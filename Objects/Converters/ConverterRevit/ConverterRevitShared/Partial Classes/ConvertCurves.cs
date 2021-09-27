@@ -70,10 +70,10 @@ namespace Objects.Converter.Revit
       {
         return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine);
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
-        return ModelCurvesFromEnumerator(CurveToNative(( ( Geometry.Curve ) speckleLine ).displayValue).GetEnumerator(),
+        return ModelCurvesFromEnumerator(CurveToNative(((Geometry.Curve)speckleLine).displayValue).GetEnumerator(),
           speckleLine);
       }
     }
@@ -81,15 +81,27 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
-      while ( curveEnum.MoveNext() && curveEnum.Current != null )
+      while (curveEnum.MoveNext() && curveEnum.Current != null)
       {
         var curve = curveEnum.Current as DB.Curve;
         // Curves must be bound in order to be valid model curves
-        if ( !curve.IsBound ) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
-        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        if (!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
+        DB.ModelCurve revitCurve = null;
+
+        if (Doc.IsFamilyDocument)
+        {
+          revitCurve = Doc.FamilyCreate.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        }
+        else
+        {
+          revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        }
+
+
         placeholders.Add(new ApplicationPlaceholderObject()
         {
-          applicationId = ( speckleLine as Base ).applicationId, ApplicationGeneratedId = revitCurve.UniqueId,
+          applicationId = (speckleLine as Base).applicationId,
+          ApplicationGeneratedId = revitCurve.UniqueId,
           NativeObject = revitCurve
         });
       }
@@ -179,6 +191,56 @@ namespace Objects.Converter.Revit
       }
 
 
+    }
+
+    public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
+    {
+      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    public ApplicationPlaceholderObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
+    {
+      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var baseCurve = CurveToNative(speckleCurve.baseCurve);
+
+      // try update existing (update model curve geometry curve based on speckle curve)
+      if (docObj != null)
+      {
+        try
+        {
+          var docCurve = docObj as DB.ModelCurve;
+          var revitGeom = docCurve.GeometryCurve;
+          var speckleGeom = baseCurve.get_Item(0);
+          bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
+          if (!fullOverlap)
+          {
+              docCurve.SetGeometryCurve(speckleGeom, false);
+          }
+          return new ApplicationPlaceholderObject()
+          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
+        }
+        catch
+        {
+              //delete and try to create new line as fallback
+              Doc.Delete(docObj.Id);
+        }
+      }
+
+      try
+      {
+          var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+          return new ApplicationPlaceholderObject()
+          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+      }
+      catch (Exception)
+      {
+          ConversionErrors.Add(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
+          throw;
+      }        
     }
 
     /// <summary>

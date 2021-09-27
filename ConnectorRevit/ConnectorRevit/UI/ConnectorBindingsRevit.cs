@@ -63,7 +63,7 @@ namespace Speckle.ConnectorRevit.UI
       NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
     }
 
-    public override string GetHostAppName() => ConnectorRevitUtils.RevitAppName;
+    public override string GetHostAppName() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
 
     public override string GetDocumentId() => GetDocHash(CurrentDoc?.Document);
 
@@ -105,8 +105,8 @@ namespace Speckle.ConnectorRevit.UI
       if (CurrentDoc != null)
         return;
 
-      if (HelpCommand.Bootstrapper != null && HelpCommand.Bootstrapper.Application != null)
-        HelpCommand.Bootstrapper.Application.MainWindow.Hide();
+      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application != null)
+        SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
 
       var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
       NotifyUi(appEvent);
@@ -121,7 +121,7 @@ namespace Speckle.ConnectorRevit.UI
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
-        HelpCommand.OpenOrFocusSpeckle(RevitApp);
+        SpeckleRevitCommand.OpenOrFocusSpeckle(RevitApp);
       }
 
       var appEvent = new ApplicationEvent()

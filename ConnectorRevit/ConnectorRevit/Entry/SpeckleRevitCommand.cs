@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -10,7 +12,7 @@ using Stylet.Xaml;
 namespace Speckle.ConnectorRevit.Entry
 {
   [Transaction(TransactionMode.Manual)]
-  public class HelpCommand : IExternalCommand
+  public class SpeckleRevitCommand : IExternalCommand
   {
     public static Bootstrapper Bootstrapper { get; set; }
     public static ConnectorBindingsRevit Bindings { get; set; }
@@ -25,6 +27,8 @@ namespace Speckle.ConnectorRevit.Entry
     {
       try
       {
+        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+
         if (Bootstrapper != null)
         {
           Bootstrapper.ShowRootView();
@@ -45,6 +49,20 @@ namespace Speckle.ConnectorRevit.Entry
       {
         Bootstrapper = null;
       }
+    }
+
+    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
+
+      string assemblyFile = Path.Combine(path, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
     }
   }
 

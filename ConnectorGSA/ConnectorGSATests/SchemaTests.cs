@@ -60,7 +60,7 @@ namespace ConnectorGSATests
         anals.Add((GsaAnal)l.Record);
       }
       Assert.Equal("Analysis Case 1", anals[0].Name);
-      Assert.Equal(1, anals[0].LoadCase);
+      Assert.Equal(1, anals[0].TaskIndex);
       Assert.Equal("L1", anals[0].Desc);
 
       for (int i = 0; i < anals.Count(); i++)

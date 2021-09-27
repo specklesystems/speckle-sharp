@@ -37,7 +37,7 @@ namespace Objects.BuiltElements.Revit
     public double topOffset { get; set; }
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
-    public bool structural { get; set; }
+    //public bool structural { get; set; }
     public double rotation { get; set; }
     public bool isSlanted { get; set; }
     public string family { get; set; }
@@ -74,7 +74,7 @@ namespace Objects.BuiltElements.Revit
       this.topLevel = topLevel;
       this.baseOffset = baseOffset;
       this.topOffset = topOffset;
-      this.structural = structural;
+      //this.structural = structural;
       this.rotation = rotation;
       this.parameters = parameters.ToBase();
       this.level = level;
@@ -87,7 +87,8 @@ namespace Objects.BuiltElements.Revit
       this.type = type;
       this.baseLine = baseLine;
       this.level = level;
-      this.structural = structural;
+      //this.structural = structural;
+      this.isSlanted = true;
       this.parameters = parameters.ToBase();
     }
   }

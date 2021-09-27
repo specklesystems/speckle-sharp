@@ -51,6 +51,14 @@ namespace Objects.Converter.Revit
       return intPt;
     }
 
+    //does not work
+    //public ReferencePoint PointToNativeReferencePoint(Point pt)
+    //{
+    //  var revitPoint = PointToNative(pt);
+    //  var referencePoint = Doc.FamilyCreate.NewReferencePoint(revitPoint);
+    //  return referencePoint;
+    //}
+
     public Point PointToSpeckle(XYZ pt, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -118,6 +126,7 @@ namespace Objects.Converter.Revit
     {
       return DB.Plane.CreateByOriginAndBasis(PointToNative(plane.origin), VectorToNative(plane.xdir).Normalize(), VectorToNative(plane.ydir).Normalize());
     }
+
 
     public Plane PlaneToSpeckle(DB.Plane plane, string units = null)
     {
@@ -313,7 +322,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        if ( e is Autodesk.Revit.Exceptions.ArgumentException ) throw e; // prob a closed, periodic curve
+        if (e is Autodesk.Revit.Exceptions.ArgumentException) throw e; // prob a closed, periodic curve
         return null;
       }
     }

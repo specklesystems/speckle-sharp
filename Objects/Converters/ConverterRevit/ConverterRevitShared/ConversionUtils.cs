@@ -403,6 +403,16 @@ namespace Objects.Converter.Revit
       }
     }
 
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, bool value)
+    {
+      var param = elem.get_Parameter(bip);
+      if (param != null && !param.IsReadOnly)
+      {
+        param.Set(value ? 1 : 0);
+
+      }
+    }
+
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
     {
       var param = elem.get_Parameter(bip);

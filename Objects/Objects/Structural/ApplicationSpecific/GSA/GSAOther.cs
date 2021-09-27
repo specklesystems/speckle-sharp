@@ -15,7 +15,7 @@ using System.Data.Common;
 
 namespace Objects.Structural.GSA.Other
 {
-  public abstract class GSAGridLoad : Load
+  /*public abstract class GSAGridLoad : Load
   {
     public int nativeId { get; set; }
     public GSAGridSurface gridSurface { get; set; }
@@ -213,4 +213,5 @@ namespace Objects.Structural.GSA.Other
     public List<double> axleLeft { get; set; } //load on left side
     public List<double> axleRight { get; set; } //load on right side
   }
+  */
 }

@@ -75,24 +75,5 @@ namespace Tests
 
       Assert.AreNotEqual(hash1, hash2);
     }
-
-    [Test(Description = "Checks to see if abstract object wrappers actually work.")]
-    public void AbstractHashing()
-    {
-      var nk1 = new NonKitClass();
-      var abs1 = new Abstract(nk1);
-
-      var nk2 = new NonKitClass() { TestProp = "HEllo" };
-      var abs2 = new Abstract(nk2);
-
-      var abs1H = abs1.GetId();
-      var abs2H = abs2.GetId();
-
-      Assert.AreNotEqual(abs1H, abs2H);
-
-      nk1.TestProp = "Wow";
-
-      Assert.AreNotEqual(abs1H, abs1.GetId());
-    }
   }
 }

@@ -51,6 +51,8 @@ namespace Objects.Structural.Geometry
                 this.code = "FFFRRR";
             if (restraintType == RestraintType.Fixed)
                 this.code = "FFFFFF";
+            if (restraintType == RestraintType.Roller)
+                this.code = "RRFRRR";
         }
     }
 }

@@ -9,13 +9,14 @@ using Objects.Structural.GSA.Materials;
 using Objects.Structural.GSA.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural;
-using System.Text.RegularExpressions;
 using Objects.Geometry;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using Speckle.Core.Models;
 
 namespace ConverterGSATests
 {
@@ -30,11 +31,20 @@ namespace ConverterGSATests
       //TO DO: 
     }
 
-    [Fact(Skip = "Not implemented yet")]
+    [Fact]
     public void NodeToNative()
     {
       //TO DO: 
       var speckleNodes = SpeckleNodeExamples(2, "node 1", "node 2");
+      var gsaRecords = converter.ConvertToNative(speckleNodes.Select(n => (Base)n).ToList());
+
+      Assert.NotEmpty(gsaRecords);
+      Assert.Contains(gsaRecords, so => so is GsaNode);
+
+      var gsaNodes = gsaRecords.FindAll(r => r is GsaNode).Select(r => (GsaNode)r).ToList();
+      Assert.Equal("node 1", gsaNodes[0].ApplicationId);
+      Assert.Equal("node 2", gsaNodes[1].ApplicationId);
+      //TO DO: complete checks
     }
 
     [Fact(Skip = "Not implemented yet")]
@@ -42,6 +52,13 @@ namespace ConverterGSATests
     {
       //TO DO: 
       var speckleElement1d = SpeckleElement1dExamples(2, "element 1", "element 2");
+    }
+
+    [Fact(Skip = "Not implemented yet")]
+    public void Element2dToNative()
+    {
+      //TO DO: 
+      var speckleElement2d = SpeckleElement2dExamples(2, "element 1", "element 2");
     }
     #endregion
 
@@ -87,7 +104,7 @@ namespace ConverterGSATests
           nativeId = 1,
           name = "",
           basePoint = new Point(0, 0, 0),
-          constraintAxis = SpeckleGlobalAxis().definition,
+          constraintAxis = SpeckleGlobalAxis(),
           localElementSize = 1,
           colour = "NO_RGB",
           restraint = new Restraint(RestraintType.Free),
@@ -101,7 +118,7 @@ namespace ConverterGSATests
           nativeId = 2,
           name = "",
           basePoint = new Point(1, 0, 0),
-          constraintAxis = SpeckleGlobalAxis().definition,
+          constraintAxis = SpeckleGlobalAxis(),
           localElementSize = 1,
           colour = "NO_RGB",
           restraint = new Restraint(RestraintType.Free),
@@ -115,7 +132,7 @@ namespace ConverterGSATests
           nativeId = 3,
           name = "",
           basePoint = new Point(1, 1, 0),
-          constraintAxis = SpeckleGlobalAxis().definition,
+          constraintAxis = SpeckleGlobalAxis(),
           localElementSize = 1,
           colour = "NO_RGB",
           restraint = new Restraint(RestraintType.Free),
@@ -129,7 +146,7 @@ namespace ConverterGSATests
           nativeId = 4,
           name = "",
           basePoint = new Point(0, 1, 0),
-          constraintAxis = SpeckleGlobalAxis().definition,
+          constraintAxis = SpeckleGlobalAxis(),
           localElementSize = 1,
           colour = "NO_RGB",
           restraint = new Restraint(RestraintType.Free),
@@ -143,7 +160,7 @@ namespace ConverterGSATests
           nativeId = 5,
           name = "",
           basePoint = new Point(2, 0, 0),
-          constraintAxis = SpeckleGlobalAxis().definition,
+          constraintAxis = SpeckleGlobalAxis(),
           localElementSize = 1,
           colour = "NO_RGB",
           restraint = new Restraint(RestraintType.Free),
@@ -210,6 +227,52 @@ namespace ConverterGSATests
           colour = "NO_RGB",
           action = "",
           isDummy = false,
+        },
+      };
+
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        speckleElements[i].applicationId = appIds[i];
+      }
+      return speckleElements.GetRange(0, num);
+    }
+
+    private List<GSAElement2D> SpeckleElement2dExamples(int num, params string[] appIds)
+    {
+      var speckleNodes = SpeckleNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5");
+      var speckleElements = new List<GSAElement2D>()
+      {
+        new GSAElement2D()
+        {
+          nativeId = 1,
+          name = "",
+          property = SpeckleProperty2dExamples(1,"property 1").First(),
+          type = ElementType2D.Quad4,
+          orientationAngle = 0,
+          parent = null,
+          topology = (new int[] { 1, 2, 4 }).Select(i => (Node)speckleNodes[i]).ToList(),
+          displayMesh = null,
+          units = "",
+          group = 0,
+          colour = "NO_RGB",
+          isDummy = false,
+          offset = 0,
+        },
+        new GSAElement2D()
+        {
+          nativeId = 2,
+          name = "",
+          property = SpeckleProperty2dExamples(1,"property 1").First(),
+          type = ElementType2D.Triangle3,
+          orientationAngle = 1,
+          parent = null,
+          topology = speckleNodes.Select(n => (Node)n).ToList().GetRange(1, 3),
+          displayMesh = null,
+          units = "",
+          group = 0,
+          colour = "NO_RGB",
+          isDummy = false,
+          offset = 0.1,
         },
       };
 
@@ -355,6 +418,26 @@ namespace ConverterGSATests
         speckleProfiles[i].applicationId = appIds[i];
       }
       return speckleProfiles.GetRange(0, num);
+    }
+
+    private List<GSAProperty2D> SpeckleProperty2dExamples(int num, params string[] appIds)
+    {
+      var speckleProperties = new List<GSAProperty2D>()
+      {
+        new GSAProperty2D()
+        {
+
+        },
+        new GSAProperty2D()
+        {
+
+        },
+      };
+      for (int i = 0; i < appIds.Count(); i++)
+      {
+        speckleProperties[i].applicationId = appIds[i];
+      }
+      return speckleProperties.GetRange(0, num);
     }
     #endregion
 

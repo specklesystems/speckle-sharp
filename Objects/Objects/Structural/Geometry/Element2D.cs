@@ -23,6 +23,7 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
+        public List<List<Node>> voids { get; set; }
 
         [DetachProperty]
         public Mesh displayMesh { get; set; }
@@ -34,12 +35,28 @@ namespace Objects.Structural.Geometry
             this.baseMesh = baseMesh;
         }
 
+        public Element2D(List<Node> nodes, List<List<Node>> voids)
+        {
+            this.topology = nodes;
+            this.voids = voids;
+        }
+
         [SchemaInfo("Element2D", "Creates a Speckle structural 2D element", "Structural", "Geometry")]
         public Element2D(Mesh baseMesh, Property2D property, ElementType2D type, double offset = 0, double orientationAngle = 0)
         {
             this.baseMesh = baseMesh;
             this.property = property;
             this.type = type; //derive from geom? 
+            this.offset = offset;
+            this.orientationAngle = orientationAngle;
+        }
+
+        [SchemaInfo("Element2D (by edge nodes)", "Creates a Speckle structural 2D element (based on a list of edge ie. external, geometry defining nodes)", "Structural", "Geometry")]
+        public Element2D(List<Node> nodes, List<List<Node>> voids, Property2D property, double offset = 0, double orientationAngle = 0)
+        {
+            this.topology = nodes;
+            this.voids = voids;
+            this.property = property;
             this.offset = offset;
             this.orientationAngle = orientationAngle;
         }

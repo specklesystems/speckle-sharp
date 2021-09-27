@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api
 {
+  public enum SerializerVersion
+  {
+    V1,
+    V2
+  }
+
   public static partial class Operations
   {
 
@@ -24,7 +31,7 @@ namespace Speckle.Core.Api
     /// <param name="onErrorAction">Action invoked on internal errors.</param>
     /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
-    public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false)
+    public static Task<Base> Receive(string objectId, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
       return Receive(
         objectId,
@@ -34,7 +41,8 @@ namespace Speckle.Core.Api
         onProgressAction,
         onErrorAction,
         onTotalChildrenCountKnown,
-        disposeTransports
+        disposeTransports,
+        serializerVersion
       );
     }
 
@@ -49,11 +57,17 @@ namespace Speckle.Core.Api
     /// <param name="onErrorAction">Action invoked on internal errors.</param>
     /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
-    public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false)
+    public static async Task<Base> Receive(string objectId, CancellationToken cancellationToken, ITransport remoteTransport = null, ITransport localTransport = null, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, Action<int> onTotalChildrenCountKnown = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
       Log.AddBreadcrumb("Receive");
 
-      var (serializer, settings) = GetSerializerInstance();
+      BaseObjectSerializer serializer = null;
+      JsonSerializerSettings settings = null;
+      BaseObjectDeserializerV2 serializerV2 = null;
+      if (serializerVersion == SerializerVersion.V1)
+        (serializer, settings) = GetSerializerInstance();
+      else
+        serializerV2 = new BaseObjectDeserializerV2();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -65,10 +79,20 @@ namespace Speckle.Core.Api
       localTransport.OnProgressAction = internalProgressAction;
       localTransport.CancellationToken = cancellationToken;
 
-      serializer.ReadTransport = localTransport;
-      serializer.OnProgressAction = internalProgressAction;
-      serializer.OnErrorAction = onErrorAction;
-      serializer.CancellationToken = cancellationToken;
+      if (serializerVersion == SerializerVersion.V1)
+      {
+        serializer.ReadTransport = localTransport;
+        serializer.OnProgressAction = internalProgressAction;
+        serializer.OnErrorAction = onErrorAction;
+        serializer.CancellationToken = cancellationToken;
+      }
+      else
+      {
+        serializerV2.ReadTransport = localTransport;
+        serializerV2.OnProgressAction = internalProgressAction;
+        serializerV2.OnErrorAction = onErrorAction;
+        serializerV2.CancellationToken = cancellationToken;
+      }
 
       // First we try and get the object from the local transport. If it's there, we assume all its children are there, and proceed with deserialisation. 
       // This assumption is hard-wired into the SDK. Read below. 
@@ -81,11 +105,15 @@ namespace Speckle.Core.Api
         if (partial.__closure != null)
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-        var localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+        Base localRes;
+        if (serializerVersion == SerializerVersion.V1)
+          localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+        else
+          localRes = serializerV2.Deserialize(objString);
 
         if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal) dispLocal.Dispose();
         if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRempte) dispRempte.Dispose();
-        
+
         return localRes;
       }
       else if (remoteTransport == null)
@@ -106,7 +134,12 @@ namespace Speckle.Core.Api
       await localTransport.WriteComplete();
 
       // Proceed to deserialise the object, now safely knowing that all its children are present in the local (fast) transport. 
-      var res = JsonConvert.DeserializeObject<Base>(objString, settings);
+
+      Base res;
+      if (serializerVersion == SerializerVersion.V1)
+        res = JsonConvert.DeserializeObject<Base>(objString, settings);
+      else
+        res = serializerV2.Deserialize(objString);
 
       if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dl) dl.Dispose();
       if (disposeTransports && remoteTransport is IDisposable dr) dr.Dispose();
