@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.Structural.Properties;
+using Objects.Structural.Materials;
 
 namespace Objects.Converter.ETABS
 {
@@ -11,8 +12,7 @@ namespace Objects.Converter.ETABS
         {
             var speckleStructProperty1D = new Property1D();
             speckleStructProperty1D.name = name;
-            
-            
+            speckleStructProperty1D.material = null;
             return speckleStructProperty1D;
         }
     }
