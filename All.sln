@@ -81,6 +81,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2022", "Obj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2022", "Objects\Converters\ConverterAutocadCivil\ConverterCivil2022\ConverterCivil2022.csproj", "{8581B4BB-A8BC-4328-99FE-D18615AF2554}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "ConnectorGrasshopper\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRhino", "ConverterRhino", "{1FD850CA-A8D7-41DC-9316-B315800437E1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhino6", "Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj", "{3CDEF4CC-2CFA-4939-8427-3ED00FA9DB55}"
@@ -327,6 +329,14 @@ Global
 		{26ECA1BE-F5B2-4A41-9658-46A4A917BFE6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{26ECA1BE-F5B2-4A41-9658-46A4A917BFE6}.Release|x64.ActiveCfg = Release|Any CPU
 		{26ECA1BE-F5B2-4A41-9658-46A4A917BFE6}.Release|x64.Build.0 = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|x64.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|x64.ActiveCfg = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
