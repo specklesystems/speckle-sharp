@@ -24,6 +24,7 @@ namespace Objects.BuiltElements.Revit
     Mass,
     Railings,
     Ramps,
+    Rebar,
     Roads,
     RoofSoffits,
     Roofs,

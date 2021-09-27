@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
     public double area { get; set; }
     public double volume { get; set; }
     public Level level { get; set; }
-    public Point center { get; set; }
+    public Point basePoint { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public ICurve outline { get; set; }
 
@@ -31,12 +31,12 @@ namespace Objects.BuiltElements
     /// </summary>
     /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
     [SchemaInfo("Room", "Creates a Speckle room", "BIM", "Architecture")]
-    public Room(string name, string number, Level level, [SchemaMainParam] Point center)
+    public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint)
     {
       this.name = name;
       this.number = number;
       this.level = level;
-      this.center = center;
+      this.basePoint = basePoint;
     }
   }
 }

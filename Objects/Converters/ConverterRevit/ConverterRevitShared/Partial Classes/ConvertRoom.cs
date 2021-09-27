@@ -19,8 +19,8 @@ namespace Objects.Converter.Revit
 
       if (revitRoom == null)
       {
-        var point = PointToNative(speckleRoom.center);
-        revitRoom = Doc.Create.NewRoom(level, new UV(point.X, point.Y));
+        var basePoint = PointToNative(speckleRoom.basePoint);
+        revitRoom = Doc.Create.NewRoom(level, new UV(basePoint.X, basePoint.Y));
       }
 
 
@@ -51,7 +51,7 @@ namespace Objects.Converter.Revit
 
       speckleRoom.name = revitRoom.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
       speckleRoom.number = revitRoom.Number;
-      speckleRoom.center = (Point)LocationToSpeckle(revitRoom);
+      speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
       speckleRoom.level = ConvertAndCacheLevel(revitRoom, BuiltInParameter.ROOM_LEVEL_ID);
       speckleRoom.outline = profiles[0];
       speckleRoom.area = GetParamValue<double>(revitRoom, BuiltInParameter.ROOM_AREA);

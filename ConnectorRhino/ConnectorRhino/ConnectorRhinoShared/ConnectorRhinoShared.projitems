@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b7376ec8-5d3e-47d2-96a7-748552f14c39</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConnectorRhinoShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConnectorRhinoCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+  </ItemGroup>
+</Project>

@@ -116,7 +116,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:");
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
@@ -206,7 +206,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
         foundKit = true;
       }

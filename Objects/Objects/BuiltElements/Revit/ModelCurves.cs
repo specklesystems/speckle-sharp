@@ -62,4 +62,20 @@ namespace Objects.BuiltElements.Revit.Curve
       this.parameters = parameters.ToBase();
     }
   }
+
+  public class SpaceSeparationLine : Base
+  {
+    public ICurve baseCurve { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+    public string units { get; set; }
+    public SpaceSeparationLine() { }
+
+    [SchemaInfo("SpaceSeparationLine", "Creates a Revit space separation line", "Revit", "Curves")]
+    public SpaceSeparationLine([SchemaMainParam] ICurve baseCurve, List<Parameter> parameters = null)
+    {
+      this.baseCurve = baseCurve;
+      this.parameters = parameters.ToBase();
+    }
+  }
 }
