@@ -14,6 +14,7 @@ using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Hatch = Objects.Other.Hatch;
 using Point = Objects.Geometry.Point;
+using Text = Objects.Other.Text;
 using RH = Rhino.DocObjects;
 using Rhino;
 
@@ -197,6 +198,23 @@ namespace Objects.Converter.RhinoGh
         return null;
 
       return Doc.Objects.FindId(instanceId) as InstanceObject;
+    }
+
+    // Text
+    public Text TextToSpeckle(TextEntity text)
+    {
+      var _text = new Text();
+      _text.curves = text.CreateCurves(text.DimensionStyle, true)?.Select(o => CurveToSpeckle(o)).ToList();
+
+      _text.position = PointToSpeckle(text.Plane.Origin);
+      _text.rotation = text.TextRotationDegrees;
+      _text.height = text.TextHeight;
+      _text.value = text.RichText;
+      _text.alignment = text.TextHorizontalAlignment.ToString();
+      _text.font = text.Font.FaceName;
+      _text.units = ModelUnits;
+
+      return _text;
     }
   }
 }

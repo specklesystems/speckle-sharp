@@ -270,6 +270,12 @@ public static string AutocadAppName = Applications.Autocad2022;
         case BlockTableRecord o:
           @base = BlockRecordToSpeckle(o);
           break;
+        case AcadDB.DBText o:
+          @base = TextToSpeckle(o);
+          break;
+        case AcadDB.MText o:
+          @base = TextToSpeckle(o);
+          break;
 #if (CIVIL2021 || CIVIL2022)
         case CivilDB.Alignment o:
           @base = AlignmentToSpeckle(o);
@@ -326,6 +332,8 @@ public static string AutocadAppName = Applications.Autocad2022;
 
             case BlockReference _:
             case BlockTableRecord _:
+            case AcadDB.DBText _:
+            case AcadDB.MText _:
               return true;
 
 #if (CIVIL2021 || CIVIL2022)

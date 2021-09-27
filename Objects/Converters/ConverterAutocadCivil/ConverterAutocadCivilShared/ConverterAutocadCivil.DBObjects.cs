@@ -29,6 +29,7 @@ using Surface = Objects.Geometry.Surface;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Text = Objects.Other.Text;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
@@ -1161,6 +1162,8 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
+    // blocks
+
     public BlockInstance BlockReferenceToSpeckle(AcadDB.BlockReference reference)
     {
       // skip if dynamic block
@@ -1332,5 +1335,34 @@ namespace Objects.Converter.AutocadCivil
 
       return blockId;
     }
+
+    // Text
+    public Text TextToSpeckle(AcadDB.DBText text)
+    {
+      var _text = new Text();
+
+      _text.height = text.Height;
+      _text.position = PointToSpeckle(text.Position);
+      _text.rotation = text.Rotation;
+      _text.value = text.TextString;
+      _text.alignment = text.HorizontalMode.ToString();
+      _text.units = ModelUnits;
+      
+      return _text;
+    }
+    public Text TextToSpeckle(AcadDB.MText text)
+    {
+      var _text = new Text();
+
+      _text.height = text.TextHeight;
+      _text.position = PointToSpeckle(text.Location);
+      _text.rotation = text.Rotation;    
+      _text.value = text.Contents;
+      _text.units = ModelUnits;
+
+
+      return _text;
+    }
+
   }
 }
