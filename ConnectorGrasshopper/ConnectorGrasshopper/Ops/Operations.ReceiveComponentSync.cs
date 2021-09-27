@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -109,9 +109,14 @@ namespace ConnectorGrasshopper.Ops
     public ReceiveSync() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
-      SetDefaultKitAndConverter();
-    }
 
+    }
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -217,14 +222,12 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
-
     /// <summary>
     /// Registers all the input parameters for this component.
     /// </summary>
     protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
     {
       var streamInputIndex = pManager.AddGenericParameter("Stream", "S", "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.item);
-      pManager[streamInputIndex].Optional = true;
     }
 
     /// <summary>
@@ -242,16 +245,12 @@ namespace ConnectorGrasshopper.Ops
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (!foundKit)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
-        return;
-      }
-      
+     
       if (RunCount == 1)
       {
         CreateCancelationToken();
         ParseInput(DA);
+        if (InputType == "Invalid") return;
       }
 
       if (InPreSolve)
