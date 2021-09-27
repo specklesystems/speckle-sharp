@@ -9,6 +9,7 @@ namespace Objects.Structural.Geometry
     public enum ElementType1D
     {
         Beam,
+        Brace,
         Bar,
         Column,
         Rod,
@@ -18,7 +19,9 @@ namespace Objects.Structural.Geometry
         Link,
         Damper,
         Cable,
-        Spacer
+        Spacer,
+        Other,
+        Null
     }
 
     public enum ElementType2D
