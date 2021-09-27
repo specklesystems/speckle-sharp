@@ -133,6 +133,40 @@
     Reference
   }
 
+  public enum IncludeOption
+  {
+    [StringValue("INC_UNDEF")]
+    Undefined,
+    [StringValue("INC_SUP")]
+    Unfavourable,
+    [StringValue("INC_INF")]
+    Favourable,
+    [StringValue("INC_BOTH")]
+    Both
+  }
+
+  public enum LoadCategory
+  {
+    [StringValue("~")]
+    NotSet,
+    [StringValue("A")]
+    Residential,
+    [StringValue("B")]
+    Office,
+    [StringValue("C")]
+    CongregationArea,
+    [StringValue("D")]
+    Shop,
+    [StringValue("E")]
+    Storage,
+    [StringValue("F")]
+    LightTraffic,
+    [StringValue("G")]
+    Traffic,
+    [StringValue("H")]
+    Roofs
+  }
+
   public enum InfType
   {
     NotSet = 0,

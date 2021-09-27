@@ -127,82 +127,80 @@ namespace ConverterGSA
 
     #region Enum conversions
     #region ToSpeckle
-    public static ElementType1D ToSpeckle(this ElementType gsaType)
+    public static ElementType1D ToSpeckle1d(this ElementType gsaType)
     {
       switch (gsaType)
       {
-        case ElementType.Bar:
-          return ElementType1D.Bar;
-        case ElementType.Cable:
-          return ElementType1D.Cable;
-        case ElementType.Damper:
-          return ElementType1D.Damper;
-        case ElementType.Link:
-          return ElementType1D.Link;
-        case ElementType.Rod:
-          return ElementType1D.Rod;
-        case ElementType.Spacer:
-          return ElementType1D.Spacer;
-        case ElementType.Spring:
-          return ElementType1D.Spring;
-        case ElementType.Strut:
-          return ElementType1D.Strut;
-        case ElementType.Tie:
-          return ElementType1D.Tie;
-        default:
-          return ElementType1D.Beam;
+        case ElementType.Bar: return ElementType1D.Bar;
+        case ElementType.Cable: return ElementType1D.Cable;
+        case ElementType.Damper: return ElementType1D.Damper;
+        case ElementType.Link: return ElementType1D.Link;
+        case ElementType.Rod: return ElementType1D.Rod;
+        case ElementType.Spacer: return ElementType1D.Spacer;
+        case ElementType.Spring: return ElementType1D.Spring;
+        case ElementType.Strut: return ElementType1D.Strut;
+        case ElementType.Tie: return ElementType1D.Tie;
+        default: return ElementType1D.Beam;
+      }
+    }
+    public static ElementType2D ToSpeckle2d(this ElementType gsaType)
+    {
+      switch (gsaType)
+      {
+        case ElementType.Triangle3: return ElementType2D.Triangle3;
+        case ElementType.Triangle6: return ElementType2D.Triangle6;
+        case ElementType.Quad8: return ElementType2D.Quad8;
+        default: return ElementType2D.Quad4;
       }
     }
 
     public static ElementType1D ToSpeckle1d(this GwaMemberType gsaMemberType)
     {
-      //TODO
-      return ElementType1D.Beam;
+      switch (gsaMemberType)
+      {
+        case GwaMemberType.Beam:
+        case GwaMemberType.Column:
+        case GwaMemberType.Generic1d:
+        case GwaMemberType.Void1d:
+          return ElementType1D.Beam;
+        default:
+          throw new Exception(gsaMemberType.ToString() + " is not a valid 1D member type.");
+      }
     }
 
     public static ElementType2D ToSpeckle2d(this GwaMemberType gsaMemberType)
     {
-      //TODO
-      return ElementType2D.Quad4;
+      switch(gsaMemberType)
+      {
+        case GwaMemberType.Generic2d:
+        case GwaMemberType.Slab:
+        case GwaMemberType.Void2d:
+        case GwaMemberType.Wall:
+          return ElementType2D.Quad4;
+        default:
+          throw new Exception(gsaMemberType.ToString() + " is not a valid 2D member type.");
+      }
     }
 
     public static GridSurfaceSpanType ToSpeckle(this GridSurfaceSpan gsaGridSurfaceSpan)
     {
-      if (gsaGridSurfaceSpan == GridSurfaceSpan.One)
+      switch (gsaGridSurfaceSpan)
       {
-        return GridSurfaceSpanType.OneWay;
-      }
-      else if (gsaGridSurfaceSpan == GridSurfaceSpan.Two)
-      {
-        return GridSurfaceSpanType.TwoWay;
-      }
-      else
-      {
-        return GridSurfaceSpanType.NotSet;
+        case GridSurfaceSpan.One: return GridSurfaceSpanType.OneWay;
+        case GridSurfaceSpan.Two: return GridSurfaceSpanType.TwoWay;
+        default: return GridSurfaceSpanType.NotSet;
       }
     }
 
     public static LoadExpansion ToSpeckle(this GridExpansion gsaExpansion)
     {
-      if (gsaExpansion == GridExpansion.Legacy)
+      switch(gsaExpansion)
       {
-        return LoadExpansion.Legacy;
-      }
-      else if (gsaExpansion == GridExpansion.PlaneAspect)
-      {
-        return LoadExpansion.PlaneAspect;
-      }
-      else if (gsaExpansion == GridExpansion.PlaneCorner)
-      {
-        return LoadExpansion.PlaneCorner;
-      }
-      else if (gsaExpansion == GridExpansion.PlaneSmooth)
-      {
-        return LoadExpansion.PlaneSmooth;
-      }
-      else
-      {
-        return LoadExpansion.NotSet;
+        case GridExpansion.Legacy: return LoadExpansion.Legacy;
+        case GridExpansion.PlaneAspect: return LoadExpansion.PlaneAspect;
+        case GridExpansion.PlaneCorner: return LoadExpansion.PlaneCorner;
+        case GridExpansion.PlaneSmooth: return LoadExpansion.PlaneSmooth;
+        default: return LoadExpansion.NotSet;
       }
     }
 
@@ -210,24 +208,37 @@ namespace ConverterGSA
     {
       switch (gsaLoadType)
       {
+        case StructuralLoadCaseType.Dead: return LoadType.Dead;
+        case StructuralLoadCaseType.Earthquake: return LoadType.SeismicStatic;
+        case StructuralLoadCaseType.Live: return LoadType.Live;
+        case StructuralLoadCaseType.Rain: return LoadType.Rain;
+        case StructuralLoadCaseType.Snow: return LoadType.Snow;
+        case StructuralLoadCaseType.Soil: return LoadType.Soil;
+        case StructuralLoadCaseType.Thermal: return LoadType.Thermal;
+        case StructuralLoadCaseType.Wind: return LoadType.Wind;
+        default: return LoadType.None;
+      }
+    }
+
+    public static ActionType GetActionType(this StructuralLoadCaseType gsaLoadType)
+    {
+      switch (gsaLoadType)
+      {
         case StructuralLoadCaseType.Dead:
-          return LoadType.Dead;
-        case StructuralLoadCaseType.Earthquake:
-          return LoadType.SeismicStatic;
-        case StructuralLoadCaseType.Live:
-          return LoadType.Live;
-        case StructuralLoadCaseType.Rain:
-          return LoadType.Rain;
-        case StructuralLoadCaseType.Snow:
-          return LoadType.Snow;
         case StructuralLoadCaseType.Soil:
-          return LoadType.Soil;
-        case StructuralLoadCaseType.Thermal:
-          return LoadType.Thermal;
+          return ActionType.Permanent;
+        case StructuralLoadCaseType.Live:
         case StructuralLoadCaseType.Wind:
-          return LoadType.Wind;
+        case StructuralLoadCaseType.Snow:
+        case StructuralLoadCaseType.Rain:
+        case StructuralLoadCaseType.Thermal:
+          return ActionType.Variable;
+        case StructuralLoadCaseType.Earthquake: //TODO: variable? accidental? something else
+          return ActionType.Accidental;
         default:
-          return LoadType.None;
+          //StructuralLoadCaseType.NotSet
+          //StructuralLoadCaseType.Generic
+          return ActionType.None;
       }
     }
 
@@ -235,12 +246,9 @@ namespace ConverterGSA
     {
       switch (gsaType)
       {
-        case Load2dFaceType.General:
-          return FaceLoadType.Variable;
-        case Load2dFaceType.Point:
-          return FaceLoadType.Point;
-        default:
-          return FaceLoadType.Constant;
+        case Load2dFaceType.General: return FaceLoadType.Variable;
+        case Load2dFaceType.Point: return FaceLoadType.Point;
+        default: return FaceLoadType.Constant;
       }
     }
 
@@ -248,14 +256,10 @@ namespace ConverterGSA
     {
       switch (gsaType)
       {
-        case Load2dThermalType.Uniform:
-          return Thermal2dLoadType.Uniform;
-        case Load2dThermalType.Gradient:
-          return Thermal2dLoadType.Gradient;
-        case Load2dThermalType.General:
-          return Thermal2dLoadType.General;
-        default:
-          return Thermal2dLoadType.NotSet;
+        case Load2dThermalType.Uniform: return Thermal2dLoadType.Uniform;
+        case Load2dThermalType.Gradient: return Thermal2dLoadType.Gradient;
+        case Load2dThermalType.General: return Thermal2dLoadType.General;
+        default: return Thermal2dLoadType.NotSet;
       }
     }
 
@@ -263,13 +267,10 @@ namespace ConverterGSA
     {
       switch (gsaDirection)
       {
-        case GwaAxisDirection3.X:
-          return LoadDirection2D.X;
-        case GwaAxisDirection3.Y:
-          return LoadDirection2D.Y;
-        case GwaAxisDirection3.Z:
-        default:
-          return LoadDirection2D.Z;
+        case GwaAxisDirection3.X: return LoadDirection2D.X;
+        case GwaAxisDirection3.Y: return LoadDirection2D.Y;
+        case GwaAxisDirection3.Z: return LoadDirection2D.Z;
+        default: return LoadDirection2D.Z; //TODO: handle NotSet case. Throw exception? Add to LoadDirection2D enum?
       }
     }
 
@@ -277,19 +278,13 @@ namespace ConverterGSA
     {
       switch (gsaDirection)
       {
-        case GwaAxisDirection6.X:
-          return LoadDirection.X;
-        case GwaAxisDirection6.Y:
-          return LoadDirection.Y;
-        case GwaAxisDirection6.Z:
-          return LoadDirection.Z;
-        case GwaAxisDirection6.XX:
-          return LoadDirection.XX;
-        case GwaAxisDirection6.YY:
-          return LoadDirection.YY;
-        case GwaAxisDirection6.ZZ:
-        default:
-          return LoadDirection.ZZ;
+        case GwaAxisDirection6.X: return LoadDirection.X;
+        case GwaAxisDirection6.Y: return LoadDirection.Y;
+        case GwaAxisDirection6.Z: return LoadDirection.Z;
+        case GwaAxisDirection6.XX: return LoadDirection.XX;
+        case GwaAxisDirection6.YY: return LoadDirection.YY;
+        case GwaAxisDirection6.ZZ: return LoadDirection.ZZ;
+        default: throw new Exception(gsaDirection + " can not be converted into LoadDirection enum");        
       }
     }
 
@@ -352,12 +347,9 @@ namespace ConverterGSA
     {
       switch (gsaReferencePoint)
       {
-        case ReferencePoint.BottomCentre:
-          return BaseReferencePoint.BotCentre;
-        case ReferencePoint.BottomLeft:
-          return BaseReferencePoint.BotLeft;
-        default:
-          return BaseReferencePoint.Centroid;
+        case ReferencePoint.BottomCentre: return BaseReferencePoint.BotCentre;
+        case ReferencePoint.BottomLeft: return BaseReferencePoint.BotLeft;
+        default: return BaseReferencePoint.Centroid;
       }
     }
 
@@ -365,12 +357,9 @@ namespace ConverterGSA
     {
       switch (gsaRefPt)
       {
-        case Property2dRefSurface.BottomCentre:
-          return ReferenceSurface.Bottom;
-        case Property2dRefSurface.TopCentre:
-          return ReferenceSurface.Top;
-        default:
-          return ReferenceSurface.Middle;
+        case Property2dRefSurface.BottomCentre: return ReferenceSurface.Bottom;
+        case Property2dRefSurface.TopCentre: return ReferenceSurface.Top;
+        default: return ReferenceSurface.Middle;
       }
     }
 
@@ -378,38 +367,22 @@ namespace ConverterGSA
     {
       switch (gsaType)
       {
-        case RigidConstraintType.ALL:
-          return LinkageType.ALL;
-        case RigidConstraintType.XY_PLANE:
-          return LinkageType.XY_PLANE;
-        case RigidConstraintType.YZ_PLANE:
-          return LinkageType.YZ_PLANE;
-        case RigidConstraintType.ZX_PLANE:
-          return LinkageType.ZX_PLANE;
-        case RigidConstraintType.XY_PLATE:
-          return LinkageType.XY_PLATE;
-        case RigidConstraintType.YZ_PLATE:
-          return LinkageType.YZ_PLATE;
-        case RigidConstraintType.ZX_PLATE:
-          return LinkageType.ZX_PLATE;
-        case RigidConstraintType.PIN:
-          return LinkageType.PIN;
-        case RigidConstraintType.XY_PLANE_PIN:
-          return LinkageType.XY_PLANE_PIN;
-        case RigidConstraintType.YZ_PLANE_PIN:
-          return LinkageType.YZ_PLANE_PIN;
-        case RigidConstraintType.ZX_PLANE_PIN:
-          return LinkageType.ZX_PLANE_PIN;
-        case RigidConstraintType.XY_PLATE_PIN:
-          return LinkageType.XY_PLATE_PIN;
-        case RigidConstraintType.YZ_PLATE_PIN:
-          return LinkageType.YZ_PLATE_PIN;
-        case RigidConstraintType.ZX_PLATE_PIN:
-          return LinkageType.ZX_PLATE_PIN;
-        case RigidConstraintType.Custom:
-          return LinkageType.Custom;
-        default:
-          return LinkageType.NotSet;
+        case RigidConstraintType.ALL: return LinkageType.ALL;
+        case RigidConstraintType.XY_PLANE: return LinkageType.XY_PLANE;
+        case RigidConstraintType.YZ_PLANE: return LinkageType.YZ_PLANE;
+        case RigidConstraintType.ZX_PLANE: return LinkageType.ZX_PLANE;
+        case RigidConstraintType.XY_PLATE: return LinkageType.XY_PLATE;
+        case RigidConstraintType.YZ_PLATE: return LinkageType.YZ_PLATE;
+        case RigidConstraintType.ZX_PLATE: return LinkageType.ZX_PLATE;
+        case RigidConstraintType.PIN: return LinkageType.PIN;
+        case RigidConstraintType.XY_PLANE_PIN: return LinkageType.XY_PLANE_PIN;
+        case RigidConstraintType.YZ_PLANE_PIN: return LinkageType.YZ_PLANE_PIN;
+        case RigidConstraintType.ZX_PLANE_PIN: return LinkageType.ZX_PLANE_PIN;
+        case RigidConstraintType.XY_PLATE_PIN: return LinkageType.XY_PLATE_PIN;
+        case RigidConstraintType.YZ_PLATE_PIN: return LinkageType.YZ_PLATE_PIN;
+        case RigidConstraintType.ZX_PLATE_PIN: return LinkageType.ZX_PLATE_PIN;
+        case RigidConstraintType.Custom: return LinkageType.Custom;
+        default: return LinkageType.NotSet;
       }
     }
 
@@ -417,20 +390,13 @@ namespace ConverterGSA
     {
       switch (gsa)
       {
-        case GwaAxisDirection6.X:
-          return AxisDirection6.X;
-        case GwaAxisDirection6.Y:
-          return AxisDirection6.Y;
-        case GwaAxisDirection6.Z:
-          return AxisDirection6.Z;
-        case GwaAxisDirection6.XX:
-          return AxisDirection6.XX;
-        case GwaAxisDirection6.YY:
-          return AxisDirection6.YY;
-        case GwaAxisDirection6.ZZ:
-          return AxisDirection6.ZZ;
-        default:
-          return AxisDirection6.NotSet;
+        case GwaAxisDirection6.X: return AxisDirection6.X;
+        case GwaAxisDirection6.Y: return AxisDirection6.Y;
+        case GwaAxisDirection6.Z: return AxisDirection6.Z;
+        case GwaAxisDirection6.XX: return AxisDirection6.XX;
+        case GwaAxisDirection6.YY: return AxisDirection6.YY;
+        case GwaAxisDirection6.ZZ: return AxisDirection6.ZZ;
+        default: return AxisDirection6.NotSet;
       }
     }
 
@@ -438,33 +404,23 @@ namespace ConverterGSA
     {
       switch (gsaType)
       {
-        case InfType.DISP:
-          return InfluenceType.DISPLACEMENT;
-        case InfType.FORCE:
-          return InfluenceType.FORCE;
-        default:
-          return InfluenceType.NotSet;
+        case InfType.DISP: return InfluenceType.DISPLACEMENT;
+        case InfType.FORCE: return InfluenceType.FORCE;
+        default: return InfluenceType.NotSet;
       }
     }
 
     public static PathType ToSpeckle(this GwaPathType gsaType)
     {
       switch (gsaType)
-      {
-        case GwaPathType.LANE:
-          return PathType.LANE;
-        case GwaPathType.FOOTWAY:
-          return PathType.FOOTWAY;
-        case GwaPathType.TRACK:
-          return PathType.TRACK;
-        case GwaPathType.VEHICLE:
-          return PathType.VEHICLE;
-        case GwaPathType.CWAY_1WAY:
-          return PathType.CWAY_1WAY;
-        case GwaPathType.CWAY_2WAY:
-          return PathType.CWAY_2WAY;
-        default:
-          return PathType.NotSet;
+      { 
+        case GwaPathType.LANE: return PathType.LANE;
+        case GwaPathType.FOOTWAY: return PathType.FOOTWAY;
+        case GwaPathType.TRACK: return PathType.TRACK;
+        case GwaPathType.VEHICLE: return PathType.VEHICLE;
+        case GwaPathType.CWAY_1WAY: return PathType.CWAY_1WAY;
+        case GwaPathType.CWAY_2WAY: return PathType.CWAY_2WAY;
+        default: return PathType.NotSet;
       }
     }
     #endregion
