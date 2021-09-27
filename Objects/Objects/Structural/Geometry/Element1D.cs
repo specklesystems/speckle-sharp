@@ -86,7 +86,7 @@ namespace Objects.Structural.Geometry
         /// <param name="orientationNode"></param>
         /// <param name="orientationAngle"></param>
         [SchemaInfo("Element1D (from orientation node and angle)", "Creates a Speckle structural 1D element (from orientation node and angle)", "Structural", "Geometry")]
-        public Element1D(ICurve baseLine, Property1D property, ElementType1D type,
+        public Element1D(Line baseLine, Property1D property, ElementType1D type,
              string name = null,
              [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
              [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,

@@ -4,7 +4,7 @@ using System.Linq;
 using MathNet.Numerics;
 using MathNet.Spatial.Euclidean;
 
-namespace SpeckleStructuralClasses.PolygonMesher
+namespace Speckle.Objects.ConverterETABS.PolygonMesher
 {
   public static class Extensions
   {

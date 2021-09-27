@@ -9,12 +9,12 @@ namespace Objects.Structural.Geometry
     public class Restraint : Base
     {
         public string code { get; set; } //a string to describe the restraint type for each degree of freedom - ex. FFFRRR (pin) / FFFFFF (fix)
-        public double stiffnessX { get; set; }
-        public double stiffnessY { get; set; }
-        public double stiffnessZ { get; set; }
-        public double stiffnessXX { get; set; }
-        public double stiffnessYY { get; set; }
-        public double stiffnessZZ { get; set; }
+        public bool stiffnessX { get; set; }
+        public bool stiffnessY { get; set; }
+        public bool stiffnessZ { get; set; }
+        public bool stiffnessXX { get; set; }
+        public bool stiffnessYY { get; set; }
+        public bool stiffnessZZ { get; set; }
         public string units { get; set; }
         public Restraint() { }
 

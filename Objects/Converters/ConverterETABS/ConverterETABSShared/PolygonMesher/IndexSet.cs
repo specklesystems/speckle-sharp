@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace SpeckleStructuralClasses.PolygonMesher
+namespace Speckle.Objects.ConverterETABS.PolygonMesher
 {
   internal abstract class IndexSet
   {
