@@ -1,5 +1,6 @@
 ﻿using Speckle.GSA.API;
 using Speckle.ConnectorGSA.Proxy.Cache;
+using Speckle.Core.Credentials;
 
 namespace ConnectorGSA
 {
@@ -14,6 +15,8 @@ namespace ConnectorGSA
     public override IGSACache Cache { get => cache; set => cache = value; }
     public override IGSAProxy Proxy { get => proxy; set => proxy = value; }
     public override IGSAMessenger Messenger { get => messenger; set => messenger = value; }
+
+    public Account Account;
 
     public GsaModel()
     {

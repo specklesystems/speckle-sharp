@@ -1,6 +1,8 @@
 ﻿using ConnectorGSA.Models;
+using ConnectorGSA.Utilities;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -17,6 +19,62 @@ namespace ConnectorGSA
   public static class Commands
   {
     public static object Assert { get; private set; }
+
+    public static async Task<bool> InitialLoad(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress)
+    {
+      coordinator.Init();
+      try
+      {
+        //This will throw an exception if there is no default account
+        var account = AccountManager.GetDefaultAccount();
+        if (account == null)
+        {
+          return false;
+        }
+        ((GsaModel)Instance.GsaModel).Account = account;
+        return await CompleteLogin(coordinator, new SpeckleAccountForUI(account.serverInfo.url, account.userInfo.email, account.token, account.userInfo.name), loggingProgress);
+      }
+      catch
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "No default account found - press the Login button to login/select an account"));
+        return false;
+      }
+    }
+
+    public static async Task<bool> CompleteLogin(TabCoordinator coordinator, SpeckleAccountForUI accountCandidate, IProgress<MessageEventArgs> loggingProgress)
+    {
+      var messenger = new ProgressMessenger(loggingProgress);
+
+      if (accountCandidate != null && accountCandidate.IsValid)
+      {
+        var streamsForAccount = new List<Stream>();
+        var client = new Client(((GsaModel)Instance.GsaModel).Account);
+        try
+        {
+          streamsForAccount = await client.StreamsGet(50);  //Undocumented limitation servers cannot seem to return more than 50 items
+        }
+        catch (Exception ex)
+        {
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "Unable to get stream list"));
+        }
+        
+
+        coordinator.Account = accountCandidate;
+        coordinator.ServerStreamList.StreamListItems.Clear();
+
+        foreach (var sd in streamsForAccount)
+        {
+          coordinator.ServerStreamList.StreamListItems.Add(new StreamListItem(sd.id, sd.name));
+        }
+
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Logged into account at: " + coordinator.Account.ServerUrl));
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
 
     public static bool OpenFile(string filePath, bool visible)
     {

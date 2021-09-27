@@ -203,7 +203,7 @@ namespace ConnectorGSA.ViewModels
          Refresh(() => StateMachine.StartedLoggingIn());
 
          var calibrateNodeAtTask = Task.Run(() => Instance.GsaModel.Proxy.CalibrateNodeAt());
-         //var initialLoadTask = Task.Run(() => Commands.InitialLoad(Coordinator, loggingProgress));
+         var initialLoadTask = Task.Run(() => Commands.InitialLoad(Coordinator, loggingProgress));
 
          //var loaded = await initialLoadTask;
          var loaded = true;   //TEMP
