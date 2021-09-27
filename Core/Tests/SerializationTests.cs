@@ -34,20 +34,6 @@ namespace Tests
     }
 
     [Test]
-    public void ListSerialisationAndDeserialisation()
-    {
-      var objs = new List<Base>();
-      for (int i = 0; i < 10; i++)
-      {
-        objs.Add(new Point(i, i, i));
-      }
-
-      var result = Operations.Serialize(objs);
-      var test = Operations.DeserializeArray(result);
-      Assert.AreEqual(10, test.Count);
-    }
-
-    [Test]
     public void DictionarySerialisation()
     {
       // TODO
