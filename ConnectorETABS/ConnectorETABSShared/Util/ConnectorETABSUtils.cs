@@ -56,56 +56,8 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllPointNames(doc);
                 case "Frame":
                     return GetAllFrameNames(doc);
-                case "Tendon":
-                    return GetAllTendonNames(doc);
                 case "Area":
                     return GetAllAreaNames(doc);
-                case "Link":
-                    return GetAllLinkNames(doc);
-                case "PropMaterial":
-                    return GetAllPropMaterialNames(doc);
-                //case "Rebar":
-                //    return GetAllPropRebarNames(doc);
-                case "PropFrame":
-                    return GetAllPropFrameNames(doc);
-                case "LoadCase":
-                    return GetAllLoadCaseNames(doc);
-                case "LoadPattern":
-                    return GetAllLoadPatternNames(doc);
-                //case "Group":
-                //    return GetAllGroupNames(doc);
-                case "GridSys":
-                    return GetAllGridNames(doc);
-                case "Combo":
-                    return GetAllComboNames(doc);
-                //case "Constraint":
-                //    return GetAllConstraintNames(doc);
-                case "DesignSteel":
-                    return GetAllSteelDesignNames(doc);
-                case "DesignConcrete":
-                    return GetAllConcreteDesignNames(doc);
-                case "Story":
-                    return GetAllStoryNames(doc);
-                case "Diaphragm":
-                    return GetAllDiaphragmNames(doc);
-                //case "Line":
-                //return GetAllLineNames(doc);
-                case "PierLabel":
-                    return GetAllPierLabelNames(doc);
-                case "PropAreaSpring":
-                    return GetAllPropAreaSpringNames(doc);
-                case "PropLineSpring":
-                    return GetAllPropLineSpringNames(doc);
-                case "PropPointSpring":
-                    return GetAllPropPointSpringNames(doc);
-                case "SpandrelLabel":
-                    return GetAllSpandrelLabelNames(doc);
-                //case "Tower":
-                //    return GetAllTowerNames(doc);
-                case "PropTendon":
-                    return GetAllPropTendonNames(doc);
-                case "PropLink":
-                    return GetAllPropLinkNames(doc);
                 default:
                     return null;
             }
@@ -457,35 +409,8 @@ namespace Speckle.ConnectorETABS.Util
         {
             Point = 1, // cPointObj
             Frame = 2, // cFrameObj
-                       //Tendon = 3, 
-            Area = 4, // cAreaObj
-            Link = 5, // cLinkObj
-            PropMaterial = 6, // cPropFrame which is material property
-            //PropRebar = 7, // cPropRebar doesn't have set methods
-            PropFrame = 8, // cPropFrame which is Frame section property
-            LoadCase = 9, // cLoadCases
-            LoadPattern = 10, // cLoadPatterns
-            //Group = 11, // cGroup
-            GridSys = 12, // cGridSys
-            Combo = 13, // cCombo
-            //Constraint = 14, // cConstraint; api manual says use diaphragm instead
-            DesignSteel = 15, // cDesignSteel
-            DesignConcrete = 16, // cDesignConcrete
-            Story = 17, /// cStory
-            Diaphragm = 18, // cDiaphragm
-                            // Line = 19, // cLineElm
-            PierLabel = 20, // cPierLabel
-            PropAreaSpring = 21, // cPropAreaSpring 
-            PropLineSpring = 22, // cPropLineSpring
-            PropPointSpring = 23, // cPropPointSpring
-            SpandrelLabel = 24, // cSpandrelLabel
-                                //Tower = 25, // cTower
-                                // Cable = 26,
-                                // Solid = 27,
-                                // DesignProcedure = 28,
-                                // DesignStrip = 29,
-            PropTendon = 30,
-            PropLink = 31
+            Area = 4
+
         }
 
         /// <summary>
@@ -495,54 +420,9 @@ namespace Speckle.ConnectorETABS.Util
         {
             Point = 1,
             Frame = 2,
-            Cable = 3,
-            Tendon = 4,
-            Area = 5,
-            Solid = 6,
-            Link = 7,
+            Area = 5
         }
     }
 
-
-
-
-
-    ///<summary>
-    ///same as in eAreaDesignOrientation Enumeration in ETABS API
-    ///</summary>
-    //public enum ETABSAreaType
-    //{
-    //    Wall = 1,
-    //    Floor = 2,
-    //    Ramp_DO_NOT_USE = 3,
-    //    Null = 4,
-    //    Other = 5,
-    //}
-
-    ///<summary>
-    ///same as in eFramePropType Enumeration
-    ///</summary>
-
-
-    ///<summary>
-    /// same as in eLoadCaseType Enumeration in ETABS API
-    ///</summary>
-    //public enum ETABSLoadCaseType
-    //{
-    //    LinearStatic = 1,
-    //    NonlinearStatic = 2,
-    //    Modal = 3,
-    //    ResponseSpectrum = 4,
-    //    LinearHistory = 5,
-    //    NonlinearHistory = 6,
-    //    LinearDynamic = 7,
-    //    NonlinearDynamic = 8,
-    //    MovingLoad = 9,
-    //    Buckling = 10,
-    //    SteadyState = 11,
-    //    PowerSpectralDensity = 12,
-    //    LinearStaticMultiStep = 13,
-    //    HyperStatic = 14,
-    //}
 }
 
