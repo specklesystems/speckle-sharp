@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
@@ -21,18 +22,19 @@ using Speckle.Core.Transports;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveSync : GH_TaskCapableComponent<Speckle.Core.Models.Base>
+  public class ReceiveSync : SelectKitTaskCapableComponentBase<Speckle.Core.Models.Base>
   {
     CancellationTokenSource source;
     const int delay = 100000;
     public ISpeckleKit Kit;
-    public ISpeckleConverter Converter;
+    //public ISpeckleConverter Converter;
     public TaskCreationOptions? TaskCreationOptions { get; set; } = null;
     public StreamWrapper StreamWrapper { get; set; }
     private Client ApiClient { get; set; }
     public string ReceivedCommitId { get; set; }
     public string InputType { get; set; }
     public bool AutoReceive { get; set; }
+    //public bool ConvertToNative { get; set; } = true;
     public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
@@ -49,7 +51,7 @@ namespace ConnectorGrasshopper.Ops
                 await ResetApiClient(StreamWrapper);
                 if (source == null)
                   CreateCancelationToken();
-                
+
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(source.Token, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
@@ -100,16 +102,6 @@ namespace ConnectorGrasshopper.Ops
       if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName) return;
       HandleNewCommit();
     }
-    public void SetConverterFromKit(string kitName)
-    {
-      if (kitName == Kit?.Name) return;
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino6);
-
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
-    }
 
     /// <summary>
     /// Initializes a new instance of the Operations class.
@@ -117,9 +109,14 @@ namespace ConnectorGrasshopper.Ops
     public ReceiveSync() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
-      SetDefaultKitAndConverter();
-    }
 
+    }
+    
+    public override void AddedToDocument(GH_Document document)
+    {
+      SetDefaultKitAndConverter();
+      base.AddedToDocument(document);
+    }
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
@@ -168,7 +165,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("KitName", Kit.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
-
+      //writer.SetBoolean(nameof(ConvertToNative), ConvertToNative);
       return base.Write(writer);
     }
 
@@ -203,6 +200,8 @@ namespace ConnectorGrasshopper.Ops
       else
         SetDefaultKitAndConverter();
 
+      //ConvertToNative = reader.GetBoolean(nameof(ConvertToNative));
+
       return base.Read(reader);
     }
 
@@ -223,14 +222,12 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
-
     /// <summary>
     /// Registers all the input parameters for this component.
     /// </summary>
     protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
     {
       var streamInputIndex = pManager.AddGenericParameter("Stream", "S", "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.item);
-      pManager[streamInputIndex].Optional = true;
     }
 
     /// <summary>
@@ -248,27 +245,18 @@ namespace ConnectorGrasshopper.Ops
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (!foundKit)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
-        return;
-      }
-      
+     
       if (RunCount == 1)
       {
         CreateCancelationToken();
         ParseInput(DA);
+        if (InputType == "Invalid") return;
       }
 
       if (InPreSolve)
       {
         var task = Task.Run(async () =>
         {
-          if (StreamWrapper == null)
-          {
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Select a Kit");
-            return null;
-          }
           var acc = await StreamWrapper?.GetAccount();
           var client = new Client(acc);
           var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
@@ -300,8 +288,6 @@ namespace ConnectorGrasshopper.Ops
 
           return ReceivedObject;
         }, source.Token);
-
-
         TaskList.Add(task);
         return;
       }
@@ -310,36 +296,21 @@ namespace ConnectorGrasshopper.Ops
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
       }
-      else if (!GetSolveResults(DA, out Speckle.Core.Models.Base ReceivedObject))
+      else if (!GetSolveResults(DA, out Speckle.Core.Models.Base @base))
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithread");
       }
       else
       {
-        if (ReceivedObject == null)
+        if (@base == null)
           return;
-        ReceivedObjectId = ReceivedObject.id;
+        ReceivedObjectId = @base.id;
 
         //the active document may have changed
-        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
+        var data = Extras.Utilities.ConvertToTree(Converter, @base);
 
-        // case 1: it's an item that has a direct conversion method, eg a point
-        if (Converter.CanConvertToNative(ReceivedObject))
-        {
-          DA.SetData(0, Extras.Utilities.TryConvertItemToNative(ReceivedObject, Converter));
-          return;
-        }
-
-        var members = ReceivedObject.GetDynamicMembers();
-
-        if (members.Count() == 1)
-        {
-          var treeBuilder = new TreeBuilder(Converter);
-          var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
-
-          DA.SetDataTree(0, tree);
-          return;
-        }
+        DA.SetDataTree(0, data);
       }
     }
 
@@ -352,12 +323,6 @@ namespace ConnectorGrasshopper.Ops
     {
       IGH_Goo DataInput = null;
       var check = DA.GetData(0, ref DataInput);
-      //if (DataInput.IsEmpty)
-      //{
-      //  StreamWrapper = null;
-      //  TriggerAutoSave();
-      //  return;
-      //}
 
       var ghGoo = DataInput;
       if (ghGoo == null) return;
