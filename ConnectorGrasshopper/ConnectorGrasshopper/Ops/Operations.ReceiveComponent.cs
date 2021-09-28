@@ -35,8 +35,6 @@ namespace ConnectorGrasshopper.Ops
     public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
-
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
     }
