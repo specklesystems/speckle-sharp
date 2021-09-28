@@ -292,7 +292,7 @@ namespace ConnectorGSA
         }).Result;
       }
 
-      Commands.UpsertSavedReceptionStreamInfo(true, null, streamStates);
+      Commands.UpsertSavedReceptionStreamInfo(true, null, streamStates.ToArray());
       Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
       Instance.GsaModel.Proxy.Close();
 

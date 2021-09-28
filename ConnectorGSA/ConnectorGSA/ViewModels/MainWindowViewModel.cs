@@ -205,13 +205,13 @@ namespace ConnectorGSA.ViewModels
          var calibrateNodeAtTask = Task.Run(() => Instance.GsaModel.Proxy.CalibrateNodeAt());
          var initialLoadTask = Task.Run(() => Commands.InitialLoad(Coordinator, loggingProgress));
 
-         //var loaded = await initialLoadTask;
-         var loaded = true;   //TEMP
+         var loaded = await initialLoadTask;
          await calibrateNodeAtTask;
 
          if (loaded)
          {
            //var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
+           var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
 
            Refresh(() => StateMachine.LoggedIn());
          }
@@ -225,6 +225,8 @@ namespace ConnectorGSA.ViewModels
         async (o) =>
         {
           Refresh(() => StateMachine.StartedLoggingIn());
+
+          Process.Start("speckle://account");
 
           //var signInWindow = new SpecklePopup.SignInWindow(true);
 
@@ -293,7 +295,7 @@ namespace ConnectorGSA.ViewModels
 
           Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-          //var result = await Task.Run(() => Commands.Receive(Coordinator, gsaReceiverCoordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+          var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
 
           Refresh(() => StateMachine.StoppedReceiving());
         },
@@ -316,8 +318,7 @@ namespace ConnectorGSA.ViewModels
         async (o) =>
         {
           Refresh(() => StateMachine.StartedOpeningFile());
-          //var opened = await Task.Run(() => Commands.OpenFile(Coordinator, loggingProgress));
-          var opened = true;
+          var opened = await Task.Run(() => Commands.OpenFile(Coordinator, loggingProgress));
           if (opened)
           {
             var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
@@ -342,11 +343,10 @@ namespace ConnectorGSA.ViewModels
           {
             //Sender coordinator is in the SpeckleGSA library, NOT the SpeckleInterface.  The sender coordinator calls the SpeckleInterface methods
             //continuousReceiverCoordinator = new ReceiverCoordinator();  //Coordinates across multiple streams
-            continuousReceiverCoordinator = new object(); //TEMP
 
             Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-            var result = await Task.Run(() => Commands.Receive(Coordinator, continuousReceiverCoordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+            var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
 
             if (ReceiveStreamMethod != StreamMethod.Continuous)
             {
@@ -403,10 +403,9 @@ namespace ConnectorGSA.ViewModels
           {
             //Sender coordinator is in the SpeckleGSA library, NOT the SpeckleInterface.  The sender coordinator calls the SpeckleInterface methods
             //var gsaSenderCoordinator = new SenderCoordinator();  //Coordinates across multiple streams
-            var gsaSenderCoordinator = new object();  //TEMP
 
             Refresh(() => StateMachine.EnteredSendingMode(SendStreamMethod));
-            var result = await Task.Run(() => Commands.SendInitial(Coordinator, gsaSenderCoordinator, streamCreationProgress, streamDeletionProgress, 
+            var result = await Task.Run(() => Commands.SendInitial(Coordinator, streamCreationProgress, streamDeletionProgress, 
               loggingProgress, statusProgress, percentageProgress));
             Refresh(() => StateMachine.StoppedSending());
 
@@ -414,7 +413,7 @@ namespace ConnectorGSA.ViewModels
             {
               TriggerTimer = new Timer(Coordinator.SenderTab.PollingRateMilliseconds);
               TriggerTimer.Elapsed += (sender, e) => Application.Current.Dispatcher.BeginInvoke(
-                DispatcherPriority.Background, new Action(() => ContinuousSendCommand.Execute(gsaSenderCoordinator)));
+                DispatcherPriority.Background, new Action(() => ContinuousSendCommand.Execute(null)));
               TriggerTimer.AutoReset = false;
               TriggerTimer.Start();
             }

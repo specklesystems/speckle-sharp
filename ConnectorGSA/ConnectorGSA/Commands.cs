@@ -1,6 +1,9 @@
 ﻿using ConnectorGSA.Models;
 using ConnectorGSA.Utilities;
+using Microsoft.Win32;
 using Newtonsoft.Json;
+using Speckle.ConnectorGSA.Proxy;
+using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -32,7 +35,7 @@ namespace ConnectorGSA
           return false;
         }
         ((GsaModel)Instance.GsaModel).Account = account;
-        return await CompleteLogin(coordinator, new SpeckleAccountForUI(account.serverInfo.url, account.userInfo.email, account.token, account.userInfo.name), loggingProgress);
+        return await CompleteLogin(coordinator, new SpeckleAccountForUI(), loggingProgress);
       }
       catch
       {
@@ -76,22 +79,61 @@ namespace ConnectorGSA
       }
     }
 
+    public static bool OpenFile(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress)
+    {
+      var openFileDialog = new OpenFileDialog();
+      if (openFileDialog.ShowDialog() == true)
+      {
+        try
+        {
+          Commands.OpenFile(openFileDialog.FileName, true);
+        }
+        catch (Exception ex)
+        {
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "Unable to load " + openFileDialog.FileName + " - refer to logs for more information"));
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, ex, "Unable to load file"));
+          return false;
+        }
+        if (!string.IsNullOrEmpty(openFileDialog.FileName))
+        {
+          coordinator.FilePath = openFileDialog.FileName;
+        }
+
+        coordinator.FileStatus = GsaLoadedFileType.ExistingFile;
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+
     public static bool OpenFile(string filePath, bool visible)
     {
       Instance.GsaModel.Proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy(); //Use a real proxy
       var opened = Instance.GsaModel.Proxy.OpenFile(filePath, visible);
       if (!opened)
       {
-        
+
         return false;
       }
       return true;
     }
 
-    public static bool ExtractSavedReceptionStreamInfo(string userId, string restApi, bool? receive, bool? send, out List<StreamState> streamStates)
+    public static bool ExtractSavedReceptionStreamInfo(bool? receive, bool? send, out List<StreamState> streamStates)
     {
       var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
-      var allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      List<StreamState> allSaved;
+      try
+      {
+        allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+      }
+      catch
+      {
+        allSaved = new List<StreamState>();
+      }
+      var userId = ((GsaModel)Instance.GsaModel).Account.userInfo.id;
+      var restApi = ((GsaModel)Instance.GsaModel).Account.serverInfo.url;
 
       //So currently it assumes that a new user for this file will have a new stream created for them, even if other users saved this file with their stream info
       streamStates = allSaved.Where(ss => ((ss.UserId == userId) && ss.ServerUrl.Equals(restApi, StringComparison.InvariantCultureIgnoreCase))).ToList();
@@ -106,7 +148,7 @@ namespace ConnectorGSA
       return (streamStates != null && streamStates.Count > 0);
     }
 
-    public static bool UpsertSavedReceptionStreamInfo(bool? receive, bool? send, List<StreamState> streamStates)
+    public static bool UpsertSavedReceptionStreamInfo(bool? receive, bool? send, params StreamState[] streamStates)
     {
       var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
       List<StreamState> allSs = null;
@@ -123,7 +165,7 @@ namespace ConnectorGSA
 
       if (allSs == null || allSs.Count() == 0)
       {
-        allSs = streamStates;
+        allSs = streamStates.ToList();
       }
       else
       {
@@ -316,6 +358,45 @@ namespace ConnectorGSA
       return (state.Errors.Count == 0);
     }
 
+    internal static bool Receive(TabCoordinator coordinator, Progress<StreamState> streamCreationProgress, Progress<MessageEventArgs> loggingProgress, Progress<string> statusProgress, Progress<double> percentageProgress)
+    {
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Applications.GSA);
+
+      Instance.GsaModel.StreamLayer = coordinator.ReceiverTab.TargetLayer;
+      Instance.GsaModel.Units = UnitEnumToString(coordinator.ReceiverTab.CoincidentNodeUnits);
+      Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance;
+      var account = ((GsaModel)Instance.GsaModel).Account;
+      var client = new Client(account);
+      //Load data to cause merging
+      Commands.LoadDataFromFile(); //Ensure all nodes
+
+      foreach (var streamId in coordinator.ReceiverTab.StreamList.StreamListItems.Select(i => i.StreamId))
+      {
+        var streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = new Stream() { id = streamId } };
+        streamState.RefreshStream().Wait();
+        streamState.Stream.branch = client.StreamGetBranches(streamId, 1).Result.First();
+        var commitId = streamState.Stream.branch.commits.items.FirstOrDefault().referencedObject;
+        var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
+
+        Commands.Receive(commitId, streamState, transport, converter.CanConvertToNative).Wait();
+      }
+
+      Commands.ConvertToNative(converter);
+
+      //The cache is filled with natives
+      if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
+      {
+        Instance.GsaModel.Proxy.WriteModel(gsaRecords, Instance.GsaModel.StreamLayer);
+      }
+
+      ((GsaProxy)Instance.GsaModel.Proxy).UpdateViews();
+
+      Console.WriteLine("Receiving complete");
+
+      return true;
+    }
+
     public static async Task<bool> Receive(string commitId, StreamState state, ITransport transport, Func<Base, bool> IsSingleObjectFn)
     {
       var commitObject = await Operations.Receive(
@@ -443,13 +524,94 @@ namespace ConnectorGSA
       return new List<StreamState>();
     }
 
-    internal static async Task<bool> NewFile(TabCoordinator coordinator, Progress<MessageEventArgs> loggingProgress)
+    internal static bool NewFile(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress)
     {
+      Instance.GsaModel.Proxy.NewFile(true);
+
+      coordinator.ReceiverTab.ReceiverSidRecords.Clear();
+      coordinator.SenderTab.SenderSidRecords.Clear();
+
+      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Created new file."));
+
       return true;
     }
 
-    internal static async Task<bool> ReadSavedStreamInfo(TabCoordinator coordinator, Progress<MessageEventArgs> loggingProgress)
+    public static async Task<bool> ReadSavedStreamInfo(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress)
     {
+      if (coordinator.FileStatus == GsaLoadedFileType.ExistingFile && coordinator.Account != null && coordinator.Account.IsValid)
+      {
+        var retrieved = ExtractSavedReceptionStreamInfo(true, true, out List<StreamState> steamStates);
+        coordinator.ReceiverTab.ReceiverSidRecords.Clear();
+        coordinator.SenderTab.SenderSidRecords.Clear();
+        
+        if (retrieved)
+        {
+          if (coordinator.ReceiverTab.ReceiverSidRecords.Count() > 0)
+          {
+            var messenger = new ProgressMessenger(loggingProgress);
+
+            var invalidSidRecords = new List<StreamState>();
+            //Since the buckets are stored in the SID tags, but not the stream names, get the stream names
+            foreach (var r in coordinator.ReceiverTab.ReceiverSidRecords)
+            {
+              if (!(await r.RefreshStream()))
+              {
+                invalidSidRecords.Add(r);
+              }  
+              /*
+              var basicStreamData = await SpeckleInterface.SpeckleStreamManager.GetStream(coordinator.Account.ServerUrl, coordinator.Account.Token,
+                r.StreamId, messenger);
+
+              if (basicStreamData == null)
+              {
+                invalidSidRecords.Add(r);
+              }
+              else if (!string.IsNullOrEmpty(basicStreamData.Name))
+              {
+                r.SetName(basicStreamData.Name);
+              }
+              */
+            }
+            invalidSidRecords.ForEach(r => coordinator.ReceiverTab.RemoveSidSpeckleRecord(r));
+            coordinator.ReceiverTab.SidRecordsToStreamList();
+
+            loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Found streams from the same server stored in file for receiving: "
+               + string.Join(", ", coordinator.ReceiverTab.ReceiverSidRecords.Select(r => r.StreamId))));
+          }
+          if (coordinator.SenderTab.SenderSidRecords.Count() > 0)
+          {
+            var messenger = new ProgressMessenger(loggingProgress);
+
+            var invalidSidRecords = new List<StreamState>();
+            //Since the buckets are stored in the SID tags, but not the stream names, get the stream names
+            foreach (var r in coordinator.SenderTab.SenderSidRecords)
+            {
+              if (!(await r.RefreshStream()))
+              {
+                invalidSidRecords.Add(r);
+              }
+              /*
+              var basicStreamData = await SpeckleInterface.SpeckleStreamManager.GetStream(coordinator.Account.ServerUrl, coordinator.Account.Token,
+                r.StreamId, messenger);
+              if (basicStreamData == null)
+              {
+                invalidSidRecords.Add(r);
+              }
+              else if (!string.IsNullOrEmpty(basicStreamData.Name))
+              {
+                r.SetName(basicStreamData.Name);
+              }
+              */
+            }
+            invalidSidRecords.ForEach(r => coordinator.SenderTab.RemoveSidSpeckleRecord(r));
+            coordinator.SenderTab.SidRecordsToStreamList();
+
+            loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Found streams from the same server stored in file for sending: "
+               + string.Join(", ", coordinator.SenderTab.SenderSidRecords.Select(r => r.StreamId))));
+          }
+        }
+        return retrieved;
+      }
       return true;
     }
 
@@ -473,14 +635,201 @@ namespace ConnectorGSA
       return true;
     }
 
-    internal static async Task<bool> SendInitial(TabCoordinator coordinator, object gsaSenderCoordinator, Progress<StreamState> streamCreationProgress, Progress<StreamState> streamDeletionProgress, Progress<MessageEventArgs> loggingProgress, Progress<string> statusProgress, Progress<double> percentageProgress)
+    internal static async Task<bool> SendInitial(TabCoordinator coordinator, IProgress<StreamState> streamCreationProgress, IProgress<StreamState> streamDeletionProgress, 
+      IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
     {
-      throw new NotImplementedException();
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Applications.GSA);
+
+      var account = ((GsaModel)Instance.GsaModel).Account;
+      var client = new Client(account);
+
+      Instance.GsaModel.StreamLayer = coordinator.SenderTab.TargetLayer;
+      Instance.GsaModel.StreamSendConfig = coordinator.SenderTab.StreamContentConfig;
+      Instance.GsaModel.Result1DNumPosition = coordinator.SenderTab.AdditionalPositionsFor1dElements; //end points (2) plus additional
+
+      var resultsToSend = coordinator.SenderTab.ResultSettings.ResultSettingItems.Where(rsi => rsi.Selected).ToList();
+      if (resultsToSend != null && resultsToSend.Count() > 0 && !string.IsNullOrEmpty(coordinator.SenderTab.LoadCaseList))
+      {
+        var analIndices = new List<int>();
+        var comboIndices = new List<int>();
+        if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var analRecords) && analRecords != null && analRecords.Count() > 0)
+        {
+          analIndices.AddRange(analRecords.Select(r => r.Index.Value));
+        }
+        if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var comboRecords) && comboRecords != null && comboRecords.Count() > 0)
+        {
+          comboIndices.AddRange(comboRecords.Select(r => r.Index.Value));
+        }
+        var expanded = ((GsaProxy)Instance.GsaModel.Proxy).ExpandLoadCasesAndCombinations(coordinator.SenderTab.LoadCaseList, analIndices, comboIndices);
+        if (expanded != null && expanded.Count() > 0)
+        {
+          percentageProgress.Report(5);
+
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Resolved load cases"));
+
+          Instance.GsaModel.ResultCases = expanded;
+          Instance.GsaModel.ResultTypes = resultsToSend.Select(rts => rts.ResultType).ToList();
+
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Extracted results"));
+        }
+      }
+
+      if (Instance.GsaModel.SendResults)
+      {
+        Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes);
+        foreach (var rg in Instance.GsaModel.ResultGroups)
+        {
+          Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
+        }
+      }
+
+      Commands.LoadDataFromFile(); //Ensure all nodes
+
+      var objs = Commands.ConvertToSpeckle(converter);
+
+      objs.Reverse();
+
+      //The converter itself can't give anything back other than Base objects, so this is the first time it can be adorned with any
+      //info useful to the sending in streams
+
+      var commitObj = new Base();
+      foreach (var obj in objs)
+      {
+        var typeName = obj.GetType().Name;
+        string name = "";
+        if (typeName.ToLower().Contains("model"))
+        {
+          try
+          {
+            name = string.Join(" ", (string)obj["layerDescription"], "Model");
+          }
+          catch
+          {
+            name = typeName;
+          }
+        }
+        else if (typeName.ToLower().Contains("result"))
+        {
+          name = "Results";
+        }
+
+        commitObj[name] = obj;
+      }
+
+
+      var stream = NewStream(client, "GSA data", "GSA data").Result;
+      var streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = stream };
+
+      var serverTransport = new ServerTransport(account, streamState.Stream.id);
+      var sent = Commands.Send(commitObj, streamState, serverTransport).Result;
+      if (sent)
+      {
+        Commands.UpsertSavedReceptionStreamInfo(true, null, streamState);
+      }
+
+      Console.WriteLine("Sending complete");
+      return true;
+      //--
+
+      /*
+      var resultsToSend = coordinator.SenderTab.ResultSettings.ResultSettingItems.Where(rsi => rsi.Selected).ToList();
+      if (resultsToSend != null && resultsToSend.Count() > 0 && !string.IsNullOrEmpty(coordinator.SenderTab.LoadCaseList))
+      {
+        //Prepare the cache for the ability to parse the load case string
+        var initialData = Instance.GsaModel.Proxy.GetGwaData(GSA.App.LocalCache.KeywordsForLoadCaseExpansion, false);
+        for (int i = 0; i < initialData.Count(); i++)
+        {
+          var applicationId = (string.IsNullOrEmpty(initialData[i].ApplicationId)) ? null : initialData[i].ApplicationId;
+          GSA.App.Cache.Upsert(
+            initialData[i].Keyword,
+            initialData[i].Index,
+            initialData[i].GwaWithoutSet,
+            streamId: initialData[i].StreamId,
+            applicationId: applicationId,
+            gwaSetCommandType: initialData[i].GwaSetType);
+        }
+
+        var resultCases = GSA.App.LocalCache.ExpandLoadCasesAndCombinations(coordinator.SenderTab.LoadCaseList);
+        if (resultCases != null && resultCases.Count() > 0)
+        {
+          percentageProgress.Report(5);
+
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Resolved load cases"));
+
+          GSA.App.Settings.ResultCases = resultCases;
+          GSA.App.Settings.ResultTypes = resultsToSend.Select(rts => rts.ResultType).ToList();
+
+          if (GSA.App.LocalSettings.SendResults && resultCases.Count() > 0)
+          {
+            GSA.App.LocalProxy.PrepareResults(GSA.App.Settings.ResultTypes, GSA.App.LocalSettings.Result1DNumPosition + 2);
+
+            loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Extracted results"));
+          }
+        }
+      }
+      */
+
+      coordinator.SenderTab.SetDocumentName(((GsaProxy)Instance.GsaModel.Proxy).GetTitle());
+
+      var messenger = new ProgressMessenger(loggingProgress);
+
+      /*
+      Func<string, string, SpeckleInterface.IStreamSender> streamSenderCreationFn = ((url, token) => new SpeckleInterface.StreamSender(url, token, messenger));
+
+      gsaSenderCoordinator.Initialize(coordinator.Account.ServerUrl, coordinator.Account.Token, coordinator.SenderTab.SenderSidRecords,
+        streamSenderCreationFn, loggingProgress, statusProgress, percentageProgress, streamCreationProgress, streamDeletionProgress);
+
+      await gsaSenderCoordinator.Trigger();
+      */
+
+      coordinator.WriteStreamInfo();
+
+      return true;
     }
 
-    internal static async Task<bool> Receive(TabCoordinator coordinator, object continuousReceiverCoordinator, Progress<StreamState> streamCreationProgress, Progress<MessageEventArgs> loggingProgress, Progress<string> statusProgress, Progress<double> percentageProgress)
+    private static async Task<Stream> NewStream(Client client, string streamName, string streamDesc)
     {
-      return true;
+      string streamId = "";
+
+      try
+      {
+        streamId = await client.StreamCreate(new StreamCreateInput()
+        {
+          name = streamName,
+          description = streamDesc,
+          isPublic = false
+        });
+
+        return await client.StreamGet(streamId);
+
+      }
+      catch (Exception e)
+      {
+        try
+        {
+          if (!string.IsNullOrEmpty(streamId))
+          {
+            await client.StreamDelete(streamId);
+          }
+        }
+        catch
+        {
+          // POKEMON! (server is prob down)
+        }
+      }
+
+      return null;
+    }
+
+    private static string UnitEnumToString(GsaUnit unit)
+    {
+      switch (unit)
+      {
+        case GsaUnit.Inches: return "in";
+        case GsaUnit.Metres: return "m";
+        default: return "mm";
+      }
     }
   }
 }
