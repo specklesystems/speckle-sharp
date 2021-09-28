@@ -148,10 +148,10 @@ namespace Objects.Converter.RhinoGh
     public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
     {
       var t = instance.InstanceXform;
-      var transformArray = new double[] { 
-        t.M00, t.M01, t.M02, t.M03, 
-        t.M10, t.M11, t.M12, t.M13, 
-        t.M20, t.M21, t.M22, t.M23, 
+      var transformArray = new double[] {
+        t.M00, t.M01, t.M02, t.M03,
+        t.M10, t.M11, t.M12, t.M13,
+        t.M20, t.M21, t.M22, t.M23,
         t.M30, t.M31, t.M32, t.M33 };
 
       var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
@@ -204,15 +204,31 @@ namespace Objects.Converter.RhinoGh
     public Text TextToSpeckle(TextEntity text)
     {
       var _text = new Text();
-      _text.curves = text.CreateCurves(text.DimensionStyle, true)?.Select(o => CurveToSpeckle(o)).ToList();
+      _text.curves = text.CreateCurves(text.DimensionStyle, false)?.Select(o => CurveToSpeckle(o)).ToList();
 
-      _text.position = PointToSpeckle(text.Plane.Origin);
+      _text.plane = PlaneToSpeckle(text.Plane);
       _text.rotation = text.TextRotationDegrees;
-      _text.height = text.TextHeight;
-      _text.value = text.RichText;
-      _text.alignment = text.TextHorizontalAlignment.ToString();
-      _text.font = text.Font.FaceName;
+      _text.height = text.TextHeight * text.DimensionScale; // this needs to be multipled by model space scale for true height in model space
+      _text.value = text.PlainText;
+      _text.richText = text.RichText;
+      _text.horizontalAlignment = text.TextHorizontalAlignment.ToString();
+      _text.verticalAlignment = text.TextVerticalAlignment.ToString();
       _text.units = ModelUnits;
+
+      return _text;
+    }
+    public TextEntity TextToNative(Text text)
+    {
+      var _text = new TextEntity();
+      _text.Plane = PlaneToNative(text.plane);
+      if (!string.IsNullOrEmpty(text.richText))
+        _text.RichText = text.richText;
+      else
+        _text.PlainText = text.value;
+      _text.TextHeight = ScaleToNative(text.height, text.units);
+      _text.TextRotationDegrees = text.rotation;
+      _text.TextHorizontalAlignment = Enum.TryParse<TextHorizontalAlignment>(text.horizontalAlignment, out TextHorizontalAlignment horizontal) ? horizontal : TextHorizontalAlignment.Center;
+      _text.TextVerticalAlignment = Enum.TryParse<TextVerticalAlignment>(text.verticalAlignment, out TextVerticalAlignment vertical) ? vertical : TextVerticalAlignment.Middle;
 
       return _text;
     }

@@ -382,6 +382,8 @@ namespace Objects.Converter.RhinoGh
         case BlockInstance o:
           return BlockInstanceToNative(o);
 
+        case Text o:
+          return TextToNative(o);
 
         default:
           throw new NotSupportedException();
@@ -474,6 +476,7 @@ case RH.SubD _:
         case BlockDefinition _:
         case BlockInstance _:
         case Alignment _:
+        case Text _:
           return true;
         
         default:

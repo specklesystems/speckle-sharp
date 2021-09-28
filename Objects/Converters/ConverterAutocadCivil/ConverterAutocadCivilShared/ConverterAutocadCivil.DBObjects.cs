@@ -1342,10 +1342,11 @@ namespace Objects.Converter.AutocadCivil
       var _text = new Text();
 
       _text.height = text.Height;
-      _text.position = PointToSpeckle(text.Position);
+      _text.plane = PlaneToSpeckle( new Plane(text.Position, text.Normal));
       _text.rotation = text.Rotation;
       _text.value = text.TextString;
-      _text.alignment = text.HorizontalMode.ToString();
+      _text.horizontalAlignment = text.HorizontalMode.ToString();
+      _text.verticalAlignment = text.VerticalMode.ToString();
       _text.units = ModelUnits;
       
       return _text;
@@ -1355,13 +1356,20 @@ namespace Objects.Converter.AutocadCivil
       var _text = new Text();
 
       _text.height = text.TextHeight;
-      _text.position = PointToSpeckle(text.Location);
+      _text.plane = PlaneToSpeckle( new Plane(text.Location, text.Normal));
       _text.rotation = text.Rotation;    
       _text.value = text.Contents;
       _text.units = ModelUnits;
 
-
       return _text;
+    }
+    public MText MTextToNative(Text text)
+    {
+      return null;
+    }
+    public DBText DBTextToNative(Text text)
+    {
+      return null;
     }
 
   }
