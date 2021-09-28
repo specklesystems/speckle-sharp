@@ -133,6 +133,12 @@
           <Style Selector="ListBoxItem:not(:pointerover) StackPanel#SendReceiveButtons">
             <Setter Property="IsVisible" Value="False" />
           </Style>
+          <Style Selector="ListBoxItem[IsSelected=true]:not(:pointerover) StackPanel#SendReceiveButtons">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
+          <Style Selector="ListBoxItem[IsSelected=true]:not(:pointerover) StackPanel#SendReceiveButtons">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
           <Style Selector="ListBoxItem:pointerover StackPanel#SendReceiveButtons">
             <Setter Property="IsVisible" Value="True" />
           </Style>

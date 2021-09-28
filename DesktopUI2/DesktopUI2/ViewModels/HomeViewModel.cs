@@ -319,9 +319,72 @@ namespace DesktopUI2.ViewModels
       OpenStream(streamState);
     }
 
-    public void NewStreamCommand()
+    public async void NewStreamCommand()
     {
+      var dialog = DialogHelper.CreateTextFieldDialog(new TextFieldDialogBuilderParams()
+      {
+        ContentHeader = "Create a new Stream",
+        SupportingText = "Create a new Stream by providing a name and description. New Streams are private by default.",
+        WindowTitle = "Create new Stream",
+        StartupLocation = WindowStartupLocation.CenterOwner,
+        Borderless = true,
+        Width = MainWindow.Instance.Width - 40,
+        TextFields = new TextFieldBuilderParams[]
+        {
+          new TextFieldBuilderParams
+          {
+              Classes = "Outline",
+              Label = "Name",
+              HelperText = "* Required",
+              MaxCountChars = 150,
+              Validater = ValidateName
+          },
+           new TextFieldBuilderParams
+          {
+              Label = "Description",
+              Classes = "Outline",
+          }
+        },
+        
+        PositiveButton = new DialogResultButton
+        {
+          Content = "CREATE",
+          Result = "create"
+        },
+        NegativeButton = new DialogResultButton
+        {
+          Content = "CANCEL",
+          Result = "cancel"
+        },
+      });
 
+#if DEBUG
+      dialog.GetWindow().AttachDevTools(KeyGesture.Parse("CTRL+R"));
+#endif
+
+      var result = await dialog.ShowDialog(MainWindow.Instance);
+
+      if (result.GetResult == "create")
+      {
+        var name = result.GetFieldsResult()[0].Text;
+        var description = result.GetFieldsResult()[1].Text;
+
+        try
+        {
+          var client = new Client(SelectedAccount);
+          var streamId = await client.StreamCreate(new StreamCreateInput { description = description, name = name, isPublic = false });
+          var stream = await client.StreamGet(streamId); 
+          var streamState = new StreamState(SelectedAccount, stream);
+
+          OpenStream(streamState);
+
+          GetStreams().ConfigureAwait(false); //update streams
+        }
+        catch (Exception e)
+        {
+          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+        }
+      }
     }
 
     [DependsOn(nameof(InProgress))]
@@ -408,6 +471,18 @@ namespace DesktopUI2.ViewModels
         else return new Tuple<bool, string>(false, "URL is not valid.");
       }
       catch { return new Tuple<bool, string>(false, "URL is not a Stream."); }
+
+
+      return new Tuple<bool, string>(true, "");
+    }
+
+    private Tuple<bool, string> ValidateName(string name)
+    {
+     if(string.IsNullOrEmpty(name))
+      return new Tuple<bool, string>(false, "Streams need a name too!");
+
+      if (name.Trim().Length < 3)
+        return new Tuple<bool, string>(false, "Name is too short");
 
 
       return new Tuple<bool, string>(true, "");
