@@ -117,7 +117,7 @@ namespace Speckle.ConnectorDynamo.Functions
         }
         catch (Exception ex)
         {
-          throw new SpeckleException("Could not convert " + value.GetType() + " to Speckle", ex);
+          throw new SpeckleException("Could not convert " + value.GetType() + " to Speckle:" + ex.Message, ex);
         }
       }
 
