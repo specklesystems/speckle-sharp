@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGSA", "ConnectorGSA\ConnectorGSA.csproj", "{1BA03BE5-F893-46A3-B569-4FAB87F0B60E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.GSA.API", "Speckle.GSA.API\Speckle.GSA.API.csproj", "{B17705B9-0D8F-41C8-A868-D46EF3E45E40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGSATests", "ConnectorGSATests\ConnectorGSATests.csproj", "{76CAC32D-3334-4F70-BBA7-B20B1FDDE298}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGSATestsHeadless", "ConnectorGSATestsHeadless\ConnectorGSATestsHeadless.csproj", "{A7D05402-E125-4F42-AC60-B6800C7802A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GSAProxy", "GSAProxy\GSAProxy.csproj", "{11DB7D37-A6ED-4C8A-B354-D9FB3C82386C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1BA03BE5-F893-46A3-B569-4FAB87F0B60E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BA03BE5-F893-46A3-B569-4FAB87F0B60E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BA03BE5-F893-46A3-B569-4FAB87F0B60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BA03BE5-F893-46A3-B569-4FAB87F0B60E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B17705B9-0D8F-41C8-A868-D46EF3E45E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B17705B9-0D8F-41C8-A868-D46EF3E45E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B17705B9-0D8F-41C8-A868-D46EF3E45E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B17705B9-0D8F-41C8-A868-D46EF3E45E40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76CAC32D-3334-4F70-BBA7-B20B1FDDE298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76CAC32D-3334-4F70-BBA7-B20B1FDDE298}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76CAC32D-3334-4F70-BBA7-B20B1FDDE298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76CAC32D-3334-4F70-BBA7-B20B1FDDE298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11DB7D37-A6ED-4C8A-B354-D9FB3C82386C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11DB7D37-A6ED-4C8A-B354-D9FB3C82386C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11DB7D37-A6ED-4C8A-B354-D9FB3C82386C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11DB7D37-A6ED-4C8A-B354-D9FB3C82386C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {057A6E70-0C2D-4782-930F-CAA8AA8151D5}
+	EndGlobalSection
+EndGlobal
