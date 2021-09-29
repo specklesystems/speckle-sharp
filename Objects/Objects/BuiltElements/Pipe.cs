@@ -19,7 +19,7 @@ namespace Objects.BuiltElements
     public Pipe() { }
 
     [SchemaInfo("Pipe", "Creates a Speckle pipe", "BIM", "MEP")]
-    public Pipe(ICurve baseCurve, double length, double diameter, double flowrate = 0, double relativeRoughness = 0)
+    public Pipe([SchemaMainParam] ICurve baseCurve, double length, double diameter, double flowrate = 0, double relativeRoughness = 0)
     {
       this.baseCurve = baseCurve;
       this.length = length;
@@ -44,7 +44,7 @@ namespace Objects.BuiltElements.Revit
     public RevitPipe() { }
 
     [SchemaInfo("RevitPipe", "Creates a Revit pipe", "Revit", "MEP")]
-    public RevitPipe(string family, string type, ICurve baseCurve, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
+    public RevitPipe(string family, string type, [SchemaMainParam] ICurve baseCurve, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;

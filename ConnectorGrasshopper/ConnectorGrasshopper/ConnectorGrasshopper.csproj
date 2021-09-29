@@ -281,3 +281,4 @@
     <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>
   </PropertyGroup>
 </Project>
+

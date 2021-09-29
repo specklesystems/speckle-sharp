@@ -56,8 +56,6 @@ namespace ConnectorGrasshopper.Ops
     public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      Tracker.TrackPageview(Tracker.SEND_ADDED);
-
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
     }
@@ -74,7 +72,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetBoolean("AutoSend", AutoSend);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       writer.SetString("BaseId", BaseId);
-      writer.SetString("KitName", Kit.Name);
+      writer.SetString("KitName", Kit?.Name);
 
       var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
       writer.SetString("OutputWrappers", owSer);
@@ -151,7 +149,8 @@ namespace ConnectorGrasshopper.Ops
       Menu_AppendSeparator(menu);
       var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
       menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      menuItem.Image = Properties.Resources.speckle_logo;
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
       {
@@ -199,35 +198,57 @@ namespace ConnectorGrasshopper.Ops
 
     public void SetConverterFromKit(string kitName)
     {
-      if (Kit == null) return;
+      if (Kit == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
       if (kitName == Kit.Name)
       {
         return;
       }
 
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
-
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
-    }
-
-    private void SetDefaultKitAndConverter()
-    {
-      Kit = KitManager.GetDefaultKit();
       try
       {
-        Converter = Kit.LoadConverter(Applications.Rhino);
+        Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
+        Converter = Kit.LoadConverter(Applications.Rhino6);
+
+        Message = $"Using the {Kit.Name} Converter";
+        foundKit = true;
+        ExpireSolution(true);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        foundKit = false;
+      }
+    }
+
+    private bool foundKit;
+    private void SetDefaultKitAndConverter()
+    {
+      try
+      {
+        Kit = KitManager.GetDefaultKit();
+        Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      // Fast exit if no default kit was found!
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
+      
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {

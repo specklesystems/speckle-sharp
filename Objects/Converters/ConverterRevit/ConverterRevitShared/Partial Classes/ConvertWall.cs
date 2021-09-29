@@ -49,8 +49,13 @@ namespace Objects.Converter.Revit
         return null;
       }
 
+      //is structural update
+      TrySetParam(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT, structural);
+
+
       if (revitWall.WallType.Name != wallType.Name)
       {
+        
         revitWall.ChangeTypeId(wallType.Id);
       }
 

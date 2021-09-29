@@ -42,7 +42,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
       ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
 
-      nodeView.grid.ContextMenu.Items.Add(new Separator());
+      //nodeView.grid.ContextMenu.Items.Add(new Separator());
     }
 
     private void Loaded(object o, RoutedEventArgs a)

@@ -17,13 +17,10 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveLocalComponent : GH_AsyncComponent
+  public class ReceiveLocalComponent : SelectKitAsyncComponentBase
   {
     public override GH_Exposure Exposure => GH_Exposure.tertiary | GH_Exposure.obscure;
 
-    public ISpeckleConverter Converter;
-
-    public ISpeckleKit Kit;
     public ReceiveLocalComponent() : base("Local Receive", "LR",
       "Receives data locally, without the need of a Speckle Server. NOTE: updates will not be automatically received.",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
@@ -49,7 +46,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:");
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
       {
@@ -71,24 +68,37 @@ namespace ConnectorGrasshopper.Ops
       if (kitName == Kit.Name)return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter = Kit.LoadConverter(Applications.Rhino6);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
 
+    public bool foundKit;
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
-      {
-        Converter = Kit.LoadConverter(Applications.Rhino);
+      { 
+        Kit = KitManager.GetDefaultKit();
+        Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
+    }
+
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
+      base.SolveInstance(DA);
     }
 
     protected override void BeforeSolveInstance()
@@ -111,7 +121,7 @@ namespace ConnectorGrasshopper.Ops
       {
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
-        
+
         Base @base = null;
 
         try
@@ -120,28 +130,12 @@ namespace ConnectorGrasshopper.Ops
         }
         catch (Exception e)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,"Failed to receive local data."));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Failed to receive local data."));
           Done();
           return;
         }
 
-        if (Converter.CanConvertToNative(@base))
-        {
-          var converted = Converter.ConvertToNative(@base);
-          data = new GH_Structure<IGH_Goo>();
-          data.Append(Utilities.TryConvertItemToNative(converted, Converter));
-        }
-        else if (@base.GetDynamicMembers().Count() == 1)
-        {
-          var treeBuilder = new TreeBuilder(Converter);
-          var tree = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
-          data = tree;
-        }
-        else
-        {
-          data = new GH_Structure<IGH_Goo>();
-          data.Append(new GH_SpeckleBase(@base));
-        }
+        data = Utilities.ConvertToTree(Converter, @base);
       }
       catch (Exception e)
       {

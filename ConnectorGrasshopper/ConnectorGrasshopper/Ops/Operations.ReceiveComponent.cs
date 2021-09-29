@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
@@ -29,17 +30,11 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveComponent : GH_AsyncComponent
+  public class ReceiveComponent : SelectKitAsyncComponentBase
   {
-    public ISpeckleConverter Converter;
-
-    public ISpeckleKit Kit;
-
     public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
-
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
     }
@@ -132,7 +127,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetBoolean("AutoReceive", AutoReceive);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       
-      writer.SetString("KitName", Kit.Name);
+      writer.SetString("KitName", Kit?.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
       writer.SetString("LastInfoMessage", LastInfoMessage);
@@ -190,8 +185,8 @@ namespace ConnectorGrasshopper.Ops
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:");
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      Menu_AppendItem(menu, "Select the converter you want to use:",null,null,false,false);
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
@@ -237,29 +232,38 @@ namespace ConnectorGrasshopper.Ops
       if (kitName == Kit.Name) return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter = Kit.LoadConverter(Applications.Rhino6);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
 
+    private bool foundKit;
     private void SetDefaultKitAndConverter()
     {
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino);
+        Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
+
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
       // We need to call this always in here to be able to react and set events :/
       ParseInput(DA);
 
@@ -594,56 +598,31 @@ namespace ConnectorGrasshopper.Ops
 
       foreach (var (level, message) in RuntimeMessages) Parent.AddRuntimeMessage(level, message);
 
-      ((ReceiveComponent)Parent).CurrentComponentState = "up_to_date";
+      var parent = ((ReceiveComponent)Parent);
+
+      parent.CurrentComponentState = "up_to_date";
 
       if (ReceivedCommit != null)
       {
-        ((ReceiveComponent)Parent).LastInfoMessage =
+        parent.LastInfoMessage =
           $"{ReceivedCommit.authorName} @ {ReceivedCommit.createdAt}: {ReceivedCommit.message} (id:{ReceivedCommit.id})";
 
-        ((ReceiveComponent)Parent).ReceivedCommitId = ReceivedCommit.id;
+        parent.ReceivedCommitId = ReceivedCommit.id;
       }
 
-      ((ReceiveComponent)Parent).JustPastedIn = false;
+      parent.JustPastedIn = false;
 
-      DA.SetData(1, ((ReceiveComponent)Parent).LastInfoMessage);
+      DA.SetData(1, parent.LastInfoMessage);
 
       if (ReceivedObject == null) return;
 
-      //((ReceiveComponent)Parent).ReceivedObjectId = ReceivedObject.id;
-
       //the active document may have changed
-      ((ReceiveComponent)Parent).Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+      var converter = parent.Converter;
 
-      // case 1: it's an item that has a direct conversion method, eg a point
-      if (((ReceiveComponent)Parent).Converter.CanConvertToNative(ReceivedObject))
-      {
-        DA.SetData(0, Utilities.TryConvertItemToNative(ReceivedObject, ((ReceiveComponent)Parent).Converter));
-        return;
-      }
+      converter?.SetContextDocument(RhinoDoc.ActiveDoc);
 
-      // case 2: it's a wrapper Base
-      //       2a: if there's only one member unpack it
-      //       2b: otherwise return dictionary of unpacked members
-
-      var members = ReceivedObject.GetDynamicMembers();
-
-      if (members.Count() == 1)
-      {
-        var treeBuilder = new TreeBuilder(((ReceiveComponent)Parent).Converter);
-        var tree = treeBuilder.Build(ReceivedObject[members.ElementAt(0)]);
-
-        DA.SetDataTree(0, tree);
-        return;
-      }
-
-      // TODO: the base object has multiple members,
-      // therefore create a matching structure via the output ports, similar to 
-      // running the expando object
-      // then run the treebuilder for each port
-
-
-      DA.SetData(0, new GH_SpeckleBase { Value = ReceivedObject });
+      var tree = Utilities.ConvertToTree(converter, ReceivedObject);
+      DA.SetDataTree(0, tree);
     }
   }
 

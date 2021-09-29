@@ -15,12 +15,12 @@ namespace Objects.Structural.Loading
         [DetachProperty]
         public Axis loadAxis { get; set; }
         public LoadDirection direction { get; set; }
-        public List<double> value { get; set; } //a force or a moment or a displacement (translation or rotation)
+        public double value { get; set; } //a force or a moment or a displacement (translation or rotation)
 
         public NodeLoad() { }
 
         [SchemaInfo("NodeLoad", "Creates a Speckle node load", "Structural", "Loading")]
-        public NodeLoad(string name, LoadCase loadCase, List<Node> nodes, LoadDirection direction, List<double> value)
+        public NodeLoad(string name, LoadCase loadCase, List<Node> nodes, LoadDirection direction, double value)
         {
             this.name = name;
             this.loadCase = loadCase;
@@ -30,7 +30,7 @@ namespace Objects.Structural.Loading
         }
 
         [SchemaInfo("NodeLoad (user-defined axis)", "Creates a Speckle node load (user-defined axis)", "Structural", "Loading")]
-        public NodeLoad(string name, LoadCase loadCase, List<Node> nodes, Axis loadAxis, LoadDirection direction, List<double> value)
+        public NodeLoad(string name, LoadCase loadCase, List<Node> nodes, Axis loadAxis, LoadDirection direction, double value)
         {
             this.name = name;
             this.loadCase = loadCase;

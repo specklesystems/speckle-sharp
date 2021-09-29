@@ -27,7 +27,7 @@ namespace ConnectorGrasshopper.Extras
           tags.Add(new OptionalStateTag());
         }
 
-        if (!Detachable)
+        if (Detachable)
           tags.Add(new DetachedStateTag());
         if (Access == GH_ParamAccess.list)
           tags.Add(new ListAccesStateTag());
@@ -70,11 +70,11 @@ namespace ConnectorGrasshopper.Extras
 
       var detachToggle = Menu_AppendItem(
         menu,
-        "Do Not Detach",
+        "Detach property",
         (s, e) => SetDetach(!Detachable),
         true,
-        Detachable == false);
-      detachToggle.ToolTipText = "Set this key as not detachable.";
+        Detachable);
+      detachToggle.ToolTipText = "Sets this key as detachable.";
       detachToggle.Image = Properties.Resources.StateTag_Detach;
 
       Menu_AppendSeparator(menu);

@@ -12,6 +12,7 @@ namespace ConnectorGrasshopper.Extras
   {
     private List<int> _path = new List<int>();
     private readonly ISpeckleConverter _converter;
+    public bool ConvertToNative { get; set; } = true;
 
     public TreeBuilder(ISpeckleConverter converter)
     {
@@ -72,7 +73,9 @@ namespace ConnectorGrasshopper.Extras
         _path.Add(0);
 
       var path = new GH_Path(_path.ToArray());
-      tree.Append(Utilities.TryConvertItemToNative(data, _converter), path);
+      tree.Append(
+        ConvertToNative ? Utilities.TryConvertItemToNative(data, _converter) : new GH_ObjectWrapper(data), 
+        path);
     }
   }
 }

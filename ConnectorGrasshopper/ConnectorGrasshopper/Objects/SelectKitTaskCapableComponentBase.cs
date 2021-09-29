@@ -43,22 +43,24 @@ namespace ConnectorGrasshopper.Objects
       SetConverter();
     }
 
-    public virtual void SetConverter()
+    public virtual bool SetConverter()
     {
       if (SelectedKitName == "None")
       {
         Kit = null;
         Converter = null;
         Message = "No Conversion";
-        return;
+        return true;
       }
       try
       {
         SetConverterFromKit(SelectedKitName);
+        return true;
       }
       catch
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return false;
       }
     }
 
@@ -79,7 +81,7 @@ namespace ConnectorGrasshopper.Objects
       //base.AppendAdditionalMenuItems(menu);
       try
       {
-        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:");
@@ -111,7 +113,7 @@ namespace ConnectorGrasshopper.Objects
       if (kitName == Kit?.Name) return;
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       SelectedKitName = Kit.Name;
-      Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter = Kit.LoadConverter(Applications.Rhino6);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Message = $"Using the {Kit.Name} Converter";
     }

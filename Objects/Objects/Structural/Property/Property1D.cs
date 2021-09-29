@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
+using Objects.Structural.Properties.Profiles;
 
 namespace Objects.Structural.Properties
 {
@@ -13,19 +14,12 @@ namespace Objects.Structural.Properties
 
         [DetachProperty]
         public Material material { get; set; }
-        public string grade { get; set; } //design material
 
         [DetachProperty]
         public SectionProfile profile { get; set; } //section description
         public BaseReferencePoint referencePoint { get; set; }
         public double offsetY { get; set; } = 0; //offset from reference point
         public double offsetZ { get; set; } = 0; //offset from reference point
-        public double area { get; set; }
-        public double Iyy { get; set; }
-        public double Izz { get; set; }
-        public double J { get; set; }
-        public double Ky { get; set; }
-        public double Kz { get; set; }
 
         public Property1D() { }
 

@@ -13,12 +13,11 @@ namespace Objects.Structural.GSA.Geometry
         public int nativeId { get; set; }
         public int group { get; set; }
         public string colour { get; set; }
-        public string action { get; set; }
         public bool isDummy { get; set; }
         public GSAElement2D() { }
 
         [SchemaInfo("GSAElement2D", "Creates a Speckle structural 2D element for GSA", "GSA", "Geometry")]
-        public GSAElement2D(int nativeId, Mesh baseMesh, Property2D property, ElementType2D type, string name = null, double offset = 0, double orientationAngle = 0, int group = 0, string colour = "NO_RGB", string action = null, bool isDummy = false)
+        public GSAElement2D(int nativeId, Mesh baseMesh, Property2D property, ElementType2D type, string name = null, double offset = 0, double orientationAngle = 0, int group = 0, string colour = "NO_RGB", bool isDummy = false)
         {
             this.nativeId = nativeId;
             this.baseMesh = baseMesh;
@@ -30,7 +29,6 @@ namespace Objects.Structural.GSA.Geometry
             this.orientationAngle = orientationAngle;
             this.group = group;
             this.colour = colour;
-            this.action = action;
             this.isDummy = isDummy;
         }
     }

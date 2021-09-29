@@ -26,6 +26,8 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public Mesh displayMesh { get; set; }
+        public string units { get; set; }
+
         public Element2D() { }
         public Element2D(Mesh baseMesh)
         {
