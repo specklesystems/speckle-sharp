@@ -27,11 +27,11 @@ namespace Objects.Converter.ETABS
 
         public string WebsiteOrEmail => "https://speckle.systems";
 
-        public ConnectorETABSDocument Doc { get; private set; }
+        public cSapModel Model { get; private set; }
 
         public void SetContextDocument(object doc)
         {
-            Doc = (ConnectorETABSDocument)doc;
+            Model = (cSapModel)doc;
         }
 
         public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -53,7 +53,7 @@ namespace Objects.Converter.ETABS
         {
             foreach (var type in Enum.GetNames(typeof(ConverterETABSUtils.ETABSAPIUsableTypes)))
             {
-                if (type == @object.GetType().Name)
+                if (type == @object.ToString())
                 {
                     return true;
                 }
@@ -92,70 +92,70 @@ namespace Objects.Converter.ETABS
                 case "Point":
                     returnObject = PointToSpeckle(name);
                     break;
-                //case "Frame":
-                //    returnObject = FrameToSpeckle(name);
-                //    break;
-                //case "Area":
-                //    returnObject = AreaToSpeckle(name);
-                //    break;
-                //case "Link":
-                //    returnObject = LinkToSpeckle(name);
-                //    break;
-                //case "PropMaterial":
-                //    returnObject = PropMaterialToSpeckle(name);
-                //    break;
-                //case "PropFrame":
-                //    returnObject = PropFrameToSpeckle(type, name);
-                //    break;
-                //case "LoadCase":
-                //    returnObject = LoadCaseToSpeckle(name);
-                //    break;
-                //case "LoadPattern":
-                //    returnObject = LoadPatternToSpeckle(name);
-                //    break;
-                //case "GridSys":
-                //    returnObject = GridSysToSpeckle(name);
-                //    break;
-                //case "Combo":
-                //    returnObject = ComboToSpeckle(name);
-                //    break;
-                //case "DesignSteel":
-                //    returnObject = DesignSteelToSpeckle(name);
-                //    break;
-                //case "DeisgnConcrete":
-                //    returnObject = DesignConcreteToSpeckle(name);
-                //    break;
-                //case "Story":
-                //    returnObject = StoryToSpeckle(name);
-                //    break;
-                //case "Diaphragm":
-                //    returnObject = DiaphragmToSpeckle(name);
-                //    break;
-                //case "PierLabel":
-                //    returnObject = PierLabelToSpeckle(name);
-                //    break;
-                //case "PropAreaSpring":
-                //    returnObject = PropAreaSpringToSpeckle(name);
-                //    break;
-                //case "PropLineSpring":
-                //    returnObject = PropLineSpringToSpeckle(name);
-                //    break;
-                //case "PropPointSpring":
-                //    returnObject = PropPointSpringToSpeckle(name);
-                //    break;
-                //case "SpandrelLabel":
-                //    returnObject = SpandrelLabelToSpeckle(name);
-                //    break;
-                //case "PropTendon":
-                //    returnObject = PropTendonToSpeckle(name);
-                //    break;
-                //case "PropLink":
-                //    returnObject = PropLinkToSpeckle(name);
-                //    break;
-                //default:
-                //    ConversionErrors.Add(new SpeckleException($"Skipping not supported type: {type}"));
-                //    returnObject = null;
-                //    break;
+                case "Frame":
+                    returnObject = FrameToSpeckle(name);
+                    break;
+                    //case "Area":
+                    //    returnObject = AreaToSpeckle(name);
+                    //    break;
+                    //case "Link":
+                    //    returnObject = LinkToSpeckle(name);
+                    //    break;
+                    //case "PropMaterial":
+                    //    returnObject = PropMaterialToSpeckle(name);
+                    //    break;
+                    //case "PropFrame":
+                    //    returnObject = PropFrameToSpeckle(type, name);
+                    //    break;
+                    //case "LoadCase":
+                    //    returnObject = LoadCaseToSpeckle(name);
+                    //    break;
+                    //case "LoadPattern":
+                    //    returnObject = LoadPatternToSpeckle(name);
+                    //    break;
+                    //case "GridSys":
+                    //    returnObject = GridSysToSpeckle(name);
+                    //    break;
+                    //case "Combo":
+                    //    returnObject = ComboToSpeckle(name);
+                    //    break;
+                    //case "DesignSteel":
+                    //    returnObject = DesignSteelToSpeckle(name);
+                    //    break;
+                    //case "DeisgnConcrete":
+                    //    returnObject = DesignConcreteToSpeckle(name);
+                    //    break;
+                    //case "Story":
+                    //    returnObject = StoryToSpeckle(name);
+                    //    break;
+                    //case "Diaphragm":
+                    //    returnObject = DiaphragmToSpeckle(name);
+                    //    break;
+                    //case "PierLabel":
+                    //    returnObject = PierLabelToSpeckle(name);
+                    //    break;
+                    //case "PropAreaSpring":
+                    //    returnObject = PropAreaSpringToSpeckle(name);
+                    //    break;
+                    //case "PropLineSpring":
+                    //    returnObject = PropLineSpringToSpeckle(name);
+                    //    break;
+                    //case "PropPointSpring":
+                    //    returnObject = PropPointSpringToSpeckle(name);
+                    //    break;
+                    //case "SpandrelLabel":
+                    //    returnObject = SpandrelLabelToSpeckle(name);
+                    //    break;
+                    //case "PropTendon":
+                    //    returnObject = PropTendonToSpeckle(name);
+                    //    break;
+                    //case "PropLink":
+                    //    returnObject = PropLinkToSpeckle(name);
+                    //    break;
+                    //default:
+                    //    ConversionErrors.Add(new SpeckleException($"Skipping not supported type: {type}"));
+                    //    returnObject = null;
+                    //    break;
             }
             return returnObject;
         }
@@ -165,10 +165,8 @@ namespace Objects.Converter.ETABS
                 return objects.Select(x => ConvertToSpeckle(x)).ToList();
         }
 
-        public IEnumerable<string> GetServicedApplications()
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerable<string> GetServicedApplications() => new string[] { ETABSAppName };
+
 
         public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
         {

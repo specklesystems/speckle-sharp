@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConnectorETABS")]
+[assembly: AssemblyTitle("ConnectorETABSv18")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ConnectorETABS")]
+[assembly: AssemblyProduct("ConnectorETABSv18")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("99559c24-cefa-4f5b-bdb3-2536eb2fd2c9")]
+[assembly: Guid("cc1f6133-9dd5-437c-ab23-380ad00267a2")]
 
 // Version information for an assembly consists of the following four values:
 //

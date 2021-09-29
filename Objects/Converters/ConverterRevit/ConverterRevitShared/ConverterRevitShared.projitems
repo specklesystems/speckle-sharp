@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRebar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBrace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBlock.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGridLine.cs" />

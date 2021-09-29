@@ -3,13 +3,11 @@
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>cf75d8d2-10d8-4419-9345-d7a830550d16</SharedGUID>
+    <SharedGUID>1c661822-4524-4faa-97f2-b5aab9f9ecc4</SharedGUID>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ConnectorETABS</Import_RootNamespace>
-  </PropertyGroup>
+  <PropertyGroup Label="Configuration" />
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.ClientOperations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Recieve.cs" />

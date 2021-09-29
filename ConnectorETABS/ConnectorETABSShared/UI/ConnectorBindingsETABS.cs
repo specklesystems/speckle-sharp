@@ -5,22 +5,22 @@ using Speckle.DesktopUI.Utils;
 using Speckle.Core.Models;
 using Speckle.ConnectorETABS.Util;
 using System.Timers;
-using Objects.Converter.ETABS;
+using ETABSv1;
 
 namespace Speckle.ConnectorETABS.UI
 {
     public partial class ConnectorBindingsETABS : ConnectorBindings
     {
-        public static ConnectorETABSDocument Doc { get; set; } = new ConnectorETABSDocument();
+        public static cSapModel Model { get; set; }
         public List<Exception> Exceptions { get; set; } = new List<Exception>();
 
         public Timer SelectionTimer;
         public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
 
 
-        public ConnectorBindingsETABS(ConnectorETABSDocument doc)
+        public ConnectorBindingsETABS(cSapModel model)
         {
-            Doc = doc;
+            Model = model;
             SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
             SelectionTimer.Elapsed += SelectionTimer_Elapsed;
             SelectionTimer.Start();
@@ -28,7 +28,7 @@ namespace Speckle.ConnectorETABS.UI
 
         private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (Doc == null)
+            if (Model == null)
             {
                 return;
             }
@@ -48,13 +48,13 @@ namespace Speckle.ConnectorETABS.UI
             throw new NotImplementedException();
         }
 
-        public override string GetDocumentId() => GetDocHash(Doc);
+        public override string GetDocumentId() => GetDocHash(Model);
 
-        private string GetDocHash(ConnectorETABSDocument doc) => Speckle.Core.Models.Utilities.hashString(doc.Document.GetModelFilepath() + doc.Document.GetModelFilename(), Utilities.HashingFuctions.MD5);
+        private string GetDocHash(cSapModel model) => Speckle.Core.Models.Utilities.hashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFuctions.MD5);
 
-        public override string GetDocumentLocation() => Doc.Document.GetModelFilepath();
+        public override string GetDocumentLocation() => Model.GetModelFilepath();
 
-        public override string GetFileName() => Doc.Document.GetModelFilename();
+        public override string GetFileName() => Model.GetModelFilename();
 
         public override string GetHostAppName() => ConnectorETABSUtils.ETABSAppName;
 

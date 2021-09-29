@@ -6,17 +6,17 @@ using Speckle.DesktopUI.Utils;
 using Speckle.Newtonsoft.Json;
 using System.IO;
 using System.Text;
-using Objects.Converter.ETABS;
+using ETABSv1;
 
 namespace ConnectorETABS.Storage
 {
     public static class StreamStateManager
     {
         private static string _speckleFilePath;
-        public static List<StreamState> ReadState(ConnectorETABSDocument doc)
+        public static List<StreamState> ReadState(cSapModel model)
         {
             Tracker.TrackPageview(Tracker.DESERIALIZE);
-            var strings = ReadSpeckleFile(doc);
+            var strings = ReadSpeckleFile(model);
             if (strings == "")
             {
                 return new List<StreamState>();
@@ -36,11 +36,11 @@ namespace ConnectorETABS.Storage
         /// Writes the stream states to the <ETABSModelName>.txt file in speckle folder
         /// that exists or is created in the folder where the etabs model exists.
         /// </summary>
-        /// <param name="doc"></param>
+        /// <param name="model"></param>
         /// <param name="streamStates"></param>
-        public static void WriteStreamStateList(ConnectorETABSDocument doc, List<StreamState> streamStates)
+        public static void WriteStreamStateList(cSapModel model, List<StreamState> streamStates)
         {
-            if (_speckleFilePath == null) GetOrCreateSpeckleFilePath(doc);
+            if (_speckleFilePath == null) GetOrCreateSpeckleFilePath(model);
             FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             try
             {
@@ -59,10 +59,10 @@ namespace ConnectorETABS.Storage
         /// called "<ETABSModelName>.txt". This function create this file and folder if
         /// they doesn't exists and returns it, otherwise just returns the file path
         /// </summary>
-        /// <param name="doc"></param>
-        private static void GetOrCreateSpeckleFilePath(ConnectorETABSDocument doc)
+        /// <param name="model"></param>
+        private static void GetOrCreateSpeckleFilePath(cSapModel model)
         {
-            string etabsModelfilePath = doc.Document.GetModelFilename(true);
+            string etabsModelfilePath = model.GetModelFilename(true);
             if (etabsModelfilePath == "")
             {
                 // etabs model is probably not saved, so speckle shouldn't do much
@@ -95,11 +95,11 @@ namespace ConnectorETABS.Storage
         /// <summary>
         /// Reads the "/speckle/<ETABSModelName>.txt" file and returns the string in it
         /// </summary>
-        /// <param name="doc"></param>
-        private static string ReadSpeckleFile(ConnectorETABSDocument doc)
+        /// <param name="model"></param>
+        private static string ReadSpeckleFile(cSapModel model)
         {
             if (_speckleFilePath == null)
-                GetOrCreateSpeckleFilePath(doc);
+                GetOrCreateSpeckleFilePath(model);
 
             if (_speckleFilePath == null) return "";
             FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);

@@ -13,10 +13,8 @@ namespace Objects.Converter.ETABS
             speckleStructArea.name = name;
             int numPoints = 0;
             string[] points = null;
-            Doc.Document.AreaObj.GetPoints(name, ref numPoints, ref points);
+            Model.AreaObj.GetPoints(name, ref numPoints, ref points);
 
-            
-            
             return speckleStructArea;
         }
 

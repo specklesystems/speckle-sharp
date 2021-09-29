@@ -9,8 +9,8 @@ using System.Linq;
 
 namespace Speckle.ConnectorETABS.UI
 {
-    public partial class ConnectorBindingsETABS: ConnectorBindings
-        
+    public partial class ConnectorBindingsETABS : ConnectorBindings
+
     {
         #region Local stream I/O with local file
         public override void AddNewStream(StreamState state)
@@ -25,7 +25,7 @@ namespace Speckle.ConnectorETABS.UI
         }
         private void WriteStateToFile()
         {
-            StreamStateManager.WriteStreamStateList(Doc, DocumentStreams);
+            StreamStateManager.WriteStreamStateList(Model, DocumentStreams);
         }
 
         public override void RemoveStreamFromFile(string streamId)
@@ -40,8 +40,8 @@ namespace Speckle.ConnectorETABS.UI
 
         public override List<StreamState> GetStreamsInFile()
         {
-            if (Doc != null)
-                DocumentStreams = StreamStateManager.ReadState(Doc);
+            if (Model != null)
+                DocumentStreams = StreamStateManager.ReadState(Model);
 
             return DocumentStreams;
         }
