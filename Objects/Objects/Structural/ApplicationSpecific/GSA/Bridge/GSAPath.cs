@@ -9,6 +9,8 @@ namespace Objects.Structural.GSA.Bridge
         public string name { get; set; }
         public PathType type { get; set; }
         public int group { get; set; }
+
+        [DetachProperty]
         public GSAAlignment alignment { get; set; }
         public double left { get; set; } //left / centre offset
         public double right { get; set; } //right offset / gauge
