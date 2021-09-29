@@ -56,7 +56,7 @@
     <md:Badged
       Margin="87,22,10,0"
       Badge="{Binding ExpiredCount}"
-      BadgeColorZoneMode="Accent"
+      BadgeColorZoneMode="SecondaryMid"
       ToolTip="Has new data to send" />
     <ToggleButton
       Grid.Row="1"

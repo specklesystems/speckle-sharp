@@ -190,6 +190,9 @@ namespace Objects.Converter.RhinoGh
         case InstanceObject o:
           @base = BlockInstanceToSpeckle(o);
           break;
+        case TextEntity o:
+          @base = TextToSpeckle(o);
+          break;
         default:
           throw new NotSupportedException();
       }
@@ -379,6 +382,8 @@ namespace Objects.Converter.RhinoGh
         case BlockInstance o:
           return BlockInstanceToNative(o);
 
+        case Text o:
+          return TextToNative(o);
 
         default:
           throw new NotSupportedException();
@@ -431,6 +436,7 @@ case RH.SubD _:
         case ViewInfo _:
         case InstanceDefinition _:
         case InstanceObject _:
+        case TextEntity _:
           return true;
 
         default:
@@ -470,6 +476,7 @@ case RH.SubD _:
         case BlockDefinition _:
         case BlockInstance _:
         case Alignment _:
+        case Text _:
           return true;
         
         default:
