@@ -342,8 +342,8 @@ namespace Objects.Converter.RhinoGh
                     case "Element2D":
                         return MeshToSpeckleElement2D(o);
 
-                case "Element3D":
-                    return MeshToSpeckleElement3D(o);
+                    case "Element3D":
+                        return MeshToSpeckleElement3D(o);
 
                         default:
                         throw new NotSupportedException();
