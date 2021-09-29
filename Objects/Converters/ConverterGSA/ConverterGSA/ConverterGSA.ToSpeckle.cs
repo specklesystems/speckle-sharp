@@ -313,7 +313,7 @@ namespace ConverterGSA
         type = gsaEl.Type.ToSpeckle2d(),
         parent = null,
         displayMesh = DisplayMesh2d(gsaEl.NodeIndices),
-        baseMesh = null,
+        //baseMesh = null,
         orientationAngle = 0, //default
 
         //-- GSA specific --
