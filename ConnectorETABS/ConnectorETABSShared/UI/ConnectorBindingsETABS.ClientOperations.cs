@@ -9,8 +9,8 @@ using System.Linq;
 
 namespace Speckle.ConnectorETABS.UI
 {
-    public partial class ConnectorBindingsETABS: ConnectorBindings
-        
+    public partial class ConnectorBindingsETABS : ConnectorBindings
+
     {
         #region Local stream I/O with local file
         public override void AddNewStream(StreamState state)

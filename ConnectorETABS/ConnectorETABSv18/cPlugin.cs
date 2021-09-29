@@ -16,7 +16,7 @@ using Speckle.ConnectorETABS.UI;
 using Objects.Converter.ETABS;
 
 
-namespace Speckle.ConnectorETABS
+namespace ConnectorETABSv18
 {
     public class cPlugin
     {

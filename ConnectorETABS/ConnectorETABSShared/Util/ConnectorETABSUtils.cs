@@ -425,4 +425,3 @@ namespace Speckle.ConnectorETABS.Util
     }
 
 }
-
