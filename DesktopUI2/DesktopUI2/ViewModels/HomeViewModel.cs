@@ -482,7 +482,7 @@ namespace DesktopUI2.ViewModels
       return new Tuple<bool, string>(false, "Streams need a name too!");
 
       if (name.Trim().Length < 3)
-        return new Tuple<bool, string>(false, "Name is too short");
+        return new Tuple<bool, string>(false, "Name is too short.");
 
 
       return new Tuple<bool, string>(true, "");

@@ -47,7 +47,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
 
       //desktopui 2
-      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector\nNew UI!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
+      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector\nNew UI (alpha)!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
       if (speckleButton2 != null)
       {

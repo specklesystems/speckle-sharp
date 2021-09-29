@@ -10,8 +10,11 @@ using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Splat;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive;
 using System.Threading.Tasks;
 
@@ -70,6 +73,15 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _selectedCommit, value);
+        if (_selectedCommit != null)
+        {
+          if (_selectedCommit.id == "latest")
+            PreviewImageUrl = _streamState.Client.Account.serverInfo.url + $"/preview/{_streamState.StreamId}";
+          else 
+            PreviewImageUrl = _streamState.Client.Account.serverInfo.url + $"/preview/{_streamState.StreamId}/commits/{_selectedCommit.id}";
+        }
+
+       
       }
     }
 
@@ -114,6 +126,30 @@ namespace DesktopUI2.ViewModels
     #endregion
 
     private StreamState _streamState { get; }
+
+ 
+    public string _previewImageUrl = "";
+    public string PreviewImageUrl
+    {
+      get => _previewImageUrl;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _previewImageUrl, value);
+        DownloadImage(PreviewImageUrl);
+      }
+    }
+
+
+
+
+    private Avalonia.Media.Imaging.Bitmap _previewImage = null;
+    public Avalonia.Media.Imaging.Bitmap PreviewImage
+    {
+      get => _previewImage;
+      set => this.RaiseAndSetIfChanged(ref _previewImage, value);
+    }
+
+
 
 
     public StreamEditViewModel()
@@ -198,6 +234,38 @@ namespace DesktopUI2.ViewModels
 
 
     }
+
+    public void DownloadImage(string url)
+    {
+      using (WebClient client = new WebClient())
+      {
+        client.Headers.Set("Authorization", "Bearer " + _streamState.Client.ApiToken);
+        client.DownloadDataAsync(new Uri(url));
+        client.DownloadDataCompleted += DownloadComplete;
+      }
+    }
+
+    private void DownloadComplete(object sender, DownloadDataCompletedEventArgs e)
+    {
+      try
+      {
+        byte[] bytes = e.Result;
+
+        System.IO.Stream stream = new MemoryStream(bytes);
+
+        var image = new Avalonia.Media.Imaging.Bitmap(stream);
+        _previewImage = image;
+        this.RaisePropertyChanged("PreviewImage");
+      }
+      catch (Exception ex)
+      {
+        System.Diagnostics.Debug.WriteLine(ex);
+        PreviewImageUrl = null; // Could not download...
+      }
+
+    }
+
+    #region commands
 
     private void SaveCommand()
     {
@@ -316,7 +384,7 @@ namespace DesktopUI2.ViewModels
 
       return true;
     }
-
+    #endregion
 
   }
 }
