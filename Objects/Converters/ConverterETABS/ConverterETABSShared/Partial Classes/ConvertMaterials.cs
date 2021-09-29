@@ -16,7 +16,7 @@ namespace Objects.Converter.ETABS
             int color = 0;
             string notes, GUID;
             notes = GUID = null;
-            Doc.Document.PropMaterial.GetMaterial(name, ref matType, ref color, ref notes, ref GUID);
+            Model.PropMaterial.GetMaterial(name, ref matType, ref color, ref notes, ref GUID);
             switch (matType)
             {
                 case eMatType.Steel:

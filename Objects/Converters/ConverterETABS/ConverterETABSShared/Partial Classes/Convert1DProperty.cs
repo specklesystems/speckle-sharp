@@ -14,9 +14,8 @@ namespace Objects.Converter.ETABS
             var speckleStructProperty1D = new Property1D();
             speckleStructProperty1D.name = name;
             string materialProp = null;
-            Doc.Document.PropFrame.GetMaterial(name, ref materialProp);
-            Material material = MaterialToSpeckle(materialProp);
-            speckleStructProperty1D.material = material;
+            Model.PropFrame.GetMaterial(name, ref materialProp);
+            speckleStructProperty1D.material = MaterialToSpeckle(materialProp);
             return speckleStructProperty1D;
         }
     }

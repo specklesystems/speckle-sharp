@@ -53,7 +53,7 @@ namespace Objects.Converter.ETABS
         {
             foreach (var type in Enum.GetNames(typeof(ConverterETABSUtils.ETABSAPIUsableTypes)))
             {
-                if (type == @object.GetType().Name)
+                if (type == @object.ToString())
                 {
                     return true;
                 }

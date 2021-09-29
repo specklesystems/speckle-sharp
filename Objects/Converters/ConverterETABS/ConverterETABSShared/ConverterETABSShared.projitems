@@ -9,7 +9,6 @@
     <Import_RootNamespace>ConverterETABS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ConnectorETABSDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterETABS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterETABSUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Convert1DProperty.cs" />

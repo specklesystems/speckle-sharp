@@ -18,13 +18,13 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.name = name;
             string pointI, pointJ;
             pointI = pointJ = null;
-            int v = Doc.Document.FrameObj.GetPoints(name,ref pointI,ref pointJ);
+            int v = Model.FrameObj.GetPoints(name,ref pointI,ref pointJ);
             var pointINode = PointToSpeckle(pointI);
             var pointJNode = PointToSpeckle(pointJ);
             var speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
             speckleStructFrame.baseLine = speckleLine;
             eFrameDesignOrientation frameDesignOrientation = eFrameDesignOrientation.Null;
-            Doc.Document.FrameObj.GetDesignOrientation(name, ref frameDesignOrientation);
+            Model.FrameObj.GetDesignOrientation(name, ref frameDesignOrientation);
             switch (frameDesignOrientation)
             {
                 case eFrameDesignOrientation.Column:
@@ -56,7 +56,7 @@ namespace Objects.Converter.ETABS
 
             string property, SAuto;
             property = SAuto = null;
-            Doc.Document.FrameObj.GetSection(name, ref property, ref SAuto);
+            Model.FrameObj.GetSection(name, ref property, ref SAuto);
             speckleStructFrame.property = Property1DToSpeckle(property);
 
 
