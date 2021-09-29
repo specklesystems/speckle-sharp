@@ -36,7 +36,7 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: Create Installer for Bentley Connectors
+name: Create Installer for GSA Connector
 
 on:
   push:
@@ -59,15 +59,13 @@ jobs:
     - name: Install the latest version of nuget
       uses: nuget/setup-nuget@v1
       with:
-        nuget-version: 'latest'
-
-    - name: Update NuGet source credentials
-      run: nuget source Update -Name "ArupGitHubPackages" -Source "https://nuget.pkg.github.com/arup-group/index.json" -UserName arup-group -Password "${{ secrets.GITHUB_TOKEN }}"             
+        nuget-version: 'latest'       
 
     - name: NuGet restore
       run: |
         nuget restore ConnectorGSA/ConnectorGSA.sln
         nuget restore Objects/Converters/ConverterGSA/ConverterGSA/ConverterGSA.csproj
+        
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
@@ -88,33 +86,12 @@ jobs:
         for %%x in (Objects, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )               
-
     - name: create Installer
       id: installer
       run: | 
         iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-gsa-installer.iss
         $filename = (ls *.exe).Name
-        echo "::set-output name=filename::$filename"
-      env:
-        ENABLE_TELEMETRY_DOMAIN: ${{ secrets.ENABLE_TELEMETRY_DOMAIN }}
-          
-    - name: Install Azure Key Vault signtool
-      run: dotnet tool install --global AzureSignTool --version 2.0.17
-        
-    # https://github.com/vcsjones/AzureSignTool
-    - name: Sign Installer
-      shell: powershell
-      continue-on-error: true
-      run: |
-        AzureSignTool sign `
-          --description-url "https://speckle.arup.com" `
-          --azure-key-vault-url "https://oasysevkv.vault.azure.net/" `
-          --azure-key-vault-client-id "${{ secrets.AZURE_CLIENT_ID }}" `
-          --azure-key-vault-client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" `
-          --azure-key-vault-certificate "OasysCodeSigning" `
-          --timestamp-rfc3161 "http://timestamp.digicert.com" `
-          --verbose `
-          ${{ github.workspace }}\${{ steps.installer.outputs.filename }}
+        echo "::set-output name=filename::$filename"          
           
     - name: Upload a Build Artifact      
       uses: actions/upload-artifact@v2
@@ -138,7 +115,7 @@ jobs:
         tag_name: ${{ steps.calculate-tag-version.outputs.tag }}
         release_name: Speckle-cx Installer ${{ steps.calculate-tag-version.outputs.tag }}
         body: |
-          Automated release of Speckle 2.0 Connectors for MicroStation, OpenRoads Designer and OpenRail Designer
+          Automated release of Speckle 2.0 Connector for Oasys GSA
         draft: false
         prerelease: true
 
