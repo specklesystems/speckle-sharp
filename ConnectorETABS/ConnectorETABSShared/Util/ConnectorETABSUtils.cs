@@ -22,7 +22,7 @@ namespace Speckle.ConnectorETABS.Util
 
         public List<SpeckleException> ConversionErrors { get; set; }
 
-        public static void GetObjectIDsTypesAndNames(ConnectorETABSDocument doc)
+        public static void GetObjectIDsTypesAndNames(cSapModel model)
         {
             ObjectIDsTypesAndNames = new Dictionary<string, (string, string)>();
             foreach (var objectType in Enum.GetNames(typeof(ETABSAPIUsableTypes)))
@@ -30,7 +30,7 @@ namespace Speckle.ConnectorETABS.Util
                 var names = new List<string>();
                 try
                 {
-                    names = GetAllNamesOfObjectType(doc, objectType);
+                    names = GetAllNamesOfObjectType(model, objectType);
                 }
                 catch { }
                 if (names.Count > 0)
@@ -48,326 +48,326 @@ namespace Speckle.ConnectorETABS.Util
             return Enum.GetNames(typeof(ETABSAPIUsableTypes)).Contains(type);
         }
 
-        public static List<string> GetAllNamesOfObjectType(ConnectorETABSDocument doc, string objectType)
+        public static List<string> GetAllNamesOfObjectType(cSapModel model, string objectType)
         {
             switch (objectType)
             {
                 case "Point":
-                    return GetAllPointNames(doc);
+                    return GetAllPointNames(model);
                 case "Frame":
-                    return GetAllFrameNames(doc);
+                    return GetAllFrameNames(model);
                 case "Area":
-                    return GetAllAreaNames(doc);
+                    return GetAllAreaNames(model);
                 default:
                     return null;
             }
         }
 
-        public static List<string> GetAllPointNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPointNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PointObj.GetNameList(ref num, ref names);
+                model.PointObj.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
 
         }
-        public static List<string> GetAllFrameNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllFrameNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.FrameObj.GetNameList(ref num, ref names);
+                model.FrameObj.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllTendonNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllTendonNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.TendonObj.GetNameList(ref num, ref names);
+                model.TendonObj.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllAreaNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllAreaNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.AreaObj.GetNameList(ref num, ref names);
+                model.AreaObj.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllLinkNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllLinkNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.LinkObj.GetNameList(ref num, ref names);
+                model.LinkObj.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropMaterialNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropMaterialNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropMaterial.GetNameList(ref num, ref names);
+                model.PropMaterial.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropRebarNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropRebarNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropRebar.GetNameList(ref num, ref names);
+                model.PropRebar.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropFrameNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropFrameNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropFrame.GetNameList(ref num, ref names);
+                model.PropFrame.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllLoadCaseNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllLoadCaseNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.LoadCases.GetNameList(ref num, ref names);
+                model.LoadCases.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllGroupNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllGroupNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.GroupDef.GetNameList(ref num, ref names);
+                model.GroupDef.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllGridNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllGridNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.GridSys.GetNameList(ref num, ref names);
+                model.GridSys.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllComboNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllComboNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.RespCombo.GetNameList(ref num, ref names);
+                model.RespCombo.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllConstraintNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllConstraintNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.ConstraintDef.GetNameList(ref num, ref names);
+                model.ConstraintDef.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllLoadPatternNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllLoadPatternNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.LoadPatterns.GetNameList(ref num, ref names);
+                model.LoadPatterns.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllSteelDesignNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllSteelDesignNames(cSapModel model)
         {
             var name = "";
             try
             {
-                doc.Document.DesignSteel.GetCode(ref name);
+                model.DesignSteel.GetCode(ref name);
                 return new List<string>() { name };
             }
             catch { return null; }
         }
-        public static List<string> GetAllConcreteDesignNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllConcreteDesignNames(cSapModel model)
         {
             var name = "";
             try
             {
-                doc.Document.DesignConcrete.GetCode(ref name);
+                model.DesignConcrete.GetCode(ref name);
                 return new List<string>() { name };
             }
             catch { return null; }
         }
-        public static List<string> GetAllStoryNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllStoryNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.Story.GetNameList(ref num, ref names);
+                model.Story.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllDiaphragmNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllDiaphragmNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.Diaphragm.GetNameList(ref num, ref names);
+                model.Diaphragm.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllLineNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllLineNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.LineElm.GetNameList(ref num, ref names);
+                model.LineElm.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPierLabelNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPierLabelNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PierLabel.GetNameList(ref num, ref names);
+                model.PierLabel.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropAreaSpringNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropAreaSpringNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropAreaSpring.GetNameList(ref num, ref names);
+                model.PropAreaSpring.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropLineSpringNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropLineSpringNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropLineSpring.GetNameList(ref num, ref names);
+                model.PropLineSpring.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropPointSpringNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropPointSpringNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropPointSpring.GetNameList(ref num, ref names);
+                model.PropPointSpring.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllSpandrelLabelNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllSpandrelLabelNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             var isMultiStory = new bool[] { };
             try
             {
-                doc.Document.SpandrelLabel.GetNameList(ref num, ref names, ref isMultiStory);
+                model.SpandrelLabel.GetNameList(ref num, ref names, ref isMultiStory);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllTowerNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllTowerNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.Tower.GetNameList(ref num, ref names);
+                model.Tower.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropTendonNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropTendonNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropTendon.GetNameList(ref num, ref names);
+                model.PropTendon.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
-        public static List<string> GetAllPropLinkNames(ConnectorETABSDocument doc)
+        public static List<string> GetAllPropLinkNames(cSapModel model)
         {
             int num = 0;
             var names = new string[] { };
             try
             {
-                doc.Document.PropLink.GetNameList(ref num, ref names);
+                model.PropLink.GetNameList(ref num, ref names);
                 return names.ToList();
             }
             catch { return null; }
         }
 
 
-        public static List<(string, string)> SelectedObjects(ConnectorETABSDocument doc)
+        public static List<(string, string)> SelectedObjects(cSapModel model)
         {
             int num = 0;
             var types = new int[] { };
             var names = new string[] { };
-            doc.Document.SelectObj.GetSelected(ref num, ref types, ref names);
+            model.SelectObj.GetSelected(ref num, ref types, ref names);
             var typesAndNames = new List<(string, string)>();
             if (num < 1)
             {

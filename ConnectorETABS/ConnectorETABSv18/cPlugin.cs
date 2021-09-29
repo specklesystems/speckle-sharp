@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ETABSv1;
 
 using Speckle.DesktopUI;
 using System.Timers;
 using System.Windows;
 using System.Diagnostics;
-using Speckle.Core.Logging;
 
+using ETABSv1;
+
+using Speckle.Core.Logging;
 using Speckle.ConnectorETABS.Util;
 using Speckle.ConnectorETABS.UI;
 using Objects.Converter.ETABS;
@@ -26,8 +27,10 @@ namespace ConnectorETABSv18
 
         public Timer SelectionTimer;
 
+        public static cSapModel model
+ {get; set;}
 
-        public static void OpenOrFocusSpeckle(ConnectorETABSDocument doc)
+        public static void OpenOrFocusSpeckle(cSapModel model)
         {
             try
             {
@@ -40,7 +43,7 @@ namespace ConnectorETABSv18
 
                 Bootstrapper = new Bootstrapper()
                 {
-                    Bindings = new ConnectorBindingsETABS(doc)
+                    Bindings = new ConnectorBindingsETABS(model)
                 };
 
                 if (Application.Current != null)
@@ -87,21 +90,6 @@ namespace ConnectorETABSv18
             }
         }
 
-        private static ConnectorETABSDocument AttachToRunningInstance()
-        {
-            try
-            {
-                cHelper helper = new Helper();
-                var etabsObject = helper.GetObject("CSI.ETABS.API.ETABSObject");
-                var doc = new ConnectorETABSDocument();
-                doc.Document = etabsObject.SapModel;
-                return doc;
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         public int Info(ref string Text)
         {
@@ -111,16 +99,23 @@ namespace ConnectorETABSv18
 
         public void Main(ref cSapModel SapModel, ref cPluginCallback ISapPlugin)
         {
+            cSapModel model;
             pluginCallback = ISapPlugin;
-            ConnectorETABSDocument doc = AttachToRunningInstance();
-            if (doc == null)
+            try
+            {
+                cHelper helper = new Helper();
+                var etabsObject = helper.GetObject("CSI.ETABS.API.ETABSObject");
+                model = etabsObject.SapModel;
+            }
+            catch
             {
                 ISapPlugin.Finish(0);
                 return;
             }
+
             try
             {
-                OpenOrFocusSpeckle(doc);
+                OpenOrFocusSpeckle(model);
                 SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
                 SelectionTimer.Elapsed += SelectionTimer_Elapsed;
                 SelectionTimer.Start();

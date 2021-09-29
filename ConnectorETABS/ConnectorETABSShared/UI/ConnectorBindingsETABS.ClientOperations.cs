@@ -25,7 +25,7 @@ namespace Speckle.ConnectorETABS.UI
         }
         private void WriteStateToFile()
         {
-            StreamStateManager.WriteStreamStateList(Doc, DocumentStreams);
+            StreamStateManager.WriteStreamStateList(Model, DocumentStreams);
         }
 
         public override void RemoveStreamFromFile(string streamId)
@@ -40,8 +40,8 @@ namespace Speckle.ConnectorETABS.UI
 
         public override List<StreamState> GetStreamsInFile()
         {
-            if (Doc != null)
-                DocumentStreams = StreamStateManager.ReadState(Doc);
+            if (Model != null)
+                DocumentStreams = StreamStateManager.ReadState(Model);
 
             return DocumentStreams;
         }

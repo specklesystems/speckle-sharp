@@ -37,7 +37,7 @@ namespace Speckle.ConnectorETABS.UI
             var kit = KitManager.GetDefaultKit();
             //var converter = new ConverterETABS();
             var converter = kit.LoadConverter(ConnectorETABSUtils.ETABSAppName);
-            converter.SetContextDocument(Doc);
+            converter.SetContextDocument(Model);
             Exceptions.Clear();
 
             var commitObj = new Base();

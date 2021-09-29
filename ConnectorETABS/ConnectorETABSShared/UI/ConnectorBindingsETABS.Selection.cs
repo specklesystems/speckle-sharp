@@ -14,7 +14,7 @@ namespace Speckle.ConnectorETABS.UI
         {
             var names = new List<string>();
             var util = new ConnectorETABSUtils();
-            var typeNameTupleList = ConnectorETABSUtils.SelectedObjects(Doc);
+            var typeNameTupleList = ConnectorETABSUtils.SelectedObjects(Model);
             if (typeNameTupleList == null) return new List<string>() { };
             foreach (var item in typeNameTupleList)
             {
@@ -35,9 +35,9 @@ namespace Speckle.ConnectorETABS.UI
         {
             var objectTypes = new List<string>();
             //var objectIds = new List<string>();
-            if (Doc != null)
+            if (Model != null)
             {
-                ConnectorETABSUtils.GetObjectIDsTypesAndNames(Doc);
+                ConnectorETABSUtils.GetObjectIDsTypesAndNames(Model);
                 objectTypes = ConnectorETABSUtils.ObjectIDsTypesAndNames
                     .Select(pair => pair.Value.Item1).Distinct().ToList();
                 //objectIds = ConnectorETABSUtils.ObjectIDsTypesAndNames.Select(pair => pair.Key).ToList();
@@ -70,7 +70,7 @@ namespace Speckle.ConnectorETABS.UI
 
         private List<string> GetSelectionFilterObjects(ISelectionFilter filter)
         {
-            var doc = Doc.Document;
+            var doc = Model;
 
             var selection = new List<string>();
 
@@ -79,7 +79,7 @@ namespace Speckle.ConnectorETABS.UI
                 case "all":
                     if (ConnectorETABSUtils.ObjectIDsTypesAndNames == null)
                     {
-                        ConnectorETABSUtils.GetObjectIDsTypesAndNames(Doc);
+                        ConnectorETABSUtils.GetObjectIDsTypesAndNames(Model);
                     }
                     selection.AddRange(ConnectorETABSUtils.ObjectIDsTypesAndNames
                                 .Select(pair => pair.Key).ToList());
@@ -90,7 +90,7 @@ namespace Speckle.ConnectorETABS.UI
                     var typeFilter = filter as ListSelectionFilter;
                     if (ConnectorETABSUtils.ObjectIDsTypesAndNames == null)
                     {
-                        ConnectorETABSUtils.GetObjectIDsTypesAndNames(Doc);
+                        ConnectorETABSUtils.GetObjectIDsTypesAndNames(Model);
                     }
                     foreach (var type in typeFilter.Selection)
                     {
@@ -111,7 +111,7 @@ namespace Speckle.ConnectorETABS.UI
                     //    {
                     //        if (ConnectorETABSUtils.ObjectTypes.Count == 0)
                     //        {
-                    //            var _ = ConnectorETABSUtils.GetObjectTypesAndNames(Doc);
+                    //            var _ = ConnectorETABSUtils.GetObjectTypesAndNames(Model);
                     //        }
 
                     //        var propFilter = filter as PropertySelectionFilter;

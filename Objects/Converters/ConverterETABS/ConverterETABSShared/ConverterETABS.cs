@@ -27,11 +27,11 @@ namespace Objects.Converter.ETABS
 
         public string WebsiteOrEmail => "https://speckle.systems";
 
-        public ConnectorETABSDocument Doc { get; private set; }
+        public cSapModel Model { get; private set; }
 
         public void SetContextDocument(object doc)
         {
-            Doc = (ConnectorETABSDocument)doc;
+            Model = (cSapModel)doc;
         }
 
         public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
