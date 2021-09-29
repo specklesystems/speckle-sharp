@@ -8,7 +8,7 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.GSA.Geometry
 {
-    public class GSAElement1D : Structural.Geometry.Element1D
+    public class GSAElement1D : Element1D
     {
         public int nativeId { get; set; } //equiv to num record of gwa keyword
         public int group { get; set; }

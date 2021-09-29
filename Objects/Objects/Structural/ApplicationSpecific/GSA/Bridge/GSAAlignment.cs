@@ -9,6 +9,8 @@ namespace Objects.Structural.GSA.Bridge
     {
         public int nativeId { get; set; }
         public string name { get; set; }
+
+        [DetachProperty]
         public GSAGridSurface gridSurface { get; set; }
         public List<double> chainage { get; set; }
         public List<double> curvature { get; set; }

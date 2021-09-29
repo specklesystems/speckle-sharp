@@ -34,6 +34,8 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
+
+        [DetachProperty]
         public Mesh displayMesh { get; set; }
         public string units { get; set; }
         public Element1D() { }

@@ -1,4 +1,5 @@
 ﻿using Objects.Structural.Geometry;
+using Speckle.Core.Models;
 using Speckle.Core.Kits;
 
 namespace Objects.Structural.GSA.Geometry
@@ -6,6 +7,8 @@ namespace Objects.Structural.GSA.Geometry
     public class GSAStorey : Storey
     {
         public int nativeId { get; set; }
+
+        [DetachProperty]
         public Axis axis { get; set; }
         public double toleranceBelow { get; set; }
         public double toleranceAbove { get; set; }

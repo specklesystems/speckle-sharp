@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
-using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.GSA.Analysis;
 
