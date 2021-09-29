@@ -13,7 +13,7 @@ using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Hatch = Objects.Other.Hatch;
-using Point = Objects.Geometry.Point;
+using Polyline = Objects.Geometry.Polyline;
 using Text = Objects.Other.Text;
 using RH = Rhino.DocObjects;
 using Rhino;
@@ -204,16 +204,31 @@ namespace Objects.Converter.RhinoGh
     public Text TextToSpeckle(TextEntity text)
     {
       var _text = new Text();
-      _text.curves = text.CreateCurves(text.DimensionStyle, false)?.Select(o => CurveToSpeckle(o)).ToList();
+
+      // display value as list of polylines
+      var outlines = text.CreateCurves(text.DimensionStyle, false)?.ToList();
+      if (outlines != null)
+      {
+        foreach (var outline in outlines)
+        {
+          Rhino.Geometry.Polyline poly = null;
+          if (!outline.TryGetPolyline(out poly))
+            outline.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out poly); // this is from nurbs, should probably be refined for text
+          if (poly != null)
+            _text.displayValue.Add(PolylineToSpeckle(poly) as Polyline);
+        }
+      }
 
       _text.plane = PlaneToSpeckle(text.Plane);
-      _text.rotation = text.TextRotationDegrees;
-      _text.height = text.TextHeight * text.DimensionScale; // this needs to be multipled by model space scale for true height in model space
+      _text.rotation = text.TextRotationRadians;
+      _text.height = text.TextHeight * text.DimensionScale; // this needs to be multiplied by model space scale for true height
       _text.value = text.PlainText;
       _text.richText = text.RichText;
-      _text.horizontalAlignment = text.TextHorizontalAlignment.ToString();
-      _text.verticalAlignment = text.TextVerticalAlignment.ToString();
       _text.units = ModelUnits;
+
+      // rhino specific props
+      _text["horizontalAlignment"] = text.TextHorizontalAlignment.ToString();
+      _text["verticalAlignment"] = text.TextVerticalAlignment.ToString();
 
       return _text;
     }
@@ -226,9 +241,13 @@ namespace Objects.Converter.RhinoGh
       else
         _text.PlainText = text.value;
       _text.TextHeight = ScaleToNative(text.height, text.units);
-      _text.TextRotationDegrees = text.rotation;
-      _text.TextHorizontalAlignment = Enum.TryParse<TextHorizontalAlignment>(text.horizontalAlignment, out TextHorizontalAlignment horizontal) ? horizontal : TextHorizontalAlignment.Center;
-      _text.TextVerticalAlignment = Enum.TryParse<TextVerticalAlignment>(text.verticalAlignment, out TextVerticalAlignment vertical) ? vertical : TextVerticalAlignment.Middle;
+      _text.TextRotationRadians = text.rotation;
+      
+      // rhino specific props
+      if (text["horizontalAlignment"] != null)
+        _text.TextHorizontalAlignment = Enum.TryParse(text["horizontalAlignment"] as string, out TextHorizontalAlignment horizontal) ? horizontal : TextHorizontalAlignment.Center;
+      if (text["verticalAlignment"] != null)
+        _text.TextVerticalAlignment = Enum.TryParse(text["verticalAlignment"] as string, out TextVerticalAlignment vertical) ? vertical : TextVerticalAlignment.Middle;
 
       return _text;
     }

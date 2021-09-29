@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using Plane = Objects.Geometry.Plane;
+using Polyline = Objects.Geometry.Polyline;
 
 namespace Objects.Other
 {
@@ -14,12 +15,11 @@ namespace Objects.Other
   public class Text : Base
   {
     public List<ICurve> curves { get; set; }
-    public Plane plane { get; set; } // origin is position
-    public double rotation { get; set; } = 0; // using degrees
+    public List<Polyline> displayValue { get; set; } = new List<Polyline>();
+    public Plane plane { get; set; } // origin should be center
+    public double rotation { get; set; } = 0; // using radians
     public string value { get; set; } // text without RTF
     public string richText { get; set; }
-    public string horizontalAlignment { get; set; }
-    public string verticalAlignment { get; set; }
     public double height { get; set; }
     public string units { get; set; }
 

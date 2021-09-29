@@ -187,6 +187,12 @@ public static string AutocadAppName = Applications.Autocad2022;
         case BlockDefinition o:
           return BlockDefinitionToNativeDB(o);
 
+        case Text o:
+          bool isMText = o["isMText"] as bool? ?? true;
+          if (!isMText)
+            return DBTextToNative(o);
+          return MTextToNative(o);
+
         // TODO: add Civil3D directive to convert to alignment instead of curve
         case Alignment o:
           return CurveToNativeDB(o.baseCurve);
@@ -384,6 +390,7 @@ public static string AutocadAppName = Applications.Autocad2022;
 
         case BlockDefinition _:
         case BlockInstance _:
+        case Text _:
 
         case Alignment _:
 
