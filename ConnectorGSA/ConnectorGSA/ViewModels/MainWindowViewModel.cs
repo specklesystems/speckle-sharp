@@ -12,6 +12,7 @@ using System.Diagnostics;
 using ConnectorGSA.Models;
 using Speckle.GSA.API;
 using ConnectorGSA.Utilities;
+using Serilog;
 
 namespace ConnectorGSA.ViewModels
 {
@@ -186,12 +187,12 @@ namespace ConnectorGSA.ViewModels
       //The same methods that handle messages from the kits are being used for messages originating from the commands and the SpeckleGSA library, with the 
       //sender and receiver coordinators
       loggingProgress.ProgressChanged += ProcessLogProgressUpdate;
-      //loggingProgress.ProgressChanged += GSA.ProcessMessageForLog;
-      //streamCreationProgress.ProgressChanged += ProcessStreamCreationProgress;
-      //streamDeletionProgress.ProgressChanged += ProcessStreamDeletionProgress;
-      //statusProgress.ProgressChanged += ProcessStatusProgressUpdate;
+      loggingProgress.ProgressChanged += MainWindowViewModel.ProcessMessageForLog;
+      streamCreationProgress.ProgressChanged += ProcessStreamCreationProgress;
+      streamDeletionProgress.ProgressChanged += ProcessStreamDeletionProgress;
+      statusProgress.ProgressChanged += ProcessStatusProgressUpdate;
       //This ensures the messages for the display log in the UI, originating from the conversion code in the kits, end up being handled
-      //GSA.App.LocalMessenger.MessageAdded += ProcessLogProgressUpdate;
+      ((GsaMessenger)Instance.GsaModel.Messenger).MessageAdded += ProcessLogProgressUpdate;
       CreateCommands();
     }
 
@@ -657,5 +658,47 @@ namespace ConnectorGSA.ViewModels
       }
       return streamId;
     }
+
+    #region static_fns
+    public static void ProcessMessageForLog(object sender, MessageEventArgs messageEventArgs)
+    {
+      if (messageEventArgs.Intent == MessageIntent.TechnicalLog)
+      {
+        if (messageEventArgs.Exception == null)
+        {
+          switch (messageEventArgs.Level)
+          {
+            case MessageLevel.Debug: Log.Debug(string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Information: Log.Information(string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Error: Log.Error(string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Fatal: Log.Fatal(string.Join(" ", messageEventArgs.MessagePortions)); break;
+          }
+        }
+        else
+        {
+          switch (messageEventArgs.Level)
+          {
+            case MessageLevel.Debug: Log.Debug(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Information: Log.Information(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Error:
+              Log.Error(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions));
+              if (messageEventArgs.Exception.InnerException != null)
+              {
+                Log.Error(messageEventArgs.Exception.InnerException, "Inner exception");
+              }
+              break;
+            case MessageLevel.Fatal:
+              Log.Fatal(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions));
+              if (messageEventArgs.Exception.InnerException != null)
+              {
+                Log.Fatal(messageEventArgs.Exception.InnerException, "Inner exception");
+              }
+              break;
+          }
+        }
+      }
+    }
+
+    #endregion
   }
 }

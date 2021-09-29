@@ -358,7 +358,7 @@ namespace ConnectorGSA
       return (state.Errors.Count == 0);
     }
 
-    internal static bool Receive(TabCoordinator coordinator, Progress<StreamState> streamCreationProgress, Progress<MessageEventArgs> loggingProgress, Progress<string> statusProgress, Progress<double> percentageProgress)
+    internal static async Task<bool> Receive(TabCoordinator coordinator, IProgress<StreamState> streamCreationProgress, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
@@ -368,9 +368,13 @@ namespace ConnectorGSA
       Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance;
       var account = ((GsaModel)Instance.GsaModel).Account;
       var client = new Client(account);
+
+      statusProgress.Report("Reading GSA data into cache");
       //Load data to cause merging
       Commands.LoadDataFromFile(); //Ensure all nodes
+      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Loaded data into cache"));
 
+      statusProgress.Report("Accessing streams");
       foreach (var streamId in coordinator.ReceiverTab.StreamList.StreamListItems.Select(i => i.StreamId))
       {
         var streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = new Stream() { id = streamId } };
@@ -379,10 +383,16 @@ namespace ConnectorGSA
         var commitId = streamState.Stream.branch.commits.items.FirstOrDefault().referencedObject;
         var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
 
-        Commands.Receive(commitId, streamState, transport, converter.CanConvertToNative).Wait();
+        var received = await Commands.Receive(commitId, streamState, transport, converter.CanConvertToNative);
+        if (received)
+        {
+          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Received data from " + streamId + " stream"));
+        }
       }
 
+      statusProgress.Report("Converting");
       Commands.ConvertToNative(converter);
+      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Converted Speckle to GSA objects"));
 
       //The cache is filled with natives
       if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
@@ -392,6 +402,7 @@ namespace ConnectorGSA
 
       ((GsaProxy)Instance.GsaModel.Proxy).UpdateViews();
 
+      statusProgress.Report("Ready");
       Console.WriteLine("Receiving complete");
 
       return true;
@@ -648,9 +659,11 @@ namespace ConnectorGSA
       Instance.GsaModel.StreamSendConfig = coordinator.SenderTab.StreamContentConfig;
       Instance.GsaModel.Result1DNumPosition = coordinator.SenderTab.AdditionalPositionsFor1dElements; //end points (2) plus additional
 
+      
       var resultsToSend = coordinator.SenderTab.ResultSettings.ResultSettingItems.Where(rsi => rsi.Selected).ToList();
       if (resultsToSend != null && resultsToSend.Count() > 0 && !string.IsNullOrEmpty(coordinator.SenderTab.LoadCaseList))
       {
+        statusProgress.Report("Preparing results");
         var analIndices = new List<int>();
         var comboIndices = new List<int>();
         if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var analRecords) && analRecords != null && analRecords.Count() > 0)
@@ -684,11 +697,13 @@ namespace ConnectorGSA
         }
       }
 
+      statusProgress.Report("Preparing cache");
       Commands.LoadDataFromFile(); //Ensure all nodes
+      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Loaded data from file into cache"));
 
       var objs = Commands.ConvertToSpeckle(converter);
 
-      objs.Reverse();
+      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Converted cache data to Speckle"));
 
       //The converter itself can't give anything back other than Base objects, so this is the first time it can be adorned with any
       //info useful to the sending in streams
@@ -717,18 +732,27 @@ namespace ConnectorGSA
         commitObj[name] = obj;
       }
 
+      statusProgress.Report("Sending to Server");
 
       var stream = NewStream(client, "GSA data", "GSA data").Result;
       var streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = stream };
+      streamCreationProgress.Report(streamState);
 
       var serverTransport = new ServerTransport(account, streamState.Stream.id);
       var sent = Commands.Send(commitObj, streamState, serverTransport).Result;
+
       if (sent)
       {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Successfully sent data to stream"));
         Commands.UpsertSavedReceptionStreamInfo(true, null, streamState);
       }
+      else
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "Unable to send data to stream"));
+      }  
 
       Console.WriteLine("Sending complete");
+
       return true;
       //--
 
