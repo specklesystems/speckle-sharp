@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-
-
 
 namespace Speckle.GSA.API.GwaSchema
 {
   //The term "section component" here is a name applied to both the group as a whole as well as one member of the group, 
   //but the latter is shortened to SectionComp to distinguish them here
-  [GsaType(GwaKeyword.SECTION_COMP, GwaSetCommandType.Set, false, true, true)]
   public class SectionComp : GsaSectionComponentBase
   {
     public string Name { get => name; set { name = value; } }
@@ -33,187 +29,6 @@ namespace Speckle.GSA.API.GwaSchema
     {
       Version = 4;
     }
-
-    public override bool FromGwa(string gwa)
-    {
-      //SECTION_COMP | ref | name | matAnal | matType | matRef | desc | offset_y | offset_z | rotn | reflect | pool | taperType | taperPos
-      //Note: the ref argument is missing when the GWA was embedded within a SECTION command, so need to detect this case
-      //This also means the BasicFromGwa can't be called here because that does assume an index parameter
-      var items = Split(gwa);
-
-      if (items[0].StartsWith("set", StringComparison.OrdinalIgnoreCase))
-      {
-        items.Remove(items[0]);
-      }
-      if (!ParseKeywordVersionSid(items[0]))
-      {
-        return false;
-      }
-      items = items.Skip(1).ToList();
-
-      //Detect presence or absense of ref (record index) argument based on number of items
-      if (int.TryParse(items[0], out var foundIndex))
-      {
-        Index = foundIndex;
-        items = items.Skip(1).ToList();
-      }
-
-      if (!FromGwaByFuncs(items, out var remainingItems, AddName, (v) => AddNullableIndex(v, out MatAnalIndex),
-        (v) => Enum.TryParse(v, true, out MaterialType), (v) => AddNullableIndex(v, out MaterialIndex)))
-      {
-        return false;
-      }
-      items = remainingItems;
-
-      if (!ProcessDesc(items[0]))
-      {
-        return false;
-      }
-      items = items.Skip(1).ToList();
-
-      return (FromGwaByFuncs(items, out _, (v) => AddNullableDoubleValue(v, out OffsetY), (v) => AddNullableDoubleValue(v, out OffsetZ),
-        (v) => AddNullableDoubleValue(v, out Rotation), (v) => Enum.TryParse(v, true, out Reflect), (v) => AddNullableIntValue(v, out Pool),
-        (v) => Enum.TryParse(v, true, out TaperType), (v) => AddNullableDoubleValue(v, out TaperPos)));
-    }
-
-    public override bool Gwa(out List<string> gwa, bool includeSet = false)
-    {
-      gwa = (GwaItems(out var items, includeSet) && Join(items, out var gwaLine)) ? new List<string>() { gwaLine } : new List<string>();
-      return (gwa.Count() > 0);
-    }
-
-    //Note: the ref argument is missing when the GWA was embedded within a SECTION command, hence the addition of the additional boolean argument
-    public override bool GwaItems(out List<string> items, bool includeSet = false, bool includeRef = false)
-    {
-      items = new List<string>();
-
-      if (includeSet)
-      {
-        items.Add("SET");
-      }
-      var sid = FormatSidTags(StreamId, ApplicationId);
-      items.Add(keyword + "." + Version + ((string.IsNullOrEmpty(sid)) ? "" : ":" + sid));
-      
-      if ((bool)GetType().GetAttribute<GsaType>("SelfContained"))
-      {
-        items.Add(Index.ToString());
-      }
-
-      //SECTION_COMP | ref | name | matAnal | matType | matRef | desc | offset_y | offset_z | rotn | reflect | pool | taperType | taperPos
-      if (includeRef && !AddItems(ref items, Index ?? 0))
-      {
-        return false;
-      }
-      return AddItems(ref items, Name, MatAnalIndex ?? 0, MaterialType.ToString(), MaterialIndex ?? 0, ProfileDetails.ToDesc(),
-        OffsetY ?? 0, OffsetZ ?? 0, Rotation.ToString(), Reflect.ToString(), Pool ?? 0, TaperType.ToString(), TaperPos ?? 0);
-    }
-
-    #region from_gwa_fns
-    private bool ProcessDesc(string v)
-    {
-      var pieces = v.ListSplit(" ");
-      if (!pieces[0].TryParseStringValue(out Section1dProfileGroup sectionProfileGroup))
-      {
-        return false;
-      }
-
-      if (sectionProfileGroup == Section1dProfileGroup.Explicit)
-      {
-        ProfileDetails = new ProfileDetailsExplicit();
-        ProfileDetails.FromDesc(v);
-      }
-      else if (sectionProfileGroup == Section1dProfileGroup.Perimeter)
-      {
-        ProfileDetails = new ProfileDetailsPerimeter();
-        ProfileDetails.FromDesc(v);
-      }
-      else if (sectionProfileGroup == Section1dProfileGroup.Catalogue)
-      {
-        ProfileDetails = new ProfileDetailsCatalogue();
-        ProfileDetails.FromDesc(v);
-      }
-      else
-      {
-        //Standard
-        if (!pieces[1].TryParseStringValue(out Section1dStandardProfileType profileType))
-        {
-          return false;
-        }
-        switch (profileType)
-        {
-          case Section1dStandardProfileType.Rectangular:
-          case Section1dStandardProfileType.RectoCircular:
-            ProfileDetails = new ProfileDetailsRectangular();
-            break;
-
-          case Section1dStandardProfileType.Circular:
-            ProfileDetails = new ProfileDetailsCircular();
-            break;
-
-          case Section1dStandardProfileType.CircularHollow:
-            ProfileDetails = new ProfileDetailsCircularHollow();
-            break;
-
-          case Section1dStandardProfileType.Taper:
-            ProfileDetails = new ProfileDetailsTaper();
-            break;
-
-          case Section1dStandardProfileType.Ellipse:
-            ProfileDetails = new ProfileDetailsEllipse();
-            break;
-
-          case Section1dStandardProfileType.GeneralI:
-            ProfileDetails = new ProfileDetailsGeneralI();
-            break;
-
-          case Section1dStandardProfileType.TaperT:
-          case Section1dStandardProfileType.TaperAngle:
-            ProfileDetails = new ProfileDetailsTaperTAngle();
-            break;
-
-          case Section1dStandardProfileType.RectoEllipse:
-            ProfileDetails = new ProfileDetailsRectoEllipse();
-            break;
-
-          case Section1dStandardProfileType.TaperI:
-            ProfileDetails = new ProfileDetailsTaperI();
-            break;
-
-          case Section1dStandardProfileType.SecantPile:
-          case Section1dStandardProfileType.SecantPileWall:
-            ProfileDetails = new ProfileDetailsSecant();
-            break;
-
-          case Section1dStandardProfileType.Oval:
-            ProfileDetails = new ProfileDetailsOval();
-            break;
-
-          case Section1dStandardProfileType.GenericZ:
-            ProfileDetails = new ProfileDetailsZ();
-            break;
-
-          case Section1dStandardProfileType.Castellated:
-          case Section1dStandardProfileType.Cellular:
-            ProfileDetails = new ProfileDetailsCastellatedCellular();
-            break;
-
-          case Section1dStandardProfileType.AsymmetricCellular:
-            ProfileDetails = new ProfileDetailsAsymmetricCellular();
-            break;
-
-          case Section1dStandardProfileType.SheetPile:
-            ProfileDetails = new ProfileDetailsSheetPile();
-            break;
-
-          default:
-            ProfileDetails = new ProfileDetailsTwoThickness();
-            break;
-        }
-        ProfileDetails.FromDesc(v);
-      }
-      return true;
-    }
-    #endregion
   }
 
   #region profile_details
@@ -288,6 +103,7 @@ namespace Speckle.GSA.API.GwaSchema
 
   public class ProfileDetailsCatalogue : ProfileDetails
   {
+    public string Profile;
     public ProfileDetailsCatalogue()
     {
       Group = Section1dProfileGroup.Catalogue;
@@ -295,17 +111,23 @@ namespace Speckle.GSA.API.GwaSchema
 
     public override bool FromDesc(string desc)
     {
+      //Example: desc = CAT A-UB 610UB125 19981201
+      Profile = desc;
       return true;
     }
 
     public override string ToDesc()
     {
-      return "";
+      return Profile;
     }
   }
 
   public class ProfileDetailsPerimeter : ProfileDetails
   {
+    public string Type;
+    public List<string> Actions;
+    public List<double?> Y;
+    public List<double?> Z;
     public ProfileDetailsPerimeter()
     {
       Group = Section1dProfileGroup.Perimeter;
@@ -313,12 +135,49 @@ namespace Speckle.GSA.API.GwaSchema
 
     public override bool FromDesc(string desc)
     {
+      //Examples: 
+      //
+      // Perimeter
+      //    desc = GEO P M(-50|-50) L(50|-50) L(50|50) L(-50|50) M(-40|-40) L(40|-40) L(40|40) L(-40|40)
+      //
+      // Line Segment
+      //    desc = GEO L(mm) T(5) M(0|0) L(100|0) L(100|100) L(0|100) L(0|0)
+      var items = Split(desc);
+      Actions = new List<string>();
+      Y = new List<double?>();
+      Z = new List<double?>();
+      Type = items[1];
+
+      for (var i = 2; i < items.Count(); i++)
+      {
+        Actions.Add(items[i].Split('(')[0]);
+        if (Actions.Last() == "T")
+        {
+          Y.Add(items[i].Split('(')[1].Split(')')[0].ToDouble());
+          Z.Add(null);
+        }
+        else
+        {
+          Y.Add(items[i].Split('(')[1].Split('|')[0].ToDouble());
+          Z.Add(items[i].Split('|')[1].Split(')')[0].ToDouble());
+        }
+      }
+
       return true;
     }
 
     public override string ToDesc()
     {
-      return "";
+      var v = "GEO " + Type;
+      
+      for (var i = 0; i < Actions.Count(); i++)
+      {
+        v += " " + Actions[i] + "(" + Y[i].ToString();
+        if (Actions[i] != "T") v += "|" + Z[i].ToString();
+        v += ")";
+      }
+
+      return v;
     }
   }
 
@@ -465,13 +324,12 @@ namespace Speckle.GSA.API.GwaSchema
   public class ProfileDetailsTaperI : ProfileDetailsStandard 
   {
     public double? d => GetValue(values, 0);
-    public double? b => GetValue(values, 1); 
-    public double? bt => GetValue(values, 2); 
-    public double? bb => GetValue(values, 3); 
-    public double? twt => GetValue(values, 4); 
-    public double? twb => GetValue(values, 5); 
-    public double? tft => GetValue(values, 6); 
-    public double? tfb => GetValue(values, 7); 
+    public double? bt => GetValue(values, 1); 
+    public double? bb => GetValue(values, 2); 
+    public double? twt => GetValue(values, 3); 
+    public double? twb => GetValue(values, 4); 
+    public double? tft => GetValue(values, 5); 
+    public double? tfb => GetValue(values, 6); 
   }
   
   public class ProfileDetailsSecant : ProfileDetailsStandard 
@@ -520,13 +378,14 @@ namespace Speckle.GSA.API.GwaSchema
   {
     public double? dt => GetValue(values, 0);
     public double? bt => GetValue(values, 1);
-    public double? tw => GetValue(values, 2);
+    public double? twt=> GetValue(values, 2);
     public double? tft => GetValue(values, 3);
     public double? db => GetValue(values, 4);
     public double? bb => GetValue(values, 5);
-    public double? tfb => GetValue(values, 6);
-    public double? ds => GetValue(values, 7);
-    public double? p => GetValue(values, 8);
+    public double? twb => GetValue(values, 6);
+    public double? tfb => GetValue(values, 7);
+    public double? ds => GetValue(values, 8);
+    public double? p => GetValue(values, 9);
   }
 
   public class ProfileDetailsSheetPile: ProfileDetailsStandard

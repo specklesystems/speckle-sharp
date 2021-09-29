@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,9 +44,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GsaMessengerMock.cs" />
     <Compile Include="GsaModelMock.cs" />
+    <Compile Include="GsaProxyMockForConverterTests.cs" />
     <Compile Include="SchemaTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SchemaTest.ToNative.cs" />
+    <Compile Include="SchemaTest.ToSpeckle.cs" />
     <Compile Include="SpeckleConversionFixture.cs" />
   </ItemGroup>
   <ItemGroup>

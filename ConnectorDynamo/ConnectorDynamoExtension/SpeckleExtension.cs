@@ -32,17 +32,12 @@ namespace Speckle.ConnectorDynamo.Extension
         //sets a read-only property using reflection WatchHandler
         //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
+        Setup.Init(Applications.DynamoRevit);
       }
       catch (Exception e)
       {
 
       }
-
-      //initialize telemetry and logging
-      if (Globals.RevitDocument != null)
-        Setup.Init(Applications.DynamoRevit);
-      else
-        Setup.Init(Applications.DynamoSandbox);
     }
 
     private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
@@ -57,6 +52,9 @@ namespace Speckle.ConnectorDynamo.Extension
     {
     }
 
-    public void Startup(ViewStartupParams p) { }
+    public void Startup(ViewStartupParams p)
+    {
+      Setup.Init(Applications.DynamoSandbox);
+    }
   }
 }

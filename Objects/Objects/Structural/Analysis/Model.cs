@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Objects.Structural.Analysis
 {
     public class Model : Base
-    {
+    {        
         public ModelInfo specs { get; set; } //container for model and project specifications
 
         [DetachProperty]
@@ -33,6 +33,9 @@ namespace Objects.Structural.Analysis
         [Chunkable(5000)]
         public List<Base> materials { get; set; } //materials list
 
+        // add "other" - ex. assemblies, grid lines, grid planes, storeys etc? alignment/paths?
+
+        public string layerDescription { get; set; } //design layer, analysis layer
         public Model() { }
 
         /// <summary>

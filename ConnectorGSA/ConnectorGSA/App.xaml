@@ -1,0 +1,45 @@
+﻿<Application x:Class="ConnectorGSA.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ConnectorGSA.ViewModels"
+             Startup="Application_Startup">
+  <Application.Resources>
+    <ResourceDictionary>
+      <local:MainWindowViewModel x:Key="MainWindowViewModel" />
+      <ResourceDictionary.MergedDictionaries>
+        <!-- material design styles -->
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/Generic.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignExtensions;component/Themes/Generic.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignExtensions;component/Themes/MaterialDesignLightTheme.xaml" />
+        <!--<ResourceDictionary Source="pack://application:,,,/MaterialDesignExtensions;component/Themes/MaterialDesignDarkTheme.xaml" />-->
+
+        <!-- primary colors -->
+        <ResourceDictionary>
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Blue.xaml" />
+          </ResourceDictionary.MergedDictionaries>
+          <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource Primary100}" />
+          <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="{StaticResource Primary100Foreground}" />
+          <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="{StaticResource Primary500}" />
+          <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="{StaticResource Primary500Foreground}" />
+          <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="{StaticResource Primary600}" />
+          <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="{StaticResource Primary600Foreground}" />
+        </ResourceDictionary>
+
+        <!-- accent color -->
+        <ResourceDictionary>
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Lime.xaml" />
+          </ResourceDictionary.MergedDictionaries>
+          <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource Accent400}" />
+          <SolidColorBrush x:Key="SecondaryHueMidForegroundBrush" Color="{StaticResource Accent400Foreground}" />
+        </ResourceDictionary>
+
+        <!--<ResourceDictionary>
+                    <SolidColorBrush x:Key="MaterialDesignBackground" Color="{Binding Color, Source={StaticResource MaterialDesignPaper}}" />
+                </ResourceDictionary>-->
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

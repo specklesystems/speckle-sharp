@@ -1,4 +1,5 @@
 ﻿using Speckle.GSA.API.GwaSchema;
+using System;
 using System.Collections.Generic;
 
 namespace Speckle.GSA.API
@@ -8,32 +9,32 @@ namespace Speckle.GSA.API
     //PROPERTIES
 
     //Settings - general
-    GSALayer Layer { get; }
+    GSALayer StreamLayer { get; set; }
     string Units { get; set; }
     double CoincidentNodeAllowance { get; set; }
+    int LoggingMinimumLevel { get; set; }
+    bool SendOnlyMeaningfulNodes { get; set; }
 
     //Settings - results
+    bool SendResults { get; }
     List<ResultType> ResultTypes { get; set; }
+    List<ResultGroup> ResultGroups { get; }
     StreamContentConfig StreamSendConfig { get; set; }
     List<string> ResultCases { get; set; }
     bool ResultInLocalAxis { get; set; }
     int Result1DNumPosition { get; set; }
 
-    //Cache
-    GsaRecord GetNative(GwaKeyword keyword, int index);
-    string GetApplicationId(GwaKeyword keyword, int index);
-    List<int> LookupIndices(GwaKeyword keyword);
 
-    //Offered by GSA itself
-    List<int> ConvertGSAList(string list, GSAEntity entityType);
-    int NodeAt(double x, double y, double z, double coincidenceTol);
+    IGSACache Cache { get; set; }
 
-    char GwaDelimiter { get; }
+    IGSAProxy Proxy { get; set; }
+    IGSAMessenger Messenger { get; set; }
 
-    //METHODS
-    bool LoadResults(ResultGroup group, out int numErrorRows, List<string> cases = null, List<int> elemIds = null);
-    bool GetResultHierarchy(ResultGroup group, int index, out Dictionary<string, Dictionary<string, object>> valueHierarchy, int dimension = 1);
-    bool ClearResults(ResultGroup group);
+    //TEMP
+    GsaRecord GetNative<T>(int value);
+    List<int> LookupIndices<T>();
+    List<int> ConvertGSAList(string v, GSAEntity e);
+    string GetApplicationId<T>(int value);
   }
 
   

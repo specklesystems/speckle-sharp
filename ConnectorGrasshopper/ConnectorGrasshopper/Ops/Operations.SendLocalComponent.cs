@@ -51,7 +51,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:");
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino);
+      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
       {
@@ -67,26 +67,38 @@ namespace ConnectorGrasshopper.Ops
       if (kitName == Kit.Name)return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino);
+      Converter = Kit.LoadConverter(Applications.Rhino6);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
 
+    public bool foundKit;
     private void SetDefaultKitAndConverter()
     {
-      Kit = KitManager.GetDefaultKit();
       try
       {
-        Converter = Kit.LoadConverter(Applications.Rhino);
+        Kit = KitManager.GetDefaultKit();
+        Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        foundKit = true;
       }
       catch
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        foundKit = false;
       }
     }
-
+    
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      if (!foundKit)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return;
+      }
+      base.SolveInstance(DA);
+    }
     protected override void BeforeSolveInstance()
     {
       Tracker.TrackPageview(Tracker.SEND_LOCAL);

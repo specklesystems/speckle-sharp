@@ -9,6 +9,7 @@ namespace Objects.Structural.Analysis
 {
     public class ModelUnits : Base
     {
+        // use enums instead of strings
         public string length { get; set; } // m, cm, mm, ft, in
         public string sections { get; set; } //m, cm, mm, ft, in
         public string displacements { get; set; }  // m, cm, mm, ft, in
@@ -85,11 +86,5 @@ namespace Objects.Structural.Analysis
             this.acceleration = acceleration;
             this.energy = energy;
         }
-    }
-
-    public enum UnitsType
-    {
-        Metric,
-        Imperial
     }
 }

@@ -38,7 +38,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       ui.CreateStreamButton.Click += CreateStreamButtonClick;
       ui.AccountsComboBox.DropDownOpened += AccountsComboBoxOnDropDownOpened;
 
-      nodeView.grid.ContextMenu.Items.Add(new Separator());
+      //nodeView.grid.ContextMenu.Items.Add(new Separator());
     }
 
     private void AccountsComboBoxOnDropDownOpened(object sender, EventArgs e)

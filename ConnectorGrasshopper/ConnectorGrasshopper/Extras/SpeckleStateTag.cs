@@ -17,11 +17,11 @@ namespace ConnectorGrasshopper.Extras
 
   public class DetachedStateTag : SpeckleStateTag
   {
-    public override string Description => "This property will not be detached";
-    public override string Name => "Do not detach";
+    public override string Description => "This property will be detached";
+    public override string Name => "Detached";
     public override Bitmap Icon => Properties.Resources.StateTag_Detach;
-    public override bool Crossed => true;
-    public override string Letter => "D";
+    public override bool Crossed => false;
+    public override string Letter => "@";
   }
 
   public class ListAccesStateTag : SpeckleStateTag

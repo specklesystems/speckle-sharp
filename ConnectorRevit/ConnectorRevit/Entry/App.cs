@@ -30,7 +30,7 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling += Initialise;
 
       var specklePanel = application.CreateRibbonPanel("Speckle 2");
-      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(HelpCommand).FullName)) as PushButton;
+      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
       string path = typeof(App).Assembly.Location;
 
       if (speckleButton != null)
@@ -80,9 +80,9 @@ namespace Speckle.ConnectorRevit.Entry
       AppInstance = sender as UIApplication;
 
       // Set up bindings now as they subscribe to some document events and it's better to do it now
-      HelpCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
-      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(HelpCommand.Bindings));
-      HelpCommand.Bindings.SetExecutorAndInit(eventHandler);
+      SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
+      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
+      SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
     }
 
     public Result OnShutdown(UIControlledApplication application)

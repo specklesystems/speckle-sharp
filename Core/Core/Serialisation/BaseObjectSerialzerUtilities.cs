@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Threading;
 using Microsoft.CSharp.RuntimeBinder;
 using Speckle.Core.Kits;
@@ -19,17 +21,22 @@ namespace Speckle.Core.Serialisation
     #region Getting Types
 
     private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
+    private static Dictionary<string, Dictionary<string, PropertyInfo>> typeProperties = new Dictionary<string, Dictionary<string, PropertyInfo>>();
+    private static Dictionary<string, List<MethodInfo>> onDeserializedCallbacks = new Dictionary<string, List<MethodInfo>>();
 
     internal static Type GetType(string objFullType)
     {
-      if (cachedTypes.ContainsKey(objFullType))
+      lock (cachedTypes)
       {
-        return cachedTypes[objFullType];
-      }
-      var type = GetAtomicType(objFullType);
-      cachedTypes[objFullType] = type;
-      return type;
+        if (cachedTypes.ContainsKey(objFullType))
+        {
+          return cachedTypes[objFullType];
+        }
 
+        var type = GetAtomicType(objFullType);
+        cachedTypes[objFullType] = type;
+        return type;
+      }
     }
 
     internal static Type GetAtomicType(string objFullType)
@@ -47,6 +54,46 @@ namespace Speckle.Core.Serialisation
       }
 
       return typeof(Base);
+    }
+
+    internal static Dictionary<string, PropertyInfo> GetTypePropeties(string objFullType)
+    {
+      lock (typeProperties)
+      {
+        if (!typeProperties.ContainsKey(objFullType))
+        {
+          Dictionary<string, PropertyInfo> ret = new Dictionary<string, PropertyInfo>();
+          Type type = GetType(objFullType);
+          PropertyInfo[] properties = type.GetProperties();
+          foreach (PropertyInfo prop in properties)
+            ret[prop.Name.ToLower()] = prop;
+          typeProperties[objFullType] = ret;
+        }
+        return typeProperties[objFullType];
+      }
+    }
+
+    internal static List<MethodInfo> GetOnDeserializedCallbacks(string objFullType)
+    {
+      // return new List<MethodInfo>();
+      lock (onDeserializedCallbacks)
+      {
+        // System.Runtime.Serialization.Ca
+        if (!onDeserializedCallbacks.ContainsKey(objFullType))
+        {
+          List<MethodInfo> ret = new List<MethodInfo>();
+          Type type = GetType(objFullType);
+          MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+          foreach (MethodInfo method in methods)
+          {
+            List<OnDeserializedAttribute> onDeserializedAttributes = method.GetCustomAttributes<OnDeserializedAttribute>(true).ToList();
+            if (onDeserializedAttributes.Count > 0)
+              ret.Add(method);
+          }
+          onDeserializedCallbacks[objFullType] = ret;
+        }
+        return onDeserializedCallbacks[objFullType];
+      }
     }
 
     internal static Type GetSytemOrSpeckleType(string typeName)
@@ -325,24 +372,27 @@ namespace Speckle.Core.Serialisation
 
     public static void SetValue(string propertyName, object target, object value)
     {
-      CallSite<Func<CallSite, object, object, object>> site;
-
-      lock(setters)
+      lock (setters)
       {
-        if (!setters.TryGetValue(propertyName, out site))
+        CallSite<Func<CallSite, object, object, object>> site;
+
+        lock (setters)
         {
-          var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
-            propertyName, typeof(CallSiteCache),
-            new List<CSharpArgumentInfo>
-            {
+          if (!setters.TryGetValue(propertyName, out site))
+          {
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
+              propertyName, typeof(CallSiteCache),
+              new List<CSharpArgumentInfo>
+              {
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-            });
-          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+              });
+            setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+          }
         }
-      }
 
-      site.Target(site, target, value);
+        site.Target(site, target, value);
+      }
     }
   }
 }

@@ -10,14 +10,12 @@ namespace Objects.Structural.Properties
     public class Property : Base
     {
         public string name { get; set; }
-        public string colour { get; set; }
         public Property() { }
 
         [SchemaInfo("Property", "Creates a Speckle structural property", "Structural", "Properties")]
-        public Property(string name, string colour = null)
+        public Property(string name)
         {
             this.name = name;
-            this.colour = colour;
         }
     }
 }

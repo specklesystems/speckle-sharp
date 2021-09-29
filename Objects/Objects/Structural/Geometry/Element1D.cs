@@ -8,7 +8,7 @@ using Objects.Structural.Properties;
 namespace Objects.Structural.Geometry
 {
     public class Element1D : Base, IDisplayMesh
-    {
+  {
         public string name { get; set; } //add unique id as base identifier, name can change too easily
         public ICurve baseLine { get; set; }
 
@@ -34,9 +34,8 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
-
-        [DetachProperty]
         public Mesh displayMesh { get; set; }
+        public string units { get; set; }
         public Element1D() { }
         public Element1D(ICurve baseLine)
         {

@@ -23,7 +23,7 @@ namespace Speckle.Core.Transports
   /// - preflight deltas on sending data
   /// - preflight deltas on receving/copying data to an existing transport? 
   /// </summary>
-  public class ServerTransport : IDisposable, ICloneable, ITransport
+  public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
 
@@ -61,7 +61,7 @@ namespace Speckle.Core.Transports
 
     public Account Account { get; set; }
 
-    public ServerTransport(Account account, string streamId, int timeoutSeconds = 60)
+    public ServerTransportV1(Account account, string streamId, int timeoutSeconds = 60)
     {
       Account = account;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);

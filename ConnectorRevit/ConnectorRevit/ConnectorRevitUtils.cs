@@ -38,6 +38,8 @@ namespace Speckle.ConnectorRevit
         foreach (var bic in SupportedBuiltInCategories)
         {
           var category = Category.GetCategory(doc, bic);
+          if (category == null)
+            continue;
           //some categories, in other languages (eg DEU) have duplicated names #542
           if (_categories.ContainsKey(category.Name))
           {

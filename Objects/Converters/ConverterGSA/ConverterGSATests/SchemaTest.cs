@@ -3,61 +3,64 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xunit;
-using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
-using Objects.Structural;
-using Objects.Structural.Geometry;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.ConnectorGSA.Proxy.Merger;
 
 namespace ConverterGSATests
 {
-  public class SchemaTest : SpeckleConversionFixture
+  public partial class SchemaTest : SpeckleConversionFixture
   {
     public SchemaTest() : base() { }
 
-    //Reminder: conversions could create 1:1, 1:n, n:1, n:n structural per native objects
-
+    #region merging
     [Fact]
-    public void GsaNode()
+    public void MergeNativeObjects()
     {
-      //Set up context 
-      gsaModelMock.Layer = GSALayer.Design;
-      gsaModelMock.NativesByKeywordId = new Dictionary<GwaKeyword, Dictionary<int, GsaRecord>>
+      Assert.True(GetAllSchemaTypes(out var schemaTypes));
+      var merger = new GsaRecordMerger();
+      merger.Initialise(schemaTypes);
+
+      var axes = new List<GsaAxis>
       {
-        { GwaKeyword.PROP_MASS, new Dictionary<int, GsaRecord>
-          { { 1, new GsaPropMass() { Index = 1, Mass = 10 } } }
-        }
+        new GsaAxis() { XDirX = 10, XDirY = 10 },  //null XDirZ
+        new GsaAxis() { XDirY = 15, XDirZ = 20 }
       };
-      gsaModelMock.IndicesByKeyword = new Dictionary<GwaKeyword, List<int>>
+      var merged = merger.Merge(axes.First(), axes.Last());
+
+      var sections = new List<GsaSection>
       {
-        { GwaKeyword.PROP_SPR, new List<int> { 1 } }
+        GsaCatalogueSectionExample("one"),  //new object
+        GsaCatalogueSectionExample("one")   //old object
       };
 
-      var gsaNode = new GsaNode() { ApplicationId = "blah", MassPropertyIndex = 1, AxisIndex = 1 };
+      ((SectionComp)sections[0].Components[0]).OffsetY = null;
+      ((SectionComp)sections[0].Components[0]).OffsetZ = null;
+      sections[1].Components.RemoveAt(1);
 
-      var structuralObjects = converter.ConvertToSpeckle(new List<object> { gsaNode });
+      merged = merger.Merge(sections.First(), sections.Last());
 
-      Assert.Empty(converter.ConversionErrors);
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is Node);
-
-      var node = (Node)structuralObjects.FirstOrDefault(so => so is Node);
-
-      Assert.Equal("blah", node.applicationId);
     }
 
-    [Fact]
-    public void GsaNodeEmbeddedResults()
+    private bool GetAllSchemaTypes(out List<Type> types)
     {
-    }
+      try
+      {
+        var gsaBaseType = typeof(GsaRecord);
+        var assembly = gsaBaseType.Assembly; //This assembly
+        var assemblyTypes = assembly.GetTypes().ToList();
 
-    [Fact]
-    public void GsaNodeSeparateResults()
-    {
+        types = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gsaBaseType)
+          && !t.IsAbstract
+          ).ToList();
+      }
+      catch
+      {
+        types = null;
+        return false;
+      }
+      return (types.Count > 0);
     }
-
-    [Fact]
-    public void GsaNodeResultsOnly()
-    {
-    }
+    #endregion
   }
 }

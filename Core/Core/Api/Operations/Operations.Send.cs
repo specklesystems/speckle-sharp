@@ -8,6 +8,7 @@ using Sentry;
 using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -27,7 +28,7 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false)
+    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
       return Send(
         @object,
@@ -36,7 +37,8 @@ namespace Speckle.Core.Api
         useDefaultCache,
         onProgressAction,
         onErrorAction,
-        disposeTransports
+        disposeTransports,
+        serializerVersion
       );
     }
 
@@ -50,7 +52,7 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false)
+    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
     {
       Log.AddBreadcrumb("Send");
 
@@ -69,14 +71,29 @@ namespace Speckle.Core.Api
         transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
       }
 
-      var(serializer, settings) = GetSerializerInstance();
+      BaseObjectSerializer serializer = null;
+      JsonSerializerSettings settings = null;
+      BaseObjectSerializerV2 serializerV2 = null;
+      if (serializerVersion == SerializerVersion.V1)
+        (serializer, settings) = GetSerializerInstance();
+      else
+        serializerV2 = new BaseObjectSerializerV2();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
 
-      serializer.OnProgressAction = internalProgressAction;
-      serializer.CancellationToken = cancellationToken;
-      serializer.OnErrorAction = onErrorAction;
+      if (serializerVersion == SerializerVersion.V1)
+      {
+        serializer.OnProgressAction = internalProgressAction;
+        serializer.CancellationToken = cancellationToken;
+        serializer.OnErrorAction = onErrorAction;
+      }
+      else
+      {
+        serializerV2.OnProgressAction = internalProgressAction;
+        serializerV2.CancellationToken = cancellationToken;
+        serializerV2.OnErrorAction = onErrorAction;
+      }
 
       foreach (var t in transports)
       {
@@ -85,12 +102,24 @@ namespace Speckle.Core.Api
         t.OnErrorAction = onErrorAction;
         t.BeginWrite();
 
-        serializer.WriteTransports.Add(t);
+        if (serializerVersion == SerializerVersion.V1)
+          serializer.WriteTransports.Add(t);
+        else
+          serializerV2.WriteTransports.Add(t);
       }
 
-      var obj = JsonConvert.SerializeObject(@object, settings);
-
-      var transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
+      string obj;
+      List<Task> transportAwaits;
+      if (serializerVersion == SerializerVersion.V1)
+      {
+        obj = JsonConvert.SerializeObject(@object, settings);
+        transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
+      }
+      else
+      {
+        obj = serializerV2.Serialize(@object);
+        transportAwaits = serializerV2.WriteTransports.Select(t => t.WriteComplete()).ToList();
+      }
 
       if (cancellationToken.IsCancellationRequested)return null;
 
