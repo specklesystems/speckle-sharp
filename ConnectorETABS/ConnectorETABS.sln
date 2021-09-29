@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv18", "ConnectorETABSv18\ConnectorETABSv18.csproj", "{CC1F6133-9DD5-437C-AB23-380AD00267A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{53C96DB6-C3CB-4F95-87F2-EE593D436B8F} = {53C96DB6-C3CB-4F95-87F2-EE593D436B8F}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorETABSShared", "ConnectorETABSShared\ConnectorETABSShared.shproj", "{1C661822-4524-4FAA-97F2-B5AAB9F9ECC4}"
 EndProject
