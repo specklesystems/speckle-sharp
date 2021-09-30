@@ -23,7 +23,7 @@ namespace Objects.Structural.Loading
         public BeamLoad() { }
 
         [SchemaInfo("BeamLoad", "Creates a Speckle structural beam (1D elem/member) load", "Structural", "Loading")]
-        public BeamLoad(LoadPattern loadCase, List<Base> elements, BeamLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global,
+        public BeamLoad(LoadCase loadCase, List<Base> elements, BeamLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global,
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)")] List<double> positions = null,
             bool isProjected = false)
@@ -39,7 +39,7 @@ namespace Objects.Structural.Loading
         }
 
         [SchemaInfo("BeamLoad (user-defined axis)", "Creates a Speckle structural beam (1D elem/member) load (specified for a user-defined axis)", "Structural", "Loading")]
-        public BeamLoad(LoadPattern loadCase, List<Base> elements, BeamLoadType loadType, LoadDirection direction, Axis loadAxis,
+        public BeamLoad(LoadCase loadCase, List<Base> elements, BeamLoadType loadType, LoadDirection direction, Axis loadAxis,
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)")] List<double> positions = null,
             bool isProjected = false)

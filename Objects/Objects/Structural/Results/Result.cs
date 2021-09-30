@@ -15,7 +15,7 @@ namespace Objects.Structural.Results
         public string description { get; set; }
         public Result() { }
 
-        public Result(LoadPattern resultCase, string description = null)
+        public Result(LoadCase resultCase, string description = null)
         {
             this.resultCase = resultCase;
             this.description = description;

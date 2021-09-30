@@ -24,7 +24,7 @@ namespace Objects.Structural.Loading
 
         [SchemaInfo("LoadCombination", "Creates a Speckle load combination", "Structural", "Loading")]
         public LoadCombination(string name,
-            [SchemaParamInfo("A list of load cases")] List<LoadPattern> loadCases,
+            [SchemaParamInfo("A list of load cases")] List<LoadCase> loadCases,
             [SchemaParamInfo("A list of load factors (to be mapped to provided load cases)")] List<double> loadFactors,
             CombinationType combinationType)
         {

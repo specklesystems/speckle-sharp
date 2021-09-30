@@ -36,7 +36,7 @@ namespace Objects.Structural.Results
         public Result3D() { }
 
         [SchemaInfo("Result3D (load case)", "Creates a Speckle 3D element result object (for load case)", "Structural", "Results")]
-        public Result3D(Element3D element, LoadPattern resultCase, List<double> position, double dispX, double dispY, double dispZ, double stressXX, double stressYY, double stressZZ, double stressXY, double stressYZ, double stressZX)
+        public Result3D(Element3D element, LoadCase resultCase, List<double> position, double dispX, double dispY, double dispZ, double stressXX, double stressYY, double stressZZ, double stressXY, double stressYZ, double stressZX)
         {
             this.element = element;
             this.resultCase = resultCase;

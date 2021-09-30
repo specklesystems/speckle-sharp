@@ -1,4 +1,5 @@
 ﻿using ETABSv1;
+using Objects.Structural.ApplicationSpecific.ETABS.Loading;
 using Objects.Structural.Loading;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,9 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-        public LoadPattern LoadPatternToSpeckle(string loadPatternName)
+        public LoadCase LoadPatternToSpeckle(string loadPatternName)
         {
-            return new LoadPattern()
+            return new ETABSLoadPattern()
             {
                 name = loadPatternName,
                 loadType = GetAndConvertEtabsLoadType(loadPatternName),

@@ -49,7 +49,7 @@ namespace Objects.Structural.Results
         public Result1D() { }
 
         [SchemaInfo("Result1D (load case)", "Creates a Speckle 1D element result object (for load case)", "Structural", "Results")]
-        public Result1D(Element1D element, LoadPattern resultCase, double position, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double forceX, double forceY, double forceZ, double momentXX, double momentYY, double momentZZ, double axialStress, double shearStressY, double shearStressZ, double bendingStressYPos, double bendingStressYNeg, double bendingStressZPos, double bendingStressZNeg, double combinedStressMax, double combinedStressMin)
+        public Result1D(Element1D element, LoadCase resultCase, double position, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double forceX, double forceY, double forceZ, double momentXX, double momentYY, double momentZZ, double axialStress, double shearStressY, double shearStressZ, double bendingStressYPos, double bendingStressYNeg, double bendingStressZPos, double bendingStressZNeg, double combinedStressMax, double combinedStressMin)
         {
             this.element = element;
             this.resultCase = resultCase;

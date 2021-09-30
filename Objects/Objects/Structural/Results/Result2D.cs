@@ -57,7 +57,7 @@ namespace Objects.Structural.Results
         public Result2D() { }
 
         [SchemaInfo("Result2D (load case)", "Creates a Speckle 2D element result object (for load case)", "Structural", "Results")]
-        public Result2D(Element2D element, LoadPattern resultCase, List<double> position, double dispX, double dispY, double dispZ, double forceXX, double forceYY, double forceXY, double momentXX, double momentYY, double momentXY, double shearX, double shearY, double stressTopXX, double stressTopYY, double stressTopZZ, double stressTopXY, double stressTopYZ, double stressTopZX, double stressMidXX, double stressMidYY, double stressMidZZ, double stressMidXY, double stressMidYZ, double stressMidZX, double stressBotXX, double stressBotYY, double stressBotZZ, double stressBotXY, double stressBotYZ, double stressBotZX)
+        public Result2D(Element2D element, LoadCase resultCase, List<double> position, double dispX, double dispY, double dispZ, double forceXX, double forceYY, double forceXY, double momentXX, double momentYY, double momentXY, double shearX, double shearY, double stressTopXX, double stressTopYY, double stressTopZZ, double stressTopXY, double stressTopYZ, double stressTopZX, double stressMidXX, double stressMidYY, double stressMidZZ, double stressMidXY, double stressMidYZ, double stressMidZX, double stressBotXX, double stressBotYY, double stressBotZZ, double stressBotXY, double stressBotYZ, double stressBotZX)
         {            
             this.element = element;
             this.resultCase = resultCase;
