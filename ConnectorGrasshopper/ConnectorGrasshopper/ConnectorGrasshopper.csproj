@@ -124,10 +124,6 @@
       <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
       <Name>DiskTransport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj">
-      <Project>{4902152d-64bc-4df0-a588-61ec7be93af0}</Project>
-      <Name>ConverterRhino6</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj">
       <Project>{e2a8e961-6db6-4474-9e31-0c00feb4a067}</Project>
       <Name>ConnectorGrasshopperUtils</Name>
@@ -285,3 +281,4 @@
     <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(TargetName).gha"</PostBuildEvent>
   </PropertyGroup>
 </Project>
+

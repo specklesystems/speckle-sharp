@@ -8,6 +8,8 @@ namespace Objects.Structural.GSA.Geometry
     {
         public string name { get; set; }
         public int nativeId { get; set; }
+
+        [DetachProperty]
         public GSAGridPlane gridPlane { get; set; }
         public double tolerance { get; set; }
         public double spanDirection { get; set; }

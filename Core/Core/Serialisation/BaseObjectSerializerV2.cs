@@ -191,12 +191,15 @@ namespace Speckle.Core.Serialisation
           convertedBase[prop.Key] = convertedValue;
       }
 
+      convertedBase["id"] = ComputeId(convertedBase);
+
       if (closure.Count > 0)
         convertedBase["__closure"] = closure;
       if (computeClosures || inheritedDetachInfo.IsDetachable)
         ParentClosures.RemoveAt(ParentClosures.Count - 1);
 
       ParentObjects.Remove(baseObj);
+
 
       if (inheritedDetachInfo.IsDetachable && WriteTransports != null && WriteTransports.Count > 0)
       {
@@ -263,7 +266,6 @@ namespace Speckle.Core.Serialisation
 
     private string Dict2Json(Dictionary<string, object> obj)
     {
-      obj["id"] = ComputeId(obj);
       string serialized = JsonConvert.SerializeObject(obj);
       return serialized;
     }

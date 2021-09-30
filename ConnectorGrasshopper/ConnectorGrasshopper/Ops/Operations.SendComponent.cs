@@ -56,8 +56,6 @@ namespace ConnectorGrasshopper.Ops
     public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      Tracker.TrackPageview(Tracker.SEND_ADDED);
-
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
     }

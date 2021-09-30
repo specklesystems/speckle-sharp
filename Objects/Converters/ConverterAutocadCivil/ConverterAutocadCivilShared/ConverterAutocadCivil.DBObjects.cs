@@ -29,6 +29,7 @@ using Surface = Objects.Geometry.Surface;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Text = Objects.Other.Text;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
@@ -274,13 +275,13 @@ namespace Objects.Converter.AutocadCivil
       Point3d previousPoint = new Point3d();
       for (int i = 0; i < exploded.Count; i++)
       {
-        var segment = (exploded[i] as AcadDB.Curve).GetGeCurve();
+        var segment = exploded[i] as AcadDB.Curve;
 
         if (i == 0 && exploded.Count > 1)
         {
           // get the connection point to the next segment - this is necessary since imported polycurves might have segments in different directions
           var connectionPoint = new Point3d();
-          var nextSegment = (exploded[i+1] as AcadDB.Curve).GetGeCurve();
+          var nextSegment = exploded[i+1] as AcadDB.Curve;
           if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
             connectionPoint = nextSegment.StartPoint;
           else
@@ -353,7 +354,7 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    private Curve3d GetCorrectSegmentDirection (Curve3d segment, Point3d connectionPoint, bool isFirstSegment, out Point3d nextPoint) // note sometimes curve3d may not have endpoints
+    private AcadDB.Curve GetCorrectSegmentDirection (AcadDB.Curve segment, Point3d connectionPoint, bool isFirstSegment, out Point3d nextPoint) // note sometimes curve3d may not have endpoints
     {
       nextPoint = segment.EndPoint;
 
@@ -371,7 +372,29 @@ namespace Objects.Converter.AutocadCivil
         reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
         if (reverseDirection) nextPoint = segment.StartPoint;
       }
-        
+
+      if (reverseDirection) segment.ReverseCurve();
+      return segment;
+    }
+    private Curve3d GetCorrectSegmentDirection(Curve3d segment, Point3d connectionPoint, bool isFirstSegment, out Point3d nextPoint) // note sometimes curve3d may not have endpoints
+    {
+      nextPoint = segment.EndPoint;
+
+      if (connectionPoint == null)
+        return segment;
+
+      bool reverseDirection = false;
+      if (isFirstSegment)
+      {
+        reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
+        if (reverseDirection) nextPoint = segment.StartPoint;
+      }
+      else
+      {
+        reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
+        if (reverseDirection) nextPoint = segment.StartPoint;
+      }
+
       return (reverseDirection) ? segment.GetReverseParameterCurve() : segment;
     }
 
@@ -1161,6 +1184,8 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
+    // blocks
+
     public BlockInstance BlockReferenceToSpeckle(AcadDB.BlockReference reference)
     {
       // skip if dynamic block
@@ -1179,8 +1204,10 @@ namespace Objects.Converter.AutocadCivil
           AttributeReference attRef = (AttributeReference)tr.GetObject(id, OpenMode.ForRead);
           attributes.Add(attRef.Tag, attRef.TextString);
         }
+
         tr.Commit();
       }
+      
       if (definition == null)
         return null;
 
@@ -1255,8 +1282,9 @@ namespace Objects.Converter.AutocadCivil
               converted["Layer"] = objEntity.Layer;
               geometry.Add(converted);
             }
-          }  
+          }
         }
+
         tr.Commit();
       }
 
@@ -1277,6 +1305,7 @@ namespace Objects.Converter.AutocadCivil
       var blockName = $"{Doc.UserData["commit"]} - {RemoveInvalidChars(definition.name)}";
 
       ObjectId blockId = ObjectId.Null;
+
       using (Transaction tr = Doc.TransactionManager.StartTransaction())
       {
         // see if block record already exists and return if so
@@ -1327,10 +1356,134 @@ namespace Objects.Converter.AutocadCivil
           tr.AddNewlyCreatedDBObject(btr, true);
           blckTbl.Dispose();
         }
+
         tr.Commit();
       }
 
       return blockId;
+    }
+
+    // Text
+    public Text TextToSpeckle(AcadDB.DBText text)
+    {
+      var _text = new Text();
+
+      // not realistically feasible to extract outline curves for displayvalue currently
+      _text.height = text.Height;
+      var center = GetTextCenter(text);
+      _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
+      _text.rotation = text.Rotation;
+      _text.value = text.TextString;
+      _text.units = ModelUnits;
+
+      // autocad specific props
+      _text["horizontalAlignment"] = text.HorizontalMode.ToString();
+      _text["verticalAlignment"] = text.VerticalMode.ToString();
+      _text["position"] = PointToSpeckle(text.Position);
+      _text["widthFactor"] = text.WidthFactor;
+      _text["isMText"] = false;
+
+      return _text;
+    }
+    public Text TextToSpeckle(AcadDB.MText text)
+    {
+      var _text = new Text();
+
+      // not realistically feasible to extract outline curves for displayvalue currently
+      _text.height = text.Height;
+      var center = (text.Bounds != null) ? GetTextCenter(text.Bounds.Value) : text.Location;
+      _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
+      _text.rotation = text.Rotation;    
+      _text.value = text.Contents;
+      _text.richText = text.ContentsRTF;
+      _text.units = ModelUnits;
+
+      // autocad specific props
+      _text["position"] = PointToSpeckle(text.Location);
+      _text["isMText"] = true;
+
+      return _text;
+    }
+    public MText MTextToNative(Text text)
+    {
+      var _text = new MText();
+
+      if (string.IsNullOrEmpty(text.richText))
+        _text.Contents = text.value;
+      else
+        _text.ContentsRTF = text.richText;
+      _text.TextHeight = ScaleToNative(text.height, text.units);
+      _text.Location = (text["position"] != null) ? PointToNative(text["position"] as Point) : PointToNative(text.plane.origin);
+      _text.Rotation = text.rotation;
+      _text.Normal = VectorToNative(text.plane.normal);
+
+      return _text;
+    }
+    public DBText DBTextToNative(Text text)
+    {
+      var _text = new DBText();
+      _text.TextString = text.value;
+      _text.Height = ScaleToNative(text.height, text.units);
+      _text.Position = (text["position"] != null) ? PointToNative(text["position"] as Point) : PointToNative(text.plane.origin);
+      _text.Rotation = text.rotation;
+      _text.Normal = VectorToNative(text.plane.normal);
+      double widthFactor = text["widthFactor"] as double? ?? 1;
+      _text.WidthFactor = widthFactor;
+
+      return _text;
+    }
+    private Point3d GetTextCenter(Extents3d extents)
+    {
+      var x = (extents.MaxPoint.X + extents.MinPoint.X) / 2.0;
+      var y = (extents.MaxPoint.Y + extents.MinPoint.Y) / 2.0;
+      var z = (extents.MaxPoint.Z + extents.MinPoint.Z) / 2.0;
+
+      return new Point3d(x, y, z);
+    }
+    private Point3d GetTextCenter(DBText text)
+    {
+      var position = text.Position;
+      double x = position.X; double y = position.Y; double z = position.Z;
+
+      if (text.Bounds != null)
+      {
+        var extents = text.Bounds.Value;
+        x = (extents.MaxPoint.X + extents.MinPoint.X) / 2.0;
+        y = (extents.MaxPoint.Y + extents.MinPoint.Y) / 2.0;
+        z = (extents.MaxPoint.Z + extents.MinPoint.Z) / 2.0;
+
+        return new Point3d(x, y, z);
+      }
+
+      var alignment = text.AlignmentPoint;
+      var height = text.Height;
+      switch (text.Justify)
+      {
+        case AttachmentPoint.BottomMid:
+        case AttachmentPoint.BottomCenter:
+          x = alignment.X;  y = alignment.Y + (height / 2);
+          break;
+        case AttachmentPoint.TopCenter:
+        case AttachmentPoint.TopMid:
+          x = alignment.X;  y = alignment.Y - (height / 2);
+          break;
+        case AttachmentPoint.MiddleRight:
+          x = alignment.X - ((alignment.X - position.X) / 2); y = alignment.Y;
+          break;
+        case AttachmentPoint.BottomRight:
+          x = alignment.X - ((alignment.X - position.X) / 2); y = alignment.Y + (height / 2);
+          break;
+        case AttachmentPoint.TopRight:
+          x = alignment.X - ((alignment.X - position.X) / 2); y = alignment.Y - (height / 2);
+          break;
+        case AttachmentPoint.MiddleCenter:
+        case AttachmentPoint.MiddleMid:
+          x = alignment.X; y = alignment.Y;
+          break;
+        default:
+          break;
+      }
+      return new Point3d(x, y, z);
     }
   }
 }
