@@ -9,6 +9,7 @@ using Objects.Structural.Geometry;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.Loading;
 using Speckle.GSA.API.GwaSchema;
+using MemberType = Objects.Structural.Geometry.MemberType;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using GwaAxisDirection3 = Speckle.GSA.API.GwaSchema.AxisDirection3;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
@@ -33,6 +34,16 @@ namespace ConverterGSA
     public static bool IsIndex(this int? v)
     {
       return (v.HasValue && v.Value > 0);
+    }
+
+    public static bool HasValues(this List<int> v)
+    {
+      return (v != null && v.Count > 0);
+    }
+
+    public static bool HasValues(this List<List<int>> v)
+    {
+      return (v != null && v.Count > 0);
     }
 
     /// <summary>
@@ -143,6 +154,7 @@ namespace ConverterGSA
         default: return ElementType1D.Beam;
       }
     }
+    
     public static ElementType2D ToSpeckle2d(this ElementType gsaType)
     {
       switch (gsaType)
@@ -151,6 +163,26 @@ namespace ConverterGSA
         case ElementType.Triangle6: return ElementType2D.Triangle6;
         case ElementType.Quad8: return ElementType2D.Quad8;
         default: return ElementType2D.Quad4;
+      }
+    }
+
+    public static MemberType ToSpeckle(this Section1dType gsaType)
+    {
+      switch (gsaType)
+      {
+        case Section1dType.Beam:
+        case Section1dType.CompositeBeam: 
+          return MemberType.Beam;
+        case Section1dType.Column:
+          return MemberType.Column;
+        case Section1dType.Slab: 
+        case Section1dType.RibbedSlab:
+          return MemberType.Slab;
+        case Section1dType.Pile:
+        case Section1dType.Explicit:
+        case Section1dType.Generic:
+        default:
+          return MemberType.Generic1D;
       }
     }
 
@@ -179,6 +211,20 @@ namespace ConverterGSA
           return ElementType2D.Quad4;
         default:
           throw new Exception(gsaMemberType.ToString() + " is not a valid 2D member type.");
+      }
+    }
+
+    public static PropertyType2D ToSpeckle(this Property2dType gsaType)
+    {
+      switch(gsaType)
+      {
+        case Property2dType.Curved: return PropertyType2D.Curved;
+        case Property2dType.Fabric: return PropertyType2D.Fabric;
+        case Property2dType.Load: return PropertyType2D.Load;
+        case Property2dType.Plate: return PropertyType2D.Plate;
+        case Property2dType.Shell: return PropertyType2D.Shell;
+        case Property2dType.Stress: return PropertyType2D.Stress;
+        default: throw new Exception(gsaType.ToString() + " can not be converted to a valid speckle 2D property type.");
       }
     }
 
@@ -538,6 +584,24 @@ namespace ConverterGSA
     }
     #endregion
 
+
+    public static List<double> Insert(this List<double> source, double item, int step)
+    {
+      //Inset item into source at every nth index
+      //e.g. var source = new List<double>(){ 1, 2, 3, 4, 5, 6 };
+      // double item = 0;
+      // int step = 3;
+      // var output = new List<double>(){ 1, 2, 0, 3, 4, 0, 5, 6, 0 };
+      //
+      var output = new List<double>();
+      for (var i = 0; i < source.Count(); i++)
+      {
+        output.Add(source[i]);
+        if ((i+1) % (step-1) == 0) output.Add(item);
+      }
+      return output;
+    }
+
     public static Colour ColourToNative(this string speckleColour)
     {
       return Enum.TryParse(speckleColour, out Colour gsaColour) ? gsaColour : Colour.NO_RGB;
@@ -586,6 +650,4 @@ namespace ConverterGSA
         target.Add(element);
     }
   }
-
-
 }

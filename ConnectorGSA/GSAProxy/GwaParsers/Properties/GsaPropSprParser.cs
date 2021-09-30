@@ -20,6 +20,10 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var items = remainingItems;
 
       //PROP_SPR.4 | num | name | colour | SPRING | curve_x | stiff_x | curve_y | stiff_y | curve_z | stiff_z | curve_xx | stiff_xx | curve_yy | stiff_yy | curve_zz | stiff_zz | damping
+      //PROP_SPR.4 | num | name | colour | DAMPER | damping_x | damping_y | damping_z | damping_xx | damping_yy | damping_zz
+      //PROP_SPR.4 | num | name | colour | MATRIX | matrix | damping
+      //PROP_SPR.4 | num | name | colour | FRICTION | stiff_x | stiff_y | stiff_z | friction | damping
+      //PROP_SPR.4 | num | name | colour | type | stiff_x | damping | +ve_lock_up | -ve_lock_up
       FromGwaByFuncs(items, out remainingItems, AddName, null, (v) => EnumParse(v, out record.PropertyType)); //Skip colour
       items = remainingItems;
 
