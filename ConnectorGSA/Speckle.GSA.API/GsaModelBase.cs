@@ -11,7 +11,7 @@ namespace Speckle.GSA.API
 
     public abstract IGSACache Cache { get; set; }
     public abstract IGSAProxy Proxy { get; set; }
-    public abstract IGSAMessenger Messenger { get; set; }
+    //public abstract IGSAMessenger Messenger { get; set; }
 
     public string Units { get; set; } = "mm";
     public double CoincidentNodeAllowance { get; set; }
@@ -53,9 +53,9 @@ namespace Speckle.GSA.API
     public int Result1DNumPosition { get; set; } = 3;
 
     public char GwaDelimiter { get; set; } = '\t';
-    public int LoggingMinimumLevel { get; set; }
+    public virtual int LoggingMinimumLevel { get; set; }
     public bool SendOnlyMeaningfulNodes { get; set; }
-    
+    public IProgress<bool> ConversionProgress { get; set; }
 
     public virtual GsaRecord GetNative<T>(int value) => Cache.GetNative<T>(value);
     public virtual List<int> LookupIndices<T>() => Cache.LookupIndices<T>();

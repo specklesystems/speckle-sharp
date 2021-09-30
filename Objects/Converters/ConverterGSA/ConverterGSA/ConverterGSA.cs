@@ -87,7 +87,16 @@ namespace ConverterGSA
     public object ConvertToNative(Base @object)
     {
       var t = @object.GetType();
-      return ToNativeFns[t](@object);
+
+      var retObj = ToNativeFns[t](@object);
+
+      //A pulse with conversion result to help with progress bars on the UI
+      if (Instance.GsaModel.ConversionProgress != null && retObj != null)
+      {
+        Instance.GsaModel.ConversionProgress.Report(true);
+      }
+
+      return retObj;
     }
 
     //Assume that this is called when a Model object is desired, rather than loose Speckle objects.
@@ -207,6 +216,7 @@ namespace ConverterGSA
               if (CanConvertToSpeckle(nativeObj))
               {
                 var toSpeckleResult = ToSpeckle(nativeObj, sendLayer);
+
                 foreach (var l in modelsByLayer.Keys)
                 {
                   if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))

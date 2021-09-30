@@ -39,6 +39,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private List<GsaCacheRecord> validRecords { get => records.Where(r => r != null).ToList(); }
 
+    public int NumSpeckleObjects { get => objects.Count(); }
+
+    public int NumNatives { get => records.Where(r => r.Latest).Count(); }
+
     private object cacheLock = new object();
 
     public GsaCache() { }
@@ -82,14 +86,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       foreach (var kvp in objectsByApplicationId)
       {
         UpsertInternal(kvp.Value, kvp.Value.GetType(), kvp.Key, out int? upsertedIndex);
-        /*
-        if (!objectIndicesByType.ContainsKey(t))
-        {
-          objectIndicesByType.Add(t, new HashSet<int>());
-        }
-        var newIndex = objects.Count();
-        objectIndicesByType[t].Add(newIndex);
-        */
       }
       return true;
     }

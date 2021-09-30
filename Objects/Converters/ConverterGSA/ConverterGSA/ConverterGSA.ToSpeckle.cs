@@ -87,7 +87,14 @@ namespace ConverterGSA
     private ToSpeckleResult ToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var nativeType = nativeObject.GetType();
-      return ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject, layer) : null;
+      var toSpeckleResult = ToSpeckleFns.ContainsKey(nativeType) ? ToSpeckleFns[nativeType](nativeObject, layer) : null;
+
+      //A pulse with conversion result to help with progress bars on the UI
+      if (Instance.GsaModel.ConversionProgress != null && toSpeckleResult != null)
+      {
+        Instance.GsaModel.ConversionProgress.Report(toSpeckleResult.Success);
+      }
+      return toSpeckleResult;
     }
 
     #region Geometry
