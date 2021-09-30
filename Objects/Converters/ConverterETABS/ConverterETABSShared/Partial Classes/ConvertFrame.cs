@@ -86,7 +86,7 @@ namespace Objects.Converter.ETABS
             property = SAuto = null;
             Model.FrameObj.GetSection(name, ref property, ref SAuto);
             speckleStructFrame.property = Property1DToSpeckle(property);
-
+            speckleStructFrame.property.profile = SectionToSpeckle(name,property);
 
             return speckleStructFrame;
         }

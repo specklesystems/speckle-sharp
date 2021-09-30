@@ -17,5 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertLoadPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterials.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSectionProfile.cs" />
   </ItemGroup>
 </Project>

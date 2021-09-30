@@ -165,7 +165,7 @@ namespace Objects.Converter.ETABS
                 return objects.Select(x => ConvertToSpeckle(x)).ToList();
         }
 
-        public IEnumerable<string> GetServicedApplications() => new string[] { ETABSAppName };
+        public IEnumerable<string> GetServicedApplications() => new string[] {ETABSAppName };
 
 
         public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
