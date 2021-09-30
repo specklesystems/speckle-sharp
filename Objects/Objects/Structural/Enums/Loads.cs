@@ -10,9 +10,11 @@ namespace Objects.Structural.Loading
     {
         None,
         Dead,
+        SuperDead,
         Soil,
         Live,
         LiveRoof,
+        ReducibleLive,
         Wind,
         Snow,
         Rain,
@@ -23,7 +25,8 @@ namespace Objects.Structural.Loading
         Accidental,
         SeismicRSA,
         SeismicAccTorsion,
-        SeismicStatic
+        SeismicStatic,
+        Other
     }
 
     public enum ActionType
