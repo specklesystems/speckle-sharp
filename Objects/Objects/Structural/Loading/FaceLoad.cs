@@ -24,7 +24,7 @@ namespace Objects.Structural.Loading
         public FaceLoad() { }
 
         [SchemaInfo("FaceLoad", "Creates a Speckle structural face (2D elem/member) load", "Structural", "Loading")]
-        public FaceLoad(LoadCase loadCase, List<Base> elements, AreaLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global, 
+        public FaceLoad(LoadPattern loadCase, List<Base> elements, AreaLoadType loadType, LoadDirection direction, LoadAxisType loadAxisType = LoadAxisType.Global, 
             [SchemaParamInfo("A list that represents load magnitude (number of values varies based on load type - Uniform: 1, Variable: 4 (corner nodes), Point: 1)")] List<double> values = null,
             [SchemaParamInfo("A list that represents load locations (number of values varies based on load type - Uniform: null, Variable: null, Point: 2)")] List<double> positions = null, 
             bool isProjected = false)

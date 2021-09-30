@@ -11,11 +11,11 @@ namespace Objects.Structural.Loading
         public string name { get; set; }
 
         [DetachProperty]
-        public LoadCase loadCase { get; set; }
+        public LoadPattern loadCase { get; set; }
         public string units { get; set; }
         public Load() { }
 
-        public Load(string name, LoadCase loadCase)
+        public Load(string name, LoadPattern loadCase)
         {
             this.name = name;
             this.loadCase = loadCase;

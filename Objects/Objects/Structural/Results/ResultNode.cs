@@ -63,7 +63,7 @@ namespace Objects.Structural.Results
         public ResultNode() { }
 
         [SchemaInfo("ResultNode (load case)", "Creates a Speckle structural nodal result object", "Structural", "Results")]
-        public ResultNode(LoadCase resultCase, Node node, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double constraintX, double constraintY, double constraintZ, double constraintXX, double constraintYY, double constraintZZ, double velX, double velY, double velZ, double velXX, double velYY, double velZZ, double accX, double accY, double accZ, double accXX, double accYY, double accZZ)
+        public ResultNode(LoadPattern resultCase, Node node, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double constraintX, double constraintY, double constraintZ, double constraintXX, double constraintYY, double constraintZZ, double velX, double velY, double velZ, double velXX, double velYY, double velZZ, double accX, double accY, double accZ, double accXX, double accYY, double accZZ)
         {
             this.resultCase = resultCase;
             this.node = node;

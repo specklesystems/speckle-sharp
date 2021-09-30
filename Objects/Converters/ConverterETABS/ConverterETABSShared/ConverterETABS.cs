@@ -110,9 +110,9 @@ namespace Objects.Converter.ETABS
                     //case "LoadCase":
                     //    returnObject = LoadCaseToSpeckle(name);
                     //    break;
-                    //case "LoadPattern":
-                    //    returnObject = LoadPatternToSpeckle(name);
-                    //    break;
+                case "LoadPattern":
+                    returnObject = LoadPatternToSpeckle(name);
+                    break;
                     //case "GridSys":
                     //    returnObject = GridSysToSpeckle(name);
                     //    break;
