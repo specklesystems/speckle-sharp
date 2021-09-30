@@ -693,6 +693,21 @@ namespace ConnectorGSA
 
       var startTime = DateTime.Now;
 
+      statusProgress.Report("Preparing cache");
+      Commands.LoadDataFromFile(); //Ensure all nodes
+      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Loaded data from file into cache"));
+
+      percentage += 20;
+      percentageProgress.Report(percentage);
+
+      TimeSpan duration = DateTime.Now - startTime;
+      if (duration.Seconds > 0)
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Duration of reading GSA model into cache: " + duration.ToString(@"hh\:mm\:ss")));
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Telemetry, MessageLevel.Information, "send", "update-cache", "duration", duration.ToString(@"hh\:mm\:ss")));
+      }
+      startTime = DateTime.Now;
+
       var resultsToSend = coordinator.SenderTab.ResultSettings.ResultSettingItems.Where(rsi => rsi.Selected).ToList();
       if (resultsToSend != null && resultsToSend.Count() > 0 && !string.IsNullOrEmpty(coordinator.SenderTab.LoadCaseList))
       {
@@ -710,7 +725,7 @@ namespace ConnectorGSA
         var expanded = ((GsaProxy)Instance.GsaModel.Proxy).ExpandLoadCasesAndCombinations(coordinator.SenderTab.LoadCaseList, analIndices, comboIndices);
         if (expanded != null && expanded.Count() > 0)
         {
-          percentage = 5;
+          percentage += 2;
           percentageProgress.Report(percentage);
 
           loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Resolved load cases"));
@@ -721,7 +736,6 @@ namespace ConnectorGSA
         }
       }
 
-      TimeSpan duration;
       if (Instance.GsaModel.SendResults)
       {
         Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes);
@@ -730,7 +744,7 @@ namespace ConnectorGSA
           Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
         }
 
-        percentage = 20;
+        percentage += 20;
         percentageProgress.Report(percentage);
 
         duration = DateTime.Now - startTime;
@@ -741,18 +755,6 @@ namespace ConnectorGSA
         }
         startTime = DateTime.Now;
       }
-
-      statusProgress.Report("Preparing cache");
-      Commands.LoadDataFromFile(); //Ensure all nodes
-      loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Loaded data from file into cache"));
-
-      duration = DateTime.Now - startTime;
-      if (duration.Seconds > 0)
-      {
-        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Duration of reading GSA model into cache: " + duration.ToString(@"hh\:mm\:ss")));
-        loggingProgress.Report(new MessageEventArgs(MessageIntent.Telemetry, MessageLevel.Information, "send", "update-cache", "duration", duration.ToString(@"hh\:mm\:ss")));
-      }
-      startTime = DateTime.Now;
 
       var numToConvert = ((GsaCache)Instance.GsaModel.Cache).NumNatives;
       int numConverted = 0;
