@@ -284,7 +284,7 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleElement1d[0].property.applicationId); //assume conversion to Property1d is tested elsewhere
       Assert.Equal(gsaEls[0].Colour.ToString(), speckleElement1d[0].colour);
       Assert.False(speckleElement1d[0].isDummy);
-      Assert.Null(speckleElement1d[0].action);
+      Assert.Equal("NORMAL",speckleElement1d[0].action);
       Assert.Equal(gsaEls[0].Index.Value, speckleElement1d[0].nativeId);
       Assert.Equal(gsaEls[0].Group.Value, speckleElement1d[0].group);
 
@@ -319,7 +319,7 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleElement1d[1].property.applicationId); //assume conversion to Property1d is tested elsewhere
       Assert.Equal(gsaEls[1].Colour.ToString(), speckleElement1d[0].colour);
       Assert.False(speckleElement1d[1].isDummy);
-      Assert.Null(speckleElement1d[1].action);
+      Assert.Equal("NORMAL", speckleElement1d[1].action);
       Assert.Equal(gsaEls[1].Index.Value, speckleElement1d[1].nativeId);
       Assert.Equal(gsaEls[1].Group.Value, speckleElement1d[1].group);
     }
@@ -451,7 +451,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaMembers[0].OffsetY.Value, speckleMember1d.end2Offset.y);
       Assert.Equal(gsaMembers[0].OffsetZ.Value, speckleMember1d.end2Offset.z);
       Assert.Equal(gsaMembers[0].Angle.Value, speckleMember1d.orientationAngle);
-      Assert.Null(speckleMember1d.parent); //TODO: update once conversion code handles parents
+      Assert.Null(speckleMember1d.parent); //not meaningful for member
       Assert.Equal("node 1", speckleMember1d.end1Node.applicationId);
       Assert.Equal("node 2", speckleMember1d.end2Node.applicationId);
       Assert.Equal(2, speckleMember1d.topology.Count());
@@ -477,17 +477,13 @@ namespace ConverterGSATests
       Assert.Equal(ElementType2D.Quad4, speckleMember2d.type);
       Assert.Equal(gsaMembers[1].Offset2dZ, speckleMember2d.offset);
       Assert.Equal(0, speckleMember2d.orientationAngle);
-      Assert.Null(speckleMember2d.parent); //TODO: update once conversion code handles parents
+      Assert.Null(speckleMember2d.parent); //not meaningful for member
       Assert.Equal(4, speckleMember2d.topology.Count());
       Assert.Equal("node 1", speckleMember2d.topology[0].applicationId);
       Assert.Equal("node 2", speckleMember2d.topology[1].applicationId);
       Assert.Equal("node 3", speckleMember2d.topology[2].applicationId);
       Assert.Equal("node 4", speckleMember2d.topology[3].applicationId);
-      var p = speckleMember2d.topology.Select(n => n.basePoint).ToList();
-      var v = new List<double>() { p[0].x, p[0].y, p[0].z, p[1].x, p[1].y, p[1].z, p[2].x, p[2].y, p[2].z, p[3].x, p[3].y, p[3].z };
-      var f = new List<int>() { 1, 1, 2, 3, 4 };
-      Assert.Equal(v, speckleMember2d.displayMesh.vertices);
-      Assert.Equal(f, speckleMember2d.displayMesh.faces);
+      Assert.Null(speckleMember2d.displayMesh); //TODO: update once conversion code handle display mesh
       Assert.Null(speckleMember2d.units);
       Assert.Equal(gsaMembers[1].Index.Value, speckleMember2d.nativeId);
       Assert.Equal(gsaMembers[1].Group.Value, speckleMember2d.group);
@@ -714,7 +710,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaPolylines[0].Colour.ToString(), specklePolylines[0].colour);
       Assert.Null(specklePolylines[0].gridPlane);
       Assert.Equal(gsaPolylines[0].Units, specklePolylines[0].units);
-      Assert.Equal(gsaPolylines[0].Values, specklePolylines[0].value);
+      Assert.Equal(new List<double>() { 1, 2, 0, 3, 4, 0, 5, 6, 0, 7, 8, 0 }, specklePolylines[0].value);
 
       //Checks - polyline 2
       Assert.Equal("polyline 2", specklePolylines[1].applicationId);
@@ -1617,7 +1613,8 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleProperty1D[0].applicationId);
       Assert.Equal(gsaSection[0].Colour.ToString(), speckleProperty1D[0].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[0].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[0].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[0].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[0].material);
       Assert.Equal(ShapeType.Catalogue, speckleProperty1D[0].profile.shapeType);
       var gsaProfileCatalogue = (ProfileDetailsCatalogue)((SectionComp)gsaSection[0].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileCatalogue.Profile, ((Catalogue)speckleProperty1D[0].profile).description);
@@ -1636,7 +1633,8 @@ namespace ConverterGSATests
       Assert.Equal("section 2", speckleProperty1D[1].applicationId);
       Assert.Equal(gsaSection[1].Colour.ToString(), speckleProperty1D[1].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[1].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[1].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[1].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[1].material);
       Assert.Equal(ShapeType.Explicit, speckleProperty1D[1].profile.shapeType);
       var gsaProfileExplicit = (ProfileDetailsExplicit)((SectionComp)gsaSection[1].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileExplicit.Area.Value, ((Explicit)speckleProperty1D[1].profile).area);
@@ -1657,7 +1655,8 @@ namespace ConverterGSATests
       Assert.Equal("section 3", speckleProperty1D[2].applicationId);
       Assert.Equal(gsaSection[2].Colour.ToString(), speckleProperty1D[2].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[2].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[2].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[2].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[2].material);
       Assert.Equal(ShapeType.Perimeter, speckleProperty1D[2].profile.shapeType);
       var gsaProfilePerimeter = (ProfileDetailsPerimeter)((SectionComp)gsaSection[2].Components[0]).ProfileDetails;
       // TO DO: test ((Perimeter)speckleProperty1D[2].profile).outline
@@ -1675,7 +1674,8 @@ namespace ConverterGSATests
       Assert.Equal("section 4", speckleProperty1D[3].applicationId);
       Assert.Equal(gsaSection[3].Colour.ToString(), speckleProperty1D[3].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[3].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[3].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[3].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[3].material);
       Assert.Equal(ShapeType.Rectangular, speckleProperty1D[3].profile.shapeType);
       var gsaProfileRectangular = (ProfileDetailsRectangular)((SectionComp)gsaSection[3].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileRectangular.b.Value, ((Rectangular)speckleProperty1D[3].profile).width);
@@ -1694,7 +1694,8 @@ namespace ConverterGSATests
       Assert.Equal("section 5", speckleProperty1D[4].applicationId);
       Assert.Equal(gsaSection[4].Colour.ToString(), speckleProperty1D[4].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[4].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[4].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[4].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[4].material);
       Assert.Equal(ShapeType.Rectangular, speckleProperty1D[4].profile.shapeType);
       var gsaProfileRHS = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[4].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileRHS.b.Value, ((Rectangular)speckleProperty1D[4].profile).width);
@@ -1713,7 +1714,8 @@ namespace ConverterGSATests
       Assert.Equal("section 6", speckleProperty1D[5].applicationId);
       Assert.Equal(gsaSection[5].Colour.ToString(), speckleProperty1D[5].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[5].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[5].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[5].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[5].material);
       Assert.Equal(ShapeType.Circular, speckleProperty1D[5].profile.shapeType);
       var gsaProfileCircular = (ProfileDetailsCircular)((SectionComp)gsaSection[5].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileCircular.d.Value / 2, ((Circular)speckleProperty1D[5].profile).radius);
@@ -1730,7 +1732,8 @@ namespace ConverterGSATests
       Assert.Equal("section 7", speckleProperty1D[6].applicationId);
       Assert.Equal(gsaSection[6].Colour.ToString(), speckleProperty1D[6].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[6].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[6].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[6].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[6].material);
       Assert.Equal(ShapeType.Circular, speckleProperty1D[6].profile.shapeType);
       var gsaProfileCHS = (ProfileDetailsCircularHollow)((SectionComp)gsaSection[6].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileCHS.d.Value / 2, ((Circular)speckleProperty1D[6].profile).radius);
@@ -1747,7 +1750,8 @@ namespace ConverterGSATests
       Assert.Equal("section 8", speckleProperty1D[7].applicationId);
       Assert.Equal(gsaSection[7].Colour.ToString(), speckleProperty1D[7].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[7].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[7].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[7].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[7].material);
       Assert.Equal(ShapeType.I, speckleProperty1D[7].profile.shapeType);
       var gsaProfileISection = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[7].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileISection.b.Value, ((ISection)speckleProperty1D[7].profile).width);
@@ -1766,7 +1770,8 @@ namespace ConverterGSATests
       Assert.Equal("section 9", speckleProperty1D[8].applicationId);
       Assert.Equal(gsaSection[8].Colour.ToString(), speckleProperty1D[8].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[8].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[8].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[8].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[8].material);
       Assert.Equal(ShapeType.Tee, speckleProperty1D[8].profile.shapeType);
       var gsaProfileTSection = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[8].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileTSection.b.Value, ((Tee)speckleProperty1D[8].profile).width);
@@ -1785,7 +1790,8 @@ namespace ConverterGSATests
       Assert.Equal("section 10", speckleProperty1D[9].applicationId);
       Assert.Equal(gsaSection[9].Colour.ToString(), speckleProperty1D[9].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[9].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[9].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[9].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[9].material);
       Assert.Equal(ShapeType.Angle, speckleProperty1D[9].profile.shapeType);
       var gsaProfileAngle = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[9].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileAngle.b.Value, ((Angle)speckleProperty1D[9].profile).width);
@@ -1804,7 +1810,8 @@ namespace ConverterGSATests
       Assert.Equal("section 11", speckleProperty1D[10].applicationId);
       Assert.Equal(gsaSection[10].Colour.ToString(), speckleProperty1D[10].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[10].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[10].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[10].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[10].material);
       Assert.Equal(ShapeType.Channel, speckleProperty1D[10].profile.shapeType);
       var gsaProfileChannel = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[10].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileChannel.b.Value, ((Channel)speckleProperty1D[10].profile).width);
@@ -1858,8 +1865,10 @@ namespace ConverterGSATests
       Assert.Equal(gsaProp2d.Name, speckleProperty2D.name);
       Assert.Equal(gsaProp2d.Colour.ToString(), speckleProperty2D.colour);
       Assert.Equal(gsaProp2d.Thickness.Value, speckleProperty2D.thickness);
-      Assert.Equal("steel material 1", speckleProperty2D.material.applicationId); //assume conversion of material is covered by another test
+      Assert.Equal("steel material 1", speckleProperty2D.designMaterial.applicationId);
+      Assert.Null(speckleProperty2D.material);
       Assert.Null(speckleProperty2D.orientationAxis.applicationId); //no application ID for global coordinate system
+      Assert.True(speckleProperty2D.orientationAxis.definition.IsGlobal());
       Assert.Equal(PropertyType2D.Shell, speckleProperty2D.type);
       Assert.Equal(ReferenceSurface.Middle, speckleProperty2D.refSurface);
       Assert.Equal(gsaProp2d.RefZ, speckleProperty2D.zOffset);
@@ -1870,7 +1879,6 @@ namespace ConverterGSATests
       Assert.Equal(gsaProp2d.Mass, speckleProperty2D.additionalMass);
       Assert.Equal(gsaProp2d.Profile, speckleProperty2D.concreteSlabProp);
       Assert.Equal(gsaProp2d.Index.Value, speckleProperty2D.nativeId);
-      Assert.Null(speckleProperty2D.designMaterial);
       Assert.Equal(0, speckleProperty2D.cost);
     }
 
@@ -2797,7 +2805,7 @@ namespace ConverterGSATests
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         },
         new GsaEl()
@@ -2812,7 +2820,7 @@ namespace ConverterGSATests
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         },
         new GsaEl()
@@ -2827,7 +2835,7 @@ namespace ConverterGSATests
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         }
       };
@@ -2854,7 +2862,7 @@ namespace ConverterGSATests
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetY = 0,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         },
         new GsaEl()
@@ -2870,7 +2878,7 @@ namespace ConverterGSATests
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetY = 0,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         }
       };
@@ -3240,7 +3248,7 @@ namespace ConverterGSATests
           Colour = Colour.NO_RGB,
           GridPlaneIndex = null,
           NumDim = 2,
-          Values = new List<double>() { 0, 0, 1, 0, 1, 1, 0, 1 },
+          Values = new List<double>() { 1, 2, 3, 4, 5, 6, 7, 8 },
           Units = "m",
         },
         new GsaPolyline()
@@ -3250,7 +3258,7 @@ namespace ConverterGSATests
           Colour = Colour.NO_RGB,
           GridPlaneIndex = 1,
           NumDim = 3,
-          Values = new List<double>() { 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1 },
+          Values = new List<double>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
           Units = "m",
         }
       };
