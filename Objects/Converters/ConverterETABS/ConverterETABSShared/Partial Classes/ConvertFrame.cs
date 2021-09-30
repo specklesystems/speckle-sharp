@@ -76,11 +76,19 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.end1Releases = end1Release;
             speckleStructFrame.end2Releases = end2Release;
 
+<<<<<<< Updated upstream
+=======
+            double localAxis = 0;
+            bool advanced = false;
+            Model.FrameObj.GetLocalAxes(name, ref localAxis,ref advanced);
+            speckleStructFrame.orientationAngle = localAxis;
+
+>>>>>>> Stashed changes
             string property, SAuto;
             property = SAuto = null;
             Model.FrameObj.GetSection(name, ref property, ref SAuto);
             speckleStructFrame.property = Property1DToSpeckle(property);
-
+            speckleStructFrame.property.profile = SectionToSpeckle(name,property);
 
             return speckleStructFrame;
         }

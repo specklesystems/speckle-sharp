@@ -78,6 +78,7 @@ namespace Objects.Structural
         Angle,
         Channel,
         Perimeter,
+        Box,
         Catalogue,
         Explicit
     }
