@@ -32,10 +32,12 @@ namespace Speckle.GSA.API
     IProgress<bool> ConversionProgress { get; set; }
 
     //TEMP
+    /*
     GsaRecord GetNative<T>(int value);
     List<int> LookupIndices<T>();
     List<int> ConvertGSAList(string v, GSAEntity e);
     string GetApplicationId<T>(int value);
+    */
   }
 
   
