@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Deployment.Application;
 using System.Threading.Tasks;
+using Speckle.GSA.API.GwaSchema;
 
 namespace ConnectorGSA
 {
@@ -174,7 +175,7 @@ namespace ConnectorGSA
       {
         Instance.GsaModel.Proxy.NewFile(false);
 
-        Instance.GsaModel.Messenger.Message(MessageIntent.Display, MessageLevel.Information, "Created new file.");
+        //Instance.GsaModel.Messenger.Message(MessageIntent.Display, MessageLevel.Information, "Created new file.");
 
         //Ensure this new file has a file name, and internally sets the file name in the proxy
         Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
@@ -218,6 +219,14 @@ namespace ConnectorGSA
             streamStates.Add(streamState);
           }
 
+          Commands.ConvertToNative(converter);
+
+          //The cache is filled with natives
+          if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
+          {
+            Instance.GsaModel.Proxy.WriteModel(gsaRecords, Instance.GsaModel.StreamLayer);
+          }
+
           Console.WriteLine("Receiving complete");
 
           return true;
@@ -240,11 +249,13 @@ namespace ConnectorGSA
           Commands.LoadDataFromFile(); //Ensure all nodes
 
           var objs = Commands.ConvertToSpeckle(converter);
+
           objs.Reverse();
 
           //The converter itself can't give anything back other than Base objects, so this is the first time it can be adorned with any
           //info useful to the sending in streams
 
+          var commitObj = new Speckle.Core.Models.Base();
           foreach (var obj in objs)
           {
             var typeName = obj.GetType().Name;
@@ -265,41 +276,23 @@ namespace ConnectorGSA
               name = "Results";
             }
 
-            var stream = NewStream(client, name, name).Result;
-            var streamState = new StreamState(userInfo.id, RestApi) { Stream = stream };
-            streamStates.Add(streamState);
-
-            var serverTransport = new ServerTransport(account, streamState.Stream.id);
-            var sent = Commands.Send(obj, streamState, serverTransport).Result;
+            commitObj[name] = obj;
           }
 
-          //Instance.GsaModel.Cache.GetSpeckleObjects(out var convertedObjects);
 
-          /*
-          var stream = NewStream(client, "GSA Model", "GSA Model").Result;
+          var stream = NewStream(client, "GSA data", "GSA data").Result;
           var streamState = new StreamState(userInfo.id, RestApi) { Stream = stream };
           streamStates.Add(streamState);
 
-          if (Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults)
-          {
-            var resultStream = NewStream(client, "GSA Results", "GSA Results").Result;
-            var resultStreamState = new StreamState(userInfo.id, RestApi) { Stream = resultStream };
-            streamStates.Add(resultStreamState);
-          }
-
-          foreach (var ss in streamStates)
-          {
-            var serverTransport = new ServerTransport(account, ss.Stream.id);
-            var sent = Commands.Send(commitObj, ss, serverTransport).Result;
-          }
-          */
+          var serverTransport = new ServerTransport(account, streamState.Stream.id);
+          var sent = Commands.Send(commitObj, streamState, serverTransport).Result;
 
           Console.WriteLine("Sending complete");
           return true;
         }).Result;
       }
 
-      Commands.UpsertSavedReceptionStreamInfo(true, null, streamStates);
+      Commands.UpsertSavedReceptionStreamInfo(true, null, streamStates.ToArray());
       Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
       Instance.GsaModel.Proxy.Close();
 

@@ -35,7 +35,7 @@ namespace ConnectorGSA.Models
       StreamList.StreamListItems.Clear();
       foreach (var sidr in sidSpeckleRecords)
       {
-        StreamList.StreamListItems.Add(new StreamListItem(sidr.StreamId, sidr.Name));
+        StreamList.StreamListItems.Add(new StreamListItem(sidr.StreamId, sidr.Stream.name));
       }
       return true;
     }

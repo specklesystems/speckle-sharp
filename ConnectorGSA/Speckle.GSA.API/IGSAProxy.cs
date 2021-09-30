@@ -32,6 +32,7 @@ namespace Speckle.GSA.API
     bool GetResultRecords(ResultGroup group, int index, out List<CsvRecord> records);
     bool GetResultRecords(ResultGroup group, int index, string loadCase, out List<CsvRecord> records);
     bool ClearResults(ResultGroup group);
+    void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer = GSALayer.Both);
     bool SaveAs(string filePath);
     bool Save();
     bool Clear();

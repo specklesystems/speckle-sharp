@@ -1,4 +1,5 @@
 ﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 
@@ -7,6 +8,8 @@ namespace Objects.Structural.GSA.Properties
     public class GSAProperty2D : Property2D
     {
         public int nativeId { get; set; }
+
+        [DetachProperty]
         public Material designMaterial { get; set; }
         public double cost { get; set; }
         public double additionalMass { get; set; }

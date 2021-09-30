@@ -12,6 +12,8 @@ using System.Diagnostics;
 using ConnectorGSA.Models;
 using Speckle.GSA.API;
 using ConnectorGSA.Utilities;
+using Serilog;
+using Speckle.ConnectorGSA.Proxy;
 
 namespace ConnectorGSA.ViewModels
 {
@@ -186,12 +188,15 @@ namespace ConnectorGSA.ViewModels
       //The same methods that handle messages from the kits are being used for messages originating from the commands and the SpeckleGSA library, with the 
       //sender and receiver coordinators
       loggingProgress.ProgressChanged += ProcessLogProgressUpdate;
-      //loggingProgress.ProgressChanged += GSA.ProcessMessageForLog;
-      //streamCreationProgress.ProgressChanged += ProcessStreamCreationProgress;
-      //streamDeletionProgress.ProgressChanged += ProcessStreamDeletionProgress;
-      //statusProgress.ProgressChanged += ProcessStatusProgressUpdate;
+      loggingProgress.ProgressChanged += ProcessMessageForLog;
+      loggingProgress.ProgressChanged += ProcessMessageForTelemetry;
+      streamCreationProgress.ProgressChanged += ProcessStreamCreationProgress;
+      streamDeletionProgress.ProgressChanged += ProcessStreamDeletionProgress;
+      statusProgress.ProgressChanged += ProcessStatusProgressUpdate;
       //This ensures the messages for the display log in the UI, originating from the conversion code in the kits, end up being handled
-      //GSA.App.LocalMessenger.MessageAdded += ProcessLogProgressUpdate;
+      //((GsaMessenger)Instance.GsaModel.Messenger).MessageAdded += ProcessLogProgressUpdate;
+      //((GsaMessenger)Instance.GsaModel.Messenger).MessageAdded += ProcessMessageForTelemetry;
+
       CreateCommands();
     }
 
@@ -203,15 +208,15 @@ namespace ConnectorGSA.ViewModels
          Refresh(() => StateMachine.StartedLoggingIn());
 
          var calibrateNodeAtTask = Task.Run(() => Instance.GsaModel.Proxy.CalibrateNodeAt());
-         //var initialLoadTask = Task.Run(() => Commands.InitialLoad(Coordinator, loggingProgress));
+         var initialLoadTask = Task.Run(() => Commands.InitialLoad(Coordinator, loggingProgress));
 
-         //var loaded = await initialLoadTask;
-         var loaded = true;   //TEMP
+         var loaded = await initialLoadTask;
          await calibrateNodeAtTask;
 
          if (loaded)
          {
            //var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
+           var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
 
            Refresh(() => StateMachine.LoggedIn());
          }
@@ -224,48 +229,13 @@ namespace ConnectorGSA.ViewModels
       ConnectToServerCommand = new DelegateCommand<object>(
         async (o) =>
         {
-          Refresh(() => StateMachine.StartedLoggingIn());
-
-          //var signInWindow = new SpecklePopup.SignInWindow(true);
 
           MainWindowEnabled = false;
 
-          /*
-          signInWindow.ShowDialog();
+          Process.Start("speckle://account");
 
           MainWindowEnabled = true;
 
-          if (signInWindow.AccountListBox.SelectedIndex != -1)
-          {
-            var account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-            var newAccountForUI = new SpeckleAccountForUI(account.RestApi, account.Email, account.Token);
-
-            if (newAccountForUI != null && newAccountForUI.IsValid)
-            {
-              Refresh(() => StateMachine.StartedUpdatingStreams());
-
-              var completed = await Commands.CompleteLogin(Coordinator, newAccountForUI, loggingProgress);
-
-              if (completed)
-              {
-                Refresh(() => StateMachine.LoggedIn());
-
-                var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
-              }
-              else
-              {
-                Refresh(() => StateMachine.CancelledLoggingIn());
-                GSA.App.Messenger.Message(MessageIntent.Display, SpeckleGSAInterfaces.MessageLevel.Error, "Failed to log in");
-              }
-
-              Refresh(() => StateMachine.StoppedUpdatingStreams());
-
-              return;
-            }
-          }
-          Refresh(() => StateMachine.CancelledLoggingIn());
-          GSA.App.Messenger.Message(MessageIntent.Display, SpeckleGSAInterfaces.MessageLevel.Error, "Failed to log in");
-          */
         },
         (o) => !StateMachine.StreamIsOccupied);
 
@@ -293,7 +263,7 @@ namespace ConnectorGSA.ViewModels
 
           Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-          //var result = await Task.Run(() => Commands.Receive(Coordinator, gsaReceiverCoordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+          var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
 
           Refresh(() => StateMachine.StoppedReceiving());
         },
@@ -316,8 +286,7 @@ namespace ConnectorGSA.ViewModels
         async (o) =>
         {
           Refresh(() => StateMachine.StartedOpeningFile());
-          //var opened = await Task.Run(() => Commands.OpenFile(Coordinator, loggingProgress));
-          var opened = true;
+          var opened = await Task.Run(() => Commands.OpenFile(Coordinator, loggingProgress));
           if (opened)
           {
             var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
@@ -342,11 +311,10 @@ namespace ConnectorGSA.ViewModels
           {
             //Sender coordinator is in the SpeckleGSA library, NOT the SpeckleInterface.  The sender coordinator calls the SpeckleInterface methods
             //continuousReceiverCoordinator = new ReceiverCoordinator();  //Coordinates across multiple streams
-            continuousReceiverCoordinator = new object(); //TEMP
 
             Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-            var result = await Task.Run(() => Commands.Receive(Coordinator, continuousReceiverCoordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+            var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
 
             if (ReceiveStreamMethod != StreamMethod.Continuous)
             {
@@ -403,10 +371,9 @@ namespace ConnectorGSA.ViewModels
           {
             //Sender coordinator is in the SpeckleGSA library, NOT the SpeckleInterface.  The sender coordinator calls the SpeckleInterface methods
             //var gsaSenderCoordinator = new SenderCoordinator();  //Coordinates across multiple streams
-            var gsaSenderCoordinator = new object();  //TEMP
 
             Refresh(() => StateMachine.EnteredSendingMode(SendStreamMethod));
-            var result = await Task.Run(() => Commands.SendInitial(Coordinator, gsaSenderCoordinator, streamCreationProgress, streamDeletionProgress, 
+            var result = await Task.Run(() => Commands.SendInitial(Coordinator, streamCreationProgress, streamDeletionProgress, 
               loggingProgress, statusProgress, percentageProgress));
             Refresh(() => StateMachine.StoppedSending());
 
@@ -414,7 +381,7 @@ namespace ConnectorGSA.ViewModels
             {
               TriggerTimer = new Timer(Coordinator.SenderTab.PollingRateMilliseconds);
               TriggerTimer.Elapsed += (sender, e) => Application.Current.Dispatcher.BeginInvoke(
-                DispatcherPriority.Background, new Action(() => ContinuousSendCommand.Execute(gsaSenderCoordinator)));
+                DispatcherPriority.Background, new Action(() => ContinuousSendCommand.Execute(null)));
               TriggerTimer.AutoReset = false;
               TriggerTimer.Start();
             }
@@ -658,5 +625,57 @@ namespace ConnectorGSA.ViewModels
       }
       return streamId;
     }
+
+    #region static_fns
+    public static void ProcessMessageForLog(object sender, MessageEventArgs messageEventArgs)
+    {
+      if (messageEventArgs.Intent == MessageIntent.TechnicalLog)
+      {
+        if (messageEventArgs.Exception == null)
+        {
+          switch (messageEventArgs.Level)
+          {
+            case MessageLevel.Debug: Log.Debug(string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Information: Log.Information(string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Error: Log.Error(string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Fatal: Log.Fatal(string.Join(" ", messageEventArgs.MessagePortions)); break;
+          }
+        }
+        else
+        {
+          switch (messageEventArgs.Level)
+          {
+            case MessageLevel.Debug: Log.Debug(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Information: Log.Information(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions)); break;
+            case MessageLevel.Error:
+              Log.Error(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions));
+              if (messageEventArgs.Exception.InnerException != null)
+              {
+                Log.Error(messageEventArgs.Exception.InnerException, "Inner exception");
+              }
+              break;
+            case MessageLevel.Fatal:
+              Log.Fatal(messageEventArgs.Exception, string.Join(" ", messageEventArgs.MessagePortions));
+              if (messageEventArgs.Exception.InnerException != null)
+              {
+                Log.Fatal(messageEventArgs.Exception.InnerException, "Inner exception");
+              }
+              break;
+          }
+        }
+      }
+    }
+
+    public static void ProcessMessageForTelemetry(object sender, MessageEventArgs messageEventArgs)
+    {
+      if (messageEventArgs.Intent == MessageIntent.Telemetry)
+      {
+        ((GsaProxy)Instance.GsaModel.Proxy).SendTelemetry(messageEventArgs.MessagePortions);
+        //Also log all telemetry transmissions, although the log entries won't have any additional info (prefixes etc) that the proxy has
+        //been coded to add
+        Log.Debug("Telemetry: " + string.Join(" ", messageEventArgs.MessagePortions));
+      }
+    }
+    #endregion
   }
 }

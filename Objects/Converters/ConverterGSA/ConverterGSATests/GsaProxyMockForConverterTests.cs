@@ -1,6 +1,5 @@
 ﻿using Speckle.ConnectorGSA.Proxy;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
-using Speckle.ConnectorGSA.Proxy;
 using Speckle.GSA.API;
 using Speckle.GSA.API.CsvSchema;
 using Speckle.GSA.API.GwaSchema;
@@ -189,6 +188,11 @@ namespace ConverterGSATests
     public bool SetTopLevelSid(string sidRecord) => true;
 
     public bool Save() => true;
+
+    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer)
+    {
+      throw new NotImplementedException();
+    }
 
     #endregion
   }

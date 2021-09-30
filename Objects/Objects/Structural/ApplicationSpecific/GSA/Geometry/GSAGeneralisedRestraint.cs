@@ -12,6 +12,8 @@ namespace Objects.Structural.GSA.Geometry
     {
         public int nativeId { get; set; }
         public string name { get; set; }
+
+        [DetachProperty]
         public Restraint restraint { get; set; }
 
         [DetachProperty]

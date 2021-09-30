@@ -62,12 +62,12 @@ namespace ConnectorGSA.Models
       }
     }
 
+    /*
     internal bool RetrieveSavedSidStreamRecords()
     {
       ReceiverTab.ReceiverSidRecords.Clear();
       SenderTab.SenderSidRecords.Clear();
 
-      /*
       if (HelperFunctions.GetSidSpeckleRecords(Account.EmailAddress, Account.ServerUrl, GSA.App.Proxy, out var receiverStreamInfo, out var senderStreamInfo))
       {
         if (receiverStreamInfo != null && receiverStreamInfo.Count > 0)
@@ -87,9 +87,9 @@ namespace ConnectorGSA.Models
           SenderTab.SidRecordsToStreamList();
         }
       }
-      */
       return true;
     }
+    */
 
     internal bool WriteStreamInfo()
     {

@@ -255,7 +255,7 @@ namespace Speckle.ConnectorGSA.Proxy
       {
         if (GSAObject.SaveAs(filePath) == 0)
         {
-          this.FilePath = FilePath;
+          this.FilePath = filePath;
           return true;
         }
         return false;
@@ -824,8 +824,45 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region writing_gwa
 
+    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer = GSALayer.Both)
+    {
+      var parsersToUseBySchemaType = new Dictionary<Type, List<IGwaParser>>();
+      foreach (var r in gsaRecords)
+      {
+        var t = r.GetType();
+        if (!parsersToUseBySchemaType.ContainsKey(t))
+        {
+          parsersToUseBySchemaType.Add(t, new List<IGwaParser>());
+        }
+        var parser = (IGwaParser)Activator.CreateInstance(ParsersBySchemaType[t], r);
+        parsersToUseBySchemaType[t].Add(parser);
+      }
+
+      var typeGens = GetTxTypeDependencyGenerations(layer);
+      foreach (var gen in typeGens)
+      {
+        foreach (var t in gen)
+        {
+          if (parsersToUseBySchemaType.ContainsKey(t))
+          {
+            var orderedParsers = parsersToUseBySchemaType[t].OrderBy(p => p.Record.Index).ToList();
+
+            foreach (var op in orderedParsers)
+            {
+              if (op.Gwa(out var gwas, true))
+              {
+                gwas.ForEach(g => SetGwa(g));
+              }
+            }
+          }
+        }
+      }
+
+      Sync();
+    }
+
     //Assumed to be the full SET or SET_AT command
-    public void SetGwa(string gwaCommand)
+    private void SetGwa(string gwaCommand)
     {
       lock (syncLock)
       {
@@ -833,7 +870,7 @@ namespace Speckle.ConnectorGSA.Proxy
       }
     }
 
-    public void Sync()
+    private void Sync()
     {
       if (batchBlankGwa.Count() > 0)
       {
@@ -971,6 +1008,325 @@ namespace Speckle.ConnectorGSA.Proxy
         return ((string)GSAObject.GwaCommand("GET" + GwaDelimiter + "TOL")).ListSplit(GwaDelimiter);
       }
     }
+
+    #region load_case_expansion
+
+    public List<string> ExpandLoadCasesAndCombinations(string loadCaseString, List<int> analIndices, List<int> comboIndices)
+    {
+      var retList = new List<string>();
+
+      if (string.IsNullOrEmpty(loadCaseString) || !ProcessLoadCaseCombinationSpec(loadCaseString, out List<string> aParts, out List<string> cParts))
+      {
+        return retList;
+      }
+
+      if (loadCaseString.Equals("all", StringComparison.InvariantCultureIgnoreCase))
+      {
+        retList.AddRange(analIndices.Select(ai => "A" + ai));
+        retList.AddRange(comboIndices.Select(ai => "C" + ai));
+        return retList;
+      }
+
+      var tasks = new List<Task>();
+      var retListLock = new object();
+
+      if (aParts.Count() > 0)
+      {
+#if !DEBUG
+        tasks.Add(Task.Run(() =>
+#endif
+        {
+          var aSpecs = ExpandLoadCasesAndCombinationSubset(aParts, "A", analIndices);
+          if (aSpecs != null && aSpecs.Count() > 0)
+          {
+            lock (retListLock)
+            {
+              retList.AddRange(aSpecs);
+            }
+          }
+        }
+#if !DEBUG
+        ));
+#endif
+      }
+
+      if (cParts.Count() > 0)
+      {
+#if !DEBUG
+        tasks.Add(Task.Run(() =>
+#endif
+        {
+          var cSpecs = ExpandLoadCasesAndCombinationSubset(cParts, "C", comboIndices);
+          if (cSpecs != null && cSpecs.Count() > 0)
+          {
+            lock (retListLock)
+            {
+              retList.AddRange(cSpecs);
+            }
+          }
+        }
+#if !DEBUG
+        ));
+#endif
+      }
+
+#if !DEBUG
+      Task.WaitAll(tasks.ToArray());
+#endif
+
+      return retList;
+    }
+
+    private List<string> ExpandLoadCasesAndCombinationSubset(List<string> listParts, string marker, List<int> cachedIndices)
+    {
+      var specs = new List<string>();
+      if (listParts.All(sp => IsMarkerPattern(sp)))
+      {
+        var aPartsDistinct = listParts.Distinct();
+        foreach (var a in aPartsDistinct)
+        {
+          if (a.Length > 1 && int.TryParse(a.Substring(1), out int specIndex))
+          {
+            if (cachedIndices.Contains(specIndex))
+            {
+              specs.Add(a);
+            }
+          }
+        }
+      }
+      else
+      {
+        specs = (listParts[0].ToLower() == "all")
+          ? cachedIndices.Select(i => marker + i).ToList()
+          : ExpandSubsetViaProxy(cachedIndices.ToList(), listParts, marker);
+      }
+      return specs;
+    }
+
+    private bool ProcessLoadCaseCombinationSpec(string spec, out List<string> aParts, out List<string> cParts)
+    {
+      aParts = new List<string>();
+      cParts = new List<string>();
+      var formattedSpec = spec.ToLower().Trim();
+
+      if (formattedSpec.StartsWith("all"))
+      {
+        aParts.Add("All");
+        cParts.Add("All");
+        return true;
+      }
+
+      var stage1Parts = new List<string>();
+      //break up the string by any A<number> and C<number> substrings
+      var inCurrSpec = false;
+      var currSpec = "";
+      var bnSpec = "";  //Between spec, could be any string
+      for (int i = 0; i < formattedSpec.Length; i++)
+      {
+        if (Char.IsDigit(formattedSpec[i]))
+        {
+          if (i == 0)
+          {
+            bnSpec += formattedSpec[i];
+          }
+          else
+          {
+            if (formattedSpec[i - 1] == 'a' || formattedSpec[i - 1] == 'c')
+            {
+              //Previous is A or C and current is a number
+              inCurrSpec = true;
+              currSpec = spec[i - 1].ToString() + spec[i].ToString();
+              bnSpec = bnSpec.Substring(0, bnSpec.Length - 1);
+              if (bnSpec.Length > 0)
+              {
+                stage1Parts.Add(bnSpec);
+              }
+              bnSpec = "";
+            }
+            else if (Char.IsNumber(formattedSpec[i - 1]))
+            {
+              //Previous is not A or C but current is a number - assume continuation of previous state
+              if (inCurrSpec)
+              {
+                currSpec += spec[i].ToString();
+              }
+              else
+              {
+                bnSpec += spec[i].ToString();
+              }
+            }
+          }
+        }
+        else if (Char.IsLetter(formattedSpec[i]))
+        {
+          //it's not a number, so close off new part if relevant
+          if (inCurrSpec)
+          {
+            stage1Parts.Add(currSpec);
+            currSpec = "";
+          }
+
+          inCurrSpec = false;
+          bnSpec += spec[i].ToString();
+        }
+        else
+        {
+          if (inCurrSpec)
+          {
+            stage1Parts.Add(currSpec);
+            currSpec = "";
+            inCurrSpec = false;
+          }
+          else if (bnSpec.Length > 0)
+          {
+            stage1Parts.Add(bnSpec);
+            bnSpec = "";
+          }
+        }
+      }
+
+      if (inCurrSpec)
+      {
+        stage1Parts.Add(currSpec);
+      }
+      else
+      {
+        stage1Parts.Add(bnSpec);
+      }
+
+      //Now break up these items into groups, delimited by a switch between an A_ and C_ mention, or an all-number item and an A_ or C_ mention
+      var partsAorC = stage1Parts.Select(p => GetAorC(p)).ToList();
+
+      if (partsAorC.All(p => p == 0))
+      {
+        return false;
+      }
+      int? firstViableIndex = null;
+      for (int i = 0; i < partsAorC.Count(); i++)
+      {
+        if (partsAorC[i] > 0)
+        {
+          firstViableIndex = i;
+          break;
+        }
+      }
+      if (!firstViableIndex.HasValue)
+      {
+        return false;
+      }
+
+      int currAorC = GetAorC(stage1Parts[firstViableIndex.Value]); // A = 1, C = 2
+      if (currAorC == 1)
+      {
+        aParts.Add(stage1Parts[firstViableIndex.Value]);
+      }
+      else
+      {
+        cParts.Add(stage1Parts[firstViableIndex.Value]);
+      }
+
+      for (int i = (firstViableIndex.Value + 1); i < stage1Parts.Count(); i++)
+      {
+        var itemAorC = GetAorC(stage1Parts[i]);
+
+        if (itemAorC == 0 || itemAorC == currAorC)
+        {
+          //Continue on
+          if (currAorC == 1)
+          {
+            aParts.Add(stage1Parts[i]);
+          }
+          else
+          {
+            cParts.Add(stage1Parts[i]);
+          }
+        }
+        else if (itemAorC != currAorC)
+        {
+          if (currAorC == 1)
+          {
+            RemoveTrailingLettersOnlyItems(ref aParts);
+
+            cParts.Add(stage1Parts[i]);
+          }
+          else if (currAorC == 2)
+          {
+            RemoveTrailingLettersOnlyItems(ref cParts);
+
+            aParts.Add(stage1Parts[i]);
+          }
+          currAorC = itemAorC;
+        }
+      }
+
+      return (aParts.Count > 0 || cParts.Count > 0);
+    }
+
+    private static void RemoveTrailingLettersOnlyItems(ref List<string> parts)
+    {
+      var found = true;
+
+      //First remove any all-letter items from the last state
+      var index = (parts.Count - 1);
+
+      do
+      {
+        if (parts[index].All(p => (char.IsLetter(p))))
+        {
+          parts.RemoveAt(index);
+          index--;
+        }
+        else
+        {
+          found = false;
+        }
+      } while (found);
+    }
+
+    private static int GetAorC(string part)
+    {
+      if (string.IsNullOrEmpty(part) || part.Length < 2 || !(Char.IsLetter(part[0]) && Char.IsDigit(part[1])))
+      {
+        return 0;
+      }
+      return (char.ToLowerInvariant(part[0]) == 'a') ? 1 : (char.ToLowerInvariant(part[0]) == 'c') ? 2 : 0;
+    }
+
+    private bool IsMarkerPattern(string item) => (item.Length >= 2 && char.IsLetter(item[0]) && item.Substring(1).All(c => char.IsDigit(c)));
+
+    private string RemoveMarker(string item) => (IsMarkerPattern(item) ? item.Substring(1) : item);
+    
+
+    //Since EntitiesInList doesn't offer load cases/combinations as a GsaEntity type, a dummy GSA instance is 
+    //created where a node is created for every load case/combination in the specification.  This is done separately for load cases and combinations.
+    private List<string> ExpandSubsetViaProxy(List<int> existingIndices, List<string> specParts, string marker)
+    {
+      var items = new List<string>();
+      var gsaProxyTemp = new GsaProxy();
+
+      try
+      {
+        gsaProxyTemp.NewFile(false);
+
+        for (int i = 0; i < existingIndices.Count(); i++)
+        {
+          var testNode = new GSA.API.GwaSchema.GsaNode() { Index = existingIndices[i], Name = existingIndices[i].ToString() };
+          gsaProxyTemp.WriteModel(new List<GsaRecord> { testNode }, GSALayer.Both);
+        }
+        gsaProxyTemp.Sync();
+        var tempSpec = string.Join(" ", specParts.Select(a => RemoveMarker(a)));
+        items.AddRange(gsaProxyTemp.GetNodeEntitiesInList(tempSpec).Select(e => marker + e.ToString()));
+      }
+      catch { }
+      finally
+      {
+        gsaProxyTemp.Close();
+        gsaProxyTemp = null;
+      }
+
+      return items;
+    }
+    #endregion
 
     /// <summary>
     /// Updates the GSA unit stored in SpeckleGSA.

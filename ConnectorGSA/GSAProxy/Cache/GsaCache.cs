@@ -39,6 +39,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
 
     private List<GsaCacheRecord> validRecords { get => records.Where(r => r != null).ToList(); }
 
+    public int NumSpeckleObjects { get => objects.Count(); }
+
+    public int NumNatives { get => records.Where(r => r.Latest).Count(); }
+
     private object cacheLock = new object();
 
     public GsaCache() { }
@@ -82,14 +86,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       foreach (var kvp in objectsByApplicationId)
       {
         UpsertInternal(kvp.Value, kvp.Value.GetType(), kvp.Key, out int? upsertedIndex);
-        /*
-        if (!objectIndicesByType.ContainsKey(t))
-        {
-          objectIndicesByType.Add(t, new HashSet<int>());
-        }
-        var newIndex = objects.Count();
-        objectIndicesByType[t].Add(newIndex);
-        */
       }
       return true;
     }
@@ -369,6 +365,29 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     { 
       gsaRecords = records.Where(r => r.Latest).Select(r => r.GsaRecord).ToList(); 
       return true;
+    }
+
+    public bool GetNatives(Type t, out List<GsaRecord> gsaRecords)
+    {
+      if (recordIndicesBySchemaType.ContainsKey(t))
+      {
+        gsaRecords = recordIndicesBySchemaType[t].Select(i => records[i].GsaRecord).ToList();
+        return true;
+      }
+      gsaRecords = null;
+      return false;
+    }
+
+    public bool GetNatives<T>(out List<GsaRecord> gsaRecords)
+    {
+      var t = typeof(T);
+      if (recordIndicesBySchemaType.ContainsKey(t))
+      {
+        gsaRecords = recordIndicesBySchemaType[t].Select(i => records[i].GsaRecord).ToList();
+        return true;
+      }
+      gsaRecords = null;
+      return false;
     }
 
     public bool GetNative<T>(int index, out GsaRecord gsaRecord) => GetNative(typeof(T), index, out gsaRecord);

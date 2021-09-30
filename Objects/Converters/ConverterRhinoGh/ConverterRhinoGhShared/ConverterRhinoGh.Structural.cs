@@ -43,7 +43,31 @@ namespace Objects.Converter.RhinoGh
 
     public Element2D MeshToSpeckleElement2D(RH.Mesh mesh)
     {
-      return new Element2D((Mesh)ConvertToSpeckle(mesh)) { units = ModelUnits };
+      var outlines = mesh.GetOutlines(RH.Plane.WorldXY);
+
+      var nodes = new List<Node>();
+      var edges = mesh.GetNakedEdges().ToList();
+      var outerEdgeArea = edges.Max(x => AreaMassProperties.Compute(x.ToPolylineCurve()).Area);
+      var outerEdge = edges.First(x => AreaMassProperties.Compute(x.ToPolylineCurve()).Area == outerEdgeArea);
+      foreach (var point in outerEdge)
+      {
+        var pt = new RH.Point(point);
+        nodes.Add(PointToSpeckleNode(pt));
+      }
+
+      var voids = new List<List<Node>>();
+      edges.Remove(outerEdge);
+      foreach(var edge in edges)
+      {
+        var voidLoop = new List<Node>();
+        foreach (var point in edge)
+        {
+          var pt = new RH.Point(point);
+          voidLoop.Add(PointToSpeckleNode(pt));
+        }
+        voids.Add(voidLoop);
+      }
+      return new Element2D(nodes, voids) { units = ModelUnits };
     }
 
     public Element3D MeshToSpeckleElement3D(RH.Mesh mesh)

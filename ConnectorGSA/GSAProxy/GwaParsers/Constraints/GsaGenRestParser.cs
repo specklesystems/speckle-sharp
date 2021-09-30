@@ -132,7 +132,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       var entityItems = v.Split(' ');
       if (entityItems.Count() == 1 && entityItems.First().Equals("all", StringComparison.InvariantCultureIgnoreCase))
       {
-        record.StageIndices = Instance.GsaModel.LookupIndices<GsaAnalStage>().ToList();
+        record.StageIndices = Instance.GsaModel.Cache.LookupIndices<GsaAnalStage>().ToList();
       }
       else
       {

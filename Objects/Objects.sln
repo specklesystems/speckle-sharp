@@ -51,6 +51,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino6", "Converte
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino7", "Converters\ConverterRhinoGh\ConverterRhino7\ConverterRhino7.csproj", "{B9649E07-F7B4-4FCC-9E44-076993621D0A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterGSA", "ConverterGSA", "{DEC9601B-7C56-49B0-9316-E7B33B5DDD45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGSA", "Converters\ConverterGSA\ConverterGSA\ConverterGSA.csproj", "{6E561E4F-A3B4-4277-A2F7-B934A4141394}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGSATests", "Converters\ConverterGSA\ConverterGSATests\ConverterGSATests.csproj", "{F8521EEA-6C45-4B01-A002-542824B97062}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
@@ -130,6 +136,14 @@ Global
 		{B9649E07-F7B4-4FCC-9E44-076993621D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9649E07-F7B4-4FCC-9E44-076993621D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9649E07-F7B4-4FCC-9E44-076993621D0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E561E4F-A3B4-4277-A2F7-B934A4141394}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E561E4F-A3B4-4277-A2F7-B934A4141394}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E561E4F-A3B4-4277-A2F7-B934A4141394}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E561E4F-A3B4-4277-A2F7-B934A4141394}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8521EEA-6C45-4B01-A002-542824B97062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8521EEA-6C45-4B01-A002-542824B97062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8521EEA-6C45-4B01-A002-542824B97062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8521EEA-6C45-4B01-A002-542824B97062}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +170,9 @@ Global
 		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{63B3F901-7C14-4530-8A6F-CCAD68586664} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{B9649E07-F7B4-4FCC-9E44-076993621D0A} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
+		{DEC9601B-7C56-49B0-9316-E7B33B5DDD45} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{6E561E4F-A3B4-4277-A2F7-B934A4141394} = {DEC9601B-7C56-49B0-9316-E7B33B5DDD45}
+		{F8521EEA-6C45-4B01-A002-542824B97062} = {DEC9601B-7C56-49B0-9316-E7B33B5DDD45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

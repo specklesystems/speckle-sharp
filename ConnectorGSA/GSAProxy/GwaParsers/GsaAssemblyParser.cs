@@ -119,7 +119,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     private List<int> GetStoreyIndices()
     {
       //Since there is no way in the GSA COM API to resolve list specification ("1 2 to 8" etc) of grid surfaces, the cache needs to be used
-      var allGridPlaneIndices = Instance.GsaModel.LookupIndices<GsaGridPlane>().ToList();
+      var allGridPlaneIndices = Instance.GsaModel.Cache.LookupIndices<GsaGridPlane>().ToList();
       var storeyIndices = new List<int>();
 
       return storeyIndices.Distinct().OrderBy(i => i).ToList();
@@ -152,7 +152,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddIntTopo(string v)
     {
-      var nodeIndices = Instance.GsaModel.ConvertGSAList(v, GSAEntity.NODE);
+      var nodeIndices = Instance.GsaModel.Proxy.ConvertGSAList(v, GSAEntity.NODE);
       record.IntTopo = nodeIndices.ToList();
       return true;
     }

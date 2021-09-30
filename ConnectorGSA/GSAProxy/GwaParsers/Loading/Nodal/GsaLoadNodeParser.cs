@@ -57,7 +57,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddList(string v)
     {
-      record.NodeIndices = Instance.GsaModel.ConvertGSAList(v, GSAEntity.NODE).ToList();
+      record.NodeIndices = Instance.GsaModel.Proxy.ConvertGSAList(v, GSAEntity.NODE).ToList();
       return (record.NodeIndices.Count() > 0);
     }
 

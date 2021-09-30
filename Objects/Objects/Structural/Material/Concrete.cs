@@ -19,7 +19,7 @@ namespace Objects.Structural.Materials
         public Concrete() { }
 
         [SchemaInfo("Concrete", "Creates a Speckle structural material for concrete (to be used in structural analysis models)", "Structural", "Materials")]
-        public Concrete(string name, string grade = null, string designCode = null, string codeYear = null, double elasticModulus = 0, double compressiveStrength = 0, double tensileStrength = 0, double flexuralStrength = 0, double maxCompressiveStrain = 0, double maxTensileStrain = 0, double maxAggregateSize = 0, bool lightweight = false, double poissonsRatio = 0, double shearModulus = 0, double density = 0, double alpha = 0, double dampingRatio = 0)
+        public Concrete(string name, string grade = null, string designCode = null, string codeYear = null, double elasticModulus = 0, double compressiveStrength = 0, double tensileStrength = 0, double flexuralStrength = 0, double maxCompressiveStrain = 0, double maxTensileStrain = 0, double maxAggregateSize = 0, bool lightweight = false, double poissonsRatio = 0, double shearModulus = 0, double density = 0, double thermalExpansivity = 0, double dampingRatio = 0)
         {
             this.name = name;
             this.grade = grade;

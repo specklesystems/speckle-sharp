@@ -12,6 +12,8 @@ namespace Objects.Structural.GSA.Properties
     public class GSAProperty1D : Property1D
     {
         public int nativeId { get; set; }
+
+        [DetachProperty]
         public Material designMaterial { get; set; }
         public double additionalMass { get; set; }
         public double? cost { get; set; }        

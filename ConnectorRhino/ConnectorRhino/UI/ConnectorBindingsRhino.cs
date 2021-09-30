@@ -134,7 +134,7 @@ namespace SpeckleRhino
       return objs;
     }
 
-    public override string GetHostAppName() => Applications.Rhino;
+    public override string GetHostAppName() => Applications.Rhino7;
 
     public override string GetDocumentId()
     {
@@ -190,7 +190,7 @@ namespace SpeckleRhino
     public override async Task<StreamState> ReceiveStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Rhino);
+      var converter = kit.LoadConverter(Applications.Rhino7);
 
       if (converter == null)
       {
@@ -430,7 +430,7 @@ namespace SpeckleRhino
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Applications.Rhino);
+      var converter = kit.LoadConverter(Applications.Rhino7);
       converter.SetContextDocument(Doc);
       Exceptions.Clear();
 
@@ -584,7 +584,7 @@ namespace SpeckleRhino
         objectId = commitObjId,
         branchName = state.Branch.name,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino.",
-        sourceApplication = Applications.Rhino
+        sourceApplication = Applications.Rhino7
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
