@@ -40,8 +40,8 @@
     <Reference Include="Speckle.Newtonsoft.Json, Version=12.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Speckle.Newtonsoft.Json.12.0.3.1\lib\net45\Speckle.Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Stylet">
-      <HintPath>..\..\ConnectorRhino\ConnectorRhino6\bin\Debug\Stylet.dll</HintPath>
+    <Reference Include="Stylet, Version=1.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stylet.1.3.6\lib\net45\Stylet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
