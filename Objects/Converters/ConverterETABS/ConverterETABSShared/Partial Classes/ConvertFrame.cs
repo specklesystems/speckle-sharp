@@ -76,6 +76,12 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.end1Releases = end1Release;
             speckleStructFrame.end2Releases = end2Release;
 
+            double localAxis = 0;
+            bool advanced = false;
+            Model.FrameObj.GetLocalAxes(name, ref localAxis,ref advanced);
+            speckleStructFrame.orientationAngle = localAxis;
+
+
             string property, SAuto;
             property = SAuto = null;
             Model.FrameObj.GetSection(name, ref property, ref SAuto);
