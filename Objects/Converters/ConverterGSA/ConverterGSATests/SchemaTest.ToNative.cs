@@ -12,6 +12,7 @@ using Objects.Structural;
 using Objects.Geometry;
 using System.Text.RegularExpressions;
 using AutoMapper;
+using Objects.Structural.GSA.Bridge;
 using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
@@ -451,6 +452,32 @@ namespace ConverterGSATests
     #endregion
 
     #region Bridges
+    
+    [Fact(Skip = "Not implemented yet")]
+    public void GSAAlignmentToNative()
+    {
+      var plane = new Plane();
+      var axis = new Axis("myAxis", AxisType.Cartesian, plane);
+      var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
+      var gsaAlignment = new GSAAlignment(1, "myGsaAlignment",
+        new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2, 
+          LoadExpansion.PlaneCorner, GridSurfaceSpanType.OneWay,
+          new List<Base>()),
+        new List<double>() { 0, 1 },
+        new List<double>() { 3, 3 });
+      var gsaRecord = converter.ConvertToNative(gsaAlignment) as GsaAlign;
+      Assert.Equal(gsaAlignment.chainage, gsaRecord.Chain);
+      Assert.Equal(gsaAlignment.curvature, gsaRecord.Curv);
+      Assert.Equal(gsaAlignment.name, gsaRecord.Name);
+      Assert.Equal(gsaAlignment.id, gsaRecord.Sid);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaRecord.NumAlignmentPoints);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaRecord.NumAlignmentPoints);
+            
+      var copy = converter.ConvertToSpeckle(
+        converter.ConvertToNative(gsaAlignment));
+      Assert.Equal(gsaAlignment, copy);
+    }
+    
     #endregion
 
     #region Other

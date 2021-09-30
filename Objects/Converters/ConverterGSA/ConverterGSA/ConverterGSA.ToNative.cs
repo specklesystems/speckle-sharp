@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Objects.Structural.GSA.Bridge;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
 
@@ -329,6 +330,25 @@ namespace ConverterGSA
       };
       return new List<GsaRecord>() { gsaProperty };
     }
+    #endregion
+    
+    #region Bridge
+
+    List<GsaRecord> AlignToNative(Base speckleObject)
+    {
+      var speckleAlign = (GSAAlignment)speckleObject;
+      var gsaAlign = new GsaAlign()
+      {
+        Chain = speckleAlign.chainage,
+        Curv = speckleAlign.curvature,
+        Name = speckleAlign.name,
+        Sid = speckleAlign.id,
+        GridSurfaceIndex = speckleAlign.gridSurface.nativeId,
+        NumAlignmentPoints = speckleAlign.GetNumAlignmentPoints()
+      };
+      return new List<GsaRecord>() { gsaAlign };
+    }
+    
     #endregion
     #endregion
 
