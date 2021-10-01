@@ -32,6 +32,7 @@ namespace ConverterGSA
         { typeof(Axis), AxisToNative },
         {typeof(GSAAlignment), AlignToNative},
         {typeof(GSAStage), AnalStageToNative},
+        {typeof(GSAInfluenceBeam), InfBeamToNative},
         { typeof(GSANode), NodeToNative },
         { typeof(GSAElement1D), Element1dToNative },
         { typeof(GSAElement2D), Element2dToNative },

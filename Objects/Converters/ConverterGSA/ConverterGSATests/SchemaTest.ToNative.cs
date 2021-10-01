@@ -12,8 +12,10 @@ using Objects.Structural;
 using Objects.Geometry;
 using System.Text.RegularExpressions;
 using AutoMapper;
+using ConverterGSA;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
+using Objects.Structural.Loading;
 using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
@@ -481,13 +483,28 @@ namespace ConverterGSATests
       //   converter.ConvertToNative(gsaAlignment));
       // Assert.Equal(gsaAlignment, copy);
     }
+
+    [Fact]
+    public void GSAInfluenceBeam()
+    {
+      var gsaInfluenceBeam = new GSAInfluenceBeam(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetElement1d1(), 0.5);
+      var gsaRecord = converter.ConvertToNative(gsaInfluenceBeam) as List<GsaRecord>;
+      var gsaInfBeam = GenericTestForList<GsaInfBeam>(gsaRecord);
+
+      Assert.Equal(gsaInfluenceBeam.position, gsaInfBeam.Position);
+      Assert.Equal(gsaInfluenceBeam.direction.ToNative(), gsaInfBeam.Direction);
+      Assert.Equal(gsaInfluenceBeam.factor, gsaInfBeam.Factor);
+      Assert.Equal(gsaInfluenceBeam.id, gsaInfBeam.Sid);
+      Assert.Equal(gsaInfluenceBeam.type.ToNative(), gsaInfBeam.Type);
+      Assert.Equal(gsaInfluenceBeam.name, gsaInfBeam.Name);
+    }
     
     [Fact]
     public void GSAStageToNative()
     {
       var twoElements = new List<GSAElement1D>
       {
-        new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D),
+        GetElement1d1(),
         new GSAElement1D(2, null, null, ElementType1D.Bar, orientationAngle: 0D),
       }.Select(x => x as Base).ToList();
       
@@ -509,7 +526,12 @@ namespace ConverterGSATests
       Assert.Equal(gsaStage.elements.Count, twoElements.Count);
       Assert.Equal(gsaStage.lockedElements.Count, twoLockedElements.Count);
     }
-    
+
+    private static GSAElement1D GetElement1d1()
+    {
+      return new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D);
+    }
+
     #endregion
 
     #region Other
