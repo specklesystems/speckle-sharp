@@ -458,7 +458,7 @@ namespace ConverterGSATests
     public void GSAAlignmentToNative()
     {
       var plane = new Plane();
-      var axis = new Axis("myAxis", AxisType.Cartesian, plane);
+      var axis = SpeckleGlobalAxis();
       var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
       var gsaAlignment = new GSAAlignment(1, "myGsaAlignment",
         new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2, 
@@ -481,16 +481,7 @@ namespace ConverterGSATests
       //   converter.ConvertToNative(gsaAlignment));
       // Assert.Equal(gsaAlignment, copy);
     }
-
-    private static T GenericTestForList<T>(List<GsaRecord> gsaRecord)
-    {
-      Assert.NotEmpty(gsaRecord);
-      Assert.Contains(gsaRecord, so => so is T);
-
-      var obj = (T)(object)(gsaRecord.First());
-      return obj;
-    }
-
+    
     [Fact]
     public void GSAStageToNative()
     {
@@ -522,6 +513,16 @@ namespace ConverterGSATests
     #endregion
 
     #region Other
+    
+    private static T GenericTestForList<T>(List<GsaRecord> gsaRecord)
+    {
+      Assert.NotEmpty(gsaRecord);
+      Assert.Contains(gsaRecord, so => so is T);
+
+      var obj = (T)(object)(gsaRecord.First());
+      return obj;
+    }
+    
     private Axis SpeckleGlobalAxis()
     {
       return new Axis()

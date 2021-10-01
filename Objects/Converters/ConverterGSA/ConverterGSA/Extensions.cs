@@ -333,6 +333,21 @@ namespace ConverterGSA
         default: throw new Exception(gsaDirection + " can not be converted into LoadDirection enum");        
       }
     }
+    
+    public static GwaAxisDirection6 ToNative(this LoadDirection loadDirection)
+    {
+      switch (loadDirection)
+      {
+        case LoadDirection.X: return GwaAxisDirection6.X;
+        case LoadDirection.Y: return GwaAxisDirection6.Y;
+        case LoadDirection.Z: return GwaAxisDirection6.Z;
+        case LoadDirection.XX: return GwaAxisDirection6.XX;
+        case LoadDirection.YY: return GwaAxisDirection6.YY;
+        case LoadDirection.ZZ: return GwaAxisDirection6.ZZ;
+        default: throw new Exception(loadDirection + " can not be converted into GwaAxisDirection6 enum");        
+      }
+    }
+    
 
     public static LoadAxisType ToSpeckle(this AxisRefType gsaType)
     {
@@ -456,6 +471,16 @@ namespace ConverterGSA
       }
     }
 
+    public static InfType ToNative(this InfluenceType gsaType)
+    {
+      switch (gsaType)
+      {
+        case InfluenceType.DISPLACEMENT: return InfType.DISP;
+        case InfluenceType.FORCE: return InfType.FORCE;
+        default: return InfType.NotSet;
+}
+    }
+    
     public static PathType ToSpeckle(this GwaPathType gsaType)
     {
       switch (gsaType)

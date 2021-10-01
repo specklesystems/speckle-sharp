@@ -337,7 +337,7 @@ namespace ConverterGSA
     
     #region Bridge
 
-    List<GsaRecord> AlignToNative(Base speckleObject)
+    private List<GsaRecord> AlignToNative(Base speckleObject)
     {
       var speckleAlign = (GSAAlignment)speckleObject;
       var gsaAlign = new GsaAlign()
@@ -352,23 +352,27 @@ namespace ConverterGSA
       return new List<GsaRecord>() { gsaAlign };
     }
 
-    
-
-    private int GetElementIdex(object obj)
+    private List<GsaRecord> InfBeamToNative(Base speckleObject)
     {
-      if (obj is GSAElement1D element1D)
-        return element1D.nativeId;
-      else if (obj is GSAElement2D element2D)
-        return element2D.nativeId;
-      else
-        return -1;
+      var speckleInfBeam = (GSAInfluenceBeam)speckleObject;
+      var gsaInfBeam = new GsaInfBeam
+      {
+        Name = speckleInfBeam.name,
+        Direction = speckleInfBeam.direction.ToNative(),
+        //Element = speckleInfBeam.element.id
+        Factor = speckleInfBeam.factor,
+        Position = speckleInfBeam.position,
+        Sid = speckleObject.id,
+        Type = speckleInfBeam.type.ToNative(),
+      };
+      return new List<GsaRecord>() { gsaInfBeam };
     }
     
     #endregion
 
     #region Analysis Stage
     
-    List<GsaRecord> AnalStageToNative(Base speckleObject)
+    public List<GsaRecord> AnalStageToNative(Base speckleObject)
     {
       var analStage = (GSAStage)speckleObject;
       var gsaAnalStage = new GsaAnalStage()
@@ -376,7 +380,7 @@ namespace ConverterGSA
         Name = analStage.name,
         Days = analStage.stageTime,
         Colour = analStage.colour.ColourToNative(),
-        ElementIndices = analStage.elements.Select(x => GetElementIdex(x)).ToList(),
+        ElementIndices = analStage.elements.Select(x => GetElementIndex(x)).ToList(),
         LockElementIndices = analStage.lockedElements.Select(x => ((GSAElement1D)x).nativeId).ToList(),
         Phi = analStage.creepFactor,
       };
@@ -388,6 +392,17 @@ namespace ConverterGSA
     #endregion
 
     #region Helper
+    
+    private int GetElementIndex(object obj)
+    {
+      if (obj is GSAElement1D element1D)
+        return element1D.nativeId;
+      else if (obj is GSAElement2D element2D)
+        return element2D.nativeId;
+      else
+        return -1;
+    }
+    
     #region ToNative
     #region Geometry
     #region Axis
