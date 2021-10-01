@@ -9,7 +9,7 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-        public ModelInfo modelInfoToSpeckle()
+        public ModelInfo ModelInfoToSpeckle()
         {
             var modelInfo = new ModelInfo();
             modelInfo.name = Model.GetModelFilename(false);

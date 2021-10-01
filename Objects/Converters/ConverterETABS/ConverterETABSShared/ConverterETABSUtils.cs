@@ -12,7 +12,8 @@ namespace Objects.Converter.ETABS
         Frame = 2, // cFrameObj
                    //Tendon = 3, 
         Area = 4, // cAreaObj
-        LoadPattern,
+        LoadPattern = 5,
+        ModelInfo,
         //Link = 5, // cLinkObj
         //PropMaterial = 6, // cPropFrame which is material property
         //                  //PropRebar = 7, // cPropRebar doesn't have set methods

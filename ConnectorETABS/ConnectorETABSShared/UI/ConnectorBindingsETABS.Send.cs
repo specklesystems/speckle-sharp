@@ -41,7 +41,7 @@ namespace Speckle.ConnectorETABS.UI
             Exceptions.Clear();
 
             var commitObj = new Base();
-
+            
             int objCount = 0;
 
             if (state.Filter != null)

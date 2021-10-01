@@ -22,6 +22,7 @@ namespace Objects.Converter.ETABS
                     break;
             }
 
+
             return speckleSectionProfile;
         }
     }
