@@ -12,6 +12,7 @@ using Objects.Structural;
 using Objects.Geometry;
 using System.Text.RegularExpressions;
 using AutoMapper;
+using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
 using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
@@ -467,11 +468,8 @@ namespace ConverterGSATests
         new List<double>() { 3, 3 });
       var gsaRecord = converter.ConvertToNative(gsaAlignment) as List<GsaRecord>;
       
-      Assert.NotEmpty(gsaRecord);
-      Assert.Contains(gsaRecord, so => so is GsaAlign);
+      var gsaAlign = GenericTestForList<GsaAlign>(gsaRecord);
 
-      var gsaAlign = gsaRecord.First() as GsaAlign;
-      
       Assert.Equal(gsaAlignment.chainage, gsaAlign.Chain);
       Assert.Equal(gsaAlignment.curvature, gsaAlign.Curv);
       Assert.Equal(gsaAlignment.name, gsaAlign.Name);
@@ -482,6 +480,43 @@ namespace ConverterGSATests
       // var copy = converter.ConvertToSpeckle(
       //   converter.ConvertToNative(gsaAlignment));
       // Assert.Equal(gsaAlignment, copy);
+    }
+
+    private static T GenericTestForList<T>(List<GsaRecord> gsaRecord)
+    {
+      Assert.NotEmpty(gsaRecord);
+      Assert.Contains(gsaRecord, so => so is T);
+
+      var obj = (T)(object)(gsaRecord.First());
+      return obj;
+    }
+
+    [Fact]
+    public void GSAStageToNative()
+    {
+      var twoElements = new List<GSAElement1D>
+      {
+        new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D),
+        new GSAElement1D(2, null, null, ElementType1D.Bar, orientationAngle: 0D),
+      }.Select(x => x as Base).ToList();
+      
+      var twoLockedElements = new List<GSAElement1D>
+      {
+        new GSAElement1D(3, null, null, ElementType1D.Bar, orientationAngle: 0D),
+        new GSAElement1D(4, null, null, ElementType1D.Bar, orientationAngle: 0D),
+      }.Select(x => x as Base).ToList();
+
+      var gsaStage = new GSAStage(1, "", Colour.RED.ToString(), twoElements, 1, 2, twoLockedElements);
+      var gsaRecord = converter.ConvertToNative(gsaStage) as List<GsaRecord>;
+      
+      var gsaAnalStage = GenericTestForList<GsaAnalStage>(gsaRecord);
+      
+      Assert.Equal(gsaStage.colour, gsaAnalStage.Colour.ToString());
+      Assert.Equal(gsaStage.name, gsaAnalStage.Name);
+      Assert.Equal(gsaStage.creepFactor, gsaAnalStage.Phi);
+      Assert.Equal(gsaStage.stageTime, gsaAnalStage.Days);
+      Assert.Equal(gsaStage.elements.Count, twoElements.Count);
+      Assert.Equal(gsaStage.lockedElements.Count, twoLockedElements.Count);
     }
     
     #endregion

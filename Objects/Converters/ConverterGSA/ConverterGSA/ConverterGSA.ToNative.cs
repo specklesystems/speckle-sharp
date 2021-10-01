@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
@@ -30,6 +31,7 @@ namespace ConverterGSA
         //Geometry
         { typeof(Axis), AxisToNative },
         {typeof(GSAAlignment), AlignToNative},
+        {typeof(GSAStage), AnalStageToNative},
         { typeof(GSANode), NodeToNative },
         { typeof(GSAElement1D), Element1dToNative },
         { typeof(GSAElement2D), Element2dToNative },
@@ -345,12 +347,44 @@ namespace ConverterGSA
         Name = speckleAlign.name,
         Sid = speckleAlign.id,
         GridSurfaceIndex = speckleAlign.gridSurface.nativeId,
-        NumAlignmentPoints = speckleAlign.GetNumAlignmentPoints()
+        NumAlignmentPoints = speckleAlign.GetNumAlignmentPoints(),
       };
       return new List<GsaRecord>() { gsaAlign };
     }
+
+    
+
+    private int GetElementIdex(object obj)
+    {
+      if (obj is GSAElement1D element1D)
+        return element1D.nativeId;
+      else if (obj is GSAElement2D element2D)
+        return element2D.nativeId;
+      else
+        return -1;
+    }
     
     #endregion
+
+    #region Analysis Stage
+    
+    List<GsaRecord> AnalStageToNative(Base speckleObject)
+    {
+      var analStage = (GSAStage)speckleObject;
+      var gsaAnalStage = new GsaAnalStage()
+      {
+        Name = analStage.name,
+        Days = analStage.stageTime,
+        Colour = analStage.colour.ColourToNative(),
+        ElementIndices = analStage.elements.Select(x => GetElementIdex(x)).ToList(),
+        LockElementIndices = analStage.lockedElements.Select(x => ((GSAElement1D)x).nativeId).ToList(),
+        Phi = analStage.creepFactor,
+      };
+      return new List<GsaRecord>() { gsaAnalStage };
+    }
+    
+    #endregion
+    
     #endregion
 
     #region Helper

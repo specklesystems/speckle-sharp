@@ -14,7 +14,7 @@ namespace Objects.Structural.GSA.Analysis
         [DetachProperty]
         [Chunkable(5000)]
         public List<Base> elements { get; set; }
-        public double creepFactor { get; set; }
+        public double creepFactor { get; set; } //Phi
         public int stageTime { get; set; } //number of days
 
         [DetachProperty]
