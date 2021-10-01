@@ -10,16 +10,12 @@ namespace Objects.Converter.ETABS
         public ModelSettings modelSettingsToSpeckle()
         {
             var speckleModelSettings = new ModelSettings();
-            var units = Model.GetDatabaseUnits();
-            var speckleModelUnits = new ModelUnits();
-            speckleModelSettings.modelUnits = speckleModelUnits;
-            if(units != 0)
-            {
-                string [] unitsCat = units.ToString().Split('_');
-                speckleModelSettings.modelUnits.temperature = unitsCat[2];
-                speckleModelSettings.modelUnits.length = unitsCat[1];
-                speckleModelSettings.modelUnits.force = unitsCat[0];
-            }
+            speckleModelSettings.modelUnits = UnitsToSpeckle();
+            string concreteCode = "";
+            Model.DesignConcrete.GetCode(ref concreteCode);
+            string steelCode = "";
+            Model.DesignSteel.GetCode(ref steelCode);
+            speckleModelSettings.steelCode = steelCode;
             return speckleModelSettings;
         }
                                 

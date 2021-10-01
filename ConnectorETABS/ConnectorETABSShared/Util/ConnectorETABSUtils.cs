@@ -61,8 +61,6 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllAreaNames(model);
                 case "LoadPattern":
                     return GetAllLoadPatternNames(model);
-                case "ModelInfo":
-                    return empty.ToList();
                 default:
                     return null;
             }
@@ -416,8 +414,6 @@ namespace Speckle.ConnectorETABS.Util
             Frame = 2, // cFrameObj
             Area = 4,
             LoadPattern = 5,
-            ModelInfo,
-
         }
 
         /// <summary>

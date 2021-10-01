@@ -95,8 +95,8 @@ namespace Objects.Converter.ETABS
                 case "Frame":
                     returnObject = FrameToSpeckle(name);
                     break;
-                case "ModelInfo":
-                    returnObject = ModelInfoToSpeckle();
+                case "@Model":
+                    returnObject = ModelToSpeckle();
                     break;
                     //case "Area":
                     //    returnObject = AreaToSpeckle(name);

@@ -44,8 +44,6 @@ namespace Objects.Converter.ETABS
                     }
                 }
             }
-
-
             return modelInfo;
 
         }
