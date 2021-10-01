@@ -453,7 +453,7 @@ namespace ConverterGSATests
 
     #region Bridges
     
-    [Fact(Skip = "Not implemented yet")]
+    [Fact]
     public void GSAAlignmentToNative()
     {
       var plane = new Plane();
@@ -465,17 +465,23 @@ namespace ConverterGSATests
           new List<Base>()),
         new List<double>() { 0, 1 },
         new List<double>() { 3, 3 });
-      var gsaRecord = converter.ConvertToNative(gsaAlignment) as GsaAlign;
-      Assert.Equal(gsaAlignment.chainage, gsaRecord.Chain);
-      Assert.Equal(gsaAlignment.curvature, gsaRecord.Curv);
-      Assert.Equal(gsaAlignment.name, gsaRecord.Name);
-      Assert.Equal(gsaAlignment.id, gsaRecord.Sid);
-      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaRecord.NumAlignmentPoints);
-      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaRecord.NumAlignmentPoints);
-            
-      var copy = converter.ConvertToSpeckle(
-        converter.ConvertToNative(gsaAlignment));
-      Assert.Equal(gsaAlignment, copy);
+      var gsaRecord = converter.ConvertToNative(gsaAlignment) as List<GsaRecord>;
+      
+      Assert.NotEmpty(gsaRecord);
+      Assert.Contains(gsaRecord, so => so is GsaAlign);
+
+      var gsaAlign = gsaRecord.First() as GsaAlign;
+      
+      Assert.Equal(gsaAlignment.chainage, gsaAlign.Chain);
+      Assert.Equal(gsaAlignment.curvature, gsaAlign.Curv);
+      Assert.Equal(gsaAlignment.name, gsaAlign.Name);
+      Assert.Equal(gsaAlignment.id, gsaAlign.Sid);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
+      
+      // var copy = converter.ConvertToSpeckle(
+      //   converter.ConvertToNative(gsaAlignment));
+      // Assert.Equal(gsaAlignment, copy);
     }
     
     #endregion

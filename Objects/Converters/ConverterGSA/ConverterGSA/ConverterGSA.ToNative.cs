@@ -29,6 +29,7 @@ namespace ConverterGSA
       {
         //Geometry
         { typeof(Axis), AxisToNative },
+        {typeof(GSAAlignment), AlignToNative},
         { typeof(GSANode), NodeToNative },
         { typeof(GSAElement1D), Element1dToNative },
         { typeof(GSAElement2D), Element2dToNative },
