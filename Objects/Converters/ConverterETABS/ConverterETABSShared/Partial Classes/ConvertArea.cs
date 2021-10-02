@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ETABSv1;
 using Objects.Structural.Geometry;
+using Objects.Structural.ETABS.Properties;
 
 namespace Objects.Converter.ETABS
 {
@@ -14,6 +16,15 @@ namespace Objects.Converter.ETABS
             int numPoints = 0;
             string[] points = null;
             Model.AreaObj.GetPoints(name, ref numPoints, ref points);
+            List<Node> nodes = null;
+            foreach(string point in points)
+            {
+                nodes.Add(PointToSpeckle(point));
+            }
+            speckleStructArea.topology = nodes;
+            string propName = "";
+            Model.AreaObj.GetProperty(name,ref propName);
+            speckleStructArea.property = Property2DToSpeckle(name,propName);
 
             return speckleStructArea;
         }

@@ -50,7 +50,6 @@ namespace Speckle.ConnectorETABS.Util
 
         public static List<string> GetAllNamesOfObjectType(cSapModel model, string objectType)
         {
-            var empty = new string[] { };
             switch (objectType)
             {
                 case "Point":
@@ -61,6 +60,10 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllAreaNames(model);
                 case "LoadPattern":
                     return GetAllLoadPatternNames(model);
+                case "Model":
+                    var names = new string[] { };
+                    names.Append(model.GetModelFilename());
+                    return names.ToList();
                 default:
                     return null;
             }
@@ -414,6 +417,7 @@ namespace Speckle.ConnectorETABS.Util
             Frame = 2, // cFrameObj
             Area = 4,
             LoadPattern = 5,
+            Model
         }
 
         /// <summary>
