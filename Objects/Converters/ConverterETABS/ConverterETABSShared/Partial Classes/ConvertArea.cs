@@ -16,10 +16,11 @@ namespace Objects.Converter.ETABS
             int numPoints = 0;
             string[] points = null;
             Model.AreaObj.GetPoints(name, ref numPoints, ref points);
-            List<Node> nodes = null;
+            List<Node> nodes = new List<Node>();
             foreach(string point in points)
             {
-                nodes.Add(PointToSpeckle(point));
+                Node node = PointToSpeckle(point);
+                nodes.Add(node);
             }
             speckleStructArea.topology = nodes;
             string propName = "";

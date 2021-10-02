@@ -98,21 +98,21 @@ namespace Objects.Converter.ETABS
                 case "Model":
                     returnObject = ModelToSpeckle();
                     break;
-                    //case "Area":
-                    //    returnObject = AreaToSpeckle(name);
-                    //    break;
-                    //case "Link":
-                    //    returnObject = LinkToSpeckle(name);
-                    //    break;
-                    //case "PropMaterial":
-                    //    returnObject = PropMaterialToSpeckle(name);
-                    //    break;
-                    //case "PropFrame":
-                    //    returnObject = PropFrameToSpeckle(type, name);
-                    //    break;
-                    //case "LoadCase":
-                    //    returnObject = LoadCaseToSpeckle(name);
-                    //    break;
+                case "Area":
+                    returnObject = AreaToSpeckle(name);
+                    break;
+                //case "Link":
+                //    returnObject = LinkToSpeckle(name);
+                //    break;
+                //case "PropMaterial":
+                //    returnObject = PropMaterialToSpeckle(name);
+                //    break;
+                //case "PropFrame":
+                //    returnObject = PropFrameToSpeckle(type, name);
+                //    break;
+                //case "LoadCase":
+                //    returnObject = LoadCaseToSpeckle(name);
+                //    break;
                 case "LoadPattern":
                     returnObject = LoadPatternToSpeckle(name);
                     break;
