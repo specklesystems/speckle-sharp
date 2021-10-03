@@ -4,6 +4,7 @@ using System.Text;
 using ETABSv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.ETABS.Properties;
+using SpeckleStructuralClasses.PolygonMesher;
 
 namespace Objects.Converter.ETABS
 {
@@ -26,6 +27,8 @@ namespace Objects.Converter.ETABS
             string propName = "";
             Model.AreaObj.GetProperty(name,ref propName);
             speckleStructArea.property = Property2DToSpeckle(name,propName);
+
+
 
             return speckleStructArea;
         }
