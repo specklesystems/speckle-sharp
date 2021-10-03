@@ -64,6 +64,12 @@ namespace Speckle.ConnectorETABS.Util
                     var names = new string[] { };
                     names.Append(model.GetModelFilename());
                     return names.ToList();
+                case "ColumnResults":
+                    return GetColumnNames(model);
+                case "BeamResults":
+                    return GetBeamNames(model);
+                case "BraceResults":
+                    return GetBraceNames(model);
                 default:
                     return null;
             }
@@ -92,6 +98,73 @@ namespace Speckle.ConnectorETABS.Util
             }
             catch { return null; }
         }
+
+        public static List<string> GetColumnNames(cSapModel model)
+        {
+            var frameNames = GetAllFrameNames(model);
+
+            List<string> columnNames = new List<string>();
+
+            string frameLabel = "";
+            string frameStory = "";
+
+            foreach(var frameName in frameNames)
+            {
+                model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+
+                if (frameLabel.ToLower().StartsWith("c"))
+                {
+                    columnNames.Add(frameName);
+                }
+            }
+
+            return columnNames;
+        }
+
+        public static List<string> GetBeamNames(cSapModel model)
+        {
+            var frameNames = GetAllFrameNames(model);
+
+            List<string> beamNames = new List<string>();
+
+            string frameLabel = "";
+            string frameStory = "";
+
+            foreach (var frameName in frameNames)
+            {
+                model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+
+                if (frameLabel.ToLower().StartsWith("b"))
+                {
+                    beamNames.Add(frameName);
+                }
+            }
+
+            return beamNames;
+        }
+
+        public static List<string> GetBraceNames(cSapModel model)
+        {
+            var frameNames = GetAllFrameNames(model);
+
+            List<string> braceNames = new List<string>();
+
+            string frameLabel = "";
+            string frameStory = "";
+
+            foreach (var frameName in frameNames)
+            {
+                model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+
+                if (frameLabel.ToLower().StartsWith("d"))
+                {
+                    braceNames.Add(frameName);
+                }
+            }
+
+            return braceNames;
+        }
+
         public static List<string> GetAllTendonNames(cSapModel model)
         {
             int num = 0;
@@ -417,7 +490,10 @@ namespace Speckle.ConnectorETABS.Util
             Frame = 2, // cFrameObj
             Area = 4,
             LoadPattern = 5,
-            Model
+            Model,
+            ColumnResults,
+            BeamResults,
+            BraceResults
         }
 
         /// <summary>

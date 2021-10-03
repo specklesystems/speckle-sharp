@@ -23,5 +23,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModelUnits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSectionProfile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertResultSet1D.cs" />
   </ItemGroup>
 </Project>

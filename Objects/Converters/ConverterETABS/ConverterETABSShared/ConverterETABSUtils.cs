@@ -14,6 +14,9 @@ namespace Objects.Converter.ETABS
         Area = 4, // cAreaObj
         LoadPattern = 5,
         Model,
+        ColumnResults,
+        BeamResults,
+        BraceResults
         //Link = 5, // cLinkObj
         //PropMaterial = 6, // cPropFrame which is material property
         //                  //PropRebar = 7, // cPropRebar doesn't have set methods

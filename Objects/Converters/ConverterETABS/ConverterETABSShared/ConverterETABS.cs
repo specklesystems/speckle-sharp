@@ -116,6 +116,15 @@ namespace Objects.Converter.ETABS
                 case "LoadPattern":
                     returnObject = LoadPatternToSpeckle(name);
                     break;
+                case "ColumnResults":
+                    returnObject = ResultSet1dToSpeckle(name);
+                    break;
+                case "BeamResults":
+                    returnObject = ResultSet1dToSpeckle(name);
+                    break;
+                case "BraceResults":
+                    returnObject = ResultSet1dToSpeckle(name);
+                    break;
                     //case "GridSys":
                     //    returnObject = GridSysToSpeckle(name);
                     //    break;
