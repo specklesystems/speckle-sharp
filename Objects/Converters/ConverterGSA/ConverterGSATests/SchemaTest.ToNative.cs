@@ -495,8 +495,12 @@ namespace ConverterGSATests
       Assert.Equal(gsaInfluenceBeam.direction.ToNative(), gsaInfBeam.Direction);
       Assert.Equal(gsaInfluenceBeam.factor, gsaInfBeam.Factor);
       Assert.Equal(gsaInfluenceBeam.id, gsaInfBeam.Sid);
+      Assert.Equal(gsaInfluenceBeam.element.nativeId, gsaInfBeam.Element);
       Assert.Equal(gsaInfluenceBeam.type.ToNative(), gsaInfBeam.Type);
       Assert.Equal(gsaInfluenceBeam.name, gsaInfBeam.Name);
+
+      //var copy = converter.ConvertToSpeckle(converter.ConvertToNative(gsaInfluenceBeam));
+      //Assert.Equal(gsaInfluenceBeam, copy);
     }
     
     [Fact]

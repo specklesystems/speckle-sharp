@@ -343,6 +343,8 @@ namespace ConverterGSA
       var speckleAlign = (GSAAlignment)speckleObject;
       var gsaAlign = new GsaAlign()
       {
+        ApplicationId = speckleAlign.applicationId,
+        Index = speckleAlign.nativeId,
         Chain = speckleAlign.chainage,
         Curv = speckleAlign.curvature,
         Name = speckleAlign.name,
@@ -360,7 +362,7 @@ namespace ConverterGSA
       {
         Name = speckleInfBeam.name,
         Direction = speckleInfBeam.direction.ToNative(),
-        //Element = speckleInfBeam.element.id
+        Element = speckleInfBeam.element.nativeId,
         Factor = speckleInfBeam.factor,
         Position = speckleInfBeam.position,
         Sid = speckleObject.id,

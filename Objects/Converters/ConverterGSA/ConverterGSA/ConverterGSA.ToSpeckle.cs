@@ -2102,9 +2102,10 @@ namespace ConverterGSA
     /// </summary>
     /// <param name="index">GSA element index</param>
     /// <returns></returns>
-    private Element1D GetElement1DFromIndex(int index)
+    private GSAElement1D GetElement1DFromIndex(int index)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaEl, Element1D>(index, out var speckleObjects)) ? speckleObjects.First() : null;
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaEl, GSAElement1D>(index, out var speckleObjects)) ? 
+      speckleObjects.First() : null;
     }
 
     /// <summary>
