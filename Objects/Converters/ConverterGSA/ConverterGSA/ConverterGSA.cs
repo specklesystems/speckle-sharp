@@ -16,6 +16,7 @@ using Objects.Structural.Results;
 using Objects.Structural.Analysis;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Materials;
+using Objects.Structural.GSA.Bridge;
 
 namespace ConverterGSA
 {
@@ -56,9 +57,14 @@ namespace ConverterGSA
     private readonly Dictionary<ModelAspect, List<Type>> modelGroups = new Dictionary<ModelAspect, List<Type>>()
     {
       { ModelAspect.Nodes, new List<Type>() { typeof(GSANode) } },
-      { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(Axis), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D) } },
+      { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D),
+        //CatchAll
+        typeof(GSAStage), //Analysis stages
+        typeof(Axis), typeof(GSAGridSurface), typeof(GSAGridPlane), typeof(GSAGridLine), typeof(GSAPolyline),  //Geometry
+        typeof(GSARigidConstraint), typeof(GSAGeneralisedRestraint), //Constraints
+        typeof(GSAAlignment), typeof(GSAInfluenceBeam), typeof(GSAInfluenceNode), typeof(GSAPath), typeof(GSAUserVehicle) } }, //Bridge
       { ModelAspect.Loads, new List<Type>()
-        { typeof(GSAAnalysisCase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSALoadNode) } },
+        { typeof(GSAAnalysisCase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSALoadNode), typeof(GSALoadThermal2d) } },
       { ModelAspect.Restraints, new List<Type>() { typeof(Objects.Structural.Geometry.Restraint) } },
       { ModelAspect.Properties, new List<Type>()
         { typeof(GSAProperty1D), typeof(GSAProperty2D), typeof(SectionProfile), typeof(PropertyMass), typeof(PropertySpring), typeof(PropertyDamper), typeof(Property3D) } },
@@ -228,7 +234,11 @@ namespace ConverterGSA
                 var speckleObjs = toSpeckleResult.ModelObjects; //Don't need to add result objects to the cache since they aren't needed for serialisation
                 if (speckleObjs != null && speckleObjs.Count > 0)
                 {
-                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so));
+                  foreach(var o in speckleObjs)
+                  {
+                    Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, new Dictionary<string, object>() { { o.applicationId, (object)o } });
+                  }
+                  
                 }
 
                 if (AssignIntoResultSet(rsa, toSpeckleResult))
