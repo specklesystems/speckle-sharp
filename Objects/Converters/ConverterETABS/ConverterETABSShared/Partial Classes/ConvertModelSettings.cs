@@ -13,6 +13,7 @@ namespace Objects.Converter.ETABS
             speckleModelSettings.modelUnits = UnitsToSpeckle();
             string concreteCode = "";
             Model.DesignConcrete.GetCode(ref concreteCode);
+            speckleModelSettings.concreteCode = concreteCode;
             string steelCode = "";
             Model.DesignSteel.GetCode(ref steelCode);
             speckleModelSettings.steelCode = steelCode;

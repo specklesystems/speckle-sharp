@@ -24,5 +24,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSectionProfile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertResultSet1D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\ClosedLoop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\IndexPair.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\IndexSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\PolygonMesher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\TriangleIndexSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\Vertex.cs" />
   </ItemGroup>
 </Project>

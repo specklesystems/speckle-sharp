@@ -60,7 +60,10 @@ namespace Speckle.ConnectorETABS.UI
             conversionProgressDict["Conversion"] = 0;
             Execute.PostToUIThread(() => state.Progress.Maximum = totalObjectCount);
 
-
+            if (commitObj["@Model"] == null)
+            {
+                commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));
+            }
             foreach (var applicationId in state.SelectedObjectIds)
             {
                 if (state.CancellationTokenSource.Token.IsCancellationRequested)
@@ -151,7 +154,7 @@ namespace Speckle.ConnectorETABS.UI
                 objectId = commitObjId,
                 branchName = state.Branch.name,
                 message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from ETABS.",
-                sourceApplication = Applications.ETABSv18
+                sourceApplication = ConnectorETABSUtils.ETABSAppName
             };
 
             if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -164,7 +167,7 @@ namespace Speckle.ConnectorETABS.UI
                 state.PreviousCommitId = commitId;
 
                 PersistAndUpdateStreamInFile(state);
-                RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
+                RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
             }
             catch (Exception e)
             {
