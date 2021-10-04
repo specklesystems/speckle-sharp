@@ -70,6 +70,10 @@ namespace Speckle.ConnectorETABS.Util
                     return GetBeamNames(model);
                 case "BraceResults":
                     return GetBraceNames(model);
+                case "PierResults":
+                    return GetAllPierLabelNames(model);
+                case "SpandrelResults":
+                    return GetAllSpandrelLabelNames(model);
                 default:
                     return null;
             }
@@ -493,7 +497,9 @@ namespace Speckle.ConnectorETABS.Util
             Model,
             ColumnResults,
             BeamResults,
-            BraceResults
+            BraceResults,
+            PierResults,
+            SpandrelResults
         }
 
         /// <summary>

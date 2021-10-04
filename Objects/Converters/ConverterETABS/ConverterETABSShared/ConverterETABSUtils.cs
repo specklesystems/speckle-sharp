@@ -16,7 +16,9 @@ namespace Objects.Converter.ETABS
         Model,
         ColumnResults,
         BeamResults,
-        BraceResults
+        BraceResults,
+        PierResults,
+        SpandrelResults
         //Link = 5, // cLinkObj
         //PropMaterial = 6, // cPropFrame which is material property
         //                  //PropRebar = 7, // cPropRebar doesn't have set methods
