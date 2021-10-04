@@ -8,7 +8,9 @@
   <PropertyGroup Label="Configuration" />
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.ClientOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.ClientOperations.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Recieve.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Selection.cs" />

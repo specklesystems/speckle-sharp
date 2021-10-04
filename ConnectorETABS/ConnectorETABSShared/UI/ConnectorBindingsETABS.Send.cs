@@ -64,6 +64,11 @@ namespace Speckle.ConnectorETABS.UI
             {
                 commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));
             }
+            if( commitObj["@Stories"] == null)
+            {
+                commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "ETABS"));
+            }
+
             foreach (var applicationId in state.SelectedObjectIds)
             {
                 if (state.CancellationTokenSource.Token.IsCancellationRequested)

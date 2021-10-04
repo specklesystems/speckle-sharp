@@ -20,7 +20,7 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.name = name;
             string pointI, pointJ;
             pointI = pointJ = null;
-            int v = Model.FrameObj.GetPoints(name,ref pointI,ref pointJ);
+            _ = Model.FrameObj.GetPoints(name, ref pointI, ref pointJ);
             var pointINode = PointToSpeckle(pointI);
             var pointJNode = PointToSpeckle(pointJ);
             var speckleLine = new Line();

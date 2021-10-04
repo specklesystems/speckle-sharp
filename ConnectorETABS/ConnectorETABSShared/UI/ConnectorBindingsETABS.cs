@@ -48,9 +48,9 @@ namespace Speckle.ConnectorETABS.UI
             throw new NotImplementedException();
         }
 
-        public override string GetDocumentId() => GetDocHash(Model);
+        public override string GetDocumentId() => GetDocHash();
 
-        private string GetDocHash(cSapModel model) => Speckle.Core.Models.Utilities.hashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFuctions.MD5);
+        private string GetDocHash() => Utilities.hashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFuctions.MD5);
 
         public override string GetDocumentLocation() => Model.GetModelFilepath();
 

@@ -9,8 +9,12 @@
     <Import_RootNamespace>ConverterETABS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterETABS.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterETABSUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterETABS.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterETABSUtils.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Convert1DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Convert2DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
@@ -24,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSectionProfile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertResultSet1D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\ClosedLoop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\IndexPair.cs" />

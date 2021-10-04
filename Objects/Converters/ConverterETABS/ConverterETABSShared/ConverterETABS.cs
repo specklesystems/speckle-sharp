@@ -98,6 +98,9 @@ namespace Objects.Converter.ETABS
                 case "Model":
                     returnObject = ModelToSpeckle();
                     break;
+                case "Stories":
+                    returnObject = StoriesToSpeckle();
+                    break;
                 case "Area":
                     returnObject = AreaToSpeckle(name);
                     break;
@@ -117,6 +120,7 @@ namespace Objects.Converter.ETABS
                     returnObject = LoadPatternToSpeckle(name);
                     break;
                 case "ColumnResults":
+                  
                     returnObject = FrameResultSet1dToSpeckle(name);
                     break;
                 case "BeamResults":
@@ -183,7 +187,7 @@ namespace Objects.Converter.ETABS
                 return objects.Select(x => ConvertToSpeckle(x)).ToList();
         }
 
-        public IEnumerable<string> GetServicedApplications() => new string[] {ETABSAppName };
+        public IEnumerable<string> GetServicedApplications() => new string[] { ETABSAppName };
 
 
         public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
