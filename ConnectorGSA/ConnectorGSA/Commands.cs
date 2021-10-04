@@ -14,7 +14,9 @@ using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Deployment.Application;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -259,7 +261,10 @@ namespace ConnectorGSA
         return null;
       }
 
-      return converter.ConvertToSpeckle(gsaRecords.Cast<object>().ToList());
+      //This converts all the natives ONCE and THEN assigns them into the correct layer-specific Model object(s)
+      var convertedObjs = converter.ConvertToSpeckle(gsaRecords.Cast<object>().ToList());
+
+      return convertedObjs;
     }
 
     public static async Task<bool> Send(Base commitObj, StreamState state, params ITransport[] transports)
@@ -686,6 +691,10 @@ namespace ConnectorGSA
       Instance.GsaModel.StreamSendConfig = coordinator.SenderTab.StreamContentConfig;
       Instance.GsaModel.Result1DNumPosition = coordinator.SenderTab.AdditionalPositionsFor1dElements; //end points (2) plus additional
       Instance.GsaModel.LoggingMinimumLevel = (int)coordinator.LoggingMinimumLevel;
+      Instance.GsaModel.SendOnlyMeaningfulNodes = coordinator.SenderTab.SendMeaningfulNodes;
+#if !DEBUG
+      ((GsaProxy)Instance.GsaModel.Proxy).SetAppVersionForTelemetry(getRunningVersion().ToString());
+#endif
       var perecentageProgressLock = new object();
 
       var account = ((GsaModel)Instance.GsaModel).Account;
@@ -905,6 +914,18 @@ namespace ConnectorGSA
         case GsaUnit.Inches: return "in";
         case GsaUnit.Metres: return "m";
         default: return "mm";
+      }
+    }
+
+    private static Version getRunningVersion()
+    {
+      try
+      {
+        return ApplicationDeployment.CurrentDeployment.CurrentVersion;
+      }
+      catch (Exception)
+      {
+        return Assembly.GetExecutingAssembly().GetName().Version;
       }
     }
   }

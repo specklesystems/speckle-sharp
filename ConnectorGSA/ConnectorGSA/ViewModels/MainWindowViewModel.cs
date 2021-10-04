@@ -133,7 +133,7 @@ namespace ConnectorGSA.ViewModels
     public StreamContentConfig StreamContentConfig { get => Coordinator.SenderTab.StreamContentConfig;
       set => Refresh(() => Coordinator.SenderTab.StreamContentConfig = value); }
 
-    public bool SendMeaningfulNodes { get; set; } = true;
+    public bool SendMeaningfulNodes { get => Coordinator.SenderTab.SendMeaningfulNodes; set => Coordinator.SenderTab.SendMeaningfulNodes = value; }
     public int Additional1DPositions { get => Coordinator.SenderTab.AdditionalPositionsFor1dElements;
       set => Coordinator.SenderTab.AdditionalPositionsFor1dElements = value; }
 
@@ -189,7 +189,9 @@ namespace ConnectorGSA.ViewModels
       //sender and receiver coordinators
       loggingProgress.ProgressChanged += ProcessLogProgressUpdate;
       loggingProgress.ProgressChanged += ProcessMessageForLog;
+#if !DEBUG
       loggingProgress.ProgressChanged += ProcessMessageForTelemetry;
+#endif
       streamCreationProgress.ProgressChanged += ProcessStreamCreationProgress;
       streamDeletionProgress.ProgressChanged += ProcessStreamDeletionProgress;
       statusProgress.ProgressChanged += ProcessStatusProgressUpdate;

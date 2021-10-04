@@ -39,6 +39,9 @@ namespace ConverterGSA
 
     private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
 
+    //private Dictionary<GSALayer, HashSet<int>> meaningfulNodeIndices = new Dictionary<GSALayer, HashSet<int>>();
+    private Dictionary<GSALayer, HashSet<string>> meaningfulNodesAppIds = new Dictionary<GSALayer, HashSet<string>>();
+
     #region model_group
     private enum ModelAspect
     {
@@ -183,6 +186,9 @@ namespace ConverterGSA
       var typeGens = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(sendLayer);
       returnObjects = new List<Base>();
 
+      //var nodeDependentSchemaTypesByLayer = new Dictionary<GSALayer, List<Type>>();
+      //nodeDependentSchemaTypesByLayer.Add(GSALayer.Design, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Design));
+
       var gsaRecordsByType = gsaRecords.GroupBy(r => r.GetType()).ToDictionary(r => r.Key, r => r.ToList());
 
       var modelsByLayer = new Dictionary<GSALayer, Model>() { { GSALayer.Design, new Model() { specs = modelInfo, layerDescription = "Design" } } };
@@ -191,7 +197,28 @@ namespace ConverterGSA
       {
         modelsByLayer.Add(GSALayer.Analysis, new Model() { specs = modelInfo, layerDescription = "Analysis" });
         modelHasData.Add(GSALayer.Analysis, false);
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Analysis, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Analysis));
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Both, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Both));
       }
+
+      /*
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes)
+      {//Remove nodes across the layers
+        var referencedNodeIndices = new List<int>();
+        foreach (var t in nodeDependentSchemaTypesByLayer[sendLayer].Where(ndst => gsaRecordsByType.Keys.Contains(ndst)))
+        {
+          var ns = gsaRecordsByType[t];
+          foreach (var i in ns.n)
+          {
+
+          }
+        }
+      }
+      */
+
+      var nodesTemp = new Dictionary<GsaRecord, ToSpeckleResult>();
 
       var rsa = new ResultSetAll();
       bool resultSetHasData = false;
@@ -219,12 +246,23 @@ namespace ConverterGSA
 
                 foreach (var l in modelsByLayer.Keys)
                 {
-                  if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                  //Special case for nodes due to the possibility that not all of them should be sent, and the subset that should be sent can vary by layer
+                  if (Instance.GsaModel.SendOnlyMeaningfulNodes && t == typeof(GsaNode))
                   {
-                    modelHasData[l] = true;
+                    if (!nodesTemp.ContainsKey(nativeObj))
+                    {
+                      nodesTemp.Add(nativeObj, toSpeckleResult);
+                    }
+                  }
+                  else
+                  {
+                    if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                    {
+                      modelHasData[l] = true;
+                    }
                   }
                 }
-                
+
                 var speckleObjs = toSpeckleResult.ModelObjects; //Don't need to add result objects to the cache since they aren't needed for serialisation
                 if (speckleObjs != null && speckleObjs.Count > 0)
                 {
@@ -240,6 +278,50 @@ namespace ConverterGSA
             catch (Exception ex)
             {
 
+            }
+          }
+        }
+      }
+
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes && nodesTemp != null && nodesTemp.Keys.Count > 0)
+      {
+        foreach (var l in modelsByLayer.Keys)
+        {
+          foreach (var n in nodesTemp.Keys)
+          {
+            if (nodesTemp[n].LayerAgnosticObjects != null)
+            {
+              foreach (var o in nodesTemp[n].LayerAgnosticObjects)
+              {
+                if (meaningfulNodesAppIds[l].Contains(o.applicationId))
+                {
+                  AssignIntoModel(modelsByLayer[l], l, nodesTemp[n]);
+                }
+              }
+            }
+          }
+        }
+
+        foreach (var n in nodesTemp.Keys)
+        {
+          if (nodesTemp[n].DesignLayerOnlyObjects != null)
+          {
+            foreach (var o in nodesTemp[n].DesignLayerOnlyObjects)
+            {
+              if (meaningfulNodesAppIds[GSALayer.Design].Contains(o.applicationId))
+              {
+                AssignIntoModel(modelsByLayer[GSALayer.Design], GSALayer.Design, nodesTemp[n]);
+              }
+            }
+          }
+          if (nodesTemp[n].AnalysisLayerOnlyObjects != null)
+          {
+            foreach (var o in nodesTemp[n].AnalysisLayerOnlyObjects)
+            {
+              if (meaningfulNodesAppIds[GSALayer.Analysis].Contains(o.applicationId))
+              {
+                AssignIntoModel(modelsByLayer[GSALayer.Analysis], GSALayer.Analysis, nodesTemp[n]);
+              }
             }
           }
         }

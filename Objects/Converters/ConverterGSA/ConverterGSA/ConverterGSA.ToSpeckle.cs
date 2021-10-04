@@ -22,9 +22,6 @@ using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Objects.Structural.Materials;
 using Objects.Structural.GSA.Bridge;
 using Objects.Structural.GSA.Analysis;
-using System.Xml;
-using Speckle.Core.Api;
-using System.Security.Cryptography;
 
 namespace ConverterGSA
 {
@@ -117,13 +114,25 @@ namespace ConverterGSA
 
       if (gsaAssembly.Index.IsIndex()) speckleAssembly.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaAssembly>(gsaAssembly.Index.Value);
       if (gsaAssembly.Index.IsIndex()) speckleAssembly.nativeId = gsaAssembly.Index.Value;
-      if (gsaAssembly.Topo1.IsIndex()) speckleAssembly.end1Node = (GSANode)GetNodeFromIndex(gsaAssembly.Topo1.Value);
-      if (gsaAssembly.Topo2.IsIndex()) speckleAssembly.end2Node = (GSANode)GetNodeFromIndex(gsaAssembly.Topo2.Value);
+      if (gsaAssembly.Topo1.IsIndex())
+      {
+        speckleAssembly.end1Node = (GSANode)GetNodeFromIndex(gsaAssembly.Topo1.Value);
+        AddToMeaningfulNodeIndices(speckleAssembly.end1Node.applicationId);
+      }
+      if (gsaAssembly.Topo2.IsIndex())
+      {
+        speckleAssembly.end2Node = (GSANode)GetNodeFromIndex(gsaAssembly.Topo2.Value);
+        AddToMeaningfulNodeIndices(speckleAssembly.end2Node.applicationId);
+      }
       if (gsaAssembly.OrientNode.IsIndex()) speckleAssembly.orientationNode = (GSANode)GetNodeFromIndex(gsaAssembly.OrientNode.Value);
       //TODO: which if Topo1, Topo2 and OrientNode are unique, if not is it a fatal error?
       if (gsaAssembly.CurveOrder.HasValue) speckleAssembly.curveOrder = gsaAssembly.CurveOrder.Value;
       if (GetAssemblyEntites(gsaAssembly, out var entities)) speckleAssembly.entities = entities;
-      if (gsaAssembly.IntTopo.HasValues()) speckleAssembly.entities.AddRange(gsaAssembly.IntTopo.Select(i => GetNodeFromIndex(i)).ToList());
+      if (gsaAssembly.IntTopo.HasValues())
+      {
+        speckleAssembly.entities.AddRange(gsaAssembly.IntTopo.Select(i => GetNodeFromIndex(i)).ToList());
+        AddToMeaningfulNodeIndices(speckleAssembly.entities.Select(e => e.applicationId));
+      }
       if (GetAssemblyPoints(gsaAssembly, out var points)) speckleAssembly.points = points;
 
       return new ToSpeckleResult(speckleAssembly);
@@ -274,6 +283,7 @@ namespace ConverterGSA
         speckleElement1d.end1Node = GetNodeFromIndex(gsaEl.NodeIndices[0]);
         speckleElement1d.end2Node = GetNodeFromIndex(gsaEl.NodeIndices[1]);
         speckleElement1d.topology = gsaEl.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(speckleElement1d.topology.Select(n => n.applicationId), GSALayer.Analysis);
       }
       else
       {
@@ -285,7 +295,11 @@ namespace ConverterGSA
       speckleElement1d.baseLine = new Line(speckleElement1d.end1Node.basePoint, speckleElement1d.end2Node.basePoint);
       if (gsaEl.PropertyIndex.IsIndex()) speckleElement1d.property = GetProperty1dFromIndex(gsaEl.PropertyIndex.Value);
       if (gsaEl.Angle.HasValue) speckleElement1d.orientationAngle = gsaEl.Angle.Value;
-      if (gsaEl.OrientationNodeIndex.IsIndex()) speckleElement1d.orientationNode = GetNodeFromIndex(gsaEl.OrientationNodeIndex.Value);
+      if (gsaEl.OrientationNodeIndex.IsIndex())
+      {
+        speckleElement1d.orientationNode = GetNodeFromIndex(gsaEl.OrientationNodeIndex.Value);
+        AddToMeaningfulNodeIndices(speckleElement1d.orientationNode.applicationId, GSALayer.Analysis);
+      }
       speckleElement1d.localAxis = GetLocalAxis(speckleElement1d.end1Node, speckleElement1d.end2Node, speckleElement1d.orientationNode, speckleElement1d.orientationAngle.Radians());
       if (gsaEl.End1OffsetX.HasValue) speckleElement1d.end1Offset.x = gsaEl.End1OffsetX.Value;
       if (gsaEl.OffsetY.HasValue) speckleElement1d.end1Offset.y = gsaEl.OffsetY.Value;
@@ -332,6 +346,7 @@ namespace ConverterGSA
       if (gsaEl.NodeIndices.Count >= 3)
       {
         speckleElement2d.topology = gsaEl.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(speckleElement2d.topology.Select(e => e.applicationId), GSALayer.Analysis);
       }
       else
       {
@@ -416,6 +431,7 @@ namespace ConverterGSA
         speckleMember1d.end1Node = GetNodeFromIndex(gsaMemb.NodeIndices[0]);
         speckleMember1d.end2Node = GetNodeFromIndex(gsaMemb.NodeIndices[1]);
         speckleMember1d.topology = gsaMemb.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(speckleMember1d.topology.Select(n => n.applicationId), GSALayer.Design);
       }
       else
       {
@@ -456,10 +472,30 @@ namespace ConverterGSA
       speckleMember1d["MemberHasOffsets"] = gsaMemb.MemberHasOffsets;
       speckleMember1d["End1AutomaticOffset"] = gsaMemb.End1AutomaticOffset;
       speckleMember1d["End2AutomaticOffset"] = gsaMemb.End2AutomaticOffset;
-      if (gsaMemb.Voids.HasValues()) speckleMember1d["Voids"] = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
-      if (gsaMemb.PointNodeIndices.HasValues()) speckleMember1d["Points"] = gsaMemb.PointNodeIndices.Select(i => (GSANode)GetNodeFromIndex(i)).ToList();
-      if (gsaMemb.Polylines.HasValues()) speckleMember1d["Lines"] = gsaMemb.Polylines.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
-      if (gsaMemb.AdditionalAreas.HasValues()) speckleMember1d["Areas"] = gsaMemb.AdditionalAreas.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
+      if (gsaMemb.Voids.HasValues())
+      {
+        var speckleVoids = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
+        speckleMember1d["Voids"] = speckleVoids;
+        AddToMeaningfulNodeIndices(speckleVoids.SelectMany(n => n.Select(n2 => n2.applicationId)), GSALayer.Design);
+      }
+      if (gsaMemb.PointNodeIndices.HasValues())
+      {
+        var specklePoints = gsaMemb.PointNodeIndices.Select(i => (GSANode)GetNodeFromIndex(i)).ToList();
+        speckleMember1d["Points"] = specklePoints;
+        AddToMeaningfulNodeIndices(specklePoints.Select(p => p.applicationId), GSALayer.Design);
+      }
+      if (gsaMemb.Polylines.HasValues())
+      {
+        var speckleLines = gsaMemb.Polylines.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
+        speckleMember1d["Lines"] = speckleLines;
+        AddToMeaningfulNodeIndices(speckleLines.SelectMany(p => p.Select(p2 => p2.applicationId)), GSALayer.Design);
+      }
+      if (gsaMemb.AdditionalAreas.HasValues())
+      {
+        var speckleAreas = gsaMemb.AdditionalAreas.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
+        speckleMember1d["Areas"] = speckleAreas;
+        AddToMeaningfulNodeIndices(speckleAreas.SelectMany(p => p.Select(p2 => p2.applicationId)), GSALayer.Design);
+      }
       if (gsaMemb.LimitingTemperature.HasValue) speckleMember1d["LimitingTemperature"] = gsaMemb.LimitingTemperature.Value;
       if (gsaMemb.LoadHeight.HasValue) speckleMember1d["LoadHeight"] = gsaMemb.LoadHeight;
       if (gsaMemb.EffectiveLengthYY.HasValue) speckleMember1d["EffectiveLengthYY"] = gsaMemb.EffectiveLengthYY;
@@ -501,6 +537,7 @@ namespace ConverterGSA
       if (gsaMemb.NodeIndices.Count >= 3)
       {
         speckleMember2d.topology = gsaMemb.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(speckleMember2d.topology.Select(n => n.applicationId), GSALayer.Design);
       }
       else
       {
@@ -515,6 +552,7 @@ namespace ConverterGSA
       if (gsaMemb.Voids != null && gsaMemb.Voids.Count > 0)
       {
         speckleMember2d.voids = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
+        AddToMeaningfulNodeIndices(speckleMember2d.voids.SelectMany(n => n.Select(n2 => n2.applicationId)), GSALayer.Design);
       }
 
       //-- GSA specific --
@@ -531,10 +569,30 @@ namespace ConverterGSA
       speckleMember2d["AgeAtLoadingDays"] = gsaMemb.AgeAtLoadingDays;
       speckleMember2d["RemovedAtDays"] = gsaMemb.RemovedAtDays;
       speckleMember2d["OffsetAutomaticInternal"] = gsaMemb.OffsetAutomaticInternal;
-      if (gsaMemb.Voids.HasValues()) speckleMember2d["Voids"] = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
-      if (gsaMemb.PointNodeIndices.HasValues()) speckleMember2d["Points"] = gsaMemb.PointNodeIndices.Select(i => (GSANode)GetNodeFromIndex(i)).ToList();
-      if (gsaMemb.Polylines.HasValues()) speckleMember2d["Lines"] = gsaMemb.Polylines.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
-      if (gsaMemb.AdditionalAreas.HasValues()) speckleMember2d["Areas"] = gsaMemb.AdditionalAreas.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
+      if (gsaMemb.Voids.HasValues())
+      {
+        var speckleVoids = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
+        speckleMember2d["Voids"] = speckleVoids;
+        AddToMeaningfulNodeIndices(speckleVoids.SelectMany(n => n.Select(n2 => n2.applicationId)), GSALayer.Design);
+      }
+      if (gsaMemb.PointNodeIndices.HasValues())
+      {
+        var specklePoints = gsaMemb.PointNodeIndices.Select(i => (GSANode)GetNodeFromIndex(i)).ToList();
+        speckleMember2d["Points"] = specklePoints;
+        AddToMeaningfulNodeIndices(specklePoints.Select(p => p.applicationId), GSALayer.Design);
+      }
+      if (gsaMemb.Polylines.HasValues())
+      {
+        var speckleLines = gsaMemb.Polylines.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
+        speckleMember2d["Lines"] = speckleLines;
+        AddToMeaningfulNodeIndices(speckleLines.SelectMany(l => l.Select(l2 => l2.applicationId)), GSALayer.Design);
+      }
+      if (gsaMemb.AdditionalAreas.HasValues())
+      {
+        var speckleAreas = gsaMemb.AdditionalAreas.Select(v => v.Select(i => (GSANode)GetNodeFromIndex(i)).ToList()).ToList();
+        speckleMember2d["Areas"] = speckleAreas;
+        AddToMeaningfulNodeIndices(speckleAreas.SelectMany(a => a.Select(a2 => a2.applicationId)), GSALayer.Design);
+      }
       if (gsaMemb.LimitingTemperature.HasValue) speckleMember2d["LimitingTemperature"] = gsaMemb.LimitingTemperature.Value;
       
       return speckleMember2d;
@@ -825,6 +883,8 @@ namespace ConverterGSA
         nodes = gsaLoadNode.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList(),
       };
 
+      AddToMeaningfulNodeIndices(speckleNodeLoad.nodes.Select(n => n.applicationId));
+
       //-- App agnostic --
       if (gsaLoadNode.Index.IsIndex()) speckleNodeLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadNode>(gsaLoadNode.Index.Value);
       if (gsaLoadNode.LoadCaseIndex.IsIndex()) speckleNodeLoad.loadCase = GetLoadCaseFromIndex(gsaLoadNode.LoadCaseIndex.Value);
@@ -861,6 +921,8 @@ namespace ConverterGSA
         gravityFactors = GetGravityFactors(gsaLoadGravity),
         elements = new List<Base>(),
       };
+
+      AddToMeaningfulNodeIndices(speckleGravityLoad.nodes.Select(n => n.applicationId));
 
       //-- App agnostic --
       if (gsaLoadGravity.Index.IsIndex()) speckleGravityLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGravity>(gsaLoadGravity.Index.Value);
@@ -1554,9 +1616,16 @@ namespace ConverterGSA
         speckleRigid.nativeId = gsaRigid.Index.Value;
         speckleRigid.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaRigid>(gsaRigid.Index.Value);
       }
-      if (gsaRigid.PrimaryNode.IsIndex()) speckleRigid.primaryNode = GetNodeFromIndex(gsaRigid.PrimaryNode.Value);
+      if (gsaRigid.PrimaryNode.IsIndex())
+      {
+        speckleRigid.primaryNode = GetNodeFromIndex(gsaRigid.PrimaryNode.Value);
+        AddToMeaningfulNodeIndices(speckleRigid.primaryNode.applicationId);
+      }
       if (gsaRigid.Type == RigidConstraintType.Custom) speckleRigid.constraintCondition = GetRigidConstraint(gsaRigid.Link);
       if (gsaRigid.ParentMember.HasValue) speckleRigid.parentMember = GetMemberFromIndex(gsaRigid.ParentMember.Value);
+
+      AddToMeaningfulNodeIndices(speckleRigid.constrainedNodes.Select(cn => cn.applicationId));
+
       return new ToSpeckleResult(speckleRigid);
     }
 
@@ -1575,6 +1644,8 @@ namespace ConverterGSA
         speckleGenRest.nativeId = gsaGenRest.Index.Value;
         speckleGenRest.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaGenRest>(gsaGenRest.Index.Value);
       }
+      AddToMeaningfulNodeIndices(speckleGenRest.nodes.Select(n => n.applicationId));
+      
       return new ToSpeckleResult(speckleGenRest);
     }
     #endregion
@@ -1647,7 +1718,11 @@ namespace ConverterGSA
         speckleInfBeam.nativeId = gsaInfNode.Index.Value;
       }
       if (gsaInfNode.Factor.HasValue) speckleInfBeam.factor = gsaInfNode.Factor.Value;
-      if (gsaInfNode.Node.IsIndex()) speckleInfBeam.node = GetNodeFromIndex(gsaInfNode.Node.Value);
+      if (gsaInfNode.Node.IsIndex())
+      {
+        speckleInfBeam.node = GetNodeFromIndex(gsaInfNode.Node.Value);
+        AddToMeaningfulNodeIndices(speckleInfBeam.node.applicationId);
+      }
 
       return new ToSpeckleResult(speckleInfBeam);
     }
@@ -3338,5 +3413,38 @@ namespace ConverterGSA
     #endregion
     #endregion
     #endregion
+
+    private void AddToMeaningfulNodeIndices(string appId, GSALayer layer = GSALayer.Both)
+    {
+      AddToMeaningfulNodeIndices(new[] { appId }, layer);
+    }
+
+    private void AddToMeaningfulNodeIndices(IEnumerable<string> nodeAppIds, GSALayer layer = GSALayer.Both)
+    {
+      if (nodeAppIds == null || nodeAppIds.Count() == 0)
+      {
+        return;
+      }
+      if (!meaningfulNodesAppIds.ContainsKey(GSALayer.Design))
+      {
+        meaningfulNodesAppIds.Add(GSALayer.Design, new HashSet<string>());
+      }
+      if ((layer == GSALayer.Analysis || layer == GSALayer.Both) && (!meaningfulNodesAppIds.ContainsKey(GSALayer.Analysis)))
+      {
+        meaningfulNodesAppIds.Add(GSALayer.Analysis, new HashSet<string>());
+      }
+      
+      foreach (var id in nodeAppIds)
+      {
+        if ((layer == GSALayer.Design || layer == GSALayer.Both) && !meaningfulNodesAppIds[GSALayer.Design].Contains(id))
+        {
+          meaningfulNodesAppIds[GSALayer.Design].Add(id);
+        }
+        if ((layer == GSALayer.Analysis || layer == GSALayer.Both) && !meaningfulNodesAppIds[GSALayer.Analysis].Contains(id))
+        {
+          meaningfulNodesAppIds[GSALayer.Analysis].Add(id);
+        }
+      }
+    }
   }
 }
