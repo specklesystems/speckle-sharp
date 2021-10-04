@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModelUnits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSectionProfile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertResultSet1D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\ClosedLoop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\IndexPair.cs" />
