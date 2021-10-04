@@ -121,7 +121,7 @@ namespace Objects.Converter.RhinoGh
           }
           if (converted == null)
             continue;
-          var layerName = $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}";
+          var layerName = (geo["Layer"] != null) ? $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}" : $"{commitInfo}";
           int index = 1;
           if (layerName != null)
             GetLayer(Doc, layerName, out index, true);
