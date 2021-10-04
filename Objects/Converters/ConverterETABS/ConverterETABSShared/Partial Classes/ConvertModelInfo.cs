@@ -16,7 +16,8 @@ namespace Objects.Converter.ETABS
             string programName, programVersion, programLevel;
             programVersion = programName = programLevel = null;
             Model.GetProgramInfo(ref programName, ref programVersion, ref programLevel);
-            modelInfo.application = programName + programVersion + programLevel;
+            modelInfo.application = programName;
+            modelInfo.settings = modelSettingsToSpeckle();
             int numberItems = 0;
             string[] items, data;
             items = data = null;

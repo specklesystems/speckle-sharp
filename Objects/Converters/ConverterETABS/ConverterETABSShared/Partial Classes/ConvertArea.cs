@@ -11,6 +11,10 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        public void AreaToNative(Element2D area)
+        {
+            return;
+        }
         public  Element2D AreaToSpeckle(string name)
         {
             var speckleStructArea = new Element2D();
@@ -42,6 +46,7 @@ namespace Objects.Converter.ETABS
             var faces = polygonMesher.Faces();
             var vertices = polygonMesher.Coordinates;
             speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
+
 
             return speckleStructArea;
         }
