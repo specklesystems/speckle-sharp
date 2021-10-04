@@ -35,82 +35,60 @@ namespace SpeckleConnectionManager
             string serverLocationStore = Path.Combine(appFolderFullName, "server.txt");
             string challengeCodeStore = Path.Combine(appFolderFullName, "challenge.txt");
 
+            var accessCode = args[0].Split('=')[1];
+            var savedUrl = System.IO.File.ReadAllText(serverLocationStore);
+            var savedChallenge = System.IO.File.ReadAllText(challengeCodeStore);
 
-            if (args.Length == 0) {
-                Console.Write("Speckle Server Address (e.g. https://v2.speckle.arup.com): ");
-                var url = Console.ReadLine();
-                var code = Guid.NewGuid();
-                var suuid= Guid.NewGuid();
-                ProcessStartInfo psi = new ProcessStartInfo
-                {
-                    FileName = $"{url}/authn/verify/sdm/{code}?suuid={suuid}",
-                    UseShellExecute = true
-                };
-                Process.Start(psi);
-                // Process.Start("open", $"{url}/authn/verify/sdm/{code}?suuid={suuid}"); //MAC
+            HttpResponseMessage response = await client.PostAsJsonAsync($"{savedUrl}/auth/token", new {
+                appId = "sdm",
+                appSecret = "sdm",
+                accessCode = accessCode,
+                challenge = savedChallenge
+            });
+            var tokens = await response.Content.ReadFromJsonAsync<Tokens>();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokens.token}");
 
-                System.IO.File.WriteAllText(serverLocationStore, url);
-                System.IO.File.WriteAllText(challengeCodeStore, code.ToString());
-            } else {
-                var accessCode = args[0].Split('=')[1];
-                var savedUrl = System.IO.File.ReadAllText(serverLocationStore);
-                var savedChallenge = System.IO.File.ReadAllText(challengeCodeStore);
+            var info = await client.PostAsJsonAsync($"{savedUrl}/graphql", new {
+                query = "{\n  user {\n    id\n    email\n    name\n company \n} serverInfo {\n name \n company \n canonicalUrl \n }\n}\n"
+            });
 
-                HttpResponseMessage response = await client.PostAsJsonAsync($"{savedUrl}/auth/token", new {
-                    appId = "sdm",
-                    appSecret = "sdm",
-                    accessCode = accessCode,
-                    challenge = savedChallenge
-                });
-                var tokens = await response.Content.ReadFromJsonAsync<Tokens>();
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokens.token}");
+            var infoContent = await info.Content.ReadFromJsonAsync<InfoData>();
 
-                var info = await client.PostAsJsonAsync($"{savedUrl}/graphql", new {
-                    query = "{\n  user {\n    id\n    email\n    name\n company \n} serverInfo {\n name \n company \n canonicalUrl \n }\n}\n"
-                });
+            var serverInfo = infoContent.data.serverInfo;
+            serverInfo.url = savedUrl;
 
-                var infoContent = await info.Content.ReadFromJsonAsync<InfoData>();
+            var content = new {
+                id = infoContent.data.serverInfo.name,
+                isDefault = true,
+                token = tokens.token,
+                userInfo = infoContent.data.user,
+                serverInfo = infoContent.data.serverInfo,
+                refreshToken = tokens.refreshToken
+            };
 
-                var serverInfo = infoContent.data.serverInfo;
-                serverInfo.url = savedUrl;
+            string jsonString = JsonSerializer.Serialize(content);
 
-                var content = new {
-                    id = infoContent.data.serverInfo.name,
-                    isDefault = true,
-                    token = tokens.token,
-                    userInfo = infoContent.data.user,
-                    serverInfo = infoContent.data.serverInfo,
-                    refreshToken = tokens.refreshToken
-                };
+            string dbPath = Path.Combine(appFolderFullName, "Accounts.db");
+            var connection = new SqliteConnection($"Data Source={dbPath}");
+            connection.Open();
+            var command = connection.CreateCommand();
 
-                string jsonString = JsonSerializer.Serialize(content);
+            var createTableCommand = connection.CreateCommand();
+            createTableCommand.CommandText =
+            @"
+                CREATE TABLE IF NOT EXISTS objects (hash varchar, content varchar);
+            ";
+            createTableCommand.ExecuteNonQuery();
 
-                string dbPath = Path.Combine(appFolderFullName, "Accounts.db");
-                var connection = new SqliteConnection($"Data Source={dbPath}");
-                connection.Open();
-                var command = connection.CreateCommand();
-
-                var createTableCommand = connection.CreateCommand();
-                createTableCommand.CommandText =
-                @"
-                    CREATE TABLE IF NOT EXISTS objects (hash varchar, content varchar);
-                ";
-                createTableCommand.ExecuteNonQuery();
-
-                command.CommandText = 
-                @"
-                    INSERT INTO objects (hash, content)
-                    VALUES (@hash, @content);
-                ";
-                command.Parameters.AddWithValue("@hash", content.GetHashCode());
-                command.Parameters.AddWithValue("@content", jsonString);
-                command.ExecuteNonQuery();
-            }
-
-                
-
-
-  
+            command.CommandText = 
+            @"
+                INSERT INTO objects (hash, content)
+                VALUES (@hash, @content);
+            ";
+            command.Parameters.AddWithValue("@hash", content.GetHashCode());
+            command.Parameters.AddWithValue("@content", jsonString);
+            command.ExecuteNonQuery();
+            
 
             return "";
         }

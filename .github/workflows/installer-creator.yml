@@ -83,6 +83,14 @@ jobs:
       run: dotnet publish -c Release -r win10-x64 --self-contained true
       working-directory: SpeckleConnectionManager
 
+    - name: Restore Speckle Connection Manager
+      run: dotnet restore
+      working-directory: SpeckleConnectionManagerUI
+
+    - name: Build SpeckleConnectionManager
+      run: dotnet publish -c Release -r win10-x64 --self-contained true
+      working-directory: SpeckleConnectionManagerUI
+
     - name: create Installer
       id: installer
       run: | 

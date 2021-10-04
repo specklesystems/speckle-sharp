@@ -163,6 +163,7 @@ Source: "ConnectorDynamo\ConnectorDynamoFunctions\bin\Release\*"; DestDir: "{use
 
 ;connectionmanager
 Source: "SpeckleConnectionManager\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
+Source: "SpeckleConnectionManagerUI\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager-ui\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
 
 ;kits
 Source: "Objects\Objects\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
@@ -216,7 +217,7 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 
 
 [Run]
-Filename: "{userappdata}\speckle-connection-manager\SpeckleConnectionManager.exe"; Description: "Authenticate with the Speckle Server"
+Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"
 
 ;checks if minimun requirements are met
 [Code]
