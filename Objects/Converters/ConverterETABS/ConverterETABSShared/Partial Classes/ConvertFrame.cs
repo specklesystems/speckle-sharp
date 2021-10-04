@@ -14,6 +14,8 @@ namespace Objects.Converter.ETABS
         }
         public Element1D FrameToSpeckle(string name)
         {
+            string units = ModelUnits();
+
             var speckleStructFrame = new Element1D();
             speckleStructFrame.name = name;
             string pointI, pointJ;
@@ -21,7 +23,14 @@ namespace Objects.Converter.ETABS
             int v = Model.FrameObj.GetPoints(name,ref pointI,ref pointJ);
             var pointINode = PointToSpeckle(pointI);
             var pointJNode = PointToSpeckle(pointJ);
-            var speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
+            var speckleLine = new Line();
+            if(units != null){
+                speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint, units);
+            }
+            else
+            {
+                speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
+            }
             speckleStructFrame.baseLine = speckleLine;
             eFrameDesignOrientation frameDesignOrientation = eFrameDesignOrientation.Null;
             Model.FrameObj.GetDesignOrientation(name, ref frameDesignOrientation);
@@ -54,27 +63,13 @@ namespace Objects.Converter.ETABS
                     }
             }
 
-            var end1Release = new Restraint();
-            var end2Release = new Restraint();
             bool[] iRelease, jRelease;
             iRelease = jRelease = null;
             double[] startV, endV;
             startV = endV = null;
             Model.FrameObj.GetReleases(name,ref iRelease,ref jRelease,ref startV,ref endV);
-            end1Release.stiffnessX = Convert.ToInt32(!iRelease[0]);
-            end1Release.stiffnessY = Convert.ToInt32(!iRelease[1]);
-            end1Release.stiffnessZ = Convert.ToInt32(!iRelease[2]);
-            end1Release.stiffnessXX = Convert.ToInt32(!iRelease[3]);
-            end1Release.stiffnessYY = Convert.ToInt32(!iRelease[4]);
-            end1Release.stiffnessZZ = Convert.ToInt32(!iRelease[5]);
-            end2Release.stiffnessX = Convert.ToInt32(!jRelease[0]);
-            end2Release.stiffnessY = Convert.ToInt32(!jRelease[1]);
-            end2Release.stiffnessZ = Convert.ToInt32(!jRelease[2]);
-            end2Release.stiffnessXX = Convert.ToInt32(!jRelease[3]);
-            end2Release.stiffnessYY = Convert.ToInt32(!jRelease[4]);
-            end2Release.stiffnessZZ = Convert.ToInt32(!jRelease[5]);
-            speckleStructFrame.end1Releases = end1Release;
-            speckleStructFrame.end2Releases = end2Release;
+            speckleStructFrame.end1Releases = Restraint(iRelease);
+            speckleStructFrame.end2Releases = Restraint(jRelease);
 
             double localAxis = 0;
             bool advanced = false;

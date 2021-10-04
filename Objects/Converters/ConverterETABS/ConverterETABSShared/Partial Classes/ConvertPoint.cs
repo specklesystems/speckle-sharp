@@ -27,13 +27,8 @@ namespace Objects.Converter.ETABS
             bool[] restraints = null;
             v = Model.PointObj.GetRestraint(name, ref restraints);
 
-            speckleStructNode.restraint = new Restraint();
-            speckleStructNode.restraint.stiffnessX = Convert.ToInt32(!restraints[0]);
-            speckleStructNode.restraint.stiffnessY = Convert.ToInt32(!restraints[1]);
-            speckleStructNode.restraint.stiffnessZ = Convert.ToInt32(!restraints[2]);
-            speckleStructNode.restraint.stiffnessXX = Convert.ToInt32(!restraints[3]);
-            speckleStructNode.restraint.stiffnessYY = Convert.ToInt32(!restraints[4]);
-            speckleStructNode.restraint.stiffnessZZ  = Convert.ToInt32(!restraints[5]);
+            speckleStructNode.restraint = Restraint(restraints);
+
 
 //TO DO: detach properties
             return speckleStructNode;

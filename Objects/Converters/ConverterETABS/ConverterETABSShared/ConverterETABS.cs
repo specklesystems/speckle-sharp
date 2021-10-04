@@ -51,7 +51,7 @@ namespace Objects.Converter.ETABS
 
         public bool CanConvertToSpeckle(object @object)
         {
-            foreach (var type in Enum.GetNames(typeof(ConverterETABSUtils.ETABSAPIUsableTypes)))
+            foreach (var type in Enum.GetNames(typeof(ConverterETABS.ETABSAPIUsableTypes)))
             {
                 if (type == @object.ToString())
                 {

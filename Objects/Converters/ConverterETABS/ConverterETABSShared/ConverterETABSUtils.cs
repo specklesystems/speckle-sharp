@@ -1,11 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Structural.Geometry;
+using ETABSv1;
 
 namespace Objects.Converter.ETABS
 {
-    public partial class ConverterETABSUtils
+    public partial class ConverterETABS
     {
+    public string ModelUnits()
+        {   
+           
+            var units = Model.GetDatabaseUnits();
+            if (units != 0)
+            {
+                string[] unitsCat = units.ToString().Split('_');
+                return unitsCat[1];
+            }
+            else
+            {
+                return null;
+            }
+}
+    public Restraint Restraint(bool[] releases)
+        {
+            Restraint restraint = new Restraint();
+            restraint.stiffnessX = Convert.ToInt32(!releases[0]);
+            restraint.stiffnessY = Convert.ToInt32(!releases[1]);
+            restraint.stiffnessZ = Convert.ToInt32(!releases[2]);
+            restraint.stiffnessXX = Convert.ToInt32(!releases[3]);
+            restraint.stiffnessYY = Convert.ToInt32(!releases[4]);
+            restraint.stiffnessZZ = Convert.ToInt32(!releases[5]);
+            return restraint;
+
+        }
+
     public enum ETABSAPIUsableTypes
     {
         Point = 1, // cPointObj
