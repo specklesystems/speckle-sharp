@@ -366,7 +366,7 @@ namespace Objects.Structural.Properties.Profiles
 
             public SheetPile() { }
 
-            [SchemaInfo("Sheet Pile", "Creates a Speckle structural secant pile section profile", "Structural", "Section Profile")]
+            [SchemaInfo("Sheet Pile", "Creates a Speckle structural sheet pile section profile", "Structural", "Section Profile")]
             public SheetPile(string name, double depth, double width, double topFlangeWidth, double botFlangeWidth, double webThickness, double flangeThickness)
             {
                 this.name = name;
