@@ -79,7 +79,18 @@ namespace Objects.Structural
         Channel,
         Perimeter,
         Catalogue,
-        Explicit
+        Explicit,
+        Cruciform,
+        Ellipse,
+        C,
+        Z,
+        IAssymetric,
+        RectoEllipse,
+        SecantPile,
+        SheetPile,
+        Stadium,
+        Trapezoid
+
     }
 
 }
