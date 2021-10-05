@@ -9,6 +9,7 @@ using BE = Objects.BuiltElements;
 using OSG = Objects.Structural.Geometry;
 using OSEA = Objects.Structural.ETABS.Analysis;
 using Objects.Converter.ETABS;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.ETABS
 {
@@ -38,15 +39,14 @@ namespace Objects.Converter.ETABS
 
         public bool CanConvertToNative(Base @object)
         {
-            throw new NotImplementedException();
-            //foreach (var type in Enum.GetNames(typeof(ConverterETABSUtils.ETABSAPIUsableTypes)))
-            //{
-            //    if (type == (string)@object)
-            //    {
-            //        return true;
-            //    }
-            //}
-            //return false;
+            foreach (var type in Enum.GetNames(typeof(ConverterETABS.ETABSConverterSupported)))
+            {
+                if (type == @object.ToString().Split('.').Last())
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool CanConvertToSpeckle(object @object)
@@ -63,22 +63,21 @@ namespace Objects.Converter.ETABS
 
         public object ConvertToNative(Base @object)
         {
-            throw new NotImplementedException();
-            //switch (@object)
-            //{
-            //    case  OSG.Node o:
-            //        return PointToNative(o);
-            //    case Frame o:
-            //        return FrameToNative(o);
-            //    case Area o:
-            //        return AreaToNative(o);
-            //    default:
-            //        ConversionErrors.Add(new SpeckleException("Unsupported Speckle Object: Can not convert to native", level: Sentry.SentryLevel.Warning));
-            //        return null;
-            //}
+            switch (@object)
+            {
+                //case OSG.Node o:
+                //    return PointToNative(o);
+                case OSG.Element1D o:
+                    return FrameToNative(o);
+                //case OSG.Element2D o:
+                //    return AreaToNative(o);
+                default:
+                    ConversionErrors.Add(new SpeckleException("Unsupported Speckle Object: Can not convert to native", level: Sentry.SentryLevel.Warning));
+                    return null;
+            }
         }
 
-            public List<object> ConvertToNative(List<Base> objects)
+        public List<object> ConvertToNative(List<Base> objects)
         {
             return objects.Select(x => ConvertToNative(x)).ToList();
         }

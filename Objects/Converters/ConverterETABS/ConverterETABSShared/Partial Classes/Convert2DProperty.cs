@@ -61,6 +61,7 @@ namespace Objects.Converter.ETABS
             }
 
 
+
             double[] value = null;
             Model.AreaObj.GetModifiers(area, ref value);
             speckleProperty2D.modifierInPlane = value[2];

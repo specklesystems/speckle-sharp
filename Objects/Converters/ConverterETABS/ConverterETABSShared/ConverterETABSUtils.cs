@@ -35,7 +35,12 @@ namespace Objects.Converter.ETABS
 
         }
 
-    public enum ETABSAPIUsableTypes
+        public enum ETABSConverterSupported {
+        Element1D,
+        Element2D
+        }
+
+        public enum ETABSAPIUsableTypes
     {
         Point = 1, // cPointObj
         Frame = 2, // cFrameObj
