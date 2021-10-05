@@ -199,7 +199,7 @@ namespace Objects.Converter.RhinoGh
     private static Layer MakeLayer(RhinoDoc doc, string name, out int index, Layer parentLayer = null)
     {
       index = -1;
-      Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
+      Layer newLayer = new Layer() { Color = System.Drawing.Color.White, Name = name };
       if (parentLayer != null)
         newLayer.ParentLayerId = parentLayer.Id;
       int newIndex = doc.Layers.Add(newLayer);
