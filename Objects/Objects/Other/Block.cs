@@ -36,8 +36,7 @@ namespace Objects.Other
     /// </summary>
     /// <remarks>
     /// the 3x3 sub-matrix determines scaling
-    /// the 4th column's first three values define translation
-    /// the 4th row is an identity row
+    /// the 4th column defines translation, where the last value could be a divisor
     /// </remarks>
     public double[] transform { get; set; }
 
