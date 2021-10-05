@@ -37,7 +37,7 @@ namespace Objects.Converter.ETABS
 
         public enum ETABSConverterSupported {
         Element1D,
-        Element2D
+        Element2D,
         }
 
         public enum ETABSAPIUsableTypes

@@ -11,9 +11,25 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-        public void AreaToNative(Element2D area)
+        public object AreaToNative(Element2D area)
         {
-            return;
+            string name = "";
+            int numPoints = area.topology.Count();
+            List<double> X = new List<double> { };
+            List<double> Y = new List<double>{ };
+            List<double> Z = new List<double> { };
+
+            foreach( Node point in area.topology) {
+                X.Add(point.basePoint.x);
+                Y.Add(point.basePoint.y);
+                Z.Add(point.basePoint.z);
+            }
+            double[] x = X.ToArray();
+            double[] y = Y.ToArray();
+            double[] z = Z.ToArray();
+            Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
+
+            return name;
         }
         public  Element2D AreaToSpeckle(string name)
         {
