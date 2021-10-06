@@ -2,6 +2,7 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
 
@@ -57,12 +58,29 @@ namespace Objects.Structural.Properties
 
     public class ConcreteSectionProperties : SectionProperties
     {
+        public List<Rebar> rebars { get; set; }
         public ConcreteSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
         public ConcreteSectionProperties(string name, double area, double Iy, double Iz, double J, double Sz, double Sy) : base(name, area, Iy, Iz, J, Sy, Sz)
         {
             // todo: implement
+        }
+    }
+
+    public class Rebar : Base
+    {
+        Point localCoordinates { get; set; }
+        double diameter { get; set; }
+        string units { get; set; }
+
+        public Rebar() { }
+
+        public Rebar(Point localCoordinates, double diameter, string units)
+        {
+            this.localCoordinates = localCoordinates;
+            this.diameter = diameter;
+            this.units = units;
         }
     }
 }
