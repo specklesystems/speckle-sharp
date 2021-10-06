@@ -7,17 +7,20 @@ using Objects.Structural.Materials;
 
 namespace Objects.Structural.Properties.Profiles
 {
-    public class SectionProfile : Base //section profile description
+    public class SectionProfile : Base // section profile description
     {
         public string name { get; set; }        
         public ShapeType shapeType { get; set; }
         public double area { get; set; }
-        public double Iyy { get; set; }
-        public double Izz { get; set; }
-        public double J { get; set; }
-        public double Ky { get; set; }
-        public double Kz { get; set; }
-        public double weight { get; set; } //section weight, ex. kg/m
+        public double Iyy { get; set; } // seccond moment of area about y-axis
+        public double Izz { get; set; } // seccond moment of area about z-axis
+        public double J { get; set; } // st. venant torsional constant 
+        public double C { get; set; } // warping constant 
+        public double Sy { get; set; } // section modulus about y-axis
+        public double Sz { get; set; } // section modulus about z-axis
+        public double ry { get; set; } // radius of gyration about y-axis
+        public double rz { get; set; } // radius of gyration about z-axis
+        public double weight { get; set; } // section weight, ex. kg/m
         public string units { get; set; }
         public SectionProfile() { }
 
