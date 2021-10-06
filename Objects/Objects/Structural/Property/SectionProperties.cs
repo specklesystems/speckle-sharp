@@ -39,16 +39,20 @@ namespace Objects.Structural.Properties
         public double C { get; set; } // warping constant 
         public double ry { get; set; } // radius of gyration about y-axis
         public double rz { get; set; } // radius of gyration about z-axis
+        public double y0 { get; set; } // distance from centroid to shear center in y-axis direction
+        public double z0 { get; set; } // distance from centroid to shear center in z-axis direction
         public SteelSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
-        public SteelSectionProperties(string name, double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz) : base(name, area, Iy, Iz, J, Sely, Selz)
+        public SteelSectionProperties(string name, double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz, double y0 = 0.0, double z0 = 0.0) : base(name, area, Iy, Iz, J, Sely, Selz)
         {
             this.C = C;
             this.Sply = Sply;
             this.Splz = Splz;
             this.ry = ry;
             this.rz = rz;
+            this.y0 = y0;
+            this.z0 = z0;
         }
     }
 
@@ -69,7 +73,7 @@ namespace Objects.Structural.Properties
         double y { get; set; } // local y-coordinate
         double z { get; set; } // local z-coordinate
         double diameter { get; set; } // diameter of bar or equivalent diameter
-        string units { get; set; }
+        string unit { get; set; }
         BarArrangement arrangement { get; set; }
 
         public ReinforcementBar() { }
@@ -78,16 +82,16 @@ namespace Objects.Structural.Properties
         /// 
         /// </summary>
         /// <param name="y">Local y-coordinate</param>
-        /// <param name="z"></param>
+        /// <param name="z">Local z-coordinate</param>
         /// <param name="diameter">Diameter of bar or equivalent diameter</param>
-        /// <param name="units">The unit of the bar diameter</param>
+        /// <param name="unit">The unit of the bar diameter</param>
         /// <param name="arrangement">Arrangement of bars</param>
-        public ReinforcementBar(double y, double z, double diameter, string units, BarArrangement arrangement = BarArrangement.Individual)
+        public ReinforcementBar(double y, double z, double diameter, string unit, BarArrangement arrangement = BarArrangement.Individual)
         {
             this.y = y;
             this.z = z;
             this.diameter = diameter;
-            this.units = units;
+            this.unit = unit;
             this.arrangement = arrangement;
         }
     }
