@@ -15,14 +15,16 @@ namespace Objects.Structural.Properties.Profiles
         public double Iyy { get; set; } // seccond moment of area about y-axis
         public double Izz { get; set; } // seccond moment of area about z-axis
         public double J { get; set; } // st. venant torsional constant 
-        public double C { get; set; } // warping constant 
         public double Sy { get; set; } // section modulus about y-axis
         public double Sz { get; set; } // section modulus about z-axis
-        public double ry { get; set; } // radius of gyration about y-axis
-        public double rz { get; set; } // radius of gyration about z-axis
         public double weight { get; set; } // section weight, ex. kg/m
         public string units { get; set; }
         public SectionProfile() { }
+
+        public SectionProfile(string name)
+        {
+            this.name = name;
+        }
 
         public class Rectangular : SectionProfile
         {
@@ -53,9 +55,8 @@ namespace Objects.Structural.Properties.Profiles
             public Circular() { }
 
             [SchemaInfo("Circular", "Creates a Speckle structural circular section profile", "Structural", "Section Profile")]
-            public Circular(string name, double radius, double wallThickness = 0)
+            public Circular(string name, double radius, double wallThickness = 0) : base(name)
             {
-                this.name = name;
                 this.radius = radius;
                 this.wallThickness = wallThickness;
                 this.shapeType = ShapeType.Circular;
@@ -72,9 +73,8 @@ namespace Objects.Structural.Properties.Profiles
             public ISection() { }
 
             [SchemaInfo("ISection", "Creates a Speckle structural I section profile", "Structural", "Section Profile")]
-            public ISection(string name, double depth, double width, double webThickness, double flangeThickness)
+            public ISection(string name, double depth, double width, double webThickness, double flangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
@@ -93,9 +93,8 @@ namespace Objects.Structural.Properties.Profiles
             public Tee() { }
 
             [SchemaInfo("Tee", "Creates a Speckle structural Tee section profile", "Structural", "Section Profile")]
-            public Tee(string name, double depth, double width, double webThickness, double flangeThickness)
+            public Tee(string name, double depth, double width, double webThickness, double flangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
@@ -114,9 +113,8 @@ namespace Objects.Structural.Properties.Profiles
             public Angle() { }
 
             [SchemaInfo("Angle", "Creates a Speckle structural angle section profile", "Structural", "Section Profile")]
-            public Angle(string name, double depth, double width, double webThickness, double flangeThickness)
+            public Angle(string name, double depth, double width, double webThickness, double flangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
@@ -135,9 +133,8 @@ namespace Objects.Structural.Properties.Profiles
             public Channel() { }
 
             [SchemaInfo("Channel", "Creates a Speckle structural channel section profile", "Structural", "Section Profile")]
-            public Channel(string name, double depth, double width, double webThickness, double flangeThickness)
+            public Channel(string name, double depth, double width, double webThickness, double flangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
@@ -154,9 +151,8 @@ namespace Objects.Structural.Properties.Profiles
             public Perimeter() { }
 
             [SchemaInfo("Perimeter", "Creates a Speckle structural section profile defined by a perimeter curve and, if applicable, a list of void curves", "Structural", "Section Profile")]
-            public Perimeter(string name, ICurve outline, List<ICurve> voids = null)
+            public Perimeter(string name, ICurve outline, List<ICurve> voids = null) : base(name)
             {
-                this.name = name;
                 this.outline = outline;
                 this.voids = voids;
             }
@@ -178,9 +174,8 @@ namespace Objects.Structural.Properties.Profiles
             }
 
             [SchemaInfo("Catalogue", "Creates a Speckle structural section profile", "Structural", "Section Profile")]
-            public Catalogue(string name, string catalogueName, string sectionType, string sectionName)
+            public Catalogue(string name, string catalogueName, string sectionType, string sectionName) : base(name)
             {
-                this.name = name;
                 this.catalogueName = catalogueName;
                 this.sectionType = sectionType;
                 this.sectionName = sectionName;
@@ -192,15 +187,14 @@ namespace Objects.Structural.Properties.Profiles
             public Explicit() { }
 
             [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Section Profile")]
-            public Explicit(string name, double area, double Iyy, double Izz, double J, double Sy, double Sz)
+            public Explicit(string name, double area, double Iyy, double Izz, double J, double Sy, double Sz) : base(name)
             {
-                this.name = name;
                 this.area = area;
                 this.Iyy = Iyy;
                 this.Izz = Izz;
-                this.J = J;
                 this.Sy = Sy;
                 this.Sz = Sz;
+                this.J = J;
                 this.shapeType = ShapeType.Explicit;
             }
         }
@@ -215,9 +209,8 @@ namespace Objects.Structural.Properties.Profiles
             public Cruciform() { }
 
             [SchemaInfo("Cruciform", "Creates a Speckle structural cruciform section profile", "Structural", "Section Profile")]
-            public Cruciform(string name, double depth, double width, double webThickness, double flangeThickness)
+            public Cruciform(string name, double depth, double width, double webThickness, double flangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
@@ -235,9 +228,8 @@ namespace Objects.Structural.Properties.Profiles
             public Ellipse() { }
 
             [SchemaInfo("Ellipse", "Creates a Speckle structural ellipse section profile", "Structural", "Section Profile")]
-            public Ellipse(string name, double depth, double width, double wallThickness = 0)
+            public Ellipse(string name, double depth, double width, double wallThickness = 0) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.wallThickness = wallThickness;
@@ -252,12 +244,11 @@ namespace Objects.Structural.Properties.Profiles
             public double wallThickness { get; set; }
             public double lipDepth { get; set; }
 
-            public C() { }
+            public CSection() { }
 
             [SchemaInfo("General C", "Creates a Speckle structural C section profile", "Structural", "Section Profile")]
-            public C(string name, double depth, double width, double wallThickness, double lipDepth)
+            public CSection(string name, double depth, double width, double wallThickness, double lipDepth) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.wallThickness = wallThickness;
@@ -278,9 +269,8 @@ namespace Objects.Structural.Properties.Profiles
             public Z() { }
 
             [SchemaInfo("General Z", "Creates a Speckle structural Z section profile", "Structural", "Section Profile")]
-            public Z(string name, double depth, double topFlangeWidth, double botFlangeWidth, double wallThickness, double topLipDepth, double botLipDepth)
+            public Z(string name, double depth, double topFlangeWidth, double botFlangeWidth, double wallThickness, double topLipDepth, double botLipDepth) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.topFlangeWidth = topFlangeWidth;
                 this.botFlangeWidth = botFlangeWidth;
@@ -303,9 +293,8 @@ namespace Objects.Structural.Properties.Profiles
             public IAssymetric() { }
 
             [SchemaInfo("Assymetric I", "Creates a Speckle structural assymetric I section profile", "Structural", "Section Profile")]
-            public IAssymetric(string name, double depth, double topFlangeWidth, double botFlangeWidth, double wallThickness, double topFlangeThickness, double botFlangeThickness)
+            public IAssymetric(string name, double depth, double topFlangeWidth, double botFlangeWidth, double wallThickness, double topFlangeThickness, double botFlangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.topFlangeWidth = topFlangeWidth;
                 this.botFlangeWidth = botFlangeWidth;
@@ -326,9 +315,8 @@ namespace Objects.Structural.Properties.Profiles
             public RectoEllipse() { }
 
             [SchemaInfo("Recto Ellipse", "Creates a Speckle structural rectangular profile with elliptical corners", "Structural", "Section Profile")]
-            public RectoEllipse(string name, double depth, double width, double depthFlat, double widthFlat)
+            public RectoEllipse(string name, double depth, double width, double depthFlat, double widthFlat) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.depthFlat = depthFlat;
@@ -347,9 +335,8 @@ namespace Objects.Structural.Properties.Profiles
             public SecantPile() { }
 
             [SchemaInfo("Secant Pile", "Creates a Speckle structural secant pile section profile", "Structural", "Section Profile")]
-            public SecantPile(string name, double diameter, double pileCentres, int pileCount, bool isWall)
+            public SecantPile(string name, double diameter, double pileCentres, int pileCount, bool isWall) : base(name)
             {
-                this.name = name;
                 this.diameter = diameter;
                 this.pileCentres = pileCentres;
                 this.pileCount = pileCount;
@@ -370,9 +357,8 @@ namespace Objects.Structural.Properties.Profiles
             public SheetPile() { }
 
             [SchemaInfo("Sheet Pile", "Creates a Speckle structural sheet pile section profile", "Structural", "Section Profile")]
-            public SheetPile(string name, double depth, double width, double topFlangeWidth, double botFlangeWidth, double webThickness, double flangeThickness)
+            public SheetPile(string name, double depth, double width, double topFlangeWidth, double botFlangeWidth, double webThickness, double flangeThickness) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.topFlangeWidth = topFlangeWidth;
@@ -391,9 +377,8 @@ namespace Objects.Structural.Properties.Profiles
             public Stadium() { }
 
             [SchemaInfo("Stadium", "Creates a Speckle structural stadium section profile. It is a profile consisting of a rectangle whose ends are capped off with semicircles", "Structural", "Section Profile")]
-            public Stadium(string name, double depth, double width)
+            public Stadium(string name, double depth, double width) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.shapeType = ShapeType.Stadium;
@@ -409,9 +394,8 @@ namespace Objects.Structural.Properties.Profiles
             public Trapezoid() { }
 
             [SchemaInfo("Trapezoid", "Creates a Speckle structural trapezoidal section profile", "Structural", "Section Profile")]
-            public Trapezoid(string name, double depth, double topWidth, double botWidth)
+            public Trapezoid(string name, double depth, double topWidth, double botWidth) : base(name)
             {
-                this.name = name;
                 this.depth = depth;
                 this.topWidth = topWidth;
                 this.botWidth = botWidth;
@@ -425,22 +409,27 @@ namespace Objects.Structural.Properties.Profiles
             public double Selz { get; set; } // elastic section modulus about z-axis
             public double Sply { get; set; } // plastic section modulus about y-axis
             public double Splz { get; set; } // plastic section modulus about z-axis
+            public double C { get; set; } // warping constant 
+            public double ry { get; set; } // radius of gyration about y-axis
+            public double rz { get; set; } // radius of gyration about z-axis
 
             public SteelSectionProfile() { }
 
             [SchemaInfo("SteelSectionProfile", "Creates a Speckle structural steel section profile", "Structural", "Section Profile")]
-            public SteelSectionProfile(string name, double area, double Iyy, double Izz, double J, double Sely, double Selz, double Sply, double Splz)
+            public SteelSectionProfile(string name, double area, double Iyy, double Izz, double J, double Sely, double Selz, double Sply, double Splz, double ry, double rz, ShapeType shapeType) : base(name)
             {
-                this.name = name;
                 this.area = area;
                 this.Iyy = Iyy;
                 this.Izz = Izz;
                 this.J = J;
+                this.C = C;
                 this.Sely = Sely;
                 this.Selz = Selz;
                 this.Sply = Sply;
                 this.Splz = Splz;
-                this.shapeType = ShapeType.Explicit;
+                this.ry = ry;
+                this.rz = rz;
+                this.shapeType = shapeType;
             }
         }
     }
