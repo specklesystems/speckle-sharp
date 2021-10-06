@@ -1,4 +1,4 @@
-﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
 <#@ assembly name="System.Core" #>
 <#@ assembly name="..\..\ConnectorGrasshopperUtils\bin\ConnectorGrasshopperUtils.dll" #>
@@ -6,7 +6,6 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Collections" #>
-<#@ import namespace="System.Drawing" #>
 <#@ import namespace="System.Reflection" #>
 <#@ import namespace="ConnectorGrasshopperUtils" #>
 
@@ -37,6 +36,12 @@ namespace ConnectorGrasshopper {
     int i = 0;
     foreach (var constructor in constructorInfos)
     {
+        var fullname = CSOUtils.MethodFullName(constructor);
+        
+        // HACK: Skip structural schema objects for now!
+        if(fullname.StartsWith("Objects.Structural")) 
+            continue;
+        
         var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
         i++;
         var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
