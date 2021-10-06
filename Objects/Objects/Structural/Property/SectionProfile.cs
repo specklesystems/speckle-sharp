@@ -9,7 +9,7 @@ namespace Objects.Structural.Properties.Profiles
 {
     public class SectionProfile : Base // section profile description
     {
-        public string name { get; set; }        
+        public string name { get; set; }
         public ShapeType shapeType { get; set; }
         public double area { get; set; }
         public double Iyy { get; set; } // seccond moment of area about y-axis
@@ -25,7 +25,7 @@ namespace Objects.Structural.Properties.Profiles
         public SectionProfile() { }
 
         public class Rectangular : SectionProfile
-        {            
+        {
             public double depth { get; set; }
             public double width { get; set; }
             public double webThickness { get; set; } // tw 
@@ -36,7 +36,7 @@ namespace Objects.Structural.Properties.Profiles
             [SchemaInfo("Rectangular", "Creates a Speckle structural rectangular section profile", "Structural", "Section Profile")]
             public Rectangular(string name, double depth, double width, double webThickness = 0, double flangeThickness = 0)
             {
-                this.name = name;                
+                this.name = name;
                 this.depth = depth;
                 this.width = width;
                 this.webThickness = webThickness;
@@ -205,5 +205,29 @@ namespace Objects.Structural.Properties.Profiles
             }
         }
 
+        public class SteelSectionProfile : SectionProfile
+        {
+            public double Sely { get; set; } // elastic section modulus about y-axis
+            public double Selz { get; set; } // elastic section modulus about z-axis
+            public double Sply { get; set; } // plastic section modulus about y-axis
+            public double Splz { get; set; } // plastic section modulus about z-axis
+
+            public SteelSectionProfile() { }
+
+            [SchemaInfo("SteelSectionProfile", "Creates a Speckle structural steel section profile", "Structural", "Section Profile")]
+            public SteelSectionProfile(string name, double area, double Iyy, double Izz, double J, double Sely, double Selz, double Sply, double Splz)
+            {
+                this.name = name;
+                this.area = area;
+                this.Iyy = Iyy;
+                this.Izz = Izz;
+                this.J = J;
+                this.Sely = Sely;
+                this.Selz = Selz;
+                this.Sply = Sply;
+                this.Splz = Splz;
+                this.shapeType = ShapeType.Explicit;
+            }
+        }
     }
 }
