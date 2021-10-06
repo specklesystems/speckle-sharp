@@ -192,15 +192,15 @@ namespace Objects.Structural.Properties.Profiles
             public Explicit() { }
 
             [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Section Profile")]
-            public Explicit(string name, double area, double Iyy, double Izz, double J, double Ky, double Kz)
+            public Explicit(string name, double area, double Iyy, double Izz, double J, double Sy, double Sz)
             {
                 this.name = name;
                 this.area = area;
                 this.Iyy = Iyy;
                 this.Izz = Izz;
                 this.J = J;
-                this.Ky = Ky;
-                this.Kz = Kz;
+                this.Sy = Sy;
+                this.Sz = Sz;
                 this.shapeType = ShapeType.Explicit;
             }
         }
