@@ -83,7 +83,8 @@ Source: "ConnectorRhino\ConnectorRhino7\bin\Release\*"; DestDir: "{userappdata}\
 
 ;gh
 Source: "ConnectorGrasshopper\ConnectorGrasshopper\bin\*"; DestDir: "{userappdata}\Grasshopper\Libraries\SpeckleGrasshopper2\"; Flags: ignoreversion recursesubdirs; Components: gh
-Source: "Objects\Converters\ConverterRhinoGh\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: gh
+Source: "Objects\Converters\ConverterRhinoGh\ConverterRhino6\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: gh
+Source: "Objects\Converters\ConverterRhinoGh\ConverterRhino7\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: gh
 
 ;revit19
 Source: "ConnectorRevit\ConnectorRevit2019\bin\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2019\SpeckleRevit2\"; Flags: ignoreversion recursesubdirs; Components: revit19
