@@ -1,0 +1,32 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Filters.PropertyFilterView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <Grid>
+    <StackPanel Spacing="10">
+      <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+      <ComboBox
+        HorizontalAlignment="Stretch"
+        Items="{Binding Filter.Values}"
+        PlaceholderText="Parameter"
+        SelectedItem="{Binding Filter.PropertyName}" />
+      <ComboBox
+        HorizontalAlignment="Stretch"
+        Items="{Binding Filter.Operators}"
+        PlaceholderText="Operator"
+        SelectedItem="{Binding Filter.PropertyOperator}" />
+      <TextBox
+        Margin="5,0"
+        HorizontalAlignment="Stretch"
+        assists:TextFieldAssist.Label="Value"
+        Text="{Binding Filter.PropertyValue}"
+        UseFloatingWatermark="True" />
+    </StackPanel>
+  </Grid>
+</UserControl>
