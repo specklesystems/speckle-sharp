@@ -37,6 +37,7 @@ namespace ConverterGSA
         { typeof(GSAInfluenceNode), InfNodeToNative},
         { typeof(GSAInfluenceBeam), InfBeamToNative},
         {typeof(GSAAlignment), AlignToNative},
+        {typeof(GSAPath), PathToNative},
         // Analysis
         {typeof(GSAStage), AnalStageToNative},
         //Material
@@ -392,6 +393,27 @@ namespace ConverterGSA
         Node = nodeIndex
       };
       return new List<GsaRecord>() { gsaInfBeam };
+    }
+    
+    private List<GsaRecord> PathToNative(Base speckleObject)
+    {
+      var specklePath = (GSAPath)speckleObject;
+      var alignmentIndex = ((GsaAlign)(AlignToNative(specklePath.alignment)).First()).Index;
+      var gsaPath = new GsaPath()
+      {
+        ApplicationId = speckleObject.applicationId,
+        Index = specklePath.nativeId,
+        Name = specklePath.name,
+        Sid = speckleObject.id,
+        Factor = specklePath.factor,
+        Alignment = alignmentIndex,
+        Group = specklePath.group,
+        Left = specklePath.left,
+        Right = specklePath.right,
+        NumMarkedLanes = specklePath.numMarkedLanes,
+        Type = specklePath.type.ToNative(),
+      };
+      return new List<GsaRecord>() { gsaPath };
     }
     
     #endregion

@@ -494,6 +494,20 @@ namespace ConverterGSA
         default: return PathType.NotSet;
       }
     }
+    
+    public static GwaPathType ToNative(this PathType gsaType)
+    {
+      switch (gsaType)
+      { 
+        case PathType.LANE: return GwaPathType.LANE;
+        case PathType.FOOTWAY: return GwaPathType.FOOTWAY;
+        case PathType.TRACK: return GwaPathType.TRACK;
+        case PathType.VEHICLE: return GwaPathType.VEHICLE;
+        case PathType.CWAY_1WAY: return GwaPathType.CWAY_1WAY;
+        case PathType.CWAY_2WAY: return GwaPathType.CWAY_2WAY;
+        default: return GwaPathType.NotSet;
+      }
+    }
     #endregion
 
     #region ToNative

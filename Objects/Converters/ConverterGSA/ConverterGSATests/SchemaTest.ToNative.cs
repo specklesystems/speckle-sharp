@@ -21,6 +21,7 @@ using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
 using Speckle.Core.Models;
+using PathType = Objects.Structural.GSA.Bridge.PathType;
 
 namespace ConverterGSATests
 {
@@ -462,17 +463,9 @@ namespace ConverterGSATests
     #region Bridges
     
     [Fact]
-    public void GSAAlignmentToNative()
+    public void GSAAlignmentToNativeTest()
     {
-      var plane = new Plane();
-      var axis = SpeckleGlobalAxis();
-      var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
-      var gsaAlignment = new GSAAlignment(1, "myGsaAlignment",
-        new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2, 
-          LoadExpansion.PlaneCorner, GridSurfaceSpanType.OneWay,
-          new List<Base>()),
-        new List<double>() { 0, 1 },
-        new List<double>() { 3, 3 });
+      var gsaAlignment = GetGsaAlignment();
       var gsaRecord = converter.ConvertToNative(gsaAlignment) as List<GsaRecord>;
       
       var gsaAlign = GenericTestForList<GsaAlign>(gsaRecord);
@@ -489,8 +482,21 @@ namespace ConverterGSATests
       // Assert.Equal(gsaAlignment, copy);
     }
 
+    private GSAAlignment GetGsaAlignment()
+    {
+      var axis = SpeckleGlobalAxis();
+      var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
+      var gsaAlignment = new GSAAlignment(1, "myGsaAlignment",
+        new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2,
+          LoadExpansion.PlaneCorner, GridSurfaceSpanType.OneWay,
+          new List<Base>()),
+        new List<double>() { 0, 1 },
+        new List<double>() { 3, 3 });
+      return gsaAlignment;
+    }
+
     [Fact]
-    public void GSAInfluenceBeam()
+    public void GSAInfluenceBeamToNativeTest()
     {
       var gsaInfluenceBeam = new GSAInfluenceBeam(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetElement1d1(), 0.5);
       var gsaRecord = converter.ConvertToNative(gsaInfluenceBeam) as List<GsaRecord>;
@@ -509,7 +515,7 @@ namespace ConverterGSATests
     }
     
     [Fact]
-    public void GSAInfluenceNode()
+    public void GSAInfluenceNodeToNativeTest()
     {
       var gsaInfluenceNode = new GSAInfluenceNode(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetNode(), SpeckleGlobalAxis());
       var gsaRecord = converter.ConvertToNative(gsaInfluenceNode) as List<GsaRecord>;
@@ -524,6 +530,26 @@ namespace ConverterGSATests
       Assert.Equal(gsaInfluenceNode.nativeId, gsaInfNode.Index);
     }
     
+    [Fact]
+    public void GSAPathToNativeTest()
+    {
+      var gsaPath = new GSAPath(1, "myPath", PathType.TRACK, 2, GetGsaAlignment(), 1, 2, 3, 4);
+      var gsaRecord = converter.ConvertToNative(gsaPath) as List<GsaRecord>;
+      var gsaP = GenericTestForList<GsaPath>(gsaRecord);
+
+      Assert.Equal(gsaPath.factor, gsaP.Factor);
+      Assert.Equal(gsaPath.id, gsaP.Sid);
+      Assert.Equal(gsaPath.name, gsaP.Name);
+      Assert.Equal(gsaPath.applicationId, gsaP.ApplicationId);
+      Assert.Equal(gsaPath.nativeId, gsaP.Index);
+      
+      Assert.Equal(gsaPath.type.ToNative(), gsaP.Type);
+      Assert.Equal(gsaPath.left, gsaP.Left);
+      Assert.Equal(gsaPath.right, gsaP.Right);
+      Assert.Equal(gsaPath.numMarkedLanes, gsaP.NumMarkedLanes);
+      Assert.Equal(gsaPath.group, gsaP.Group);
+      Assert.Equal(gsaPath.factor, gsaP.Factor);
+    }
     
     [Fact]
     public void GSAStageToNative()
