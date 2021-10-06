@@ -11,12 +11,6 @@ namespace Objects.Structural.Properties.Profiles
     {
         public string name { get; set; }
         public ShapeType shapeType { get; set; }
-        public double area { get; set; }
-        public double Iyy { get; set; } // seccond moment of area about y-axis
-        public double Izz { get; set; } // seccond moment of area about z-axis
-        public double J { get; set; } // st. venant torsional constant 
-        public double Sy { get; set; } // section modulus about y-axis
-        public double Sz { get; set; } // section modulus about z-axis
         public double weight { get; set; } // section weight, ex. kg/m
         public string units { get; set; }
         public SectionProfile() { }
@@ -182,20 +176,14 @@ namespace Objects.Structural.Properties.Profiles
             }
         }
 
-        public class Explicit : SectionProfile
+        public class Custom : SectionProfile
         {
-            public Explicit() { }
+            public Custom() { }
 
-            [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Section Profile")]
-            public Explicit(string name, double area, double Iyy, double Izz, double J, double Sy, double Sz) : base(name)
+            [SchemaInfo("Custom", "Creates a Speckle structural section profile based on custom geometric properties", "Structural", "Section Profile")]
+            public Custom(string name) : base(name)
             {
-                this.area = area;
-                this.Iyy = Iyy;
-                this.Izz = Izz;
-                this.Sy = Sy;
-                this.Sz = Sz;
-                this.J = J;
-                this.shapeType = ShapeType.Explicit;
+                // todo: implement
             }
         }
 
@@ -400,36 +388,6 @@ namespace Objects.Structural.Properties.Profiles
                 this.topWidth = topWidth;
                 this.botWidth = botWidth;
                 this.shapeType = ShapeType.Trapezoid;
-            }
-        }
-
-        public class SteelSectionProfile : SectionProfile
-        {
-            public double Sely { get; set; } // elastic section modulus about y-axis
-            public double Selz { get; set; } // elastic section modulus about z-axis
-            public double Sply { get; set; } // plastic section modulus about y-axis
-            public double Splz { get; set; } // plastic section modulus about z-axis
-            public double C { get; set; } // warping constant 
-            public double ry { get; set; } // radius of gyration about y-axis
-            public double rz { get; set; } // radius of gyration about z-axis
-
-            public SteelSectionProfile() { }
-
-            [SchemaInfo("SteelSectionProfile", "Creates a Speckle structural steel section profile", "Structural", "Section Profile")]
-            public SteelSectionProfile(string name, double area, double Iyy, double Izz, double J, double Sely, double Selz, double Sply, double Splz, double ry, double rz, ShapeType shapeType) : base(name)
-            {
-                this.area = area;
-                this.Iyy = Iyy;
-                this.Izz = Izz;
-                this.J = J;
-                this.C = C;
-                this.Sely = Sely;
-                this.Selz = Selz;
-                this.Sply = Sply;
-                this.Splz = Splz;
-                this.ry = ry;
-                this.rz = rz;
-                this.shapeType = shapeType;
             }
         }
     }
