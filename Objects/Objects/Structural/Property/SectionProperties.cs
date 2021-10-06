@@ -15,8 +15,8 @@ namespace Objects.Structural.Properties
         public double Iy { get; set; } // seccond moment of area about y-axis
         public double Iz { get; set; } // seccond moment of area about z-axis
         public double J { get; set; } // st. venant torsional constant 
-        public double Sy { get; set; } // section modulus about y-axis
-        public double Sz { get; set; } // section modulus about z-axis
+        public double Sy { get; set; } // elastic section modulus about y-axis
+        public double Sz { get; set; } // elastic section modulus about z-axis
         public SectionProperties() { }
 
         [SchemaInfo("SectionProperties", "Creates Speckle structural section properties", "Structural", "Section Properties")]
@@ -34,8 +34,6 @@ namespace Objects.Structural.Properties
 
     public class SteelSectionProperties : SectionProperties
     {
-        public double Sely { get; set; } // elastic section modulus about y-axis
-        public double Selz { get; set; } // elastic section modulus about z-axis
         public double Sply { get; set; } // plastic section modulus about y-axis
         public double Splz { get; set; } // plastic section modulus about z-axis
         public double C { get; set; } // warping constant 
@@ -47,8 +45,6 @@ namespace Objects.Structural.Properties
         public SteelSectionProperties(string name, double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz) : base(name, area, Iy, Iz, J, Sely, Selz)
         {
             this.C = C;
-            this.Sely = Sely;
-            this.Selz = Selz;
             this.Sply = Sply;
             this.Splz = Splz;
             this.ry = ry;
