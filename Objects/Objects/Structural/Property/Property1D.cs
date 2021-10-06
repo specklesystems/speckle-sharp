@@ -8,7 +8,7 @@ using Objects.Structural.Properties.Profiles;
 
 namespace Objects.Structural.Properties
 {
-    public class Property1D : Property //SectionProperty as alt class name
+    public class Property1D : Property
     {
         public MemberType memberType { get; set; }
 
@@ -17,6 +17,7 @@ namespace Objects.Structural.Properties
 
         [DetachProperty]
         public SectionProfile profile { get; set; } //section description
+        public SectionProperties sectionProperties { get; set; }
         public BaseReferencePoint referencePoint { get; set; }
         public double offsetY { get; set; } = 0; //offset from reference point
         public double offsetZ { get; set; } = 0; //offset from reference point
