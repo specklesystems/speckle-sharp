@@ -1,0 +1,22 @@
+﻿<Styles
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:v="clr-namespace:Material.Dialog.Views;assembly=Material.Dialog">
+  <Design.PreviewWith>
+
+
+    <v:CustomDialog />
+    <!--<v:TextFieldDialog />-->
+
+
+
+
+  </Design.PreviewWith>
+  <!--<Style Selector="Window TextBlock#PART_Header">
+    <Setter Property="Foreground" Value="Red" />
+    <Setter Property="Classes" Value="" />
+  </Style>
+  <Style Selector="v|TextFieldDialog TextBlock#PART_Header">
+    <Setter Property="Foreground" Value="Red" />
+  </Style>-->
+</Styles>

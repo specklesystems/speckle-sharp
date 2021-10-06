@@ -1,0 +1,95 @@
+﻿<Styles
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple">
+  <Design.PreviewWith>
+    <Border
+      Width="360"
+      Height="200"
+      Padding="20">
+      <StackPanel VerticalAlignment="Center">
+        <ListBox>
+          <ListBox.Items>
+            <ListBoxItem Content="Item 1" IsSelected="True" />
+            <ListBoxItem Content="Item 2" />
+            <ListBoxItem Content="Item 3" />
+          </ListBox.Items>
+        </ListBox>
+
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="ListBoxItem">
+    <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          Margin="{TemplateBinding Margin}"
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          ClipToBounds="{TemplateBinding ClipToBounds}">
+          <Grid>
+            <Border Name="selectedBorder" Background="{TemplateBinding Foreground}" />
+            <Border Name="pointerOverBorder" Background="{TemplateBinding Foreground}" />
+            <Border Name="normalBorder" Background="{TemplateBinding Foreground}" />
+            <ripple:RippleEffect
+              Name="Ripple"
+              Padding="{TemplateBinding Padding}"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Focusable="False"
+              RippleFill="{TemplateBinding Foreground}">
+              <ContentPresenter
+                Name="PART_ContentPresenter"
+                Padding="{TemplateBinding Padding}"
+                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Content="{TemplateBinding Content}"
+                ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </ripple:RippleEffect>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="ListBoxItem /template/ Border">
+    <Setter Property="CornerRadius" Value="25" />
+  </Style>
+
+  <Style Selector="ListBoxItem /template/ Border#normalBorder">
+    <Setter Property="Opacity" Value="0.12" />
+  </Style>
+
+
+  <Style Selector="ListBoxItem">
+    <Setter Property="Margin" Value="1" />
+  </Style>
+
+  <Style Selector="ListBoxItem:selected /template/ Border#selectedBorder">
+    <Setter Property="Opacity" Value="0.36" />
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ Border#normalBorder">
+    <Setter Property="Opacity" Value="0" />
+  </Style>
+
+  <Style Selector="ListBox">
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <WrapPanel />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</Styles>

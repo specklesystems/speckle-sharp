@@ -1,0 +1,64 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Filters.ListFilterView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <UserControl.Styles>
+    <StyleInclude Source="/Styles/ChipListBox.xaml" />
+  </UserControl.Styles>
+  <Grid RowDefinitions="auto,auto,*,auto,auto">
+    <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+
+
+    <TextBox
+      Grid.Row="1"
+      Margin="0,8"
+      Padding="0"
+      assists:TextFieldAssist.CornerRadius="32"
+      BorderBrush="{Binding $self.Foreground}"
+      BorderThickness="1"
+      Classes="Solo"
+      Text="{Binding SearchQuery, Mode=TwoWay}"
+      Watermark="Search">
+      <TextBox.InnerLeftContent>
+        <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
+          <icons:MaterialIcon
+            Width="20"
+            Height="20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Kind="Magnify" />
+        </Border>
+      </TextBox.InnerLeftContent>
+    </TextBox>
+
+
+
+    <ScrollViewer
+      Grid.Row="2"
+      MaxHeight="180"
+      VerticalScrollBarVisibility="Auto">
+      <ListBox
+        x:Name="ItemsListBox"
+        Margin="0,0,0,8"
+        Items="{Binding SearchResults}"
+        Selection="{Binding SelectionModel}"
+        SelectionMode="Multiple, Toggle" />
+    </ScrollViewer>
+
+    <TextBlock
+      Grid.Row="3"
+      Margin="0,20,0,8"
+      FontSize="14"
+      FontWeight="Medium"
+      Text="Current selection:" />
+    <TextBlock Grid.Row="4" Text="{Binding Summary}" />
+
+  </Grid>
+</UserControl>
