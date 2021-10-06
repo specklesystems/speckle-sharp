@@ -13,6 +13,7 @@ using Autodesk.Revit.UI;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.ConnectorRevit.UI;
 using Speckle.DesktopUI;
+using Revit.Async;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -25,6 +26,9 @@ namespace Speckle.ConnectorRevit.Entry
 
     public Result OnStartup(UIControlledApplication application)
     {
+      //Always initialize RevitTask ahead of time within Revit API context
+      RevitTask.Initialize();
+
       UICtrlApp = application;
       // Fires an init event, where we can get the UIApp
       UICtrlApp.Idling += Initialise;
@@ -40,6 +44,18 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButton.ToolTip = "Speckle Connector for Revit";
         speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+
+      //desktopui 2
+      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector\nNew UI (alpha)!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
+
+      if (speckleButton2 != null)
+      {
+        speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+        speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        speckleButton2.ToolTip = "Speckle Connector for Revit - With a new UI";
+        speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
 
@@ -79,10 +95,18 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
 
+      AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+
       // Set up bindings now as they subscribe to some document events and it's better to do it now
       SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
+
+      //pre build app, so that it's faster to open up
+      SpeckleRevitCommand2.InitAvalonia();
+      SpeckleRevitCommand2.Bindings = new ConnectorBindingsRevit2(AppInstance);
+      SpeckleRevitCommand2.Bindings.RegisterAppEvents();
+
     }
 
     public Result OnShutdown(UIControlledApplication application)
@@ -103,6 +127,20 @@ namespace Speckle.ConnectorRevit.Entry
       catch { }
 
       return null;
+    }
+
+    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
+
+      string assemblyFile = Path.Combine(path, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
     }
   }
 

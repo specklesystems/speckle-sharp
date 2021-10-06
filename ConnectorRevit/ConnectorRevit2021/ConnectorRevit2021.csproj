@@ -58,6 +58,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Avalonia">
+      <Version>0.10.7</Version>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Desktop">
+      <Version>0.10.7</Version>
+    </PackageReference>
+    <PackageReference Include="Avalonia.ReactiveUI">
+      <Version>0.10.7</Version>
+    </PackageReference>
     <PackageReference Include="ModPlus.Revit.API.2021">
       <Version>1.0.0</Version>
       <ExcludeAssets>runtime</ExcludeAssets>
@@ -67,11 +76,18 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Revit.Async">
+      <Version>1.3.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
+      <Project>{aab81f89-c71c-4f8a-b256-6a23d19134a7}</Project>
+      <Name>DesktopUI2</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>

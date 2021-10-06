@@ -1,0 +1,140 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.StreamEditControls.Receive"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Grid
+    Margin="15,0"
+    ColumnDefinitions="Auto,*"
+    RowDefinitions="auto, auto, *, auto">
+
+    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+      <icons:MaterialIcon
+        Margin="0,0,5,0"
+        VerticalAlignment="Center"
+        Foreground="Gray"
+        Kind="InfoCircle"
+        ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
+      <TextBlock Text="Branch:" />
+    </StackPanel>
+
+    <StackPanel
+      Grid.Row="1"
+      VerticalAlignment="Center"
+      Orientation="Horizontal">
+      <icons:MaterialIcon
+        Margin="0,0,5,0"
+        VerticalAlignment="Center"
+        Foreground="Gray"
+        Kind="InfoCircle"
+        ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
+      <TextBlock Text="Commit:" />
+    </StackPanel>
+
+    <ComboBox
+      Grid.Column="1"
+      Margin="10,10,0,10"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Center"
+      Items="{Binding Branches}"
+      PlaceholderText="Select a branch"
+      SelectedItem="{Binding SelectedBranch}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="auto,*">
+            <icons:MaterialIcon
+              Margin="0,0,5,0"
+              Foreground="DarkGray"
+              Kind="SourceBranch" />
+            <TextBlock
+              Grid.Column="1"
+              Text="{Binding name}"
+              TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <ComboBox
+      Grid.Row="1"
+      Grid.Column="1"
+      Margin="10,10,0,10"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Center"
+      IsEnabled="{Binding HasCommits}"
+      Items="{Binding Commits}"
+      PlaceholderText="Select a commit"
+      SelectedIndex="0"
+      SelectedItem="{Binding SelectedCommit}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="auto,auto,auto,*">
+            <icons:MaterialIcon
+              Margin="0,0,5,0"
+              Foreground="DarkGray"
+              Kind="SourceCommit" />
+            <TextBlock
+              Grid.Column="1"
+              Text="{Binding id}"
+              TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="2" Text=" | " />
+            <TextBlock
+              Grid.Column="3"
+              Text="{Binding message}"
+              TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+
+    <m:Card
+      Grid.Row="2"
+      Grid.ColumnSpan="2"
+      Margin="0,15"
+      VerticalAlignment="Stretch"
+      HorizontalContentAlignment="Stretch"
+      Classes="Mini">
+      <StackPanel>
+        <TextBlock
+          IsVisible="{Binding HasCommits, Converter={x:Static BoolConverters.Not}}"
+          Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
+          TextWrapping="Wrap" />
+
+        <Image Source="{Binding PreviewImage}" />
+      </StackPanel>
+    </m:Card>
+
+    <StackPanel
+      Grid.Row="3"
+      Grid.ColumnSpan="2"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal"
+      Spacing="10">
+      <Button
+        Classes="Flat"
+        Command="{Binding ReceiveCommand}"
+        Content="Receive"
+        ToolTip.Tip="Receive once from Speckle" />
+      <Button
+        Classes="Flat"
+        Command="{Binding SaveCommand}"
+        Content="Save"
+        ToolTip.Tip="Save this sender to the file without receiving" />
+      <Button
+        Command="{Binding SaveReceiveCommand}"
+        Content="Receive &amp; Save"
+        Foreground="White"
+        ToolTip.Tip="Receive from Speckle and save this receiver to the file" />
+    </StackPanel>
+  </Grid>
+</UserControl>
