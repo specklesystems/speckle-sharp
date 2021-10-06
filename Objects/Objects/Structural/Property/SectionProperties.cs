@@ -19,13 +19,15 @@ namespace Objects.Structural.Properties
         public SectionProperties() { }
 
         [SchemaInfo("SectionProperties", "Creates Speckle structural section properties", "Structural", "Section Properties")]
-        public SectionProperties(string name, double area, double Iy, double Iz, double J)
+        public SectionProperties(string name, double area, double Iy, double Iz, double J, double Sz, double Sy)
         {
             this.name = name;
             this.area = area;
             this.Iy = Iy;
             this.Iz = Iz;
             this.J = J;
+            this.Sy = Sy;
+            this.Sz = Sz;
         }
     }
 
@@ -41,7 +43,7 @@ namespace Objects.Structural.Properties
         public SteelSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
-        public SteelSectionProperties(string name, double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz) : base(name, area, Iy, Iz, J)
+        public SteelSectionProperties(string name, double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz) : base(name, area, Iy, Iz, J, Sely, Selz)
         {
             this.C = C;
             this.Sely = Sely;
@@ -58,7 +60,7 @@ namespace Objects.Structural.Properties
         public ConcreteSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
-        public ConcreteSectionProperties(string name, double area, double Iy, double Iz, double J) : base(name, area, Iy, Iz, J)
+        public ConcreteSectionProperties(string name, double area, double Iy, double Iz, double J, double Sz, double Sy) : base(name, area, Iy, Iz, J, Sy, Sz)
         {
             // todo: implement
         }
