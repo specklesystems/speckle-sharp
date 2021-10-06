@@ -66,15 +66,17 @@ namespace Objects.Structural.Properties
 
     public class Rebar : Base
     {
-        Point localCoordinates { get; set; }
-        double diameter { get; set; }
+        double y { get; set; } // local coordinate y
+        double z { get; set; } // local coordinate z
+        double diameter { get; set; } 
         string units { get; set; }
 
         public Rebar() { }
 
-        public Rebar(Point localCoordinates, double diameter, string units)
+        public Rebar(double y, double z, double diameter, string units)
         {
-            this.localCoordinates = localCoordinates;
+            this.y = y;
+            this.z = z;
             this.diameter = diameter;
             this.units = units;
         }
