@@ -30,12 +30,15 @@ namespace ConverterGSA
       {
         //Geometry
         { typeof(Axis), AxisToNative },
-        {typeof(GSAAlignment), AlignToNative},
-        {typeof(GSAStage), AnalStageToNative},
-        {typeof(GSAInfluenceBeam), InfBeamToNative},
         { typeof(GSANode), NodeToNative },
         { typeof(GSAElement1D), Element1dToNative },
         { typeof(GSAElement2D), Element2dToNative },
+        // Bridge
+        { typeof(GSAInfluenceNode), InfNodeToNative},
+        { typeof(GSAInfluenceBeam), InfBeamToNative},
+        {typeof(GSAAlignment), AlignToNative},
+        // Analysis
+        {typeof(GSAStage), AnalStageToNative},
         //Material
         { typeof(GSASteel), SteelToNative },
         //Property
@@ -367,6 +370,26 @@ namespace ConverterGSA
         Position = speckleInfBeam.position,
         Sid = speckleObject.id,
         Type = speckleInfBeam.type.ToNative(),
+      };
+      return new List<GsaRecord>() { gsaInfBeam };
+    }
+    
+    private List<GsaRecord> InfNodeToNative(Base speckleObject)
+    {
+      var speckleInfNode = (GSAInfluenceNode)speckleObject;
+      GetAxis(speckleInfNode.axis, out var gsaRefType, out var axisIndex);
+      var nodeIndex = ((GsaNode)(NodeToNative(speckleInfNode.node).First())).Index;
+      var gsaInfBeam = new GsaInfNode()
+      {
+        ApplicationId = speckleObject.applicationId,
+        Index = speckleInfNode.nativeId,
+        Name = speckleInfNode.name,
+        Direction = speckleInfNode.direction.ToNative(),
+        Factor = speckleInfNode.factor,
+        Sid = speckleObject.id,
+        Type = speckleInfNode.type.ToNative(),
+        AxisIndex = axisIndex,
+        Node = nodeIndex
       };
       return new List<GsaRecord>() { gsaInfBeam };
     }

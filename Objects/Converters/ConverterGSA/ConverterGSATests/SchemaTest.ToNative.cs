@@ -103,20 +103,7 @@ namespace ConverterGSATests
     {
       var speckleNodes = new List<GSANode>()
       {
-        new GSANode()
-        {
-          nativeId = 1,
-          name = "",
-          basePoint = new Point(0, 0, 0),
-          constraintAxis = SpeckleGlobalAxis(),
-          localElementSize = 1,
-          colour = "NO_RGB",
-          restraint = new Restraint(RestraintType.Free),
-          springProperty = null,
-          massProperty = null,
-          damperProperty = null,
-          units = "",
-        },
+        GetNode(),
         new GSANode()
         {
           nativeId = 2,
@@ -179,6 +166,24 @@ namespace ConverterGSATests
         speckleNodes[i].applicationId = appIds[i];
       }
       return speckleNodes.GetRange(0, num);
+    }
+
+    private GSANode GetNode()
+    {
+      return new GSANode()
+      {
+        nativeId = 1,
+        name = "",
+        basePoint = new Point(0, 0, 0),
+        constraintAxis = SpeckleGlobalAxis(),
+        localElementSize = 1,
+        colour = "NO_RGB",
+        restraint = new Restraint(RestraintType.Free),
+        springProperty = null,
+        massProperty = null,
+        damperProperty = null,
+        units = "",
+      };
     }
 
     private List<GSAElement1D> SpeckleElement1dExamples(int num, params string[] appIds)
@@ -502,6 +507,23 @@ namespace ConverterGSATests
       //var copy = converter.ConvertToSpeckle(converter.ConvertToNative(gsaInfluenceBeam));
       //Assert.Equal(gsaInfluenceBeam, copy);
     }
+    
+    [Fact]
+    public void GSAInfluenceNode()
+    {
+      var gsaInfluenceNode = new GSAInfluenceNode(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetNode(), SpeckleGlobalAxis());
+      var gsaRecord = converter.ConvertToNative(gsaInfluenceNode) as List<GsaRecord>;
+      var gsaInfNode = GenericTestForList<GsaInfNode>(gsaRecord);
+
+      Assert.Equal(gsaInfluenceNode.direction.ToNative(), gsaInfNode.Direction);
+      Assert.Equal(gsaInfluenceNode.factor, gsaInfNode.Factor);
+      Assert.Equal(gsaInfluenceNode.id, gsaInfNode.Sid);
+      Assert.Equal(gsaInfluenceNode.type.ToNative(), gsaInfNode.Type);
+      Assert.Equal(gsaInfluenceNode.name, gsaInfNode.Name);
+      Assert.Equal(gsaInfluenceNode.applicationId, gsaInfNode.ApplicationId);
+      Assert.Equal(gsaInfluenceNode.nativeId, gsaInfNode.Index);
+    }
+    
     
     [Fact]
     public void GSAStageToNative()

@@ -1634,7 +1634,7 @@ namespace ConverterGSA
     private ToSpeckleResult GsaInfNodeToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
       var gsaInfNode = (GsaInfNode)nativeObject;
-      var speckleInfBeam = new GSAInfluenceNode()
+      var speckleInfNode = new GSAInfluenceNode()
       {
         name = gsaInfNode.Name,
         direction = gsaInfNode.Direction.ToSpeckleLoad(),
@@ -1643,13 +1643,13 @@ namespace ConverterGSA
       };
       if (gsaInfNode.Index.IsIndex())
       {
-        speckleInfBeam.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaInfNode>(gsaInfNode.Index.Value);
-        speckleInfBeam.nativeId = gsaInfNode.Index.Value;
+        speckleInfNode.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaInfNode>(gsaInfNode.Index.Value);
+        speckleInfNode.nativeId = gsaInfNode.Index.Value;
       }
-      if (gsaInfNode.Factor.HasValue) speckleInfBeam.factor = gsaInfNode.Factor.Value;
-      if (gsaInfNode.Node.IsIndex()) speckleInfBeam.node = GetNodeFromIndex(gsaInfNode.Node.Value);
+      if (gsaInfNode.Factor.HasValue) speckleInfNode.factor = gsaInfNode.Factor.Value;
+      if (gsaInfNode.Node.IsIndex()) speckleInfNode.node = GetNodeFromIndex(gsaInfNode.Node.Value);
 
-      return new ToSpeckleResult(speckleInfBeam);
+      return new ToSpeckleResult(speckleInfNode);
     }
 
     private ToSpeckleResult GsaAlignToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
