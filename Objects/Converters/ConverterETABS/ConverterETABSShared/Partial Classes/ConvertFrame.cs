@@ -38,6 +38,8 @@ namespace Objects.Converter.ETABS
             _ = Model.FrameObj.GetPoints(name, ref pointI, ref pointJ);
             var pointINode = PointToSpeckle(pointI);
             var pointJNode = PointToSpeckle(pointJ);
+            speckleStructFrame.end1Node = pointINode;
+            speckleStructFrame.end2Node = pointJNode;
             var speckleLine = new Line();
             if(units != null){
                 speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint, units);
@@ -96,7 +98,17 @@ namespace Objects.Converter.ETABS
             property = SAuto = null;
             Model.FrameObj.GetSection(name, ref property, ref SAuto);
             speckleStructFrame.property = Property1DToSpeckle(property);
-            speckleStructFrame.property.profile = SectionToSpeckle(name,property);
+
+            double offSetEnd1 = 0;
+            double offSetEnd2 = 0;
+            double RZ = 0;
+            bool autoOffSet = true;
+            Model.FrameObj.GetEndLengthOffset(name, ref autoOffSet, ref offSetEnd1, ref offSetEnd2, ref RZ);
+            Vector end1Offset = new Vector(0, 0, offSetEnd1, units = ModelUnits());
+            Vector end2Offset = new Vector(0, 0, offSetEnd2, units = ModelUnits());
+            speckleStructFrame.end1Offset = end1Offset;
+            speckleStructFrame.end2Offset = end2Offset;
+
 
             return speckleStructFrame;
         }

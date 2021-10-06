@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Objects.Structural.Analysis;
 using Objects.Geometry;
+using Objects.Structural.Properties;
 using ETABSv1;
 
 namespace Objects.Converter.ETABS
@@ -11,6 +13,11 @@ namespace Objects.Converter.ETABS
         {
             var model = new Model();
             model.specs = ModelInfoToSpeckle();
+
+            List<Property1D> properties1D = new List<Property1D> { };
+
+           
+
             return model;
         }
     }
