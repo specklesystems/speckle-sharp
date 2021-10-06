@@ -77,9 +77,9 @@ namespace Objects.Structural
         Tee,
         Angle,
         Channel,
+        Custom,
         Perimeter,
         Catalogue,
-        Explicit,
         Cruciform,
         Ellipse,
         C,
@@ -90,7 +90,6 @@ namespace Objects.Structural
         SheetPile,
         Stadium,
         Trapezoid
-
     }
 
 }
