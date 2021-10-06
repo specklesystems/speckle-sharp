@@ -54,7 +54,7 @@ namespace Objects.Structural.Properties
 
     public class ConcreteSectionProperties : SectionProperties
     {
-        public List<Rebar> rebars { get; set; }
+        public List<ReinforcementBar> rebars { get; set; }
         public ConcreteSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
@@ -64,21 +64,37 @@ namespace Objects.Structural.Properties
         }
     }
 
-    public class Rebar : Base
+    public class ReinforcementBar : Base
     {
-        double y { get; set; } // local coordinate y
-        double z { get; set; } // local coordinate z
-        double diameter { get; set; } 
+        double y { get; set; } // local y-coordinate
+        double z { get; set; } // local z-coordinate
+        double diameter { get; set; } // diameter of bar or equivalent diameter
         string units { get; set; }
+        BarArrangement arrangement { get; set; }
 
-        public Rebar() { }
+        public ReinforcementBar() { }
 
-        public Rebar(double y, double z, double diameter, string units)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="y">Local y-coordinate</param>
+        /// <param name="z"></param>
+        /// <param name="diameter">Diameter of bar or equivalent diameter</param>
+        /// <param name="units">The unit of the bar diameter</param>
+        /// <param name="arrangement">Arrangement of bars</param>
+        public ReinforcementBar(double y, double z, double diameter, string units, BarArrangement arrangement = BarArrangement.Individual)
         {
             this.y = y;
             this.z = z;
             this.diameter = diameter;
             this.units = units;
+            this.arrangement = arrangement;
         }
+    }
+
+    public enum BarArrangement
+    {
+        Individual,
+        Bundled
     }
 }
