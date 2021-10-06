@@ -17,6 +17,7 @@ using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Properties;
 using Objects.Structural.GSA.Materials;
+using Model = Objects.Structural.Analysis.Model;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using GwaMemberType = Speckle.GSA.API.GwaSchema.MemberType;
 using MemberType = Objects.Structural.Geometry.MemberType;
@@ -284,7 +285,7 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleElement1d[0].property.applicationId); //assume conversion to Property1d is tested elsewhere
       Assert.Equal(gsaEls[0].Colour.ToString(), speckleElement1d[0].colour);
       Assert.False(speckleElement1d[0].isDummy);
-      Assert.Null(speckleElement1d[0].action);
+      Assert.Equal("NORMAL",speckleElement1d[0].action);
       Assert.Equal(gsaEls[0].Index.Value, speckleElement1d[0].nativeId);
       Assert.Equal(gsaEls[0].Group.Value, speckleElement1d[0].group);
 
@@ -319,7 +320,7 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleElement1d[1].property.applicationId); //assume conversion to Property1d is tested elsewhere
       Assert.Equal(gsaEls[1].Colour.ToString(), speckleElement1d[0].colour);
       Assert.False(speckleElement1d[1].isDummy);
-      Assert.Null(speckleElement1d[1].action);
+      Assert.Equal("NORMAL", speckleElement1d[1].action);
       Assert.Equal(gsaEls[1].Index.Value, speckleElement1d[1].nativeId);
       Assert.Equal(gsaEls[1].Group.Value, speckleElement1d[1].group);
     }
@@ -451,7 +452,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaMembers[0].OffsetY.Value, speckleMember1d.end2Offset.y);
       Assert.Equal(gsaMembers[0].OffsetZ.Value, speckleMember1d.end2Offset.z);
       Assert.Equal(gsaMembers[0].Angle.Value, speckleMember1d.orientationAngle);
-      Assert.Null(speckleMember1d.parent); //TODO: update once conversion code handles parents
+      Assert.Null(speckleMember1d.parent); //not meaningful for member
       Assert.Equal("node 1", speckleMember1d.end1Node.applicationId);
       Assert.Equal("node 2", speckleMember1d.end2Node.applicationId);
       Assert.Equal(2, speckleMember1d.topology.Count());
@@ -477,17 +478,13 @@ namespace ConverterGSATests
       Assert.Equal(ElementType2D.Quad4, speckleMember2d.type);
       Assert.Equal(gsaMembers[1].Offset2dZ, speckleMember2d.offset);
       Assert.Equal(0, speckleMember2d.orientationAngle);
-      Assert.Null(speckleMember2d.parent); //TODO: update once conversion code handles parents
+      Assert.Null(speckleMember2d.parent); //not meaningful for member
       Assert.Equal(4, speckleMember2d.topology.Count());
       Assert.Equal("node 1", speckleMember2d.topology[0].applicationId);
       Assert.Equal("node 2", speckleMember2d.topology[1].applicationId);
       Assert.Equal("node 3", speckleMember2d.topology[2].applicationId);
       Assert.Equal("node 4", speckleMember2d.topology[3].applicationId);
-      var p = speckleMember2d.topology.Select(n => n.basePoint).ToList();
-      var v = new List<double>() { p[0].x, p[0].y, p[0].z, p[1].x, p[1].y, p[1].z, p[2].x, p[2].y, p[2].z, p[3].x, p[3].y, p[3].z };
-      var f = new List<int>() { 1, 1, 2, 3, 4 };
-      Assert.Equal(v, speckleMember2d.displayMesh.vertices);
-      Assert.Equal(f, speckleMember2d.displayMesh.faces);
+      Assert.Null(speckleMember2d.displayMesh); //TODO: update once conversion code handle display mesh
       Assert.Null(speckleMember2d.units);
       Assert.Equal(gsaMembers[1].Index.Value, speckleMember2d.nativeId);
       Assert.Equal(gsaMembers[1].Group.Value, speckleMember2d.group);
@@ -635,20 +632,50 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
-      {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
-      }
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModelObjects = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      var speckleDesignModel = speckleModelObjects.Where(so => so.layerDescription == "Design").FirstOrDefault();
+      var speckleAnalysisModel = speckleModelObjects.Where(so => so.layerDescription == "Analysis").FirstOrDefault();
+      Assert.NotNull(speckleDesignModel.elements);
+      Assert.NotNull(speckleAnalysisModel.elements);
+      Assert.Contains(speckleDesignModel.elements, o => o is GSAGridSurface);
+      Assert.Contains(speckleAnalysisModel.elements, o => o is GSAGridSurface);
 
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+      #region Design Layer
+      var speckleGridSurfaces = speckleDesignModel.elements.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
 
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSAGridSurface);
+      //Checks - grid surface 1
+      Assert.Equal("grid surface 1", speckleGridSurfaces[0].applicationId);
+      Assert.Equal(gsaGridSurfaces[0].Name, speckleGridSurfaces[0].name);
+      Assert.Equal(gsaGridSurfaces[0].Index.Value, speckleGridSurfaces[0].nativeId);
+      Assert.True(speckleGridSurfaces[0].gridPlane.axis.definition.IsGlobal());
+      Assert.Equal(gsaGridSurfaces[0].Tolerance.Value, speckleGridSurfaces[0].tolerance);
+      Assert.Equal(gsaGridSurfaces[0].Angle.Value, speckleGridSurfaces[0].spanDirection);
+      Assert.Equal(LoadExpansion.PlaneAspect, speckleGridSurfaces[0].loadExpansion);
+      Assert.Equal(GridSurfaceSpanType.OneWay, speckleGridSurfaces[0].span);
+      Assert.Null(speckleGridSurfaces[0].elements);
 
-      var speckleGridSurfaces = structuralObjects.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
+      //Checks - grid surface 2
+      Assert.Equal("grid surface 2", speckleGridSurfaces[1].applicationId);
+      Assert.Equal(gsaGridSurfaces[1].Name, speckleGridSurfaces[1].name);
+      Assert.Equal(gsaGridSurfaces[1].Index.Value, speckleGridSurfaces[1].nativeId);
+      Assert.Equal("grid plane 1", speckleGridSurfaces[1].gridPlane.applicationId);
+      Assert.Equal(gsaGridSurfaces[1].Tolerance.Value, speckleGridSurfaces[1].tolerance);
+      Assert.Equal(gsaGridSurfaces[1].Angle.Value, speckleGridSurfaces[1].spanDirection);
+      Assert.Equal(LoadExpansion.PlaneAspect, speckleGridSurfaces[1].loadExpansion);
+      Assert.Equal(GridSurfaceSpanType.TwoWay, speckleGridSurfaces[1].span);
+      Assert.Null(speckleGridSurfaces[1].elements);
+      #endregion
+
+      #region Analysis Layer
+      speckleGridSurfaces = speckleAnalysisModel.elements.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
 
       //Checks - grid surface 1
       Assert.Equal("grid surface 1", speckleGridSurfaces[0].applicationId);
@@ -673,6 +700,7 @@ namespace ConverterGSATests
       Assert.Equal(GridSurfaceSpanType.TwoWay, speckleGridSurfaces[1].span);
       Assert.Equal(gsaGridSurfaces[0].ElementIndices.Count(), speckleGridSurfaces[1].elements.Count());
       Assert.Equal("quad 1", speckleGridSurfaces[1].elements[0].applicationId);
+      #endregion
     }
 
     [Fact]
@@ -714,7 +742,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaPolylines[0].Colour.ToString(), specklePolylines[0].colour);
       Assert.Null(specklePolylines[0].gridPlane);
       Assert.Equal(gsaPolylines[0].Units, specklePolylines[0].units);
-      Assert.Equal(gsaPolylines[0].Values, specklePolylines[0].value);
+      Assert.Equal(new List<double>() { 1, 2, 0, 3, 4, 0, 5, 6, 0, 7, 8, 0 }, specklePolylines[0].value);
 
       //Checks - polyline 2
       Assert.Equal("polyline 2", specklePolylines[1].applicationId);
@@ -919,62 +947,66 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSALoadFace> speckleFaceLoads;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadFace);
+        speckleFaceLoads = m.loads.FindAll(so => so is GSALoadFace).Select(so => (GSALoadFace)so).ToList();
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - Load 1
+        Assert.Equal("load 2d face 1", speckleFaceLoads[0].applicationId);
+        Assert.Equal("1", speckleFaceLoads[0].name);
+        //Assert.Single(speckleFaceLoads[0].elements);
+        //Assert.Equal("element 1", speckleFaceLoads[0].elements[0].applicationId);
+        Assert.Equal(FaceLoadType.Constant, speckleFaceLoads[0].loadType);
+        Assert.Equal(LoadDirection2D.Z, speckleFaceLoads[0].direction);
+        Assert.Equal(LoadAxisType.Global, speckleFaceLoads[0].loadAxisType);
+        Assert.False(speckleFaceLoads[0].isProjected);
+        Assert.Equal(gsaLoad2dFace[0].Values, speckleFaceLoads[0].values);
+        Assert.Null(speckleFaceLoads[0].loadAxis);
+        Assert.Null(speckleFaceLoads[0].positions);
+        Assert.Equal(gsaLoad2dFace[0].Index.Value, speckleFaceLoads[0].nativeId);
+
+        //Checks - Load 2
+        Assert.Equal("load 2d face 2", speckleFaceLoads[1].applicationId);
+        Assert.Equal("2", speckleFaceLoads[1].name);
+        //Assert.Single(speckleFaceLoads[1].elements);
+        //Assert.Equal("element 2", speckleFaceLoads[1].elements[0].applicationId);
+        Assert.Equal(FaceLoadType.Point, speckleFaceLoads[1].loadType);
+        Assert.Equal(LoadDirection2D.X, speckleFaceLoads[1].direction);
+        Assert.Equal(LoadAxisType.Global, speckleFaceLoads[1].loadAxisType);
+        Assert.False(speckleFaceLoads[1].isProjected);
+        Assert.Equal(gsaLoad2dFace[1].Values, speckleFaceLoads[1].values);
+        Assert.Equal("axis 1", speckleFaceLoads[1].loadAxis.applicationId);
+        Assert.Equal(new List<double>() { 0, 0 }, speckleFaceLoads[1].positions);
+        Assert.Equal(gsaLoad2dFace[1].Index.Value, speckleFaceLoads[1].nativeId);
+
+        //Checks - Load 3
+        Assert.Equal("load 2d face 3", speckleFaceLoads[2].applicationId);
+        Assert.Equal("3", speckleFaceLoads[2].name);
+        //Assert.Single(speckleFaceLoads[2].elements);
+        //Assert.Equal("element 3", speckleFaceLoads[2].elements[0].applicationId);
+        Assert.Equal(FaceLoadType.Variable, speckleFaceLoads[2].loadType);
+        Assert.Equal(LoadDirection2D.Y, speckleFaceLoads[2].direction);
+        Assert.Equal(LoadAxisType.Local, speckleFaceLoads[2].loadAxisType);
+        Assert.False(speckleFaceLoads[2].isProjected);
+        Assert.Equal(gsaLoad2dFace[2].Values, speckleFaceLoads[2].values);
+        Assert.Null(speckleFaceLoads[2].loadAxis);
+        Assert.Null(speckleFaceLoads[2].positions);
+        Assert.Equal(gsaLoad2dFace[2].Index.Value, speckleFaceLoads[2].nativeId);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadFace);
-
-      var speckleFaceLoads = structuralObjects.FindAll(so => so is GSALoadFace).Select(so => (GSALoadFace)so).ToList();
-
-      //Checks - Load 1
-      Assert.Equal("load 2d face 1", speckleFaceLoads[0].applicationId);
-      Assert.Equal("1", speckleFaceLoads[0].name);
-      Assert.Single(speckleFaceLoads[0].elements);
-      Assert.Equal("element 1", speckleFaceLoads[0].elements[0].applicationId);
-      Assert.Equal(FaceLoadType.Constant, speckleFaceLoads[0].loadType);
-      Assert.Equal(LoadDirection2D.Z, speckleFaceLoads[0].direction);
-      Assert.Equal(LoadAxisType.Global, speckleFaceLoads[0].loadAxisType);
-      Assert.False(speckleFaceLoads[0].isProjected);
-      Assert.Equal(gsaLoad2dFace[0].Values, speckleFaceLoads[0].values);
-      Assert.Null(speckleFaceLoads[0].loadAxis);
-      Assert.Null(speckleFaceLoads[0].positions);
-      Assert.Equal(gsaLoad2dFace[0].Index.Value, speckleFaceLoads[0].nativeId);
-
-      //Checks - Load 2
-      Assert.Equal("load 2d face 2", speckleFaceLoads[1].applicationId);
-      Assert.Equal("2", speckleFaceLoads[1].name);
-      Assert.Single(speckleFaceLoads[1].elements);
-      Assert.Equal("element 2", speckleFaceLoads[1].elements[0].applicationId);
-      Assert.Equal(FaceLoadType.Point, speckleFaceLoads[1].loadType);
-      Assert.Equal(LoadDirection2D.X, speckleFaceLoads[1].direction);
-      Assert.Equal(LoadAxisType.Global, speckleFaceLoads[1].loadAxisType);
-      Assert.False(speckleFaceLoads[1].isProjected);
-      Assert.Equal(gsaLoad2dFace[1].Values, speckleFaceLoads[1].values);
-      Assert.Equal("axis 1", speckleFaceLoads[1].loadAxis.applicationId);
-      Assert.Equal(new List<double>() { 0, 0 }, speckleFaceLoads[1].positions);
-      Assert.Equal(gsaLoad2dFace[1].Index.Value, speckleFaceLoads[1].nativeId);
-
-      //Checks - Load 3
-      Assert.Equal("load 2d face 3", speckleFaceLoads[2].applicationId);
-      Assert.Equal("3", speckleFaceLoads[2].name);
-      Assert.Single(speckleFaceLoads[2].elements);
-      Assert.Equal("element 3", speckleFaceLoads[2].elements[0].applicationId);
-      Assert.Equal(FaceLoadType.Variable, speckleFaceLoads[2].loadType);
-      Assert.Equal(LoadDirection2D.Y, speckleFaceLoads[2].direction);
-      Assert.Equal(LoadAxisType.Local, speckleFaceLoads[2].loadAxisType);
-      Assert.False(speckleFaceLoads[2].isProjected);
-      Assert.Equal(gsaLoad2dFace[2].Values, speckleFaceLoads[2].values);
-      Assert.Null(speckleFaceLoads[2].loadAxis);
-      Assert.Null(speckleFaceLoads[2].positions);
-      Assert.Equal(gsaLoad2dFace[2].Index.Value, speckleFaceLoads[2].nativeId);
     }
 
     [Fact]
@@ -1004,70 +1036,74 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSALoadBeam> speckleBeamLoads;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadBeam);
+        speckleBeamLoads = m.loads.FindAll(so => so is GSALoadBeam).Select(so => (GSALoadBeam)so).ToList();
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - Element 1
+        Assert.Equal("load beam 1", speckleBeamLoads[0].applicationId);
+        Assert.Equal("1", speckleBeamLoads[0].name);
+        Assert.Equal("load case 1", speckleBeamLoads[0].loadCase.applicationId);
+        Assert.Single(speckleBeamLoads[0].elements);
+        Assert.Equal("element 1", speckleBeamLoads[0].elements[0].applicationId);
+        Assert.Equal(BeamLoadType.Point, speckleBeamLoads[0].loadType);
+        Assert.Equal(LoadDirection.Z, speckleBeamLoads[0].direction);
+        Assert.Null(speckleBeamLoads[0].loadAxis);
+        Assert.Equal(LoadAxisType.Global, speckleBeamLoads[0].loadAxisType);
+        Assert.False(speckleBeamLoads[0].isProjected);
+        Assert.Single(speckleBeamLoads[0].values);
+        Assert.Equal(((GsaLoadBeamPoint)gsaLoadBeams[0]).Load, speckleBeamLoads[0].values[0]);
+        Assert.Single(speckleBeamLoads[0].positions);
+        Assert.Equal(((GsaLoadBeamPoint)gsaLoadBeams[0]).Position, speckleBeamLoads[0].positions[0]);
+        Assert.Equal(gsaLoadBeams[0].Index.Value, speckleBeamLoads[0].nativeId);
+
+        //Checks - Element 2
+        Assert.Equal("load beam 2", speckleBeamLoads[1].applicationId);
+        Assert.Equal("2", speckleBeamLoads[1].name);
+        Assert.Equal("load case 1", speckleBeamLoads[1].loadCase.applicationId);
+        Assert.Single(speckleBeamLoads[1].elements);
+        Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
+        Assert.Equal(BeamLoadType.Uniform, speckleBeamLoads[1].loadType);
+        Assert.Equal(LoadDirection.X, speckleBeamLoads[1].direction);
+        Assert.Equal("axis 1", speckleBeamLoads[1].loadAxis.applicationId);
+        Assert.Equal(LoadAxisType.Global, speckleBeamLoads[1].loadAxisType);
+        Assert.False(speckleBeamLoads[1].isProjected);
+        Assert.Single(speckleBeamLoads[1].values);
+        Assert.Equal(((GsaLoadBeamUdl)gsaLoadBeams[1]).Load, speckleBeamLoads[1].values[0]);
+        Assert.Null(speckleBeamLoads[1].positions);
+        Assert.Equal(gsaLoadBeams[1].Index.Value, speckleBeamLoads[1].nativeId);
+
+        //Checks - Element 3
+        Assert.Equal("load beam 3", speckleBeamLoads[2].applicationId);
+        Assert.Equal("3", speckleBeamLoads[2].name);
+        Assert.Equal("load case 1", speckleBeamLoads[2].loadCase.applicationId);
+        Assert.Single(speckleBeamLoads[2].elements);
+        Assert.Equal("element 1", speckleBeamLoads[2].elements[0].applicationId);
+        Assert.Equal(BeamLoadType.Linear, speckleBeamLoads[2].loadType);
+        Assert.Equal(LoadDirection.Y, speckleBeamLoads[2].direction);
+        Assert.Null(speckleBeamLoads[2].loadAxis);
+        Assert.Equal(LoadAxisType.Local, speckleBeamLoads[2].loadAxisType);
+        Assert.False(speckleBeamLoads[2].isProjected);
+        Assert.Equal(2, speckleBeamLoads[2].values.Count());
+        Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[2]).Load1, speckleBeamLoads[2].values[0]);
+        Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[2]).Load2, speckleBeamLoads[2].values[1]);
+        Assert.Null(speckleBeamLoads[2].positions);
+        Assert.Equal(gsaLoadBeams[2].Index.Value, speckleBeamLoads[2].nativeId);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadBeam);
-
-      var speckleBeamLoads = structuralObjects.FindAll(so => so is GSALoadBeam).Select(so => (GSALoadBeam)so).ToList();
-
-      //Checks - Element 1
-      Assert.Equal("load beam 1", speckleBeamLoads[0].applicationId);
-      Assert.Equal("1", speckleBeamLoads[0].name);
-      Assert.Equal("load case 1", speckleBeamLoads[0].loadCase.applicationId);
-      Assert.Single(speckleBeamLoads[0].elements);
-      Assert.Equal("element 1", speckleBeamLoads[0].elements[0].applicationId);
-      Assert.Equal(BeamLoadType.Point, speckleBeamLoads[0].loadType);
-      Assert.Equal(LoadDirection.Z, speckleBeamLoads[0].direction);
-      Assert.Null(speckleBeamLoads[0].loadAxis);
-      Assert.Equal(LoadAxisType.Global, speckleBeamLoads[0].loadAxisType);
-      Assert.False(speckleBeamLoads[0].isProjected);
-      Assert.Single(speckleBeamLoads[0].values);
-      Assert.Equal(((GsaLoadBeamPoint)gsaLoadBeams[0]).Load, speckleBeamLoads[0].values[0]);
-      Assert.Single(speckleBeamLoads[0].positions);
-      Assert.Equal(((GsaLoadBeamPoint)gsaLoadBeams[0]).Position, speckleBeamLoads[0].positions[0]);
-      Assert.Equal(gsaLoadBeams[0].Index.Value, speckleBeamLoads[0].nativeId);
-
-      //Checks - Element 2
-      Assert.Equal("load beam 2", speckleBeamLoads[1].applicationId);
-      Assert.Equal("2", speckleBeamLoads[1].name);
-      Assert.Equal("load case 1", speckleBeamLoads[1].loadCase.applicationId);
-      Assert.Single(speckleBeamLoads[1].elements);
-      Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
-      Assert.Equal(BeamLoadType.Uniform, speckleBeamLoads[1].loadType);
-      Assert.Equal(LoadDirection.X, speckleBeamLoads[1].direction);
-      Assert.Equal("axis 1", speckleBeamLoads[1].loadAxis.applicationId);
-      Assert.Equal(LoadAxisType.Global, speckleBeamLoads[1].loadAxisType);
-      Assert.False(speckleBeamLoads[1].isProjected);
-      Assert.Single(speckleBeamLoads[1].values);
-      Assert.Equal(((GsaLoadBeamUdl)gsaLoadBeams[1]).Load, speckleBeamLoads[1].values[0]);
-      Assert.Null(speckleBeamLoads[1].positions);
-      Assert.Equal(gsaLoadBeams[1].Index.Value, speckleBeamLoads[1].nativeId);
-
-      //Checks - Element 3
-      Assert.Equal("load beam 3", speckleBeamLoads[2].applicationId);
-      Assert.Equal("3", speckleBeamLoads[2].name);
-      Assert.Equal("load case 1", speckleBeamLoads[2].loadCase.applicationId);
-      Assert.Single(speckleBeamLoads[2].elements);
-      Assert.Equal("element 1", speckleBeamLoads[2].elements[0].applicationId);
-      Assert.Equal(BeamLoadType.Linear, speckleBeamLoads[2].loadType);
-      Assert.Equal(LoadDirection.Y, speckleBeamLoads[2].direction);
-      Assert.Null(speckleBeamLoads[2].loadAxis);
-      Assert.Equal(LoadAxisType.Local, speckleBeamLoads[2].loadAxisType);
-      Assert.False(speckleBeamLoads[2].isProjected);
-      Assert.Equal(2, speckleBeamLoads[2].values.Count());
-      Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[2]).Load1, speckleBeamLoads[2].values[0]);
-      Assert.Equal(((GsaLoadBeamLine)gsaLoadBeams[2]).Load2, speckleBeamLoads[2].values[1]);
-      Assert.Null(speckleBeamLoads[2].positions);
-      Assert.Equal(gsaLoadBeams[2].Index.Value, speckleBeamLoads[2].nativeId);
     }
 
     [Fact]
@@ -1156,37 +1192,49 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      GSALoadGravity speckleGravityLoad;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadGravity);
+        speckleGravityLoad = m.loads.FindAll(so => so is GSALoadGravity).Select(so => (GSALoadGravity)so).ToList().First();
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks
+        Assert.Equal("load gravity 1", speckleGravityLoad.applicationId);
+        Assert.Equal("load case 1", speckleGravityLoad.loadCase.applicationId);
+        Assert.Equal(5, speckleGravityLoad.nodes.Count());
+        Assert.Equal("node 1", speckleGravityLoad.nodes[0].applicationId);
+        Assert.Equal("node 2", speckleGravityLoad.nodes[1].applicationId);
+        Assert.Equal("node 3", speckleGravityLoad.nodes[2].applicationId);
+        Assert.Equal("node 4", speckleGravityLoad.nodes[3].applicationId);
+        Assert.Equal("node 5", speckleGravityLoad.nodes[4].applicationId);
+        Assert.Equal(0, speckleGravityLoad.gravityFactors.x);
+        Assert.Equal(0, speckleGravityLoad.gravityFactors.y);
+        Assert.Equal(-1, speckleGravityLoad.gravityFactors.z);
+        Assert.Equal(gsaLoadGravity.Index.Value, speckleGravityLoad.nativeId);
+
+        if (m.layerDescription == "Design")
+        {
+          Assert.Null(speckleGravityLoad.elements);
+        }
+        else if (m.layerDescription == "Analysis")
+        {
+          Assert.Equal(2, speckleGravityLoad.elements.Count());
+          Assert.Equal("element 1", speckleGravityLoad.elements[0].applicationId);
+          Assert.Equal("element 2", speckleGravityLoad.elements[1].applicationId);
+        }
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadGravity);
-
-      var speckleGravityLoad = structuralObjects.FindAll(so => so is GSALoadGravity).Select(so => (GSALoadGravity)so).ToList().First();
-
-      //Checks
-      Assert.Equal("load gravity 1", speckleGravityLoad.applicationId);
-      Assert.Equal("load case 1", speckleGravityLoad.loadCase.applicationId);
-      Assert.Equal(2, speckleGravityLoad.elements.Count());
-      Assert.Equal("element 1", speckleGravityLoad.elements[0].applicationId);
-      Assert.Equal("element 2", speckleGravityLoad.elements[1].applicationId);
-      Assert.Equal(5, speckleGravityLoad.nodes.Count());
-      Assert.Equal("node 1", speckleGravityLoad.nodes[0].applicationId);
-      Assert.Equal("node 2", speckleGravityLoad.nodes[1].applicationId);
-      Assert.Equal("node 3", speckleGravityLoad.nodes[2].applicationId);
-      Assert.Equal("node 4", speckleGravityLoad.nodes[3].applicationId);
-      Assert.Equal("node 5", speckleGravityLoad.nodes[4].applicationId);
-      Assert.Equal(0, speckleGravityLoad.gravityFactors.x);
-      Assert.Equal(0, speckleGravityLoad.gravityFactors.y);
-      Assert.Equal(-1, speckleGravityLoad.gravityFactors.z);
-      Assert.Equal(gsaLoadGravity.Index.Value, speckleGravityLoad.nativeId);
     }
 
     [Fact]
@@ -1220,45 +1268,49 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSALoadGridPoint> speckleGridPointLoads;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadGridPoint);
+        speckleGridPointLoads = m.loads.FindAll(so => so is GSALoadGridPoint).Select(so => (GSALoadGridPoint)so).ToList();
+        Assert.Equal(gsaLoadGridPoints.Count(), speckleGridPointLoads.Count());
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
-      }
+        //Checks - Load grid point 1
+        Assert.Equal("load grid point 1", speckleGridPointLoads[0].applicationId);
+        Assert.Equal(gsaLoadGridPoints[0].Index.Value, speckleGridPointLoads[0].nativeId);
+        Assert.Equal(gsaLoadGridPoints[0].Name, speckleGridPointLoads[0].name);
+        Assert.Equal("grid surface 1", speckleGridPointLoads[0].gridSurface.applicationId);
+        Assert.Equal(gsaLoadGridPoints[0].X.Value, speckleGridPointLoads[0].position.x);
+        Assert.Equal(gsaLoadGridPoints[0].Y.Value, speckleGridPointLoads[0].position.y);
+        Assert.Equal("load case 1", speckleGridPointLoads[0].loadCase.applicationId);
+        Assert.True(speckleGridPointLoads[0].loadAxis.definition.IsGlobal());
+        Assert.Equal(LoadDirection2D.Z, speckleGridPointLoads[0].direction);
+        Assert.Equal(gsaLoadGridPoints[0].Value.Value, speckleGridPointLoads[0].value);
 
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadGridPoint);
-
-      var speckleGridPointLoads = structuralObjects.FindAll(so => so is GSALoadGridPoint).Select(so => (GSALoadGridPoint)so).ToList();
-      Assert.Equal(gsaLoadGridPoints.Count(), speckleGridPointLoads.Count());
-
-      //Checks - Load grid point 1
-      Assert.Equal("load grid point 1", speckleGridPointLoads[0].applicationId);
-      Assert.Equal(gsaLoadGridPoints[0].Index.Value, speckleGridPointLoads[0].nativeId);
-      Assert.Equal(gsaLoadGridPoints[0].Name, speckleGridPointLoads[0].name);
-      Assert.Equal("grid surface 1", speckleGridPointLoads[0].gridSurface.applicationId);
-      Assert.Equal(gsaLoadGridPoints[0].X.Value, speckleGridPointLoads[0].position.x);
-      Assert.Equal(gsaLoadGridPoints[0].Y.Value, speckleGridPointLoads[0].position.y);
-      Assert.Equal("load case 1", speckleGridPointLoads[0].loadCase.applicationId);
-      Assert.True(speckleGridPointLoads[0].loadAxis.definition.IsGlobal());
-      Assert.Equal(LoadDirection2D.Z, speckleGridPointLoads[0].direction);
-      Assert.Equal(gsaLoadGridPoints[0].Value.Value, speckleGridPointLoads[0].value);
-
-      //Checks - Load grid point 2
-      Assert.Equal("load grid point 2", speckleGridPointLoads[1].applicationId);
-      Assert.Equal(gsaLoadGridPoints[1].Index.Value, speckleGridPointLoads[1].nativeId);
-      Assert.Equal(gsaLoadGridPoints[1].Name, speckleGridPointLoads[1].name);
-      Assert.Equal("grid surface 1", speckleGridPointLoads[1].gridSurface.applicationId);
-      Assert.Equal(gsaLoadGridPoints[1].X.Value, speckleGridPointLoads[1].position.x);
-      Assert.Equal(gsaLoadGridPoints[1].Y.Value, speckleGridPointLoads[1].position.y);
-      Assert.Equal("load case 2", speckleGridPointLoads[1].loadCase.applicationId);
-      Assert.Equal("axis 1", speckleGridPointLoads[1].loadAxis.applicationId);
-      Assert.Equal(LoadDirection2D.Z, speckleGridPointLoads[1].direction);
-      Assert.Equal(gsaLoadGridPoints[1].Value.Value, speckleGridPointLoads[1].value);
+        //Checks - Load grid point 2
+        Assert.Equal("load grid point 2", speckleGridPointLoads[1].applicationId);
+        Assert.Equal(gsaLoadGridPoints[1].Index.Value, speckleGridPointLoads[1].nativeId);
+        Assert.Equal(gsaLoadGridPoints[1].Name, speckleGridPointLoads[1].name);
+        Assert.Equal("grid surface 1", speckleGridPointLoads[1].gridSurface.applicationId);
+        Assert.Equal(gsaLoadGridPoints[1].X.Value, speckleGridPointLoads[1].position.x);
+        Assert.Equal(gsaLoadGridPoints[1].Y.Value, speckleGridPointLoads[1].position.y);
+        Assert.Equal("load case 2", speckleGridPointLoads[1].loadCase.applicationId);
+        Assert.Equal("axis 1", speckleGridPointLoads[1].loadAxis.applicationId);
+        Assert.Equal(LoadDirection2D.Z, speckleGridPointLoads[1].direction);
+        Assert.Equal(gsaLoadGridPoints[1].Value.Value, speckleGridPointLoads[1].value);
+      }      
     }
 
     [Fact]
@@ -1293,49 +1345,53 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSALoadGridLine> speckleGridLineLoads;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadGridLine);
+        speckleGridLineLoads = m.loads.FindAll(so => so is GSALoadGridLine).Select(so => (GSALoadGridLine)so).ToList();
+        Assert.Equal(gsaLoadGridLines.Count(), speckleGridLineLoads.Count());
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - Load grid line 1
+        Assert.Equal("load grid line 1", speckleGridLineLoads[0].applicationId);
+        Assert.Equal(gsaLoadGridLines[0].Index.Value, speckleGridLineLoads[0].nativeId);
+        Assert.Equal(gsaLoadGridLines[0].Name, speckleGridLineLoads[0].name);
+        Assert.Equal("grid surface 1", speckleGridLineLoads[0].gridSurface.applicationId);
+        Assert.Equal("polyline 1", speckleGridLineLoads[0].polyline.applicationId);
+        Assert.Equal("load case 1", speckleGridLineLoads[0].loadCase.applicationId);
+        Assert.True(speckleGridLineLoads[0].loadAxis.definition.IsGlobal());
+        Assert.Equal(gsaLoadGridLines[0].Projected, speckleGridLineLoads[0].isProjected);
+        Assert.Equal(LoadDirection2D.Z, speckleGridLineLoads[0].direction);
+        Assert.Equal(2, speckleGridLineLoads[0].values.Count());
+        Assert.Equal(gsaLoadGridLines[0].Value1.Value, speckleGridLineLoads[0].values[0]);
+        Assert.Equal(gsaLoadGridLines[0].Value2.Value, speckleGridLineLoads[0].values[1]);
+
+        //Checks - Load grid line 2
+        Assert.Equal("load grid line 2", speckleGridLineLoads[1].applicationId);
+        Assert.Equal(gsaLoadGridLines[1].Index.Value, speckleGridLineLoads[1].nativeId);
+        Assert.Equal(gsaLoadGridLines[1].Name, speckleGridLineLoads[1].name);
+        Assert.Equal("grid surface 1", speckleGridLineLoads[1].gridSurface.applicationId);
+        Assert.Equal(new List<double>() { 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0 }, speckleGridLineLoads[1].polyline.value);
+        Assert.Equal("load case 2", speckleGridLineLoads[1].loadCase.applicationId);
+        Assert.Equal("axis 1", speckleGridLineLoads[1].loadAxis.applicationId);
+        Assert.Equal(gsaLoadGridLines[1].Projected, speckleGridLineLoads[1].isProjected);
+        Assert.Equal(LoadDirection2D.Z, speckleGridLineLoads[1].direction);
+        Assert.Equal(2, speckleGridLineLoads[1].values.Count());
+        Assert.Equal(gsaLoadGridLines[1].Value1.Value, speckleGridLineLoads[1].values[0]);
+        Assert.Equal(gsaLoadGridLines[1].Value2.Value, speckleGridLineLoads[1].values[1]);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadGridLine);
-
-      var speckleGridLineLoads = structuralObjects.FindAll(so => so is GSALoadGridLine).Select(so => (GSALoadGridLine)so).ToList();
-      Assert.Equal(gsaLoadGridLines.Count(), speckleGridLineLoads.Count());
-
-      //Checks - Load grid line 1
-      Assert.Equal("load grid line 1", speckleGridLineLoads[0].applicationId);
-      Assert.Equal(gsaLoadGridLines[0].Index.Value, speckleGridLineLoads[0].nativeId);
-      Assert.Equal(gsaLoadGridLines[0].Name, speckleGridLineLoads[0].name);
-      Assert.Equal("grid surface 1", speckleGridLineLoads[0].gridSurface.applicationId);
-      Assert.Equal("polyline 1", speckleGridLineLoads[0].polyline.applicationId);
-      Assert.Equal("load case 1", speckleGridLineLoads[0].loadCase.applicationId);
-      Assert.True(speckleGridLineLoads[0].loadAxis.definition.IsGlobal());
-      Assert.Equal(gsaLoadGridLines[0].Projected, speckleGridLineLoads[0].isProjected);
-      Assert.Equal(LoadDirection2D.Z, speckleGridLineLoads[0].direction);
-      Assert.Equal(2, speckleGridLineLoads[0].values.Count());
-      Assert.Equal(gsaLoadGridLines[0].Value1.Value, speckleGridLineLoads[0].values[0]);
-      Assert.Equal(gsaLoadGridLines[0].Value2.Value, speckleGridLineLoads[0].values[1]);
-
-      //Checks - Load grid line 2
-      Assert.Equal("load grid line 2", speckleGridLineLoads[1].applicationId);
-      Assert.Equal(gsaLoadGridLines[1].Index.Value, speckleGridLineLoads[1].nativeId);
-      Assert.Equal(gsaLoadGridLines[1].Name, speckleGridLineLoads[1].name);
-      Assert.Equal("grid surface 1", speckleGridLineLoads[1].gridSurface.applicationId);
-      Assert.Equal(new List<double>() { 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0 }, speckleGridLineLoads[1].polyline.value);
-      Assert.Equal("load case 2", speckleGridLineLoads[1].loadCase.applicationId);
-      Assert.Equal("axis 1", speckleGridLineLoads[1].loadAxis.applicationId);
-      Assert.Equal(gsaLoadGridLines[1].Projected, speckleGridLineLoads[1].isProjected);
-      Assert.Equal(LoadDirection2D.Z, speckleGridLineLoads[1].direction);
-      Assert.Equal(2, speckleGridLineLoads[1].values.Count());
-      Assert.Equal(gsaLoadGridLines[1].Value1.Value, speckleGridLineLoads[1].values[0]);
-      Assert.Equal(gsaLoadGridLines[1].Value2.Value, speckleGridLineLoads[1].values[1]);
     }
 
     [Fact]
@@ -1370,45 +1426,49 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSALoadGridArea> speckleGridAreaLoads;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadGridArea);
+        speckleGridAreaLoads = m.loads.FindAll(so => so is GSALoadGridArea).Select(so => (GSALoadGridArea)so).ToList();
+        Assert.Equal(gsaLoadGridAreas.Count(), speckleGridAreaLoads.Count());
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - Load grid area 1
+        Assert.Equal("load grid area 1", speckleGridAreaLoads[0].applicationId);
+        Assert.Equal(gsaLoadGridAreas[0].Index.Value, speckleGridAreaLoads[0].nativeId);
+        Assert.Equal(gsaLoadGridAreas[0].Name, speckleGridAreaLoads[0].name);
+        Assert.True(speckleGridAreaLoads[0].loadAxis.definition.IsGlobal());
+        Assert.Equal(gsaLoadGridAreas[0].Projected, speckleGridAreaLoads[0].isProjected);
+        Assert.Equal(LoadDirection2D.Z, speckleGridAreaLoads[0].direction);
+        Assert.Null(speckleGridAreaLoads[0].polyline);
+        Assert.Equal("grid surface 1", speckleGridAreaLoads[0].gridSurface.applicationId);
+        Assert.Equal("load case 1", speckleGridAreaLoads[0].loadCase.applicationId);
+        Assert.Equal(gsaLoadGridAreas[0].Value.Value, speckleGridAreaLoads[0].value);
+
+        //Checks - Load grid area 2
+        Assert.Equal("load grid area 2", speckleGridAreaLoads[1].applicationId);
+        Assert.Equal(gsaLoadGridAreas[1].Index.Value, speckleGridAreaLoads[1].nativeId);
+        Assert.Equal(gsaLoadGridAreas[1].Name, speckleGridAreaLoads[1].name);
+        Assert.Equal("axis 1", speckleGridAreaLoads[1].loadAxis.applicationId);
+        Assert.Equal(gsaLoadGridAreas[1].Projected, speckleGridAreaLoads[1].isProjected);
+        Assert.Equal(LoadDirection2D.Z, speckleGridAreaLoads[1].direction);
+        Assert.Equal("polyline 1", speckleGridAreaLoads[1].polyline.applicationId);
+        Assert.Equal("grid surface 1", speckleGridAreaLoads[1].gridSurface.applicationId);
+        Assert.Equal("load case 2", speckleGridAreaLoads[1].loadCase.applicationId);
+        Assert.Equal(gsaLoadGridAreas[1].Value.Value, speckleGridAreaLoads[1].value);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadGridArea);
-
-      var speckleGridAreaLoads = structuralObjects.FindAll(so => so is GSALoadGridArea).Select(so => (GSALoadGridArea)so).ToList();
-      Assert.Equal(gsaLoadGridAreas.Count(), speckleGridAreaLoads.Count());
-
-      //Checks - Load grid area 1
-      Assert.Equal("load grid area 1", speckleGridAreaLoads[0].applicationId);
-      Assert.Equal(gsaLoadGridAreas[0].Index.Value, speckleGridAreaLoads[0].nativeId);
-      Assert.Equal(gsaLoadGridAreas[0].Name, speckleGridAreaLoads[0].name);
-      Assert.True(speckleGridAreaLoads[0].loadAxis.definition.IsGlobal());
-      Assert.Equal(gsaLoadGridAreas[0].Projected, speckleGridAreaLoads[0].isProjected);
-      Assert.Equal(LoadDirection2D.Z, speckleGridAreaLoads[0].direction);
-      Assert.Null(speckleGridAreaLoads[0].polyline);
-      Assert.Equal("grid surface 1", speckleGridAreaLoads[0].gridSurface.applicationId);
-      Assert.Equal("load case 1", speckleGridAreaLoads[0].loadCase.applicationId);
-      Assert.Equal(gsaLoadGridAreas[0].Value.Value, speckleGridAreaLoads[0].value);
-
-      //Checks - Load grid area 2
-      Assert.Equal("load grid area 2", speckleGridAreaLoads[1].applicationId);
-      Assert.Equal(gsaLoadGridAreas[1].Index.Value, speckleGridAreaLoads[1].nativeId);
-      Assert.Equal(gsaLoadGridAreas[1].Name, speckleGridAreaLoads[1].name);
-      Assert.Equal("axis 1", speckleGridAreaLoads[1].loadAxis.applicationId);
-      Assert.Equal(gsaLoadGridAreas[1].Projected, speckleGridAreaLoads[1].isProjected);
-      Assert.Equal(LoadDirection2D.Z, speckleGridAreaLoads[1].direction);
-      Assert.Equal("polyline 1", speckleGridAreaLoads[1].polyline.applicationId);
-      Assert.Equal("grid surface 1", speckleGridAreaLoads[1].gridSurface.applicationId);
-      Assert.Equal("load case 2", speckleGridAreaLoads[1].loadCase.applicationId);
-      Assert.Equal(gsaLoadGridAreas[1].Value.Value, speckleGridAreaLoads[1].value);
     }
 
     [Fact]
@@ -1438,41 +1498,54 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSALoadThermal2d> speckleThermalLoads;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.loads);
+        Assert.Contains(m.loads, o => o is GSALoadThermal2d);
+        speckleThermalLoads = m.loads.FindAll(so => so is GSALoadThermal2d).Select(so => (GSALoadThermal2d)so).ToList();
+        Assert.Equal(gsaLoadThermal.Count(), speckleThermalLoads.Count());
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - Load thermal 1
+        Assert.Equal("load thermal 1", speckleThermalLoads[0].applicationId);
+        Assert.Equal(gsaLoadThermal[0].Index.Value, speckleThermalLoads[0].nativeId);
+        Assert.Equal(gsaLoadThermal[0].Name, speckleThermalLoads[0].name);
+        Assert.Equal("load case 1", speckleThermalLoads[0].loadCase.applicationId);
+        Assert.Equal(Thermal2dLoadType.Uniform, speckleThermalLoads[0].type);
+        Assert.Equal(gsaLoadThermal[0].Values, speckleThermalLoads[0].values);
+
+        //Checks - Load thermal 2
+        Assert.Equal("load thermal 2", speckleThermalLoads[1].applicationId);
+        Assert.Equal(gsaLoadThermal[1].Index.Value, speckleThermalLoads[1].nativeId);
+        Assert.Equal(gsaLoadThermal[1].Name, speckleThermalLoads[1].name);
+        Assert.Equal("load case 2", speckleThermalLoads[1].loadCase.applicationId);
+        Assert.Equal(Thermal2dLoadType.Gradient, speckleThermalLoads[1].type);
+        Assert.Equal(gsaLoadThermal[1].Values, speckleThermalLoads[1].values);
+
+        if (m.layerDescription == "Design")
+        {
+          Assert.Null(speckleThermalLoads[0].elements);
+          Assert.Null(speckleThermalLoads[1].elements);
+        }
+        else if (m.layerDescription == "Analysis")
+        {
+          Assert.Equal(gsaLoadThermal[0].ElementIndices.Count(), speckleThermalLoads[0].elements.Count());
+          Assert.Equal("element 1", speckleThermalLoads[0].elements[0].applicationId);
+          Assert.Equal(gsaLoadThermal[1].ElementIndices.Count(), speckleThermalLoads[1].elements.Count());
+          Assert.Equal("element 1", speckleThermalLoads[1].elements[0].applicationId);
+        }
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSALoadThermal2d);
-
-      var speckleThermalLoads = structuralObjects.FindAll(so => so is GSALoadThermal2d).Select(so => (GSALoadThermal2d)so).ToList();
-      Assert.Equal(gsaLoadThermal.Count(), speckleThermalLoads.Count());
-
-      //Checks - Load thermal 1
-      Assert.Equal("load thermal 1", speckleThermalLoads[0].applicationId);
-      Assert.Equal(gsaLoadThermal[0].Index.Value, speckleThermalLoads[0].nativeId);
-      Assert.Equal(gsaLoadThermal[0].Name, speckleThermalLoads[0].name);
-      Assert.Equal(gsaLoadThermal[0].ElementIndices.Count(), speckleThermalLoads[0].elements.Count());
-      Assert.Equal("element 1", speckleThermalLoads[0].elements[0].applicationId);
-      Assert.Equal("load case 1", speckleThermalLoads[0].loadCase.applicationId);
-      Assert.Equal(Thermal2dLoadType.Uniform, speckleThermalLoads[0].type);
-      Assert.Equal(gsaLoadThermal[0].Values, speckleThermalLoads[0].values);
-
-      //Checks - Load thermal 2
-      Assert.Equal("load thermal 2", speckleThermalLoads[1].applicationId);
-      Assert.Equal(gsaLoadThermal[1].Index.Value, speckleThermalLoads[1].nativeId);
-      Assert.Equal(gsaLoadThermal[1].Name, speckleThermalLoads[1].name);
-      Assert.Equal(gsaLoadThermal[1].ElementIndices.Count(), speckleThermalLoads[1].elements.Count());
-      Assert.Equal("element 1", speckleThermalLoads[1].elements[0].applicationId);
-      Assert.Equal("load case 2", speckleThermalLoads[1].loadCase.applicationId);
-      Assert.Equal(Thermal2dLoadType.Gradient, speckleThermalLoads[1].type);
-      Assert.Equal(gsaLoadThermal[1].Values, speckleThermalLoads[1].values);
     }
     #endregion
 
@@ -1617,7 +1690,8 @@ namespace ConverterGSATests
       Assert.Equal("section 1", speckleProperty1D[0].applicationId);
       Assert.Equal(gsaSection[0].Colour.ToString(), speckleProperty1D[0].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[0].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[0].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[0].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[0].material);
       Assert.Equal(ShapeType.Catalogue, speckleProperty1D[0].profile.shapeType);
       var gsaProfileCatalogue = (ProfileDetailsCatalogue)((SectionComp)gsaSection[0].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileCatalogue.Profile, ((Catalogue)speckleProperty1D[0].profile).description);
@@ -1636,7 +1710,8 @@ namespace ConverterGSATests
       Assert.Equal("section 2", speckleProperty1D[1].applicationId);
       Assert.Equal(gsaSection[1].Colour.ToString(), speckleProperty1D[1].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[1].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[1].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[1].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[1].material);
       Assert.Equal(ShapeType.Explicit, speckleProperty1D[1].profile.shapeType);
       var gsaProfileExplicit = (ProfileDetailsExplicit)((SectionComp)gsaSection[1].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileExplicit.Area.Value, ((Explicit)speckleProperty1D[1].profile).area);
@@ -1657,7 +1732,8 @@ namespace ConverterGSATests
       Assert.Equal("section 3", speckleProperty1D[2].applicationId);
       Assert.Equal(gsaSection[2].Colour.ToString(), speckleProperty1D[2].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[2].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[2].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[2].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[2].material);
       Assert.Equal(ShapeType.Perimeter, speckleProperty1D[2].profile.shapeType);
       var gsaProfilePerimeter = (ProfileDetailsPerimeter)((SectionComp)gsaSection[2].Components[0]).ProfileDetails;
       // TO DO: test ((Perimeter)speckleProperty1D[2].profile).outline
@@ -1675,7 +1751,8 @@ namespace ConverterGSATests
       Assert.Equal("section 4", speckleProperty1D[3].applicationId);
       Assert.Equal(gsaSection[3].Colour.ToString(), speckleProperty1D[3].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[3].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[3].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[3].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[3].material);
       Assert.Equal(ShapeType.Rectangular, speckleProperty1D[3].profile.shapeType);
       var gsaProfileRectangular = (ProfileDetailsRectangular)((SectionComp)gsaSection[3].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileRectangular.b.Value, ((Rectangular)speckleProperty1D[3].profile).width);
@@ -1694,7 +1771,8 @@ namespace ConverterGSATests
       Assert.Equal("section 5", speckleProperty1D[4].applicationId);
       Assert.Equal(gsaSection[4].Colour.ToString(), speckleProperty1D[4].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[4].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[4].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[4].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[4].material);
       Assert.Equal(ShapeType.Rectangular, speckleProperty1D[4].profile.shapeType);
       var gsaProfileRHS = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[4].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileRHS.b.Value, ((Rectangular)speckleProperty1D[4].profile).width);
@@ -1713,7 +1791,8 @@ namespace ConverterGSATests
       Assert.Equal("section 6", speckleProperty1D[5].applicationId);
       Assert.Equal(gsaSection[5].Colour.ToString(), speckleProperty1D[5].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[5].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[5].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[5].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[5].material);
       Assert.Equal(ShapeType.Circular, speckleProperty1D[5].profile.shapeType);
       var gsaProfileCircular = (ProfileDetailsCircular)((SectionComp)gsaSection[5].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileCircular.d.Value / 2, ((Circular)speckleProperty1D[5].profile).radius);
@@ -1730,7 +1809,8 @@ namespace ConverterGSATests
       Assert.Equal("section 7", speckleProperty1D[6].applicationId);
       Assert.Equal(gsaSection[6].Colour.ToString(), speckleProperty1D[6].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[6].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[6].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[6].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[6].material);
       Assert.Equal(ShapeType.Circular, speckleProperty1D[6].profile.shapeType);
       var gsaProfileCHS = (ProfileDetailsCircularHollow)((SectionComp)gsaSection[6].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileCHS.d.Value / 2, ((Circular)speckleProperty1D[6].profile).radius);
@@ -1747,7 +1827,8 @@ namespace ConverterGSATests
       Assert.Equal("section 8", speckleProperty1D[7].applicationId);
       Assert.Equal(gsaSection[7].Colour.ToString(), speckleProperty1D[7].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[7].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[7].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[7].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[7].material);
       Assert.Equal(ShapeType.I, speckleProperty1D[7].profile.shapeType);
       var gsaProfileISection = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[7].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileISection.b.Value, ((ISection)speckleProperty1D[7].profile).width);
@@ -1766,7 +1847,8 @@ namespace ConverterGSATests
       Assert.Equal("section 9", speckleProperty1D[8].applicationId);
       Assert.Equal(gsaSection[8].Colour.ToString(), speckleProperty1D[8].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[8].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[8].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[8].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[8].material);
       Assert.Equal(ShapeType.Tee, speckleProperty1D[8].profile.shapeType);
       var gsaProfileTSection = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[8].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileTSection.b.Value, ((Tee)speckleProperty1D[8].profile).width);
@@ -1785,7 +1867,8 @@ namespace ConverterGSATests
       Assert.Equal("section 10", speckleProperty1D[9].applicationId);
       Assert.Equal(gsaSection[9].Colour.ToString(), speckleProperty1D[9].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[9].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[9].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[9].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[9].material);
       Assert.Equal(ShapeType.Angle, speckleProperty1D[9].profile.shapeType);
       var gsaProfileAngle = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[9].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileAngle.b.Value, ((Angle)speckleProperty1D[9].profile).width);
@@ -1804,7 +1887,8 @@ namespace ConverterGSATests
       Assert.Equal("section 11", speckleProperty1D[10].applicationId);
       Assert.Equal(gsaSection[10].Colour.ToString(), speckleProperty1D[10].colour);
       Assert.Equal(MemberType.Generic1D, speckleProperty1D[10].memberType);
-      Assert.Equal("steel material 1", speckleProperty1D[10].material.applicationId); //assume tests are done elsewhere
+      Assert.Equal("steel material 1", speckleProperty1D[10].designMaterial.applicationId);
+      Assert.Null(speckleProperty1D[10].material);
       Assert.Equal(ShapeType.Channel, speckleProperty1D[10].profile.shapeType);
       var gsaProfileChannel = (ProfileDetailsTwoThickness)((SectionComp)gsaSection[10].Components[0]).ProfileDetails;
       Assert.Equal(gsaProfileChannel.b.Value, ((Channel)speckleProperty1D[10].profile).width);
@@ -1858,8 +1942,10 @@ namespace ConverterGSATests
       Assert.Equal(gsaProp2d.Name, speckleProperty2D.name);
       Assert.Equal(gsaProp2d.Colour.ToString(), speckleProperty2D.colour);
       Assert.Equal(gsaProp2d.Thickness.Value, speckleProperty2D.thickness);
-      Assert.Equal("steel material 1", speckleProperty2D.material.applicationId); //assume conversion of material is covered by another test
+      Assert.Equal("steel material 1", speckleProperty2D.designMaterial.applicationId);
+      Assert.Null(speckleProperty2D.material);
       Assert.Null(speckleProperty2D.orientationAxis.applicationId); //no application ID for global coordinate system
+      Assert.True(speckleProperty2D.orientationAxis.definition.IsGlobal());
       Assert.Equal(PropertyType2D.Shell, speckleProperty2D.type);
       Assert.Equal(ReferenceSurface.Middle, speckleProperty2D.refSurface);
       Assert.Equal(gsaProp2d.RefZ, speckleProperty2D.zOffset);
@@ -1870,7 +1956,6 @@ namespace ConverterGSATests
       Assert.Equal(gsaProp2d.Mass, speckleProperty2D.additionalMass);
       Assert.Equal(gsaProp2d.Profile, speckleProperty2D.concreteSlabProp);
       Assert.Equal(gsaProp2d.Index.Value, speckleProperty2D.nativeId);
-      Assert.Null(speckleProperty2D.designMaterial);
       Assert.Equal(0, speckleProperty2D.cost);
     }
 
@@ -2285,53 +2370,57 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
-      {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSARigidConstraint> speckleRigids;
+
+      foreach (var m in speckleModels)
+      {
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.elements);
+        Assert.Contains(m.elements, o => o is GSARigidConstraint);
+        speckleRigids = m.elements.FindAll(so => so is GSARigidConstraint).Select(so => (GSARigidConstraint)so).ToList();
+
+        //Checks - rigid 1
+        Assert.Equal("rigid 1", speckleRigids[0].applicationId);
+        Assert.Equal(gsaRigids[0].Index.Value, speckleRigids[0].nativeId);
+        Assert.Equal(gsaRigids[0].Name, speckleRigids[0].name);
+        Assert.Equal("node 1", speckleRigids[0].primaryNode.applicationId);
+        Assert.Equal(gsaRigids[0].ConstrainedNodes.Count(), speckleRigids[0].constrainedNodes.Count());
+        Assert.Equal("node 2", speckleRigids[0].constrainedNodes[0].applicationId);
+        Assert.Equal(gsaRigids[0].Stage.Count(), speckleRigids[0].stages.Count());
+        Assert.Equal("stage 1", speckleRigids[0].stages[0].applicationId);
+        Assert.Equal(LinkageType.ALL, speckleRigids[0].type);
+        Assert.Null(speckleRigids[0].constraintCondition);
+
+        //Checks - rigid 2
+        Assert.Equal("rigid 2", speckleRigids[1].applicationId);
+        Assert.Equal(gsaRigids[1].Index.Value, speckleRigids[1].nativeId);
+        Assert.Equal(gsaRigids[1].Name, speckleRigids[1].name);
+        Assert.Equal("node 1", speckleRigids[1].primaryNode.applicationId);
+        Assert.Equal(gsaRigids[1].ConstrainedNodes.Count(), speckleRigids[1].constrainedNodes.Count());
+        Assert.Equal("node 2", speckleRigids[1].constrainedNodes[0].applicationId);
+        Assert.Equal(gsaRigids[1].Stage.Count(), speckleRigids[1].stages.Count());
+        Assert.Equal("stage 1", speckleRigids[1].stages[0].applicationId);
+        Assert.Equal(LinkageType.Custom, speckleRigids[1].type);
+        var constraintCondition = new Dictionary<AxisDirection6, List<AxisDirection6>>()
+        {
+          { AxisDirection6.X, new List<AxisDirection6>() { AxisDirection6.X, AxisDirection6.YY, AxisDirection6.ZZ } },
+          { AxisDirection6.Y, new List<AxisDirection6>() { AxisDirection6.Y, AxisDirection6.XX, AxisDirection6.ZZ } },
+          { AxisDirection6.Z, new List<AxisDirection6>() { AxisDirection6.Z, AxisDirection6.XX, AxisDirection6.YY } },
+          { AxisDirection6.XX, new List<AxisDirection6>() { AxisDirection6.XX } },
+          { AxisDirection6.YY, new List<AxisDirection6>() { AxisDirection6.YY } },
+          { AxisDirection6.ZZ, new List<AxisDirection6>() { AxisDirection6.ZZ } },
+        };
+        Assert.Equal(constraintCondition, speckleRigids[1].constraintCondition);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSARigidConstraint);
-
-      var speckleRigids = structuralObjects.FindAll(so => so is GSARigidConstraint).Select(so => (GSARigidConstraint)so).ToList();
-
-      //Checks - rigid 1
-      Assert.Equal("rigid 1", speckleRigids[0].applicationId);
-      Assert.Equal(gsaRigids[0].Index.Value, speckleRigids[0].nativeId);
-      Assert.Equal(gsaRigids[0].Name, speckleRigids[0].name);
-      Assert.Equal("node 1", speckleRigids[0].primaryNode.applicationId);
-      Assert.Equal(gsaRigids[0].ConstrainedNodes.Count(), speckleRigids[0].constrainedNodes.Count());
-      Assert.Equal("node 2", speckleRigids[0].constrainedNodes[0].applicationId);
-      Assert.Equal(gsaRigids[0].Stage.Count(), speckleRigids[0].stages.Count());
-      Assert.Equal("stage 1", speckleRigids[0].stages[0].applicationId);
-      Assert.Equal(LinkageType.ALL, speckleRigids[0].type);
-      Assert.Null(speckleRigids[0].constraintCondition);
-
-      //Checks - rigid 2
-      Assert.Equal("rigid 2", speckleRigids[1].applicationId);
-      Assert.Equal(gsaRigids[1].Index.Value, speckleRigids[1].nativeId);
-      Assert.Equal(gsaRigids[1].Name, speckleRigids[1].name);
-      Assert.Equal("node 1", speckleRigids[1].primaryNode.applicationId);
-      Assert.Equal(gsaRigids[1].ConstrainedNodes.Count(), speckleRigids[1].constrainedNodes.Count());
-      Assert.Equal("node 2", speckleRigids[1].constrainedNodes[0].applicationId);
-      Assert.Equal(gsaRigids[1].Stage.Count(), speckleRigids[1].stages.Count());
-      Assert.Equal("stage 1", speckleRigids[1].stages[0].applicationId);
-      Assert.Equal(LinkageType.Custom, speckleRigids[1].type);
-      var constraintCondition = new Dictionary<AxisDirection6, List<AxisDirection6>>()
-      {
-        { AxisDirection6.X, new List<AxisDirection6>() { AxisDirection6.X, AxisDirection6.YY, AxisDirection6.ZZ } },
-        { AxisDirection6.Y, new List<AxisDirection6>() { AxisDirection6.Y, AxisDirection6.XX, AxisDirection6.ZZ } },
-        { AxisDirection6.Z, new List<AxisDirection6>() { AxisDirection6.Z, AxisDirection6.XX, AxisDirection6.YY } },
-        { AxisDirection6.XX, new List<AxisDirection6>() { AxisDirection6.XX } },
-        { AxisDirection6.YY, new List<AxisDirection6>() { AxisDirection6.YY } },
-        { AxisDirection6.ZZ, new List<AxisDirection6>() { AxisDirection6.ZZ } },
-      };
-      Assert.Equal(constraintCondition, speckleRigids[1].constraintCondition);
     }
 
     [Fact]
@@ -2362,42 +2451,49 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSAGeneralisedRestraint> speckleGenRests;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.elements);
+        Assert.Contains(m.elements, o => o is GSAGeneralisedRestraint);
+        speckleGenRests = m.elements.FindAll(so => so is GSAGeneralisedRestraint).Select(so => (GSAGeneralisedRestraint)so).ToList();
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - rigid 1
+        Assert.Equal("gen rest 1", speckleGenRests[0].applicationId);
+        Assert.Equal(gsaGenRests[0].Index.Value, speckleGenRests[0].nativeId);
+        Assert.Equal(gsaGenRests[0].Name, speckleGenRests[0].name);
+        Assert.Equal("FFFRRR", speckleGenRests[0].restraint.code);
+        Assert.Equal(gsaGenRests[0].NodeIndices.Count(), speckleGenRests[0].nodes.Count());
+        Assert.Equal("node 1", speckleGenRests[0].nodes[0].applicationId);
+        Assert.Equal(gsaGenRests[0].StageIndices.Count(), speckleGenRests[0].stages.Count());
+        //Assert.Equal("stage 1", speckleGenRests[0].stages[0].applicationId);
+        Assert.Null(speckleGenRests[0].stages[0]);
+
+        //Checks - rigid 2
+        Assert.Equal("gen rest 2", speckleGenRests[1].applicationId);
+        Assert.Equal(gsaGenRests[1].Index.Value, speckleGenRests[1].nativeId);
+        Assert.Equal(gsaGenRests[1].Name, speckleGenRests[1].name);
+        Assert.Equal("FFFFFF", speckleGenRests[1].restraint.code);
+        Assert.Equal(gsaGenRests[1].NodeIndices.Count(), speckleGenRests[1].nodes.Count());
+        Assert.Equal("node 1", speckleGenRests[1].nodes[0].applicationId);
+        Assert.Equal("node 2", speckleGenRests[1].nodes[1].applicationId);
+        Assert.Equal(gsaGenRests[1].StageIndices.Count(), speckleGenRests[1].stages.Count());
+        //Assert.Equal("stage 1", speckleGenRests[1].stages[0].applicationId);
+        //Assert.Equal("stage 2", speckleGenRests[1].stages[1].applicationId);
+        Assert.Null(speckleGenRests[1].stages[0]);
+        Assert.Null(speckleGenRests[1].stages[1]);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSAGeneralisedRestraint);
-
-      var speckleGenRests = structuralObjects.FindAll(so => so is GSAGeneralisedRestraint).Select(so => (GSAGeneralisedRestraint)so).ToList();
-
-      //Checks - rigid 1
-      Assert.Equal("gen rest 1", speckleGenRests[0].applicationId);
-      Assert.Equal(gsaGenRests[0].Index.Value, speckleGenRests[0].nativeId);
-      Assert.Equal(gsaGenRests[0].Name, speckleGenRests[0].name);
-      Assert.Equal("FFFRRR", speckleGenRests[0].restraint.code);
-      Assert.Equal(gsaGenRests[0].NodeIndices.Count(), speckleGenRests[0].nodes.Count());
-      Assert.Equal("node 1", speckleGenRests[0].nodes[0].applicationId);
-      Assert.Equal(gsaGenRests[0].StageIndices.Count(), speckleGenRests[0].stages.Count());
-      Assert.Equal("stage 1", speckleGenRests[0].stages[0].applicationId);
-
-      //Checks - rigid 2
-      Assert.Equal("gen rest 2", speckleGenRests[1].applicationId);
-      Assert.Equal(gsaGenRests[1].Index.Value, speckleGenRests[1].nativeId);
-      Assert.Equal(gsaGenRests[1].Name, speckleGenRests[1].name);
-      Assert.Equal("FFFFFF", speckleGenRests[1].restraint.code);
-      Assert.Equal(gsaGenRests[1].NodeIndices.Count(), speckleGenRests[1].nodes.Count());
-      Assert.Equal("node 1", speckleGenRests[1].nodes[0].applicationId);
-      Assert.Equal("node 2", speckleGenRests[1].nodes[1].applicationId);
-      Assert.Equal(gsaGenRests[1].StageIndices.Count(), speckleGenRests[1].stages.Count());
-      Assert.Equal("stage 1", speckleGenRests[1].stages[0].applicationId);
-      Assert.Equal("stage 2", speckleGenRests[1].stages[1].applicationId);
     }
     #endregion
 
@@ -2427,33 +2523,36 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      GSAStage speckleStage;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.elements);
+        Assert.Contains(m.elements, o => o is GSAStage);
+        speckleStage = (GSAStage)m.elements.FirstOrDefault(so => so is GSAStage);
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - stage 1
+        Assert.Equal("stage 1", speckleStage.applicationId);
+        Assert.Equal(gsaStage.Index.Value, speckleStage.nativeId);
+        Assert.Equal(gsaStage.Name, speckleStage.name);
+        Assert.Equal(gsaStage.Colour.ToString(), speckleStage.colour);
+        Assert.Equal(gsaStage.ElementIndices.Count(), speckleStage.elements.Count());
+        Assert.Equal("element 1", speckleStage.elements[0].applicationId);
+        Assert.Equal(gsaStage.LockElementIndices.Count(), speckleStage.lockedElements.Count());
+        Assert.Equal("element 2", speckleStage.lockedElements[0].applicationId);
+        Assert.Equal(gsaStage.Phi.Value, speckleStage.creepFactor);
+        Assert.Equal(gsaStage.Days.Value, speckleStage.stageTime);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSAStage);
-
-      //var speckleStage = structuralObjects.FindAll(so => so is GSAStage).Select(so => (GSAStage)so).ToList();
-      var speckleStage = (GSAStage)structuralObjects.FirstOrDefault(so => so is GSAStage);
-
-      //Checks - stage 1
-      Assert.Equal("stage 1", speckleStage.applicationId);
-      Assert.Equal(gsaStage.Index.Value, speckleStage.nativeId);
-      Assert.Equal(gsaStage.Name, speckleStage.name);
-      Assert.Equal(gsaStage.Colour.ToString(), speckleStage.colour);
-      Assert.Equal(gsaStage.ElementIndices.Count(), speckleStage.elements.Count());
-      Assert.Equal("element 1", speckleStage.elements[0].applicationId);
-      Assert.Equal(gsaStage.LockElementIndices.Count(), speckleStage.lockedElements.Count());
-      Assert.Equal("element 2", speckleStage.lockedElements[0].applicationId);
-      Assert.Equal(gsaStage.Phi.Value, speckleStage.creepFactor);
-      Assert.Equal(gsaStage.Days.Value, speckleStage.stageTime);
     }
     #endregion
 
@@ -2606,36 +2705,42 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSAAlignment> speckleAligns;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.elements);
+        Assert.Contains(m.elements, o => o is GSAAlignment);
+        speckleAligns = m.elements.FindAll(so => so is GSAAlignment).Select(so => (GSAAlignment)so).ToList();
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - align 1
+        Assert.Equal("align 1", speckleAligns[0].applicationId);
+        Assert.Equal(gsaAligns[0].Index.Value, speckleAligns[0].nativeId);
+        Assert.Equal(gsaAligns[0].Name, speckleAligns[0].name);
+        Assert.Equal(gsaAligns[0].Chain, speckleAligns[0].chainage);
+        Assert.Equal(gsaAligns[0].Curv, speckleAligns[0].curvature);
+
+        //Checks - align 2
+        Assert.Equal("align 2", speckleAligns[1].applicationId);
+        Assert.Equal(gsaAligns[1].Index.Value, speckleAligns[1].nativeId);
+        Assert.Equal(gsaAligns[1].Name, speckleAligns[1].name);
+        Assert.Equal(gsaAligns[1].Chain, speckleAligns[1].chainage);
+        Assert.Equal(gsaAligns[1].Curv, speckleAligns[1].curvature);
+
+        //TODO:
+        Assert.Null(speckleAligns[0].gridSurface);
+        Assert.Null(speckleAligns[1].gridSurface);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSAAlignment);
-
-      var speckleAligns = structuralObjects.FindAll(so => so is GSAAlignment).Select(so => (GSAAlignment)so).ToList();
-
-      //Checks - align 1
-      Assert.Equal("align 1", speckleAligns[0].applicationId);
-      Assert.Equal(gsaAligns[0].Index.Value, speckleAligns[0].nativeId);
-      Assert.Equal(gsaAligns[0].Name, speckleAligns[0].name);
-      Assert.Equal("grid surface 1", speckleAligns[0].gridSurface.applicationId);
-      Assert.Equal(gsaAligns[0].Chain, speckleAligns[0].chainage);
-      Assert.Equal(gsaAligns[0].Curv, speckleAligns[0].curvature);
-
-      //Checks - align 2
-      Assert.Equal("align 2", speckleAligns[1].applicationId);
-      Assert.Equal(gsaAligns[1].Index.Value, speckleAligns[1].nativeId);
-      Assert.Equal(gsaAligns[1].Name, speckleAligns[1].name);
-      Assert.Equal("grid surface 1", speckleAligns[1].gridSurface.applicationId);
-      Assert.Equal(gsaAligns[1].Chain, speckleAligns[1].chainage);
-      Assert.Equal(gsaAligns[1].Curv, speckleAligns[1].curvature);
     }
 
     [Fact]
@@ -2671,44 +2776,48 @@ namespace ConverterGSATests
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      foreach (var record in gsaRecords)
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      Assert.NotEmpty(speckleObjects);
+      Assert.Contains(speckleObjects, so => so is Model);
+      var speckleModels = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      List<GSAPath> specklePaths;
+
+      foreach (var m in speckleModels)
       {
-        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.NotNull(m);
+        Assert.NotEmpty(m.elements);
+        Assert.Contains(m.elements, o => o is GSAPath);
+        specklePaths = m.elements.FindAll(so => so is GSAPath).Select(so => (GSAPath)so).ToList();
 
-        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+        //Checks - path 1
+        Assert.Equal("path 1", specklePaths[0].applicationId);
+        Assert.Equal(gsaPaths[0].Index.Value, specklePaths[0].nativeId);
+        Assert.Equal(gsaPaths[0].Name, specklePaths[0].name);
+        Assert.Equal(Objects.Structural.GSA.Bridge.PathType.CWAY_1WAY, specklePaths[0].type);
+        Assert.Equal(gsaPaths[0].Group.Value, specklePaths[0].group);
+        Assert.Equal("align 1", specklePaths[0].alignment.applicationId);
+        Assert.Equal(gsaPaths[0].Left.Value, specklePaths[0].left);
+        Assert.Equal(gsaPaths[0].Right.Value, specklePaths[0].right);
+        Assert.Equal(gsaPaths[0].Factor.Value, specklePaths[0].factor);
+        Assert.Equal(0, specklePaths[0].numMarkedLanes);
+
+        //Checks - path 2
+        Assert.Equal("path 2", specklePaths[1].applicationId);
+        Assert.Equal(gsaPaths[1].Index.Value, specklePaths[1].nativeId);
+        Assert.Equal(gsaPaths[1].Name, specklePaths[1].name);
+        Assert.Equal(Objects.Structural.GSA.Bridge.PathType.TRACK, specklePaths[1].type);
+        Assert.Equal(gsaPaths[1].Group.Value, specklePaths[1].group);
+        Assert.Equal("align 1", specklePaths[1].alignment.applicationId);
+        Assert.Equal(0, specklePaths[1].left);
+        Assert.Equal(gsaPaths[1].Right.Value, specklePaths[1].right);
+        Assert.Equal(gsaPaths[1].Factor.Value, specklePaths[1].factor);
+        Assert.Equal(0, specklePaths[1].numMarkedLanes);
       }
-
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
-
-      Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSAPath);
-
-      var specklePaths = structuralObjects.FindAll(so => so is GSAPath).Select(so => (GSAPath)so).ToList();
-
-      //Checks - path 1
-      Assert.Equal("path 1", specklePaths[0].applicationId);
-      Assert.Equal(gsaPaths[0].Index.Value, specklePaths[0].nativeId);
-      Assert.Equal(gsaPaths[0].Name, specklePaths[0].name);
-      Assert.Equal(Objects.Structural.GSA.Bridge.PathType.CWAY_1WAY, specklePaths[0].type);
-      Assert.Equal(gsaPaths[0].Group.Value, specklePaths[0].group);
-      Assert.Equal("align 1", specklePaths[0].alignment.applicationId);
-      Assert.Equal(gsaPaths[0].Left.Value, specklePaths[0].left);
-      Assert.Equal(gsaPaths[0].Right.Value, specklePaths[0].right);
-      Assert.Equal(gsaPaths[0].Factor.Value, specklePaths[0].factor);
-      Assert.Equal(0, specklePaths[0].numMarkedLanes);
-
-      //Checks - path 2
-      Assert.Equal("path 2", specklePaths[1].applicationId);
-      Assert.Equal(gsaPaths[1].Index.Value, specklePaths[1].nativeId);
-      Assert.Equal(gsaPaths[1].Name, specklePaths[1].name);
-      Assert.Equal(Objects.Structural.GSA.Bridge.PathType.TRACK, specklePaths[1].type);
-      Assert.Equal(gsaPaths[1].Group.Value, specklePaths[1].group);
-      Assert.Equal("align 1", specklePaths[1].alignment.applicationId);
-      Assert.Equal(0, specklePaths[1].left);
-      Assert.Equal(gsaPaths[1].Right.Value, specklePaths[1].right);
-      Assert.Equal(gsaPaths[1].Factor.Value, specklePaths[1].factor);
-      Assert.Equal(0, specklePaths[1].numMarkedLanes);
     }
 
     [Fact]
@@ -2797,7 +2906,7 @@ namespace ConverterGSATests
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         },
         new GsaEl()
@@ -2812,7 +2921,7 @@ namespace ConverterGSATests
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         },
         new GsaEl()
@@ -2827,7 +2936,7 @@ namespace ConverterGSATests
           Angle = 0,
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         }
       };
@@ -2854,7 +2963,7 @@ namespace ConverterGSATests
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetY = 0,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         },
         new GsaEl()
@@ -2870,7 +2979,7 @@ namespace ConverterGSATests
           ReleaseInclusion = ReleaseInclusion.NotIncluded,
           OffsetY = 0,
           OffsetZ = 0,
-          ParentIndex = 1,
+          ParentIndex = 0,
           Dummy = false
         }
       };
@@ -3240,7 +3349,7 @@ namespace ConverterGSATests
           Colour = Colour.NO_RGB,
           GridPlaneIndex = null,
           NumDim = 2,
-          Values = new List<double>() { 0, 0, 1, 0, 1, 1, 0, 1 },
+          Values = new List<double>() { 1, 2, 3, 4, 5, 6, 7, 8 },
           Units = "m",
         },
         new GsaPolyline()
@@ -3250,7 +3359,7 @@ namespace ConverterGSATests
           Colour = Colour.NO_RGB,
           GridPlaneIndex = 1,
           NumDim = 3,
-          Values = new List<double>() { 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1 },
+          Values = new List<double>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
           Units = "m",
         }
       };

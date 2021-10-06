@@ -13,6 +13,7 @@ using ConnectorGSA.Models;
 using Speckle.GSA.API;
 using ConnectorGSA.Utilities;
 using Serilog;
+using Speckle.ConnectorGSA.Proxy;
 
 namespace ConnectorGSA.ViewModels
 {
@@ -132,7 +133,7 @@ namespace ConnectorGSA.ViewModels
     public StreamContentConfig StreamContentConfig { get => Coordinator.SenderTab.StreamContentConfig;
       set => Refresh(() => Coordinator.SenderTab.StreamContentConfig = value); }
 
-    public bool SendMeaningfulNodes { get; set; } = true;
+    public bool SendMeaningfulNodes { get => Coordinator.SenderTab.SendMeaningfulNodes; set => Coordinator.SenderTab.SendMeaningfulNodes = value; }
     public int Additional1DPositions { get => Coordinator.SenderTab.AdditionalPositionsFor1dElements;
       set => Coordinator.SenderTab.AdditionalPositionsFor1dElements = value; }
 
@@ -187,12 +188,17 @@ namespace ConnectorGSA.ViewModels
       //The same methods that handle messages from the kits are being used for messages originating from the commands and the SpeckleGSA library, with the 
       //sender and receiver coordinators
       loggingProgress.ProgressChanged += ProcessLogProgressUpdate;
-      loggingProgress.ProgressChanged += MainWindowViewModel.ProcessMessageForLog;
+      loggingProgress.ProgressChanged += ProcessMessageForLog;
+#if !DEBUG
+      loggingProgress.ProgressChanged += ProcessMessageForTelemetry;
+#endif
       streamCreationProgress.ProgressChanged += ProcessStreamCreationProgress;
       streamDeletionProgress.ProgressChanged += ProcessStreamDeletionProgress;
       statusProgress.ProgressChanged += ProcessStatusProgressUpdate;
       //This ensures the messages for the display log in the UI, originating from the conversion code in the kits, end up being handled
-      ((GsaMessenger)Instance.GsaModel.Messenger).MessageAdded += ProcessLogProgressUpdate;
+      //((GsaMessenger)Instance.GsaModel.Messenger).MessageAdded += ProcessLogProgressUpdate;
+      //((GsaMessenger)Instance.GsaModel.Messenger).MessageAdded += ProcessMessageForTelemetry;
+
       CreateCommands();
     }
 
@@ -225,50 +231,13 @@ namespace ConnectorGSA.ViewModels
       ConnectToServerCommand = new DelegateCommand<object>(
         async (o) =>
         {
-          Refresh(() => StateMachine.StartedLoggingIn());
-
-          Process.Start("speckle://account");
-
-          //var signInWindow = new SpecklePopup.SignInWindow(true);
 
           MainWindowEnabled = false;
 
-          /*
-          signInWindow.ShowDialog();
+          Process.Start("speckle://account");
 
           MainWindowEnabled = true;
 
-          if (signInWindow.AccountListBox.SelectedIndex != -1)
-          {
-            var account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-            var newAccountForUI = new SpeckleAccountForUI(account.RestApi, account.Email, account.Token);
-
-            if (newAccountForUI != null && newAccountForUI.IsValid)
-            {
-              Refresh(() => StateMachine.StartedUpdatingStreams());
-
-              var completed = await Commands.CompleteLogin(Coordinator, newAccountForUI, loggingProgress);
-
-              if (completed)
-              {
-                Refresh(() => StateMachine.LoggedIn());
-
-                var retrievedStreamInfoFromFile = await Task.Run(() => Commands.ReadSavedStreamInfo(Coordinator, loggingProgress));
-              }
-              else
-              {
-                Refresh(() => StateMachine.CancelledLoggingIn());
-                GSA.App.Messenger.Message(MessageIntent.Display, SpeckleGSAInterfaces.MessageLevel.Error, "Failed to log in");
-              }
-
-              Refresh(() => StateMachine.StoppedUpdatingStreams());
-
-              return;
-            }
-          }
-          Refresh(() => StateMachine.CancelledLoggingIn());
-          GSA.App.Messenger.Message(MessageIntent.Display, SpeckleGSAInterfaces.MessageLevel.Error, "Failed to log in");
-          */
         },
         (o) => !StateMachine.StreamIsOccupied);
 
@@ -699,6 +668,16 @@ namespace ConnectorGSA.ViewModels
       }
     }
 
+    public static void ProcessMessageForTelemetry(object sender, MessageEventArgs messageEventArgs)
+    {
+      if (messageEventArgs.Intent == MessageIntent.Telemetry)
+      {
+        ((GsaProxy)Instance.GsaModel.Proxy).SendTelemetry(messageEventArgs.MessagePortions);
+        //Also log all telemetry transmissions, although the log entries won't have any additional info (prefixes etc) that the proxy has
+        //been coded to add
+        Log.Debug("Telemetry: " + string.Join(" ", messageEventArgs.MessagePortions));
+      }
+    }
     #endregion
   }
 }

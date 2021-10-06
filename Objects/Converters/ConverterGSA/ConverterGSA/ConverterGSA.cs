@@ -16,6 +16,7 @@ using Objects.Structural.Results;
 using Objects.Structural.Analysis;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Materials;
+using Objects.Structural.GSA.Bridge;
 
 namespace ConverterGSA
 {
@@ -39,6 +40,9 @@ namespace ConverterGSA
 
     private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
 
+    //private Dictionary<GSALayer, HashSet<int>> meaningfulNodeIndices = new Dictionary<GSALayer, HashSet<int>>();
+    private Dictionary<GSALayer, HashSet<string>> meaningfulNodesAppIds = new Dictionary<GSALayer, HashSet<string>>();
+
     #region model_group
     private enum ModelAspect
     {
@@ -56,9 +60,14 @@ namespace ConverterGSA
     private readonly Dictionary<ModelAspect, List<Type>> modelGroups = new Dictionary<ModelAspect, List<Type>>()
     {
       { ModelAspect.Nodes, new List<Type>() { typeof(GSANode) } },
-      { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(Axis), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D) } },
+      { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D),
+        //CatchAll
+        typeof(GSAStage), //Analysis stages
+        typeof(Axis), typeof(GSAGridSurface), typeof(GSAGridPlane), typeof(GSAGridLine), typeof(GSAPolyline),  //Geometry
+        typeof(GSARigidConstraint), typeof(GSAGeneralisedRestraint), //Constraints
+        typeof(GSAAlignment), typeof(GSAInfluenceBeam), typeof(GSAInfluenceNode), typeof(GSAPath), typeof(GSAUserVehicle) } }, //Bridge
       { ModelAspect.Loads, new List<Type>()
-        { typeof(GSAAnalysisCase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSALoadNode) } },
+        { typeof(GSAAnalysisCase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSALoadNode), typeof(GSALoadThermal2d) } },
       { ModelAspect.Restraints, new List<Type>() { typeof(Objects.Structural.Geometry.Restraint) } },
       { ModelAspect.Properties, new List<Type>()
         { typeof(GSAProperty1D), typeof(GSAProperty2D), typeof(SectionProfile), typeof(PropertyMass), typeof(PropertySpring), typeof(PropertyDamper), typeof(Property3D) } },
@@ -87,7 +96,16 @@ namespace ConverterGSA
     public object ConvertToNative(Base @object)
     {
       var t = @object.GetType();
-      return ToNativeFns[t](@object);
+
+      var retObj = ToNativeFns[t](@object);
+
+      //A pulse with conversion result to help with progress bars on the UI
+      if (Instance.GsaModel.ConversionProgress != null && retObj != null)
+      {
+        Instance.GsaModel.ConversionProgress.Report(true);
+      }
+
+      return retObj;
     }
 
     //Assume that this is called when a Model object is desired, rather than loose Speckle objects.
@@ -174,6 +192,9 @@ namespace ConverterGSA
       var typeGens = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(sendLayer);
       returnObjects = new List<Base>();
 
+      //var nodeDependentSchemaTypesByLayer = new Dictionary<GSALayer, List<Type>>();
+      //nodeDependentSchemaTypesByLayer.Add(GSALayer.Design, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Design));
+
       var gsaRecordsByType = gsaRecords.GroupBy(r => r.GetType()).ToDictionary(r => r.Key, r => r.ToList());
 
       var modelsByLayer = new Dictionary<GSALayer, Model>() { { GSALayer.Design, new Model() { specs = modelInfo, layerDescription = "Design" } } };
@@ -182,7 +203,28 @@ namespace ConverterGSA
       {
         modelsByLayer.Add(GSALayer.Analysis, new Model() { specs = modelInfo, layerDescription = "Analysis" });
         modelHasData.Add(GSALayer.Analysis, false);
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Analysis, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Analysis));
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Both, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Both));
       }
+
+      /*
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes)
+      {//Remove nodes across the layers
+        var referencedNodeIndices = new List<int>();
+        foreach (var t in nodeDependentSchemaTypesByLayer[sendLayer].Where(ndst => gsaRecordsByType.Keys.Contains(ndst)))
+        {
+          var ns = gsaRecordsByType[t];
+          foreach (var i in ns.n)
+          {
+
+          }
+        }
+      }
+      */
+
+      var nodesTemp = new Dictionary<GsaRecord, ToSpeckleResult>();
 
       var rsa = new ResultSetAll();
       bool resultSetHasData = false;
@@ -207,18 +249,34 @@ namespace ConverterGSA
               if (CanConvertToSpeckle(nativeObj))
               {
                 var toSpeckleResult = ToSpeckle(nativeObj, sendLayer);
+
                 foreach (var l in modelsByLayer.Keys)
                 {
-                  if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                  //Special case for nodes due to the possibility that not all of them should be sent, and the subset that should be sent can vary by layer
+                  if (Instance.GsaModel.SendOnlyMeaningfulNodes && t == typeof(GsaNode))
                   {
-                    modelHasData[l] = true;
+                    if (!nodesTemp.ContainsKey(nativeObj))
+                    {
+                      nodesTemp.Add(nativeObj, toSpeckleResult);
+                    }
+                  }
+                  else
+                  {
+                    if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                    {
+                      modelHasData[l] = true;
+                    }
                   }
                 }
-                
+
                 var speckleObjs = toSpeckleResult.ModelObjects; //Don't need to add result objects to the cache since they aren't needed for serialisation
                 if (speckleObjs != null && speckleObjs.Count > 0)
                 {
-                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so));
+                  foreach(var o in speckleObjs)
+                  {
+                    Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, new Dictionary<string, object>() { { o.applicationId, (object)o } });
+                  }
+                  
                 }
 
                 if (AssignIntoResultSet(rsa, toSpeckleResult))
@@ -230,6 +288,50 @@ namespace ConverterGSA
             catch (Exception ex)
             {
 
+            }
+          }
+        }
+      }
+
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes && nodesTemp != null && nodesTemp.Keys.Count > 0)
+      {
+        foreach (var l in modelsByLayer.Keys)
+        {
+          foreach (var n in nodesTemp.Keys)
+          {
+            if (nodesTemp[n].LayerAgnosticObjects != null)
+            {
+              foreach (var o in nodesTemp[n].LayerAgnosticObjects)
+              {
+                if (meaningfulNodesAppIds[l].Contains(o.applicationId))
+                {
+                  AssignIntoModel(modelsByLayer[l], l, nodesTemp[n]);
+                }
+              }
+            }
+          }
+        }
+
+        foreach (var n in nodesTemp.Keys)
+        {
+          if (nodesTemp[n].DesignLayerOnlyObjects != null)
+          {
+            foreach (var o in nodesTemp[n].DesignLayerOnlyObjects)
+            {
+              if (meaningfulNodesAppIds[GSALayer.Design].Contains(o.applicationId))
+              {
+                AssignIntoModel(modelsByLayer[GSALayer.Design], GSALayer.Design, nodesTemp[n]);
+              }
+            }
+          }
+          if (nodesTemp[n].AnalysisLayerOnlyObjects != null)
+          {
+            foreach (var o in nodesTemp[n].AnalysisLayerOnlyObjects)
+            {
+              if (meaningfulNodesAppIds[GSALayer.Analysis].Contains(o.applicationId))
+              {
+                AssignIntoModel(modelsByLayer[GSALayer.Analysis], GSALayer.Analysis, nodesTemp[n]);
+              }
             }
           }
         }

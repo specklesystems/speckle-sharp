@@ -28,13 +28,16 @@ namespace Speckle.GSA.API
     IGSACache Cache { get; set; }
 
     IGSAProxy Proxy { get; set; }
-    IGSAMessenger Messenger { get; set; }
+    //IGSAMessenger Messenger { get; set; }
+    IProgress<bool> ConversionProgress { get; set; }
 
     //TEMP
+    /*
     GsaRecord GetNative<T>(int value);
     List<int> LookupIndices<T>();
     List<int> ConvertGSAList(string v, GSAEntity e);
     string GetApplicationId<T>(int value);
+    */
   }
 
   

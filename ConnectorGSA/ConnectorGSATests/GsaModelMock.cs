@@ -15,7 +15,7 @@ namespace ConnectorGSATests
   {
     public override IGSACache Cache { get; set; } = new GsaCache();
     public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
-    public override IGSAMessenger Messenger { get; set; } = new GsaMessenger();
+    //public override IGSAMessenger Messenger { get; set; } = new GsaMessenger();
   }
 
   public class GsaProxyMock : IGSAProxy
@@ -115,10 +115,9 @@ namespace ConnectorGSATests
 
     public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
 
-    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer)
-    {
-      throw new NotImplementedException();
-    }
+    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer) { }
+
+    public List<Type> GetNodeDependentTypes(GSALayer layer) => new List<Type>();
 
     #endregion
   }

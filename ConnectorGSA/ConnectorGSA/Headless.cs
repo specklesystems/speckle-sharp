@@ -175,7 +175,7 @@ namespace ConnectorGSA
       {
         Instance.GsaModel.Proxy.NewFile(false);
 
-        Instance.GsaModel.Messenger.Message(MessageIntent.Display, MessageLevel.Information, "Created new file.");
+        //Instance.GsaModel.Messenger.Message(MessageIntent.Display, MessageLevel.Information, "Created new file.");
 
         //Ensure this new file has a file name, and internally sets the file name in the proxy
         Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);

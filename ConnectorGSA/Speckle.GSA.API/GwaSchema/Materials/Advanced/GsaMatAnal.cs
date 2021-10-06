@@ -20,7 +20,7 @@
     public double? G;
     public double? Damp;
     #endregion
-    #region MAT_ELAS_ORTHO
+    #region MAT_ELAS_PLAS_ISO
     public double? Yield;
     public double? Ultimate;
     public double? Eh;
@@ -32,7 +32,7 @@
     public double? Psi;
     public double? Scribe;
     #endregion
-    #region ELAS_ORTHO
+    #region MAT_ELAS_ORTHO
     public double? Ex;
     public double? Ey;
     public double? Ez;
@@ -46,7 +46,7 @@
     public double? Gyz;
     public double? Gzx;
     #endregion
-    #region FABRIC
+    #region MAT_FABRIC
     public double? Comp;
     #endregion
     #region MAT_MOHR_COULOMB

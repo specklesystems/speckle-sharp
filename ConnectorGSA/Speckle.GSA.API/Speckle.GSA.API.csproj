@@ -102,7 +102,6 @@
     <Compile Include="IGSAModel.cs" />
     <Compile Include="IGSAProxy.cs" />
     <Compile Include="Instance.cs" />
-    <Compile Include="IGSAMessenger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

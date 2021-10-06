@@ -67,10 +67,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="GsaMessenger.cs" />
     <Compile Include="GsaModel.cs" />
     <Compile Include="Headless.cs" />
-    <Compile Include="IGSALocalMessenger.cs" />
     <Compile Include="MessageEventArgs.cs" />
     <Compile Include="Models\DisplayLog.cs" />
     <Compile Include="Models\DisplayLogItem.cs" />
