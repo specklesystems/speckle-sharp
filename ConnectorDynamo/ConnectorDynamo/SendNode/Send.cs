@@ -47,7 +47,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     //cached inputs
     private object _data { get; set; }
-    private List<ITransport> _streams { get; set; }
+    private List<ITransport> _transports { get; set; }
     private Dictionary<ITransport, string> _branchNames { get; set; }
     private string _commitMessage { get; set; }
 
@@ -237,7 +237,7 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       try
       {
-        if (_streams == null)
+        if (_transports == null)
           throw new SpeckleException("The stream provided is invalid");
         if (_data == null)
           throw new SpeckleException("The data provided is invalid");
@@ -293,7 +293,7 @@ namespace Speckle.ConnectorDynamo.SendNode
           ? $"Sent {totalCount} object{plural} from Dynamo"
           : _commitMessage;
 
-        var commitIds = Functions.Functions.Send(@base, _streams, _cancellationToken.Token, _branchNames,
+        var commitIds = Functions.Functions.Send(@base, _transports, _cancellationToken.Token, _branchNames,
           _commitMessage,
           ProgressAction, ErrorAction);
 
@@ -308,7 +308,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         if (!_cancellationToken.IsCancellationRequested)
         {
           _cancellationToken.Cancel();
-          Message = e.Message;
+          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
           throw new SpeckleException(e.Message, e);
         }
       }
@@ -335,7 +335,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       _hasOutput = false;
       if (hardReset)
       {
-        _streams = null;
+        _transports = null;
         _branchNames = null;
         _data = null;
         _objectCount = 0;
@@ -367,14 +367,14 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       try
       {
-        _streams = new List<ITransport>();
+        _transports = new List<ITransport>();
         _streamWrappers = new List<StreamWrapper>(); // populated during TryConvertInputToTransport, not ideal but I'm lazy
 
         //this port accepts:
         //a stream wrapper, a url, a list of stream wrappers or a list of urls
         var inputTransport = GetInputAs<object>(engine, 1);
         var transportsDict = TryConvertInputToTransport(inputTransport);
-        _streams = transportsDict.Keys.ToList();
+        _transports = transportsDict.Keys.ToList();
         _branchNames = transportsDict;
       }
       catch (Exception e)
@@ -386,7 +386,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         return;
       }
 
-      if (_streams == null || !_streams.Any())
+      if (_transports == null || !_transports.Any())
       {
         ResetNode(true);
         Message = "Stream is invalid";

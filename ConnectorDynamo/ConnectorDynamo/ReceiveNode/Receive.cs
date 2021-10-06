@@ -313,7 +313,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         if (!_cancellationToken.IsCancellationRequested)
         {
           _cancellationToken.Cancel();
-          Message = e.Message;
+          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
           if (e.InnerException != null) Warning(e.InnerException.Message);
           if (e is AggregateException agrException)
             agrException.InnerExceptions.ToList().ForEach(ex =>
