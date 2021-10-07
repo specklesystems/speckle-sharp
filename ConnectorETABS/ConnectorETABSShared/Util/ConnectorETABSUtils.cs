@@ -56,6 +56,12 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllPointNames(model);
                 case "Frame":
                     return GetAllFrameNames(model);
+                case "Beam":
+                    return GetBeamNames(model);
+                case "Column":
+                    return GetColumnNames(model);
+                case "Braces":
+                    return GetBraceNames(model);
                 case "Area":
                     return GetAllAreaNames(model);
                 case "LoadPattern":
