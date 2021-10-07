@@ -688,5 +688,32 @@ namespace ConverterGSA
       foreach (var element in source)
         target.Add(element);
     }
+
+    public static void UpsertDictionary<T, U>(this Dictionary<T, List<U>> d, T key, U value)
+    {
+      if (!d.ContainsKey(key))
+      {
+        d.Add(key, new List<U>());
+      }
+      if (!d[key].Contains(value))
+      {
+        d[key].Add(value);
+      }
+    }
+
+    public static void UpsertDictionary<T, U>(this Dictionary<T, List<U>> d, T key, IEnumerable<U> values)
+    {
+      if (!d.ContainsKey(key))
+      {
+        d.Add(key, values.ToList());
+      }
+      foreach (var v in values)
+      {
+        if (!d[key].Contains(v))
+        {
+          d[key].Add(v);
+        }
+      }
+    }
   }
 }

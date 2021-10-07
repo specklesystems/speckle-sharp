@@ -11,7 +11,7 @@ namespace Speckle.GSA.API
     bool OpenFile(string path, bool showWindow = true, object gsaInstance = null);
     bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null);
     string GetTopLevelSid();
-    bool SetTopLevelSid(string sidRecord);
+    bool SetTopLevelSid(string StreamState);
 
     string GenerateApplicationId(Type schemaType, int gsaIndex);
 

@@ -208,7 +208,11 @@ namespace ConnectorGSA
 
           foreach (var streamId in streamIds)
           {
-            var streamState = new StreamState(userInfo.id, RestApi) { Stream = new Speckle.Core.Api.Stream() { id = streamId } };
+            var streamState = new StreamState(userInfo.id, RestApi) 
+            { 
+              Stream = new Speckle.Core.Api.Stream() { id = streamId }, 
+              IsReceiving = true 
+            };
             streamState.RefreshStream().Wait();
             streamState.Stream.branch = client.StreamGetBranches(streamId, 1).Result.First();
             var commitId = streamState.Stream.branch.commits.items.FirstOrDefault().referencedObject;
@@ -281,11 +285,11 @@ namespace ConnectorGSA
 
 
           var stream = NewStream(client, "GSA data", "GSA data").Result;
-          var streamState = new StreamState(userInfo.id, RestApi) { Stream = stream };
+          var streamState = new StreamState(userInfo.id, RestApi) { Stream = stream, IsSending = true };
           streamStates.Add(streamState);
 
           var serverTransport = new ServerTransport(account, streamState.Stream.id);
-          var sent = Commands.Send(commitObj, streamState, serverTransport).Result;
+          var sent = Commands.SendCommit(commitObj, streamState, serverTransport).Result;
 
           Console.WriteLine("Sending complete");
           return true;
