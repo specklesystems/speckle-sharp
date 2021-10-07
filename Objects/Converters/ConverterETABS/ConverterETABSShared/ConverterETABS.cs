@@ -10,6 +10,7 @@ using OSG = Objects.Structural.Geometry;
 using OSEA = Objects.Structural.ETABS.Analysis;
 using Objects.Converter.ETABS;
 using Speckle.Core.Logging;
+using Objects.Structural.Analysis;
 
 namespace Objects.Converter.ETABS
 {
@@ -30,9 +31,12 @@ namespace Objects.Converter.ETABS
 
         public cSapModel Model { get; private set; }
 
+        public Model SpeckleModel { get; set; }
+
         public void SetContextDocument(object doc)
         {
             Model = (cSapModel)doc;
+            SpeckleModel = ModelToSpeckle();
         }
 
         public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -95,7 +99,7 @@ namespace Objects.Converter.ETABS
                     returnObject = FrameToSpeckle(name);
                     break;
                 case "Model":
-                    returnObject = ModelToSpeckle();
+                    returnObject = SpeckleModel;
                     break;
                 case "Stories":
                     returnObject = StoriesToSpeckle();
@@ -115,25 +119,25 @@ namespace Objects.Converter.ETABS
                 //case "LoadCase":
                 //    returnObject = LoadCaseToSpeckle(name);
                 //    break;
-                case "LoadPattern":
-                    returnObject = LoadPatternToSpeckle(name);
-                    break;
-                case "ColumnResults":
+                //case "LoadPattern":
+                //    returnObject = LoadPatternToSpeckle(name);
+                //    break;
+                //case "ColumnResults":
                   
-                    returnObject = FrameResultSet1dToSpeckle(name);
-                    break;
-                case "BeamResults":
-                    returnObject = FrameResultSet1dToSpeckle(name);
-                    break;
-                case "BraceResults":
-                    returnObject = FrameResultSet1dToSpeckle(name);
-                    break;
-                case "PierResults":
-                    returnObject = PierResultSet1dToSpeckle(name);
-                    break;
-                case "SpandrelResults":
-                    returnObject = SpandrelResultSet1dToSpeckle(name);
-                    break;
+                //    returnObject = FrameResultSet1dToSpeckle(name);
+                //    break;
+                //case "BeamResults":
+                //    returnObject = FrameResultSet1dToSpeckle(name);
+                //    break;
+                //case "BraceResults":
+                //    returnObject = FrameResultSet1dToSpeckle(name);
+                //    break;
+                //case "PierResults":
+                //    returnObject = PierResultSet1dToSpeckle(name);
+                //    break;
+                //case "SpandrelResults":
+                //    returnObject = SpandrelResultSet1dToSpeckle(name);
+                //    break;
                     //case "GridSys":
                     //    returnObject = GridSysToSpeckle(name);
                     //    break;

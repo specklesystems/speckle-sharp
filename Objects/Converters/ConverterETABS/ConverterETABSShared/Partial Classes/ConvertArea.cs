@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ETABSv1;
 using Objects.Structural.Geometry;
+using Objects.Structural.Analysis;
 using Objects.Structural.ETABS.Properties;
 using SpeckleStructuralClasses.PolygonMesher;
 using System.Linq;
@@ -64,6 +65,7 @@ namespace Objects.Converter.ETABS
             var vertices = polygonMesher.Coordinates;
             speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
 
+            SpeckleModel.elements.Add(speckleStructArea);
 
             return speckleStructArea;
         }

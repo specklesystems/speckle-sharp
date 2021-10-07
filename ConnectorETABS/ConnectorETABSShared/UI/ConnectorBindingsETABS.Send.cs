@@ -60,14 +60,11 @@ namespace Speckle.ConnectorETABS.UI
             conversionProgressDict["Conversion"] = 0;
             Execute.PostToUIThread(() => state.Progress.Maximum = totalObjectCount);
 
-            if (commitObj["@Model"] == null)
-            {
-                commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));
-            }
-            if( commitObj["@Stories"] == null)
-            {
-                commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "ETABS"));
-            }
+
+            //if( commitObj["@Stories"] == null)
+            //{
+            //    commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "ETABS"));
+            //}
 
             foreach (var applicationId in state.SelectedObjectIds)
             {
@@ -105,19 +102,23 @@ namespace Speckle.ConnectorETABS.UI
                 }
 
 
-                if (converted != null)
-                {
-                    if (commitObj[selectedObjectType] == null)
-                    {
-                        commitObj[selectedObjectType] = new List<Base>();
-                    }
-                             ((List<Base>)commitObj[selectedObjectType]).Add(converted);
-                }
+                //if (converted != null)
+                //{
+                //    if (commitObj[selectedObjectType] == null)
+                //    {
+                //        commitObj[selectedObjectType] = new List<Base>();
+                //    }
+                //             ((List<Base>)commitObj[selectedObjectType]).Add(converted);
+                //}
                 converted.applicationId = applicationId;
 
                 objCount++;
                 conversionProgressDict["Conversion"]++;
                 UpdateProgress(conversionProgressDict, state.Progress);
+            }
+            if (commitObj["@Model"] == null)
+            {
+                commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));
             }
 
             if (objCount == 0)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
+using Objects.Structural.Analysis;
 using ETABSv1;
 
 namespace Objects.Converter.ETABS
@@ -110,6 +111,7 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.end1Offset = end1Offset;
             speckleStructFrame.end2Offset = end2Offset;
 
+            SpeckleModel.elements.Add(speckleStructFrame);
 
             return speckleStructFrame;
         }

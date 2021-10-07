@@ -1,6 +1,7 @@
 ﻿using System;
 using Objects.Structural.Geometry;
 using Objects.Geometry;
+using Objects.Structural.Analysis;
 using ETABSv1;
 
 namespace Objects.Converter.ETABS
@@ -29,8 +30,9 @@ namespace Objects.Converter.ETABS
 
             speckleStructNode.restraint = Restraint(restraints);
 
-
-//TO DO: detach properties
+            SpeckleModel.elements.Add(speckleStructNode);
+            
+                //TO DO: detach properties
             return speckleStructNode;
         }
 
