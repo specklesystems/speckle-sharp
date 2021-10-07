@@ -80,7 +80,7 @@ namespace Objects.Converter.ETABS
                             speckleProperty2D.shearThickness = shearThickness;
                             speckleProperty2D.unitWeight = unitWeight;
                             speckleProperty2D.shearStudHt = shearStudHt;
-                            speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Filled
+                            speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Filled;
                         }
                         else if (deckType == eDeckType.Unfilled)
                         {
@@ -115,6 +115,55 @@ namespace Objects.Converter.ETABS
                     {
                         setProperties(speckleProperty2D, matProp, thickness);
                         speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Slab;
+                        double overallDepth = 0;
+                        double slabThickness = 0;
+                        double stemWidthTop = 0;
+                        double stemWidthBot = 0;
+                        double ribSpacingDir1 = 0;
+                        double ribSpacingDir2 = 0;
+                        double ribSpacing = 0;
+                        int ribParrallelTo = 0;
+                        if (slabType == eSlabType.Waffle)
+                        {
+                            Model.PropArea.GetSlabWaffle(property, ref overallDepth, ref slabThickness,ref stemWidthTop,ref stemWidthBot,ref ribSpacingDir1,ref ribSpacingDir2);
+                            speckleProperty2D.OverAllDepth = overallDepth;
+                            speckleProperty2D.StemWidthBot = stemWidthBot;
+                            speckleProperty2D.StemWidthTop = stemWidthTop;
+                            speckleProperty2D.RibSpacingDir1 = ribSpacingDir1;
+                            speckleProperty2D.RibSpacingDir2 = ribSpacingDir2;
+                            speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Waffle;
+                        }
+                        else if (slabType == eSlabType.Ribbed)
+                        {
+                            Model.PropArea.GetSlabRibbed(property, ref overallDepth, ref slabThickness, ref stemWidthTop, ref stemWidthBot, ref ribSpacing, ref ribParrallelTo);
+                            speckleProperty2D.OverAllDepth = overallDepth;
+                            speckleProperty2D.StemWidthBot = stemWidthBot;
+                            speckleProperty2D.StemWidthTop = stemWidthTop;
+                            speckleProperty2D.ribSpacing = ribSpacing;
+                            speckleProperty2D.RibsParallelTo = ribParrallelTo;
+                            speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Ribbed;
+                        }
+                        else
+                        {
+                            switch (slabType)
+                            {
+                                case eSlabType.Slab:
+                                    speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Slab;
+                                    break;
+                                case eSlabType.Drop:
+                                    speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Drop;
+                                    break;
+                                case eSlabType.Mat:
+                                    speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Mat;
+                                    break;
+                                case eSlabType.Footing:
+                                    speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Footing;
+                                    break;
+                                default:
+                                    speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Null;
+                                    break;
+                            }
+                        }
                         break;
                     }
                     break;
