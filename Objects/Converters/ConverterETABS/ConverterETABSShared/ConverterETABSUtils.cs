@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Objects.Structural.Geometry;
 using ETABSv1;
+using Objects.Structural.ETABS.Properties;
+using Objects.Structural.ETABS.Analysis;
 
 namespace Objects.Converter.ETABS
 {
@@ -22,6 +24,33 @@ namespace Objects.Converter.ETABS
                 return null;
             }
 }
+    public ShellType ConvertShellType(eShellType eShellType)
+        {
+            ShellType shellType = new ShellType();
+
+            switch (eShellType)
+            {
+                case eShellType.Membrane:
+                    shellType = ShellType.Membrane;
+                    break;
+                case eShellType.ShellThick:
+                    shellType = ShellType.ShellThick;
+                    break;
+                case eShellType.ShellThin:
+                    shellType = ShellType.ShellThin;
+                    break;
+                case eShellType.Layered:
+                    shellType = ShellType.Layered;
+                    break;
+                default:
+                    shellType = ShellType.Null;
+                    break;
+
+
+            }
+
+            return shellType;
+        }
     public Restraint Restraint(bool[] releases)
         {
             Restraint restraint = new Restraint();

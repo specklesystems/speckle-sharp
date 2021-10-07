@@ -104,6 +104,7 @@ namespace Objects.Converter.ETABS
             double RZ = 0;
             bool autoOffSet = true;
             Model.FrameObj.GetEndLengthOffset(name, ref autoOffSet, ref offSetEnd1, ref offSetEnd2, ref RZ);
+            //Offset needs to be oriented wrt to 1-axis
             Vector end1Offset = new Vector(0, 0, offSetEnd1, units = ModelUnits());
             Vector end2Offset = new Vector(0, 0, offSetEnd2, units = ModelUnits());
             speckleStructFrame.end1Offset = end1Offset;

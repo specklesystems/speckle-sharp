@@ -11,4 +11,33 @@ namespace Objects.Structural.ETABS.Analysis
         Shell,
         Wall
     }
+
+    public enum SlabType
+    {
+        Slab,
+        Drop,
+        Ribbed,
+        Waffle,
+        Mat,
+        Footing,
+        Null
+    }
+
+    public enum ShellType
+    {
+        ShellThin,
+        ShellThick,
+        Membrane,
+        Layered,
+        Null
+    }
+
+    public enum DeckType
+    {
+        Filled,
+        Unfilled,
+        SolidSlab,
+        Null
+    }
+
 }
