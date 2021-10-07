@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Objects.Structural.GSA.Analysis;
+using Objects.Structural.GSA.Bridge;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
 
@@ -31,6 +33,13 @@ namespace ConverterGSA
         { typeof(GSANode), NodeToNative },
         { typeof(GSAElement1D), Element1dToNative },
         { typeof(GSAElement2D), Element2dToNative },
+        // Bridge
+        { typeof(GSAInfluenceNode), InfNodeToNative},
+        { typeof(GSAInfluenceBeam), InfBeamToNative},
+        {typeof(GSAAlignment), AlignToNative},
+        {typeof(GSAPath), PathToNative},
+        // Analysis
+        {typeof(GSAStage), AnalStageToNative},
         //Material
         { typeof(GSASteel), SteelToNative },
         //Property
@@ -330,9 +339,118 @@ namespace ConverterGSA
       return new List<GsaRecord>() { gsaProperty };
     }
     #endregion
+    
+    #region Bridge
+
+    private List<GsaRecord> AlignToNative(Base speckleObject)
+    {
+      var speckleAlign = (GSAAlignment)speckleObject;
+      var gsaAlign = new GsaAlign()
+      {
+        ApplicationId = speckleAlign.applicationId,
+        Index = speckleAlign.nativeId,
+        Chain = speckleAlign.chainage,
+        Curv = speckleAlign.curvature,
+        Name = speckleAlign.name,
+        Sid = speckleAlign.id,
+        GridSurfaceIndex = speckleAlign.gridSurface.nativeId,
+        NumAlignmentPoints = speckleAlign.GetNumAlignmentPoints(),
+      };
+      return new List<GsaRecord>() { gsaAlign };
+    }
+
+    private List<GsaRecord> InfBeamToNative(Base speckleObject)
+    {
+      var speckleInfBeam = (GSAInfluenceBeam)speckleObject;
+      var gsaInfBeam = new GsaInfBeam
+      {
+        Name = speckleInfBeam.name,
+        Direction = speckleInfBeam.direction.ToNative(),
+        Element = speckleInfBeam.element.nativeId,
+        Factor = speckleInfBeam.factor,
+        Position = speckleInfBeam.position,
+        Sid = speckleObject.id,
+        Type = speckleInfBeam.type.ToNative(),
+      };
+      return new List<GsaRecord>() { gsaInfBeam };
+    }
+    
+    private List<GsaRecord> InfNodeToNative(Base speckleObject)
+    {
+      var speckleInfNode = (GSAInfluenceNode)speckleObject;
+      GetAxis(speckleInfNode.axis, out var gsaRefType, out var axisIndex);
+      var nodeIndex = ((GsaNode)(NodeToNative(speckleInfNode.node).First())).Index;
+      var gsaInfBeam = new GsaInfNode()
+      {
+        ApplicationId = speckleObject.applicationId,
+        Index = speckleInfNode.nativeId,
+        Name = speckleInfNode.name,
+        Direction = speckleInfNode.direction.ToNative(),
+        Factor = speckleInfNode.factor,
+        Sid = speckleObject.id,
+        Type = speckleInfNode.type.ToNative(),
+        AxisIndex = axisIndex,
+        Node = nodeIndex
+      };
+      return new List<GsaRecord>() { gsaInfBeam };
+    }
+    
+    private List<GsaRecord> PathToNative(Base speckleObject)
+    {
+      var specklePath = (GSAPath)speckleObject;
+      var alignmentIndex = ((GsaAlign)(AlignToNative(specklePath.alignment)).First()).Index;
+      var gsaPath = new GsaPath()
+      {
+        ApplicationId = speckleObject.applicationId,
+        Index = specklePath.nativeId,
+        Name = specklePath.name,
+        Sid = speckleObject.id,
+        Factor = specklePath.factor,
+        Alignment = alignmentIndex,
+        Group = specklePath.group,
+        Left = specklePath.left,
+        Right = specklePath.right,
+        NumMarkedLanes = specklePath.numMarkedLanes,
+        Type = specklePath.type.ToNative(),
+      };
+      return new List<GsaRecord>() { gsaPath };
+    }
+    
+    #endregion
+
+    #region Analysis Stage
+    
+    public List<GsaRecord> AnalStageToNative(Base speckleObject)
+    {
+      var analStage = (GSAStage)speckleObject;
+      var gsaAnalStage = new GsaAnalStage()
+      {
+        Name = analStage.name,
+        Days = analStage.stageTime,
+        Colour = analStage.colour.ColourToNative(),
+        ElementIndices = analStage.elements.Select(x => GetElementIndex(x)).ToList(),
+        LockElementIndices = analStage.lockedElements.Select(x => ((GSAElement1D)x).nativeId).ToList(),
+        Phi = analStage.creepFactor,
+      };
+      return new List<GsaRecord>() { gsaAnalStage };
+    }
+    
+    #endregion
+    
     #endregion
 
     #region Helper
+    
+    private int GetElementIndex(object obj)
+    {
+      if (obj is GSAElement1D element1D)
+        return element1D.nativeId;
+      else if (obj is GSAElement2D element2D)
+        return element2D.nativeId;
+      else
+        return -1;
+    }
+    
     #region ToNative
     #region Geometry
     #region Axis
