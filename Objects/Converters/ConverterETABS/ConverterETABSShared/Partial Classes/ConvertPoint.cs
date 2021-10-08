@@ -8,9 +8,12 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-        public void PointToNative(Node speckleStructNode)
+        public object PointToNative(Node speckleStructNode)
         {
-            throw new NotImplementedException(); 
+            var point = speckleStructNode.basePoint;
+            string name = "";
+            Model.PointObj.AddCartesian(point.x, point.y, point.z, ref name);
+            return speckleStructNode.name;
         }
         public Node PointToSpeckle(string name)
         {

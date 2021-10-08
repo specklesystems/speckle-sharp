@@ -12,20 +12,21 @@ namespace Objects.Converter.ETABS
         public object FrameToNative(Element1D element1D)
         {
             string units = ModelUnits();
-            string new_name = "";
+            string newFrame = "";
             Line baseline = element1D.baseLine;
             if (baseline != null)
             {
                 Point end1node = baseline.start;
                 Point end2node = baseline.end;
-                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref new_name);
+                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame,element1D.property.name);
             }
             else
             {
                 Point end1node = element1D.end1Node.basePoint;
                 Point end2node = element1D.end2Node.basePoint;
-                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref new_name);
+                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame,element1D.property.name);
             }
+
             return element1D.name;
         }
         public Element1D FrameToSpeckle(string name)

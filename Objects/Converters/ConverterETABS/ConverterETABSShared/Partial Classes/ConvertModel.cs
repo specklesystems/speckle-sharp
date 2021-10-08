@@ -15,6 +15,7 @@ namespace Objects.Converter.ETABS
     {
         object ModelToNative(Model model)
         {
+            var Element1D = new Element1D();
             foreach(Material material in model.materials)
             {
                 MaterialToNative(material);
@@ -25,7 +26,8 @@ namespace Objects.Converter.ETABS
             }
             foreach(var element in model.elements)
             {
-                if (element.Equals(typeof(Element1D)))
+               
+                if (element.GetType().ToString() == Element1D.GetType().ToString())
                 {
                     FrameToNative((Element1D)element);
                 }
@@ -33,6 +35,10 @@ namespace Objects.Converter.ETABS
                 {
                     AreaToNative((Element2D)element);
                 }
+            }
+            foreach(Node node in model.nodes)
+            {
+                PointToNative(node);
             }
             return "Finished";
         }

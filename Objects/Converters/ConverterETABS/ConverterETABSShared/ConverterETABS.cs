@@ -69,12 +69,14 @@ namespace Objects.Converter.ETABS
         {
             switch (@object)
             {
-                //case OSG.Node o:
-                //    return PointToNative(o);
+                //case osg.node o:
+                //    return pointtonative(o);
                 case OSG.Element1D o:
                     return FrameToNative(o);
                 case OSG.Element2D o:
                     return AreaToNative(o);
+                case Model o:
+                    return ModelToNative(o);
                 default:
                     ConversionErrors.Add(new SpeckleException("Unsupported Speckle Object: Can not convert to native", level: Sentry.SentryLevel.Warning));
                     return null;

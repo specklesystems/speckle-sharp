@@ -67,6 +67,7 @@ namespace Objects.Converter.ETABS
         public enum ETABSConverterSupported {
         Element1D,
         Element2D,
+        Model,
         }
 
         public enum ETABSAPIUsableTypes
