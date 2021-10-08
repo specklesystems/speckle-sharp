@@ -117,11 +117,11 @@ namespace ConverterGSA
         ApplicationId = speckleElement.applicationId,
         Index = Instance.GsaModel.Cache.ResolveIndex<GsaEl>(speckleElement.applicationId),
         Name = speckleElement.name,
-        Colour = speckleElement.colour.ColourToNative(),
+        Colour = speckleElement.colour?.ColourToNative() ?? Colour.NotSet,
         Type = speckleElement.type.ToNative(),
         //TaperOffsetPercentageEnd1 - currently not supported
         //TaperOffsetPercentageEnd2 - currently not supported
-        NodeIndices = speckleElement.topology.Select(n => GetIndexFromNode(n)).ToList(),
+        NodeIndices = speckleElement.topology?.Select(n => GetIndexFromNode(n)).ToList() ?? new List<int>(),
         Dummy = speckleElement.isDummy,
       };
       if (speckleElement.property != null) gsaElement.PropertyIndex = Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleElement.property.applicationId);
@@ -348,7 +348,7 @@ namespace ConverterGSA
       var gsaAlign = new GsaAlign()
       {
         ApplicationId = speckleAlign.applicationId,
-        Index = speckleAlign.nativeId,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaAlign>(speckleAlign.applicationId),
         Chain = speckleAlign.chainage,
         Curv = speckleAlign.curvature,
         Name = speckleAlign.name,
@@ -362,11 +362,13 @@ namespace ConverterGSA
     private List<GsaRecord> InfBeamToNative(Base speckleObject)
     {
       var speckleInfBeam = (GSAInfluenceBeam)speckleObject;
+      var elementIndex = ((GsaEl)Element1dToNative(speckleInfBeam.element).First()).Index;
       var gsaInfBeam = new GsaInfBeam
       {
         Name = speckleInfBeam.name,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaInfBeam>(speckleInfBeam.applicationId),
         Direction = speckleInfBeam.direction.ToNative(),
-        Element = speckleInfBeam.element.nativeId,
+        Element = elementIndex,
         Factor = speckleInfBeam.factor,
         Position = speckleInfBeam.position,
         Sid = speckleObject.id,
@@ -383,7 +385,7 @@ namespace ConverterGSA
       var gsaInfBeam = new GsaInfNode()
       {
         ApplicationId = speckleObject.applicationId,
-        Index = speckleInfNode.nativeId,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaInfNode>(speckleInfNode.applicationId),
         Name = speckleInfNode.name,
         Direction = speckleInfNode.direction.ToNative(),
         Factor = speckleInfNode.factor,
@@ -402,7 +404,7 @@ namespace ConverterGSA
       var gsaPath = new GsaPath()
       {
         ApplicationId = speckleObject.applicationId,
-        Index = specklePath.nativeId,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaPath>(specklePath.applicationId),
         Name = specklePath.name,
         Sid = speckleObject.id,
         Factor = specklePath.factor,
