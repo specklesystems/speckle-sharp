@@ -289,7 +289,7 @@ namespace ConnectorGSA
           streamStates.Add(streamState);
 
           var serverTransport = new ServerTransport(account, streamState.Stream.id);
-          var sent = Commands.SendCommit(commitObj, streamState, serverTransport).Result;
+          var sent = Commands.SendCommit(commitObj, streamState, "", serverTransport).Result;
 
           Console.WriteLine("Sending complete");
           return true;

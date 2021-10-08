@@ -206,6 +206,7 @@ namespace ConnectorGSA
 
     public static bool LoadDataFromFile(IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
+      Instance.GsaModel.Proxy.Clear();
       var loadedCache = UpdateCache();
       int cumulativeErrorRows = 0;
 
@@ -268,7 +269,7 @@ namespace ConnectorGSA
       return convertedObjs;
     }
 
-    public static async Task<bool> SendCommit(Base commitObj, StreamState state, params ITransport[] transports)
+    public static async Task<bool> SendCommit(Base commitObj, StreamState state, string parent, params ITransport[] transports)
     {
       var commitObjId = await Operations.Send(
         @object: commitObj,
@@ -291,11 +292,17 @@ namespace ConnectorGSA
           sourceApplication = Applications.GSA
         };
 
+        if (!string.IsNullOrEmpty(parent))
+        {
+          actualCommit.parents = new List<string>() { parent };
+        }
+
         //if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
         try
         {
           var commitId = await state.Client.CommitCreate(actualCommit);
+          ((GsaModel)Instance.GsaModel).LastCommitId = commitId;
         }
         catch (Exception e)
         {
@@ -660,11 +667,11 @@ namespace ConnectorGSA
     internal static async Task<bool> SendTriggered(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress, 
       IProgress<string> statusProgress, IProgress<double> percentageProgress)
     {
-      var result = await Send(coordinator.SenderTab.SenderStreamStates.First(), loggingProgress, statusProgress, percentageProgress);
+      var result = await Send(coordinator, coordinator.SenderTab.SenderStreamStates.First(), loggingProgress, statusProgress, percentageProgress);
       return result;
     }
 
-    private static async Task<bool> Send(StreamState ss, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
+    private static async Task<bool> Send(TabCoordinator coordinator, StreamState ss, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
@@ -681,6 +688,38 @@ namespace ConnectorGSA
       percentage += 20;
       percentageProgress.Report(percentage);
 
+      var resultsToSend = coordinator.SenderTab.ResultSettings.ResultSettingItems.Where(rsi => rsi.Selected).ToList();
+      if (resultsToSend != null && resultsToSend.Count() > 0 && !string.IsNullOrEmpty(coordinator.SenderTab.LoadCaseList)
+        && (Instance.GsaModel.ResultCases == null || Instance.GsaModel.ResultCases.Count() == 0))
+      {
+        try
+        {
+          statusProgress.Report("Preparing results");
+          var analIndices = new List<int>();
+          var comboIndices = new List<int>();
+          if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var analRecords) && analRecords != null && analRecords.Count() > 0)
+          {
+            analIndices.AddRange(analRecords.Select(r => r.Index.Value));
+          }
+          if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var comboRecords) && comboRecords != null && comboRecords.Count() > 0)
+          {
+            comboIndices.AddRange(comboRecords.Select(r => r.Index.Value));
+          }
+          var expanded = ((GsaProxy)Instance.GsaModel.Proxy).ExpandLoadCasesAndCombinations(coordinator.SenderTab.LoadCaseList, analIndices, comboIndices);
+          if (expanded != null && expanded.Count() > 0)
+          {
+            loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Resolved load cases"));
+
+            Instance.GsaModel.ResultCases = expanded;
+            Instance.GsaModel.ResultTypes = resultsToSend.Select(rts => rts.ResultType).ToList();
+          }
+        }
+        catch
+        {
+
+        }
+      }
+
       TimeSpan duration = DateTime.Now - startTime;
       if (duration.Seconds > 0)
       {
@@ -691,20 +730,26 @@ namespace ConnectorGSA
 
       if (Instance.GsaModel.SendResults)
       {
-        Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes);
-        foreach (var rg in Instance.GsaModel.ResultGroups)
+        try
         {
-          Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
-        }
+          Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes);
+          foreach (var rg in Instance.GsaModel.ResultGroups)
+          {
+            Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
+          }
 
-        percentage += 20;
-        percentageProgress.Report(percentage);
+          percentage += 20;
+          percentageProgress.Report(percentage);
 
-        duration = DateTime.Now - startTime;
-        if (duration.Seconds > 0)
+          duration = DateTime.Now - startTime;
+          if (duration.Seconds > 0)
+          {
+            loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Duration of preparing results: " + duration.ToString(@"hh\:mm\:ss")));
+            loggingProgress.Report(new MessageEventArgs(MessageIntent.Telemetry, MessageLevel.Information, "send", "prepare-results", "duration", duration.ToString(@"hh\:mm\:ss")));
+          }
+        } catch
         {
-          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Duration of preparing results: " + duration.ToString(@"hh\:mm\:ss")));
-          loggingProgress.Report(new MessageEventArgs(MessageIntent.Telemetry, MessageLevel.Information, "send", "prepare-results", "duration", duration.ToString(@"hh\:mm\:ss")));
+
         }
         startTime = DateTime.Now;
       }
@@ -779,7 +824,7 @@ namespace ConnectorGSA
       }
 
       var serverTransport = new ServerTransport(account, ss.Stream.id);
-      var sent = await Commands.SendCommit(commitObj, ss, serverTransport);
+      var sent = await Commands.SendCommit(commitObj, ss, ((GsaModel)Instance.GsaModel).LastCommitId, serverTransport);
 
       if (sent)
       {
@@ -828,29 +873,6 @@ namespace ConnectorGSA
 #if !DEBUG
       ((GsaProxy)Instance.GsaModel.Proxy).SetAppVersionForTelemetry(getRunningVersion().ToString());
 #endif
-      var resultsToSend = coordinator.SenderTab.ResultSettings.ResultSettingItems.Where(rsi => rsi.Selected).ToList();
-      if (resultsToSend != null && resultsToSend.Count() > 0 && !string.IsNullOrEmpty(coordinator.SenderTab.LoadCaseList))
-      {
-        statusProgress.Report("Preparing results");
-        var analIndices = new List<int>();
-        var comboIndices = new List<int>();
-        if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var analRecords) && analRecords != null && analRecords.Count() > 0)
-        {
-          analIndices.AddRange(analRecords.Select(r => r.Index.Value));
-        }
-        if (((GsaCache)Instance.GsaModel.Cache).GetNatives<GsaAnal>(out var comboRecords) && comboRecords != null && comboRecords.Count() > 0)
-        {
-          comboIndices.AddRange(comboRecords.Select(r => r.Index.Value));
-        }
-        var expanded = ((GsaProxy)Instance.GsaModel.Proxy).ExpandLoadCasesAndCombinations(coordinator.SenderTab.LoadCaseList, analIndices, comboIndices);
-        if (expanded != null && expanded.Count() > 0)
-        {
-          loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Resolved load cases"));
-
-          Instance.GsaModel.ResultCases = expanded;
-          Instance.GsaModel.ResultTypes = resultsToSend.Select(rts => rts.ResultType).ToList();
-        }
-      }
 
       var account = ((GsaModel)Instance.GsaModel).Account;
       var client = new Client(account);
@@ -859,15 +881,22 @@ namespace ConnectorGSA
       {
         var stream = NewStream(client, "GSA data", "GSA data").Result;
         streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = stream, IsSending = true };
+        ((GsaModel)Instance.GsaModel).LastCommitId = "";
       }
       else
       {
         streamState = coordinator.SenderTab.SenderStreamStates.First();
+        var branches = client.StreamGetBranches(streamState.StreamId).Result;
+        var mainBranch = branches.FirstOrDefault(b => b.name == "main");
+        if (mainBranch != null && mainBranch.commits.items.Any())
+        {
+          ((GsaModel)Instance.GsaModel).LastCommitId = mainBranch.commits.items[0].id;
+        }
       }
       
       streamCreationProgress.Report(streamState); //This will add it to the sender tab's streamState list
 
-      await Send(streamState, loggingProgress, statusProgress, percentageProgress);
+      await Send(coordinator, streamState, loggingProgress, statusProgress, percentageProgress);
 
       coordinator.SenderTab.SetDocumentName(((GsaProxy)Instance.GsaModel.Proxy).GetTitle());
 
