@@ -15,23 +15,65 @@ namespace Objects.Structural.ETABS.Properties
         public SlabType slabType{ get; set; }
         public DeckType deckType{ get; set; }
         public ShellType shellType{ get; set; }
-        public double RibSpacing { get; set; }
-        public int RibsParallelTo { get; set; }
-        public double OverAllDepth { get; set; }
-        public double StemWidthTop { get; set; }
-        public double StemWidthBot { get; set; }
-        public double RibSpacingDir1 { get; set; }
-        public double RibSpacingDir2 { get; set; }
-        public double ribDepth{ get; set; }
-        public double ribWidthTop{ get; set; }
-        public double ribWidthBot{ get; set; }
-        public double ribSpacing{ get; set; }
-        public double shearThickness{ get; set; }
-        public double unitWeight{ get; set; }
-        public double slabDepth { get; set; }
-        public double shearStudDia { get; set; }
-        public double shearStudFu { get; set; }
-        public double shearStudHt { get; set; }
+
+        public class WaffleSlab : ETABSProperty2D
+        {
+            public double OverAllDepth { get; set; }
+            public double StemWidthBot { get; set; }
+            public double StemWidthTop { get; set; }
+            public double RibSpacingDir1 { get; set; }
+            public double RibSpacingDir2 { get; set; }
+            public WaffleSlab() { }
+
+
+            //[SchemaInfo("WaffleSlab","Define a WaffleSlab Area Property")]      
+        }
+
+        public class RibbedSlab : ETABSProperty2D
+        {
+            public double OverAllDepth { get; set; }
+            public double StemWidthBot { get; set; }
+            public double StemWidthTop { get; set; }
+            public double RibSpacing { get; set; }
+            public double RibsParallelTo { get; set; }
+        }
+
+        public class DeckFilled : ETABSProperty2D
+        {
+            public double SlabDepth { get; set; }
+            public double ShearStudDia { get; set; }
+            public double ShearStudFu { get; set; }
+            public double ShearStudHt { get; set; }
+            public double RibDepth { get; set; }
+            public double RibWidthTop { get; set; }
+            public double RibWidthBot { get; set; }
+            public double RibSpacing { get; set; }
+            public double ShearThickness { get; set; }
+            public double UnitWeight { get; set; }
+        }
+
+        public class DeckUnFilled : ETABSProperty2D
+        {
+            public double SlabDepth { get; set; }
+            public double RibDepth { get; set; }
+            public double RibWidthTop { get; set; }
+            public double RibWidthBot { get; set; }
+            public double RibSpacing { get; set; }
+            public double ShearThickness { get; set; }
+            public double UnitWeight { get; set; }
+
+        }
+
+        public class DeckSlab : ETABSProperty2D
+        {
+            public double SlabDepth { get; set; }
+            public double ShearStudDia { get; set; }
+            public double ShearStudFu { get; set; }
+            public double ShearStudHt { get; set; }
+            public double ShearThickness { get; set; }
+            public double UnitWeight { get; set; }
+        }
+
 
         public ETABSProperty2D() { }
     }
