@@ -16,7 +16,7 @@ namespace Objects.Converter.ETABS
         {
             var model = new Model();
             model.specs = ModelInfoToSpeckle();
-
+            model.nodes = new List<Base> { };
             model.materials = new List<Base> { };
             model.elements = new List<Base> { };
             model.properties = new List<Base> { };

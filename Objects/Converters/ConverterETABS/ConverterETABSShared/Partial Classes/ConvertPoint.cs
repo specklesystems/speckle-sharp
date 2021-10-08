@@ -30,7 +30,7 @@ namespace Objects.Converter.ETABS
 
             speckleStructNode.restraint = Restraint(restraints);
 
-            SpeckleModel.elements.Add(speckleStructNode);
+            SpeckleModel.nodes.Add(speckleStructNode);
             
                 //TO DO: detach properties
             return speckleStructNode;
