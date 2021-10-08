@@ -32,8 +32,12 @@ namespace Objects.Other
     public Point insertionPoint { get; set; }
 
     /// <summary>
-    /// The 4x4 transform matrix. Row-dominant, should have 16 values.
+    /// The 4x4 transform matrix.
     /// </summary>
+    /// <remarks>
+    /// the 3x3 sub-matrix determines scaling
+    /// the 4th column defines translation, where the last value could be a divisor
+    /// </remarks>
     public double[] transform { get; set; }
 
     public string units { get; set; }

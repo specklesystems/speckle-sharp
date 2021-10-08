@@ -28,15 +28,15 @@ namespace Speckle.ConnectorRevit
     public void Execute(UIApplication app)
     {
       Debug.WriteLine("Current queue length is: " + RevitBindings.Queue.Count);
-      if ( Running ) return; // queue will run itself through
+      if (Running) return; // queue will run itself through
 
       Running = true;
 
       try
       {
-        RevitBindings.Queue[ 0 ]();
+        RevitBindings.Queue[0]();
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         Log.CaptureException(e);
       }
@@ -44,7 +44,7 @@ namespace Speckle.ConnectorRevit
       RevitBindings.Queue.RemoveAt(0);
       Running = false;
 
-      if ( RevitBindings.Queue.Count != 0 )
+      if (RevitBindings.Queue.Count != 0)
         RevitBindings.Executor.Raise();
 
     }
