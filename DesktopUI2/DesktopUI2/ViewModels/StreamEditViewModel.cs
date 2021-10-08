@@ -77,11 +77,11 @@ namespace DesktopUI2.ViewModels
         {
           if (_selectedCommit.id == "latest")
             PreviewImageUrl = _streamState.Client.Account.serverInfo.url + $"/preview/{_streamState.StreamId}";
-          else 
+          else
             PreviewImageUrl = _streamState.Client.Account.serverInfo.url + $"/preview/{_streamState.StreamId}/commits/{_selectedCommit.id}";
         }
 
-       
+
       }
     }
 
@@ -127,7 +127,7 @@ namespace DesktopUI2.ViewModels
 
     private StreamState _streamState { get; }
 
- 
+
     public string _previewImageUrl = "";
     public string PreviewImageUrl
     {
@@ -285,8 +285,7 @@ namespace DesktopUI2.ViewModels
           Progress.CancellationTokenSource.Cancel();
       }
         );
-
-      await Bindings.SendStream(GetStreamState(), Progress);
+      await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
       dialog.GetWindow().Close();
       //TODO: display other dialog if operation failed etc
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
@@ -304,8 +303,7 @@ namespace DesktopUI2.ViewModels
           Progress.CancellationTokenSource.Cancel();
       }
         );
-
-      await Bindings.ReceiveStream(GetStreamState(), Progress);
+      await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
       dialog.GetWindow().Close();
       //TODO: display other dialog if operation failed etc
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
