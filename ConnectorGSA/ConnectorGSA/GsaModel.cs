@@ -49,6 +49,7 @@ namespace ConnectorGSA
 		}
 
 		public Account Account;
+		public string LastCommitId;
 
     public GsaModel()
     {

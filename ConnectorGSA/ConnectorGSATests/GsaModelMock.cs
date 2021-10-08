@@ -109,7 +109,7 @@ namespace ConnectorGSATests
     public bool Clear() => true;
 
     public string GetTopLevelSid() => "";
-    public bool SetTopLevelSid(string sidRecord) => true;
+    public bool SetTopLevelSid(string StreamState) => true;
 
     public bool Save() => true;
 

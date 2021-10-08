@@ -1009,13 +1009,13 @@ namespace Speckle.ConnectorGSA.Proxy
       return sid;
     }
 
-    public bool SetTopLevelSid(string sidRecord)
+    public bool SetTopLevelSid(string StreamState)
     {
       try
       {
         lock(syncLock)
         {
-          GSAObject.GwaCommand(string.Join(GwaDelimiter.ToString(), new[] { "SET", "SID", sidRecord }));
+          GSAObject.GwaCommand(string.Join(GwaDelimiter.ToString(), new[] { "SET", "SID", StreamState }));
         }
         return true;
       }

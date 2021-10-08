@@ -1,5 +1,4 @@
-﻿using Speckle.ConnectorGSA.Proxy;
-using Speckle.ConnectorGSA.Proxy.GwaParsers;
+﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System.Collections.Generic;
@@ -159,7 +158,7 @@ namespace ConnectorGSATests
       var resources = new GsaAppResources();
       resources.Settings.TargetLayer = GSALayer.Design;
 
-      var senderStreamInfo = new List<SidSpeckleRecord> { new SidSpeckleRecord("testStreamId", "testStream", "testClientId") };
+      var senderStreamInfo = new List<StreamState> { new StreamState("testStreamId", "testStream", "testClientId") };
 
       //This runs SpeckleInitializer.Initialize() and fills WriteTypePrereqs and ReadTypePrereqs
       GSA.Init("");
@@ -177,7 +176,7 @@ namespace ConnectorGSATests
 
         //This will load data from all streams into the cache
         senderCoordinator.Initialize("", "", senderStreamInfo, (restApi, apiToken) => new TestSpeckleGSASender(), new Progress<MessageEventArgs>(),
-          new Progress<string>(), new Progress<double>(), new Progress<SidSpeckleRecord>(), new Progress<SidSpeckleRecord>());
+          new Progress<string>(), new Progress<double>(), new Progress<StreamState>(), new Progress<StreamState>());
 
         _ = senderCoordinator.Trigger();
 

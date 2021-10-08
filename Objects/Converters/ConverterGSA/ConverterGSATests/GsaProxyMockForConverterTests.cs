@@ -185,7 +185,7 @@ namespace ConverterGSATests
 
     public string GetTopLevelSid() => "";
 
-    public bool SetTopLevelSid(string sidRecord) => true;
+    public bool SetTopLevelSid(string StreamState) => true;
 
     public bool Save() => true;
 

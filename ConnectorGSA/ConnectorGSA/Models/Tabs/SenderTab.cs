@@ -13,7 +13,7 @@ namespace ConnectorGSA.Models
 
     public ResultSettings ResultSettings { get; set; } = new ResultSettings();
 
-    public List<StreamState> SenderSidRecords { get => this.sidSpeckleRecords; }
+    public List<StreamState> SenderStreamStates { get => this.StreamStates; }
 
     private string documentTitle = "";
 

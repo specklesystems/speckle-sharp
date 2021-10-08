@@ -63,6 +63,18 @@ namespace Speckle.ConnectorGSA.Proxy
       }
     }
 
+    public static void UpsertDictionary<T,U>(this Dictionary<T, HashSet<U>> d, T key, U value)
+    {
+      if (!d.ContainsKey(key))
+      {
+        d.Add(key, new HashSet<U>());
+      }
+      if (!d[key].Contains(value))
+      {
+        d[key].Add(value);
+      }
+    }
+
     public static bool ValidNonZero(this double? v)
     {
       return v.HasValue && v > 0;
