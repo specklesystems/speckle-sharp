@@ -35,7 +35,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var responses = new List<string>();
 
       var objectId = Operations.Send(data, cancellationToken, new List<ITransport>(transports), true,
-        onProgressAction, onErrorAction).Result;
+        onProgressAction, onErrorAction, disposeTransports: true).Result;
 
       if (cancellationToken.IsCancellationRequested)
         return null;

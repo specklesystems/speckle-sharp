@@ -169,7 +169,6 @@ namespace Speckle.Core.Transports
         throw new Exception("ServerTransport not sending");
       ShouldSendThreadRun = false;
       SendingThread.Join();
-      SendingThread = null;
     }
 
     public override string ToString()
