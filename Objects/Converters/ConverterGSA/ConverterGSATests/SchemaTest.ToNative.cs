@@ -486,7 +486,7 @@ namespace ConverterGSATests
     {
       var axis = SpeckleGlobalAxis();
       var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
-      var gsaAlignment = new GSAAlignment(1, "myGsaAlignment",
+      var gsaAlignment = new GSAAlignment(2, "myGsaAlignment",
         new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2,
           LoadExpansion.PlaneCorner, GridSurfaceSpanType.OneWay,
           new List<Base>()),
@@ -581,7 +581,7 @@ namespace ConverterGSATests
 
     private static GSAElement1D GetElement1d1()
     {
-      return new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D);
+      return new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D){applicationId = "appl1dforGsaElement1d"};
     }
 
     #endregion
