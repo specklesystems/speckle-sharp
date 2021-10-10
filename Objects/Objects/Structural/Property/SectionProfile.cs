@@ -11,8 +11,10 @@ namespace Objects.Structural.Properties.Profiles
     {
         public string name { get; set; }
         public ShapeType shapeType { get; set; }
+        public List<SectionProfile> children { get; set; }
         public double weight { get; set; } // section weight, ex. kg/m
         public string units { get; set; }
+        public SectionProperties sectionProperties { get; set; }
 
         public SectionProfile() { }
 

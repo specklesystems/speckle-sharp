@@ -10,7 +10,6 @@ namespace Objects.Structural.Properties
 {
     public class SectionProperties
     {
-        public string name { get; set; }
         public double area { get; set; }
         public double Iy { get; set; } // seccond moment of area about y-axis
         public double Iz { get; set; } // seccond moment of area about z-axis
@@ -20,9 +19,8 @@ namespace Objects.Structural.Properties
         public SectionProperties() { }
 
         [SchemaInfo("SectionProperties", "Creates Speckle structural section properties", "Structural", "Section Properties")]
-        public SectionProperties(string name, double area, double Iy, double Iz, double J, double Sz, double Sy)
+        public SectionProperties(double area, double Iy, double Iz, double J, double Sz, double Sy)
         {
-            this.name = name;
             this.area = area;
             this.Iy = Iy;
             this.Iz = Iz;
@@ -44,7 +42,7 @@ namespace Objects.Structural.Properties
         public SteelSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
-        public SteelSectionProperties(string name, double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz, double y0 = 0.0, double z0 = 0.0) : base(name, area, Iy, Iz, J, Sely, Selz)
+        public SteelSectionProperties(double area, double Iy, double Iz, double J, double Sely, double Selz, double Sply, double Splz, double C, double ry, double rz, double y0 = 0.0, double z0 = 0.0) : base(area, Iy, Iz, J, Sely, Selz)
         {
             this.C = C;
             this.Sply = Sply;
@@ -62,7 +60,7 @@ namespace Objects.Structural.Properties
         public ConcreteSectionProperties() { }
 
         [SchemaInfo("SteelSectionProperties", "Creates Speckle structural steel section properties", "Structural", "Section Properties")]
-        public ConcreteSectionProperties(string name, double area, double Iy, double Iz, double J, double Sz, double Sy) : base(name, area, Iy, Iz, J, Sy, Sz)
+        public ConcreteSectionProperties(double area, double Iy, double Iz, double J, double Sz, double Sy) : base(area, Iy, Iz, J, Sy, Sz)
         {
             // todo: implement
         }
@@ -70,8 +68,8 @@ namespace Objects.Structural.Properties
 
     public class ReinforcementBar : Base
     {
-        double y { get; set; } // local y-coordinate
-        double z { get; set; } // local z-coordinate
+        double localY { get; set; } // local y-coordinate
+        double localZ { get; set; } // local z-coordinate
         double diameter { get; set; } // diameter of bar or equivalent diameter
         string unit { get; set; }
         BarArrangement arrangement { get; set; }
@@ -86,10 +84,10 @@ namespace Objects.Structural.Properties
         /// <param name="diameter">Diameter of bar or equivalent diameter</param>
         /// <param name="unit">The unit of the bar diameter</param>
         /// <param name="arrangement">Arrangement of bars</param>
-        public ReinforcementBar(double y, double z, double diameter, string unit, BarArrangement arrangement = BarArrangement.Individual)
+        public ReinforcementBar(double localY, double localZ, double diameter, string unit, BarArrangement arrangement = BarArrangement.Individual)
         {
-            this.y = y;
-            this.z = z;
+            this.localY = localY;
+            this.localZ = localZ;
             this.diameter = diameter;
             this.unit = unit;
             this.arrangement = arrangement;

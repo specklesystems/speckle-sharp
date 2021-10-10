@@ -17,7 +17,6 @@ namespace Objects.Structural.Properties
 
         [DetachProperty]
         public SectionProfile profile { get; set; } //section description
-        public SectionProperties sectionProperties { get; set; }
         public BaseReferencePoint referencePoint { get; set; }
         public double offsetY { get; set; } = 0; //offset from reference point
         public double offsetZ { get; set; } = 0; //offset from reference point
