@@ -27,6 +27,13 @@ namespace Speckle.Core.Serialisation
       bool isList = value is List<object>;
       List<object> valueList = value as List<object>;
 
+      //strings
+      if (type == typeof(string))
+      {
+        convertedValue = Convert.ToString(value);
+        return true;
+      }
+
       #region Enum
       if (type.IsEnum)
       {
@@ -68,7 +75,7 @@ namespace Speckle.Core.Serialisation
           if (valueType == typeof(double)) { convertedValue = (Single)(double)value; return true; }
           if (valueType == typeof(long)) { convertedValue = (Single)(long)value; return true; }
           else return false;
-        #endregion
+          #endregion
       }
 
       // Handle List<?>
