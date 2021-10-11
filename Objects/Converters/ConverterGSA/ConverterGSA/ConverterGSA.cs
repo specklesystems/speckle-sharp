@@ -40,6 +40,9 @@ namespace ConverterGSA
 
     private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
 
+    //private Dictionary<GSALayer, HashSet<int>> meaningfulNodeIndices = new Dictionary<GSALayer, HashSet<int>>();
+    private Dictionary<GSALayer, HashSet<string>> meaningfulNodesAppIds = new Dictionary<GSALayer, HashSet<string>>();
+
     #region model_group
     private enum ModelAspect
     {
@@ -155,7 +158,7 @@ namespace ConverterGSA
         foreach (var x in objects)
         {
           var toSpeckleResult = ToSpeckle((GsaRecord)x);
-          var speckleObjects = toSpeckleResult.ModelObjects;
+          var speckleObjects = toSpeckleResult.ObjectsByLayer.SelectMany(kvp => kvp.Value).ToList();
           if (speckleObjects != null && speckleObjects.Count > 0)
           {
             retList.AddRange(speckleObjects.Where(so => so != null));
@@ -189,6 +192,9 @@ namespace ConverterGSA
       var typeGens = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(sendLayer);
       returnObjects = new List<Base>();
 
+      //var nodeDependentSchemaTypesByLayer = new Dictionary<GSALayer, List<Type>>();
+      //nodeDependentSchemaTypesByLayer.Add(GSALayer.Design, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Design));
+
       var gsaRecordsByType = gsaRecords.GroupBy(r => r.GetType()).ToDictionary(r => r.Key, r => r.ToList());
 
       var modelsByLayer = new Dictionary<GSALayer, Model>() { { GSALayer.Design, new Model() { specs = modelInfo, layerDescription = "Design" } } };
@@ -197,7 +203,28 @@ namespace ConverterGSA
       {
         modelsByLayer.Add(GSALayer.Analysis, new Model() { specs = modelInfo, layerDescription = "Analysis" });
         modelHasData.Add(GSALayer.Analysis, false);
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Analysis, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Analysis));
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Both, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Both));
       }
+
+      /*
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes)
+      {//Remove nodes across the layers
+        var referencedNodeIndices = new List<int>();
+        foreach (var t in nodeDependentSchemaTypesByLayer[sendLayer].Where(ndst => gsaRecordsByType.Keys.Contains(ndst)))
+        {
+          var ns = gsaRecordsByType[t];
+          foreach (var i in ns.n)
+          {
+
+          }
+        }
+      }
+      */
+
+      var nodesTemp = new Dictionary<GsaRecord, ToSpeckleResult>();
 
       var rsa = new ResultSetAll();
       bool resultSetHasData = false;
@@ -225,20 +252,30 @@ namespace ConverterGSA
 
                 foreach (var l in modelsByLayer.Keys)
                 {
-                  if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                  //Special case for nodes due to the possibility that not all of them should be sent, and the subset that should be sent can vary by layer
+                  if (Instance.GsaModel.SendOnlyMeaningfulNodes && t == typeof(GsaNode))
                   {
-                    modelHasData[l] = true;
+                    if (!nodesTemp.ContainsKey(nativeObj))
+                    {
+                      nodesTemp.Add(nativeObj, toSpeckleResult);
+                    }
+                  }
+                  else
+                  {
+                    if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                    {
+                      modelHasData[l] = true;
+                    }
                   }
                 }
-                
-                var speckleObjs = toSpeckleResult.ModelObjects; //Don't need to add result objects to the cache since they aren't needed for serialisation
-                if (speckleObjs != null && speckleObjs.Count > 0)
+
+                foreach (var l in toSpeckleResult.ObjectsByLayer.Keys)
                 {
-                  foreach(var o in speckleObjs)
+                  var layerObjectsToCache = toSpeckleResult.ObjectsByLayer[l].Where(o => o != null);
+                  if (layerObjectsToCache.Count() > 0)
                   {
-                    Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, new Dictionary<string, object>() { { o.applicationId, (object)o } });
+                    Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, layerObjectsToCache.ToDictionary(o => o.applicationId, o => (object)o), l);
                   }
-                  
                 }
 
                 if (AssignIntoResultSet(rsa, toSpeckleResult))
@@ -250,6 +287,36 @@ namespace ConverterGSA
             catch (Exception ex)
             {
 
+            }
+          }
+        }
+      }
+
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes && nodesTemp != null && nodesTemp.Keys.Count > 0)
+      {
+        foreach (var l in modelsByLayer.Keys)
+        {
+          foreach (var n in nodesTemp.Keys)
+          {
+            if (nodesTemp[n].ObjectsByLayer.ContainsKey(l) && nodesTemp[n].ObjectsByLayer[l] != null)
+            {
+              foreach (var o in nodesTemp[n].ObjectsByLayer[l])
+              {
+                if (meaningfulNodesAppIds[l].Contains(o.applicationId))
+                {
+                  AssignIntoModel(modelsByLayer[l], l, nodesTemp[n]);
+                }
+              }
+            }
+            if (nodesTemp[n].ObjectsByLayer.ContainsKey(GSALayer.Both) && nodesTemp[n].ObjectsByLayer[GSALayer.Both] != null)
+            {
+              foreach (var o in nodesTemp[n].ObjectsByLayer[GSALayer.Both])
+              {
+                if (meaningfulNodesAppIds[l].Contains(o.applicationId))
+                {
+                  AssignIntoModel(modelsByLayer[l], l, nodesTemp[n]);
+                }
+              }
             }
           }
         }
@@ -327,8 +394,16 @@ namespace ConverterGSA
 
     private bool AssignIntoModel(Model model, GSALayer layer, ToSpeckleResult toSpeckleResult)
     {
-      var objs = toSpeckleResult.GetModelObjectsForLayer(layer);
-      if (objs == null || objs.Count == 0)
+      var objs = new List<Base>();
+      if (toSpeckleResult.ObjectsByLayer.ContainsKey(GSALayer.Both))
+      {
+        objs.AddRange(toSpeckleResult.ObjectsByLayer[GSALayer.Both]);
+      }
+      if (toSpeckleResult.ObjectsByLayer.ContainsKey(layer))
+      {
+        objs.AddRange(toSpeckleResult.ObjectsByLayer[layer]);
+      }
+      if (objs == null || objs.Count() == 0)
       {
         return false;
       }
@@ -407,30 +482,13 @@ namespace ConverterGSA
     internal class ToSpeckleResult
     {
       public bool Success = true;
-      public List<Base> LayerAgnosticObjects;
-      public List<Base> DesignLayerOnlyObjects;
-      public List<Base> AnalysisLayerOnlyObjects;
+      public Dictionary<GSALayer, List<Base>> ObjectsByLayer = new Dictionary<GSALayer, List<Base>>();
+      /*
+      public List<Base> LayerAgnosticObjects { get => ObjectsByLayer.ContainsKey(GSALayer.Both) ? ObjectsByLayer[GSALayer.Both] : null; }
+      public List<Base> DesignLayerOnlyObjects { get => ObjectsByLayer.ContainsKey(GSALayer.Design) ? ObjectsByLayer[GSALayer.Design] : null; }
+      public List<Base> AnalysisLayerOnlyObjects { get => ObjectsByLayer.ContainsKey(GSALayer.Analysis) ? ObjectsByLayer[GSALayer.Analysis] : null; }
+      */
       public List<Base> ResultObjects;
-      public List<Base> ModelObjects
-      {
-        get
-        {
-          var objects = new List<Base>();
-          if (LayerAgnosticObjects != null)
-          {
-            objects.AddRange(LayerAgnosticObjects);
-          }
-          if (DesignLayerOnlyObjects != null)
-          {
-            objects.AddRange(DesignLayerOnlyObjects);
-          }
-          if (AnalysisLayerOnlyObjects != null)
-          {
-            objects.AddRange(AnalysisLayerOnlyObjects);
-          }
-          return objects;
-        }
-      }
 
       public ToSpeckleResult(bool success)  //Used mainly when there is an error
       {
@@ -439,22 +497,22 @@ namespace ConverterGSA
 
       public ToSpeckleResult(Base layerAgnosticObject)
       {
-        this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
+        ObjectsByLayer.Add(GSALayer.Both, new List<Base> { layerAgnosticObject });
       }
 
       public ToSpeckleResult(IEnumerable<Base> layerAgnosticObjects = null, IEnumerable<Base> designLayerOnlyObjects = null, IEnumerable<Base> analysisLayerOnlyObjects = null, IEnumerable<Base> resultObjects = null)
       {
         if (designLayerOnlyObjects != null)
         {
-          this.DesignLayerOnlyObjects = designLayerOnlyObjects.ToList();
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Design, designLayerOnlyObjects);
         }
         if (analysisLayerOnlyObjects != null)
         {
-          this.AnalysisLayerOnlyObjects = analysisLayerOnlyObjects.ToList();
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Analysis, analysisLayerOnlyObjects);
         }
         if (layerAgnosticObjects != null)
         {
-          this.LayerAgnosticObjects = layerAgnosticObjects.ToList();
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Both, layerAgnosticObjects);
         }
         if (resultObjects != null)
         {
@@ -466,48 +524,20 @@ namespace ConverterGSA
       {
         if (designLayerOnlyObject != null)
         {
-          this.DesignLayerOnlyObjects = new List<Base>() { designLayerOnlyObject };
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Design, designLayerOnlyObject);
         }
         if (analysisLayerOnlyObject != null)
         {
-          this.AnalysisLayerOnlyObjects = new List<Base>() { analysisLayerOnlyObject };
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Analysis, analysisLayerOnlyObject);
         }
         if (layerAgnosticObject != null)
         {
-          this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Both, layerAgnosticObject);
         }
         if (resultObjects != null)
         {
           this.ResultObjects = resultObjects.ToList();
         }
-      }
-
-      public List<Base> GetModelObjectsForLayer(GSALayer layer)
-      {
-        if (layer != GSALayer.Design && layer != GSALayer.Analysis)
-        {
-          return null;
-        }
-        var objs = new List<Base>();
-        if (layer == GSALayer.Design)
-        {
-          if (DesignLayerOnlyObjects != null)
-          {
-            objs.AddRange(DesignLayerOnlyObjects);
-          }
-        }
-        else
-        {
-          if (AnalysisLayerOnlyObjects != null)
-          {
-            objs.AddRange(AnalysisLayerOnlyObjects);
-          }
-        }
-        if (LayerAgnosticObjects != null)
-        {
-          objs.AddRange(LayerAgnosticObjects);
-        }
-        return objs;
       }
     }
     #endregion

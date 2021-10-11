@@ -239,7 +239,7 @@ namespace ConnectorGSATests
       {
         var streamState = await PrepareStream(client);
 
-        returnInfo.Sent = await Commands.Send(co, streamState,
+        returnInfo.Sent = await Commands.SendCommit(co, streamState, "",
           (new ITransport[] { new ServerTransport(account, streamState.Stream.id) }).Concat(nonServerTransports).ToArray());
 
         returnInfo.ConvertedObjectsByStream.Add(streamState, co);

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API.CsvSchema;
+using GsaNode = Speckle.GSA.API.GwaSchema.GsaNode;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
@@ -21,9 +22,10 @@ namespace Speckle.ConnectorGSA.Proxy
     //public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
 
     private Dictionary<GSALayer, List<List<Type>>> nativeTypeDependencyGenerations; //leaves first, all the way up to roots
+    private Dictionary<GSALayer, List<Type>> nodeDependentSchemaTypesByLayer = new Dictionary<GSALayer, List<Type>>(); //This is to store data for a requirement specific to sending, and specific to nodes: being filtered out if not referenced by other objects
 
     private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
-    private IPairCollection<GwaKeyword, Type> ParsersSchemaType = new PairCollection<GwaKeyword, Type>();
+    private IPairCollection<GwaKeyword, Type> ParsersByKeyword = new PairCollection<GwaKeyword, Type>();
     private bool initialised = false;
     private bool initialisedError = false;  //To ensure initialisation is only attempted once.
     //private GSALayer prevLayer;
@@ -298,6 +300,27 @@ namespace Speckle.ConnectorGSA.Proxy
       }
       return index ?? 0;
     }
+
+    public List<Type> GetNodeDependentTypes(GSALayer layer)
+    {
+      return nodeDependentSchemaTypesByLayer[layer];
+
+      /*
+      var typeToFind = typeof(GsaNode);
+      InitialiseIfNecessary();
+      var dependencies = nativeTypeDependencyGenerations[layer];
+      for (int i = 0; i < dependencies.Count(); i++)
+      {
+        for (int j = 0; j < dependencies[i].Count(); j++)
+        {
+          if (dependencies[i][j] == typeToFind)
+          {
+            return gen[t];
+          }
+        }
+      }
+      */
+    }
     #endregion
 
     #region gsa_list_resolution
@@ -420,77 +443,89 @@ namespace Speckle.ConnectorGSA.Proxy
     #region type_dependency_tree
     private bool Initialise(GSALayer layer)
     {
-      if (!initialised && !initialisedError)
+      var assembly = GetType().Assembly; //This assembly
+      var assemblyTypes = assembly.GetTypes().ToList();
+
+      var gsaBaseType = typeof(GwaParser<GsaRecord>);
+      var gsaAttributeType = typeof(GsaType);
+      var gwaParserInterfaceType = typeof(IGwaParser);
+
+      var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
+        && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
+        && Helper.IsSelfContained(t)
+        && (layer == GSALayer.Both
+          || (layer == GSALayer.Design && Helper.IsDesignLayer(t))
+          || (layer == GSALayer.Analysis && Helper.IsAnalysisLayer(t)))
+        && !t.IsAbstract
+        ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
+
+      var layerKeywords = parserTypes.Values.ToList();
+      var kwDict = new Dictionary<GwaKeyword, GwaKeyword[]>();
+      foreach (var pt in parserTypes.Keys)
       {
-        var assembly = GetType().Assembly; //This assembly
-        var assemblyTypes = assembly.GetTypes().ToList();
+        var allRefKw = Helper.GetReferencedKeywords(pt).Where(kw => layerKeywords.Any(k => k == kw)).ToArray();
+        kwDict.Add(parserTypes[pt], allRefKw);
 
-        var gsaBaseType = typeof(GwaParser<GsaRecord>);
-        var gsaAttributeType = typeof(GsaType);
-        var gwaParserInterfaceType = typeof(IGwaParser);
-
-        var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
-          && t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
-          && Helper.IsSelfContained(t)
-          && (layer == GSALayer.Both
-            || (layer == GSALayer.Design && Helper.IsDesignLayer(t)) 
-            || (layer == GSALayer.Analysis && Helper.IsAnalysisLayer(t)))
-          && !t.IsAbstract
-          ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
-
-        var layerKeywords = parserTypes.Values.ToList();
-        var kwDict = new Dictionary<GwaKeyword, GwaKeyword[]>();
-        foreach (var pt in parserTypes.Keys)
+        //Handling the special case of nodes
+        if (allRefKw.Contains(GwaKeyword.NODE))
         {
-          var allRefKw = Helper.GetReferencedKeywords(pt).Where(kw => layerKeywords.Any(k => k == kw)).ToArray();
-          kwDict.Add(parserTypes[pt], allRefKw);
-        }
-
-        var retCol = new TypeTreeCollection<GwaKeyword>(kwDict.Keys);
-        foreach (var kw in kwDict.Keys)
-        {
-          retCol.Integrate(kw, kwDict[kw]);
-        }
-
-        var gens = retCol.Generations();
-        if (gens == null || gens.Count == 0)
-        {
-          return false;
-        }
-
-        foreach (var kvp in parserTypes)
-        {
-          if (!ParsersSchemaType.ContainsLeft(kvp.Value))
+          var schemaType = pt.BaseType.GenericTypeArguments.First();
+          if (!nodeDependentSchemaTypesByLayer.ContainsKey(layer))
           {
-            ParsersSchemaType.Add(kvp.Value, kvp.Key);
+            nodeDependentSchemaTypesByLayer.Add(layer, new List<Type>());
           }
-        }
-        ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
-
-        if (nativeTypeDependencyGenerations == null)
-        {
-          nativeTypeDependencyGenerations = new Dictionary<GSALayer, List<List<Type>>>();
-        }
-        if (!nativeTypeDependencyGenerations.ContainsKey(layer))
-        {
-          nativeTypeDependencyGenerations.Add(layer, new List<List<Type>>());
-        }
-
-        foreach (var gen in gens)
-        {
-          var genParserTypes = new List<Type>();
-
-          foreach (var keyword in gen.Where(kw => ParsersSchemaType.ContainsLeft(kw)))
+          if (!nodeDependentSchemaTypesByLayer[layer].Contains(schemaType))
           {
-            if (ParsersSchemaType.FindRight(keyword, out Type pt))
-            {
-              var schemaType = pt.BaseType.GenericTypeArguments.First();
-              genParserTypes.Add(schemaType);
-            }
+            nodeDependentSchemaTypesByLayer[layer].Add(schemaType);
           }
-          nativeTypeDependencyGenerations[layer].Add(genParserTypes);
         }
       }
+
+      var retCol = new TypeTreeCollection<GwaKeyword>(kwDict.Keys);
+      foreach (var kw in kwDict.Keys)
+      {
+        retCol.Integrate(kw, kwDict[kw]);
+      }
+
+      var gens = retCol.Generations();
+      if (gens == null || gens.Count == 0)
+      {
+        return false;
+      }
+
+      foreach (var kvp in parserTypes)
+      {
+        if (!ParsersByKeyword.ContainsLeft(kvp.Value))
+        {
+          ParsersByKeyword.Add(kvp.Value, kvp.Key);
+        }
+      }
+      ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
+
+      if (nativeTypeDependencyGenerations == null)
+      {
+        nativeTypeDependencyGenerations = new Dictionary<GSALayer, List<List<Type>>>();
+      }
+      if (!nativeTypeDependencyGenerations.ContainsKey(layer))
+      {
+        nativeTypeDependencyGenerations.Add(layer, new List<List<Type>>());
+      }
+
+      foreach (var gen in gens)
+      {
+        var genSchemaTypes = new List<Type>();
+
+        foreach (var keyword in gen.Where(kw => ParsersByKeyword.ContainsLeft(kw)))
+        {
+          if (ParsersByKeyword.FindRight(keyword, out Type pt))
+          {
+            var schemaType = pt.BaseType.GenericTypeArguments.First();
+            genSchemaTypes.Add(schemaType);
+          }
+        }
+        nativeTypeDependencyGenerations[layer].Add(genSchemaTypes);
+      }
+
       return (!initialisedError);
     }
     #endregion
@@ -504,11 +539,11 @@ namespace Speckle.ConnectorGSA.Proxy
         return "";
       }
       var parser = ParsersBySchemaType[schemaType];
-      if (!ParsersSchemaType.ContainsRight(parser))
+      if (!ParsersByKeyword.ContainsRight(parser))
       {
         return "";
       }
-      ParsersSchemaType.FindLeft(parser, out GwaKeyword kw);
+      ParsersByKeyword.FindLeft(parser, out GwaKeyword kw);
 
       var appId = "gsa/" + kw + "-" + gsaIndex;
       return appId;
@@ -529,8 +564,7 @@ namespace Speckle.ConnectorGSA.Proxy
       var setAtKeywords = new List<GwaKeyword>();
       var tempKeywordIndexCache = new Dictionary<GwaKeyword, List<int>>();
 
-      //var keywords = ParsersByKeyword.Keys.ToList();
-      var keywords = ParsersSchemaType.Lefts;
+      var keywords = ParsersByKeyword.Lefts;
 
       foreach (var kw in keywords)
       {
@@ -573,7 +607,7 @@ namespace Speckle.ConnectorGSA.Proxy
         Parallel.ForEach(gwaLines, gwa =>
         {
           if (ParseGeneralGwa(gwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, out string keywordAndVersion)
-            && keyword.HasValue && ParsersSchemaType.ContainsLeft(keyword.Value))
+            && keyword.HasValue && ParsersByKeyword.ContainsLeft(keyword.Value))
           {
             index = index ?? 0;
             var originalSid = "";
@@ -636,7 +670,7 @@ namespace Speckle.ConnectorGSA.Proxy
                 }
               }
 
-              if (ParsersSchemaType.FindRight(keyword.Value, out Type t))
+              if (ParsersByKeyword.FindRight(keyword.Value, out Type t))
               {
                 var parser = (IGwaParser)Activator.CreateInstance(t);
                 parser.FromGwa(gwa);
@@ -697,7 +731,7 @@ namespace Speckle.ConnectorGSA.Proxy
             ParseGeneralGwa(gwaLine, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, 
               out string keywordAndVersion);
 
-            if (keyword == setAtKeywords[i] && ParsersSchemaType.FindRight(setAtKeywords[i], out Type t))
+            if (keyword == setAtKeywords[i] && ParsersByKeyword.FindRight(setAtKeywords[i], out Type t))
             {
               var kwStr = keyword.Value.GetStringValue();
               var originalSid = "";
@@ -769,14 +803,21 @@ namespace Speckle.ConnectorGSA.Proxy
 
     private bool InitialiseIfNecessary()
     {
-      if (!Initialise(GSALayer.Design) || !Initialise(GSALayer.Analysis) || !Initialise(GSALayer.Both))
+      if (!initialised && !initialisedError)
       {
-        initialisedError = true;
-        //Already tried this layer once and it was an error, so don't try again
-        return false;
+        nodeDependentSchemaTypesByLayer.Clear();
+
+        if (!Initialise(GSALayer.Design) || !Initialise(GSALayer.Analysis) || !Initialise(GSALayer.Both))
+        {
+          initialisedError = true;
+          //Already tried this layer once and it was an error, so don't try again
+          return false;
+        }
+
+        initialised = true;
       }
-      initialised = true;
-      return true;
+     
+      return !initialisedError;
     }
 
     private string FormatApplicationId(string keyword, int index, string applicationId)
@@ -968,13 +1009,13 @@ namespace Speckle.ConnectorGSA.Proxy
       return sid;
     }
 
-    public bool SetTopLevelSid(string sidRecord)
+    public bool SetTopLevelSid(string StreamState)
     {
       try
       {
         lock(syncLock)
         {
-          GSAObject.GwaCommand(string.Join(GwaDelimiter.ToString(), new[] { "SET", "SID", sidRecord }));
+          GSAObject.GwaCommand(string.Join(GwaDelimiter.ToString(), new[] { "SET", "SID", StreamState }));
         }
         return true;
       }

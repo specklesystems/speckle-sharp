@@ -12,11 +12,16 @@ using Objects.Structural;
 using Objects.Geometry;
 using System.Text.RegularExpressions;
 using AutoMapper;
+using ConverterGSA;
+using Objects.Structural.GSA.Analysis;
+using Objects.Structural.GSA.Bridge;
+using Objects.Structural.Loading;
 using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
 using Speckle.Core.Models;
+using PathType = Objects.Structural.GSA.Bridge.PathType;
 
 namespace ConverterGSATests
 {
@@ -99,20 +104,7 @@ namespace ConverterGSATests
     {
       var speckleNodes = new List<GSANode>()
       {
-        new GSANode()
-        {
-          nativeId = 1,
-          name = "",
-          basePoint = new Point(0, 0, 0),
-          constraintAxis = SpeckleGlobalAxis(),
-          localElementSize = 1,
-          colour = "NO_RGB",
-          restraint = new Restraint(RestraintType.Free),
-          springProperty = null,
-          massProperty = null,
-          damperProperty = null,
-          units = "",
-        },
+        GetNode(),
         new GSANode()
         {
           nativeId = 2,
@@ -175,6 +167,24 @@ namespace ConverterGSATests
         speckleNodes[i].applicationId = appIds[i];
       }
       return speckleNodes.GetRange(0, num);
+    }
+
+    private GSANode GetNode()
+    {
+      return new GSANode()
+      {
+        nativeId = 1,
+        name = "",
+        basePoint = new Point(0, 0, 0),
+        constraintAxis = SpeckleGlobalAxis(),
+        localElementSize = 1,
+        colour = "NO_RGB",
+        restraint = new Restraint(RestraintType.Free),
+        springProperty = null,
+        massProperty = null,
+        damperProperty = null,
+        units = "",
+      };
     }
 
     private List<GSAElement1D> SpeckleElement1dExamples(int num, params string[] appIds)
@@ -451,9 +461,142 @@ namespace ConverterGSATests
     #endregion
 
     #region Bridges
+    
+    [Fact]
+    public void GSAAlignmentToNativeTest()
+    {
+      var gsaAlignment = GetGsaAlignment();
+      var gsaRecord = converter.ConvertToNative(gsaAlignment) as List<GsaRecord>;
+      
+      var gsaAlign = GenericTestForList<GsaAlign>(gsaRecord);
+
+      Assert.Equal(gsaAlignment.chainage, gsaAlign.Chain);
+      Assert.Equal(gsaAlignment.curvature, gsaAlign.Curv);
+      Assert.Equal(gsaAlignment.name, gsaAlign.Name);
+      Assert.Equal(gsaAlignment.id, gsaAlign.Sid);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
+      
+      // var copy = converter.ConvertToSpeckle(
+      //   converter.ConvertToNative(gsaAlignment));
+      // Assert.Equal(gsaAlignment, copy);
+    }
+
+    private GSAAlignment GetGsaAlignment()
+    {
+      var axis = SpeckleGlobalAxis();
+      var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
+      var gsaAlignment = new GSAAlignment(2, "myGsaAlignment",
+        new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2,
+          LoadExpansion.PlaneCorner, GridSurfaceSpanType.OneWay,
+          new List<Base>()),
+        new List<double>() { 0, 1 },
+        new List<double>() { 3, 3 });
+      return gsaAlignment;
+    }
+
+    [Fact]
+    public void GSAInfluenceBeamToNativeTest()
+    {
+      var gsaInfluenceBeam = new GSAInfluenceBeam(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetElement1d1(), 0.5);
+      var gsaRecord = converter.ConvertToNative(gsaInfluenceBeam) as List<GsaRecord>;
+      var gsaInfBeam = GenericTestForList<GsaInfBeam>(gsaRecord);
+
+      Assert.Equal(gsaInfluenceBeam.position, gsaInfBeam.Position);
+      Assert.Equal(gsaInfluenceBeam.direction.ToNative(), gsaInfBeam.Direction);
+      Assert.Equal(gsaInfluenceBeam.factor, gsaInfBeam.Factor);
+      Assert.Equal(gsaInfluenceBeam.id, gsaInfBeam.Sid);
+      Assert.Equal(gsaInfluenceBeam.element.nativeId, gsaInfBeam.Element);
+      Assert.Equal(gsaInfluenceBeam.type.ToNative(), gsaInfBeam.Type);
+      Assert.Equal(gsaInfluenceBeam.name, gsaInfBeam.Name);
+
+      //var copy = converter.ConvertToSpeckle(converter.ConvertToNative(gsaInfluenceBeam));
+      //Assert.Equal(gsaInfluenceBeam, copy);
+    }
+    
+    [Fact]
+    public void GSAInfluenceNodeToNativeTest()
+    {
+      var gsaInfluenceNode = new GSAInfluenceNode(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetNode(), SpeckleGlobalAxis());
+      var gsaRecord = converter.ConvertToNative(gsaInfluenceNode) as List<GsaRecord>;
+      var gsaInfNode = GenericTestForList<GsaInfNode>(gsaRecord);
+
+      Assert.Equal(gsaInfluenceNode.direction.ToNative(), gsaInfNode.Direction);
+      Assert.Equal(gsaInfluenceNode.factor, gsaInfNode.Factor);
+      Assert.Equal(gsaInfluenceNode.id, gsaInfNode.Sid);
+      Assert.Equal(gsaInfluenceNode.type.ToNative(), gsaInfNode.Type);
+      Assert.Equal(gsaInfluenceNode.name, gsaInfNode.Name);
+      Assert.Equal(gsaInfluenceNode.applicationId, gsaInfNode.ApplicationId);
+      Assert.Equal(gsaInfluenceNode.nativeId, gsaInfNode.Index);
+    }
+    
+    [Fact]
+    public void GSAPathToNativeTest()
+    {
+      var gsaPath = new GSAPath(1, "myPath", PathType.TRACK, 2, GetGsaAlignment(), 1, 2, 3, 4);
+      var gsaRecord = converter.ConvertToNative(gsaPath) as List<GsaRecord>;
+      var gsaP = GenericTestForList<GsaPath>(gsaRecord);
+
+      Assert.Equal(gsaPath.factor, gsaP.Factor);
+      Assert.Equal(gsaPath.id, gsaP.Sid);
+      Assert.Equal(gsaPath.name, gsaP.Name);
+      Assert.Equal(gsaPath.applicationId, gsaP.ApplicationId);
+      Assert.Equal(gsaPath.nativeId, gsaP.Index);
+      
+      Assert.Equal(gsaPath.type.ToNative(), gsaP.Type);
+      Assert.Equal(gsaPath.left, gsaP.Left);
+      Assert.Equal(gsaPath.right, gsaP.Right);
+      Assert.Equal(gsaPath.numMarkedLanes, gsaP.NumMarkedLanes);
+      Assert.Equal(gsaPath.group, gsaP.Group);
+      Assert.Equal(gsaPath.factor, gsaP.Factor);
+    }
+    
+    [Fact]
+    public void GSAStageToNative()
+    {
+      var twoElements = new List<GSAElement1D>
+      {
+        GetElement1d1(),
+        new GSAElement1D(2, null, null, ElementType1D.Bar, orientationAngle: 0D),
+      }.Select(x => x as Base).ToList();
+      
+      var twoLockedElements = new List<GSAElement1D>
+      {
+        new GSAElement1D(3, null, null, ElementType1D.Bar, orientationAngle: 0D),
+        new GSAElement1D(4, null, null, ElementType1D.Bar, orientationAngle: 0D),
+      }.Select(x => x as Base).ToList();
+
+      var gsaStage = new GSAStage(1, "", Colour.RED.ToString(), twoElements, 1, 2, twoLockedElements);
+      var gsaRecord = converter.ConvertToNative(gsaStage) as List<GsaRecord>;
+      
+      var gsaAnalStage = GenericTestForList<GsaAnalStage>(gsaRecord);
+      
+      Assert.Equal(gsaStage.colour, gsaAnalStage.Colour.ToString());
+      Assert.Equal(gsaStage.name, gsaAnalStage.Name);
+      Assert.Equal(gsaStage.creepFactor, gsaAnalStage.Phi);
+      Assert.Equal(gsaStage.stageTime, gsaAnalStage.Days);
+      Assert.Equal(gsaStage.elements.Count, twoElements.Count);
+      Assert.Equal(gsaStage.lockedElements.Count, twoLockedElements.Count);
+    }
+
+    private static GSAElement1D GetElement1d1()
+    {
+      return new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D){applicationId = "appl1dforGsaElement1d"};
+    }
+
     #endregion
 
     #region Other
+    
+    private static T GenericTestForList<T>(List<GsaRecord> gsaRecord)
+    {
+      Assert.NotEmpty(gsaRecord);
+      Assert.Contains(gsaRecord, so => so is T);
+
+      var obj = (T)(object)(gsaRecord.First());
+      return obj;
+    }
+    
     private Axis SpeckleGlobalAxis()
     {
       return new Axis()

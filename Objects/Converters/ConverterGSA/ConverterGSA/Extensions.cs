@@ -333,6 +333,21 @@ namespace ConverterGSA
         default: throw new Exception(gsaDirection + " can not be converted into LoadDirection enum");        
       }
     }
+    
+    public static GwaAxisDirection6 ToNative(this LoadDirection loadDirection)
+    {
+      switch (loadDirection)
+      {
+        case LoadDirection.X: return GwaAxisDirection6.X;
+        case LoadDirection.Y: return GwaAxisDirection6.Y;
+        case LoadDirection.Z: return GwaAxisDirection6.Z;
+        case LoadDirection.XX: return GwaAxisDirection6.XX;
+        case LoadDirection.YY: return GwaAxisDirection6.YY;
+        case LoadDirection.ZZ: return GwaAxisDirection6.ZZ;
+        default: throw new Exception(loadDirection + " can not be converted into GwaAxisDirection6 enum");        
+      }
+    }
+    
 
     public static LoadAxisType ToSpeckle(this AxisRefType gsaType)
     {
@@ -456,6 +471,16 @@ namespace ConverterGSA
       }
     }
 
+    public static InfType ToNative(this InfluenceType gsaType)
+    {
+      switch (gsaType)
+      {
+        case InfluenceType.DISPLACEMENT: return InfType.DISP;
+        case InfluenceType.FORCE: return InfType.FORCE;
+        default: return InfType.NotSet;
+}
+    }
+    
     public static PathType ToSpeckle(this GwaPathType gsaType)
     {
       switch (gsaType)
@@ -467,6 +492,20 @@ namespace ConverterGSA
         case GwaPathType.CWAY_1WAY: return PathType.CWAY_1WAY;
         case GwaPathType.CWAY_2WAY: return PathType.CWAY_2WAY;
         default: return PathType.NotSet;
+      }
+    }
+    
+    public static GwaPathType ToNative(this PathType gsaType)
+    {
+      switch (gsaType)
+      { 
+        case PathType.LANE: return GwaPathType.LANE;
+        case PathType.FOOTWAY: return GwaPathType.FOOTWAY;
+        case PathType.TRACK: return GwaPathType.TRACK;
+        case PathType.VEHICLE: return GwaPathType.VEHICLE;
+        case PathType.CWAY_1WAY: return GwaPathType.CWAY_1WAY;
+        case PathType.CWAY_2WAY: return GwaPathType.CWAY_2WAY;
+        default: return GwaPathType.NotSet;
       }
     }
     #endregion
@@ -648,6 +687,33 @@ namespace ConverterGSA
         throw new ArgumentNullException(nameof(source));
       foreach (var element in source)
         target.Add(element);
+    }
+
+    public static void UpsertDictionary<T, U>(this Dictionary<T, List<U>> d, T key, U value)
+    {
+      if (!d.ContainsKey(key))
+      {
+        d.Add(key, new List<U>());
+      }
+      if (!d[key].Contains(value))
+      {
+        d[key].Add(value);
+      }
+    }
+
+    public static void UpsertDictionary<T, U>(this Dictionary<T, List<U>> d, T key, IEnumerable<U> values)
+    {
+      if (!d.ContainsKey(key))
+      {
+        d.Add(key, values.ToList());
+      }
+      foreach (var v in values)
+      {
+        if (!d[key].Contains(v))
+        {
+          d[key].Add(v);
+        }
+      }
     }
   }
 }
