@@ -6,6 +6,7 @@ using Xunit;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.ConnectorGSA.Proxy.Merger;
+using Speckle.ConnectorGSA.Proxy;
 
 namespace ConverterGSATests
 {

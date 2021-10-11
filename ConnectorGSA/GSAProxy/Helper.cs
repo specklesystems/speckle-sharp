@@ -1,53 +1,24 @@
-﻿using Speckle.GSA.API;
+﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API;
+using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Speckle.GSA.API.GwaSchema;
 
-namespace Speckle.ConnectorGSA.Proxy.GwaParsers
+namespace Speckle.ConnectorGSA.Proxy
 {
   public static class Helper
   {
-    public static IEnumerable<Type> GetEnumerableOfType<T>() where T : class
-    {
-      return Assembly.GetAssembly(typeof(T)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)));
-    }
-
-    public static IEnumerable<Type> GetTypesImplementingInterface<T>()
-    {
-      var interfaceType = typeof(T);
-      return Assembly.GetAssembly(interfaceType).GetTypes().Where(t => !t.IsInterface && t.InheritsOrImplements(interfaceType));
-    }
-
-    /*
-    public static string FormatApplicationId(Type t, IEnumerable<int> indices, int parentIndex = 0)
-    {
-      var keyword = GetGwaKeyword(t);
-      return ("gsa/" + keyword + "-" + string.Join("-", indices) + ((parentIndex > 0) ? "_" + parentIndex : ""));
-    }
-    */
-
     public static string FormatApplicationId(Type t, int index)
     {
-      //var keyword = GetGwaKeyword(t);
-      //return ("gsa/" + keyword.GetStringValue() + "-" + index);
-
       return Instance.GsaModel.Proxy.GenerateApplicationId(t, index);
     }
-
-    /*
-    public static GwaKeyword GetKeyword<U>() where U: IGwaParser
-    {
-      return (GwaKeyword)typeof(U).GetAttribute<GsaType>("Keyword");
-    }
-    */
 
     public static GwaKeyword GetGwaKeyword(Type t)
     {
       return (GwaKeyword)t.GetAttribute<GsaType>("Keyword");
     }
-
 
     public static bool IsAnalysisLayer(Type t)
     {
@@ -69,9 +40,25 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       return (GwaSetCommandType)typeof(T).GetAttribute<GsaType>("SetCommandType");
     }
 
+    public static GwaSetCommandType GetGwaSetCommandType(Type t)
+    {
+      return (GwaSetCommandType)t.GetAttribute<GsaType>("SetCommandType");
+    }
+
     public static bool IsSelfContained(Type t)
     {
       return (bool)t.GetAttribute<GsaType>("SelfContained");
+    }
+
+    public static IEnumerable<Type> GetEnumerableOfType<T>() where T : class
+    {
+      return Assembly.GetAssembly(typeof(T)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T)));
+    }
+
+    public static IEnumerable<Type> GetTypesImplementingInterface<T>()
+    {
+      var interfaceType = typeof(T);
+      return Assembly.GetAssembly(interfaceType).GetTypes().Where(t => !t.IsInterface && t.InheritsOrImplements(interfaceType));
     }
 
     //https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class

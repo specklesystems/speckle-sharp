@@ -16,6 +16,7 @@ using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
+using Speckle.Core.Kits;
 
 namespace ConverterGSA
 {
@@ -447,13 +448,13 @@ namespace ConverterGSA
       };
       return new List<GsaRecord>() { gsaAnalStage };
     }
-    
+
     #endregion
-    
+
     #endregion
 
     #region Helper
-    
+
     private int GetElementIndex(object obj)
     {
       if (obj is GSAElement1D element1D)

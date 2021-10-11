@@ -18,7 +18,7 @@ namespace Speckle.GSA.API
     //Settings - results
     bool SendResults { get; }
     List<ResultType> ResultTypes { get; set; }
-    List<ResultGroup> ResultGroups { get; }
+    List<ResultGroup> ResultGroups   { get; } // Set when ResultTypes are set
     StreamContentConfig StreamSendConfig { get; set; }
     List<string> ResultCases { get; set; }
     bool ResultInLocalAxis { get; set; }
@@ -31,13 +31,7 @@ namespace Speckle.GSA.API
     //IGSAMessenger Messenger { get; set; }
     IProgress<bool> ConversionProgress { get; set; }
 
-    //TEMP
-    /*
-    GsaRecord GetNative<T>(int value);
-    List<int> LookupIndices<T>();
-    List<int> ConvertGSAList(string v, GSAEntity e);
-    string GetApplicationId<T>(int value);
-    */
+    //List<List<Type>> SpeckleDependencyTree();
   }
 
   

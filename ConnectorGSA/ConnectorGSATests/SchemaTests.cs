@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Xunit;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.ConnectorGSA.Proxy;
 
 namespace ConnectorGSATests
 {
@@ -15,6 +18,72 @@ namespace ConnectorGSATests
     private static readonly GsaAxis gsaAxis1 = new GsaAxis() { Index = 1, ApplicationId = "Axis1", Name = "StandardAxis", XDirX = 1, XDirY = 0, XDirZ = 0, XYDirX = 0, XYDirY = 1, XYDirZ = 0, OriginX = 10, OriginY = 20, OriginZ = 30 };
     private static readonly GsaAxis gsaAxis2 = new GsaAxis() { Index = 2, ApplicationId = "Axis2", Name = "AngledAxis", XDirX = 1, XDirY = 1, XDirZ = 0, XYDirX = -1, XYDirY = 1, XYDirZ = 0 };
     private static readonly string streamId1 = "TestStream1";
+
+    //TEMP
+    [Fact]
+    public void SpeckleDependencyTree()
+    {
+      var kit = KitManager.GetDefaultKit();
+
+      var structuralTypes = kit.Types.Where(t => t.Namespace.ToLower().Contains("structural"));
+      var tree = new TypeTreeCollection<Type>(structuralTypes);
+
+      var typeChildren = new Dictionary<Type, List<Type>>();
+      var baseType = typeof(Base);
+      foreach (var t in structuralTypes)
+      {
+        var baseClasses = t.GetBaseClasses().Where(bc => structuralTypes.Any(st => st == bc) && bc.InheritsOrImplements(baseType) && bc != baseType);
+        foreach (var p in baseClasses)
+        {
+          typeChildren.UpsertDictionary(p, t);
+        }
+      }
+
+      foreach (var t in structuralTypes)
+      {
+        if (t == typeof(Objects.Structural.GSA.Geometry.GSANode))
+        {
+
+        }
+        var referencedStructuralTypes = new List<Type>();
+        var propertyInfos = t.GetProperties();
+        //.Where(pi => structuralTypes.Any(kt => kt == pi.PropertyType));
+
+        foreach (var pi in propertyInfos)
+        {
+          Type typeToAdd = null;
+          if (pi.IsList(out Type listType))
+          {
+            if (structuralTypes.Any(st => st == listType))
+            {
+              typeToAdd = listType;
+            }
+          }
+          else if (structuralTypes.Any(st => st == pi.PropertyType))
+          {
+            typeToAdd = pi.PropertyType;
+          }
+          if (typeToAdd != null)
+          {
+            if (typeChildren.ContainsKey(typeToAdd))
+            {
+              foreach (var c in typeChildren[typeToAdd])
+              {
+                if (!referencedStructuralTypes.Contains(c))
+                {
+                  referencedStructuralTypes.Add(c);
+                }
+              }
+            }
+            if (!referencedStructuralTypes.Contains(typeToAdd))
+            {
+              referencedStructuralTypes.Add(typeToAdd);
+            }
+          }
+        }
+        tree.Integrate(t, referencedStructuralTypes.ToArray());
+      }
+    }
 
     #region tests
     #region simple

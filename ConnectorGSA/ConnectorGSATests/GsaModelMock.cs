@@ -15,6 +15,7 @@ namespace ConnectorGSATests
   {
     public override IGSACache Cache { get; set; } = new GsaCache();
     public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
+
     //public override IGSAMessenger Messenger { get; set; } = new GsaMessenger();
   }
 
@@ -109,16 +110,15 @@ namespace ConnectorGSATests
     public bool Clear() => true;
 
     public string GetTopLevelSid() => "";
-    public bool SetTopLevelSid(string sidRecord) => true;
+    public bool SetTopLevelSid(string StreamState) => true;
 
     public bool Save() => true;
 
     public List<List<Type>> GetTxTypeDependencyGenerations(GSALayer layer) => new List<List<Type>>();
 
-    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer)
-    {
-      throw new NotImplementedException();
-    }
+    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer) { }
+
+    public List<Type> GetNodeDependentTypes(GSALayer layer) => new List<Type>();
 
     #endregion
   }

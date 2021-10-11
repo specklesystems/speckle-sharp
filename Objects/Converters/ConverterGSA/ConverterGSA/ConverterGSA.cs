@@ -16,6 +16,7 @@ using Objects.Structural.Results;
 using Objects.Structural.Analysis;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Materials;
+using Objects.Structural.GSA.Bridge;
 
 namespace ConverterGSA
 {
@@ -39,6 +40,9 @@ namespace ConverterGSA
 
     private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
 
+    //private Dictionary<GSALayer, HashSet<int>> meaningfulNodeIndices = new Dictionary<GSALayer, HashSet<int>>();
+    private Dictionary<GSALayer, HashSet<string>> meaningfulNodesAppIds = new Dictionary<GSALayer, HashSet<string>>();
+
     #region model_group
     private enum ModelAspect
     {
@@ -56,9 +60,15 @@ namespace ConverterGSA
     private readonly Dictionary<ModelAspect, List<Type>> modelGroups = new Dictionary<ModelAspect, List<Type>>()
     {
       { ModelAspect.Nodes, new List<Type>() { typeof(GSANode) } },
-      { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(Axis), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D) } },
+      { ModelAspect.Elements, new List<Type>() { typeof(GSAAssembly), typeof(GSAElement1D), typeof(GSAElement2D), typeof(GSAElement3D), typeof(GSAMember1D), typeof(GSAMember2D),
+        //CatchAll
+        typeof(GSAStage), //Analysis stages
+        typeof(Axis), typeof(GSAGridSurface), typeof(GSAGridPlane), typeof(GSAGridLine), typeof(GSAPolyline),  //Geometry
+        typeof(GSARigidConstraint), typeof(GSAGeneralisedRestraint), //Constraints
+        typeof(GSAAlignment), typeof(GSAInfluenceBeam), typeof(GSAInfluenceNode), typeof(GSAPath), typeof(GSAUserVehicle) } }, //Bridge
       { ModelAspect.Loads, new List<Type>()
-        { typeof(GSAAnalysisCase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), typeof(GSALoadNode) } },
+        { typeof(GSAAnalysisCase), typeof(GSATask), typeof(GSALoadCase), typeof(GSALoadBeam), typeof(GSALoadFace), typeof(GSALoadGravity), typeof(GSALoadCase), typeof(GSALoadCombination), 
+        typeof(GSALoadNode), typeof(GSALoadThermal2d), typeof(GSALoadGridArea), typeof(GSALoadGridLine), typeof(GSALoadGridPoint) } },
       { ModelAspect.Restraints, new List<Type>() { typeof(Objects.Structural.Geometry.Restraint) } },
       { ModelAspect.Properties, new List<Type>()
         { typeof(GSAProperty1D), typeof(GSAProperty2D), typeof(SectionProfile), typeof(PropertyMass), typeof(PropertySpring), typeof(PropertyDamper), typeof(Property3D) } },
@@ -115,6 +125,7 @@ namespace ConverterGSA
           }
         }
       }
+
       return retList;
     }
 
@@ -149,7 +160,7 @@ namespace ConverterGSA
         foreach (var x in objects)
         {
           var toSpeckleResult = ToSpeckle((GsaRecord)x);
-          var speckleObjects = toSpeckleResult.ModelObjects;
+          var speckleObjects = toSpeckleResult.ObjectsByLayer.SelectMany(kvp => kvp.Value).ToList();
           if (speckleObjects != null && speckleObjects.Count > 0)
           {
             retList.AddRange(speckleObjects.Where(so => so != null));
@@ -157,6 +168,11 @@ namespace ConverterGSA
         }
         return retList;
       }
+
+      var allGsaRecords = objects.Cast<GsaRecord>();
+      var modelSettingsNativeTypes = new List<Type> { typeof(GsaUnitData), typeof(GsaTol) };
+      var modelSettingsRecords = allGsaRecords.Where(r => modelSettingsNativeTypes.Any(msnt => msnt == r.GetType()));
+      var gsaRecords = allGsaRecords.Except(modelSettingsRecords);
 
       //TO DO - fill in this more
       var modelInfo = new ModelInfo()
@@ -167,10 +183,13 @@ namespace ConverterGSA
           coincidenceTolerance = 0.01
         }
       };
+      if (ConvertToSpeckle(modelSettingsRecords, out ModelSettings ms))
+      {
+        modelInfo.settings = ms;
+      }
 
-      if (!ConvertToSpeckle(objects.Cast<GsaRecord>(), 
-        Instance.GsaModel.StreamLayer, (Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults),
-        modelInfo, out retList))
+      var sendResults = (Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults);
+      if (!ConvertToSpeckle(allGsaRecords, Instance.GsaModel.StreamLayer, sendResults, modelInfo, out retList))
       {
         return null;
       }
@@ -178,10 +197,20 @@ namespace ConverterGSA
       return retList;
     }
 
+    private bool ConvertToSpeckle(IEnumerable<GsaRecord> modelSettingsRecords, out ModelSettings ms)
+    {
+      //TO DO
+      ms = new ModelSettings() { coincidenceTolerance = 0.01 };
+      return true;
+    }
+
     private bool ConvertToSpeckle(IEnumerable<GsaRecord> gsaRecords, GSALayer sendLayer, bool sendResults, ModelInfo modelInfo, out List<Base> returnObjects)
     {
       var typeGens = Instance.GsaModel.Proxy.GetTxTypeDependencyGenerations(sendLayer);
       returnObjects = new List<Base>();
+
+      //var nodeDependentSchemaTypesByLayer = new Dictionary<GSALayer, List<Type>>();
+      //nodeDependentSchemaTypesByLayer.Add(GSALayer.Design, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Design));
 
       var gsaRecordsByType = gsaRecords.GroupBy(r => r.GetType()).ToDictionary(r => r.Key, r => r.ToList());
 
@@ -191,7 +220,28 @@ namespace ConverterGSA
       {
         modelsByLayer.Add(GSALayer.Analysis, new Model() { specs = modelInfo, layerDescription = "Analysis" });
         modelHasData.Add(GSALayer.Analysis, false);
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Analysis, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Analysis));
+
+        //nodeDependentSchemaTypesByLayer.Add(GSALayer.Both, Instance.GsaModel.Proxy.GetNodeDependentTypes(GSALayer.Both));
       }
+
+      /*
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes)
+      {//Remove nodes across the layers
+        var referencedNodeIndices = new List<int>();
+        foreach (var t in nodeDependentSchemaTypesByLayer[sendLayer].Where(ndst => gsaRecordsByType.Keys.Contains(ndst)))
+        {
+          var ns = gsaRecordsByType[t];
+          foreach (var i in ns.n)
+          {
+
+          }
+        }
+      }
+      */
+
+      var nodesTemp = new Dictionary<GsaRecord, ToSpeckleResult>();
 
       var rsa = new ResultSetAll();
       bool resultSetHasData = false;
@@ -219,16 +269,30 @@ namespace ConverterGSA
 
                 foreach (var l in modelsByLayer.Keys)
                 {
-                  if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                  //Special case for nodes due to the possibility that not all of them should be sent, and the subset that should be sent can vary by layer
+                  if (Instance.GsaModel.SendOnlyMeaningfulNodes && t == typeof(GsaNode))
                   {
-                    modelHasData[l] = true;
+                    if (!nodesTemp.ContainsKey(nativeObj))
+                    {
+                      nodesTemp.Add(nativeObj, toSpeckleResult);
+                    }
+                  }
+                  else
+                  {
+                    if (AssignIntoModel(modelsByLayer[l], l, toSpeckleResult))
+                    {
+                      modelHasData[l] = true;
+                    }
                   }
                 }
-                
-                var speckleObjs = toSpeckleResult.ModelObjects; //Don't need to add result objects to the cache since they aren't needed for serialisation
-                if (speckleObjs != null && speckleObjs.Count > 0)
+
+                foreach (var l in toSpeckleResult.ObjectsByLayer.Keys)
                 {
-                  Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, speckleObjs.ToDictionary(so => so.applicationId, so => (object)so));
+                  var layerObjectsToCache = toSpeckleResult.ObjectsByLayer[l].Where(o => o != null);
+                  if (layerObjectsToCache.Count() > 0)
+                  {
+                    Instance.GsaModel.Cache.SetSpeckleObjects(nativeObj, layerObjectsToCache.ToDictionary(o => o.applicationId, o => (object)o), l);
+                  }
                 }
 
                 if (AssignIntoResultSet(rsa, toSpeckleResult))
@@ -240,6 +304,36 @@ namespace ConverterGSA
             catch (Exception ex)
             {
 
+            }
+          }
+        }
+      }
+
+      if (Instance.GsaModel.SendOnlyMeaningfulNodes && nodesTemp != null && nodesTemp.Keys.Count > 0)
+      {
+        foreach (var l in modelsByLayer.Keys)
+        {
+          foreach (var n in nodesTemp.Keys)
+          {
+            if (nodesTemp[n].ObjectsByLayer.ContainsKey(l) && nodesTemp[n].ObjectsByLayer[l] != null)
+            {
+              foreach (var o in nodesTemp[n].ObjectsByLayer[l])
+              {
+                if (meaningfulNodesAppIds[l].Contains(o.applicationId))
+                {
+                  AssignIntoModel(modelsByLayer[l], l, nodesTemp[n]);
+                }
+              }
+            }
+            if (nodesTemp[n].ObjectsByLayer.ContainsKey(GSALayer.Both) && nodesTemp[n].ObjectsByLayer[GSALayer.Both] != null)
+            {
+              foreach (var o in nodesTemp[n].ObjectsByLayer[GSALayer.Both])
+              {
+                if (meaningfulNodesAppIds[l].Contains(o.applicationId))
+                {
+                  AssignIntoModel(modelsByLayer[l], l, nodesTemp[n]);
+                }
+              }
             }
           }
         }
@@ -317,8 +411,16 @@ namespace ConverterGSA
 
     private bool AssignIntoModel(Model model, GSALayer layer, ToSpeckleResult toSpeckleResult)
     {
-      var objs = toSpeckleResult.GetModelObjectsForLayer(layer);
-      if (objs == null || objs.Count == 0)
+      var objs = new List<Base>();
+      if (toSpeckleResult.ObjectsByLayer.ContainsKey(GSALayer.Both))
+      {
+        objs.AddRange(toSpeckleResult.ObjectsByLayer[GSALayer.Both]);
+      }
+      if (toSpeckleResult.ObjectsByLayer.ContainsKey(layer))
+      {
+        objs.AddRange(toSpeckleResult.ObjectsByLayer[layer]);
+      }
+      if (objs == null || objs.Count() == 0)
       {
         return false;
       }
@@ -397,30 +499,8 @@ namespace ConverterGSA
     internal class ToSpeckleResult
     {
       public bool Success = true;
-      public List<Base> LayerAgnosticObjects;
-      public List<Base> DesignLayerOnlyObjects;
-      public List<Base> AnalysisLayerOnlyObjects;
+      public Dictionary<GSALayer, List<Base>> ObjectsByLayer = new Dictionary<GSALayer, List<Base>>();
       public List<Base> ResultObjects;
-      public List<Base> ModelObjects
-      {
-        get
-        {
-          var objects = new List<Base>();
-          if (LayerAgnosticObjects != null)
-          {
-            objects.AddRange(LayerAgnosticObjects);
-          }
-          if (DesignLayerOnlyObjects != null)
-          {
-            objects.AddRange(DesignLayerOnlyObjects);
-          }
-          if (AnalysisLayerOnlyObjects != null)
-          {
-            objects.AddRange(AnalysisLayerOnlyObjects);
-          }
-          return objects;
-        }
-      }
 
       public ToSpeckleResult(bool success)  //Used mainly when there is an error
       {
@@ -429,22 +509,22 @@ namespace ConverterGSA
 
       public ToSpeckleResult(Base layerAgnosticObject)
       {
-        this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
+        ObjectsByLayer.Add(GSALayer.Both, new List<Base> { layerAgnosticObject });
       }
 
       public ToSpeckleResult(IEnumerable<Base> layerAgnosticObjects = null, IEnumerable<Base> designLayerOnlyObjects = null, IEnumerable<Base> analysisLayerOnlyObjects = null, IEnumerable<Base> resultObjects = null)
       {
         if (designLayerOnlyObjects != null)
         {
-          this.DesignLayerOnlyObjects = designLayerOnlyObjects.ToList();
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Design, designLayerOnlyObjects);
         }
         if (analysisLayerOnlyObjects != null)
         {
-          this.AnalysisLayerOnlyObjects = analysisLayerOnlyObjects.ToList();
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Analysis, analysisLayerOnlyObjects);
         }
         if (layerAgnosticObjects != null)
         {
-          this.LayerAgnosticObjects = layerAgnosticObjects.ToList();
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Both, layerAgnosticObjects);
         }
         if (resultObjects != null)
         {
@@ -456,48 +536,20 @@ namespace ConverterGSA
       {
         if (designLayerOnlyObject != null)
         {
-          this.DesignLayerOnlyObjects = new List<Base>() { designLayerOnlyObject };
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Design, designLayerOnlyObject);
         }
         if (analysisLayerOnlyObject != null)
         {
-          this.AnalysisLayerOnlyObjects = new List<Base>() { analysisLayerOnlyObject };
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Analysis, analysisLayerOnlyObject);
         }
         if (layerAgnosticObject != null)
         {
-          this.LayerAgnosticObjects = new List<Base>() { layerAgnosticObject };
+          this.ObjectsByLayer.UpsertDictionary(GSALayer.Both, layerAgnosticObject);
         }
         if (resultObjects != null)
         {
           this.ResultObjects = resultObjects.ToList();
         }
-      }
-
-      public List<Base> GetModelObjectsForLayer(GSALayer layer)
-      {
-        if (layer != GSALayer.Design && layer != GSALayer.Analysis)
-        {
-          return null;
-        }
-        var objs = new List<Base>();
-        if (layer == GSALayer.Design)
-        {
-          if (DesignLayerOnlyObjects != null)
-          {
-            objs.AddRange(DesignLayerOnlyObjects);
-          }
-        }
-        else
-        {
-          if (AnalysisLayerOnlyObjects != null)
-          {
-            objs.AddRange(AnalysisLayerOnlyObjects);
-          }
-        }
-        if (LayerAgnosticObjects != null)
-        {
-          objs.AddRange(LayerAgnosticObjects);
-        }
-        return objs;
       }
     }
     #endregion
