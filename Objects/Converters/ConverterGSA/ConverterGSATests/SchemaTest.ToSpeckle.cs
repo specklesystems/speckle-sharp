@@ -2469,7 +2469,7 @@ namespace ConverterGSATests
         Assert.Contains(m.elements, o => o is GSAGeneralisedRestraint);
         speckleGenRests = m.elements.FindAll(so => so is GSAGeneralisedRestraint).Select(so => (GSAGeneralisedRestraint)so).ToList();
 
-        //Checks - rigid 1
+        //Checks - gen rest 1
         Assert.Equal("gen rest 1", speckleGenRests[0].applicationId);
         Assert.Equal(gsaGenRests[0].Index.Value, speckleGenRests[0].nativeId);
         Assert.Equal(gsaGenRests[0].Name, speckleGenRests[0].name);
@@ -2477,10 +2477,9 @@ namespace ConverterGSATests
         Assert.Equal(gsaGenRests[0].NodeIndices.Count(), speckleGenRests[0].nodes.Count());
         Assert.Equal("node 1", speckleGenRests[0].nodes[0].applicationId);
         Assert.Equal(gsaGenRests[0].StageIndices.Count(), speckleGenRests[0].stages.Count());
-        //Assert.Equal("stage 1", speckleGenRests[0].stages[0].applicationId);
-        Assert.Null(speckleGenRests[0].stages[0]);
+        Assert.Equal("stage 1", speckleGenRests[0].stages[0].applicationId);
 
-        //Checks - rigid 2
+        //Checks - gen rest 2
         Assert.Equal("gen rest 2", speckleGenRests[1].applicationId);
         Assert.Equal(gsaGenRests[1].Index.Value, speckleGenRests[1].nativeId);
         Assert.Equal(gsaGenRests[1].Name, speckleGenRests[1].name);
@@ -2489,10 +2488,8 @@ namespace ConverterGSATests
         Assert.Equal("node 1", speckleGenRests[1].nodes[0].applicationId);
         Assert.Equal("node 2", speckleGenRests[1].nodes[1].applicationId);
         Assert.Equal(gsaGenRests[1].StageIndices.Count(), speckleGenRests[1].stages.Count());
-        //Assert.Equal("stage 1", speckleGenRests[1].stages[0].applicationId);
-        //Assert.Equal("stage 2", speckleGenRests[1].stages[1].applicationId);
-        Assert.Null(speckleGenRests[1].stages[0]);
-        Assert.Null(speckleGenRests[1].stages[1]);
+        Assert.Equal("stage 1", speckleGenRests[1].stages[0].applicationId);
+        Assert.Equal("stage 2", speckleGenRests[1].stages[1].applicationId);
       }
     }
     #endregion
@@ -2546,12 +2543,21 @@ namespace ConverterGSATests
         Assert.Equal(gsaStage.Index.Value, speckleStage.nativeId);
         Assert.Equal(gsaStage.Name, speckleStage.name);
         Assert.Equal(gsaStage.Colour.ToString(), speckleStage.colour);
-        Assert.Equal(gsaStage.ElementIndices.Count(), speckleStage.elements.Count());
-        Assert.Equal("element 1", speckleStage.elements[0].applicationId);
-        Assert.Equal(gsaStage.LockElementIndices.Count(), speckleStage.lockedElements.Count());
-        Assert.Equal("element 2", speckleStage.lockedElements[0].applicationId);
         Assert.Equal(gsaStage.Phi.Value, speckleStage.creepFactor);
         Assert.Equal(gsaStage.Days.Value, speckleStage.stageTime);
+
+        if (m.layerDescription == "Design")
+        {
+          Assert.Null(speckleStage.elements);
+          Assert.Null(speckleStage.lockedElements);
+        }
+        else if (m.layerDescription == "Analysis")
+        {
+          Assert.Equal(gsaStage.ElementIndices.Count(), speckleStage.elements.Count());
+          Assert.Equal("element 1", speckleStage.elements[0].applicationId);
+          Assert.Equal(gsaStage.LockElementIndices.Count(), speckleStage.lockedElements.Count());
+          Assert.Equal("element 2", speckleStage.lockedElements[0].applicationId);
+        }
       }
     }
     #endregion
@@ -2727,6 +2733,7 @@ namespace ConverterGSATests
         Assert.Equal("align 1", speckleAligns[0].applicationId);
         Assert.Equal(gsaAligns[0].Index.Value, speckleAligns[0].nativeId);
         Assert.Equal(gsaAligns[0].Name, speckleAligns[0].name);
+        Assert.Equal("grid surface 1", speckleAligns[0].gridSurface.applicationId);
         Assert.Equal(gsaAligns[0].Chain, speckleAligns[0].chainage);
         Assert.Equal(gsaAligns[0].Curv, speckleAligns[0].curvature);
 
@@ -2734,12 +2741,9 @@ namespace ConverterGSATests
         Assert.Equal("align 2", speckleAligns[1].applicationId);
         Assert.Equal(gsaAligns[1].Index.Value, speckleAligns[1].nativeId);
         Assert.Equal(gsaAligns[1].Name, speckleAligns[1].name);
+        Assert.Equal("grid surface 1", speckleAligns[1].gridSurface.applicationId);
         Assert.Equal(gsaAligns[1].Chain, speckleAligns[1].chainage);
         Assert.Equal(gsaAligns[1].Curv, speckleAligns[1].curvature);
-
-        //TODO:
-        Assert.Null(speckleAligns[0].gridSurface);
-        Assert.Null(speckleAligns[1].gridSurface);
       }
     }
 
