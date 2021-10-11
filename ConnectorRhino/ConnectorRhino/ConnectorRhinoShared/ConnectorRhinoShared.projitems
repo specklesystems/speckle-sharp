@@ -11,7 +11,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConnectorRhinoCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRhinoCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>

@@ -1,0 +1,34 @@
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border
+      Width="360"
+      Height="200"
+      Padding="20">
+      <StackPanel Orientation="Vertical">
+        <Button
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Content="Hello!" />
+
+        <TextBlock Classes="Grotesk">Test Text</TextBlock>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="TextBlock.Grotesk">
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
+
+  <Style Selector="Button &gt; TextBlock, TextBlock.ButtonText">
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+  </Style>
+
+  <!--<Style Selector="cc|FloatingButton &gt; TextBlock, TextBlock.FloatingButtonText">
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="Medium" />
+  </Style>-->
+</Styles>

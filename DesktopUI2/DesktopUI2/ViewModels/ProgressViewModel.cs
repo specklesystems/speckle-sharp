@@ -43,20 +43,18 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private int _max = 100;
+    private int _max = 0;
     public int Max
     {
       get => _max;
-      set => this.RaiseAndSetIfChanged(ref _max, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _max, value);
+        this.RaisePropertyChanged(nameof(IsIndeterminate));
+      }
     }
 
-    private bool _isIndeterminate = true;
-
-    public bool IsIndeterminate
-    {
-      get => _isIndeterminate;
-      set => this.RaiseAndSetIfChanged(ref _isIndeterminate, value);
-    }
+    public bool IsIndeterminate { get => Max != 0; }
 
     public bool IsProgressing { get => Value != 0; }
 

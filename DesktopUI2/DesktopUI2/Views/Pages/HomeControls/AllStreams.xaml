@@ -148,7 +148,7 @@
             <Grid ColumnDefinitions="*,Auto">
               <Grid Grid.Column="0" RowDefinitions="auto,auto,auto">
                 <TextBlock
-                  Classes="ButtonText"
+                  Classes="Grotesk"
                   Text="{Binding name}"
                   TextTrimming="CharacterEllipsis" />
                 <TextBlock
