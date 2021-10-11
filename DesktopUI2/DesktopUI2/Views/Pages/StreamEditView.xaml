@@ -45,7 +45,8 @@
         Margin="15,0,0,0"
         RowDefinitions="auto,auto">
         <TextBlock
-          Classes="Headline6 Subheadline"
+          Classes="Grotesk"
+          FontSize="20"
           Text="{Binding Stream.name}"
           TextTrimming="CharacterEllipsis" />
         <TextBlock
