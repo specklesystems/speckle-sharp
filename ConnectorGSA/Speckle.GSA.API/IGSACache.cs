@@ -26,5 +26,7 @@ namespace Speckle.GSA.API
     bool Upsert(Dictionary<string, object> objectsByApplicationId, GSALayer layer = GSALayer.Both);
     bool Upsert(IEnumerable<GsaRecord> gsaRecords);
     int ResolveIndex<T>(string applicationId = "");
+
+    double GetScalingFactor(UnitDimension unitDimension, string overrideUnits = null);
   }
 }

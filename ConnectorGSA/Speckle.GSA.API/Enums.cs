@@ -1,4 +1,6 @@
-﻿namespace Speckle.GSA.API
+﻿using Speckle.GSA.API.GwaSchema;
+
+namespace Speckle.GSA.API
 {
   public enum GSALayer
   {

@@ -245,47 +245,50 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       var t = record.GetType();
       try
       {
-        var matchingRecordsByIndex = new Dictionary<int, GsaCacheRecord>();
-        lock (cacheLock)
+        if (record.Index.HasValue)
         {
-          if (GetAllRecords(t, record.Index.Value, out var foundRecordsByIndex) && foundRecordsByIndex != null && foundRecordsByIndex.Count > 0)
+          var matchingRecordsByIndex = new Dictionary<int, GsaCacheRecord>();
+          lock (cacheLock)
           {
-            matchingRecordsByIndex = foundRecordsByIndex;
+            if (GetAllRecords(t, record.Index.Value, out var foundRecordsByIndex) && foundRecordsByIndex != null && foundRecordsByIndex.Count > 0)
+            {
+              matchingRecordsByIndex = foundRecordsByIndex;
+            }
           }
-        }
 
-        if (matchingRecordsByIndex.Count() > 0)
-        {
-          var equalRecords = matchingRecordsByIndex.Where(kvp => Equals(kvp.Value.GsaRecord, record)).ToList();
-          if (equalRecords.Count() == 1)
+          if (matchingRecordsByIndex.Count() > 0)
           {
-            //There should just be one equal record
+            var equalRecords = matchingRecordsByIndex.Where(kvp => Equals(kvp.Value.GsaRecord, record)).ToList();
+            if (equalRecords.Count() == 1)
+            {
+              //There should just be one equal record
 
-            //There is no change to the record but it clearly means it's part of the latest
-            if (latest.HasValue)
+              //There is no change to the record but it clearly means it's part of the latest
+              if (latest.HasValue)
+              {
+                lock (cacheLock)
+                {
+                  equalRecords.First().Value.Latest = latest.Value;
+                }
+              }
+              upsertedIndex = equalRecords.First().Key;
+              return true;
+            }
+            else if (equalRecords.Count() == 0)
             {
               lock (cacheLock)
               {
-                equalRecords.First().Value.Latest = latest.Value;
+                //These will be return at the next call to GetToBeDeletedGwa() and removed at the next call to Snapshot()
+                foreach (var r in matchingRecordsByIndex.Values)
+                {
+                  r.Latest = false;
+                }
               }
             }
-            upsertedIndex = equalRecords.First().Key;
-            return true;
-          }
-          else if (equalRecords.Count() == 0)
-          {
-            lock (cacheLock)
+            else if (equalRecords.Count() > 1)
             {
-              //These will be return at the next call to GetToBeDeletedGwa() and removed at the next call to Snapshot()
-              foreach (var r in matchingRecordsByIndex.Values)
-              {
-                r.Latest = false;
-              }
+              throw new Exception("Unexpected multiple matches found in upsert of cache records");
             }
-          }
-          else if (equalRecords.Count() > 1)
-          {
-            throw new Exception("Unexpected multiple matches found in upsert of cache records");
           }
         }
 
@@ -307,27 +310,57 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       {
         addedIndex = records.Count();
         records.Add(new GsaCacheRecord(record));
-        if (!UpdateIndexTables(t, record.Index.Value, record.StreamId, record.ApplicationId))
+
+        recordIndicesBySchemaType.UpsertDictionary(t, addedIndex);
+
+        if (record.Index.HasValue)
         {
-          return false;
+          if (!recordIndicesBySchemaTypeGsaId.ContainsKey(t))
+          {
+            recordIndicesBySchemaTypeGsaId.Add(t, new Dictionary<int, HashSet<int>>());
+          }
+          recordIndicesBySchemaTypeGsaId[t].UpsertDictionary(record.Index.Value, addedIndex);
         }
+
+        if (!string.IsNullOrEmpty(record.ApplicationId))
+        {
+          var trimmedAppId = record.ApplicationId.Replace(" ", "");
+          if (!string.IsNullOrEmpty(trimmedAppId))
+          {
+            recordIndicesByApplicationId.UpsertDictionary(trimmedAppId, addedIndex);
+          }
+        }
+
+        if (!string.IsNullOrEmpty(record.StreamId))
+        {
+          if (!foundStreamIds.Contains(record.StreamId))
+          {
+            foundStreamIds.Add(record.StreamId);
+          }
+          var streamIdIndex = foundStreamIds.IndexOf(record.StreamId);
+          recordIndicesByStreamIdIndex.UpsertDictionary(streamIdIndex, addedIndex);
+        }
+        
         if (provisionals.ContainsKey(t))
         {
           if (!string.IsNullOrEmpty(record.ApplicationId) && provisionals[t].ContainsRight(record.ApplicationId))
           {
             provisionals[t].RemoveRight(record.ApplicationId);
           }
-          //In most cases where there is an Application ID and the provisional index matches the one of the new record, the call above will have removed
-          //its index from the provisionals table.  But in the odd case where a different index is specified than the one that was assigned to the application ID,
-          //the existing one at that index needs to be moved
-          if (provisionals[t].ContainsLeft(record.Index.Value))
+          if (record.Index.HasValue)
           {
-            provisionals[t].RemoveLeft(record.Index.Value);
-            //Only move the reservation if there is an Application ID involved
-            if (provisionals[t].FindRight(record.Index.Value, out string right) && !string.IsNullOrEmpty(right))
+            //In most cases where there is an Application ID and the provisional index matches the one of the new record, the call above will have removed
+            //its index from the provisionals table.  But in the odd case where a different index is specified than the one that was assigned to the application ID,
+            //the existing one at that index needs to be moved
+            if (provisionals[t].ContainsLeft(record.Index.Value))
             {
-              var newIndex = FindNextFreeIndexForProvisional(t);
-              UpsertProvisional(t, newIndex, right);
+              provisionals[t].RemoveLeft(record.Index.Value);
+              //Only move the reservation if there is an Application ID involved
+              if (provisionals[t].FindRight(record.Index.Value, out string right) && !string.IsNullOrEmpty(right))
+              {
+                var newIndex = FindNextFreeIndexForProvisional(t);
+                UpsertProvisional(t, newIndex, right);
+              }
             }
           }
 
@@ -344,65 +377,6 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     {
       //TO DO
       return false;
-    }
-
-    //Assumptions:
-    //- this is called within a lock
-    //- the record has already been added
-    private bool UpdateIndexTables(Type t, int gsaIndex, string streamId, string applicationId)
-    {
-      //Minus one because the record has already been added
-      var newColIndex = records.Count() - 1;
-      var trimmedAppId = string.IsNullOrEmpty(applicationId) ? applicationId : applicationId.Replace(" ", "");
-
-      recordIndicesBySchemaType.UpsertDictionary(t, newColIndex);
-      /*
-      if (!recordIndicesBySchemaType.ContainsKey(t))
-      {
-        recordIndicesBySchemaType.Add(t, new HashSet<int>());
-      }
-      recordIndicesBySchemaType[t].Add(newColIndex);
-      */
-      if (!recordIndicesBySchemaTypeGsaId.ContainsKey(t))
-      {
-        recordIndicesBySchemaTypeGsaId.Add(t, new Dictionary<int, HashSet<int>>());
-      }
-      recordIndicesBySchemaTypeGsaId[t].UpsertDictionary(gsaIndex, newColIndex);
-      /*
-      if (!recordIndicesBySchemaTypeGsaId[t].ContainsKey(gsaIndex))
-      {
-        recordIndicesBySchemaTypeGsaId[t].Add(gsaIndex, new HashSet<int>());
-      }
-      recordIndicesBySchemaTypeGsaId[t][gsaIndex].Add(newColIndex);
-      */
-      if (!string.IsNullOrEmpty(trimmedAppId))
-      {
-        recordIndicesByApplicationId.UpsertDictionary(trimmedAppId, newColIndex);
-        /*
-        if (!recordIndicesByApplicationId.ContainsKey(trimmedAppId))
-        {
-          recordIndicesByApplicationId.Add(trimmedAppId, new HashSet<int>());
-        }
-        recordIndicesByApplicationId[trimmedAppId].Add(newColIndex);
-        */
-      }
-      if (!string.IsNullOrEmpty(streamId))
-      {
-        if (!foundStreamIds.Contains(streamId))
-        {
-          foundStreamIds.Add(streamId);
-        }
-        var streamIdIndex = foundStreamIds.IndexOf(streamId);
-        recordIndicesByStreamIdIndex.UpsertDictionary(streamIdIndex, newColIndex);
-        /*
-        if (!recordIndicesByStreamIdIndex.ContainsKey(streamIdIndex))
-        {
-          recordIndicesByStreamIdIndex.Add(streamIdIndex, new HashSet<int>());
-        }
-        recordIndicesByStreamIdIndex[streamIdIndex].Add(newColIndex);
-        */
-      }
-      return true;
     }
 
     private void UpsertProvisional(Type t, int index, string applicationId = null)
@@ -763,6 +737,13 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
     {
       return (objectIndicesBySchemaTypesGsaId.ContainsKey(t) && objectIndicesBySchemaTypesGsaId[t] != null
           && objectIndicesBySchemaTypesGsaId[t].ContainsKey(gsaIndex) && objectIndicesBySchemaTypesGsaId[t][gsaIndex] != null);
+    }
+    #endregion
+
+    #region scaling
+    public double GetScalingFactor(UnitDimension unitDimension, string overrideUnits = null)
+    {
+      throw new NotImplementedException();
     }
     #endregion
 

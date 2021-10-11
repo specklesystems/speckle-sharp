@@ -2,6 +2,12 @@
 using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.Core.Credentials;
 using Serilog;
+using Speckle.ConnectorGSA.Proxy;
+using Speckle.Core.Kits;
+using System;
+using Speckle.Core.Models;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace ConnectorGSA
 {
@@ -57,6 +63,67 @@ namespace ConnectorGSA
       {
         Speckle.GSA.API.Instance.GsaModel = this;
       }
+    }
+
+    //TEMP: Not sure where to put this yet 
+    public List<List<Type>> SpeckleDependencyTree()
+    {
+      var kit = KitManager.GetDefaultKit();
+
+      var structuralTypes = kit.Types.Where(t => t.Namespace.ToLower().Contains("structural"));
+      var tree = new TypeTreeCollection<Type>(structuralTypes);
+
+      var typeChildren = new Dictionary<Type, List<Type>>();
+      var baseType = typeof(Base);
+      foreach (var t in structuralTypes)
+      {
+        var baseClasses = t.GetBaseClasses().Where(bc => structuralTypes.Any(st => st == bc) && bc.InheritsOrImplements(baseType) && bc != baseType);
+        foreach (var p in baseClasses)
+        {
+          typeChildren.UpsertDictionary(p, t);
+        }
+      }
+
+      foreach (var t in structuralTypes)
+      {
+        var referencedStructuralTypes = new List<Type>();
+        var propertyInfos = t.GetProperties();
+
+        foreach (var pi in propertyInfos)
+        {
+          Type typeToAdd = null;
+          if (pi.IsList(out Type listType))
+          {
+            if (structuralTypes.Any(st => st == listType))
+            {
+              typeToAdd = listType;
+            }
+          }
+          else if (structuralTypes.Any(st => st == pi.PropertyType))
+          {
+            typeToAdd = pi.PropertyType;
+          }
+          if (typeToAdd != null)
+          {
+            if (typeChildren.ContainsKey(typeToAdd))
+            {
+              foreach (var c in typeChildren[typeToAdd])
+              {
+                if (!referencedStructuralTypes.Contains(c))
+                {
+                  referencedStructuralTypes.Add(c);
+                }
+              }
+            }
+            if (!referencedStructuralTypes.Contains(typeToAdd))
+            {
+              referencedStructuralTypes.Add(typeToAdd);
+            }
+          }
+        }
+        tree.Integrate(t, referencedStructuralTypes.ToArray());
+      }
+      return tree.Generations();
     }
   }
 }

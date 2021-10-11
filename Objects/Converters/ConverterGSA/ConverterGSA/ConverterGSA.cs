@@ -124,6 +124,7 @@ namespace ConverterGSA
           }
         }
       }
+
       return retList;
     }
 
@@ -167,6 +168,11 @@ namespace ConverterGSA
         return retList;
       }
 
+      var allGsaRecords = objects.Cast<GsaRecord>();
+      var modelSettingsNativeTypes = new List<Type> { typeof(GsaUnitData), typeof(GsaTol) };
+      var modelSettingsRecords = allGsaRecords.Where(r => modelSettingsNativeTypes.Any(msnt => msnt == r.GetType()));
+      var gsaRecords = allGsaRecords.Except(modelSettingsRecords);
+
       //TO DO - fill in this more
       var modelInfo = new ModelInfo()
       {
@@ -176,15 +182,25 @@ namespace ConverterGSA
           coincidenceTolerance = 0.01
         }
       };
+      if (ConvertToSpeckle(modelSettingsRecords, out ModelSettings ms))
+      {
+        modelInfo.settings = ms;
+      }
 
-      if (!ConvertToSpeckle(objects.Cast<GsaRecord>(), 
-        Instance.GsaModel.StreamLayer, (Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults),
-        modelInfo, out retList))
+      var sendResults = (Instance.GsaModel.StreamSendConfig == StreamContentConfig.ModelAndResults);
+      if (!ConvertToSpeckle(allGsaRecords, Instance.GsaModel.StreamLayer, sendResults, modelInfo, out retList))
       {
         return null;
       }
 
       return retList;
+    }
+
+    private bool ConvertToSpeckle(IEnumerable<GsaRecord> modelSettingsRecords, out ModelSettings ms)
+    {
+      //TO DO
+      ms = new ModelSettings() { coincidenceTolerance = 0.01 };
+      return true;
     }
 
     private bool ConvertToSpeckle(IEnumerable<GsaRecord> gsaRecords, GSALayer sendLayer, bool sendResults, ModelInfo modelInfo, out List<Base> returnObjects)
@@ -483,11 +499,6 @@ namespace ConverterGSA
     {
       public bool Success = true;
       public Dictionary<GSALayer, List<Base>> ObjectsByLayer = new Dictionary<GSALayer, List<Base>>();
-      /*
-      public List<Base> LayerAgnosticObjects { get => ObjectsByLayer.ContainsKey(GSALayer.Both) ? ObjectsByLayer[GSALayer.Both] : null; }
-      public List<Base> DesignLayerOnlyObjects { get => ObjectsByLayer.ContainsKey(GSALayer.Design) ? ObjectsByLayer[GSALayer.Design] : null; }
-      public List<Base> AnalysisLayerOnlyObjects { get => ObjectsByLayer.ContainsKey(GSALayer.Analysis) ? ObjectsByLayer[GSALayer.Analysis] : null; }
-      */
       public List<Base> ResultObjects;
 
       public ToSpeckleResult(bool success)  //Used mainly when there is an error
