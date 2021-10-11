@@ -1,4 +1,5 @@
-﻿using DesktopUI2.Models;
+﻿using Avalonia.Controls;
+using DesktopUI2.Models;
 using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -59,6 +60,23 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private string _notification;
+    public string Notification
+    {
+      get => _notification;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _notification, value);
+        this.RaisePropertyChanged("ShowNotification");
+      }
+    }
+
+    public bool ShowNotification
+    {
+      get => !string.IsNullOrEmpty(Notification);
+
+    }
+
     private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}"; }
 
     public SavedStreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
@@ -71,7 +89,6 @@ namespace DesktopUI2.ViewModels
 
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
-
       GetStream().ConfigureAwait(false);
       GenerateMenuItems();
 
@@ -113,10 +130,31 @@ namespace DesktopUI2.ViewModels
         Stream = StreamState.CachedStream;
         Stream = await StreamState.Client.StreamGet(StreamState.StreamId);
         StreamState.CachedStream = Stream;
+
+        //subscription
+        StreamState.Client.SubscribeCommitCreated(StreamState.StreamId);
+        StreamState.Client.OnCommitCreated += Client_OnCommitCreated;
       }
       catch (Exception e)
       {
       }
+    }
+
+    private async void Client_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo info)
+    {
+      var branches = await StreamState.Client.StreamGetBranches(StreamState.StreamId);
+
+      if (!StreamState.IsReceiver) return;
+
+      var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
+      var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
+
+      Notification = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
+    }
+
+    public void CloseNotificationCommand()
+    {
+      Notification = "";
     }
 
     public void EditSavedStreamCommand()
@@ -140,7 +178,7 @@ namespace DesktopUI2.ViewModels
     public async void SendCommand()
     {
       Progress = new ProgressViewModel();
-      await Task.Run(() =>  Bindings.SendStream(StreamState, Progress));
+      await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.Value = 0;
       LastUsed = DateTime.Now.ToString();
 

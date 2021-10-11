@@ -22,22 +22,22 @@
       <StackPanel
         VerticalAlignment="Bottom"
         Orientation="Horizontal"
-        Spacing="5">
+        Spacing="6">
 
         <TextBlock
           FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
-          FontSize="20"
+          FontSize="18"
           FontWeight="Bold"
           Foreground="{DynamicResource PrimaryHueMidBrush}"
-          Text="Speckle" />
+          Text="SPECKLE" />
         <TextBlock
           FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
-          FontSize="20"
+          FontSize="18"
           FontWeight="Medium"
           Text="{Binding Title}" />
 
         <TextBlock
-          Margin="0,0,0,3"
+          Margin="0,0,0,4"
           VerticalAlignment="Bottom"
           FontSize="8"
           Foreground="Gray"
