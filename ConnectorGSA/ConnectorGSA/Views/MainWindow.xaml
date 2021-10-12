@@ -141,7 +141,7 @@
 					<Button Grid.Row="0" Content="New File" Padding="10 5" Margin="5 10 5 5" Command="{Binding NewFileCommand}"/>
           <Button Grid.Row="1" Content="Open File" Padding="10 5" Margin="5 5 5 10" Command="{Binding OpenFileCommand}" />
 					<StackPanel Grid.Row="2" VerticalAlignment="Center">
-						<TextBlock Text="{Binding CurrentlyOpenFileName}" Margin="5" />
+						<TextBlock Text="{Binding CurrentlyOpenFileName, Mode=OneWay}" Margin="5" />
 						<Button Content="Save File" Padding="5" Margin="10 5" HorizontalAlignment="Left" 
 										Command="{Binding SaveFileCommand}"/>
           </StackPanel>

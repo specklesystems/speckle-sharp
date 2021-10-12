@@ -67,6 +67,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Extensions.cs" />
     <Compile Include="GsaModel.cs" />
     <Compile Include="Headless.cs" />
     <Compile Include="MessageEventArgs.cs" />
