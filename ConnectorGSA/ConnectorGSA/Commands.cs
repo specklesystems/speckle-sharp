@@ -669,18 +669,54 @@ namespace ConnectorGSA
       return true;
     }
 
-    internal static async Task<bool> SaveFile(TabCoordinator coordinator)
+    internal static bool SaveFile(TabCoordinator coordinator)
     {
+      if (coordinator.FileStatus == GsaLoadedFileType.NewFile)
+      {
+        var saveFileDialog = new SaveFileDialog
+        {
+          Filter = "GSA files (*.gwb)|*.gwb",
+          DefaultExt = "gwb",
+          AddExtension = true
+        };
+        if (saveFileDialog.ShowDialog() == true)
+        {
+          Instance.GsaModel.Proxy.SaveAs(saveFileDialog.FileName);
+          coordinator.FilePath = saveFileDialog.FileName;
+        }
+      }
+      else if (coordinator.FileStatus == GsaLoadedFileType.ExistingFile)
+      {
+        Instance.GsaModel.Proxy.SaveAs(coordinator.FilePath);
+      }
       return true;
     }
 
     internal static async Task<bool> RenameStream(TabCoordinator coordinator, string streamId, string newStreamName, Progress<MessageEventArgs> loggingProgress)
     {
-      return true;
+      var messenger = new ProgressMessenger(loggingProgress);
+
+      var streamState = coordinator.SenderTab.SenderStreamStates.FirstOrDefault(ss => ss.StreamId == streamId);
+
+      if (streamState == null)
+      {
+        return false;
+      }
+
+      var changed = await streamState.Client.StreamUpdate(new StreamUpdateInput() { id = streamId, name = newStreamName });
+
+      //var changed = await SpeckleInterface.SpeckleStreamManager.UpdateStreamName(coordinator.Account.ServerUrl, coordinator.Account.Token, streamId, newStreamName, messenger);
+
+      return changed;
     }
 
     internal static async Task<bool> CloneStream(TabCoordinator coordinator, string streamId, Progress<MessageEventArgs> loggingProgress)
     {
+      var messenger = new ProgressMessenger(loggingProgress);
+
+      //var clonedStreamId = await SpeckleInterface.SpeckleStreamManager.CloneStream(coordinator.Account.ServerUrl, coordinator.Account.Token, streamId, messenger);
+
+      //return (!string.IsNullOrEmpty(clonedStreamId));
       return true;
     }
 
