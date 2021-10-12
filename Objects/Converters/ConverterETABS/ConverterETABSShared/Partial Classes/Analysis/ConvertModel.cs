@@ -16,13 +16,21 @@ namespace Objects.Converter.ETABS
         object ModelToNative(Model model)
         {
             var Element1D = new Element1D();
+            var Property1D = new Property1D();
             foreach(Material material in model.materials)
             {
                 MaterialToNative(material);
             }
-            foreach(Property1D property1D in model.properties)
+            foreach(var property in model.properties)
             {
-                Property1DToNative(property1D);
+                if (property.GetType().ToString() == Property1D.GetType().ToString())
+                {
+                    Property1DToNative((Property1D)property);
+                }
+                else
+                {
+                    break;
+                }
             }
             foreach(var element in model.elements)
             {
@@ -50,25 +58,32 @@ namespace Objects.Converter.ETABS
             model.materials = new List<Base> { };
             model.elements = new List<Base> { };
             model.properties = new List<Base> { };
+            model.restraints = new List<Base> { };
             int number = 0;
             string[] properties1D = { };
             Model.PropFrame.GetNameList(ref number, ref properties1D);
             properties1D.ToList();
-            foreach( string property1D in properties1D)
+            foreach (string property1D in properties1D)
             {
-                var speckleProperty1D  = Property1DToSpeckle(property1D);
+                var speckleProperty1D = Property1DToSpeckle(property1D);
                 model.properties.Add(speckleProperty1D);
             }
 
-            // need to rewirte Property2DToSpeckle to encapsulate this better by just name 
-            //string[] properties2D = { };
-            //Model.PropArea.GetNameList(ref number, ref properties2D);
-            //properties2D.ToList();
-            //foreach(string property2D in properties2D)
-            //{
-            //    var speckleProperty2D = Property2DToSpeckle(property2D,property2D);
-            //    model.properties.Add(speckleProperty2D);
-            //}
+            string[] properties2D = { };
+            Model.PropArea.GetNameList(ref number, ref properties2D);
+            properties2D.ToList();
+            foreach(string property in properties2D)
+            {
+                var speckleProperty2D = FloorPropertyToSpeckle(property);
+                if (speckleProperty2D != null)
+                {
+                    model.properties.Add(speckleProperty2D);
+                }
+                else {
+                    model.properties.Add(WallPropertyToSpeckle(property));
+                }
+            }
+
 
             string[] materials = { };
             Model.PropMaterial.GetNameList(ref number, ref materials);

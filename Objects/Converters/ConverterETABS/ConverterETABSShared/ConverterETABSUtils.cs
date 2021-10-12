@@ -5,6 +5,7 @@ using Objects.Structural.Geometry;
 using ETABSv1;
 using Objects.Structural.ETABS.Properties;
 using Objects.Structural.ETABS.Analysis;
+using System.Linq;
 
 namespace Objects.Converter.ETABS
 {
@@ -24,7 +25,60 @@ namespace Objects.Converter.ETABS
                 return null;
             }
 }
-    public ShellType ConvertShellType(eShellType eShellType)
+        public static List<string> GetAllAreaNames(cSapModel model)
+        {
+            int num = 0;
+            var names = new string[] { };
+            try
+            {
+                model.AreaObj.GetNameList(ref num, ref names);
+                return names.ToList();
+            }
+            catch { return null; }
+        }
+        public static List<string> GetAllWallNames(cSapModel model)
+        {
+            var WallNames = GetAllAreaNames(model);
+
+            List<string> WallName = new List<string>();
+
+            string wallLabel = "";
+            string wallStory = "";
+
+            foreach (var wallName in WallNames)
+            {
+                model.AreaObj.GetLabelFromName(wallName, ref wallLabel, ref wallStory);
+
+                if (wallLabel.ToLower().StartsWith("w"))
+                {
+                    WallName.Add(wallName);
+                }
+            }
+
+            return WallName;
+        }
+        public static List<string> GetAllFloorNames(cSapModel model)
+        {
+            var FloorNames = GetAllAreaNames(model);
+
+            List<string> FloorName = new List<string>();
+
+            string FloorLabel = "";
+            string FloorStory = "";
+
+            foreach (var floorName in FloorNames)
+            {
+                model.AreaObj.GetLabelFromName(floorName, ref FloorLabel, ref FloorStory);
+
+                if (FloorLabel.ToLower().StartsWith("f"))
+                {
+                    FloorName.Add(floorName);
+                }
+            }
+
+            return FloorName;
+        }
+        public ShellType ConvertShellType(eShellType eShellType)
         {
             ShellType shellType = new ShellType();
 

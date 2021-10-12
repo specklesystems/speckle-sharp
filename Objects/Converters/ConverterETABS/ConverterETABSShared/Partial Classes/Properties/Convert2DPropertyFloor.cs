@@ -10,7 +10,7 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-        public ETABSProperty2D ConvertFloor(string property)
+        public ETABSProperty2D FloorPropertyToSpeckle(string property)
         {
             eDeckType deckType = eDeckType.Filled;
             eSlabType slabType = eSlabType.Drop;

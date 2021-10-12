@@ -39,14 +39,10 @@ namespace Objects.Converter.ETABS
             switch (areaDesignOrientation)
             {
                 case eAreaDesignOrientation.Wall:
-                    var specklePropery2DWall = new ETABSProperty2D();
-                    specklePropery2DWall.type = Structural.PropertyType2D.Wall;
-                    Model.PropArea.GetWall(property, ref wallPropType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
-                    setProperties(specklePropery2DWall, matProp, thickness);
-                    specklePropery2DWall.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Wall;
-                    return specklePropery2DWall;
+                    return WallPropertyToSpeckle(property);
+                    break;
                 case eAreaDesignOrientation.Floor:
-                    return ConvertFloor(property);
+                    return FloorPropertyToSpeckle(property);
                     break;
             }
 

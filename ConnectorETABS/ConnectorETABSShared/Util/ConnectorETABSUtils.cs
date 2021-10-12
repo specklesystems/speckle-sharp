@@ -236,7 +236,7 @@ namespace Speckle.ConnectorETABS.Util
             {
                 model.AreaObj.GetLabelFromName(floorName, ref FloorLabel, ref FloorStory);
 
-                if (FloorLabel.ToLower().StartsWith("w"))
+                if (FloorLabel.ToLower().StartsWith("f"))
                 {
                     FloorName.Add(floorName);
                 }
