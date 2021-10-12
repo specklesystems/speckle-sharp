@@ -15,6 +15,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterETABSUtils.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBraces.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertColumn.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert1DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert2DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert2DPropertyFloor.cs" />
@@ -42,7 +45,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)PolygonMesher\Vertex.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Materials\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\" />

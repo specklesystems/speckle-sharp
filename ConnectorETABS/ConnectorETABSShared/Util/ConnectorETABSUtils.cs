@@ -60,31 +60,35 @@ namespace Speckle.ConnectorETABS.Util
                     return GetBeamNames(model);
                 case "Column":
                     return GetColumnNames(model);
-                case "Braces":
+                case "Brace":
                     return GetBraceNames(model);
                 case "Area":
                     return GetAllAreaNames(model);
-                case "LoadPattern":
-                    return GetAllLoadPatternNames(model);
+                case "Floor":
+                    return GetAllFloorNames(model);
+                case "Wall":
+                    return GetAllWallNames(model);
+                //case "LoadPattern":
+                //    return GetAllLoadPatternNames(model);
                 case "Model":
                     var names = new string[] { };
                     names.Append(model.GetModelFilename());
                     return names.ToList();
-                case "ColumnResults":
-                    return GetColumnNames(model);
-                case "BeamResults":
-                    return GetBeamNames(model);
-                case "BraceResults":
-                    return GetBraceNames(model);
-                case "PierResults":
-                    return GetAllPierLabelNames(model);
-                case "SpandrelResults":
-                    return GetAllSpandrelLabelNames(model);
+                //case "ColumnResults":
+                //    return GetColumnNames(model);
+                //case "BeamResults":
+                //    return GetBeamNames(model);
+                //case "BraceResults":
+                //    return GetBraceNames(model);
+                //case "PierResults":
+                //    return GetAllPierLabelNames(model);
+                //case "SpandrelResults":
+                //    return GetAllSpandrelLabelNames(model);
                 default:
                     return null;
             }
         }
-
+        #region Get List Names
         public static List<string> GetAllPointNames(cSapModel model)
         {
             int num = 0;
@@ -196,6 +200,49 @@ namespace Speckle.ConnectorETABS.Util
                 return names.ToList();
             }
             catch { return null; }
+        }
+
+        public static List<string> GetAllWallNames(cSapModel model)
+        {
+            var WallNames = GetAllAreaNames(model);
+
+            List<string> WallName = new List<string>();
+
+            string wallLabel = "";
+            string wallStory = "";
+
+            foreach (var wallName in WallNames)
+            {
+                model.AreaObj.GetLabelFromName(wallName, ref wallLabel, ref wallStory) ;
+
+                if (wallLabel.ToLower().StartsWith("w"))
+                {
+                    WallName.Add(wallName);
+                }
+            }
+
+            return WallName; 
+        }
+        public static List<string> GetAllFloorNames(cSapModel model)
+        {
+            var FloorNames = GetAllAreaNames(model);
+
+            List<string> FloorName = new List<string>();
+
+            string FloorLabel = "";
+            string FloorStory = "";
+
+            foreach (var floorName in FloorNames)
+            {
+                model.AreaObj.GetLabelFromName(floorName, ref FloorLabel, ref FloorStory);
+
+                if (FloorLabel.ToLower().StartsWith("w"))
+                {
+                    FloorName.Add(floorName);
+                }
+            }
+
+            return FloorName;
         }
         public static List<string> GetAllLinkNames(cSapModel model)
         {
@@ -450,6 +497,7 @@ namespace Speckle.ConnectorETABS.Util
             catch { return null; }
         }
 
+        #endregion
 
         public static List<(string, string)> SelectedObjects(cSapModel model)
         {
@@ -496,16 +544,21 @@ namespace Speckle.ConnectorETABS.Util
 
         public enum ETABSAPIUsableTypes
         {
-            Point = 1, // cPointObj
-            Frame = 2, // cFrameObj
-            Area = 4,
-            LoadPattern = 5,
+            Point, // cPointObj
+            Frame, // cFrameObj
+            Beam,
+            Column,
+            Brace,
+            Area,
+            Wall,
+            Floor,
+            //LoadPattern,
             Model,
-            ColumnResults,
-            BeamResults,
-            BraceResults,
-            PierResults,
-            SpandrelResults
+            //ColumnResults,
+            //BeamResults,
+            //BraceResults,
+            //PierResults,
+            //SpandrelResults
         }
 
         /// <summary>

@@ -109,37 +109,53 @@ namespace Objects.Converter.ETABS
                 case "Area":
                     returnObject = AreaToSpeckle(name);
                     break;
-                //case "Link":
-                //    returnObject = LinkToSpeckle(name);
-                //    break;
-                //case "PropMaterial":
-                //    returnObject = PropMaterialToSpeckle(name);
-                //    break;
-                //case "PropFrame":
-                //    returnObject = PropFrameToSpeckle(type, name);
-                //    break;
-                //case "LoadCase":
-                //    returnObject = LoadCaseToSpeckle(name);
-                //    break;
-                //case "LoadPattern":
-                //    returnObject = LoadPatternToSpeckle(name);
-                //    break;
-                //case "ColumnResults":
-                  
-                //    returnObject = FrameResultSet1dToSpeckle(name);
-                //    break;
-                //case "BeamResults":
-                //    returnObject = FrameResultSet1dToSpeckle(name);
-                //    break;
-                //case "BraceResults":
-                //    returnObject = FrameResultSet1dToSpeckle(name);
-                //    break;
-                //case "PierResults":
-                //    returnObject = PierResultSet1dToSpeckle(name);
-                //    break;
-                //case "SpandrelResults":
-                //    returnObject = SpandrelResultSet1dToSpeckle(name);
-                //    break;
+                case "Wall":
+                    returnObject = WallToSpeckle(name);
+                    break;
+                case "Floor":
+                    returnObject = FloorToSpeckle(name);
+                    break;
+                case "Column":
+                    returnObject = ColumnToSpeckle(name);
+                    break;
+                case "Beam":
+                    returnObject = BeamToSpeckle(name);
+                    break;
+                case "Brace":
+                    returnObject = BraceToSpeckle(name);
+                    break;
+
+                    //case "Link":
+                    //    returnObject = LinkToSpeckle(name);
+                    //    break;
+                    //case "PropMaterial":
+                    //    returnObject = PropMaterialToSpeckle(name);
+                    //    break;
+                    //case "PropFrame":
+                    //    returnObject = PropFrameToSpeckle(type, name);
+                    //    break;
+                    //case "LoadCase":
+                    //    returnObject = LoadCaseToSpeckle(name);
+                    //    break;
+                    //case "LoadPattern":
+                    //    returnObject = LoadPatternToSpeckle(name);
+                    //    break;
+                    //case "ColumnResults":
+
+                    //    returnObject = FrameResultSet1dToSpeckle(name);
+                    //    break;
+                    //case "BeamResults":
+                    //    returnObject = FrameResultSet1dToSpeckle(name);
+                    //    break;
+                    //case "BraceResults":
+                    //    returnObject = FrameResultSet1dToSpeckle(name);
+                    //    break;
+                    //case "PierResults":
+                    //    returnObject = PierResultSet1dToSpeckle(name);
+                    //    break;
+                    //case "SpandrelResults":
+                    //    returnObject = SpandrelResultSet1dToSpeckle(name);
+                    //    break;
                     //case "GridSys":
                     //    returnObject = GridSysToSpeckle(name);
                     //    break;

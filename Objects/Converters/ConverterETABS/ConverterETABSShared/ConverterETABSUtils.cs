@@ -78,6 +78,10 @@ namespace Objects.Converter.ETABS
         Area = 4, // cAreaObj
         //LoadPattern = 5,
         Model,
+        Column,
+        Beam,
+        Floor,
+        Wall
         //ColumnResults,
         //BeamResults,
         //BraceResults,
