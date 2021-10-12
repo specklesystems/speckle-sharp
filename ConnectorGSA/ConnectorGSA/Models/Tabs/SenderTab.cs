@@ -9,7 +9,7 @@ namespace ConnectorGSA.Models
 
     public string LoadCaseList { get; set; }
     public int AdditionalPositionsFor1dElements { get; set; } = 3;
-    public bool SendMeaningfulNodes { get; set; } = true;
+    public bool SendMeaningfulNodes { get; set; } = false;
 
     public ResultSettings ResultSettings { get; set; } = new ResultSettings();
 
