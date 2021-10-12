@@ -5,9 +5,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
-using Stylet;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -18,10 +15,16 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
 using Rhino.Display;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Models.Filters;
+using System.Threading;
+using Timer = System.Timers.Timer;
 
 namespace SpeckleRhino
 {
-  public partial class ConnectorBindingsRhino : ConnectorBindings
+  public partial class ConnectorBindingsRhino2 : ConnectorBindings
   {
     public RhinoDoc Doc { get => RhinoDoc.ActiveDoc; }
 
@@ -34,7 +37,7 @@ namespace SpeckleRhino
     /// </summary>
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
 
-    public ConnectorBindingsRhino()
+    public ConnectorBindingsRhino2()
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
 
@@ -51,9 +54,9 @@ namespace SpeckleRhino
       }
 
       var selection = GetSelectedObjects();
-
-      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
-      NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
+      //TODO
+      //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
+      //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -63,43 +66,22 @@ namespace SpeckleRhino
         return; // prevents triggering this on copy pastes, imports, etc.
       }
 
-      if (e.Document == null)
+      if (e.Document == null || UpdateSavedStreams == null)
       {
         return;
       }
 
-      GetFileContextAndNotifyUI();
+      var streams = GetStreamsInFile();
+      //TODO check if needed
+      //if (streams != null && streams.Count != 0)
+      //{
+      //  SpeckleRevitCommand2.CreateOrFocusSpeckle();
+      //}
+
+      UpdateSavedStreams(streams);
     }
 
     #region Local streams I/O with local file
-
-    public void GetFileContextAndNotifyUI()
-    {
-      var streamStates = GetStreamsInFile();
-
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streamStates
-      };
-
-      NotifyUi(appEvent);
-    }
-
-    public override void AddNewStream(StreamState state)
-    {
-      Doc.Strings.SetString(SpeckleKey, state.Stream.id, JsonConvert.SerializeObject(state));
-    }
-
-    public override void RemoveStreamFromFile(string streamId)
-    {
-      Doc.Strings.Delete(SpeckleKey, streamId);
-    }
-
-    public override void PersistAndUpdateStreamInFile(StreamState state)
-    {
-      Doc.Strings.SetString(SpeckleKey, state.Stream.id, JsonConvert.SerializeObject(state));
-    }
 
     public override List<StreamState> GetStreamsInFile()
     {
@@ -110,11 +92,6 @@ namespace SpeckleRhino
       }
 
       var states = strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue(SpeckleKey, s))).ToList();
-
-      if (states != null)
-      {
-        states.ForEach(x => x.Initialise(true));
-      }
 
       return states;
     }
@@ -158,8 +135,9 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
+        new ManualSelectionFilter(),
         new ListSelectionFilter {Slug="layer", Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-        new ListSelectionFilter {Slug="project-info", Name = "P. Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information as views to the stream"},
+        new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information as views to the stream"},
         new AllSelectionFilter { Slug="all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project info." }
       };
     }
@@ -169,90 +147,81 @@ namespace SpeckleRhino
       throw new NotImplementedException();
     }
 
-    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
-    {
-      if (progress == null)
-      {
-        return;
-      }
-
-      Execute.PostToUIThread(() =>
-      {
-        progress.ProgressDict = dict;
-        progress.Value = dict.Values.Last();
-      });
-    }
 
     #endregion
 
     #region receiving 
 
-    public override async Task<StreamState> ReceiveStream(StreamState state)
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      //ConversionErrors.Clear();
+      //OperationErrors.Clear();
+
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
 
       if (converter == null)
       {
-        RaiseNotification($"Could not find any Kit!");
-        state.CancellationTokenSource.Cancel();
-        return null;
+        throw new Exception("Could not find any Kit!");
+        progress.CancellationTokenSource.Cancel();
+        //return null;
       }
 
       converter.SetContextDocument(Doc);
 
-      var stream = await state.Client.StreamGet(state.Stream.id);
+      var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      string referencedObject = state.ReferencedObject;
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
-      var transport = new ServerTransport(state.Client.Account, state.Stream.id);
 
       Exceptions.Clear();
 
-      string referencedObject = state.Commit.referencedObject;
-
-      var commitId = state.Commit.id;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (commitId == "latest")
+      if (state.CommitId == "latest")
       {
-        var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
-        var commit = res.commits.items.FirstOrDefault();
-        commitId = commit.id;
-        referencedObject = commit.referencedObject;
+        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
       }
 
+      var contex = SynchronizationContext.Current;
+
+      //var commit = state.Commit;
       var commitObject = await Operations.Receive(
-        referencedObject,
-        state.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: d => UpdateProgress(d, state.Progress),
-        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
-        onErrorAction: (message, exception) => { Exceptions.Add(exception); },
-        disposeTransports: true
-        );
+          referencedObject,
+          progress.CancellationTokenSource.Token,
+          transport,
+          onProgressAction: dict => progress.Update(dict),
+          onErrorAction: (s, e) =>
+          {
+            Exceptions.Add(e);
+            //state.Errors.Add(e);
+            progress.CancellationTokenSource.Cancel();
+          },
+          onTotalChildrenCountKnown: (c) => progress.Max = c,
+          disposeTransports: true
+          );
+
+
 
       if (Exceptions.Count != 0)
       {
-        RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
+        //RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
+        return state;
       }
 
-      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {stream.name}");
+      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
-      Action updateProgressAction = () =>
-      {
-        conversionProgressDict["Conversion"]++;
-        UpdateProgress(conversionProgressDict, state.Progress);
-      };
 
       // get commit layer name 
-      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, commitId);
+      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, state.CommitId);
 
       // give converter a way to access the base commit layer name
       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
@@ -265,7 +234,8 @@ namespace SpeckleRhino
       {
         var (obj, layerPath) = commitObj;
         BakeObject(obj, layerPath, state, converter);
-        updateProgressAction?.Invoke();
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
       }
 
       Doc.Views.Redraw();
@@ -317,7 +287,7 @@ namespace SpeckleRhino
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            state.Errors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
+            Exceptions.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
           }
           return objects;
         }
@@ -405,17 +375,17 @@ namespace SpeckleRhino
               attributes.SetUserString("SpeckleSchema", schema);
 
             if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
-              state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+              Exceptions.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
           }
           else
-            state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
+            Exceptions.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
         }
         else
-          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}"));
+          Exceptions.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}"));
       }
       else if (converted == null)
       {
-        state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+        Exceptions.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
       }
     }
 
@@ -423,43 +393,44 @@ namespace SpeckleRhino
 
     #region sending
 
-    public override async Task<StreamState> SendStream(StreamState state)
+    public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
+      Exceptions.Clear();
+
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
-      Exceptions.Clear();
 
-      var commitObj = new Base();
+      var streamId = state.StreamId;
+      var client = state.Client;
+
+
 
       int objCount = 0;
       bool renamedlayers = false;
 
-      if (state.Filter != null)
-      {
-        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
-      }
-      else
-      {
-        // remove object ids of any objects that may have been deleted
-        state.SelectedObjectIds = state.SelectedObjectIds.Where(o => Doc.Objects.FindId(new Guid(o)) != null).ToList();
-      }
+      var selectedObjects = GetObjectsFromFilter(state.Filter);
+      state.SelectedObjectIds = selectedObjects.Where(o => Doc.Objects.FindId(new Guid(o)) != null).ToList();
+      var commitObject = new Base();
+
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
-        return state;
+        //TODO
+        //RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+        return;
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
+
+      progress.Max = state.SelectedObjectIds.Count;
 
       foreach (var applicationId in state.SelectedObjectIds)
       {
-        if (state.CancellationTokenSource.Token.IsCancellationRequested)
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
-          return null;
+          return;
         }
 
         Base converted = null;
@@ -472,13 +443,13 @@ namespace SpeckleRhino
           {
             if (!converter.CanConvertToSpeckle(obj))
             {
-              state.Errors.Add(new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported"));
+              Exceptions.Add(new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported"));
               continue;
             }
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
-              state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}."));
+              Exceptions.Add(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}."));
               continue;
             }
 
@@ -507,23 +478,24 @@ namespace SpeckleRhino
           }
           else
           {
-            state.Errors.Add(new Exception($"Failed to find local view ${applicationId}."));
+            Exceptions.Add(new Exception($"Failed to find local view ${applicationId}."));
             continue;
           }
           if (converted == null)
           {
-            state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
+            Exceptions.Add(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
             continue;
           }
           containerName = "Named Views";
         }
 
-        if (commitObj[$"@{containerName}"] == null)
-          commitObj[$"@{containerName}"] = new List<Base>();
-        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+        if (commitObject[$"@{containerName}"] == null)
+          commitObject[$"@{containerName}"] = new List<Base>();
+        ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
         conversionProgressDict["Conversion"]++;
-        UpdateProgress(conversionProgressDict, state.Progress);
+        progress.Update(conversionProgressDict);
+
 
         // set application ids, also set for speckle schema base object if it exists
         converted.applicationId = applicationId;
@@ -539,46 +511,55 @@ namespace SpeckleRhino
 
       if (objCount == 0)
       {
-        RaiseNotification("Zero objects converted successfully. Send stopped.");
-        return state;
+        //TODO
+        //RaiseNotification("Zero objects converted successfully. Send stopped.");
+        return;
       }
 
-      if (renamedlayers)
-        RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
+      //TODO
+      //if (renamedlayers)
+      //  RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
-        return null;
+        return;
       }
 
-      Execute.PostToUIThread(() => state.Progress.Maximum = objCount);
+      progress.Max = objCount;
 
-      var streamId = state.Stream.id;
-      var client = state.Client;
+
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
-      var commitObjId = await Operations.Send(
-        commitObj,
-        state.CancellationTokenSource.Token,
-        transports,
-        onProgressAction: dict => UpdateProgress(dict, state.Progress),
-        /* TODO: a wee bit nicer handling here; plus request cancellation! */
-        onErrorAction: (err, exception) => { Exceptions.Add(exception); },
+      var objectId = await Operations.Send(
+        @object: commitObject,
+        cancellationToken: progress.CancellationTokenSource.Token,
+        transports: transports,
+        onProgressAction: dict =>
+        {
+          progress.Update(dict);
+        },
+        onErrorAction: (s, e) =>
+        {
+          Exceptions.Add(e); // TODO!
+                             //state.Errors.Add(e);
+          progress.CancellationTokenSource.Cancel();
+        },
         disposeTransports: true
         );
 
       if (Exceptions.Count != 0)
       {
-        RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
-        return null;
+        //TODO
+        //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
+        return;
       }
 
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
-        objectId = commitObjId,
-        branchName = state.Branch.name,
+        objectId = objectId,
+        branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from Rhino.",
         sourceApplication = Utils.RhinoAppName
       };
@@ -589,19 +570,20 @@ namespace SpeckleRhino
       {
         var commitId = await client.CommitCreate(actualCommit);
 
-        await state.RefreshStream();
+        //await state.RefreshStream();
         state.PreviousCommitId = commitId;
 
-        PersistAndUpdateStreamInFile(state);
-        RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
+        //PersistAndUpdateStreamInFile(state);
+        //RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
       }
       catch (Exception e)
       {
-        Globals.Notify($"Failed to create commit.\n{e.Message}");
-        state.Errors.Add(e);
+        //TODO
+        //Globals.Notify($"Failed to create commit.\n{e.Message}");
+        Exceptions.Add(e);
       }
 
-      return state;
+      //return state;
     }
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
@@ -610,6 +592,8 @@ namespace SpeckleRhino
 
       switch (filter.Slug)
       {
+        case "manual":
+          return GetSelectedObjects();
         case "all":
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           objs.AddRange(Doc.NamedViews.Select(o => o.Name).ToList());
@@ -631,7 +615,7 @@ namespace SpeckleRhino
             objs.AddRange(Doc.NamedViews.Select(o => o.Name).ToList());
           break;
         default:
-          RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
+          //RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
           break;
       }
 
@@ -642,6 +626,22 @@ namespace SpeckleRhino
     {
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
+    }
+
+    public override void WriteStreamsToFile(List<StreamState> streams)
+    {
+      Doc.Strings.Delete(SpeckleKey);
+
+      foreach (var s in streams)
+      {
+        Doc.Strings.SetString(SpeckleKey, s.StreamId, JsonConvert.SerializeObject(s));
+      }
+    }
+
+
+    public override List<MenuItem> GetCustomStreamMenuItems()
+    {
+      return new List<MenuItem>();
     }
 
     #endregion

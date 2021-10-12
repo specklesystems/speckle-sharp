@@ -104,7 +104,7 @@ namespace DesktopUI2.Models
     //List of uniqueids of the currently selected objects
     //the values are updated only upon sending
     [JsonProperty]
-    public List<string> SelectedObjectIds { get; set; }
+    public List<string> SelectedObjectIds { get; set; } = new List<string>();
 
     [JsonProperty]
     public List<ApplicationPlaceholderObject> ReceivedObjects { get; set; } = new List<ApplicationPlaceholderObject>();
