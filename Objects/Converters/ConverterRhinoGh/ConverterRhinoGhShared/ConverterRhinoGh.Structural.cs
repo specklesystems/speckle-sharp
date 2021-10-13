@@ -38,7 +38,7 @@ namespace Objects.Converter.RhinoGh
 
     public Element1D CurveToSpeckleElement1D(RH.Curve curve)
     {
-      return new Element1D((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
+      return new Element1D((Geometry.Line)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Element2D MeshToSpeckleElement2D(RH.Mesh mesh)
@@ -55,19 +55,7 @@ namespace Objects.Converter.RhinoGh
         nodes.Add(PointToSpeckleNode(pt));
       }
 
-      var voids = new List<List<Node>>();
-      edges.Remove(outerEdge);
-      foreach(var edge in edges)
-      {
-        var voidLoop = new List<Node>();
-        foreach (var point in edge)
-        {
-          var pt = new RH.Point(point);
-          voidLoop.Add(PointToSpeckleNode(pt));
-        }
-        voids.Add(voidLoop);
-      }
-      return new Element2D(nodes, voids) { units = ModelUnits };
+      return new Element2D(nodes) { units = ModelUnits };
     }
 
     public Element3D MeshToSpeckleElement3D(RH.Mesh mesh)
