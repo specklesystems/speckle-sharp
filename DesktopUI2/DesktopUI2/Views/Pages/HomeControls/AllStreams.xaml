@@ -86,13 +86,13 @@
       <TextBlock Text="Select a stream to use:" TextTrimming="CharacterEllipsis" />
 
     </StackPanel>
+
+    <!--  SEARCH STREAMS  -->
     <Grid Grid.Row="2" Margin="0,15,0,0">
       <m:Card Padding="0">
         <TextBox
-          Margin="0"
-          Padding="0"
-          Classes="Solo Search"
-          FontSize="12"
+          Margin="5"
+          Classes="Solo Small"
           Text="{Binding SearchQuery}"
           Watermark="Search streams">
           <TextBox.InnerRightContent>

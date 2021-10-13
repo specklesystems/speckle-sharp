@@ -61,6 +61,7 @@ namespace Objects.Converter.Revit
     public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
+    public HashSet<string> ConversionLog { get; private set; } = new HashSet<string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
@@ -99,7 +100,7 @@ namespace Objects.Converter.Revit
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
           {
             returnObject = RoomBoundaryLineToSpeckle(o);
-          } 
+          }
           else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
           {
             returnObject = SpaceSeparationLineToSpeckle(o);
@@ -357,7 +358,7 @@ namespace Objects.Converter.Revit
           return GridLineToNative(o);
 
         case BE.Space o:
-            return SpaceToNative(o);
+          return SpaceToNative(o);
 
         // other
         case Other.BlockInstance o:

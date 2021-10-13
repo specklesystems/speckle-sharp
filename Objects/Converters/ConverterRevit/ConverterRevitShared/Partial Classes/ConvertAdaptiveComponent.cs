@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       }
 
       DB.FamilyInstance revitAc = null;
-
+      var isUpdate = false;
       //try update existing 
       if (docObj != null)
       {
@@ -45,6 +45,8 @@ namespace Objects.Converter.Revit
             if (speckleAc.type != null && speckleAc.type != revitType.Name)
               revitAc.ChangeTypeId(familySymbol.Id);
           }
+
+          isUpdate = true;
         }
         catch
         {
@@ -62,6 +64,9 @@ namespace Objects.Converter.Revit
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
       SetInstanceParameters(revitAc, speckleAc);
+
+      var s = isUpdate ? "updated" : "created";
+      ConversionLog.Add($"Successfully {s} AdaptiveComponent {revitAc.Id}");
 
       return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = revitAc.UniqueId, NativeObject = revitAc };
     }

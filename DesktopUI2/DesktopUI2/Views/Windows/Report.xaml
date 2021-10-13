@@ -1,0 +1,65 @@
+<Window
+  x:Class="DesktopUI2.Views.Windows.Report"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  Title="Report"
+  Width="500"
+  Height="500"
+  d:DesignHeight="500"
+  d:DesignWidth="500"
+  mc:Ignorable="d">
+  <Window.Resources>
+    <conv:EmptyFalseValueConverter x:Key="EmptyFalseValueConverter" />
+  </Window.Resources>
+  <Window.Styles>
+    <Style Selector="TextBox.Readonly">
+      <Setter Property="Margin" Value="20,0,20,20" />
+      <Setter Property="FontStyle" Value="Italic" />
+    </Style>
+  </Window.Styles>
+
+  <Design.DataContext>
+    <vm:DesignReportViewModel />
+  </Design.DataContext>
+  <Grid RowDefinitions="auto,auto,*,auto">
+
+    <Expander Header="Operation Errors ⚠" IsVisible="{Binding OperationErrors.Count, Converter={StaticResource EmptyFalseValueConverter}}">
+      <TextBox
+        Classes="Readonly"
+        Foreground="Red"
+        Text="{Binding OperationErrorsString}" />
+    </Expander>
+
+    <Expander
+      Grid.Row="1"
+      Header="Conversion Errors ⚠"
+      IsVisible="{Binding ConversionErrors.Count, Converter={StaticResource EmptyFalseValueConverter}}">
+      <TextBox
+        Classes="Readonly"
+        Foreground="Red"
+        Text="{Binding ConversionErrorsString}" />
+    </Expander>
+
+    <Expander
+      Grid.Row="2"
+      VerticalAlignment="Top"
+      Header="Log">
+      <TextBox Classes="Readonly" Text="{Binding ConversionLogString}" />
+    </Expander>
+    <StackPanel
+      Grid.Row="3"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal">
+      <Button
+        Margin="0,0,10,0"
+        Command="{Binding GetHelpCommand}"
+        Content="Get help" />
+      <!--<Button Click="Close_Click" Content="Close" />-->
+    </StackPanel>
+  </Grid>
+</Window>

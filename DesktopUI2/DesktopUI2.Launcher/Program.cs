@@ -28,9 +28,9 @@ namespace DesktopUI2.Launcher
     {
 
 
-      // Debugger.Launch();
-      // while (!Debugger.IsAttached)
-      //   Thread.Sleep(100);
+      //Debugger.Launch();
+      //while (!Debugger.IsAttached)
+      //  Thread.Sleep(100);
 
       string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
 

@@ -30,7 +30,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
             CommitId = "latest",
 
             IsReceiver = true,
-            Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
+            //Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
             SelectedObjectIds = new List<string> { "", "", "" },
           }
         },
@@ -42,7 +42,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
            {
              BranchName = "main",
              IsReceiver = false,
-             Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
+             //Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
              SelectedObjectIds = new List<string> { "", "", "" },
            }
          }
@@ -56,7 +56,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string BranchName { get; set; }
     public string CommitId { get; set; }
     public bool IsReceiver { get; set; }
-    public ListSelectionFilter Filter { get; set; }
+    //public ListSelectionFilter Filter { get; set; }
     public List<string> SelectedObjectIds { get; set; }
     public DesignStreamState()
     {

@@ -16,6 +16,11 @@ namespace Speckle.Core.Kits
     public HashSet<Exception> ConversionErrors { get; }
 
     /// <summary>
+    /// Keeps track of the conversion process
+    /// </summary>
+    public HashSet<string> ConversionLog { get; }
+
+    /// <summary>
     /// Converts a native object to a Speckle one
     /// </summary>
     /// <param name="object">Native object to convert</param>

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,6 +12,43 @@ namespace DesktopUI2.ViewModels
   public class ProgressViewModel : ReactiveObject
   {
     public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
+
+    /// <summary>
+    /// Keeps track of the conversion process
+    /// </summary>
+    public List<string> ConversionLog { get; set; } = new List<string>();
+
+    public string ConversionLogString
+    {
+      get
+      {
+        return string.Join("\n", ConversionLog);
+      }
+    }
+    /// <summary>
+    /// Keeps track of errors in the conversions.
+    /// </summary>
+    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
+    public string ConversionErrorsString
+    {
+      get
+      {
+        return string.Join("\n", ConversionErrors.Select(x => x.Message));
+      }
+    }
+
+    /// <summary>
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
+    public string OperationErrorsString
+    {
+      get
+      {
+        return string.Join("\n", OperationErrors.Select(x => x.Message));
+      }
+    }
+
 
     private ConcurrentDictionary<string, int> _progressDict;
     public ConcurrentDictionary<string, int> ProgressDict
@@ -54,7 +92,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public bool IsIndeterminate { get => Max != 0; }
+    public bool IsIndeterminate { get => Max == 0; }
 
     public bool IsProgressing { get => Value != 0; }
 
@@ -67,6 +105,11 @@ namespace DesktopUI2.ViewModels
       ProgressDict = pd;
       Value = pd.Values.Last();
       //}, Avalonia.Threading.DispatcherPriority.MaxValue);
+    }
+
+    public void GetHelpCommand()
+    {
+      Process.Start(new ProcessStartInfo("https://speckle.community/") { UseShellExecute = true });
     }
   }
 }

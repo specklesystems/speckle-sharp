@@ -1,5 +1,7 @@
 ﻿using Avalonia.Controls;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
+using DesktopUI2.Views.Windows;
 using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -111,6 +113,7 @@ namespace DesktopUI2.ViewModels
         new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
+        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox),
       };
       var customMenues = Bindings.GetCustomStreamMenuItems();
       if (customMenues != null)
@@ -178,19 +181,33 @@ namespace DesktopUI2.ViewModels
     public async void SendCommand()
     {
       Progress = new ProgressViewModel();
-      await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      await Bindings.SendStream(StreamState, Progress);
       Progress.Value = 0;
       LastUsed = DateTime.Now.ToString();
+      if (Progress.ConversionErrors.Any() || Progress.OperationErrors.Any())
+      {
+        Notification = "Something went wrong, please check the report.";
+      }
 
     }
 
     public async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
-      await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+      await Bindings.ReceiveStream(StreamState, Progress);
       Progress.Value = 0;
       LastUsed = DateTime.Now.ToString();
     }
+
+    public void OpenReportCommand()
+    {
+      var report = new Report();
+      report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
+      report.DataContext = Progress;
+      report.ShowDialog(MainWindow.Instance);
+    }
+
+
 
   }
 }

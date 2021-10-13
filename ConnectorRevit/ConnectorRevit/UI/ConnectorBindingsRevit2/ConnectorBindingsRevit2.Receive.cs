@@ -33,8 +33,6 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns></returns>
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      ConversionErrors.Clear();
-      OperationErrors.Clear();
 
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
@@ -68,15 +66,14 @@ namespace Speckle.ConnectorRevit.UI
           onProgressAction: dict => progress.Update(dict),
           onErrorAction: (s, e) =>
           {
-            OperationErrors.Add(e);
-            //state.Errors.Add(e);
+            progress.OperationErrors.Add(e);
             progress.CancellationTokenSource.Cancel();
           },
-          //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+          onTotalChildrenCountKnown: count => { progress.Max = count; },
           disposeTransports: true
           );
 
-      if (OperationErrors.Count != 0)
+      if (progress.OperationErrors.Count != 0)
       {
         //Globals.Notify("Failed to get commit.");
         return state;
@@ -118,8 +115,7 @@ namespace Speckle.ConnectorRevit.UI
           state.ReceivedObjects = newPlaceholderObjects;
 
           t.Commit();
-
-          //state.Errors.AddRange(converter.ConversionErrors);
+          progress.ConversionErrors.AddRange(converter.ConversionErrors);
         }
 
       });
@@ -140,9 +136,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception e)
       {
-        //WriteStateToFile();
-        //state.Errors.Add(e);
-        //Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
+        progress.OperationErrors.Add(new Exception("Receiving done, but failed to update stream from server.", e));
       }
 
       return state;
@@ -198,7 +192,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception e)
         {
-          //state.Errors.Add(e);
+          progress.OperationErrors.Add(e);
         }
       }
 
@@ -249,6 +243,11 @@ namespace Speckle.ConnectorRevit.UI
           objects.AddRange(FlattenCommitObject(kvp.Value, converter));
         }
         return objects;
+      }
+
+      else
+      {
+        converter.ConversionLog.Add($"Skipping object of type {obj.GetType()}, not supported.");
       }
 
       return objects;

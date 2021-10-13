@@ -225,7 +225,7 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    private void Init()
+    internal void Init()
     {
       Accounts = AccountManager.GetAccounts().ToList();
 
@@ -345,7 +345,7 @@ namespace DesktopUI2.ViewModels
               Classes = "Outline",
           }
         },
-        
+
         PositiveButton = new DialogResultButton
         {
           Content = "CREATE",
@@ -373,7 +373,7 @@ namespace DesktopUI2.ViewModels
         {
           var client = new Client(SelectedAccount);
           var streamId = await client.StreamCreate(new StreamCreateInput { description = description, name = name, isPublic = false });
-          var stream = await client.StreamGet(streamId); 
+          var stream = await client.StreamGet(streamId);
           var streamState = new StreamState(SelectedAccount, stream);
 
           OpenStream(streamState);
@@ -478,8 +478,8 @@ namespace DesktopUI2.ViewModels
 
     private Tuple<bool, string> ValidateName(string name)
     {
-     if(string.IsNullOrEmpty(name))
-      return new Tuple<bool, string>(false, "Streams need a name too!");
+      if (string.IsNullOrEmpty(name))
+        return new Tuple<bool, string>(false, "Streams need a name too!");
 
       if (name.Trim().Length < 3)
         return new Tuple<bool, string>(false, "Name is too short.");

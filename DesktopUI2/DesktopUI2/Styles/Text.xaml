@@ -13,14 +13,7 @@
           VerticalAlignment="Center"
           Content="Hello!" />
 
-        <TextBlock Classes="Grotesk" Text="Test Text"></TextBlock>
-
-        <TextBox
-          Margin="0"
-          Padding="0"
-          Classes="Solo Search"
-          FontSize="12"
-          Watermark="Search streams" />
+        <TextBlock Classes="Grotesk" Text="Test Text" />
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -36,9 +29,10 @@
     <Setter Property="FontWeight" Value="Medium" />
   </Style>
 
-  <Style Selector="TextBox.Search TextBlock">
+
+  <!--<Style Selector="TextBox.Search TextPresenter">
     <Setter Property="FontSize" Value="12" />
-  </Style>
+  </Style>-->
 
   <!--<Style Selector="cc|FloatingButton &gt; TextBlock, TextBlock.FloatingButtonText">
     <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />

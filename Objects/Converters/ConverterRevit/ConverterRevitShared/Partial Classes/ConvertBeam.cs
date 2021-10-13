@@ -35,7 +35,7 @@ namespace Objects.Converter.Revit
       {
         level = LevelToNative(LevelFromCurve(baseLine));
       }
-
+      var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
 
@@ -61,6 +61,7 @@ namespace Objects.Converter.Revit
               revitBeam.ChangeTypeId(familySymbol.Id);
             }
           }
+          isUpdate = true;
         }
         catch
         {
@@ -88,6 +89,9 @@ namespace Objects.Converter.Revit
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId, NativeObject = revitBeam } };
 
       // TODO: nested elements.
+
+      var s = isUpdate ? "updated" : "created";
+      ConversionLog.Add($"Successfully {s} AdaptiveComponent {revitBeam.Id}");
 
       return placeholders;
     }
