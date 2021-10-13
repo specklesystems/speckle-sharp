@@ -10,6 +10,121 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        public object FloorPropertyToNative(ETABSProperty2D property2D)
+        {
+            if (property2D.deckType != Structural.ETABS.Analysis.DeckType.Null) 
+            {
+                SetDeck(property2D);
+                switch(property2D.deckType)
+                {
+                    case Structural.ETABS.Analysis.DeckType.Filled:
+                        var deckFilled = (ETABSProperty2D.DeckFilled)property2D;
+                        Model.PropArea.SetDeckFilled(deckFilled.name,
+                            deckFilled.SlabDepth,
+                            deckFilled.RibDepth,
+                            deckFilled.RibWidthTop,
+                            deckFilled.RibWidthBot,
+                            deckFilled.RibSpacing,
+                            deckFilled.ShearThickness,
+                            deckFilled.UnitWeight,
+                            deckFilled.ShearStudDia,
+                            deckFilled.ShearStudHt,
+                            deckFilled.ShearStudFu);
+                        break;
+                    case Structural.ETABS.Analysis.DeckType.Unfilled:
+                        var deckUnfilled = (ETABSProperty2D.DeckUnFilled)property2D;
+                        Model.PropArea.SetDeckUnfilled(deckUnfilled.name,
+                            deckUnfilled.RibDepth,
+                            deckUnfilled.RibWidthTop,
+                            deckUnfilled.RibWidthBot,
+                            deckUnfilled.RibSpacing,
+                            deckUnfilled.ShearThickness,
+                            deckUnfilled.UnitWeight);
+                        break;
+                    case Structural.ETABS.Analysis.DeckType.SolidSlab:
+                        var deckSlab = (ETABSProperty2D.DeckSlab)property2D;
+                        Model.PropArea.SetDeckSolidSlab(deckSlab.name,
+                            deckSlab.SlabDepth,
+                            deckSlab.ShearStudDia,
+                            deckSlab.ShearStudHt,
+                            deckSlab.ShearStudFu);
+                        break;
+                }
+            }
+            else {
+                switch (property2D.slabType)
+                {
+                    case Structural.ETABS.Analysis.SlabType.Slab:
+                        var SolidSlab = property2D;
+                        Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shellType(SolidSlab), SolidSlab.material.name, SolidSlab.thickness);
+                        break;
+                    case Structural.ETABS.Analysis.SlabType.Ribbed:
+                        var slabRibbed = (ETABSProperty2D.RibbedSlab)property2D;
+                        Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shellType(slabRibbed), slabRibbed.material.name, slabRibbed.thickness);
+                        Model.PropArea.SetSlabRibbed(slabRibbed.name,
+                            slabRibbed.OverAllDepth,
+                            slabRibbed.thickness,
+                            slabRibbed.StemWidthTop,
+                            slabRibbed.StemWidthTop,
+                            slabRibbed.RibSpacing,
+                            slabRibbed.RibsParallelTo);
+                        break;
+                    case Structural.ETABS.Analysis.SlabType.Waffle:
+                        var slabWaffled = (ETABSProperty2D.WaffleSlab)property2D;
+                        Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shellType(slabWaffled), slabWaffled.material.name, slabWaffled.thickness);
+                        Model.PropArea.SetSlabWaffle(
+                            slabWaffled.name,
+                            slabWaffled.OverAllDepth,
+                            slabWaffled.thickness,
+                            slabWaffled.StemWidthTop,
+                            slabWaffled.StemWidthBot,
+                            slabWaffled.RibSpacingDir1,
+                            slabWaffled.RibSpacingDir2);
+                        break;
+                }
+            }
+            
+
+            return property2D.name;
+        }
+
+        public eShellType shellType(ETABSProperty2D property)
+        {
+            var shellType = eShellType.Layered;
+            switch (property.shellType)
+            {
+                case Structural.ETABS.Analysis.ShellType.ShellThin:
+                    shellType = eShellType.ShellThin;
+                    break;
+                case Structural.ETABS.Analysis.ShellType.Layered:
+                    shellType = eShellType.Layered;
+                    break;
+                case Structural.ETABS.Analysis.ShellType.ShellThick:
+                    shellType = eShellType.ShellThick;
+                    break;
+                case Structural.ETABS.Analysis.ShellType.Membrane:
+                    shellType = eShellType.Membrane;
+                    break;
+            }
+            return shellType;
+        }
+        public void SetDeck(ETABSProperty2D deck)
+        {
+            var deckType = eDeckType.Filled;
+            switch (deck.deckType)
+            {
+                case Structural.ETABS.Analysis.DeckType.Filled:
+                    deckType = eDeckType.Filled;
+                    break;
+                case Structural.ETABS.Analysis.DeckType.Unfilled:
+                    deckType = eDeckType.Unfilled;
+                    break;
+                case Structural.ETABS.Analysis.DeckType.SolidSlab:
+                    deckType = eDeckType.SolidSlab;
+                    break;
+            }
+            Model.PropArea.SetDeck(deck.name, deckType, shellType(deck), deck.material.name, deck.thickness);
+        }
         public ETABSProperty2D FloorPropertyToSpeckle(string property)
         {
             eDeckType deckType = eDeckType.Filled;
@@ -24,6 +139,7 @@ namespace Objects.Converter.ETABS
             int d = Model.PropArea.GetDeck(property, ref deckType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
             if (d == 0)
             {
+
                 var speckleProperties2D = new ETABSProperty2D();
                 double slabDepth = 0;
                 double shearStudDia = 0;
@@ -35,6 +151,7 @@ namespace Objects.Converter.ETABS
                 double ribSpacing = 0;
                 double shearThickness = 0;
                 double unitWeight = 0;
+                var speckleShellType = ConvertShellType(shellType);
                 if (deckType == eDeckType.Filled)
                 {
                     var speckleProperty2D = new ETABSProperty2D.DeckFilled();
@@ -62,6 +179,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Filled;
                     setProperties(speckleProperty2D, matProp, thickness);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
+                    speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
                 }
                 else if (deckType == eDeckType.Unfilled)
@@ -83,6 +201,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Filled;
                     setProperties(speckleProperty2D, matProp, thickness);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
+                    speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
 
                 }
@@ -97,6 +216,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.SolidSlab;
                     setProperties(speckleProperty2D, matProp, thickness);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
+                    speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
                 }
             }
@@ -114,6 +234,7 @@ namespace Objects.Converter.ETABS
                 double ribSpacingDir2 = 0;
                 double ribSpacing = 0;
                 int ribParrallelTo = 0;
+                var speckleShellType = ConvertShellType(shellType);
                 if (slabType == eSlabType.Waffle)
                 {
                     var speckleProperty2D = new ETABSProperty2D.WaffleSlab();
@@ -124,7 +245,9 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.RibSpacingDir1 = ribSpacingDir1;
                     speckleProperty2D.RibSpacingDir2 = ribSpacingDir2;
                     speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Waffle;
+                    speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Null;
                     setProperties(speckleProperty2D, matProp, thickness);
+                    speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
                 }
                 else if (slabType == eSlabType.Ribbed)
@@ -137,7 +260,9 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.RibSpacing = ribSpacing;
                     speckleProperty2D.RibsParallelTo = ribParrallelTo;
                     speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Ribbed;
+                    speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Null;
                     setProperties(speckleProperty2D, matProp, thickness);
+                    speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
 
                 }
@@ -161,6 +286,8 @@ namespace Objects.Converter.ETABS
                             specklePropery2DSlab.slabType = Structural.ETABS.Analysis.SlabType.Null;
                             break;
                     }
+                    specklePropery2DSlab.deckType = Structural.ETABS.Analysis.DeckType.Null;
+                    specklePropery2DSlab.shellType = speckleShellType;
                     return specklePropery2DSlab;
                 }
             }

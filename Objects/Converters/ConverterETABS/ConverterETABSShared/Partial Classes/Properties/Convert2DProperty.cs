@@ -15,10 +15,16 @@ namespace Objects.Converter.ETABS
         {
             property2D.thickness = thickeness;
             property2D.material = MaterialToSpeckle(matProp);
+            
             return;
         }
         object Property2DToNative(ETABSProperty2D property2D)
         {
+            if (property2D.type == Structural.PropertyType2D.Wall)
+            {
+                WallPropertyToNative(property2D);
+            }
+            else { FloorPropertyToNative(property2D); }
             return property2D.name;
         }
 

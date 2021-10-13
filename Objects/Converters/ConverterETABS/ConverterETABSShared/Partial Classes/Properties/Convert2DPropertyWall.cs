@@ -10,6 +10,10 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        public object WallPropertyToNative(ETABSProperty2D Wall)
+        {
+            return Wall.name;
+        }
         public ETABSProperty2D WallPropertyToSpeckle(string property)
         {
             eWallPropType wallPropType = eWallPropType.Specified;
@@ -22,6 +26,8 @@ namespace Objects.Converter.ETABS
             var specklePropery2DWall = new ETABSProperty2D();
             specklePropery2DWall.type = Structural.PropertyType2D.Wall;
             Model.PropArea.GetWall(property, ref wallPropType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
+            var speckleShellType = ConvertShellType(shellType);
+            specklePropery2DWall.shellType = speckleShellType;
             setProperties(specklePropery2DWall, matProp, thickness);
             specklePropery2DWall.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Wall;
             return specklePropery2DWall;

@@ -5,6 +5,7 @@ using Objects.Geometry;
 using Objects.Structural.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
+using Objects.Structural.ETABS.Properties;
 using Speckle.Core.Models;
 using System.Linq;
 using ETABSv1;
@@ -29,6 +30,7 @@ namespace Objects.Converter.ETABS
                 }
                 else
                 {
+                    Property2DToNative((ETABSProperty2D)property);
                     break;
                 }
             }

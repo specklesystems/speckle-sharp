@@ -35,7 +35,7 @@ namespace Objects.Structural.ETABS.Properties
             public double StemWidthBot { get; set; }
             public double StemWidthTop { get; set; }
             public double RibSpacing { get; set; }
-            public double RibsParallelTo { get; set; }
+            public int RibsParallelTo { get; set; }
         }
 
         public class DeckFilled : ETABSProperty2D
