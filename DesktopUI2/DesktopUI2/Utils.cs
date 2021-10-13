@@ -47,6 +47,7 @@ namespace DesktopUI2
         StartupLocation = WindowStartupLocation.CenterOwner,
         NegativeResult = new DialogResult("cancel"),
         Borderless = true,
+        MaxWidth = MainWindow.Instance.Width - 40,
         DialogButtons = new DialogResultButton[]
           {
             new DialogResultButton

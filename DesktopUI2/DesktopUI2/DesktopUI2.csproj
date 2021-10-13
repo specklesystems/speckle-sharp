@@ -26,6 +26,7 @@
     <None Remove="Styles\ListBox.xaml" />
     <None Remove="Styles\MenuItem.xaml" />
     <None Remove="Styles\Styles.xaml" />
+    <None Remove="Styles\Text.xaml" />
     <None Remove="Views\Filters\AllFilterView.xaml" />
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
@@ -60,6 +61,9 @@
     </AvaloniaResource>
     <AvaloniaResource Include="Styles\Styles.xaml">
       <Generator></Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Text.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
