@@ -117,7 +117,6 @@ namespace ConnectorGSA
       var opened = Instance.GsaModel.Proxy.OpenFile(filePath, visible);
       if (!opened)
       {
-
         return false;
       }
       return true;
@@ -130,11 +129,15 @@ namespace ConnectorGSA
       try
       {
         allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
+        if (allSaved == null) {
+          allSaved = new List<StreamState>();
+        }
       }
       catch
       {
         allSaved = new List<StreamState>();
-      }
+      }      
+      
       var userId = ((GsaModel)Instance.GsaModel).Account.userInfo.id;
       var restApi = ((GsaModel)Instance.GsaModel).Account.serverInfo.url;
 
@@ -820,7 +823,7 @@ namespace ConnectorGSA
           name = "Results";
         }
 
-        commitObj[name] = obj;
+        commitObj['@' + name] = obj;
       }
 
       var serverTransport = new ServerTransport(account, ss.Stream.id);
