@@ -64,8 +64,8 @@ Name: autocad21; Description: Speckle for AutoCAD 2021 ALPHA - v{#Autocad2021Ver
 Name: autocad22; Description: Speckle for AutoCAD 2022 ALPHA - v{#Autocad2022Version};  Types: full
 Name: civil21; Description: Speckle for AutoCADCivil 2021 ALPHA - v{#Civil2021Version};  Types: full
 Name: civil22; Description: Speckle for AutoCADCivil 2022 ALPHA - v{#Civil2022Version};  Types: full
-Name: connectionmanager; Description: Connection Manager - v{#AppVersion};  Types: full; Flags: fixed
-Name: kits; Description: Speckle Kits - v{#AppVersion};  Types: full; Flags: fixed
+Name: connectionmanager; Description: Connection Manager - v{#AppVersion};  Types: full custom; Flags: fixed
+Name: kits; Description: Speckle Kits - v{#AppVersion};  Types: full custom; Flags: fixed
 
 [Types]
 Name: "full"; Description: "Full installation"
@@ -216,6 +216,8 @@ Root: HKCU; Subkey: "Software\Classes\speckle\shell\open\command"; ValueType: "s
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\Speckle@Arup"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe";
+Name: "{userstartup}\Speckle@Arup"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"
 
 
 [Run]

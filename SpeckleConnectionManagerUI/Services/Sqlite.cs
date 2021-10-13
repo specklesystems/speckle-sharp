@@ -17,7 +17,7 @@ namespace SpeckleConnectionManagerUI.Services
                 new SqliteConnection($"Filename={Constants.DatabasePath}"))
             {
                 db.Open();
-                
+
                 var createTableCommand = db.CreateCommand();
                 createTableCommand.CommandText =
                     @"
@@ -40,6 +40,25 @@ namespace SpeckleConnectionManagerUI.Services
             }
 
             return entries;
+        }
+
+        public static void DeleteAuthData()
+        {
+            using (SqliteConnection db =
+                new SqliteConnection($"Filename={Constants.DatabasePath}"))
+            {
+                db.Open();
+                var truncateTableCommand = db.CreateCommand();
+                truncateTableCommand.CommandText =
+                    @"
+                    DELETE FROM objects;
+                ";
+                truncateTableCommand.ExecuteNonQuery();
+                
+            }
+            
+
+            
         }
     }
 }

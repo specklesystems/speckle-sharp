@@ -8,7 +8,7 @@ namespace SpeckleConnectionManagerUI.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        ViewModelBase content;
+        public ViewModelBase content;
         private Authenticate _authenticate = new Authenticate();
         
         public MainWindowViewModel(Database db)
@@ -25,7 +25,7 @@ namespace SpeckleConnectionManagerUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref content, value);
         }
         
-        private ConnectStatusViewModel List { get; }
+        public ConnectStatusViewModel List { get; }
 
         private void RunConnectToServer(int identifier)
         {
@@ -36,6 +36,16 @@ namespace SpeckleConnectionManagerUI.ViewModels
             
             connectionStatusItem.Disconnected = false;
             connectionStatusItem.Colour = "Orange";
+        }
+
+        public void DeleteAllAuthData()
+        {
+            Sqlite.DeleteAuthData();
+            foreach (var connectionStatusItem in  List.Items)
+            {
+                connectionStatusItem.Colour = "Red";
+                connectionStatusItem.Disconnected = true;
+            }
         }
     }
 }

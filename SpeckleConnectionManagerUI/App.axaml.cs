@@ -14,15 +14,18 @@ namespace SpeckleConnectionManagerUI
             AvaloniaXamlLoader.Load(this);
         }
 
-        public override void OnFrameworkInitializationCompleted()
+        public override async void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var db = new Database();
+                var mainWindowModel = new MainWindowViewModel(db);
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(db),
+                    DataContext = mainWindowModel,
                 };
+                
+                await BackgroundRefreshTokenProcess.Main();
             }
 
             base.OnFrameworkInitializationCompleted();
