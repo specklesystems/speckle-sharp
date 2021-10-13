@@ -22,6 +22,8 @@ using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
 using Speckle.Core.Models;
 using PathType = Objects.Structural.GSA.Bridge.PathType;
+using Speckle.GSA.API;
+using KellermanSoftware.CompareNetObjects;
 
 namespace ConverterGSATests
 {
@@ -79,10 +81,73 @@ namespace ConverterGSATests
     #endregion
 
     #region Properties
-    [Fact (Skip = "Not implemented yet")]
+
+    [Fact]
+    public void TestComplexObjectComparison()
+    {
+      var p1 = GsaCatalogueSectionExample("section 1");
+      var p2 = GsaCatalogueSectionExample("section 1");
+
+      //Two differences ...
+      p1.Cost = 100;
+      p1.Sid = "Sidney";
+
+      var compareLogic = new CompareLogic();
+      
+      //Set config to ignore one difference ...
+      //(Creating a lambda expression, as shown below, avoids having to pass a hard-coded string with the property name ("Cost"))
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaSection x) => x.Cost)); 
+      
+      var result = compareLogic.Compare(p1, p2);
+
+      //.. leaving one difference left (Sid)
+      Assert.Single(result.Differences);
+    }
+
+    [Fact(Skip = "Not implemented yet")]
     public void Property1dToNative()
     {
-      //TO DO: 
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>
+      {
+        //Generation #1: Types with no other dependencies - the leaves of the tree
+        GsaMatSteelExample("steel material 1")
+      };
+
+      //Gen #2
+      var gsaSection = new List<GsaSection>
+      {
+        GsaCatalogueSectionExample("section 1"),
+        GsaExplicitSectionExample("section 2"),
+        GsaPerimeterSectionExample("section 3"),
+        GsaRectangularSectionExample("section 4"),
+        GsaRectangularHollowSectionExample("section 5"),
+        GsaCircularSectionExample("section 6"),
+        GsaCircularHollowSectionExample("section 7"),
+        GsaISectionSectionExample("section 8"),
+        GsaTSectionSectionExample("section 9"),
+        GsaAngleSectionExample("section 10"),
+        GsaChannelSectionExample("section 11")
+      };
+      gsaRecords.AddRange(gsaSection);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAProperty1D);
+
+      var speckleProperty1D = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
     }
     #endregion
 
