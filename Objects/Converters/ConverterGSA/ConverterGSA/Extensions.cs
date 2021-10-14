@@ -22,6 +22,7 @@ using Objects.Structural.GSA.Bridge;
 using Objects.Structural.GSA.Loading;
 using Speckle.GSA.API;
 using Speckle.Core.Models;
+using Objects.Structural.Properties;
 
 namespace ConverterGSA
 {
@@ -710,7 +711,7 @@ namespace ConverterGSA
         var index = Instance.GsaModel.Cache.LookupIndex<GsaEl>(e.applicationId);
         if (index.HasValue) gsaIndices.Add(index.Value);
       }
-      return gsaIndices;
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
     }
 
     public static List<int> GetMemberIndicies(this List<Base> speckleElements)
@@ -721,7 +722,7 @@ namespace ConverterGSA
         var index = Instance.GsaModel.Cache.LookupIndex<GsaMemb>(e.applicationId);
         if (index.HasValue) gsaIndices.Add(index.Value);
       }
-      return gsaIndices;
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
     }
 
     public static List<int> GetIndicies(this List<Node> speckleNodes)
@@ -732,43 +733,23 @@ namespace ConverterGSA
         var index = Instance.GsaModel.Cache.LookupIndex<GsaNode>(e.applicationId);
         if (index.HasValue) gsaIndices.Add(index.Value);
       }
-      return gsaIndices;
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
     }
 
-    public static int ResolveIndex(this Node speckleNode)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaNode>(speckleNode.applicationId);
-    }
-
-    public static int ResolveIndex(this Axis speckleAxis)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleAxis.applicationId);
-    }
-
-    public static int ResolveIndex(this LoadCase speckleLoad)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaLoadCase>(speckleLoad.applicationId);
-    }
-
-    public static int ResolveIndex(this LoadFace speckleLoad)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dFace>(speckleLoad.applicationId);
-    }
-
-    public static int ResolveIndex(this LoadNode speckleLoad)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaLoadNode>(speckleLoad.applicationId);
-    }
-
-    public static int ResolveIndex(this GSALoadThermal2d speckleLoad)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dThermal>(speckleLoad.applicationId);
-    }
-
-    public static int ResolveIndex(this LoadGravity speckleLoad)
-    {
-      return Instance.GsaModel.Cache.ResolveIndex<GsaLoadGravity>(speckleLoad.applicationId);
-    }
+    public static int ResolveElementIndex(this Base speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaEl>(speckleObject.applicationId);
+    public static int ResolveMemberIndex(this Base speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMemb>(speckleObject.applicationId);
+    public static int ResolveIndex(this Node speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaNode>(speckleObject.applicationId);
+    public static int ResolveIndex(this Axis speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadCase speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadCase>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadCombination speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaCombination>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadFace speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dFace>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadNode speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadNode>(speckleObject.applicationId);
+    public static int ResolveIndex(this GSALoadThermal2d speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dThermal>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadGravity speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadGravity>(speckleObject.applicationId);
+    public static int ResolveIndex(this Property1D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleObject.applicationId);
+    public static int ResolveIndex(this Property2D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaProp2d>(speckleObject.applicationId);
+    public static int ResolveIndex(this PropertyMass speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(speckleObject.applicationId);
+    public static int ResolveIndex(this PropertySpring speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropSpr>(speckleObject.applicationId);
     #endregion
 
     public static List<double> Insert(this List<double> source, double item, int step)
@@ -861,6 +842,50 @@ namespace ConverterGSA
           d[key].Add(v);
         }
       }
+    }
+
+    public static string RemoveWhitespace(this string input)
+    {
+      var len = input.Length;
+      var src = input.ToCharArray();
+      int dstIdx = 0;
+      for (int i = 0; i < len; i++)
+      {
+        var ch = src[i];
+        switch (ch)
+        {
+          case '\u0020':
+          case '\u00A0':
+          case '\u1680':
+          case '\u2000':
+          case '\u2001':
+          case '\u2002':
+          case '\u2003':
+          case '\u2004':
+          case '\u2005':
+          case '\u2006':
+          case '\u2007':
+          case '\u2008':
+          case '\u2009':
+          case '\u200A':
+          case '\u202F':
+          case '\u205F':
+          case '\u3000':
+          case '\u2028':
+          case '\u2029':
+          case '\u0009':
+          case '\u000A':
+          case '\u000B':
+          case '\u000C':
+          case '\u000D':
+          case '\u0085':
+            continue;
+          default:
+            src[dstIdx++] = ch;
+            break;
+        }
+      }
+      return new string(src, 0, dstIdx);
     }
   }
 }
