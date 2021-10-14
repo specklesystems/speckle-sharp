@@ -455,7 +455,7 @@ workflows:
             
       # ETABS Build&Deploy
       - build-connector:
-          name: build-deploy-connector-ETABS
+          name: build-deploy-connector-etabs
           slnname: ConnectorETABS
           dllname: SpeckleConnectorETABS.dll
           slug: etabs
@@ -478,7 +478,7 @@ workflows:
             - build-deploy-connector-rhino
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
-            - build-deploy-connector-ETABS
+            - build-deploy-connector-etabs
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
               only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
