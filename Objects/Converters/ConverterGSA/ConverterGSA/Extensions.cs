@@ -20,6 +20,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Objects.Structural.GSA.Bridge;
 using Objects.Structural.GSA.Loading;
+using Speckle.GSA.API;
+using Speckle.Core.Models;
 
 namespace ConverterGSA
 {
@@ -515,26 +517,17 @@ namespace ConverterGSA
     {
       switch (speckleType)
       {
-        case ElementType1D.Bar:
-          return ElementType.Bar;
-        case ElementType1D.Cable:
-          return ElementType.Cable;
-        case ElementType1D.Damper:
-          return ElementType.Damper;
-        case ElementType1D.Link:
-          return ElementType.Link;
-        case ElementType1D.Rod:
-          return ElementType.Rod;
-        case ElementType1D.Spacer:
-          return ElementType.Spacer;
-        case ElementType1D.Spring:
-          return ElementType.Spring;
-        case ElementType1D.Strut:
-          return ElementType.Strut;
-        case ElementType1D.Tie:
-          return ElementType.Tie;
-        default:
-          return ElementType.Beam;
+        case ElementType1D.Beam: return ElementType.Beam;
+        case ElementType1D.Bar: return ElementType.Bar;
+        case ElementType1D.Cable: return ElementType.Cable;
+        case ElementType1D.Damper: return ElementType.Damper;
+        case ElementType1D.Link: return ElementType.Link;
+        case ElementType1D.Rod: return ElementType.Rod;
+        case ElementType1D.Spacer: return ElementType.Spacer;
+        case ElementType1D.Spring: return ElementType.Spring;
+        case ElementType1D.Strut: return ElementType.Strut;
+        case ElementType1D.Tie: return ElementType.Tie;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum"); 
       }
     }
 
@@ -542,15 +535,100 @@ namespace ConverterGSA
     {
       switch (speckleType)
       {
-        case ElementType2D.Triangle3:
-          return ElementType.Triangle3;
-        case ElementType2D.Triangle6:
-          return ElementType.Triangle6;
-        case ElementType2D.Quad8:
-          return ElementType.Quad8;
-        case ElementType2D.Quad4:
-        default:
-          return ElementType.Quad4;
+        case ElementType2D.Triangle3: return ElementType.Triangle3;
+        case ElementType2D.Triangle6: return ElementType.Triangle6;
+        case ElementType2D.Quad8: return ElementType.Quad8;
+        case ElementType2D.Quad4: return ElementType.Quad4;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static Load2dFaceType ToNative(this FaceLoadType speckleType)
+    {
+      switch (speckleType)
+      {
+        case FaceLoadType.Constant: return Load2dFaceType.Uniform;
+        case FaceLoadType.Point: return Load2dFaceType.Point;
+        case FaceLoadType.Variable: return Load2dFaceType.General;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static GwaAxisDirection3 ToNative(this LoadDirection2D speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadDirection2D.X: return GwaAxisDirection3.X;
+        case LoadDirection2D.Y: return GwaAxisDirection3.Y;
+        case LoadDirection2D.Z: return GwaAxisDirection3.Z;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static AxisRefType ToNative(this LoadAxisType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadAxisType.Global: return AxisRefType.Global;
+        case LoadAxisType.Local: return AxisRefType.Local;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static LoadCategory LoadCategoryToNative(this string category)
+    {
+      switch(category.ToLowerInvariant())
+      {
+        case "residential": return LoadCategory.Residential;
+        case "office": return LoadCategory.Office;
+        case "congregationarea": return LoadCategory.CongregationArea;
+        case "shop": return LoadCategory.Shop;
+        case "storage": return LoadCategory.Storage;
+        case "lighttraffic": return LoadCategory.LightTraffic;
+        case "traffic": return LoadCategory.Traffic;
+        case "roofs": return LoadCategory.Roofs;
+        case "notset": return LoadCategory.NotSet;
+        default: throw new Exception(category + " speckle string can not be converted into native enum");
+      }
+    }
+
+    public static IncludeOption IncludeOptionToNative(this string include)
+    {
+      switch(include.ToLowerInvariant())
+      {
+        case "undefined": return IncludeOption.Undefined;
+        case "unfavourable": return IncludeOption.Unfavourable;
+        case "favourable": return IncludeOption.Favourable;
+        case "both": return IncludeOption.Both;
+        default: throw new Exception(include + " speckle string can not be converted into native enum");
+      }
+    }
+
+    public static StructuralLoadCaseType ToNative(this LoadType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadType.Dead: return StructuralLoadCaseType.Dead;
+        case LoadType.SeismicStatic: return StructuralLoadCaseType.Earthquake;
+        case LoadType.Live: return StructuralLoadCaseType.Live;
+        case LoadType.Rain: return StructuralLoadCaseType.Rain;
+        case LoadType.Snow: return StructuralLoadCaseType.Snow;
+        case LoadType.Soil: return StructuralLoadCaseType.Soil;
+        case LoadType.Thermal: return StructuralLoadCaseType.Thermal;
+        case LoadType.Wind: return StructuralLoadCaseType.Wind;
+        case LoadType.None: return StructuralLoadCaseType.NotSet;
+        default: return StructuralLoadCaseType.Generic;
+      }
+    }
+
+    public static Load2dThermalType ToNative(this Thermal2dLoadType speckleType)
+    {
+      switch (speckleType)
+      {
+        case Thermal2dLoadType.Uniform: return Load2dThermalType.Uniform;
+        case Thermal2dLoadType.Gradient: return Load2dThermalType.Gradient;
+        case Thermal2dLoadType.General: return Load2dThermalType.General;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
       }
     }
     #endregion
@@ -623,6 +701,75 @@ namespace ConverterGSA
     }
     #endregion
 
+    #region ResolveIndices
+    public static List<int> GetElementIndicies(this List<Base> speckleElements)
+    {
+      var gsaIndices = new List<int>();
+      foreach (var e in speckleElements)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaEl>(e.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return gsaIndices;
+    }
+
+    public static List<int> GetMemberIndicies(this List<Base> speckleElements)
+    {
+      var gsaIndices = new List<int>();
+      foreach (var e in speckleElements)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaMemb>(e.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return gsaIndices;
+    }
+
+    public static List<int> GetIndicies(this List<Node> speckleNodes)
+    {
+      var gsaIndices = new List<int>();
+      foreach (var e in speckleNodes)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaNode>(e.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return gsaIndices;
+    }
+
+    public static int ResolveIndex(this Node speckleNode)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaNode>(speckleNode.applicationId);
+    }
+
+    public static int ResolveIndex(this Axis speckleAxis)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleAxis.applicationId);
+    }
+
+    public static int ResolveIndex(this LoadCase speckleLoad)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaLoadCase>(speckleLoad.applicationId);
+    }
+
+    public static int ResolveIndex(this LoadFace speckleLoad)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dFace>(speckleLoad.applicationId);
+    }
+
+    public static int ResolveIndex(this LoadNode speckleLoad)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaLoadNode>(speckleLoad.applicationId);
+    }
+
+    public static int ResolveIndex(this GSALoadThermal2d speckleLoad)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dThermal>(speckleLoad.applicationId);
+    }
+
+    public static int ResolveIndex(this LoadGravity speckleLoad)
+    {
+      return Instance.GsaModel.Cache.ResolveIndex<GsaLoadGravity>(speckleLoad.applicationId);
+    }
+    #endregion
 
     public static List<double> Insert(this List<double> source, double item, int step)
     {

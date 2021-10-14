@@ -12,11 +12,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using Speckle.Core.Kits;
+using Objects.Structural.Loading;
 
 namespace ConverterGSA
 {
@@ -196,6 +198,266 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
+    private List<GsaRecord> LoadCaseToNative(Base speckleObject)
+    {
+      var speckleLoadCase = (GSALoadCase)speckleObject;
+      var gsaLoadCase = new GsaLoadCase()
+      {
+        ApplicationId = speckleLoadCase.applicationId,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaLoadCase>(speckleLoadCase.applicationId),
+        Title = speckleLoadCase.name,
+        CaseType = speckleLoadCase.loadType.ToNative(),
+        Category = speckleLoadCase.description.LoadCategoryToNative(),
+        Direction = speckleLoadCase.direction.ToNative(),
+        Include = speckleLoadCase.include.IncludeOptionToNative(),
+        Source = int.Parse(speckleLoadCase.group),
+      };
+      if (speckleLoadCase.bridge) gsaLoadCase.Bridge = true;
+      return new List<GsaRecord>() { gsaLoadCase };
+    }
+
+    private List<GsaRecord> AnalysisCaseToNative(Base speckleObject)
+    {
+      var speckleCase = (GSAAnalysisCase)speckleObject;
+      var gsaCase = new GsaAnal()
+      {
+        ApplicationId = speckleCase.applicationId,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaAnal>(speckleCase.applicationId),
+        Name = speckleCase.name,
+        //TaskIndex = Instance.GsaModel.Cache.ResolveIndex<GsaTask>(speckleCase.task.applicationId), //TODO:
+        Desc = GetAnalysisCaseDescription(speckleCase.loadCases, speckleCase.loadFactors),
+      };
+      return new List<GsaRecord>() { gsaCase };
+    }
+
+    private List<GsaRecord> LoadCombinationToNative(Base speckleObject)
+    {
+      var speckleLoadCombination = (LoadCombination)speckleObject;
+      var gsaLoadCombination = new GsaCombination()
+      {
+        ApplicationId = speckleLoadCombination.applicationId,
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaCombination>(speckleLoadCombination.applicationId),
+        Name = speckleLoadCombination.name,
+        Desc = GetLoadCombinationDescription(speckleLoadCombination.combinationType, speckleLoadCombination.loadCases, speckleLoadCombination.loadFactors),
+      };
+
+      //Add dynamic properties
+      var members = speckleLoadCombination.GetMembers();
+      if (members.ContainsKey("bridge") && speckleLoadCombination["bridge"] is bool) gsaLoadCombination.Bridge = speckleLoadCombination["bridge"] as bool?;
+      if (members.ContainsKey("note") && speckleLoadCombination["note"] is string) gsaLoadCombination.Note = speckleLoadCombination["note"] as string;
+
+      return new List<GsaRecord>() { gsaLoadCombination };
+    }
+
+    #region LoadBeam
+    private List<GsaRecord> LoadBeamToNative(Base speckleObject)
+    {
+      var speckleLoad = (GSALoadBeam)speckleObject;
+      GsaLoadBeam gsaLoad = null;
+
+      var fns = new Dictionary<BeamLoadType, Func<GSALoadBeam, GsaLoadBeam>>
+      { { BeamLoadType.Uniform, LoadBeamUniformToNative },
+        { BeamLoadType.Linear, LoadBeamLinearToNative },
+        { BeamLoadType.Point, LoadBeamPointToNative },
+        { BeamLoadType.Patch, LoadBeamPatchToNative },
+        { BeamLoadType.TriLinear, LoadBeamTriLinearToNative },
+      };
+      //Apply spring type specific properties
+      if (fns.ContainsKey(speckleLoad.loadType)) gsaLoad = fns[speckleLoad.loadType](speckleLoad);
+      else
+      {
+        ConversionErrors.Add(new Exception("LoadBeamToNative: beam load type (" + speckleLoad.loadType.ToString() + ") is not currently supported"));
+      }
+
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private GsaLoadBeam LoadBeamUniformToNative(GSALoadBeam speckleLoad)
+    {
+      var gsaLoad = LoadBeamBaseToNative<GsaLoadBeamUdl>(speckleLoad);
+      if (speckleLoad.values != null) gsaLoad.Load = speckleLoad.values[0];
+      return gsaLoad;
+    }
+
+    private GsaLoadBeam LoadBeamLinearToNative(GSALoadBeam speckleLoad)
+    {
+      var gsaLoad = LoadBeamBaseToNative<GsaLoadBeamLine>(speckleLoad);
+      if (speckleLoad.values != null && speckleLoad.values.Count() >= 2)
+      {
+        gsaLoad.Load1 = speckleLoad.values[0];
+        gsaLoad.Load2 = speckleLoad.values[1];
+      }
+      return gsaLoad;
+    }
+
+    private GsaLoadBeam LoadBeamPointToNative(GSALoadBeam speckleLoad)
+    {
+      var gsaLoad = LoadBeamBaseToNative<GsaLoadBeamPoint>(speckleLoad);
+      if (speckleLoad.values != null) gsaLoad.Load = speckleLoad.values[0];
+      if (speckleLoad.positions != null) gsaLoad.Position = speckleLoad.positions[0];
+      return gsaLoad;
+    }
+
+    private GsaLoadBeam LoadBeamPatchToNative(GSALoadBeam speckleLoad)
+    {
+      var gsaLoad = LoadBeamBaseToNative<GsaLoadBeamPatch>(speckleLoad);
+      if (speckleLoad.values != null && speckleLoad.values.Count() >= 2)
+      {
+        gsaLoad.Load1 = speckleLoad.values[0];
+        gsaLoad.Load2 = speckleLoad.values[1];
+      }
+      if (speckleLoad.positions != null && speckleLoad.positions.Count() >= 2)
+      {
+        gsaLoad.Position1 = speckleLoad.positions[0];
+        gsaLoad.Position2Percent = speckleLoad.positions[1];
+      }
+      return gsaLoad;
+    }
+
+    private GsaLoadBeam LoadBeamTriLinearToNative(GSALoadBeam speckleLoad)
+    {
+      var gsaLoad = LoadBeamBaseToNative<GsaLoadBeamTrilin>(speckleLoad);
+      if (speckleLoad.values != null && speckleLoad.values.Count() >= 2)
+      {
+        gsaLoad.Load1 = speckleLoad.values[0];
+        gsaLoad.Load2 = speckleLoad.values[1];
+      }
+      if (speckleLoad.positions != null && speckleLoad.positions.Count() >= 2)
+      {
+        gsaLoad.Position1 = speckleLoad.positions[0];
+        gsaLoad.Position2Percent = speckleLoad.positions[1];
+      }
+      return gsaLoad;
+    }
+
+    private T LoadBeamBaseToNative<T>(GSALoadBeam speckleLoad) where T : GsaLoadBeam
+    {
+      var gsaLoad = (T)Activator.CreateInstance(typeof(T), new object());
+      gsaLoad.ApplicationId = speckleLoad.applicationId;
+      gsaLoad.Index = Instance.GsaModel.Cache.ResolveIndex<T>(speckleLoad.applicationId);
+      gsaLoad.Name = speckleLoad.name;
+      gsaLoad.LoadCaseIndex = speckleLoad.loadCase.ResolveIndex();
+      gsaLoad.Projected = speckleLoad.isProjected;
+      gsaLoad.LoadDirection = speckleLoad.direction.ToNative();
+      if (speckleLoad.elements != null)
+      {
+        gsaLoad.ElementIndices = speckleLoad.elements.GetElementIndicies();
+        gsaLoad.MemberIndices = speckleLoad.elements.GetMemberIndicies();
+      }
+      if (GetLoadBeamAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+      {
+        gsaLoad.AxisRefType = gsaAxisRefType;
+        gsaLoad.AxisIndex = gsaAxisIndex;
+      }
+      return gsaLoad;
+    }
+    #endregion
+    private List<GsaRecord> LoadFaceToNative(Base speckleObject)
+    {
+      var speckleLoad = (GSALoadFace)speckleObject;
+      var gsaLoad = new GsaLoad2dFace()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.ResolveIndex(),
+        Name = speckleLoad.name,
+        Type = speckleLoad.loadType.ToNative(),
+        LoadCaseIndex = speckleLoad.loadCase.ResolveIndex(),
+        Values = speckleLoad.values,
+        LoadDirection = speckleLoad.direction.ToNative(),
+        Projected = speckleLoad.isProjected,
+      };
+      if (speckleLoad.elements != null)
+      {
+        gsaLoad.ElementIndices = speckleLoad.elements.GetElementIndicies();
+        gsaLoad.MemberIndices = speckleLoad.elements.GetMemberIndicies();
+      }
+      if (GetLoadFaceAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+      {
+        gsaLoad.AxisRefType = gsaAxisRefType;
+        gsaLoad.AxisIndex = gsaAxisIndex;
+      }
+      else
+      {
+        gsaLoad.AxisRefType = speckleLoad.loadAxisType.ToNative();
+      }
+      if (speckleLoad.positions != null && speckleLoad.positions.Count() >= 2)
+      {
+        gsaLoad.R = speckleLoad.positions[0];
+        gsaLoad.S = speckleLoad.positions[1];
+      }
+
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private List<GsaRecord> LoadNodeToNative(Base speckleObject)
+    {
+      var speckleLoad = (LoadNode)speckleObject;
+      var gsaLoad = new GsaLoadNode()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.ResolveIndex(),
+        Name = speckleLoad.name,
+        LoadDirection = speckleLoad.direction.ToNative(),
+        LoadCaseIndex = speckleLoad.loadCase.ResolveIndex(),
+      };
+      if (speckleLoad.value != 0) gsaLoad.Value = speckleLoad.value;
+      if (speckleLoad.nodes != null) gsaLoad.NodeIndices = speckleLoad.nodes.GetIndicies();
+      if (speckleLoad.loadAxis.definition.IsGlobal())
+      {
+        gsaLoad.GlobalAxis = true;
+      }
+      else
+      {
+        gsaLoad.GlobalAxis = false;
+        gsaLoad.AxisIndex = speckleLoad.loadAxis.ResolveIndex();
+      }
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private List<GsaRecord> LoadGravityToNative(Base speckleObject)
+    {
+      var speckleLoad = (LoadGravity)speckleObject;
+      var gsaLoad = new GsaLoadGravity()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.ResolveIndex(),
+        Name = speckleLoad.name,
+        LoadCaseIndex = speckleLoad.loadCase.ResolveIndex(),
+      };
+      if (speckleLoad.nodes != null) gsaLoad.Nodes = speckleLoad.nodes.Select(o => (Node)o).ToList().GetIndicies();
+      if (speckleLoad.elements != null)
+      {
+        gsaLoad.ElementIndices = speckleLoad.elements.GetElementIndicies();
+        gsaLoad.MemberIndices = speckleLoad.elements.GetMemberIndicies();
+      }
+      if (speckleLoad.gravityFactors.x != 0) gsaLoad.X = speckleLoad.gravityFactors.x;
+      if (speckleLoad.gravityFactors.y != 0) gsaLoad.Y = speckleLoad.gravityFactors.y;
+      if (speckleLoad.gravityFactors.z != 0) gsaLoad.Z = speckleLoad.gravityFactors.z;
+
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private List<GsaRecord> LoadThermal2dToNative(Base speckleObject)
+    {
+      var speckleLoad = (GSALoadThermal2d)speckleObject;
+      var gsaLoad = new GsaLoad2dThermal()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.ResolveIndex(),
+        Name = speckleLoad.name,
+        LoadCaseIndex = speckleLoad.loadCase.ResolveIndex(),
+        Type = speckleLoad.type.ToNative(),
+        Values = speckleLoad.values,
+      };
+      if (speckleLoad.elements != null)
+      {
+        var speckleElements = speckleLoad.elements.Select(o => (Base)o).ToList();
+        gsaLoad.ElementIndices = speckleElements.GetElementIndicies();
+        gsaLoad.MemberIndices = speckleElements.GetMemberIndicies();
+      }
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
     #endregion
 
     #region Materials
@@ -561,6 +823,93 @@ namespace ConverterGSA
     }
     #endregion
     #endregion
+    #endregion
+    #region Loading
+    private bool GetLoadBeamAxis(Axis speckleAxis, out LoadBeamAxisRefType gsaAxisRefType, out int? gsaAxisIndex)
+    {
+      gsaAxisIndex = null;
+      if (speckleAxis.definition.IsGlobal())
+      {
+        gsaAxisRefType = LoadBeamAxisRefType.Global;
+      }
+      else
+      {
+        gsaAxisIndex = Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleAxis.applicationId);
+        if (gsaAxisIndex == null)
+        {
+          //TODO: handle local, and natural cases
+          gsaAxisRefType = LoadBeamAxisRefType.NotSet;
+          return false;
+        }
+        else
+        {
+          gsaAxisRefType = LoadBeamAxisRefType.Reference;
+        }
+      }
+
+      return true;
+    }
+
+    private bool GetLoadFaceAxis(Axis speckleAxis, out AxisRefType gsaAxisRefType, out int? gsaAxisIndex)
+    {
+      gsaAxisIndex = null;
+      if (speckleAxis.definition.IsGlobal())
+      {
+        gsaAxisRefType = AxisRefType.Global;
+      }
+      else
+      {
+        gsaAxisIndex = Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleAxis.applicationId);
+        if (gsaAxisIndex == null)
+        {
+          //TODO: handle local, and natural cases
+          gsaAxisRefType = AxisRefType.NotSet;
+          return false;
+        }
+        else
+        {
+          gsaAxisRefType = AxisRefType.Reference;
+        }
+      }
+
+      return true;
+    }
+
+    private string GetAnalysisCaseDescription(List<LoadCase> speckleLoadCases, List<double> speckleLoadFactors)
+    {
+      var gsaDescription = "";
+      for (var i = 0; i < speckleLoadCases.Count(); i++)
+      {
+        if (i > 0 && speckleLoadFactors[i] > 0) gsaDescription += "+";
+        gsaDescription += speckleLoadFactors[i].ToString() + "L" + Instance.GsaModel.Cache.ResolveIndex<LoadCase>(speckleLoadCases[i].applicationId);
+      }
+      return gsaDescription;
+    }
+
+    private string GetLoadCombinationDescription(CombinationType type, List<Base> loadCases, List<double> loadFactors)
+    {
+      var desc = "";
+      if (type != CombinationType.LinearAdd) return null; //TODO - handle other cases
+
+      for (var i = 0; i < loadCases.Count(); i++)
+      {
+        if (i > 0 && loadFactors[i] > 0) desc += "+";
+        desc += loadFactors[i].ToString();
+        if (loadCases[i].GetType() == typeof(LoadCombination))
+        {
+          desc += "C" + Instance.GsaModel.Cache.ResolveIndex<LoadCombination>(loadCases[i].applicationId);
+        }
+        else if (loadCases[i].GetType() == typeof(GSAAnalysisCase))
+        {
+          desc += "A" + Instance.GsaModel.Cache.ResolveIndex<GSAAnalysisCase>(loadCases[i].applicationId);
+        }
+        else
+        {
+          return null;
+        }
+      }
+      return desc;
+    }
     #endregion
     #endregion
   }
