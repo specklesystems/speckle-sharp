@@ -56,7 +56,7 @@ parameters:
   run_connector_autocadcivil:
     type: boolean
     default: false
-  run_connector_ETABS:
+  run_connector_etabs:
     type: boolean
     default: false
 
@@ -78,7 +78,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"}
-            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_ETABS"}
+            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"}
           ]'
           base-branch: 'main'
   
@@ -312,11 +312,11 @@ workflows:
           dllname: SpeckleConnectorCivil.dll
   
   # ETABS Connector -Build/Test
-  connector_ETABS:
-    when: << pipeline.parameters.run_connector_ETABS>>
+  connector_etabs:
+    when: << pipeline.parameters.run_connector_etabs>>
     jobs:
       - build-connector: 
-        name: build-connector-ETABS
+        name: build-connector-etabs
         slnname: ConnectorETABS
         dllname: SpeckleConnectorETABS.dll
 

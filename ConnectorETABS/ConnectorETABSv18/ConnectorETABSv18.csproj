@@ -129,7 +129,7 @@
       <Name>Objects</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\ConnectorETABSShared\ConnectorETABSShared.projitems" Label="Shared" />
   <Import Project="..\..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems" Label="Shared" />
+  <Import Project="..\ConnectorETABS\ConnectorETABSShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
