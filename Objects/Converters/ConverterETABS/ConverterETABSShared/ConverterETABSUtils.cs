@@ -13,7 +13,6 @@ namespace Objects.Converter.ETABS
     {
     public string ModelUnits()
         {   
-           
             var units = Model.GetDatabaseUnits();
             if (units != 0)
             {
@@ -139,13 +138,13 @@ namespace Objects.Converter.ETABS
 
         public enum ETABSAPIUsableTypes
     {
-        Point = 1, // cPointObj
-        Frame = 2, // cFrameObj
-                   //Tendon = 3, 
-        Area = 4, // cAreaObj
-        //LoadPattern = 5,
+        Point,
+        Frame,
+        Area, // cAreaObj
+        LoadPattern,
         Model,
         Column,
+        Brace,
         Beam,
         Floor,
         Wall

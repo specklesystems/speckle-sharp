@@ -68,8 +68,8 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllFloorNames(model);
                 case "Wall":
                     return GetAllWallNames(model);
-                //case "LoadPattern":
-                //    return GetAllLoadPatternNames(model);
+                case "LoadPattern":
+                    return GetAllLoadPatternNames(model);
                 case "Model":
                     var names = new string[] { };
                     names.Append(model.GetModelFilename());
@@ -552,7 +552,7 @@ namespace Speckle.ConnectorETABS.Util
             Area,
             Wall,
             Floor,
-            //LoadPattern,
+            LoadPattern,
             Model,
             //ColumnResults,
             //BeamResults,

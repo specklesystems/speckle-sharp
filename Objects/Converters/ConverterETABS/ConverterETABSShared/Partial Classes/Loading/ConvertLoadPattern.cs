@@ -1,5 +1,4 @@
 ﻿using ETABSv1;
-using Objects.Structural.ApplicationSpecific.ETABS.Loading;
 using Objects.Structural.Loading;
 using System;
 using System.Collections.Generic;
@@ -9,14 +8,34 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        public object LoadPatternToNative(Load gravityLoad)
+        {
+            return gravityLoad.name;
+            
+        }
         public LoadCase LoadPatternToSpeckle(string loadPatternName)
         {
-            return new ETABSLoadPattern()
+            var speckleLoadCase = new LoadCase();
+
+
+            speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
+            
+            speckleLoadCase.name = loadPatternName;
+            var selfweight = GetSelfWeightMultiplier(loadPatternName);
+            if(selfweight != 0)
             {
-                name = loadPatternName,
-                loadType = GetAndConvertEtabsLoadType(loadPatternName),
-                SelfWeightMultiplier = GetSelfWeightMultiplier(loadPatternName)
-            };
+                var gravityVector = new Geometry.Vector(0, 0, -selfweight);
+                var gravityLoad = new GravityLoad(loadPatternName, speckleLoadCase, gravityVector);
+                SpeckleModel.loads.Add(gravityLoad);
+            }
+            else
+            {
+                var gravityVector = new Geometry.Vector(0, 0,0);
+                var gravityLoad = new GravityLoad(loadPatternName, speckleLoadCase, gravityVector);
+                SpeckleModel.loads.Add(gravityLoad);
+            }
+
+            return speckleLoadCase;
         }
 
         public LoadType GetAndConvertEtabsLoadType(string name)

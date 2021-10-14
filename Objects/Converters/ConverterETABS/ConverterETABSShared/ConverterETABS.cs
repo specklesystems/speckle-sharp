@@ -125,21 +125,21 @@ namespace Objects.Converter.ETABS
                     returnObject = BraceToSpeckle(name);
                     break;
 
-                    //case "Link":
-                    //    returnObject = LinkToSpeckle(name);
-                    //    break;
-                    //case "PropMaterial":
-                    //    returnObject = PropMaterialToSpeckle(name);
-                    //    break;
-                    //case "PropFrame":
-                    //    returnObject = PropFrameToSpeckle(type, name);
-                    //    break;
-                    //case "LoadCase":
-                    //    returnObject = LoadCaseToSpeckle(name);
-                    //    break;
-                    //case "LoadPattern":
-                    //    returnObject = LoadPatternToSpeckle(name);
-                    //    break;
+                //case "Link":
+                //    returnObject = LinkToSpeckle(name);
+                //    break;
+                //case "PropMaterial":
+                //    returnObject = PropMaterialToSpeckle(name);
+                //    break;
+                //case "PropFrame":
+                //    returnObject = PropFrameToSpeckle(type, name);
+                //    break;
+                //case "LoadCase":
+                //    returnObject = LoadCaseToSpeckle(name);
+                //    break;
+                case "LoadPattern":
+                    returnObject = LoadPatternToSpeckle(name);
+                    break;
                     //case "ColumnResults":
 
                     //    returnObject = FrameResultSet1dToSpeckle(name);

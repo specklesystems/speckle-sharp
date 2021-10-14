@@ -60,6 +60,7 @@ namespace Objects.Converter.ETABS
             model.elements = new List<Base> { };
             model.properties = new List<Base> { };
             model.restraints = new List<Base> { };
+            model.loads = new List<Base> { };
             int number = 0;
             string[] properties1D = { };
             Model.PropFrame.GetNameList(ref number, ref properties1D);

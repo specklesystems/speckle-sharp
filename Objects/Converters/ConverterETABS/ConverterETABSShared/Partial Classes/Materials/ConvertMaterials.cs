@@ -90,6 +90,7 @@ namespace Objects.Converter.ETABS
                     speckleStructMaterial.type = Structural.MaterialType.Masonry;
                     break;
             }
+
             return speckleStructMaterial;
         }
     }
