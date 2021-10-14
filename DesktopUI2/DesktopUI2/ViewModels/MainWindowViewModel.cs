@@ -24,7 +24,9 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    public string Title => "Speckle " + Bindings.GetHostAppName();
+    public string Title => "for " + Bindings.GetHostAppName();
+    public string TitleFull => "Speckle for " + Bindings.GetHostAppName();
+    public string Version => "v" + Bindings.ConnectorVersion;
     public MainWindowViewModel(ConnectorBindings _bindings)
     {
       Bindings = _bindings;

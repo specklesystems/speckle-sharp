@@ -11,6 +11,7 @@ namespace DesktopUI2
     public override void Initialize()
     {
       AvaloniaXamlLoader.Load(this);
+      this.Name = "Speckle";
     }
 
     public override void OnFrameworkInitializationCompleted()
