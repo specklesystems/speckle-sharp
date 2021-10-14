@@ -318,7 +318,7 @@ workflows:
       - build-connector: 
         name: build-connector-ETABS
         slnname: ConnectorETABS
-        dllname: ConnectorETABSv18
+        dllname: SpeckleConnectorETABS.dll
 
   nuget:
     jobs:
@@ -457,7 +457,7 @@ workflows:
       - build-connector:
           name: build-deploy-connector-ETABS
           slnname: ConnectorETABS
-          dllname: SpeckleConnectorETABS
+          dllname: SpeckleConnectorETABS.dll
           slug: etabs
           installer: true
           requires: 
