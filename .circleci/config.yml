@@ -316,9 +316,9 @@ workflows:
     when: << pipeline.parameters.run_connector_etabs>>
     jobs:
       - build-connector: 
-        name: build-connector-etabs
-        slnname: ConnectorETABS
-        dllname: SpeckleConnectorETABS.dll
+          name: build-connector-etabs
+          slnname: ConnectorETABS
+          dllname: SpeckleConnectorETABS.dll
 
   nuget:
     jobs:
