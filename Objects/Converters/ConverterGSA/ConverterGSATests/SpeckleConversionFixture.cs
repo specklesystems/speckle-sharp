@@ -1,6 +1,7 @@
 ﻿using System;
 using Speckle.GSA.API;
 using Speckle.Core.Kits;
+using System.Linq.Expressions;
 
 namespace ConverterGSATests
 {
@@ -22,6 +23,13 @@ namespace ConverterGSATests
     public void Dispose()
     {
       Instance.GsaModel = null;
+    }
+
+    //https://stackoverflow.com/questions/17048752/how-to-get-a-property-name-from-the-property-of-a-class-instance/17049349#17049349
+    public static string GetPropertyName<T, P>(Expression<Func<T, P>> propertyDelegate)
+    {
+      var expression = (MemberExpression)propertyDelegate.Body;
+      return expression.Member.Name;
     }
   }
 }

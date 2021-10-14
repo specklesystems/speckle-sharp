@@ -266,7 +266,7 @@ namespace ConnectorGSA.ViewModels
 
           Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-          var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+          var result = await Task.Run(() => Commands.Receive(Coordinator, loggingProgress, statusProgress, percentageProgress));
 
           Refresh(() => StateMachine.StoppedReceiving());
         },
@@ -317,7 +317,7 @@ namespace ConnectorGSA.ViewModels
 
             Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-            var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+            var result = await Task.Run(() => Commands.Receive(Coordinator, loggingProgress, statusProgress, percentageProgress));
 
             if (ReceiveStreamMethod != StreamMethod.Continuous)
             {

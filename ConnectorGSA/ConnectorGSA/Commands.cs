@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Speckle.ConnectorGSA.Proxy;
 using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.Core.Api;
+using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -326,7 +327,7 @@ namespace ConnectorGSA
       return (state.Errors.Count == 0);
     }
 
-    internal static async Task<bool> Receive(TabCoordinator coordinator, IProgress<StreamState> streamCreationProgress, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
+    internal static async Task<bool> Receive(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
@@ -336,6 +337,7 @@ namespace ConnectorGSA
       Instance.GsaModel.Units = UnitEnumToString(coordinator.ReceiverTab.CoincidentNodeUnits);
       Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance;
       Instance.GsaModel.LoggingMinimumLevel = (int)coordinator.LoggingMinimumLevel;
+
       var perecentageProgressLock = new object();
 
       var account = ((GsaModel)Instance.GsaModel).Account;
@@ -365,14 +367,19 @@ namespace ConnectorGSA
       var receiveTasks = new List<Task>();
       foreach (var streamId in streamIds)
       {
-        var streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = new Stream() { id = streamId }, IsReceiving = true };
+        var streamState = new StreamState(account.userInfo.id, account.serverInfo.url)
+        {
+          Stream = new Stream() { id = streamId },
+          IsReceiving = true
+        };
         var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
+
         receiveTasks.Add(streamState.RefreshStream()
           .ContinueWith(async (refreshed) =>
             {
               if (refreshed.Result)
               {
-                streamState.Stream.branch = client.StreamGetBranches(streamId, 1).Result.First();
+                streamState.Stream.branch = streamState.Client.StreamGetBranches(streamId, 1).Result.First();
                 if (streamState.Stream.branch.commits == null || streamState.Stream.branch.commits.totalCount == 0)
                 {
                   loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "This branch has no commits"));
@@ -931,18 +938,19 @@ namespace ConnectorGSA
 #endif
 
       var account = ((GsaModel)Instance.GsaModel).Account;
-      var client = new Client(account);
+      //var client = new Client(account);
       StreamState streamState;
       if (coordinator.SenderTab.SenderStreamStates == null || coordinator.SenderTab.SenderStreamStates.Count == 0)
       {
-        var stream = NewStream(client, "GSA data", "GSA data").Result;
-        streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = stream, IsSending = true };
+        streamState = new StreamState(account.userInfo.id, account.serverInfo.url);
+        streamState.Stream = await NewStream(streamState.Client, "GSA data", "GSA data");
+        streamState.IsSending = true;
         ((GsaModel)Instance.GsaModel).LastCommitId = "";
       }
       else
       {
         streamState = coordinator.SenderTab.SenderStreamStates.First();
-        var branches = client.StreamGetBranches(streamState.StreamId).Result;
+        var branches = streamState.Client.StreamGetBranches(streamState.StreamId).Result;
         var mainBranch = branches.FirstOrDefault(b => b.name == "main");
         if (mainBranch != null && mainBranch.commits.items.Any())
         {
