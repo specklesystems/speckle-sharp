@@ -44,7 +44,6 @@ namespace Objects.Converter.ETABS
                 return property1D.name;
             }
 
-;
             return null;
 
         }

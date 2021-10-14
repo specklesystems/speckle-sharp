@@ -11,8 +11,9 @@ namespace Objects.Converter.ETABS
     public partial class ConverterETABS
     {
 
-        void setProperties(ETABSProperty2D property2D, string matProp, double thickeness)
+        void setProperties(ETABSProperty2D property2D, string matProp, double thickeness, string name)
         {
+            property2D.name = name;
             property2D.thickness = thickeness;
             property2D.material = MaterialToSpeckle(matProp);
             

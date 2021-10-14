@@ -56,11 +56,13 @@ namespace Objects.Converter.ETABS
                 {
                     case Structural.ETABS.Analysis.SlabType.Slab:
                         var SolidSlab = property2D;
-                        Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shellType(SolidSlab), SolidSlab.material.name, SolidSlab.thickness);
+                        var shell = shellType(SolidSlab);
+                        Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shell, SolidSlab.material.name, SolidSlab.thickness);
                         break;
                     case Structural.ETABS.Analysis.SlabType.Ribbed:
                         var slabRibbed = (ETABSProperty2D.RibbedSlab)property2D;
-                        Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shellType(slabRibbed), slabRibbed.material.name, slabRibbed.thickness);
+                        shell = shellType(slabRibbed);
+                        Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shell, slabRibbed.material.name, slabRibbed.thickness);
                         Model.PropArea.SetSlabRibbed(slabRibbed.name,
                             slabRibbed.OverAllDepth,
                             slabRibbed.thickness,
@@ -71,7 +73,8 @@ namespace Objects.Converter.ETABS
                         break;
                     case Structural.ETABS.Analysis.SlabType.Waffle:
                         var slabWaffled = (ETABSProperty2D.WaffleSlab)property2D;
-                        Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shellType(slabWaffled), slabWaffled.material.name, slabWaffled.thickness);
+                        shell = shellType(slabWaffled);
+                        Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shell , slabWaffled.material.name, slabWaffled.thickness);
                         Model.PropArea.SetSlabWaffle(
                             slabWaffled.name,
                             slabWaffled.OverAllDepth,
@@ -123,7 +126,8 @@ namespace Objects.Converter.ETABS
                     deckType = eDeckType.SolidSlab;
                     break;
             }
-            Model.PropArea.SetDeck(deck.name, deckType, shellType(deck), deck.material.name, deck.thickness);
+            var shell = shellType(deck);
+            Model.PropArea.SetDeck(deck.name, deckType, shell, deck.material.name, deck.thickness);
         }
         public ETABSProperty2D FloorPropertyToSpeckle(string property)
         {
@@ -177,7 +181,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.UnitWeight = unitWeight;
                     speckleProperty2D.ShearStudHt = shearStudHt;
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Filled;
-                    setProperties(speckleProperty2D, matProp, thickness);
+                    setProperties(speckleProperty2D, matProp, thickness,property);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
                     speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
@@ -199,7 +203,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.ShearThickness = shearThickness;
                     speckleProperty2D.UnitWeight = unitWeight;
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Filled;
-                    setProperties(speckleProperty2D, matProp, thickness);
+                    setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
                     speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
@@ -214,7 +218,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.ShearStudFu = shearStudFu;
                     speckleProperty2D.ShearStudHt = shearStudHt;
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.SolidSlab;
-                    setProperties(speckleProperty2D, matProp, thickness);
+                    setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
                     speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
@@ -224,7 +228,7 @@ namespace Objects.Converter.ETABS
             if (s == 0)
             {
                 var specklePropery2DSlab = new ETABSProperty2D();
-                setProperties(specklePropery2DSlab, matProp, thickness);
+                setProperties(specklePropery2DSlab, matProp, thickness, property);
                 specklePropery2DSlab.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Slab;
                 double overallDepth = 0;
                 double slabThickness = 0;
@@ -246,7 +250,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.RibSpacingDir2 = ribSpacingDir2;
                     speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Waffle;
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Null;
-                    setProperties(speckleProperty2D, matProp, thickness);
+                    setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
                 }
@@ -261,7 +265,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.RibsParallelTo = ribParrallelTo;
                     speckleProperty2D.slabType = Structural.ETABS.Analysis.SlabType.Ribbed;
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Null;
-                    setProperties(speckleProperty2D, matProp, thickness);
+                    setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.shellType = speckleShellType;
                     return speckleProperty2D;
 

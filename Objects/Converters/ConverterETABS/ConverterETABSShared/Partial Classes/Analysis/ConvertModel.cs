@@ -31,7 +31,6 @@ namespace Objects.Converter.ETABS
                 else
                 {
                     Property2DToNative((ETABSProperty2D)property);
-                    break;
                 }
             }
             foreach(var element in model.elements)
