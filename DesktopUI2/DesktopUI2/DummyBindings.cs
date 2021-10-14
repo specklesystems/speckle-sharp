@@ -301,7 +301,7 @@ namespace DesktopUI2
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       // Let's fake some progress barsssss
-      progress.ConversionLog.Add("Starting fake sending");
+      progress.Report.Log("Starting fake sending");
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
       pd["A2"] = 1;
@@ -313,11 +313,11 @@ namespace DesktopUI2
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
-          progress.ConversionLog.Add("Fake sending was cancelled");
+          progress.Report.Log("Fake sending was cancelled");
           return;
         }
 
-        progress.ConversionLog.Add("Done fake task " + i);
+        progress.Report.Log("Done fake task " + i);
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;
@@ -334,7 +334,7 @@ namespace DesktopUI2
         }
         catch (Exception e)
         {
-          progress.OperationErrors.Add(e);
+          progress.Report.LogOperationError(e);
           //TODO
           //state.Errors.Add(e);
         }

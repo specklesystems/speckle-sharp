@@ -60,14 +60,22 @@ namespace Objects.Converter.Revit
     /// </summary>
     public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
-    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
-    public HashSet<string> ConversionLog { get; private set; } = new HashSet<string>();
+    public ProgressReport Report { get; private set; } = new ProgressReport();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
-    public ConverterRevit() { }
+    public ConverterRevit()
+    {
+      var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
+      Report.Log($"Using converter: {this.Name} v{ver}");
+    }
 
-    public void SetContextDocument(object doc) => Doc = (Document)doc;
+    public void SetContextDocument(object doc)
+    {
+      Doc = (Document)doc;
+      Report.Log($"Using document: {Doc.PathName}");
+      Report.Log($"Using units: {ModelUnits}");
+    }
 
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
@@ -190,7 +198,7 @@ namespace Objects.Converter.Revit
             break;
           }
 
-          ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
+          Report.Log($"Skipped not supported type: {@object.GetType()}{GetElemInfo(@object)}");
           returnObject = null;
           break;
       }

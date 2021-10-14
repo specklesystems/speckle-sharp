@@ -11,7 +11,7 @@ namespace Objects.Converter.Revit
   {
     public List<ApplicationPlaceholderObject> BraceToNative(Brace speckleBrace)
     {
-      //reuse logic in Beam class, at these are basically the same thing
+      //reuse ConversionLog.Addic in Beam class, at these are basically the same thing
       if (speckleBrace is RevitBrace rb)
       {
         var speckleBeam = new RevitBeam

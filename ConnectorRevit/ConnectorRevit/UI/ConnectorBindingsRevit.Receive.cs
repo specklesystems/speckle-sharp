@@ -105,9 +105,9 @@ namespace Speckle.ConnectorRevit.UI
           converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
           // receive was cancelled by user
-          if ( newPlaceholderObjects == null )
+          if (newPlaceholderObjects == null)
           {
-            converter.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
+            converter.Report.LogConversionError(new Exception("fatal error: receive cancelled by user"));
             t.RollBack();
             return;
           }
@@ -118,7 +118,7 @@ namespace Speckle.ConnectorRevit.UI
 
           t.Commit();
 
-          state.Errors.AddRange(converter.ConversionErrors);
+          state.Errors.AddRange(converter.Report.ConversionErrors);
         }
 
       });
@@ -130,7 +130,7 @@ namespace Speckle.ConnectorRevit.UI
         //wait to let queue finish
       }
 
-      if (converter.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
+      if (converter.Report.ConversionErrorsString.Contains("fatal error"))
       {
         // the commit is being rolled back
         return null;
@@ -177,7 +177,7 @@ namespace Speckle.ConnectorRevit.UI
 
       foreach (var @base in objects)
       {
-        if ( state.CancellationTokenSource.Token.IsCancellationRequested )
+        if (state.CancellationTokenSource.Token.IsCancellationRequested)
         {
           placeholders = null;
           break;

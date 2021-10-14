@@ -55,10 +55,6 @@ namespace Speckle.ConnectorRevit.UI
         referencedObject = res.commits.items.FirstOrDefault().referencedObject;
       }
 
-      //var commit = state.Commit;
-
-
-
       var commitObject = await Operations.Receive(
           referencedObject,
           progress.CancellationTokenSource.Token,
@@ -66,16 +62,15 @@ namespace Speckle.ConnectorRevit.UI
           onProgressAction: dict => progress.Update(dict),
           onErrorAction: (s, e) =>
           {
-            progress.OperationErrors.Add(e);
+            progress.Report.LogOperationError(e);
             progress.CancellationTokenSource.Cancel();
           },
           onTotalChildrenCountKnown: count => { progress.Max = count; },
           disposeTransports: true
           );
 
-      if (progress.OperationErrors.Count != 0)
+      if (progress.Report.OperationErrorsCount != 0)
       {
-        //Globals.Notify("Failed to get commit.");
         return state;
       }
 
@@ -105,7 +100,7 @@ namespace Speckle.ConnectorRevit.UI
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
           {
-            converter.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
+            progress.Report.LogConversionError(new Exception("fatal error: receive cancelled by user"));
             t.RollBack();
             return;
           }
@@ -115,29 +110,19 @@ namespace Speckle.ConnectorRevit.UI
           state.ReceivedObjects = newPlaceholderObjects;
 
           t.Commit();
-          progress.ConversionErrors.AddRange(converter.ConversionErrors);
+          progress.Report.Merge(converter.Report);
         }
 
       });
 
 
 
-      if (converter.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
+      if (converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
       {
         // the commit is being rolled back
         return null;
       }
 
-      try
-      {
-        //await state.RefreshStream();
-
-        //WriteStateToFile();
-      }
-      catch (Exception e)
-      {
-        progress.OperationErrors.Add(new Exception("Receiving done, but failed to update stream from server.", e));
-      }
 
       return state;
     }
@@ -192,7 +177,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception e)
         {
-          progress.OperationErrors.Add(e);
+          progress.Report.LogConversionError(e);
         }
       }
 
@@ -247,7 +232,7 @@ namespace Speckle.ConnectorRevit.UI
 
       else
       {
-        converter.ConversionLog.Add($"Skipping object of type {obj.GetType()}, not supported.");
+        converter.Report.Log($"Skipped object of type {obj.GetType()}, not supported.");
       }
 
       return objects;

@@ -6,15 +6,46 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 {
   public class DesignReportViewModel
   {
-
-    public string ConversionErrorsString { get; set; } = @"Could not convert chair to table
+    public class DesignReport
+    {
+      public string ConversionErrorsString { get; set; } = @"Could not convert chair to table
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
+Test
 Type 'rocket' is not supported 🚀";
 
-    public List<string> OperationErrors { get; set; } = new List<string>();
-    public string OperationErrorsString { get; set; } = @"Something went wrong";
-    public string ConversionLogString { get; set; } = @"This is a sample log
+      public int OperationErrorsCount = 0;
+      public string OperationErrorsString { get; set; } = @"Something went wrong";
+      public string ConversionLogString { get; set; } = @"This is a sample log
 Some elements were created
 Some other elements were not created
+Some other elements were updated
 Bye Bye!";
+
+    }
+
+    public DesignReport Report { get; set; } = new DesignReport();
   }
 }

@@ -27,7 +27,7 @@ namespace ConnectorRevit.Revit
       var failedElements = new List<ElementId>();
       // Inside event handler, get all warnings
       failList = failuresAccessor.GetFailureMessages();
-      foreach ( FailureMessageAccessor failure in failList )
+      foreach (FailureMessageAccessor failure in failList)
       {
         // check FailureDefinitionIds against ones that you want to dismiss, 
         //FailureDefinitionId failID = failure.GetFailureDefinitionId();
@@ -35,21 +35,21 @@ namespace ConnectorRevit.Revit
         //if (failID == BuiltInFailures.RoomFailures.RoomNotEnclosed)
         //{
         var t = failure.GetDescriptionText();
-        _converter.ConversionErrors.Add(new Exception(t));
+        _converter.Report.LogConversionError(new Exception(t));
 
         var s = failure.GetSeverity();
-        if ( s == FailureSeverity.Warning ) continue;
+        if (s == FailureSeverity.Warning) continue;
         try
         {
           failuresAccessor.ResolveFailure(failure);
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           // currently, the whole commit is rolled back. this should be investigated further at a later date
           // to properly proceed with commit
           failedElements.AddRange(failure.GetFailingElementIds());
-          _converter.ConversionErrors.Clear();
-          _converter.ConversionErrors.Add(new Exception(
+          //_converter.ConversionErrors.Clear();
+          _converter.Report.LogConversionError(new Exception(
             "Objects failed to bake due to a fatal error!\n" +
             "This is likely due to scaling issues - please ensure you've set the correct units on your objects or remove any invalid objects.\n\n" +
             "Revit error: " + t));

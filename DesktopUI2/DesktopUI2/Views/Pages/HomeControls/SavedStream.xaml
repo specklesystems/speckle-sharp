@@ -13,7 +13,7 @@
   mc:Ignorable="d">
 
   <m:Card
-    Margin="15,15,15,0"
+    Margin="14,7"
     VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch">
     <Grid ColumnDefinitions="*, auto" RowDefinitions="auto,auto">

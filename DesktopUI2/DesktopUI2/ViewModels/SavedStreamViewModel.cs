@@ -181,22 +181,27 @@ namespace DesktopUI2.ViewModels
     public async void SendCommand()
     {
       Progress = new ProgressViewModel();
-      await Bindings.SendStream(StreamState, Progress);
-      Progress.Value = 0;
+      Progress.IsProgressing = true;
+      await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
-      if (Progress.ConversionErrors.Any() || Progress.OperationErrors.Any())
-      {
+
+      if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
-      }
+
 
     }
 
     public async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
-      await Bindings.ReceiveStream(StreamState, Progress);
-      Progress.Value = 0;
+      Progress.IsProgressing = true;
+      await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+      Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
+
+      if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
+        Notification = "Something went wrong, please check the report.";
     }
 
     public void OpenReportCommand()
@@ -205,6 +210,8 @@ namespace DesktopUI2.ViewModels
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
       report.ShowDialog(MainWindow.Instance);
+
+
     }
 
 

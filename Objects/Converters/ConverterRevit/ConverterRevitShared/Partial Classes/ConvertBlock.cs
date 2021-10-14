@@ -44,8 +44,8 @@ namespace Objects.Converter.Revit
 
         if (familyDoc != null)
         {
-          if (familyDoc.LoadFamily(familyPath, new FamilyLoadOption(), out var fam));
-            familySymbol = familyDoc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
+          if (familyDoc.LoadFamily(familyPath, new FamilyLoadOption(), out var fam)) ;
+          familySymbol = familyDoc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
         }
         else
         {
@@ -90,7 +90,7 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(_instance, instance);
         result = "success";
       }
-
+      Report.Log($"Created Block {_instance.Id}");
       return result;
     }
 
@@ -125,7 +125,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} brep to native, falling back to mesh representation.", e));
+              Report.LogConversionError(new SpeckleException($"Could not convert block {definition.id} brep to native, falling back to mesh representation.", e));
               var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                   .Select(m => m as DB.Solid);
               solids.AddRange(brepMeshSolids);
@@ -145,7 +145,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              ConversionErrors.Add(new SpeckleException($"Could not convert block {definition.id} curve to native.", e));
+              Report.LogConversionError(new SpeckleException($"Could not convert block {definition.id} curve to native.", e));
             }
             break;
           case BlockInstance instance:
@@ -171,7 +171,7 @@ namespace Objects.Converter.Revit
       so.OverwriteExistingFile = true;
       famDoc.SaveAs(familyPath, so);
       famDoc.Close();
-
+      Report.Log($"Created temp family {familyPath}");
       return familyPath;
     }
 

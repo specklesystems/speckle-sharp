@@ -276,6 +276,7 @@ namespace DesktopUI2.ViewModels
     private async void SendCommand()
     {
       Progress = new ProgressViewModel();
+      Progress.IsProgressing = true;
       var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
 
@@ -287,13 +288,14 @@ namespace DesktopUI2.ViewModels
         );
       await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
       dialog.GetWindow().Close();
-      //TODO: display other dialog if operation failed etc
+      Progress.IsProgressing = false;
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
 
     private async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
+      Progress.IsProgressing = true;
       var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
 
@@ -305,6 +307,7 @@ namespace DesktopUI2.ViewModels
         );
       await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
       dialog.GetWindow().Close();
+      Progress.IsProgressing = false;
       //TODO: display other dialog if operation failed etc
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }

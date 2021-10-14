@@ -45,7 +45,7 @@ namespace Objects.Converter.Revit
       }
       if (revitWall == null)
       {
-        ConversionErrors.Add(new Exception($"Failed to create wall ${speckleWall.applicationId}."));
+        Report.LogConversionError(new Exception($"Failed to create wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -120,8 +120,7 @@ namespace Objects.Converter.Revit
       placeholders.AddRange(hostedElements);
 
 
-      var s = isUpdate ? "updated" : "created";
-      ConversionLog.Add($"Successfully {s} Wall {revitWall.Id}");
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} Wall {revitWall.Id}");
 
 
       return placeholders;
@@ -190,7 +189,7 @@ namespace Objects.Converter.Revit
       });
 
       GetHostedElements(speckleWall, revitWall);
-
+      Report.Log($"Converted Wall {revitWall.Id}");
       return speckleWall;
     }
 

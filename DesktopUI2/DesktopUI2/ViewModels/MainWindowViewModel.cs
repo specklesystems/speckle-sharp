@@ -52,7 +52,8 @@ namespace DesktopUI2.ViewModels
       Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
 
       var theme = PaletteHelper.GetTheme();
-      theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue400]);
+      theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
+      PaletteHelper.SetTheme(theme);
     }
 
     #region theme

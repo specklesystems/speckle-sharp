@@ -13,12 +13,11 @@ namespace Speckle.Core.Kits
     string Author { get; }
     string WebsiteOrEmail { get; }
 
-    public HashSet<Exception> ConversionErrors { get; }
-
     /// <summary>
     /// Keeps track of the conversion process
     /// </summary>
-    public HashSet<string> ConversionLog { get; }
+    public ProgressReport Report { get; }
+
 
     /// <summary>
     /// Converts a native object to a Speckle one
@@ -85,5 +84,6 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <param name="objects"></param>
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects);
+
   }
 }

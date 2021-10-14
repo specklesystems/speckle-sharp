@@ -11,6 +11,7 @@
   Height="500"
   d:DesignHeight="500"
   d:DesignWidth="500"
+  Icon="avares://DesktopUI2/Assets/icon.ico"
   mc:Ignorable="d">
   <Window.Resources>
     <conv:EmptyFalseValueConverter x:Key="EmptyFalseValueConverter" />
@@ -25,30 +26,35 @@
   <Design.DataContext>
     <vm:DesignReportViewModel />
   </Design.DataContext>
-  <Grid RowDefinitions="auto,auto,*,auto">
+  <Grid VerticalAlignment="Stretch" RowDefinitions="auto,auto,*,auto">
 
-    <Expander Header="Operation Errors ⚠" IsVisible="{Binding OperationErrors.Count, Converter={StaticResource EmptyFalseValueConverter}}">
+    <Expander
+      MaxHeight="300"
+      Header="Operation Errors ⚠"
+      IsVisible="{Binding Report.OperationErrorsCount, Converter={StaticResource EmptyFalseValueConverter}}">
       <TextBox
         Classes="Readonly"
         Foreground="Red"
-        Text="{Binding OperationErrorsString}" />
+        Text="{Binding Report.OperationErrorsString}" />
     </Expander>
 
     <Expander
       Grid.Row="1"
+      MaxHeight="300"
       Header="Conversion Errors ⚠"
-      IsVisible="{Binding ConversionErrors.Count, Converter={StaticResource EmptyFalseValueConverter}}">
+      IsVisible="{Binding Report.ConversionErrorsCount, Converter={StaticResource EmptyFalseValueConverter}}">
       <TextBox
         Classes="Readonly"
         Foreground="Red"
-        Text="{Binding ConversionErrorsString}" />
+        Text="{Binding Report.ConversionErrorsString}" />
     </Expander>
 
     <Expander
       Grid.Row="2"
+      MaxHeight="300"
       VerticalAlignment="Top"
       Header="Log">
-      <TextBox Classes="Readonly" Text="{Binding ConversionLogString}" />
+      <TextBox Classes="Readonly" Text="{Binding Report.ConversionLogString}" />
     </Expander>
     <StackPanel
       Grid.Row="3"
@@ -58,7 +64,7 @@
       <Button
         Margin="0,0,10,0"
         Command="{Binding GetHelpCommand}"
-        Content="Get help" />
+        Content="Get help on the forum 🤷‍" />
       <!--<Button Click="Close_Click" Content="Close" />-->
     </StackPanel>
   </Grid>

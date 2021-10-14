@@ -123,18 +123,17 @@
       <Button
         Classes="Flat"
         Command="{Binding ReceiveCommand}"
-        Content="Receive"
+        Content="Quick Receive"
         ToolTip.Tip="Receive once from Speckle" />
       <Button
-        Classes="Flat"
         Command="{Binding SaveCommand}"
         Content="Save"
         ToolTip.Tip="Save this sender to the file without receiving" />
-      <Button
+      <!--<Button
         Command="{Binding SaveReceiveCommand}"
         Content="Receive &amp; Save"
         Foreground="White"
-        ToolTip.Tip="Receive from Speckle and save this receiver to the file" />
+        ToolTip.Tip="Receive from Speckle and save this receiver to the file" />-->
     </StackPanel>
   </Grid>
 </UserControl>

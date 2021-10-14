@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,48 +7,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Web;
 
 namespace DesktopUI2.ViewModels
 {
+
+
   public class ProgressViewModel : ReactiveObject
   {
     public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
 
-    /// <summary>
-    /// Keeps track of the conversion process
-    /// </summary>
-    public List<string> ConversionLog { get; set; } = new List<string>();
-
-    public string ConversionLogString
-    {
-      get
-      {
-        return string.Join("\n", ConversionLog);
-      }
-    }
-    /// <summary>
-    /// Keeps track of errors in the conversions.
-    /// </summary>
-    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
-    public string ConversionErrorsString
-    {
-      get
-      {
-        return string.Join("\n", ConversionErrors.Select(x => x.Message));
-      }
-    }
-
-    /// <summary>
-    /// Keeps track of errors in the operations of send/receive.
-    /// </summary>
-    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
-    public string OperationErrorsString
-    {
-      get
-      {
-        return string.Join("\n", OperationErrors.Select(x => x.Message));
-      }
-    }
+    public ProgressReport Report { get; set; } = new ProgressReport();
 
 
     private ConcurrentDictionary<string, int> _progressDict;
@@ -77,7 +47,7 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _value, value);
-        this.RaisePropertyChanged(nameof(IsProgressing));
+        this.RaisePropertyChanged(nameof(IsIndeterminate));
       }
     }
 
@@ -92,9 +62,17 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public bool IsIndeterminate { get => Max == 0; }
+    public bool IsIndeterminate { get => Value == 0 || Max == Value; }
 
-    public bool IsProgressing { get => Value != 0; }
+    private bool _isProgressing = false;
+    public bool IsProgressing
+    {
+      get => _isProgressing;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _isProgressing, value);
+      }
+    }
 
 
 
@@ -109,7 +87,22 @@ namespace DesktopUI2.ViewModels
 
     public void GetHelpCommand()
     {
-      Process.Start(new ProcessStartInfo("https://speckle.community/") { UseShellExecute = true });
+      var report = "";
+      if (Report.OperationErrorsCount > 0)
+      {
+        report += "OPERATION ERRORS\n\n";
+        report += Report.OperationErrorsString;
+      }
+
+      if (Report.ConversionErrorsCount > 0)
+      {
+        if (Report.OperationErrorsCount > 0)
+          report += "\n\n";
+        report += "CONVERSION ERRORS\n\n";
+        report += Report.ConversionErrorsString;
+      }
+      var safeReport = HttpUtility.UrlEncode(report);
+      Process.Start(new ProcessStartInfo($"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help") { UseShellExecute = true });
     }
   }
 }
