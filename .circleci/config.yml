@@ -77,7 +77,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorDynamo/.*", "param_name": "run_connector_dynamo"},
             {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
-            {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"}
+            {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
             {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"}
           ]'
           base-branch: 'main'
