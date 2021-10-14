@@ -105,7 +105,20 @@ namespace Objects.Converter.ETABS
 
             return shellType;
         }
-    public Restraint Restraint(bool[] releases)
+
+    public bool[] RestraintToNative(Restraint restraint)
+        {
+            bool[] restraints = new bool[6];
+            restraints[0] = Convert.ToBoolean(restraint.stiffnessX);
+            restraints[1] = Convert.ToBoolean(restraint.stiffnessY);
+            restraints[2] = Convert.ToBoolean(restraint.stiffnessZ);
+            restraints[3] = Convert.ToBoolean(restraint.stiffnessXX);
+            restraints[4] = Convert.ToBoolean(restraint.stiffnessYY);
+            restraints[5] = Convert.ToBoolean(restraint.stiffnessZZ);
+            return restraints;
+        }
+
+    public Restraint RestraintToSpeckle(bool[] releases)
         {
             Restraint restraint = new Restraint();
             restraint.stiffnessX = Convert.ToInt32(!releases[0]);

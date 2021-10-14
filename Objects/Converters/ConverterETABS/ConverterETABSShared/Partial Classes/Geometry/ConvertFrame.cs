@@ -18,15 +18,24 @@ namespace Objects.Converter.ETABS
             {
                 Point end1node = baseline.start;
                 Point end2node = baseline.end;
-                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame,element1D.property.name);
+                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
             }
             else
             {
                 Point end1node = element1D.end1Node.basePoint;
                 Point end2node = element1D.end2Node.basePoint;
-                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame,element1D.property.name);
+                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
             }
 
+            var end1Release = RestraintToNative(element1D.end1Releases);
+            var end2Release = RestraintToNative(element1D.end2Releases);
+            double[] startV, endV;
+            startV = new double[] { };
+            endV = new double[] { };
+
+            Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
+
+            Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
             return element1D.name;
         }
         
@@ -88,8 +97,12 @@ namespace Objects.Converter.ETABS
             double[] startV, endV;
             startV = endV = null;
             Model.FrameObj.GetReleases(name,ref iRelease,ref jRelease,ref startV,ref endV);
-            speckleStructFrame.end1Releases = Restraint(iRelease);
-            speckleStructFrame.end2Releases = Restraint(jRelease);
+           
+            speckleStructFrame.end1Releases = RestraintToSpeckle(iRelease);
+            speckleStructFrame.end2Releases = RestraintToSpeckle(jRelease);
+            SpeckleModel.restraints.Add(speckleStructFrame.end1Releases);
+            SpeckleModel.restraints.Add(speckleStructFrame.end2Releases);
+
 
             double localAxis = 0;
             bool advanced = false;

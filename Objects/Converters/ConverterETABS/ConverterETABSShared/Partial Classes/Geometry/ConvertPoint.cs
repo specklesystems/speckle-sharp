@@ -31,7 +31,9 @@ namespace Objects.Converter.ETABS
             bool[] restraints = null;
             v = Model.PointObj.GetRestraint(name, ref restraints);
 
-            speckleStructNode.restraint = Restraint(restraints);
+            speckleStructNode.restraint = RestraintToSpeckle(restraints);
+
+            SpeckleModel.restraints.Add(speckleStructNode.restraint);
 
             SpeckleModel.nodes.Add(speckleStructNode);
             
