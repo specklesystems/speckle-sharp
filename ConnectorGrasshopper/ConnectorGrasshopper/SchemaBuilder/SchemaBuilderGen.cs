@@ -215,6 +215,32 @@ public class ConcreteSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class DeckFilledSchemaComponent: CreateSchemaObjectBase {
+     
+    public DeckFilledSchemaComponent(): base("DeckFilled", "DeckFilled", "Create an ETABS Filled Deck", "Speckle 2 Structural", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("151a2166-f739-501f-d3bc-f1a24bdd4093");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSProperty2D+DeckFilled.ctor(System.String,Objects.Structural.ETABS.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.ETABS.Properties.ETABSProperty2D+DeckFilled");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class DeckUnFilledSchemaComponent: CreateSchemaObjectBase {
+     
+    public DeckUnFilledSchemaComponent(): base("DeckUnFilled", "DeckUnFilled", "Create an ETABS UnFilled Deck", "Speckle 2 Structural", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("680e6f0c-d140-e8c4-27e1-28d353a87b8f");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSProperty2D+DeckUnFilled.ctor(System.String,Objects.Structural.ETABS.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.ETABS.Properties.ETABSProperty2D+DeckUnFilled");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class DetailCurveSchemaComponent: CreateSchemaObjectBase {
      
     public DetailCurveSchemaComponent(): base("DetailCurve", "DetailCurve", "Creates a Revit detail curve", "Speckle 2 Revit", "Curves") { }
@@ -1632,6 +1658,19 @@ public class RevitWireSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class RibbedSlabSchemaComponent: CreateSchemaObjectBase {
+     
+    public RibbedSlabSchemaComponent(): base("RibbedSlab", "RibbedSlab", "Create an ETABS Ribbed Slab", "Speckle 2 Structural", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("e5db5889-0924-136f-be6d-39c7de9a3649");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSProperty2D+RibbedSlab.ctor(System.String,Objects.Structural.ETABS.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32)","Objects.Structural.ETABS.Properties.ETABSProperty2D+RibbedSlab");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class RoofSchemaComponent: CreateSchemaObjectBase {
      
     public RoofSchemaComponent(): base("Roof", "Roof", "Creates a Speckle roof", "Speckle 2 BIM", "Architecture") { }
@@ -1671,14 +1710,14 @@ public class RoomBoundaryLineSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
-public class SAPFireOptionsSchemaComponent: CreateSchemaObjectBase {
+public class SlabSchemaComponent: CreateSchemaObjectBase {
      
-    public SAPFireOptionsSchemaComponent(): base("SAPFireOptions", "SAPFireOptions", "Analysis Process", "Speckle 2 BIM", "Objects.Structural.ETABS.Analysis") { }
+    public SlabSchemaComponent(): base("Slab", "Slab", "Create an ETABS Slab", "Speckle 2 Structural", "Properties") { }
     
-    public override Guid ComponentGuid => new Guid("c22e4222-5374-cf0b-d652-cc5d3691015f");
+    public override Guid ComponentGuid => new Guid("27930f28-6811-7f66-f432-07dd5585f6e0");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Analysis.SAPFireOptions.ctor(Objects.Structural.ETABS.Analysis.SolverOption,Objects.Structural.ETABS.Analysis.AnalysisProcess)","Objects.Structural.ETABS.Analysis.SAPFireOptions");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSProperty2D+Slab.ctor(System.String,Objects.Structural.ETABS.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double)","Objects.Structural.ETABS.Properties.ETABSProperty2D+Slab");
         base.AddedToDocument(document);
     }
 }
@@ -1783,6 +1822,19 @@ public class TopographySchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Topography.ctor(Objects.Geometry.Mesh)","Objects.BuiltElements.Topography");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class WaffleSlabSchemaComponent: CreateSchemaObjectBase {
+     
+    public WaffleSlabSchemaComponent(): base("WaffleSlab", "WaffleSlab", "Create an ETABS Waffle Slab", "Speckle 2 Structural", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("b8956ee0-8372-db59-654a-c11c4af5e0f6");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSProperty2D+WaffleSlab.ctor(System.String,Objects.Structural.ETABS.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.ETABS.Properties.ETABSProperty2D+WaffleSlab");
         base.AddedToDocument(document);
     }
 }
