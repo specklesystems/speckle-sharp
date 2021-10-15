@@ -22,6 +22,7 @@ using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Objects.Structural.Materials;
 using Objects.Structural.GSA.Bridge;
 using Objects.Structural.GSA.Analysis;
+using StructuralUtilities.PolygonMesher;
 
 namespace ConverterGSA
 {
@@ -342,7 +343,6 @@ namespace ConverterGSA
         orientationAngle = gsaEl.Angle ?? 0,
         offset = gsaEl.OffsetZ ?? 0,
         units = "",
-        voids = null, //shouldn't be part of Element2D 
 
         //-- GSA specific --
         nativeId = gsaEl.Index ?? 0,
@@ -517,12 +517,13 @@ namespace ConverterGSA
 
     private GSAMember2D GsaMember2dToSpeckle(GsaMemb gsaMemb)
     {
+      var color = gsaMemb.Type == Speckle.GSA.API.GwaSchema.MemberType.Void2d ? System.Drawing.Color.LightPink : System.Drawing.Color.White;
       var speckleMember2d = new GSAMember2D()
       {
         //-- App agnostic --
         name = gsaMemb.Name,
         type = gsaMemb.Type.ToSpeckle2d(),
-        displayMesh = null, //TODO add
+        displayMesh = DisplayMeshPolygon(gsaMemb.NodeIndices, color),
         orientationAngle = gsaMemb.Angle ?? 0,
         offset = gsaMemb.Offset2dZ ?? 0,
         parent = null, //no meaning for member, only for element
@@ -555,6 +556,9 @@ namespace ConverterGSA
       {
         speckleMember2d.voids = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
         AddToMeaningfulNodeIndices(speckleMember2d.voids.SelectMany(n => n.Select(n2 => n2.applicationId)), GSALayer.Design);
+      } else
+      {
+
       }
 
       //The following properties aren't part of the structural schema:
@@ -2596,32 +2600,71 @@ namespace ConverterGSA
 
     private Mesh DisplayMesh2d(List<int> gsaNodeIndicies)
     {
-      //TODO: check if this actually creates a real mesh
+      var _vertices = new List<Node>();
+      var _faces = new List<int[]>();
       var vertices = new List<double>();
-      var faces = new List<int[]>();
 
       var topology = gsaNodeIndicies.Select(i => GetNodeFromIndex(i)).ToList();
 
+      var faceIndices = new List<int>();
       foreach (var node in topology)
       {
-        vertices.Add(node.basePoint.x);
-        vertices.Add(node.basePoint.y);
-        vertices.Add(node.basePoint.z);
+        vertices.AddRange(new double[] { node.basePoint.x, node.basePoint.y, node.basePoint.z });
+
+        if (!_vertices.Contains(node))
+        {
+          faceIndices.Add(_vertices.Count);
+          _vertices.Add(node);
+        }
+        else
+        {
+          faceIndices.Add(_vertices.IndexOf(node));
+        }
       }
 
-      if (gsaNodeIndicies.Count == 4)
+      if (topology.Count == 4)
       {
-        faces.Add(new int[] { 1, 1, 2, 3, 4 });
+        _faces.Add(new int[] { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
       }
-      else if (gsaNodeIndicies.Count == 3)
+      else if (topology.Count == 3)
       {
-        faces.Add(new int[] { 0, 1, 2, 3 });
+        _faces.Add(new int[] { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
       }
 
-      var speckleMesh = new Mesh(vertices.ToArray(), faces.SelectMany(o => o).ToArray());
+      var faces = _faces.SelectMany(o => o).ToArray();
+      var mesh = new Mesh(vertices.ToArray(), faces);
 
-      return speckleMesh;
+      return mesh;
     }
+
+    private Mesh DisplayMeshPolygon(List<int> gsaNodeIndicies, System.Drawing.Color color = default)
+    {      
+      var edgeVertices = new List<double>();
+      var topology = gsaNodeIndicies.Select(i => GetNodeFromIndex(i)).ToList();
+      foreach (var node in topology)
+      {
+        edgeVertices.AddRange(new double[] { node.basePoint.x, node.basePoint.y, node.basePoint.z });
+      }
+
+      var mesher = new PolygonMesher();
+      mesher.Init(edgeVertices);
+      
+      var faces = mesher.Faces().ToList();
+      var vertices = mesher.Coordinates.ToList();
+
+      var mesh = new Mesh();
+      mesh.faces = faces;
+      mesh.vertices = vertices;
+
+      if (color != null)
+      {        
+        var colors = Enumerable.Repeat(color.ToArgb(), vertices.Count()).ToList();
+        mesh.colors = colors;
+      }
+
+      return mesh;
+    }
+
     #endregion
 
     #region Member
@@ -2650,7 +2693,7 @@ namespace ConverterGSA
       }
     }
 
-    private Polyline GetBaseLine(List<Point> points)
+    private Polyline GetBasePolyline(List<Point> points)
     {
       var v = new List<double>();
       foreach (var pt in points)
@@ -2658,6 +2701,11 @@ namespace ConverterGSA
         v.AddRange(new List<double> { pt.x, pt.y, pt.z });
       }
       return new Polyline(v.ToArray());
+    }
+
+    private Line GetBaseLine(List<Point> points)
+    {
+      return new Line(points[0], points[1]);
     }
     #endregion
 
