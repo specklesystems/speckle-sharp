@@ -3,7 +3,8 @@
   public enum GwaSetCommandType
   {
     Set = 0,
-    SetAt = 1
+    SetAt = 1,
+    SetNoIndex = 2
   }
 
   public enum GSAEntity
@@ -916,5 +917,36 @@
     Lockup,
     Gap,
     Friction
+  }
+
+  public enum UnitDimension
+  {
+    //These are described in dimension_syntax overlapping the values of UNIT_DATA, at https://arup-group.github.io/oasys-combined/GSA_Text.html
+    [StringValue("LENGTH")]
+    Length,
+    [StringValue("SECTION")]
+    Sections,
+    [StringValue("DISP")]
+    Displacements,
+    [StringValue("STRESS")]
+    Stress,
+    [StringValue("FORCE")]
+    Force,
+    [StringValue("MASS")]
+    Mass,
+    [StringValue("TIME")]
+    Time,
+    [StringValue("TEMP")]
+    Temperature,
+    [StringValue("VEL")]
+    Velocity,
+    [StringValue("ACCEL")]
+    Acceleration,
+    [StringValue("ENERGY")]
+    Energy,
+    [StringValue("ANGLE")]
+    Angle,
+    [StringValue("STRAIN")]
+    Strain
   }
 }

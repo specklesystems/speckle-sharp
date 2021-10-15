@@ -230,6 +230,17 @@ namespace Speckle.GSA.API.GwaSchema
       Group = Section1dProfileGroup.Standard;
     }
 
+    //Should this be replaced with individual setters for each in the child classes?
+    public void SetValues(List<double?> values)
+    {
+      this.values = values;
+    }
+
+    public void SetValues(params double?[] values)
+    {
+      this.values = values.ToList();
+    }
+
     public override bool FromDesc(string desc)
     {
       var items = Split(desc);

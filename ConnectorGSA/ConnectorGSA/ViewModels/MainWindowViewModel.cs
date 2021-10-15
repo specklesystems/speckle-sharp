@@ -48,7 +48,10 @@ namespace ConnectorGSA.ViewModels
     public StreamMethod SendStreamMethod { get => Coordinator.SenderTab.StreamMethod; set => Refresh(() => Coordinator.SenderTab.StreamMethod = value); }
     public string CurrentlyOpenFileName
     {
-      get => Coordinator.FileStatus == GsaLoadedFileType.None ? "No file is currently open" : Coordinator.FileStatus == GsaLoadedFileType.NewFile ? "New file" : Coordinator.FilePath;
+      get => Coordinator.FileStatus == GsaLoadedFileType.None 
+        ? "No file is currently open" 
+        : Coordinator.FileStatus == GsaLoadedFileType.NewFile 
+          ? "New file" : Coordinator.FilePath;
     }
 
     public bool MainWindowEnabled { get; private set; } = true;
@@ -263,7 +266,7 @@ namespace ConnectorGSA.ViewModels
 
           Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-          var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+          var result = await Task.Run(() => Commands.Receive(Coordinator, loggingProgress, statusProgress, percentageProgress));
 
           Refresh(() => StateMachine.StoppedReceiving());
         },
@@ -314,7 +317,7 @@ namespace ConnectorGSA.ViewModels
 
             Refresh(() => StateMachine.EnteredReceivingMode(ReceiveStreamMethod));
 
-            var result = await Task.Run(() => Commands.Receive(Coordinator, streamCreationProgress, loggingProgress, statusProgress, percentageProgress));
+            var result = await Task.Run(() => Commands.Receive(Coordinator, loggingProgress, statusProgress, percentageProgress));
 
             if (ReceiveStreamMethod != StreamMethod.Continuous)
             {
@@ -410,6 +413,10 @@ namespace ConnectorGSA.ViewModels
         {
           Refresh(() => StateMachine.StartedSavingFile());
           var result = await Task.Run(() => Commands.SaveFile(Coordinator));
+          if (result)
+          {
+            Coordinator.FileStatus = GsaLoadedFileType.ExistingFile;
+          }
           Refresh(() => StateMachine.StoppedSavingFile());
         },
         (o) => !StateMachine.StreamFileIsOccupied && StateMachine.FileState == FileState.Loaded);
@@ -438,7 +445,7 @@ namespace ConnectorGSA.ViewModels
           var newStreamName = o.ToString();
           var streamId = Coordinator.SenderTab.StreamList.SeletedStreamListItem.StreamId;
           var result = await Task.Run(() => Commands.RenameStream(Coordinator, streamId, newStreamName, loggingProgress));
-          Coordinator.SenderTab.ChangeStreamStateStreamName(streamId, newStreamName);
+          await Coordinator.SenderTab.RefreshStream(streamId, newStreamName);
           Coordinator.SenderTab.StreamStatesToStreamList();
           Refresh(() => StateMachine.StoppedRenamingStream());
         },

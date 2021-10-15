@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Speckle.ConnectorGSA.Proxy;
 using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.Core.Api;
+using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -124,11 +125,11 @@ namespace ConnectorGSA
     }
 
     public static bool ExtractSavedReceptionStreamInfo(bool? receive, bool? send, out List<StreamState> streamStates)
-    {
-      var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+    { 
       List<StreamState> allSaved;
       try
       {
+        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
         allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
       }
       catch
@@ -231,26 +232,39 @@ namespace ConnectorGSA
 
     public static bool ConvertToNative(ISpeckleConverter converter) //Includes writing to Cache
     {
+      var speckleDependencyTree = ((GsaModel)Instance.GsaModel).SpeckleDependencyTree();
+
       //With the attached objects in speckle objects, there is no type dependency needed on the receive side, so just convert each object
 
       if (Instance.GsaModel.Cache.GetSpeckleObjects(out var speckleObjects))
       {
-        foreach (var so in speckleObjects.Cast<Base>())
+        var objectsByType = speckleObjects.GroupBy(t => t.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var gen in speckleDependencyTree)
         {
-          try
+          foreach (var t in gen)
           {
-            if (converter.CanConvertToNative(so))
+            if (objectsByType.ContainsKey(t))
             {
-              var nativeObjects = converter.ConvertToNative(new List<Base> { so }).Cast<GsaRecord>().ToList();
-              var appId = string.IsNullOrEmpty(so.applicationId) ? so.id : so.applicationId;
-              Instance.GsaModel.Cache.SetNatives(so.GetType(), appId, nativeObjects);
+              foreach (Base so in objectsByType[t])
+              {
+                try
+                {
+                  if (converter.CanConvertToNative(so))
+                  {
+                    var nativeObjects = converter.ConvertToNative(new List<Base> { so }).Cast<GsaRecord>().ToList();
+                    var appId = string.IsNullOrEmpty(so.applicationId) ? so.id : so.applicationId;
+                    Instance.GsaModel.Cache.SetNatives(so.GetType(), appId, nativeObjects);
+                  }
+                }
+                catch (Exception ex)
+                {
+
+                }
+              }
             }
           }
-          catch (Exception ex)
-          {
-
-          }
-        } 
+        }
       }
 
       return true;
@@ -313,7 +327,7 @@ namespace ConnectorGSA
       return (state.Errors.Count == 0);
     }
 
-    internal static async Task<bool> Receive(TabCoordinator coordinator, IProgress<StreamState> streamCreationProgress, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
+    internal static async Task<bool> Receive(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress, IProgress<string> statusProgress, IProgress<double> percentageProgress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
@@ -323,6 +337,7 @@ namespace ConnectorGSA
       Instance.GsaModel.Units = UnitEnumToString(coordinator.ReceiverTab.CoincidentNodeUnits);
       Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance;
       Instance.GsaModel.LoggingMinimumLevel = (int)coordinator.LoggingMinimumLevel;
+
       var perecentageProgressLock = new object();
 
       var account = ((GsaModel)Instance.GsaModel).Account;
@@ -332,7 +347,7 @@ namespace ConnectorGSA
 
       statusProgress.Report("Reading GSA data into cache");
       //Load data to cause merging
-      Commands.LoadDataFromFile(); //Ensure all nodes
+      Commands.LoadDataFromFile();
 
       percentage = 10;
       percentageProgress.Report(percentage);
@@ -352,14 +367,26 @@ namespace ConnectorGSA
       var receiveTasks = new List<Task>();
       foreach (var streamId in streamIds)
       {
-        var streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = new Stream() { id = streamId }, IsReceiving = true };
+        var streamState = new StreamState(account.userInfo.id, account.serverInfo.url)
+        {
+          Stream = new Stream() { id = streamId },
+          IsReceiving = true
+        };
         var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
-        receiveTasks.Add(
-          streamState.RefreshStream().ContinueWith(async (refreshed) =>
+
+        receiveTasks.Add(streamState.RefreshStream()
+          .ContinueWith(async (refreshed) =>
             {
               if (refreshed.Result)
               {
-                streamState.Stream.branch = client.StreamGetBranches(streamId, 1).Result.First();
+                streamState.Stream.branch = streamState.Client.StreamGetBranches(streamId, 1).Result.First();
+                if (streamState.Stream.branch.commits == null || streamState.Stream.branch.commits.totalCount == 0)
+                {
+                  loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "This branch has no commits"));
+                  loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, "This branch has no commits"));
+                  percentageProgress.Report(0);
+                  return;
+                }
                 var commitId = streamState.Stream.branch.commits.items.FirstOrDefault().referencedObject;
 
                 var received = await Commands.Receive(commitId, streamState, transport, converter.CanConvertToNative);
@@ -649,18 +676,54 @@ namespace ConnectorGSA
       return true;
     }
 
-    internal static async Task<bool> SaveFile(TabCoordinator coordinator)
+    internal static bool SaveFile(TabCoordinator coordinator)
     {
+      if (coordinator.FileStatus == GsaLoadedFileType.NewFile)
+      {
+        var saveFileDialog = new SaveFileDialog
+        {
+          Filter = "GSA files (*.gwb)|*.gwb",
+          DefaultExt = "gwb",
+          AddExtension = true
+        };
+        if (saveFileDialog.ShowDialog() == true)
+        {
+          Instance.GsaModel.Proxy.SaveAs(saveFileDialog.FileName);
+          coordinator.FilePath = saveFileDialog.FileName;
+        }
+      }
+      else if (coordinator.FileStatus == GsaLoadedFileType.ExistingFile)
+      {
+        Instance.GsaModel.Proxy.SaveAs(coordinator.FilePath);
+      }
       return true;
     }
 
     internal static async Task<bool> RenameStream(TabCoordinator coordinator, string streamId, string newStreamName, Progress<MessageEventArgs> loggingProgress)
     {
-      return true;
+      var messenger = new ProgressMessenger(loggingProgress);
+
+      var streamState = coordinator.SenderTab.SenderStreamStates.FirstOrDefault(ss => ss.StreamId == streamId);
+
+      if (streamState == null)
+      {
+        return false;
+      }
+
+      var changed = await streamState.Client.StreamUpdate(new StreamUpdateInput() { id = streamId, name = newStreamName });
+
+      //var changed = await SpeckleInterface.SpeckleStreamManager.UpdateStreamName(coordinator.Account.ServerUrl, coordinator.Account.Token, streamId, newStreamName, messenger);
+
+      return changed;
     }
 
     internal static async Task<bool> CloneStream(TabCoordinator coordinator, string streamId, Progress<MessageEventArgs> loggingProgress)
     {
+      var messenger = new ProgressMessenger(loggingProgress);
+
+      //var clonedStreamId = await SpeckleInterface.SpeckleStreamManager.CloneStream(coordinator.Account.ServerUrl, coordinator.Account.Token, streamId, messenger);
+
+      //return (!string.IsNullOrEmpty(clonedStreamId));
       return true;
     }
 
@@ -875,18 +938,19 @@ namespace ConnectorGSA
 #endif
 
       var account = ((GsaModel)Instance.GsaModel).Account;
-      var client = new Client(account);
+      //var client = new Client(account);
       StreamState streamState;
       if (coordinator.SenderTab.SenderStreamStates == null || coordinator.SenderTab.SenderStreamStates.Count == 0)
       {
-        var stream = NewStream(client, "GSA data", "GSA data").Result;
-        streamState = new StreamState(account.userInfo.id, account.serverInfo.url) { Stream = stream, IsSending = true };
+        streamState = new StreamState(account.userInfo.id, account.serverInfo.url);
+        streamState.Stream = await NewStream(streamState.Client, "GSA data", "GSA data");
+        streamState.IsSending = true;
         ((GsaModel)Instance.GsaModel).LastCommitId = "";
       }
       else
       {
         streamState = coordinator.SenderTab.SenderStreamStates.First();
-        var branches = client.StreamGetBranches(streamState.StreamId).Result;
+        var branches = streamState.Client.StreamGetBranches(streamState.StreamId).Result;
         var mainBranch = branches.FirstOrDefault(b => b.name == "main");
         if (mainBranch != null && mainBranch.commits.items.Any())
         {

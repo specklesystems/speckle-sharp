@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Materials;
@@ -10,8 +8,6 @@ using Objects.Structural.GSA.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural;
 using Objects.Geometry;
-using System.Text.RegularExpressions;
-using AutoMapper;
 using ConverterGSA;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
@@ -22,6 +18,8 @@ using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
 using Speckle.Core.Models;
 using PathType = Objects.Structural.GSA.Bridge.PathType;
+using Speckle.GSA.API;
+using KellermanSoftware.CompareNetObjects;
 
 namespace ConverterGSATests
 {
@@ -79,10 +77,66 @@ namespace ConverterGSATests
     #endregion
 
     #region Properties
-    [Fact (Skip = "Not implemented yet")]
+
+    [Fact]
     public void Property1dToNative()
     {
-      //TO DO: 
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>
+      {
+        //Generation #1: Types with no other dependencies - the leaves of the tree
+        GsaMatSteelExample("steel material 1")
+      };
+
+      //Gen #2
+      var gsaSections = new List<GsaSection>
+      {
+        GsaCatalogueSectionExample("section 1"),
+        GsaExplicitSectionExample("section 2"),
+        GsaPerimeterSectionExample("section 3"),
+        GsaRectangularSectionExample("section 4"),
+        GsaRectangularHollowSectionExample("section 5"),
+        GsaCircularSectionExample("section 6"),
+        GsaCircularHollowSectionExample("section 7"),
+        GsaISectionSectionExample("section 8"),
+        GsaTSectionSectionExample("section 9"),
+        GsaAngleSectionExample("section 10"),
+        GsaChannelSectionExample("section 11")
+      };
+      gsaRecords.AddRange(gsaSections);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var objs));
+
+      var structuralObjects = objs.Cast<Base>().OrderBy(o => o.applicationId).ToList();
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAProperty1D);
+
+      var speckleProperty1Ds = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
+
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add("SectionSteel.Type");
+      //compareLogic.Config.IgnoreProperty<SectionSteel>(c => c.Type);
+
+      foreach (var prop in speckleProperty1Ds.Skip(4))
+      {
+        var newNatives = converter.ConvertToNative(new List<Base> { prop });
+        var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaSection)));
+        var oldNative = gsaSections.FirstOrDefault(s => s.ApplicationId.Equals(prop.applicationId, StringComparison.InvariantCultureIgnoreCase));
+        var result = compareLogic.Compare(newNative, oldNative);
+        Assert.True(result.AreEqual);
+      }
     }
     #endregion
 
@@ -486,7 +540,7 @@ namespace ConverterGSATests
     {
       var axis = SpeckleGlobalAxis();
       var gsaGridPlane = new GSAGridPlane(1, "myGsaGridPlane", axis, 1);
-      var gsaAlignment = new GSAAlignment(1, "myGsaAlignment",
+      var gsaAlignment = new GSAAlignment(2, "myGsaAlignment",
         new GSAGridSurface("myGsaGridSurface", 1, gsaGridPlane, 1, 2,
           LoadExpansion.PlaneCorner, GridSurfaceSpanType.OneWay,
           new List<Base>()),
@@ -581,7 +635,7 @@ namespace ConverterGSATests
 
     private static GSAElement1D GetElement1d1()
     {
-      return new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D);
+      return new GSAElement1D(1, null, null, ElementType1D.Bar, orientationAngle: 0D){applicationId = "appl1dforGsaElement1d"};
     }
 
     #endregion

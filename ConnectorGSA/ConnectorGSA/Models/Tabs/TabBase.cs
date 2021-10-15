@@ -1,6 +1,7 @@
 ﻿using Speckle.GSA.API;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ConnectorGSA.Models
 {
@@ -18,15 +19,15 @@ namespace ConnectorGSA.Models
       TargetLayer = defaultLayer;
     }
 
-    public bool ChangeStreamStateStreamName(string streamId, string streamName)
+    public async Task<bool> RefreshStream(string streamId, string streamName)
     {
       var matching = StreamStates.FirstOrDefault(r => r.StreamId.Equals(streamId, System.StringComparison.InvariantCultureIgnoreCase));
       if (matching == null)
       {
         return false;
       }
-      matching.SetName(streamName);
-      return true;
+      var refreshed = await matching.RefreshStream();
+      return refreshed;
     }
 
     public bool StreamStatesToStreamList()

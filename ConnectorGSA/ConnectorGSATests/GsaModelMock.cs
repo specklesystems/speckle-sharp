@@ -15,6 +15,7 @@ namespace ConnectorGSATests
   {
     public override IGSACache Cache { get; set; } = new GsaCache();
     public override IGSAProxy Proxy { get; set; } = new GsaProxyMock();
+
     //public override IGSAMessenger Messenger { get; set; } = new GsaMessenger();
   }
 
