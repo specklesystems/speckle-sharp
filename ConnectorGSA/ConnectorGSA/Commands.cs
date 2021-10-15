@@ -125,11 +125,11 @@ namespace ConnectorGSA
     }
 
     public static bool ExtractSavedReceptionStreamInfo(bool? receive, bool? send, out List<StreamState> streamStates)
-    {
-      var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+    { 
       List<StreamState> allSaved;
       try
       {
+        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
         allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
       }
       catch

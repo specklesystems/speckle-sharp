@@ -16,7 +16,7 @@ namespace ConnectorGSA
     public static IGSAModel Instance = new GsaModel();
 
     private static IGSACache cache = new GsaCache();
-    private static IGSAProxy proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
+    private static IGSAProxy proxy = new GsaProxy();
     //private static IGSAMessenger messenger = new GsaMessenger();
 
     public override IGSACache Cache { get => cache; set => cache = value; }
