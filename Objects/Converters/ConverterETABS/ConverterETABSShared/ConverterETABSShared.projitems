@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBraces.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertColumn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert1DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert2DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert2DPropertyFloor.cs" />

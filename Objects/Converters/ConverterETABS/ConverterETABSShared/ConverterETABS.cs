@@ -71,6 +71,8 @@ namespace Objects.Converter.ETABS
             {
                 //case osg.node o:
                 //    return pointtonative(o);
+                case Geometry.Line o:
+                    return LineToNative(o);
                 case OSG.Element1D o:
                     return FrameToNative(o);
                 case OSG.Element2D o:
