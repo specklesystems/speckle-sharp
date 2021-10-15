@@ -202,7 +202,7 @@ namespace ConverterGSATests
 
     #region Loading
     [Fact]
-    public void LoadCaseToNative()
+    public void GSALoadCaseToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -225,7 +225,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void AnalysisCaseToNative()
+    public void GSAAnalysisCaseToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -253,7 +253,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void LoadCombinationToNative()
+    public void GSALoadCombinationToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -281,7 +281,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void LoadFaceToNative()
+    public void GSALoadFaceToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -312,7 +312,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void LoadBeamToNative()
+    public void GSALoadBeamToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -343,7 +343,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void LoadNodeToNative()
+    public void GSALoadNodeToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -371,7 +371,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void LoadGravityToNative()
+    public void GSALoadGravityToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -407,7 +407,7 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void LoadThermal2dToNative()
+    public void GSALoadThermal2dToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();
@@ -436,10 +436,54 @@ namespace ConverterGSATests
       var result = compareLogic.Compare(gsaLoadThermals, gsaConvertedLoadThermals);
       Assert.Empty(result.Differences);
     }
+
+    //TODO: add app agnostic test methods
     #endregion
 
     #region Materials
-    
+    [Fact]
+    public void GSASteelToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaMatSteel = GsaMatSteelExample("steel 1");
+      gsaRecords.Add(gsaMatSteel);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedSteel = gsaConvertedRecords.FindAll(r => r is GsaMatSteel).Select(r => (GsaMatSteel)r).First();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaMatSteel, gsaConvertedSteel);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSAConcreteToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaMatConcrete = GsaMatConcreteExample("concrete 1");
+      gsaRecords.Add(gsaMatConcrete);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedConcrete = gsaConvertedRecords.FindAll(r => r is GsaMatConcrete).Select(r => (GsaMatConcrete)r).First();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaMatConcrete, gsaConvertedConcrete);
+      Assert.Empty(result.Differences);
+    }
     #endregion
 
     #region Properties

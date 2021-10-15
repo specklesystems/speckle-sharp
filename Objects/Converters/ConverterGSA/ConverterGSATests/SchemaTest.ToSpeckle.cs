@@ -1630,7 +1630,7 @@ namespace ConverterGSATests
       Assert.Equal("", speckleSteel.codeYear);
       Assert.Equal(gsaMatSteel.Fy.Value, speckleSteel.yieldStrength);
       Assert.Equal(gsaMatSteel.Fu.Value, speckleSteel.ultimateStrength);
-      Assert.Equal(gsaMatSteel.EpsP.Value, speckleSteel.maxStrain);
+      Assert.Equal(gsaMatSteel.Mat.Eps.Value, speckleSteel.maxStrain);
       Assert.Equal(gsaMatSteel.Mat.E.Value, speckleSteel.elasticModulus);
       Assert.Equal(gsaMatSteel.Mat.Nu.Value, speckleSteel.poissonsRatio);
       Assert.Equal(gsaMatSteel.Mat.G.Value, speckleSteel.shearModulus);
@@ -3799,19 +3799,19 @@ namespace ConverterGSATests
           NumUC = 0,
           AbsUC = Dimension.NotSet,
           OrdUC = Dimension.NotSet,
-          PtsUC = new double[0],
+          PtsUC = null, //new double[0],
           NumSC = 0,
           AbsSC = Dimension.NotSet,
           OrdSC = Dimension.NotSet,
-          PtsSC = new double[0],
+          PtsSC = null, //new double[0],
           NumUT = 0,
           AbsUT = Dimension.NotSet,
           OrdUT = Dimension.NotSet,
-          PtsUT = new double[0],
+          PtsUT = null, //new double[0],
           NumST = 0,
           AbsST = Dimension.NotSet,
           OrdST = Dimension.NotSet,
-          PtsST = new double[0],
+          PtsST = null, //new double[0],
           Eps = 0,
           Uls = new GsaMatCurveParam()
           {
@@ -3899,19 +3899,19 @@ namespace ConverterGSATests
           NumUC = 0,
           AbsUC = Dimension.NotSet,
           OrdUC = Dimension.NotSet,
-          PtsUC = new double[0],
+          PtsUC = null, //new double[0],
           NumSC = 0,
           AbsSC = Dimension.NotSet,
           OrdSC = Dimension.NotSet,
-          PtsSC = new double[0],
+          PtsSC = null, //new double[0],
           NumUT = 0,
           AbsUT = Dimension.NotSet,
           OrdUT = Dimension.NotSet,
-          PtsUT = new double[0],
+          PtsUT = null, //new double[0],
           NumST = 0,
           AbsST = Dimension.NotSet,
           OrdST = Dimension.NotSet,
-          PtsST = new double[0],
+          PtsST = null, //new double[0],
           Eps = 0.05,
           Uls = new GsaMatCurveParam()
           {

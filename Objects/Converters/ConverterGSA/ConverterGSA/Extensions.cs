@@ -23,6 +23,7 @@ using Objects.Structural.GSA.Loading;
 using Speckle.GSA.API;
 using Speckle.Core.Models;
 using Objects.Structural.Properties;
+using Objects.Structural.Materials;
 
 namespace ConverterGSA
 {
@@ -746,6 +747,8 @@ namespace ConverterGSA
     public static int ResolveIndex(this LoadNode speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadNode>(speckleObject.applicationId);
     public static int ResolveIndex(this GSALoadThermal2d speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dThermal>(speckleObject.applicationId);
     public static int ResolveIndex(this LoadGravity speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadGravity>(speckleObject.applicationId);
+    public static int ResolveIndex(this Steel speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMatSteel>(speckleObject.applicationId);
+    public static int ResolveIndex(this Concrete speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMatConcrete>(speckleObject.applicationId);
     public static int ResolveIndex(this Property1D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleObject.applicationId);
     public static int ResolveIndex(this Property2D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaProp2d>(speckleObject.applicationId);
     public static int ResolveIndex(this PropertyMass speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(speckleObject.applicationId);
