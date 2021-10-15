@@ -90,7 +90,7 @@ namespace ConverterGSA
           return MassUnits.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new Exception($"Cannot understand what unit {unit} is.");
     }
 
     public static int GetEncodingFromUnit(string unit)
@@ -198,7 +198,7 @@ namespace ConverterGSA
           return TimeUnits.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new Exception($"Cannot understand what unit {unit} is.");
     }
 
     public static int GetEncodingFromUnit(string unit)
@@ -287,7 +287,7 @@ namespace ConverterGSA
           return TemperatureUnits.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new Exception($"Cannot understand what unit {unit} is.");
     }
 
     public static int GetEncodingFromUnit(string unit)
@@ -383,7 +383,7 @@ namespace ConverterGSA
           return ForceUnits.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new Exception($"Cannot understand what unit {unit} is.");
     }
 
     public static int GetEncodingFromUnit(string unit)
@@ -462,7 +462,7 @@ namespace ConverterGSA
           return AccelerationUnits.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new Exception($"Cannot understand what unit {unit} is.");
     }
 
     public static int GetEncodingFromUnit(string unit)
@@ -570,7 +570,7 @@ namespace ConverterGSA
           return PressureUnits.None;
       }
 
-      throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      throw new Exception($"Cannot understand what unit {unit} is.");
     }
 
     public static int GetEncodingFromUnit(string unit)
@@ -603,6 +603,10 @@ namespace ConverterGSA
       return None;
     }
   }
+
+  //Velocity
+  //Density
+  //Moment
 
   #endregion
 }

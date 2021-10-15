@@ -1293,7 +1293,8 @@ namespace ConverterGSA
       if (gsaSteel.Index.IsIndex()) speckleSteel.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaMatSteel>(gsaSteel.Index.Value);
       if (gsaSteel.Fy.IsPositive()) speckleSteel.yieldStrength = gsaSteel.Fy.Value;
       if (gsaSteel.Fu.IsPositive()) speckleSteel.ultimateStrength = gsaSteel.Fu.Value;
-      if (gsaSteel.EpsP.IsPositive()) speckleSteel.maxStrain = gsaSteel.EpsP.Value;
+      if (gsaSteel.Mat.Eps.IsPositive()) speckleSteel.maxStrain = gsaSteel.Mat.Eps.Value;
+      if (gsaSteel.Eh.HasValue) speckleSteel.strainHardeningModulus = gsaSteel.Eh.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaSteel.Mat.E, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.E, out var E)) speckleSteel.elasticModulus = E;
@@ -1303,7 +1304,6 @@ namespace ConverterGSA
       if (Choose(gsaSteel.Mat.Alpha, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
 
       //the following properties are not part of the schema
-      if (gsaSteel.Eh.IsPositive()) speckleSteel["Eh"] = gsaSteel.Eh.Value;
       speckleSteel["Mat"] = GetMat(gsaSteel.Mat);
 
       return new ToSpeckleResult(speckleSteel);
@@ -1321,7 +1321,8 @@ namespace ConverterGSA
         type = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
-        flexuralStrength = 0 //TODO: don't think this is part of the GSA definition
+        flexuralStrength = 0, //TODO: don't think this is part of the GSA definition
+        lightweight = gsaConcrete.Light,
       };
       if (gsaConcrete.Index.IsIndex()) speckleConcrete.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaMatConcrete>(gsaConcrete.Index.Value);
 
@@ -1330,6 +1331,7 @@ namespace ConverterGSA
       if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxCompressiveStrain = gsaConcrete.EpsU.Value;
       if (gsaConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaConcrete.Agg.Value;
       if (gsaConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaConcrete.Fcdt.Value;
+      if (gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.elasticModulus = E;
@@ -1342,7 +1344,6 @@ namespace ConverterGSA
       speckleConcrete["Mat"] = GetMat(gsaConcrete.Mat);
       speckleConcrete["Type"] = gsaConcrete.Type.ToString();
       speckleConcrete["Cement"] = gsaConcrete.Cement.ToString();
-      speckleConcrete["Light"] = gsaConcrete.Light;
       if (gsaConcrete.Fcd.HasValue) speckleConcrete["Fcd"] = gsaConcrete.Fcd.Value;
       if (gsaConcrete.Fcdc.HasValue) speckleConcrete["Fcdc"] = gsaConcrete.Fcdc.Value;
       if (gsaConcrete.Fcfib.HasValue) speckleConcrete["Fcfib"] = gsaConcrete.Fcfib.Value;
@@ -3258,6 +3259,13 @@ namespace ConverterGSA
       if (gsaMat == null) return null;
 
       var speckleMat = new Base();
+      if (gsaMat.Name != null) speckleMat["Name"] = gsaMat.Name;
+      if (gsaMat.E.HasValue) speckleMat["E"] = gsaMat.E.Value;
+      if (gsaMat.F.HasValue) speckleMat["F"] = gsaMat.F.Value;
+      if (gsaMat.Nu.HasValue) speckleMat["Nu"] = gsaMat.Nu.Value;
+      if (gsaMat.G.HasValue) speckleMat["G"] = gsaMat.G.Value;
+      if (gsaMat.Rho.HasValue) speckleMat["Rho"] = gsaMat.Rho.Value;
+      if (gsaMat.Alpha.HasValue) speckleMat["Alpha"] = gsaMat.Alpha.Value;
       speckleMat["Prop"] = GetMatAnal(gsaMat.Prop);
       if (gsaMat.NumUC > 0)
       {
@@ -3271,22 +3279,23 @@ namespace ConverterGSA
         speckleMat["OrdSC"] = gsaMat.OrdSC.ToString();
         speckleMat["PtsSC"] = gsaMat.PtsSC;
       }
-      if (gsaMat.NumUC > 0)
+      if (gsaMat.NumUT > 0)
       {
         speckleMat["AbsUT"] = gsaMat.AbsUT.ToString();
         speckleMat["OrdUT"] = gsaMat.OrdUT.ToString();
         speckleMat["PtsUT"] = gsaMat.PtsUT;
       }
-      if (gsaMat.NumUC > 0)
+      if (gsaMat.NumST > 0)
       {
         speckleMat["AbsST"] = gsaMat.AbsST.ToString();
         speckleMat["OrdST"] = gsaMat.OrdST.ToString();
         speckleMat["PtsST"] = gsaMat.PtsST;
       }
-      if (gsaMat.Eps.IsPositive()) speckleMat["Eps"] = gsaMat.Eps;
-      if (gsaMat.Cost.IsPositive()) speckleMat["Cost"] = gsaMat.Cost;
+      if (gsaMat.Eps.HasValue) speckleMat["Eps"] = gsaMat.Eps.Value;
       speckleMat["Uls"] = GetMatCurveParam(gsaMat.Uls);
       speckleMat["Sls"] = GetMatCurveParam(gsaMat.Sls);
+      if (gsaMat.Cost.HasValue) speckleMat["Cost"] = gsaMat.Cost.Value;
+      speckleMat["Type"] = gsaMat.Type.ToString();
       return speckleMat;
     }
 
@@ -3295,8 +3304,10 @@ namespace ConverterGSA
       if (gsaMatAnal == null) return null;
 
       var speckleMatAnal = new Base();
-      speckleMatAnal["Name"] = gsaMatAnal.Name;
-      speckleMatAnal["colour"] = gsaMatAnal.Colour.ToString();
+      if (gsaMatAnal.Name != null) speckleMatAnal["Name"] = gsaMatAnal.Name;
+      speckleMatAnal["Colour"] = gsaMatAnal.Colour.ToString();
+      speckleMatAnal["Type"] = gsaMatAnal.Type.ToString();
+      if (gsaMatAnal.NumParams.HasValue) speckleMatAnal["NumParams"] = gsaMatAnal.NumParams.Value;
       if (gsaMatAnal.E.HasValue) speckleMatAnal["E"] = gsaMatAnal.E.Value;
       if (gsaMatAnal.Nu.HasValue) speckleMatAnal["Nu"] = gsaMatAnal.Nu.Value;
       if (gsaMatAnal.Rho.HasValue) speckleMatAnal["Rho"] = gsaMatAnal.Rho.Value;

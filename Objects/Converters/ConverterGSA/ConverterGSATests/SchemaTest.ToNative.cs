@@ -20,6 +20,8 @@ using Speckle.Core.Models;
 using PathType = Objects.Structural.GSA.Bridge.PathType;
 using Speckle.GSA.API;
 using KellermanSoftware.CompareNetObjects;
+using Objects.Structural.Analysis;
+using Objects.Structural.GSA.Loading;
 
 namespace ConverterGSATests
 {
@@ -28,51 +30,455 @@ namespace ConverterGSATests
     //Reminder: conversions could create 1:1, 1:n, n:1, n:n structural per native objects
 
     #region Geometry
-    [Fact(Skip = "Not implemented yet")]
+    [Fact]
     public void AxisToNative()
     {
-      //TO DO: 
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaAxis = GsaAxisExample("axis 1");
+      gsaRecords.Add(gsaAxis);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedAxis = gsaConvertedRecords.FindAll(r => r is GsaAxis).Select(r => (GsaAxis)r).First();
+      
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAxis x) => x.XDirX));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAxis x) => x.XDirY));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAxis x) => x.XDirZ));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAxis x) => x.XYDirX));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAxis x) => x.XYDirY));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAxis x) => x.XYDirZ));
+      var result = compareLogic.Compare(gsaAxis, gsaConvertedAxis);
+      Assert.Empty(result.Differences);
+      Assert.Equal(gsaAxis.XDirX.Value, gsaConvertedAxis.XDirX.Value, 6);
+      Assert.Equal(gsaAxis.XDirY.Value, gsaConvertedAxis.XDirY.Value, 6);
+      Assert.Equal(gsaAxis.XDirZ.Value, gsaConvertedAxis.XDirZ.Value, 6);
+      Assert.Equal(gsaAxis.XYDirX.Value, gsaConvertedAxis.XYDirX.Value, 6);
+      Assert.Equal(gsaAxis.XYDirY.Value, gsaConvertedAxis.XYDirY.Value, 6);
+      Assert.Equal(gsaAxis.XYDirZ.Value, gsaConvertedAxis.XYDirZ.Value, 6);
     }
 
     [Fact]
     public void NodeToNative()
     {
-      //TO DO: 
-      var speckleNodes = SpeckleNodeExamples(2, "node 1", "node 2");
-      var gsaRecords = converter.ConvertToNative(speckleNodes.Select(n => (Base)n).ToList());
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      var gsaNodes = GsaNodeExamples(1, "node 1");
+      gsaRecords.AddRange(gsaNodes);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
 
-      Assert.NotEmpty(gsaRecords);
-      Assert.Contains(gsaRecords, so => so is GsaNode);
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.First()).nodes.FindAll(o => o is GSANode).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
 
-      var gsaNodes = gsaRecords.FindAll(r => r is GsaNode).Select(r => (GsaNode)r).ToList();
-      Assert.Equal("node 1", gsaNodes[0].ApplicationId);
-      Assert.Equal("node 2", gsaNodes[1].ApplicationId);
-      //TO DO: complete checks
+      //Checks
+      var gsaConvertedNodes = gsaConvertedRecords.FindAll(r => r is GsaNode).Select(r => (GsaNode)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaNodes, gsaConvertedNodes);
+      Assert.Empty(result.Differences);
     }
 
-    [Fact(Skip = "Not implemented yet")]
-    public void Element1dToNative()
-    {
-      //TO DO: 
-      var speckleElement1d = SpeckleElement1dExamples(2, "element 1", "element 2");
-    }
-
-    [Fact(Skip = "Not implemented yet")]
+    [Fact]
     public void Element2dToNative()
     {
-      //TO DO: 
-      var speckleElement2d = SpeckleElement2dExamples(2, "element 1", "element 2");
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5"));
+      gsaRecords.Add(GsaProp2dExample("property 2D 1"));
+      var gsaEls = GsaElement2dExamples(2, "element 1", "element 2");
+      gsaRecords.AddRange(gsaEls);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAElement2D).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedEls = gsaConvertedRecords.FindAll(r => r is GsaEl).Select(r => (GsaEl)r).ToList();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaEl x) => x.Angle));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaEl x) => x.OffsetZ));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaEl x) => x.ParentIndex));
+      var result = compareLogic.Compare(gsaEls, gsaConvertedEls);
+      Assert.Empty(result.Differences);
+      Assert.Null(gsaConvertedEls[0].Angle);
+      Assert.Null(gsaConvertedEls[0].OffsetZ);
+      Assert.Null(gsaConvertedEls[0].ParentIndex);
+      Assert.Null(gsaConvertedEls[1].Angle);
+      Assert.Null(gsaConvertedEls[1].OffsetZ);
+      Assert.Null(gsaConvertedEls[1].ParentIndex);
+    }
+
+    [Fact]
+    public void Element1dToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(3, "node 1", "node 2", "node 3"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      var gsaEls = GsaElement1dExamples(2, "element 1", "element 2");
+      gsaRecords.AddRange(gsaEls);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAElement1D).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedEls = gsaConvertedRecords.FindAll(r => r is GsaEl).Select(r => (GsaEl)r).ToList();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaEl x) => x.OffsetY));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaEl x) => x.OffsetZ));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaEl x) => x.ParentIndex));
+      var result = compareLogic.Compare(gsaEls, gsaConvertedEls);
+      Assert.Empty(result.Differences);
+      Assert.Null(gsaConvertedEls[0].OffsetY);
+      Assert.Null(gsaConvertedEls[0].OffsetZ);
+      Assert.Null(gsaConvertedEls[0].ParentIndex);
+      Assert.Null(gsaConvertedEls[1].OffsetY);
+      Assert.Null(gsaConvertedEls[1].OffsetZ);
+      Assert.Null(gsaConvertedEls[1].ParentIndex);
+    }
+
+    [Fact (Skip = "Not implemented yet!")]
+    public void MembToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5"));
+      gsaRecords.Add(GsaProp2dExample("prop 2D 1"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      var gsaMembers = GsaMemberExamples(2, "member 1", "member 2");
+      gsaRecords.AddRange(gsaMembers);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = new List<Base>();
+      speckleObjects.Add(((Model)speckleModels.First()).elements.FindAll(o => o is GSAMember1D).First());
+      speckleObjects.Add(((Model)speckleModels.First()).elements.FindAll(o => o is GSAMember2D).First());
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedMembers = gsaConvertedRecords.FindAll(r => r is GsaMemb).Select(r => (GsaMemb)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaMembers, gsaConvertedMembers);
+      Assert.Empty(result.Differences);
     }
     #endregion
 
     #region Loading
+    [Fact]
+    public void GSALoadCaseToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaLoadCases = GsaLoadCaseExamples(2, "load case 1", "load case 2");
+      gsaRecords.AddRange(gsaLoadCases);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSALoadCase).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadCases = gsaConvertedRecords.FindAll(r => r is GsaLoadCase).Select(r => (GsaLoadCase)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoadCases, gsaConvertedLoadCases);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSAAnalysisCaseToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      var gsaAnalysisCases = GsaAnalysisCaseExamples(2, "analysis case 1", "analysis case 2");
+      gsaRecords.AddRange(gsaAnalysisCases);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSAAnalysisCase).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedAnalysisCases = gsaConvertedRecords.FindAll(r => r is GsaAnal).Select(r => (GsaAnal)r).ToList();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAnal x) => x.TaskIndex)); //TODO - add in when this keyword is supported
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAnal x) => x.Desc));
+      var result = compareLogic.Compare(gsaAnalysisCases, gsaConvertedAnalysisCases);
+      Assert.Empty(result.Differences);
+      Assert.Equal(gsaAnalysisCases[0].Desc.RemoveWhitespace(), gsaConvertedAnalysisCases[0].Desc);
+      Assert.Equal(gsaAnalysisCases[1].Desc.RemoveWhitespace(), gsaConvertedAnalysisCases[1].Desc);
+    }
+
+    [Fact]
+    public void GSALoadCombinationToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.AddRange(GsaAnalysisCaseExamples(2, "analysis case 1", "analysis case 2"));
+      var gsaCombinations = GsaCombinationExamples(2, "combo 1", "combo 2");
+      gsaRecords.AddRange(gsaCombinations);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSALoadCombination).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedCombinations = gsaConvertedRecords.FindAll(r => r is GsaCombination).Select(r => (GsaCombination)r).ToList();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaAnal x) => x.Desc));
+      var result = compareLogic.Compare(gsaCombinations, gsaConvertedCombinations);
+      Assert.Empty(result.Differences);
+      Assert.Equal(gsaConvertedCombinations[0].Desc.RemoveWhitespace(), gsaConvertedCombinations[0].Desc);
+      Assert.Equal(gsaConvertedCombinations[1].Desc.RemoveWhitespace(), gsaConvertedCombinations[1].Desc);
+    }
+
+    [Fact]
+    public void GSALoadFaceToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
+      gsaRecords.AddRange(GsaNodeExamples(6, "node 1", "node 2", "node 3", "node 4", "node 5", "node 6"));
+      gsaRecords.Add(GsaProp2dExample("property 2D 1"));
+      gsaRecords.AddRange(GsaElement2dExamples(3, "element 1", "element 2", "element 3"));
+      var gsaLoad2dFace = GsaLoad2dFaceExamples(3, "load 2d face 1", "load 2d face 2", "load 2d face 3");
+      gsaRecords.AddRange(gsaLoad2dFace);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadFace).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoad2dFace = gsaConvertedRecords.FindAll(r => r is GsaLoad2dFace).Select(r => (GsaLoad2dFace)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoad2dFace, gsaConvertedLoad2dFace);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSALoadBeamToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.AddRange(GsaNodeExamples(3, "node 1", "node 2", "node 3"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.AddRange(GsaElement1dExamples(2, "element 1", "element 2"));
+      var gsaLoadBeams = GsaLoadBeamExamples(3, "load beam 1", "load beam 2", "load beam 3");
+      gsaRecords.AddRange(gsaLoadBeams);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSALoadBeam).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadBeams = gsaConvertedRecords.FindAll(r => r is GsaLoadBeam).Select(r => (GsaLoadBeam)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoadBeams, gsaConvertedLoadBeams);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSALoadNodeToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
+      gsaRecords.Add(GsaNodeExamples(1, "node 1").First());
+      var gsaLoadNodes = GsaLoadNodeExamples(2, "load node 1", "load node 2");
+      gsaRecords.AddRange(gsaLoadNodes);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSALoadNode).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadNodes = gsaConvertedRecords.FindAll(r => r is GsaLoadNode).Select(r => (GsaLoadNode)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoadNodes, gsaConvertedLoadNodes);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSALoadGravityToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
+      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5"));
+      gsaRecords.Add(GsaProp2dExample("property 2D 1"));
+      gsaRecords.AddRange(GsaElement2dExamples(2, "element 1", "element 2"));
+      var gsaLoadGravity = GsaLoadGravityExample("load gravity 1");
+      gsaRecords.Add(gsaLoadGravity);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadGravity).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadGravity = gsaConvertedRecords.FindAll(r => r is GsaLoadGravity).Select(r => (GsaLoadGravity)r).First();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaLoadGravity x) => x.MemberIndices));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaLoadGravity x) => x.X));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaLoadGravity x) => x.Y));
+      var result = compareLogic.Compare(gsaLoadGravity, gsaConvertedLoadGravity);
+      Assert.Empty(result.Differences);
+      Assert.Null(gsaConvertedLoadGravity.MemberIndices);
+      Assert.Null(gsaConvertedLoadGravity.X);
+      Assert.Null(gsaConvertedLoadGravity.Y);
+    }
+
+    [Fact]
+    public void GSALoadThermal2dToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.Add(GsaProp2dExample("property 2D 1"));
+      gsaRecords.AddRange(GsaNodeExamples(4, "node 1", "node 2", "node 3", "node 4"));
+      gsaRecords.Add(GsaElement2dExamples(1, "element 1").FirstOrDefault());
+      var gsaLoadThermals = GsaLoad2dThermalExamples(2, "load thermal 1", "load thermal 2");
+      gsaRecords.AddRange(gsaLoadThermals);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadThermal2d).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadThermals = gsaConvertedRecords.FindAll(r => r is GsaLoad2dThermal).Select(r => (GsaLoad2dThermal)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoadThermals, gsaConvertedLoadThermals);
+      Assert.Empty(result.Differences);
+    }
+
+    //TODO: add app agnostic test methods
     #endregion
 
     #region Materials
-    [Fact (Skip = "Not implemented yet")]
-    public void SteelToNative()
+    [Fact]
+    public void GSASteelToNative()
     {
-      //TO DO:
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaMatSteel = GsaMatSteelExample("steel 1");
+      gsaRecords.Add(gsaMatSteel);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedSteel = gsaConvertedRecords.FindAll(r => r is GsaMatSteel).Select(r => (GsaMatSteel)r).First();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaMatSteel, gsaConvertedSteel);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSAConcreteToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaMatConcrete = GsaMatConcreteExample("concrete 1");
+      gsaRecords.Add(gsaMatConcrete);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedConcrete = gsaConvertedRecords.FindAll(r => r is GsaMatConcrete).Select(r => (GsaMatConcrete)r).First();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaMatConcrete, gsaConvertedConcrete);
+      Assert.Empty(result.Differences);
     }
     #endregion
 
