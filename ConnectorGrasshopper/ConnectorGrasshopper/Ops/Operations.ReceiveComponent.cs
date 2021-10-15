@@ -562,8 +562,7 @@ namespace ConnectorGrasshopper.Ops
           var myCommit = await GetCommit(InputWrapper, client, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
-            Done();
-            return;
+
           }, CancellationToken);
           
           if (myCommit == null)
