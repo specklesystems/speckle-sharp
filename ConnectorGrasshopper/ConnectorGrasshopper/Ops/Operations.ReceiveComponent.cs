@@ -565,6 +565,11 @@ namespace ConnectorGrasshopper.Ops
             Done();
             return;
           }, CancellationToken);
+          
+          if (myCommit == null)
+          {
+            throw new Exception("Failed to find a valid commit or object to get.");
+          }
 
           ReceivedCommit = myCommit;
 
