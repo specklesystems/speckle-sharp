@@ -45,6 +45,7 @@ namespace Objects.Converter.ETABS
             if(material.designCode != null)
             {
                 Model.PropMaterial.AddMaterial(ref materialName, eMaterialType, material.designCode, material.codeYear, material.grade);
+                Model.PropMaterial.ChangeName(materialName, material.name);
             }
             else
             {
