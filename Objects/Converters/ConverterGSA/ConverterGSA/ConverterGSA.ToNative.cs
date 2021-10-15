@@ -1043,7 +1043,15 @@ namespace ConverterGSA
     private List<GsaRecord> PathToNative(Base speckleObject)
     {
       var specklePath = (GSAPath)speckleObject;
-      var alignmentIndex = ((GsaAlign)(AlignToNative(specklePath.alignment)).First()).Index;
+      var lookupIndex = Instance.GsaModel.Cache.LookupIndex<GsaAlign>(specklePath.alignment.applicationId);
+      GsaAlign gsaAlign = null;
+      
+      if (lookupIndex != null)
+      {
+        gsaAlign = (GsaAlign)(AlignToNative(specklePath.alignment)).First();
+        lookupIndex = gsaAlign.Index;
+      }
+
       var gsaPath = new GsaPath()
       {
         ApplicationId = speckleObject.applicationId,
@@ -1051,14 +1059,17 @@ namespace ConverterGSA
         Name = specklePath.name,
         Sid = speckleObject.id,
         Factor = specklePath.factor,
-        Alignment = alignmentIndex,
+        Alignment = lookupIndex,
         Group = specklePath.group,
         Left = specklePath.left,
         Right = specklePath.right,
         NumMarkedLanes = specklePath.numMarkedLanes,
         Type = specklePath.type.ToNative(),
       };
-      return new List<GsaRecord>() { gsaPath };
+      if(gsaAlign != null)
+        return new List<GsaRecord>() { gsaAlign, gsaPath };
+      else
+        return new List<GsaRecord>() { gsaPath };
     }
     
     #endregion
