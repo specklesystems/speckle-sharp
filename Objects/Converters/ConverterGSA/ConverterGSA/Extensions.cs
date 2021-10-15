@@ -186,6 +186,16 @@ namespace ConverterGSA
       }
     }
 
+    public static Section1dType ToNative(this Objects.Structural.Geometry.MemberType speckleElementType)
+    {
+      switch (speckleElementType)
+      {
+        case Objects.Structural.Geometry.MemberType.Beam: return Section1dType.Beam;
+        case Objects.Structural.Geometry.MemberType.Column: return Section1dType.Column;
+        default: return Section1dType.Generic;
+      }
+    }
+
     public static ElementType1D ToSpeckle1d(this GwaMemberType gsaMemberType)
     {
       switch (gsaMemberType)
@@ -411,6 +421,23 @@ namespace ConverterGSA
         case ReferencePoint.BottomCentre: return BaseReferencePoint.BotCentre;
         case ReferencePoint.BottomLeft: return BaseReferencePoint.BotLeft;
         default: return BaseReferencePoint.Centroid;
+      }
+    }
+
+    public static ReferencePoint ToNative(this BaseReferencePoint baseReferencePoint)
+    {
+      switch (baseReferencePoint)
+      {
+        case BaseReferencePoint.BotCentre: return ReferencePoint.BottomCentre;
+        case BaseReferencePoint.BotLeft: return ReferencePoint.BottomLeft;
+        case BaseReferencePoint.BotRight: return ReferencePoint.BottomRight;
+        case BaseReferencePoint.Centroid: return ReferencePoint.Centroid;
+        case BaseReferencePoint.MidLeft: return ReferencePoint.MiddleLeft;
+        case BaseReferencePoint.MidRight: return ReferencePoint.MiddleRight;
+        case BaseReferencePoint.TopCentre: return ReferencePoint.TopCentre;
+        case BaseReferencePoint.TopLeft: return ReferencePoint.TopLeft;
+        case BaseReferencePoint.TopRight: return ReferencePoint.TopRight;
+        default: return ReferencePoint.Centroid;
       }
     }
 
@@ -714,6 +741,15 @@ namespace ConverterGSA
           d[key].Add(v);
         }
       }
+    }
+
+    //https://stackoverflow.com/questions/23921210/grouping-lists-into-groups-of-x-items-per-group
+    public static IEnumerable<IGrouping<int, TSource>> GroupBy<TSource>(this IEnumerable<TSource> source, int itemsPerGroup)
+    {
+      return source.Zip(Enumerable.Range(0, source.Count()),
+                        (s, r) => new { Group = r / itemsPerGroup, Item = s })
+                   .GroupBy(i => i.Group, g => g.Item)
+                   .ToList();
     }
   }
 }

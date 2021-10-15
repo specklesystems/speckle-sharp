@@ -1383,21 +1383,30 @@ namespace ConverterGSA
         cost = gsaSection.Cost ?? 0,
         poolRef = gsaSection.PoolIndex,
       };
-      if (gsaSection.Index.IsIndex()) speckleProperty1D.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      if (gsaSection.Index.IsIndex())
+      {
+        speckleProperty1D.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      }
       var gsaSectionComp = (SectionComp)gsaSection.Components.Find(x => x.GetType() == typeof(SectionComp));
       if (gsaSectionComp.MatAnalIndex.IsIndex()) //TODO: intention is to use this to convert MAT_ANAL to a material, but this is not currently possible
       {
         speckleProperty1D.material = null;
         ConversionErrors.Add(new Exception("GsaSectionToSpeckle: Conversion of MAT_ANAL keyword not currently supported"));
       }
-      if (gsaSectionComp.MaterialIndex.IsIndex()) speckleProperty1D.designMaterial = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
+      if (gsaSectionComp.MaterialIndex.IsIndex())
+      {
+        speckleProperty1D.designMaterial = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
+      }
       var fns = new Dictionary<Section1dProfileGroup, Func<ProfileDetails, SectionProfile>>
       { { Section1dProfileGroup.Catalogue, GetProfileCatalogue },
         { Section1dProfileGroup.Explicit, GetProfileExplicit },
         { Section1dProfileGroup.Perimeter, GetProfilePerimeter },
         { Section1dProfileGroup.Standard, GetProfileStandard }
       };
-      if (fns.ContainsKey(gsaSectionComp.ProfileGroup)) speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
+      if (fns.ContainsKey(gsaSectionComp.ProfileGroup))
+      {
+        speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
+      }
 
       return new ToSpeckleResult(speckleProperty1D);
       //TODO:
@@ -3546,7 +3555,7 @@ namespace ConverterGSA
       var p = (ProfileDetailsStandard)gsaProfile;
       var speckleProfile = new SectionProfile();
       var fns = new Dictionary<Section1dStandardProfileType, Func<ProfileDetailsStandard, SectionProfile>>
-      { { Section1dStandardProfileType.Rectangular, GetProfileStandardRectangluar },
+      { { Section1dStandardProfileType.Rectangular, GetProfileStandardRectangular },
         { Section1dStandardProfileType.RectangularHollow, GetProfileStandardRHS },
         { Section1dStandardProfileType.Circular, GetProfileStandardCircular },
         { Section1dStandardProfileType.CircularHollow, GetProfileStandardCHS },
@@ -3560,7 +3569,7 @@ namespace ConverterGSA
 
       return speckleProfile;
     }
-    private SectionProfile GetProfileStandardRectangluar(ProfileDetailsStandard gsaProfile)
+    private SectionProfile GetProfileStandardRectangular(ProfileDetailsStandard gsaProfile)
     {
       var p = (ProfileDetailsRectangular)gsaProfile;
       var speckleProfile = new Rectangular()

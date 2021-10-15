@@ -93,18 +93,28 @@ namespace ConverterGSATests
       p1.Sid = "Sidney";
 
       var compareLogic = new CompareLogic();
-      
+
       //Set config to ignore one difference ...
       //(Creating a lambda expression, as shown below, avoids having to pass a hard-coded string with the property name ("Cost"))
-      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaSection x) => x.Cost)); 
-      
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaSection x) => x.Cost));
+
       var result = compareLogic.Compare(p1, p2);
 
       //.. leaving one difference left (Sid)
       Assert.Single(result.Differences);
     }
 
-    [Fact(Skip = "Not implemented yet")]
+    [Fact]
+    public void TestRetrievalOfDynamicObjectFromBase()
+    { 
+      var testBase = new Base();
+      testBase["MyProp"] = new Property1D("ThisMy1dPropertyDon'tYouMessWithMeYouHearGeeeez");
+      
+      var members = testBase.GetMembers();
+
+      var testBaseHasMyProp = members.ContainsKey("MyProp");
+    }
+    [Fact]
     public void Property1dToNative()
     {
       //Define GSA objects
@@ -116,7 +126,7 @@ namespace ConverterGSATests
       };
 
       //Gen #2
-      var gsaSection = new List<GsaSection>
+      var gsaSections = new List<GsaSection>
       {
         GsaCatalogueSectionExample("section 1"),
         GsaExplicitSectionExample("section 2"),
@@ -130,7 +140,7 @@ namespace ConverterGSATests
         GsaAngleSectionExample("section 10"),
         GsaChannelSectionExample("section 11")
       };
-      gsaRecords.AddRange(gsaSection);
+      gsaRecords.AddRange(gsaSections);
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
@@ -142,12 +152,27 @@ namespace ConverterGSATests
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
 
-      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var objs));
+
+      var structuralObjects = objs.Cast<Base>().OrderBy(o => o.applicationId).ToList();
 
       Assert.NotEmpty(structuralObjects);
       Assert.Contains(structuralObjects, so => so is GSAProperty1D);
 
-      var speckleProperty1D = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
+      var speckleProperty1Ds = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
+
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add("SectionSteel.Type");
+      //compareLogic.Config.IgnoreProperty<SectionSteel>(c => c.Type);
+
+      foreach (var prop in speckleProperty1Ds.Skip(4))
+      {
+        var newNatives = converter.ConvertToNative(new List<Base> { prop });
+        var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaSection)));
+        var oldNative = gsaSections.FirstOrDefault(s => s.ApplicationId.Equals(prop.applicationId, StringComparison.InvariantCultureIgnoreCase));
+        var result = compareLogic.Compare(newNative, oldNative);
+        Assert.True(result.AreEqual);
+      }
     }
     #endregion
 
