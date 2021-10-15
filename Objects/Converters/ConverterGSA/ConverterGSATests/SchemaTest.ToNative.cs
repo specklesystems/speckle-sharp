@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Materials;
@@ -10,8 +8,6 @@ using Objects.Structural.GSA.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural;
 using Objects.Geometry;
-using System.Text.RegularExpressions;
-using AutoMapper;
 using ConverterGSA;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
@@ -82,38 +78,6 @@ namespace ConverterGSATests
 
     #region Properties
 
-    [Fact]
-    public void TestComplexObjectComparison()
-    {
-      var p1 = GsaCatalogueSectionExample("section 1");
-      var p2 = GsaCatalogueSectionExample("section 1");
-
-      //Two differences ...
-      p1.Cost = 100;
-      p1.Sid = "Sidney";
-
-      var compareLogic = new CompareLogic();
-
-      //Set config to ignore one difference ...
-      //(Creating a lambda expression, as shown below, avoids having to pass a hard-coded string with the property name ("Cost"))
-      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaSection x) => x.Cost));
-
-      var result = compareLogic.Compare(p1, p2);
-
-      //.. leaving one difference left (Sid)
-      Assert.Single(result.Differences);
-    }
-
-    [Fact]
-    public void TestRetrievalOfDynamicObjectFromBase()
-    { 
-      var testBase = new Base();
-      testBase["MyProp"] = new Property1D("ThisMy1dPropertyDon'tYouMessWithMeYouHearGeeeez");
-      
-      var members = testBase.GetMembers();
-
-      var testBaseHasMyProp = members.ContainsKey("MyProp");
-    }
     [Fact]
     public void Property1dToNative()
     {
