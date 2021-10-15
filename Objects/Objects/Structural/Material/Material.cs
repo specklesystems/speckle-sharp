@@ -17,7 +17,7 @@ namespace Objects.Structural.Materials
         public Material() { }
 
         [SchemaInfo("Material", "Creates a Speckle structural material", "Structural", "Materials")]
-        public Material(string name, MaterialType type, string grade = null)
+        public Material(string name, MaterialType type,string designCode = null,string codeYear = null,  string grade = null)
         {
             this.name = name;
             this.type = type;

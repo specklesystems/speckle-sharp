@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
+using System.Linq
 using ETABSv1;
 
 namespace Objects.Converter.ETABS
@@ -14,26 +15,53 @@ namespace Objects.Converter.ETABS
             string units = ModelUnits();
             string newFrame = "";
             Line baseline = element1D.baseLine;
+            string[] properties = null;
+            int number = 0;
+            Model.PropFrame.GetNameList(ref number, ref properties);
             if (baseline != null)
             {
                 Point end1node = baseline.start;
                 Point end2node = baseline.end;
-                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
+                if (properties.Contains(element1D.property.name))
+                {
+                    Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
+                }
+                else
+                {
+                    Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
+                }
             }
             else
             {
                 Point end1node = element1D.end1Node.basePoint;
                 Point end2node = element1D.end2Node.basePoint;
-                Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
+                if (properties.Contains(element1D.property.name))
+                {
+                    Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
+                }
+                else
+                {
+                    Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
+                }
             }
 
-            var end1Release = RestraintToNative(element1D.end1Releases);
-            var end2Release = RestraintToNative(element1D.end2Releases);
+            bool[] end1Release = null;
+            bool[] end2Release = null;
+            if (element1D.end1Releases != null && element1D.end2Releases !=null) 
+            {
+                end1Release = RestraintToNative(element1D.end1Releases);
+                end2Release = RestraintToNative(element1D.end2Releases);
+            }
+
             double[] startV, endV;
             startV = new double[] { };
             endV = new double[] { };
 
-            Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
+            if(element1D.orientationAngle!= null)
+            {
+                Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
+            }
+
 
             Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
             return element1D.name;
