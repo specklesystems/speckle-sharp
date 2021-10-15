@@ -45,10 +45,14 @@ namespace Objects.Converter.ETABS
                     AreaToNative((Element2D)element);
                 }
             }
-            foreach(Node node in model.nodes)
+            if(model.nodes != null)
             {
-                PointToNative(node);
+                foreach (Node node in model.nodes)
+                {
+                    PointToNative(node);
+                }
             }
+
             return "Finished";
         }
         Model ModelToSpeckle()

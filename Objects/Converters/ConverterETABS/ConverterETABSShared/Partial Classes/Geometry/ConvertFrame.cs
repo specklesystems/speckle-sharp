@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
-using System.Linq
+using System.Linq;
 using ETABSv1;
 
 namespace Objects.Converter.ETABS
