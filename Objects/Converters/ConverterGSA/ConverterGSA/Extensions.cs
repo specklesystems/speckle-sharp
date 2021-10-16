@@ -242,6 +242,20 @@ namespace ConverterGSA
       }
     }
 
+    public static Property2dType ToNative(this PropertyType2D propertyType)
+    {
+      switch (propertyType)
+      {
+        case PropertyType2D.Curved : return Property2dType.Curved;
+        case PropertyType2D.Fabric : return Property2dType.Fabric;
+        case PropertyType2D.Load:   return Property2dType.Load; 
+        case PropertyType2D.Plate:  return Property2dType.Plate;
+        case PropertyType2D.Shell:  return Property2dType.Shell;
+        case PropertyType2D.Stress : return Property2dType.Stress;
+        default: throw new Exception(propertyType.ToString() + " can not be converted to a valid native 2D property type.");
+      }
+    }
+
     public static GridSurfaceSpanType ToSpeckle(this GridSurfaceSpan gsaGridSurfaceSpan)
     {
       switch (gsaGridSurfaceSpan)
@@ -452,6 +466,16 @@ namespace ConverterGSA
         case Property2dRefSurface.BottomCentre: return ReferenceSurface.Bottom;
         case Property2dRefSurface.TopCentre: return ReferenceSurface.Top;
         default: return ReferenceSurface.Middle;
+      }
+    }
+
+    public static Property2dRefSurface ToNative(this ReferenceSurface refSurface)
+    {
+      switch (refSurface)
+      {
+        case ReferenceSurface.Bottom: return Property2dRefSurface.BottomCentre;
+        case ReferenceSurface.Top: return Property2dRefSurface.TopCentre;
+        default: return Property2dRefSurface.Centroid;
       }
     }
 

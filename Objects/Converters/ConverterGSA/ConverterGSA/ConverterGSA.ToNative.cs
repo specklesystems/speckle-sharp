@@ -64,6 +64,8 @@ namespace ConverterGSA
         //Properties
         { typeof(Property1D), Property1dToNative },
         { typeof(GSAProperty1D), GsaProperty1dToNative },
+        { typeof(Property2D), Property2dToNative },
+        { typeof(GSAProperty2D), GsaProperty2dToNative },
         // Bridge
         { typeof(GSAInfluenceNode), InfNodeToNative},
         { typeof(GSAInfluenceBeam), InfBeamToNative},
@@ -980,9 +982,89 @@ namespace ConverterGSA
       }
       return true;
     }
-      
+
+
+    private List<GsaRecord> GsaProperty2dToNative(Base speckleObject)
+    {
+      var speckleProperty = (GSAProperty2D)speckleObject;
+      var natives = Property2dToNative(speckleObject);
+      var gsaProp2d = (GsaProp2d)natives.FirstOrDefault(n => n is GsaProp2d);
+      if (gsaProp2d != null)
+      {
+        gsaProp2d.Colour = (Enum.TryParse(speckleProperty.colour, true, out Colour gsaColour) ? gsaColour : Colour.NO_RGB);
+        gsaProp2d.Mass = speckleProperty.additionalMass;
+        gsaProp2d.Profile = speckleProperty.concreteSlabProp;
+        if (speckleProperty.designMaterial != null)
+        {
+          int? materialIndex = null;
+          if (speckleProperty.designMaterial.type == MaterialType.Steel && speckleProperty.designMaterial is GSASteel)
+          {
+            //var mat = (GSASteel)speckleProperty.designMaterial;
+            materialIndex = Instance.GsaModel.Cache.LookupIndex<GsaMatSteel>(speckleProperty.designMaterial.applicationId);
+            gsaProp2d.MatType = Property2dMaterialType.Steel;
+          }
+          else if (speckleProperty.material.type == MaterialType.Concrete && speckleProperty.designMaterial is GSAConcrete)
+          {
+            materialIndex = Instance.GsaModel.Cache.LookupIndex<GsaMatConcrete>(speckleProperty.designMaterial.applicationId);
+            gsaProp2d.MatType = Property2dMaterialType.Concrete;
+          }
+          else
+          {
+            //Not supported yet
+
+            gsaProp2d.MatType = Property2dMaterialType.Generic;
+          }
+
+          if (materialIndex.HasValue)
+          {
+            gsaProp2d.GradeIndex = materialIndex;
+          }
+          else
+          {
+            //TO DO: ToNative() of the material
+          }
+        }
+      }
+      return natives;
+    }
+
+    //Note: there should be no ToNative for SectionProfile because it's not a type that will create a first-class citizen in the GSA model
+    //      so there is basically a ToNative of that class here in this method too
+    private List<GsaRecord> Property2dToNative(Base speckleObject)
+    {
+      var speckleProperty = (Property2D)speckleObject;
+
+      var gsaProp2d = new GsaProp2d()
+      {
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaProp2d>(speckleProperty.applicationId),
+        Name = speckleProperty.name,
+        ApplicationId = speckleProperty.applicationId,
+        Thickness = (speckleProperty.thickness == 0) ? null : (double?)speckleProperty.thickness,
+        RefZ = speckleProperty.zOffset,
+        RefPt = speckleProperty.refSurface.ToNative(),
+        Type = speckleProperty.type.ToNative(),
+        InPlaneStiffnessPercentage = speckleProperty.modifierInPlane == 0 ? null : (double?)speckleProperty.modifierInPlane,
+        BendingStiffnessPercentage = speckleProperty.modifierBending == 0 ? null : (double?)speckleProperty.modifierBending,
+        ShearStiffnessPercentage = speckleProperty.modifierShear == 0 ? null : (double?)speckleProperty.modifierShear,
+        VolumePercentage = speckleProperty.modifierVolume == 0 ? null : (double?)speckleProperty.modifierVolume
+      };
+
+      var axisIndex = Instance.GsaModel.Cache.LookupIndex<GsaAxis>(speckleProperty.orientationAxis.applicationId);
+      if (axisIndex.HasValue)
+      {
+        gsaProp2d.AxisIndex = axisIndex;
+        gsaProp2d.AxisRefType = AxisRefType.Reference;
+      }
+      else
+      {
+        gsaProp2d.AxisRefType = AxisRefType.Global;
+      }
+
+      return new List<GsaRecord>() { gsaProp2d };
+    }
+
     #endregion
-    
+
     #region Bridge
 
     private List<GsaRecord> AlignToNative(Base speckleObject)

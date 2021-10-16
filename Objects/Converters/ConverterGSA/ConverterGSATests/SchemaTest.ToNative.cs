@@ -535,7 +535,7 @@ namespace ConverterGSATests
       compareLogic.Config.MembersToIgnore.Add("SectionSteel.Type");
       //compareLogic.Config.IgnoreProperty<SectionSteel>(c => c.Type);
 
-      foreach (var prop in speckleProperty1Ds.Skip(4))
+      foreach (var prop in speckleProperty1Ds)
       {
         var newNatives = converter.ConvertToNative(new List<Base> { prop });
         var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaSection)));
@@ -543,6 +543,46 @@ namespace ConverterGSATests
         var result = compareLogic.Compare(newNative, oldNative);
         Assert.True(result.AreEqual);
       }
+    }
+
+    [Fact]
+    public void Property2dToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+
+      //Gen #2
+      var gsaProp2d = GsaProp2dExample("property 2D 1");
+      gsaRecords.Add(gsaProp2d);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAProperty2D);
+
+      var prop = (GSAProperty2D)structuralObjects.FirstOrDefault(so => so is GSAProperty2D);
+
+      var compareLogic = new CompareLogic();
+
+      var newNatives = converter.ConvertToNative(new List<Base> { prop });
+      var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaProp2d)));
+      var oldNative = gsaProp2d;
+      var result = compareLogic.Compare(newNative, oldNative);
+      Assert.True(result.AreEqual);
     }
     #endregion
 
