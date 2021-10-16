@@ -474,7 +474,7 @@ namespace ConnectorGSA.ViewModels
             Task.Run(() =>
             {
               string url = Coordinator.Account.ServerUrl.Split(new string[] { "api" }, StringSplitOptions.RemoveEmptyEntries)[0];
-              Process.Start(url + @"#/view/" + streamId);
+              Process.Start(url + @"/streams/" + streamId);
             });
           }
         },

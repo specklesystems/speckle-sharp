@@ -110,10 +110,13 @@ namespace Objects.Converter.RhinoGh
           GeometryBase converted = null;
           switch (geo)
           {
-            case BlockInstance _:
-              var instance = (InstanceObject)ConvertToNative(geo);
-              converted = instance.Geometry;
-              Doc.Objects.Delete(instance);
+            case BlockInstance o:
+              var instance = BlockInstanceToNative(o);
+              if (instance != null)
+              {
+                converted = instance.DuplicateGeometry();
+                Doc.Objects.Delete(instance);
+              }
               break;
             default:
               converted = (GeometryBase)ConvertToNative(geo);
@@ -121,7 +124,7 @@ namespace Objects.Converter.RhinoGh
           }
           if (converted == null)
             continue;
-          var layerName = $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}";
+          var layerName = (geo["Layer"] != null) ? $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}" : $"{commitInfo}";
           int index = 1;
           if (layerName != null)
             GetLayer(Doc, layerName, out index, true);
@@ -140,6 +143,7 @@ namespace Objects.Converter.RhinoGh
         return null;
 
       var blockDefinition = Doc.InstanceDefinitions[definitionIndex];
+
       return blockDefinition;
     }
 
@@ -173,19 +177,25 @@ namespace Objects.Converter.RhinoGh
       InstanceDefinition definition = BlockDefinitionToNative(instance.blockDefinition);
 
       // get the transform
-      if (instance.transform.Length != 16)
-        return null;
-      Transform transform = new Transform();
-      int count = 0;
-      for (int i = 0; i < 4; i++)
+      // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
+      Transform transform = Transform.Identity;
+      double[] t = instance.transform;
+      if (t.Length == 16)
       {
-        for (int j = 0; j < 4; j++)
+        int count = 0;
+        for (int i = 0; i < 4; i++)
         {
-          if (j == 3 && i != 3) // scale the delta values for translation transformations
-            transform[i, j] = ScaleToNative(instance.transform[count], instance.units);
-          else
-            transform[i, j] = instance.transform[count];
-          count++;
+          for (int j = 0; j < 4; j++)
+          {
+            if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
+              if (t[15] != 0)
+                transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], instance.units) : 1;
+              else
+                transform[i, j] = (i != 3) ? ScaleToNative(t[count], instance.units) : 1;
+            else
+              transform[i, j] = t[count];
+            count++;
+          }
         }
       }
 

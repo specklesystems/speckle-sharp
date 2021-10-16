@@ -22,6 +22,7 @@ using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Objects.Structural.Materials;
 using Objects.Structural.GSA.Bridge;
 using Objects.Structural.GSA.Analysis;
+using StructuralUtilities.PolygonMesher;
 
 namespace ConverterGSA
 {
@@ -342,7 +343,6 @@ namespace ConverterGSA
         orientationAngle = gsaEl.Angle ?? 0,
         offset = gsaEl.OffsetZ ?? 0,
         units = "",
-        voids = null, //shouldn't be part of Element2D 
 
         //-- GSA specific --
         nativeId = gsaEl.Index ?? 0,
@@ -517,12 +517,13 @@ namespace ConverterGSA
 
     private GSAMember2D GsaMember2dToSpeckle(GsaMemb gsaMemb)
     {
+      var color = gsaMemb.Type == Speckle.GSA.API.GwaSchema.MemberType.Void2d ? System.Drawing.Color.LightPink : System.Drawing.Color.White;
       var speckleMember2d = new GSAMember2D()
       {
         //-- App agnostic --
         name = gsaMemb.Name,
         type = gsaMemb.Type.ToSpeckle2d(),
-        displayMesh = null, //TODO add
+        displayMesh = DisplayMeshPolygon(gsaMemb.NodeIndices, color),
         orientationAngle = gsaMemb.Angle ?? 0,
         offset = gsaMemb.Offset2dZ ?? 0,
         parent = null, //no meaning for member, only for element
@@ -555,6 +556,9 @@ namespace ConverterGSA
       {
         speckleMember2d.voids = gsaMemb.Voids.Select(v => v.Select(i => GetNodeFromIndex(i)).ToList()).ToList();
         AddToMeaningfulNodeIndices(speckleMember2d.voids.SelectMany(n => n.Select(n2 => n2.applicationId)), GSALayer.Design);
+      } else
+      {
+
       }
 
       //The following properties aren't part of the structural schema:
@@ -1289,7 +1293,8 @@ namespace ConverterGSA
       if (gsaSteel.Index.IsIndex()) speckleSteel.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaMatSteel>(gsaSteel.Index.Value);
       if (gsaSteel.Fy.IsPositive()) speckleSteel.yieldStrength = gsaSteel.Fy.Value;
       if (gsaSteel.Fu.IsPositive()) speckleSteel.ultimateStrength = gsaSteel.Fu.Value;
-      if (gsaSteel.EpsP.IsPositive()) speckleSteel.maxStrain = gsaSteel.EpsP.Value;
+      if (gsaSteel.Mat.Eps.IsPositive()) speckleSteel.maxStrain = gsaSteel.Mat.Eps.Value;
+      if (gsaSteel.Eh.HasValue) speckleSteel.strainHardeningModulus = gsaSteel.Eh.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaSteel.Mat.E, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.E, out var E)) speckleSteel.elasticModulus = E;
@@ -1299,7 +1304,6 @@ namespace ConverterGSA
       if (Choose(gsaSteel.Mat.Alpha, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
 
       //the following properties are not part of the schema
-      if (gsaSteel.Eh.IsPositive()) speckleSteel["Eh"] = gsaSteel.Eh.Value;
       speckleSteel["Mat"] = GetMat(gsaSteel.Mat);
 
       return new ToSpeckleResult(speckleSteel);
@@ -1317,7 +1321,8 @@ namespace ConverterGSA
         type = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
-        flexuralStrength = 0 //TODO: don't think this is part of the GSA definition
+        flexuralStrength = 0, //TODO: don't think this is part of the GSA definition
+        lightweight = gsaConcrete.Light,
       };
       if (gsaConcrete.Index.IsIndex()) speckleConcrete.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaMatConcrete>(gsaConcrete.Index.Value);
 
@@ -1326,6 +1331,7 @@ namespace ConverterGSA
       if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxCompressiveStrain = gsaConcrete.EpsU.Value;
       if (gsaConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaConcrete.Agg.Value;
       if (gsaConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaConcrete.Fcdt.Value;
+      if (gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.elasticModulus = E;
@@ -1338,7 +1344,6 @@ namespace ConverterGSA
       speckleConcrete["Mat"] = GetMat(gsaConcrete.Mat);
       speckleConcrete["Type"] = gsaConcrete.Type.ToString();
       speckleConcrete["Cement"] = gsaConcrete.Cement.ToString();
-      speckleConcrete["Light"] = gsaConcrete.Light;
       if (gsaConcrete.Fcd.HasValue) speckleConcrete["Fcd"] = gsaConcrete.Fcd.Value;
       if (gsaConcrete.Fcdc.HasValue) speckleConcrete["Fcdc"] = gsaConcrete.Fcdc.Value;
       if (gsaConcrete.Fcfib.HasValue) speckleConcrete["Fcfib"] = gsaConcrete.Fcfib.Value;
@@ -2596,32 +2601,71 @@ namespace ConverterGSA
 
     private Mesh DisplayMesh2d(List<int> gsaNodeIndicies)
     {
-      //TODO: check if this actually creates a real mesh
+      var _vertices = new List<Node>();
+      var _faces = new List<int[]>();
       var vertices = new List<double>();
-      var faces = new List<int[]>();
 
       var topology = gsaNodeIndicies.Select(i => GetNodeFromIndex(i)).ToList();
 
+      var faceIndices = new List<int>();
       foreach (var node in topology)
       {
-        vertices.Add(node.basePoint.x);
-        vertices.Add(node.basePoint.y);
-        vertices.Add(node.basePoint.z);
+        vertices.AddRange(new double[] { node.basePoint.x, node.basePoint.y, node.basePoint.z });
+
+        if (!_vertices.Contains(node))
+        {
+          faceIndices.Add(_vertices.Count);
+          _vertices.Add(node);
+        }
+        else
+        {
+          faceIndices.Add(_vertices.IndexOf(node));
+        }
       }
 
-      if (gsaNodeIndicies.Count == 4)
+      if (topology.Count == 4)
       {
-        faces.Add(new int[] { 1, 1, 2, 3, 4 });
+        _faces.Add(new int[] { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
       }
-      else if (gsaNodeIndicies.Count == 3)
+      else if (topology.Count == 3)
       {
-        faces.Add(new int[] { 0, 1, 2, 3 });
+        _faces.Add(new int[] { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
       }
 
-      var speckleMesh = new Mesh(vertices.ToArray(), faces.SelectMany(o => o).ToArray());
+      var faces = _faces.SelectMany(o => o).ToArray();
+      var mesh = new Mesh(vertices.ToArray(), faces);
 
-      return speckleMesh;
+      return mesh;
     }
+
+    private Mesh DisplayMeshPolygon(List<int> gsaNodeIndicies, System.Drawing.Color color = default)
+    {      
+      var edgeVertices = new List<double>();
+      var topology = gsaNodeIndicies.Select(i => GetNodeFromIndex(i)).ToList();
+      foreach (var node in topology)
+      {
+        edgeVertices.AddRange(new double[] { node.basePoint.x, node.basePoint.y, node.basePoint.z });
+      }
+
+      var mesher = new PolygonMesher();
+      mesher.Init(edgeVertices);
+      
+      var faces = mesher.Faces().ToList();
+      var vertices = mesher.Coordinates.ToList();
+
+      var mesh = new Mesh();
+      mesh.faces = faces;
+      mesh.vertices = vertices;
+
+      if (color != null)
+      {        
+        var colors = Enumerable.Repeat(color.ToArgb(), vertices.Count()).ToList();
+        mesh.colors = colors;
+      }
+
+      return mesh;
+    }
+
     #endregion
 
     #region Member
@@ -2650,7 +2694,7 @@ namespace ConverterGSA
       }
     }
 
-    private Polyline GetBaseLine(List<Point> points)
+    private Polyline GetBasePolyline(List<Point> points)
     {
       var v = new List<double>();
       foreach (var pt in points)
@@ -2658,6 +2702,11 @@ namespace ConverterGSA
         v.AddRange(new List<double> { pt.x, pt.y, pt.z });
       }
       return new Polyline(v.ToArray());
+    }
+
+    private Line GetBaseLine(List<Point> points)
+    {
+      return new Line(points[0], points[1]);
     }
     #endregion
 
@@ -3210,6 +3259,13 @@ namespace ConverterGSA
       if (gsaMat == null) return null;
 
       var speckleMat = new Base();
+      if (gsaMat.Name != null) speckleMat["Name"] = gsaMat.Name;
+      if (gsaMat.E.HasValue) speckleMat["E"] = gsaMat.E.Value;
+      if (gsaMat.F.HasValue) speckleMat["F"] = gsaMat.F.Value;
+      if (gsaMat.Nu.HasValue) speckleMat["Nu"] = gsaMat.Nu.Value;
+      if (gsaMat.G.HasValue) speckleMat["G"] = gsaMat.G.Value;
+      if (gsaMat.Rho.HasValue) speckleMat["Rho"] = gsaMat.Rho.Value;
+      if (gsaMat.Alpha.HasValue) speckleMat["Alpha"] = gsaMat.Alpha.Value;
       speckleMat["Prop"] = GetMatAnal(gsaMat.Prop);
       if (gsaMat.NumUC > 0)
       {
@@ -3223,22 +3279,23 @@ namespace ConverterGSA
         speckleMat["OrdSC"] = gsaMat.OrdSC.ToString();
         speckleMat["PtsSC"] = gsaMat.PtsSC;
       }
-      if (gsaMat.NumUC > 0)
+      if (gsaMat.NumUT > 0)
       {
         speckleMat["AbsUT"] = gsaMat.AbsUT.ToString();
         speckleMat["OrdUT"] = gsaMat.OrdUT.ToString();
         speckleMat["PtsUT"] = gsaMat.PtsUT;
       }
-      if (gsaMat.NumUC > 0)
+      if (gsaMat.NumST > 0)
       {
         speckleMat["AbsST"] = gsaMat.AbsST.ToString();
         speckleMat["OrdST"] = gsaMat.OrdST.ToString();
         speckleMat["PtsST"] = gsaMat.PtsST;
       }
-      if (gsaMat.Eps.IsPositive()) speckleMat["Eps"] = gsaMat.Eps;
-      if (gsaMat.Cost.IsPositive()) speckleMat["Cost"] = gsaMat.Cost;
+      if (gsaMat.Eps.HasValue) speckleMat["Eps"] = gsaMat.Eps.Value;
       speckleMat["Uls"] = GetMatCurveParam(gsaMat.Uls);
       speckleMat["Sls"] = GetMatCurveParam(gsaMat.Sls);
+      if (gsaMat.Cost.HasValue) speckleMat["Cost"] = gsaMat.Cost.Value;
+      speckleMat["Type"] = gsaMat.Type.ToString();
       return speckleMat;
     }
 
@@ -3247,8 +3304,10 @@ namespace ConverterGSA
       if (gsaMatAnal == null) return null;
 
       var speckleMatAnal = new Base();
-      speckleMatAnal["Name"] = gsaMatAnal.Name;
-      speckleMatAnal["colour"] = gsaMatAnal.Colour.ToString();
+      if (gsaMatAnal.Name != null) speckleMatAnal["Name"] = gsaMatAnal.Name;
+      speckleMatAnal["Colour"] = gsaMatAnal.Colour.ToString();
+      speckleMatAnal["Type"] = gsaMatAnal.Type.ToString();
+      if (gsaMatAnal.NumParams.HasValue) speckleMatAnal["NumParams"] = gsaMatAnal.NumParams.Value;
       if (gsaMatAnal.E.HasValue) speckleMatAnal["E"] = gsaMatAnal.E.Value;
       if (gsaMatAnal.Nu.HasValue) speckleMatAnal["Nu"] = gsaMatAnal.Nu.Value;
       if (gsaMatAnal.Rho.HasValue) speckleMatAnal["Rho"] = gsaMatAnal.Rho.Value;
