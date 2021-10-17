@@ -1,0 +1,292 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.HomeControls.AllStreams"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <vm:DesignAllStreamsViewModel />
+  </Design.DataContext>
+  <UserControl.Resources>
+    <conv:RoleValueConverter x:Key="RoleValueConverter" />
+  </UserControl.Resources>
+  <Grid Margin="15" RowDefinitions="auto,auto,auto,auto, *, auto">
+    <Grid Grid.Row="0" ColumnDefinitions="auto,*">
+      <StackPanel Orientation="Horizontal">
+        <icons:MaterialIcon
+          Margin="0,0,5,0"
+          VerticalAlignment="Center"
+          Foreground="Gray"
+          Kind="InfoCircle"
+          ToolTip.Tip="You can have multiple Speckle accounts.&#x0a;Select the one to use from the dropdown&#x0a;to load its streams." />
+
+        <TextBlock
+          VerticalAlignment="Center"
+          Text="Account:"
+          TextTrimming="CharacterEllipsis" />
+
+      </StackPanel>
+      <ComboBox
+        Grid.Column="1"
+        Margin="10,0,0,10"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
+        Items="{Binding Accounts}"
+        PlaceholderText="Select an account"
+        SelectedItem="{Binding SelectedAccount}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="auto,*,auto,*">
+              <icons:MaterialIcon
+                Margin="0,0,5,0"
+                Foreground="DarkGray"
+                Kind="Account" />
+              <TextBlock
+                Grid.Column="1"
+                Text="{Binding userInfo.email}"
+                TextTrimming="CharacterEllipsis" />
+              <icons:MaterialIcon
+                Grid.Column="2"
+                Margin="10,0,5,0"
+                Foreground="DarkGray"
+                Kind="Server" />
+              <TextBlock
+                Grid.Column="3"
+                Text="{Binding serverInfo.url}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </Grid>
+
+
+    <StackPanel
+      Grid.Row="1"
+      Margin="0,10,0,0"
+      Orientation="Horizontal">
+      <icons:MaterialIcon
+        Margin="0,0,5,0"
+        VerticalAlignment="Center"
+        Foreground="Gray"
+        Kind="InfoCircle"
+        ToolTip.Tip="Streams are collections of data inside Speckle.&#x0a;You can see a stream as a folder,&#x0a;a project or a repository.&#x0a;In order to send and receive data or geometry,&#x0a;you first need to select the stream to use." />
+
+      <TextBlock Text="Select a stream to use:" TextTrimming="CharacterEllipsis" />
+
+    </StackPanel>
+    <Grid Grid.Row="2" Margin="0,15,0,0">
+      <m:Card Padding="0">
+        <TextBox
+          Margin="0"
+          Padding="0"
+          Classes="Solo"
+          Text="{Binding SearchQuery}"
+          Watermark="Search streams">
+          <TextBox.InnerRightContent>
+            <Button
+              Width="{Binding $self.Bounds.Height}"
+              Padding="4"
+              Classes="Flat"
+              Command="{Binding ClearSearchCommand}"
+              Content="{icons:MaterialIconExt CloseCircle,
+                                              Size=20}" />
+          </TextBox.InnerRightContent>
+          <TextBox.InnerLeftContent>
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              Margin="4,0,0,0"
+              Kind="Search" />
+          </TextBox.InnerLeftContent>
+        </TextBox>
+      </m:Card>
+    </Grid>
+
+
+
+
+
+    <Grid Grid.Row="3" Margin="0,15,0,0">
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding InProgress}" />
+    </Grid>
+
+
+    <m:Card Grid.Row="4" Padding="0,4">
+      <ListBox
+        Background="Transparent"
+        BorderThickness="0"
+        IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
+        Items="{Binding Streams}"
+        ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.Styles>
+          <Style Selector="ListBoxItem:not(:pointerover) StackPanel#SendReceiveButtons">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+          <Style Selector="ListBoxItem[IsSelected=true]:not(:pointerover) StackPanel#SendReceiveButtons">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
+          <Style Selector="ListBoxItem[IsSelected=true]:not(:pointerover) StackPanel#SendReceiveButtons">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
+          <Style Selector="ListBoxItem:pointerover StackPanel#SendReceiveButtons">
+            <Setter Property="IsVisible" Value="True" />
+          </Style>
+        </ListBox.Styles>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="*,Auto">
+              <Grid Grid.Column="0" RowDefinitions="auto,auto,auto">
+                <TextBlock
+                  Classes="Grotesk"
+                  Text="{Binding name}"
+                  TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                  Grid.Row="1"
+                  Margin="0,3,0,0"
+                  Classes="Caption"
+                  MaxLines="1"
+                  Text="{Binding description}"
+                  TextTrimming="CharacterEllipsis" />
+                <Grid
+                  Grid.Row="2"
+                  Margin="0,3,0,0"
+                  ColumnDefinitions="auto,auto,*">
+                  <TextBlock
+                    Classes="Overline"
+                    Text="{Binding id}"
+                    TextTrimming="CharacterEllipsis" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Classes="Overline"
+                    Text=" - " />
+                  <TextBlock
+                    Grid.Column="2"
+                    Classes="Overline"
+                    Text="{Binding role, Converter={StaticResource RoleValueConverter}}"
+                    TextTrimming="CharacterEllipsis" />
+                </Grid>
+
+
+              </Grid>
+              <StackPanel
+                Name="SendReceiveButtons"
+                Grid.Column="1"
+                Margin="0,0,10,0"
+                Orientation="Horizontal"
+                Spacing="10">
+
+                <m:FloatingButton
+                  VerticalAlignment="Center"
+                  assists:ShadowAssist.ShadowDepth="0"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
+                  CommandParameter="{Binding}"
+                  ToolTip.Tip="View Online">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="Gray"
+                      Kind="ExternalLink" />
+
+                  </Button.Content>
+                </m:FloatingButton>
+                <m:FloatingButton
+                  VerticalAlignment="Center"
+                  Classes="Mini"
+                  Command="{Binding $parent[local:HomeView].DataContext.SendCommand}"
+                  CommandParameter="{Binding}"
+                  ToolTip.Tip="Send to this stream">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="CubeSend">
+                      <icons:MaterialIcon.RenderTransform>
+                        <RotateTransform Angle="-30" />
+                      </icons:MaterialIcon.RenderTransform>
+                    </icons:MaterialIcon>
+
+                  </Button.Content>
+                </m:FloatingButton>
+
+                <m:FloatingButton
+                  VerticalAlignment="Center"
+                  Classes="Mini"
+                  Command="{Binding $parent[local:HomeView].DataContext.ReceiveCommand}"
+                  CommandParameter="{Binding}"
+                  ToolTip.Tip="Receive from this stream">
+                  <Button.Content>
+                    <icons:MaterialIcon Foreground="White" Kind="CubeSend">
+                      <icons:MaterialIcon.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="30" />
+                          <ScaleTransform ScaleX="-1" />
+                        </TransformGroup>
+                      </icons:MaterialIcon.RenderTransform>
+                    </icons:MaterialIcon>
+
+                  </Button.Content>
+                </m:FloatingButton>
+              </StackPanel>
+            </Grid>
+
+
+
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+
+      </ListBox>
+    </m:Card>
+    <Grid
+      Grid.Row="5"
+      Margin="0,15,0,0"
+      ColumnDefinitions="*,*">
+
+      <Button
+        Margin="0,0,7,0"
+        HorizontalAlignment="Stretch"
+        Command="{Binding NewStreamCommand}">
+        <Grid ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="Plus" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            VerticalAlignment="Center"
+            Classes="ButtonText"
+            Text="Create new Stream"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+      <Button
+        Grid.Column="1"
+        Margin="7,0,0,0"
+        HorizontalAlignment="Stretch"
+        Command="{Binding AddFromUrlCommand}">
+        <Grid ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="Link" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            VerticalAlignment="Center"
+            Classes="ButtonText"
+            Text="Add from URL"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+    </Grid>
+  </Grid>
+</UserControl>

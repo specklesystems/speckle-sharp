@@ -99,6 +99,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGSA", "ConnectorGS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGSATestsHeadless", "ConnectorGSA\ConnectorGSATestsHeadless\ConnectorGSATestsHeadless.csproj", "{A7D05402-E125-4F42-AC60-B6800C7802A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolygonMesher", "Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StructuralUtilities", "StructuralUtilities", "{85C30B55-E486-49AE-B3F5-6A196D14CCB8}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
@@ -376,6 +380,14 @@ Global
 		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Release|x64.ActiveCfg = Release|Any CPU
 		{A7D05402-E125-4F42-AC60-B6800C7802A7}.Release|x64.Build.0 = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|x64.Build.0 = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|x64.ActiveCfg = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -425,6 +437,8 @@ Global
 		{76CAC32D-3334-4F70-BBA7-B20B1FDDE298} = {5582A5DC-6A9B-4C84-8130-8D44CFCFF906}
 		{1BA03BE5-F893-46A3-B569-4FAB87F0B60E} = {5582A5DC-6A9B-4C84-8130-8D44CFCFF906}
 		{A7D05402-E125-4F42-AC60-B6800C7802A7} = {5582A5DC-6A9B-4C84-8130-8D44CFCFF906}
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21} = {85C30B55-E486-49AE-B3F5-6A196D14CCB8}
+		{85C30B55-E486-49AE-B3F5-6A196D14CCB8} = {4DE5ED81-2A55-4C23-A05F-3C9B9B06F85D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}

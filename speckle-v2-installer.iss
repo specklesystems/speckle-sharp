@@ -16,7 +16,8 @@
 #define Revit2021Version  GetVersionNumbersString("ConnectorRevit\ConnectorRevit2021\bin\Release\SpeckleConnectorRevit.dll")
 #define Revit2022Version  GetVersionNumbersString("ConnectorRevit\ConnectorRevit2022\bin\Release\SpeckleConnectorRevit.dll")
 
-#define RhinoVersion  GetFileVersion("ConnectorRhino\ConnectorRhino\bin\Release\SpeckleConnectorRhino.dll")
+#define Rhino6Version  GetVersionNumbersString("ConnectorRhino\ConnectorRhino6\bin\Release\SpeckleConnectorRhino.rhp")
+#define Rhino7Version  GetVersionNumbersString("ConnectorRhino\ConnectorRhino7\bin\Release\SpeckleConnectorRhino.rhp")
 
 #define AppPublisher "Spec-cx"
 #define AppURL       "https://docs.speckle.arup.com"
@@ -52,7 +53,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: dynamo; Description: Speckle for Dynamo 2.1+ - v{#DynamoVersion}; Types: full
 Name: dynamoext; Description: Speckle for Dynamo Extensions - v{#DynamoExtensionVersion}; Types: full
 Name: dynamofunc; Description: Speckle for Dynamo Functions - v{#DynamoFunctionsVersion}; Types: full
-Name: rhino; Description: Speckle for Rhino 6, Rhino 7 - v{#RhinoVersion};  Types: full
+Name: rhino6; Description: Speckle for Rhino 6 - v{#Rhino6Version};  Types: full
+Name: rhino7; Description: Speckle for Rhino 7 - v{#Rhino7Version};  Types: full
 Name: gh; Description: Speckle for Grasshopper - v{#GrasshopperVersion};  Types: full
 Name: revit19; Description: Speckle for Revit 2019 ALPHA - v{#Revit2019Version};  Types: full
 Name: revit20; Description: Speckle for Revit 2020 ALPHA - v{#Revit2020Version};  Types: full
@@ -73,13 +75,16 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
 Name: "{app}"; Permissions: everyone-full
 
 [Files]
-;rhino                                                                                                                                    
-Source: "ConnectorRhino\ConnectorRhino\bin\Release\*"; DestDir: "{userappdata}\McNeel\Rhinoceros\6.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\"; Flags: ignoreversion recursesubdirs; Components: rhino
-Source: "ConnectorRhino\ConnectorRhino\bin\Release\*"; DestDir: "{userappdata}\McNeel\Rhinoceros\7.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\"; Flags: ignoreversion recursesubdirs; Components: rhino
+;rhino6                                                                                                                                    
+Source: "ConnectorRhino\ConnectorRhino6\bin\Release\*"; DestDir: "{userappdata}\McNeel\Rhinoceros\6.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\"; Flags: ignoreversion recursesubdirs; Components: rhino6
+
+;rhino7
+Source: "ConnectorRhino\ConnectorRhino7\bin\Release\*"; DestDir: "{userappdata}\McNeel\Rhinoceros\7.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\"; Flags: ignoreversion recursesubdirs; Components: rhino7
 
 ;gh
 Source: "ConnectorGrasshopper\ConnectorGrasshopper\bin\*"; DestDir: "{userappdata}\Grasshopper\Libraries\SpeckleGrasshopper2\"; Flags: ignoreversion recursesubdirs; Components: gh
-Source: "Objects\Converters\ConverterRhinoGh\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: gh
+Source: "Objects\Converters\ConverterRhinoGh\ConverterRhino6\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: gh
+Source: "Objects\Converters\ConverterRhinoGh\ConverterRhino7\bin\Release\net48\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: gh
 
 ;revit19
 Source: "ConnectorRevit\ConnectorRevit2019\bin\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2019\SpeckleRevit2\"; Flags: ignoreversion recursesubdirs; Components: revit19
@@ -91,18 +96,15 @@ Source: "ConnectorRevit\ConnectorRevit2020\bin\Release\*"; DestDir: "{userappdat
 Source: "ConnectorRevit\ConnectorRevit2020\bin\Release\SpeckleRevit2.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2020\"; Flags: ignoreversion recursesubdirs; Components: revit20
 Source: "Objects\Converters\ConverterRevit\ConverterRevit2020\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: revit20
 
-
 ;revit21
 Source: "ConnectorRevit\ConnectorRevit2021\bin\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2021\SpeckleRevit2\"; Flags: ignoreversion recursesubdirs; Components: revit21
 Source: "ConnectorRevit\ConnectorRevit2021\bin\Release\SpeckleRevit2.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2021\"; Flags: ignoreversion recursesubdirs; Components: revit21
 Source: "Objects\Converters\ConverterRevit\ConverterRevit2021\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: revit21
 
-
 ;revit22
 Source: "ConnectorRevit\ConnectorRevit2022\bin\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022\SpeckleRevit2\"; Flags: ignoreversion recursesubdirs; Components: revit22
 Source: "ConnectorRevit\ConnectorRevit2022\bin\Release\SpeckleRevit2.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022\"; Flags: ignoreversion recursesubdirs; Components: revit22
 Source: "Objects\Converters\ConverterRevit\ConverterRevit2022\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects\"; Flags: ignoreversion recursesubdirs; Components: revit22
-
 
 ;autocad21
 Source: "ConnectorAutocadCivil\ConnectorAutocad2021\bin\Release\*"; DestDir: "{userappdata}\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021\"; Flags: ignoreversion recursesubdirs; Components: autocad21

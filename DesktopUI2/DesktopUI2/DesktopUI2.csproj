@@ -1,0 +1,161 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>8.0</LangVersion>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <StartupObject />
+
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <WarningLevel>2</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="App.xaml" />
+    <None Remove="Styles\Button.xaml" />
+    <None Remove="Styles\ChipListBox.xaml" />
+    <None Remove="Styles\ComboBox.xaml" />
+    <None Remove="Styles\Dialog.xaml" />
+    <None Remove="Styles\FloatingButton.xaml" />
+    <None Remove="Styles\ListBox.xaml" />
+    <None Remove="Styles\MenuItem.xaml" />
+    <None Remove="Styles\Styles.xaml" />
+    <None Remove="Styles\Text.xaml" />
+    <None Remove="Views\Filters\AllFilterView.xaml" />
+    <None Remove="Views\Filters\ListFilterView.xaml" />
+    <None Remove="Views\Filters\ManualFilterView.xaml" />
+    <None Remove="Views\Filters\PropertyFilterView.xaml" />
+    <None Remove="Views\MainWindow.xaml" />
+    <None Remove="Views\Pages\HomeControls\AllStreams.xaml" />
+    <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
+    <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
+    <None Remove="Views\Pages\StreamEditView.xaml" />
+    <AvaloniaResource Include="Styles\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Dialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\ChipListBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\ListBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\ComboBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\FloatingButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\MenuItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Styles.xaml">
+      <Generator></Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Text.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaXaml Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\MenuItem.xaml" />
+    <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Filters\ListFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Filters\ManualFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\HomeControls\AllStreams.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\HomeControls\SavedStreams.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\HomeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Receive.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <None Update="Native\libAvalonia.Native.OSX.dylib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
+    <PackageReference Include="Material.Avalonia" Version="2.3.0" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Native\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Filters\AllFilterView.xaml.cs">
+      <DependentUpon>AllFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Filters\ListFilterView.xaml.cs">
+      <DependentUpon>ListFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Filters\ManualFilterView.xaml.cs">
+      <DependentUpon>ManualFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
+      <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\HomeControls\AllStreams.xaml.cs">
+      <DependentUpon>AllStreams.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\HomeControls\SavedStreams.xaml.cs">
+      <DependentUpon>SavedStreams.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\HomeView.xaml.cs">
+      <DependentUpon>HomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\StreamEditControls\Receive.xaml.cs">
+      <DependentUpon>Receive.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\StreamEditControls\Send.xaml.cs">
+      <DependentUpon>Send.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\StreamEditView.xaml.cs">
+      <DependentUpon>StreamEditView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+  </ItemGroup>
+</Project>

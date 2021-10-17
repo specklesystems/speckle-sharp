@@ -190,6 +190,16 @@ namespace ConverterGSA
       }
     }
 
+    public static Section1dType ToNative(this Objects.Structural.Geometry.MemberType speckleElementType)
+    {
+      switch (speckleElementType)
+      {
+        case Objects.Structural.Geometry.MemberType.Beam: return Section1dType.Beam;
+        case Objects.Structural.Geometry.MemberType.Column: return Section1dType.Column;
+        default: return Section1dType.Generic;
+      }
+    }
+
     public static ElementType1D ToSpeckle1d(this GwaMemberType gsaMemberType)
     {
       switch (gsaMemberType)
@@ -229,6 +239,20 @@ namespace ConverterGSA
         case Property2dType.Shell: return PropertyType2D.Shell;
         case Property2dType.Stress: return PropertyType2D.Stress;
         default: throw new Exception(gsaType.ToString() + " can not be converted to a valid speckle 2D property type.");
+      }
+    }
+
+    public static Property2dType ToNative(this PropertyType2D propertyType)
+    {
+      switch (propertyType)
+      {
+        case PropertyType2D.Curved : return Property2dType.Curved;
+        case PropertyType2D.Fabric : return Property2dType.Fabric;
+        case PropertyType2D.Load:   return Property2dType.Load; 
+        case PropertyType2D.Plate:  return Property2dType.Plate;
+        case PropertyType2D.Shell:  return Property2dType.Shell;
+        case PropertyType2D.Stress : return Property2dType.Stress;
+        default: throw new Exception(propertyType.ToString() + " can not be converted to a valid native 2D property type.");
       }
     }
 
@@ -418,6 +442,23 @@ namespace ConverterGSA
       }
     }
 
+    public static ReferencePoint ToNative(this BaseReferencePoint baseReferencePoint)
+    {
+      switch (baseReferencePoint)
+      {
+        case BaseReferencePoint.BotCentre: return ReferencePoint.BottomCentre;
+        case BaseReferencePoint.BotLeft: return ReferencePoint.BottomLeft;
+        case BaseReferencePoint.BotRight: return ReferencePoint.BottomRight;
+        case BaseReferencePoint.Centroid: return ReferencePoint.Centroid;
+        case BaseReferencePoint.MidLeft: return ReferencePoint.MiddleLeft;
+        case BaseReferencePoint.MidRight: return ReferencePoint.MiddleRight;
+        case BaseReferencePoint.TopCentre: return ReferencePoint.TopCentre;
+        case BaseReferencePoint.TopLeft: return ReferencePoint.TopLeft;
+        case BaseReferencePoint.TopRight: return ReferencePoint.TopRight;
+        default: return ReferencePoint.Centroid;
+      }
+    }
+
     public static ReferenceSurface ToSpeckle(this Property2dRefSurface gsaRefPt)
     {
       switch (gsaRefPt)
@@ -425,6 +466,16 @@ namespace ConverterGSA
         case Property2dRefSurface.BottomCentre: return ReferenceSurface.Bottom;
         case Property2dRefSurface.TopCentre: return ReferenceSurface.Top;
         default: return ReferenceSurface.Middle;
+      }
+    }
+
+    public static Property2dRefSurface ToNative(this ReferenceSurface refSurface)
+    {
+      switch (refSurface)
+      {
+        case ReferenceSurface.Bottom: return Property2dRefSurface.BottomCentre;
+        case ReferenceSurface.Top: return Property2dRefSurface.TopCentre;
+        default: return Property2dRefSurface.Centroid;
       }
     }
 
@@ -889,6 +940,15 @@ namespace ConverterGSA
         }
       }
       return new string(src, 0, dstIdx);
+    }
+    
+    //https://stackoverflow.com/questions/23921210/grouping-lists-into-groups-of-x-items-per-group
+    public static IEnumerable<IGrouping<int, TSource>> GroupBy<TSource>(this IEnumerable<TSource> source, int itemsPerGroup)
+    {
+      return source.Zip(Enumerable.Range(0, source.Count()),
+                        (s, r) => new { Group = r / itemsPerGroup, Item = s })
+                   .GroupBy(i => i.Group, g => g.Item)
+                   .ToList();
     }
   }
 }

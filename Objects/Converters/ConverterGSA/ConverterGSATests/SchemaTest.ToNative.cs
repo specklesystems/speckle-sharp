@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Objects.Structural.GSA.Geometry;
 using Objects.Structural.GSA.Materials;
@@ -10,8 +8,6 @@ using Objects.Structural.GSA.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural;
 using Objects.Geometry;
-using System.Text.RegularExpressions;
-using AutoMapper;
 using ConverterGSA;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
@@ -489,28 +485,6 @@ namespace ConverterGSATests
     #region Properties
 
     [Fact]
-    public void TestComplexObjectComparison()
-    {
-      var p1 = GsaCatalogueSectionExample("section 1");
-      var p2 = GsaCatalogueSectionExample("section 1");
-
-      //Two differences ...
-      p1.Cost = 100;
-      p1.Sid = "Sidney";
-
-      var compareLogic = new CompareLogic();
-      
-      //Set config to ignore one difference ...
-      //(Creating a lambda expression, as shown below, avoids having to pass a hard-coded string with the property name ("Cost"))
-      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaSection x) => x.Cost)); 
-      
-      var result = compareLogic.Compare(p1, p2);
-
-      //.. leaving one difference left (Sid)
-      Assert.Single(result.Differences);
-    }
-
-    [Fact(Skip = "Not implemented yet")]
     public void Property1dToNative()
     {
       //Define GSA objects
@@ -522,7 +496,7 @@ namespace ConverterGSATests
       };
 
       //Gen #2
-      var gsaSection = new List<GsaSection>
+      var gsaSections = new List<GsaSection>
       {
         GsaCatalogueSectionExample("section 1"),
         GsaExplicitSectionExample("section 2"),
@@ -536,7 +510,54 @@ namespace ConverterGSATests
         GsaAngleSectionExample("section 10"),
         GsaChannelSectionExample("section 11")
       };
-      gsaRecords.AddRange(gsaSection);
+      gsaRecords.AddRange(gsaSections);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var objs));
+
+      var structuralObjects = objs.Cast<Base>().OrderBy(o => o.applicationId).ToList();
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAProperty1D);
+
+      var speckleProperty1Ds = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
+
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add("SectionSteel.Type");
+      //compareLogic.Config.IgnoreProperty<SectionSteel>(c => c.Type);
+
+      foreach (var prop in speckleProperty1Ds)
+      {
+        var newNatives = converter.ConvertToNative(new List<Base> { prop });
+        var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaSection)));
+        var oldNative = gsaSections.FirstOrDefault(s => s.ApplicationId.Equals(prop.applicationId, StringComparison.InvariantCultureIgnoreCase));
+        var result = compareLogic.Compare(newNative, oldNative);
+        Assert.True(result.AreEqual);
+      }
+    }
+
+    [Fact]
+    public void Property2dToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+
+      //Gen #2
+      var gsaProp2d = GsaProp2dExample("property 2D 1");
+      gsaRecords.Add(gsaProp2d);
 
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
@@ -551,9 +572,17 @@ namespace ConverterGSATests
       Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
 
       Assert.NotEmpty(structuralObjects);
-      Assert.Contains(structuralObjects, so => so is GSAProperty1D);
+      Assert.Contains(structuralObjects, so => so is GSAProperty2D);
 
-      var speckleProperty1D = structuralObjects.FindAll(so => so is GSAProperty1D).Select(so => (GSAProperty1D)so).ToList();
+      var prop = (GSAProperty2D)structuralObjects.FirstOrDefault(so => so is GSAProperty2D);
+
+      var compareLogic = new CompareLogic();
+
+      var newNatives = converter.ConvertToNative(new List<Base> { prop });
+      var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaProp2d)));
+      var oldNative = gsaProp2d;
+      var result = compareLogic.Compare(newNative, oldNative);
+      Assert.True(result.AreEqual);
     }
     #endregion
 

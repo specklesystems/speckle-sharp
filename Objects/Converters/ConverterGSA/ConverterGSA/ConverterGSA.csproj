@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,6 +62,10 @@
     <ProjectReference Include="..\..\..\Objects\Objects.csproj">
       <Project>{60be029e-1f31-4473-8b68-a745a43af179}</Project>
       <Name>Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
+      <Project>{6185b1a1-0a12-44b1-8ac5-0ed48147fb21}</Project>
+      <Name>PolygonMesher</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

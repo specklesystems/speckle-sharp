@@ -51,6 +51,7 @@
     <Compile Include="SchemaTest.ToNative.cs" />
     <Compile Include="SchemaTest.ToSpeckle.cs" />
     <Compile Include="SpeckleConversionFixture.cs" />
+    <Compile Include="TestingLibraryExamples.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\ConnectorGSA\GSAProxy\GSAProxy.csproj">

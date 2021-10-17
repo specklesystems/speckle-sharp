@@ -235,13 +235,27 @@ namespace Speckle.ConnectorGSA.Proxy
 
         GSAObject = (IComAuto)gsaInstance ?? new ComAuto();
 
-        GSAObject.LogFeatureUsage("api::specklegsa::" +
-          FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
-            .ProductVersion + "::GSA " + GSAObject.VersionString()
-            .Split(new char[] { '\n' })[0]
-            .Split(new char[] { GwaDelimiter }, StringSplitOptions.RemoveEmptyEntries)[1]);
+        //Squash any exceptions from the telemetry
+        try
+        {
+          GSAObject.LogFeatureUsage("api::specklegsa::" +
+            FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
+              .ProductVersion + "::GSA " + GSAObject.VersionString()
+              .Split(new char[] { '\n' })[0]
+              .Split(new char[] { GwaDelimiter }, StringSplitOptions.RemoveEmptyEntries)[1]);
+        }
+        catch 
+        {
+        }
 
-        GSAObject.Open(path);
+        try
+        {
+          GSAObject.Open(path);
+        }
+        catch
+        {
+          return false;
+        }
         FilePath = path;
         GSAObject.SetLocale(Locale.LOC_EN_GB);
 

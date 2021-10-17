@@ -98,12 +98,11 @@ namespace ConverterGSA
     {
       var t = @object.GetType();
 
-      var retObj = ToNativeFns[t](@object);
+      var retObj = (ToNativeFns.ContainsKey(t)) ? ToNativeFns[t](@object) : null;
 
-      //A pulse with conversion result to help with progress bars on the UI
-      if (Instance.GsaModel.ConversionProgress != null && retObj != null)
+      if (Instance.GsaModel.ConversionProgress != null)
       {
-        Instance.GsaModel.ConversionProgress.Report(true);
+        Instance.GsaModel.ConversionProgress.Report(retObj != null);
       }
 
       return retObj;

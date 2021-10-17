@@ -18,7 +18,7 @@ namespace Objects.Structural.GSA.Geometry
         public GSAElement1D() { }
 
         [SchemaInfo("GSAElement1D (from local axis)", "Creates a Speckle structural 1D element for GSA (from local axis)", "GSA", "Geometry")]
-        public GSAElement1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type, 
+        public GSAElement1D(int nativeId, Line baseLine, Property1D property, ElementType1D type, 
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null, 
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null, 
             [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null, 
@@ -36,7 +36,7 @@ namespace Objects.Structural.GSA.Geometry
         }
 
         [SchemaInfo("GSAElement1D (from orientation node and angle)", "Creates a Speckle structural 1D element for GSA (from orientation node and angle)", "GSA", "Geometry")]
-        public GSAElement1D(int nativeId, ICurve baseLine, Property1D property, ElementType1D type,
+        public GSAElement1D(int nativeId, Line baseLine, Property1D property, ElementType1D type,
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,
             [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
