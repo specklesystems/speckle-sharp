@@ -559,6 +559,8 @@ namespace ConverterGSA
           Alpha = speckleSteel.thermalExpansivity,
           Prop = new GsaMatAnal()
           {
+            Type = MatAnalType.MAT_ELAS_ISO,
+            NumParams = 6,
             E = speckleSteel.elasticModulus,
             Nu = speckleSteel.poissonsRatio,
             Rho = speckleSteel.density,
@@ -668,15 +670,15 @@ namespace ConverterGSA
         Mat = new GsaMat()
         {
           E = speckleConcrete.elasticModulus,
-          F = null,
+          F = speckleConcrete.compressiveStrength,
           Nu = speckleConcrete.poissonsRatio,
           G = speckleConcrete.shearModulus,
           Rho = speckleConcrete.density,
           Alpha = speckleConcrete.thermalExpansivity,
           Prop = new GsaMatAnal()
           {
-            Name = "",
-            Colour = Colour.NO_RGB,
+            Type = MatAnalType.MAT_ELAS_ISO,
+            NumParams = 6,
             E = speckleConcrete.elasticModulus,
             Nu = speckleConcrete.poissonsRatio,
             Rho = speckleConcrete.density,
@@ -704,9 +706,9 @@ namespace ConverterGSA
           Uls = new GsaMatCurveParam()
           {
             Model = new List<MatCurveParamType>() { MatCurveParamType.RECTANGLE, MatCurveParamType.NO_TENSION },
-            StrainElasticCompression = GetEpsMax(speckleConcrete.maxCompressiveStrain),
+            StrainElasticCompression = GetEpsMax(speckleConcrete.compressiveStrength),
             StrainElasticTension = 0,
-            StrainPlasticCompression = GetEpsMax(speckleConcrete.maxCompressiveStrain),
+            StrainPlasticCompression = GetEpsMax(speckleConcrete.compressiveStrength),
             StrainPlasticTension = 0,
             StrainFailureCompression = 0.003,
             StrainFailureTension = 1,
@@ -735,11 +737,11 @@ namespace ConverterGSA
         Fcdc = 0.4 * speckleConcrete.compressiveStrength, //cracked strength
         Fcdt = speckleConcrete.tensileStrength, //tensile strength
         Fcfib = 0.6 * speckleConcrete.tensileStrength, //peak strength for FIB/Popovics curves
-        EmEs = 0, //ratio of initial elastic modulus to secant modulus
+        EmEs = null, //ratio of initial elastic modulus to secant modulus
         N = 2, //parabolic coefficient (normally 2)
         Emod = 1, //modifier on elastic stiffness typically in range (0.8:1.2)
         EpsPeak = 0.003, //concrete strain at peak SLS stress
-        EpsMax = GetEpsMax(speckleConcrete.maxCompressiveStrain), //maximum conrete SLS strain
+        EpsMax = GetEpsMax(speckleConcrete.compressiveStrength), //maximum conrete SLS strain
         EpsU = speckleConcrete.maxCompressiveStrain, //concrete ULS failure strain
         EpsAx = 0.0025, //concrete max compressive ULS strain
         EpsTran = 0.002, //slab transition strain
