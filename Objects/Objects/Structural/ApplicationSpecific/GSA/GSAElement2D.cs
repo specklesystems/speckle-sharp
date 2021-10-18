@@ -10,6 +10,7 @@ namespace Objects.Structural.GSA.Geometry
 {
     public class GSAElement2D : Element2D
     {
+        public ElementType2D type { get; set; }
         public int nativeId { get; set; }
         public int group { get; set; }
         public string colour { get; set; }

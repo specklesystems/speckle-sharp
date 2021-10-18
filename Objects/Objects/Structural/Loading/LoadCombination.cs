@@ -14,6 +14,12 @@ namespace Objects.Structural.Loading
         public CombinationType combinationType { get; set; }
         public LoadCombination() { }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="caseFactors"></param>
+        /// <param name="combinationType"></param>
         public LoadCombination(string name,
             [SchemaParamInfo("A dictionary with key/value pairs to map a load factor (value) to a load case (key)")] Dictionary<string, double> caseFactors, CombinationType combinationType)
         {
@@ -22,7 +28,14 @@ namespace Objects.Structural.Loading
             this.combinationType = combinationType;
         }
 
-        [SchemaInfo("LoadCombination", "Creates a Speckle load combination", "Structural", "Loading")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="loadCases"></param>
+        /// <param name="loadFactors"></param>
+        /// <param name="combinationType"></param>
+        [SchemaInfo("Load Combination", "Creates a Speckle load combination", "Structural", "Loading")]
         public LoadCombination(string name,
             [SchemaParamInfo("A list of load cases")] List<LoadCase> loadCases,
             [SchemaParamInfo("A list of load factors (to be mapped to provided load cases)")] List<double> loadFactors,

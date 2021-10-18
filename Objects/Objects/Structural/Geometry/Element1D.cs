@@ -7,14 +7,14 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.Geometry
 {
-    public class Element1D : Base
+    public class Element1D : Base, IDisplayMesh
     {
         public string name { get; set; } //add unique id as base identifier, name can change too easily
         public Line baseLine { get; set; }
 
         [DetachProperty]
         public Property1D property { get; set; }
-        public ElementType1D type { get; set; }
+        public ElementType1D type { get; set; } //analysis element type
         public Restraint end1Releases { get; set; }
         public Restraint end2Releases { get; set; }
         public Vector end1Offset { get; set; }
@@ -34,7 +34,8 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
-        public string units { get; set; }
+        public string units { get; set; }        
+        public Mesh displayMesh { get; set; }
         public Element1D() { }
         public Element1D(Line baseLine)
         {
