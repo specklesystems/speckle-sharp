@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
@@ -78,7 +79,6 @@ namespace ConnectorGrasshopper.Ops
           {
             // Will execute every time a document becomes active (from background or opening file.).
             if (StreamWrapper != null)
-            {
               Task.Run(async () =>
               {
                 // Ensure fresh instance of client.
@@ -89,14 +89,10 @@ namespace ConnectorGrasshopper.Ops
 
                 // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
                 if (b.commits.items[0].id != ReceivedCommitId)
-                {
                   HandleNewCommit();
-                }
-
+                
                 OnDisplayExpired(true);
               });
-            }
-
             break;
           }
         case GH_DocumentContext.Unloaded:
@@ -120,13 +116,9 @@ namespace ConnectorGrasshopper.Ops
       RhinoApp.InvokeOnUiThread((Action)delegate
      {
        if (AutoReceive)
-       {
          ExpireSolution(true);
-       }
        else
-       {
          OnDisplayExpired(true);
-       }
      });
     }
 
@@ -153,10 +145,7 @@ namespace ConnectorGrasshopper.Ops
       ReceivedCommitId = reader.GetString("ReceivedCommitId");
       
       var swString = reader.GetString("StreamWrapper");
-      if (!string.IsNullOrEmpty(swString))
-      {
-        StreamWrapper = new StreamWrapper(swString);
-      }
+      if (!string.IsNullOrEmpty(swString)) StreamWrapper = new StreamWrapper(swString);
 
       JustPastedIn = true;
 
@@ -164,22 +153,18 @@ namespace ConnectorGrasshopper.Ops
       reader.TryGetString("KitName", ref kitName);
 
       if (kitName != "")
-      {
         try
         {
           SetConverterFromKit(kitName);
         }
-        catch (Exception)
+        catch (Exception e)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
             $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
           SetDefaultKitAndConverter();
         }
-      }
       else
-      {
         SetDefaultKitAndConverter();
-      }
 
       return base.Read(reader);
     }
@@ -204,10 +189,8 @@ namespace ConnectorGrasshopper.Ops
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
-      {
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
           kit.Name == Kit.Name);
-      }
 
       Menu_AppendSeparator(menu);
 
@@ -245,15 +228,8 @@ namespace ConnectorGrasshopper.Ops
 
     public void SetConverterFromKit(string kitName)
     {
-      if (Kit == null)
-      {
-        return;
-      }
-
-      if (kitName == Kit.Name)
-      {
-        return;
-      }
+      if (Kit == null) return;
+      if (kitName == Kit.Name) return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino6);
@@ -324,10 +300,7 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DisplayProgress(object sender, ElapsedEventArgs e)
     {
-      if (Workers.Count == 0)
-      {
-        return;
-      }
+      if (Workers.Count == 0) return;
 
       Message = "";
       var total = 0.0;
@@ -361,10 +334,7 @@ namespace ConnectorGrasshopper.Ops
       }
 
       var ghGoo = DataInput.get_DataItem(0);
-      if (ghGoo == null)
-      {
-        return;
-      }
+      if (ghGoo == null) return;
 
       var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
@@ -430,11 +400,7 @@ namespace ConnectorGrasshopper.Ops
 
 
 
-      if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn)
-      {
-        return;
-      }
-
+      if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn) return;
       StreamWrapper = wrapper;
 
       //ResetApiClient(wrapper);
@@ -456,11 +422,7 @@ namespace ConnectorGrasshopper.Ops
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
     {
       // Break if wrapper is branch type and branch name is not equal.
-      if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
-      {
-        return;
-      }
-
+      if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName) return;
       HandleNewCommit();
     }
 
@@ -512,10 +474,7 @@ namespace ConnectorGrasshopper.Ops
         {
           //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
           //foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / (TotalObjectCount + 1));
-          foreach (var kvp in dict)
-          {
-            ReportProgress(kvp.Key, kvp.Value);
-          }
+          foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value);
         };
 
         ErrorAction = (transportName, exception) =>
@@ -530,9 +489,7 @@ namespace ConnectorGrasshopper.Ops
           asyncParent.CancellationSources.ForEach(source =>
           {
             if (source.Token != CancellationToken)
-            {
               source.Cancel();
-            }
           });
         };
 
@@ -562,20 +519,13 @@ namespace ConnectorGrasshopper.Ops
           var myCommit = await GetCommit(InputWrapper, client, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
-
+            Done();
+            return;
           }, CancellationToken);
-          
-          if (myCommit == null)
-          {
-            throw new Exception("Failed to find a valid commit or object to get.");
-          }
 
           ReceivedCommit = myCommit;
 
-          if (CancellationToken.IsCancellationRequested)
-          {
-            return;
-          }
+          if (CancellationToken.IsCancellationRequested) return;
 
           ReceivedObject = await Operations.Receive(
             myCommit.referencedObject,
@@ -588,10 +538,7 @@ namespace ConnectorGrasshopper.Ops
             disposeTransports: true
           );
 
-          if (CancellationToken.IsCancellationRequested)
-          {
-            return;
-          }
+          if (CancellationToken.IsCancellationRequested) return;
 
           Done();
         });
@@ -616,47 +563,30 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
-            return myCommit;
           }
           catch (Exception e)
           {
             OnFail(GH_RuntimeMessageLevel.Error, e.Message);
-            return null;
-          }
-        case StreamWrapperType.Object:
-          myCommit = new Commit { referencedObject = InputWrapper.ObjectId };
-          return myCommit;
-        case StreamWrapperType.Stream:
-        case StreamWrapperType.Undefined:
-          var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1);
-          if(mb.commits.totalCount == 0)
-          {
-            // TODO: Warn that we're not pulling from the main branch
-            OnFail(GH_RuntimeMessageLevel.Remark, $"Main branch was empty. Defaulting to latest commit regardless of branch.");
-          } 
-          else
-          {
-            return mb.commits.items[0];
           }
 
-          var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1);
-          if(cms.Count == 0)
+          break;
+        case StreamWrapperType.Object:
+          myCommit = new Commit { referencedObject = InputWrapper.ObjectId };
+          break;
+        default:
+          try
           {
-            OnFail(GH_RuntimeMessageLevel.Error, $"This stream has no commits.");
-            return null;
-          } 
-          else
-          {
-            return cms[0];
+            var branches = await client.StreamGetBranches(InputWrapper.StreamId);
+            var mainBranch = branches.FirstOrDefault(b => b.name == (InputWrapper.BranchName ?? "main"));
+            myCommit = mainBranch?.commits.items[0];
+            return myCommit;
           }
-        case StreamWrapperType.Branch:
-          var br = await client.BranchGet(InputWrapper.StreamId, InputWrapper.BranchName, 1);
-          if(br.commits.totalCount == 0)
+          catch (Exception e)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, $"This branch has no commits.");
-            return null;
+            OnFail(GH_RuntimeMessageLevel.Warning, $"Could not get any commits from the stream's '{(InputWrapper.BranchName ?? "main")}' branch.");
           }
-          return br.commits.items[0];
+
+          break;
       }
 
       return myCommit;
@@ -664,15 +594,9 @@ namespace ConnectorGrasshopper.Ops
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested)
-      {
-        return;
-      }
+      if (CancellationToken.IsCancellationRequested) return;
 
-      foreach (var (level, message) in RuntimeMessages)
-      {
-        Parent.AddRuntimeMessage(level, message);
-      }
+      foreach (var (level, message) in RuntimeMessages) Parent.AddRuntimeMessage(level, message);
 
       var parent = ((ReceiveComponent)Parent);
 
@@ -690,10 +614,7 @@ namespace ConnectorGrasshopper.Ops
 
       DA.SetData(1, parent.LastInfoMessage);
 
-      if (ReceivedObject == null)
-      {
-        return;
-      }
+      if (ReceivedObject == null) return;
 
       //the active document may have changed
       var converter = parent.Converter;
@@ -774,20 +695,10 @@ namespace ConnectorGrasshopper.Ops
 
     public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
     {
-      if (e.Button != MouseButtons.Left)
-      {
-        return base.RespondToMouseDown(sender, e);
-      }
+      if (e.Button != MouseButtons.Left) return base.RespondToMouseDown(sender, e);
+      if (!((RectangleF)ButtonBounds).Contains(e.CanvasLocation)) return base.RespondToMouseDown(sender, e);
 
-      if (!((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
-      {
-        return base.RespondToMouseDown(sender, e);
-      }
-
-      if (((ReceiveComponent)Owner).CurrentComponentState == "receiving")
-      {
-        return GH_ObjectResponse.Handled;
-      }
+      if (((ReceiveComponent)Owner).CurrentComponentState == "receiving") return GH_ObjectResponse.Handled;
 
       if (((ReceiveComponent)Owner).AutoReceive)
       {
