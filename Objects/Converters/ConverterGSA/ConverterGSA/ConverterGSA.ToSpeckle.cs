@@ -1535,14 +1535,14 @@ namespace ConverterGSA
       //Dictionary of fns used to apply spring type specific properties. 
       //Functions will pass by reference specklePropertySpring and make the necessary changes to it
       var fns = new Dictionary<StructuralSpringPropertyType, Func<GsaPropSpr, PropertySpring, bool>>
-      { { StructuralSpringPropertyType.Axial, SetProprtySpringAxial },
+      { { StructuralSpringPropertyType.Axial, SetPropertySpringAxial },
         { StructuralSpringPropertyType.Torsional, SetPropertySpringTorsional },
-        { StructuralSpringPropertyType.Compression, SetProprtySpringCompression },
-        { StructuralSpringPropertyType.Tension, SetProprtySpringTension },
-        { StructuralSpringPropertyType.Lockup, SetProprtySpringLockup },
-        { StructuralSpringPropertyType.Gap, SetProprtySpringGap },
-        { StructuralSpringPropertyType.Friction, SetProprtySpringFriction },
-        { StructuralSpringPropertyType.General, SetProprtySpringGeneral }
+        { StructuralSpringPropertyType.Compression, SetPropertySpringCompression },
+        { StructuralSpringPropertyType.Tension, SetPropertySpringTension },
+        { StructuralSpringPropertyType.Lockup, SetPropertySpringLockup },
+        { StructuralSpringPropertyType.Gap, SetPropertySpringGap },
+        { StructuralSpringPropertyType.Friction, SetPropertySpringFriction },
+        { StructuralSpringPropertyType.General, SetPropertySpringGeneral }
         //CONNECT not yet supported
         //MATRIX not yet supported
       };
@@ -3383,7 +3383,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Axial;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3409,7 +3409,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.CompressionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3422,7 +3422,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.TensionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3435,7 +3435,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
       specklePropertySpring.springType = PropertyTypeSpring.LockUp;
@@ -3451,7 +3451,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Gap;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3464,7 +3464,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Friction;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3480,7 +3480,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.General;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];

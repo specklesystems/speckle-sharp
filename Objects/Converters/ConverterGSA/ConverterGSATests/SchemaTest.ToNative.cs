@@ -16,12 +16,14 @@ using Objects.Structural.Properties.Profiles;
 using Speckle.GSA.API.GwaSchema;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using MemberType = Objects.Structural.Geometry.MemberType;
+using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
 using Speckle.Core.Models;
 using PathType = Objects.Structural.GSA.Bridge.PathType;
 using Speckle.GSA.API;
 using KellermanSoftware.CompareNetObjects;
 using Objects.Structural.Analysis;
 using Objects.Structural.GSA.Loading;
+using Objects.Structural.Properties;
 
 namespace ConverterGSATests
 {
@@ -584,6 +586,81 @@ namespace ConverterGSATests
       var result = compareLogic.Compare(newNative, oldNative);
       Assert.True(result.AreEqual);
     }
+
+    [Fact]
+    public void PropertyMassToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      var gsaPropMass = GsaPropMassExample("property mass 1");
+      gsaRecords.Add(gsaPropMass);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is PropertyMass);
+
+      var specklePropertyMass = (PropertyMass)structuralObjects.FirstOrDefault(so => so is PropertyMass);
+
+      var compareLogic = new CompareLogic();
+
+      var newNatives = converter.ConvertToNative(new List<Base> { specklePropertyMass });
+      var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaPropMass)));
+      var oldNative = gsaPropMass;
+      var result = compareLogic.Compare(newNative, oldNative);
+      Assert.True(result.AreEqual);
+    }
+
+    [Fact]
+    public void PropertySpringToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      var gsaProSpr = GsaPropSprExample("property spring 1");
+      gsaRecords.Add(gsaProSpr);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is PropertySpring);
+
+      var specklePropertySpring = (PropertySpring)structuralObjects.FirstOrDefault(so => so is PropertySpring);
+
+      var compareLogic = new CompareLogic();
+
+      var newNatives = converter.ConvertToNative(new List<Base> { specklePropertySpring });
+      var newNative = newNatives.FirstOrDefault(n => n.GetType().IsAssignableFrom(typeof(GsaPropSpr)));
+      var oldNative = gsaProSpr;
+      var result = compareLogic.Compare(newNative, oldNative);
+      Assert.True(result.AreEqual);
+    }
+
     #endregion
 
     #region Results
