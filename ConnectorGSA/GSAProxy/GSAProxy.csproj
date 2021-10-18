@@ -49,6 +49,8 @@
     <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="Cache\GsaCacheRecord.cs" />
     <Compile Include="GwaParsers\Geometry\GsaPolylineParser.cs" />
+    <Compile Include="GwaParsers\GsaUnitDataParser.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="IPairCollection.cs" />
     <Compile Include="Merger\GsaRecordMerger.cs" />
     <Compile Include="Merger\IgnoreNullResolver.cs" />
@@ -95,7 +97,6 @@
     <Compile Include="GwaParsers\Properties\GsaPropMassParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaPropSprParser.cs" />
     <Compile Include="GwaParsers\GwaParser.cs" />
-    <Compile Include="GwaParsers\Helper.cs" />
     <Compile Include="GwaParsers\IGwaParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionParser.cs" />
     <Compile Include="GwaParsers\Properties\GsaSectionCompParser.cs" />

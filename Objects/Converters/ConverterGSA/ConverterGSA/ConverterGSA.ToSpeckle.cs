@@ -690,18 +690,6 @@ namespace ConverterGSA
           spanDirection = gsaGridSurface.Angle ?? 0,
         };
         if (gsaGridSurface.ElementIndices.HasValues()) analysisGridSurface.elements = gsaGridSurface.ElementIndices.Select(i => GetElementFromIndex(i)).ToList();
-        /*
-        if (gsaGridSurface.ElementIndices.HasValues())
-        {
-          var elements = new List<Base>();
-          foreach (var i in gsaGridSurface.ElementIndices)
-          {
-            var e = GetElementFromIndex(i);
-            elements.Add(e);
-          }
-          analysisGridSurface.elements = elements.ToList();
-        }
-        */
       }
 
       var toSpeckleResult = (analysisGridSurface == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designGridSurface })
@@ -851,6 +839,10 @@ namespace ConverterGSA
       }
 
       return new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad }, analysisLayerOnlyObjects: new List<Base>() { analysisLoad });
+
+      //TODO:
+      //SpeckleObject:
+      //  string units
     }
 
     private ToSpeckleResult GsaLoadBeamToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
@@ -915,7 +907,9 @@ namespace ConverterGSA
         if (gsaLoad.ElementIndices.HasValues()) analysisLoad.elements = gsaLoad.ElementIndices.Select(i => GetElementFromIndex(i)).ToList();
       }
 
-      return new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad }, analysisLayerOnlyObjects: new List<Base>() { analysisLoad });
+      var toSpeckleResult = (analysisLoad == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad })
+              : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad }, analysisLayerOnlyObjects: new List<Base>() { analysisLoad });
+      return toSpeckleResult;
 
       //TODO:
       //SpeckleObject:
@@ -932,10 +926,13 @@ namespace ConverterGSA
         direction = gsaLoadNode.LoadDirection.ToSpeckleLoad(),
         value = gsaLoadNode.Value ?? 0,
       };
-      AddToMeaningfulNodeIndices(speckleNodeLoad.nodes.Select(n => n.applicationId));
 
       if (gsaLoadNode.Index.IsIndex()) speckleNodeLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadNode>(gsaLoadNode.Index.Value);
-      if (gsaLoadNode.NodeIndices.HasValues()) speckleNodeLoad.nodes = gsaLoadNode.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+      if (gsaLoadNode.NodeIndices.HasValues())
+      {
+        speckleNodeLoad.nodes = gsaLoadNode.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(speckleNodeLoad.nodes.Select(n => n.applicationId));
+      }
       if (gsaLoadNode.LoadCaseIndex.IsIndex()) speckleNodeLoad.loadCase = GetLoadCaseFromIndex(gsaLoadNode.LoadCaseIndex.Value);
       if (gsaLoadNode.GlobalAxis) speckleNodeLoad.loadAxis = GlobalAxis();
       else if (gsaLoadNode.AxisIndex.IsIndex()) speckleNodeLoad.loadAxis = GetAxisFromIndex(gsaLoadNode.AxisIndex.Value);
@@ -1057,21 +1054,67 @@ namespace ConverterGSA
 
     private ToSpeckleResult GsaLoadGridAreaToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaLoad = (GsaLoadGridArea)nativeObject;
-      var speckleLoad = new GSALoadGridArea()
+
+      //Defaults
+      GSALoadGridArea analysisLoad = null;
+      GSAGridSurface designGridSurface = null, analysisGridSurface = null;
+      GSALoadCase loadCase = null;
+      string applicationId = null;
+
+      //local variables
+      var loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex);
+      var polyline = GetPolyline(gsaLoad.Area, gsaLoad.Polygon, gsaLoad.PolygonIndex);
+      var direction = gsaLoad.LoadDirection.ToSpeckle();
+      if (gsaLoad.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGridArea>(gsaLoad.Index.Value);
+      if (gsaLoad.LoadCaseIndex.IsIndex()) loadCase = GetLoadCaseFromIndex(gsaLoad.LoadCaseIndex.Value);
+      if (gsaLoad.GridSurfaceIndex.IsIndex())
       {
+        designGridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, GSALayer.Design);
+        analysisGridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, GSALayer.Analysis);
+      }
+
+      if (layer == GSALayer.Design && designGridSurface == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
+
+      //design layer
+      var designLoad = new GSALoadGridArea()
+      {
+        applicationId = applicationId,
         nativeId = gsaLoad.Index ?? 0,
         name = gsaLoad.Name,
-        loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex),
+        loadCase = loadCase,
+        gridSurface = designGridSurface,
+        loadAxis = loadAxis,
         isProjected = gsaLoad.Projected,
-        direction = gsaLoad.LoadDirection.ToSpeckle(),
-        polyline = GetPolyline(gsaLoad.Area, gsaLoad.Polygon, gsaLoad.PolygonIndex),
+        direction = direction,
+        polyline = polyline,
         value = gsaLoad.Value ?? 0,
       };
-      if (gsaLoad.Index.IsIndex()) speckleLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGridArea>(gsaLoad.Index.Value);
-      if (gsaLoad.GridSurfaceIndex.IsIndex()) speckleLoad.gridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, layer);
-      if (gsaLoad.LoadCaseIndex.IsIndex()) speckleLoad.loadCase = GetLoadCaseFromIndex(gsaLoad.LoadCaseIndex.Value);
-      return new ToSpeckleResult(speckleLoad);
+
+      if (layer == GSALayer.Both)
+      {
+        //analysis layer
+        analysisLoad = new GSALoadGridArea()
+        {
+          applicationId = applicationId,
+          nativeId = gsaLoad.Index ?? 0,
+          name = gsaLoad.Name,
+          loadCase = loadCase,
+          gridSurface = analysisGridSurface,
+          loadAxis = loadAxis,
+          isProjected = gsaLoad.Projected,
+          direction = direction,
+          polyline = polyline,
+          value = gsaLoad.Value ?? 0,
+        };
+      }
+
+      var toSpeckleResult = (analysisLoad == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad })
+              : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad }, analysisLayerOnlyObjects: new List<Base>() { analysisLoad });
+      return toSpeckleResult;
 
       //TODO:
       //SpeckleObject:
@@ -1080,21 +1123,69 @@ namespace ConverterGSA
 
     private ToSpeckleResult GsaLoadGridLineToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaLoad = (GsaLoadGridLine)nativeObject;
-      var speckleLoad = new GSALoadGridLine()
+
+      //Defaults
+      GSALoadGridLine analysisLoad = null;
+      GSAGridSurface designGridSurface = null, analysisGridSurface = null;
+      GSALoadCase loadCase = null;
+      string applicationId = null;
+      List<double> values = null;
+
+      //local variables
+      var loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex);
+      var polyline = GetPolyline(gsaLoad.Line, gsaLoad.Polygon, gsaLoad.PolygonIndex);
+      var direction = gsaLoad.LoadDirection.ToSpeckle();
+      if (gsaLoad.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGridLine>(gsaLoad.Index.Value);
+      if (gsaLoad.LoadCaseIndex.IsIndex()) loadCase = GetLoadCaseFromIndex(gsaLoad.LoadCaseIndex.Value);
+      if (gsaLoad.Value1.HasValue && gsaLoad.Value2.HasValue) values = new List<double>() { gsaLoad.Value1.Value, gsaLoad.Value2.Value };
+      if (gsaLoad.GridSurfaceIndex.IsIndex())
       {
+        designGridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, GSALayer.Design);
+        analysisGridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, GSALayer.Analysis);
+      }
+
+      if (layer == GSALayer.Design && designGridSurface == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
+
+      //design layer
+      var designLoad = new GSALoadGridLine()
+      {
+        applicationId = applicationId,
         nativeId = gsaLoad.Index ?? 0,
         name = gsaLoad.Name,
-        loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex),
+        loadCase = loadCase,
+        gridSurface = designGridSurface,
+        loadAxis = loadAxis,
         isProjected = gsaLoad.Projected,
-        direction = gsaLoad.LoadDirection.ToSpeckle(),
-        polyline = GetPolyline(gsaLoad.Line, gsaLoad.Polygon, gsaLoad.PolygonIndex),
+        direction = direction,
+        polyline = polyline,
+        values = values,
       };
-      if (gsaLoad.Index.IsIndex()) speckleLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGridLine>(gsaLoad.Index.Value);
-      if (gsaLoad.GridSurfaceIndex.IsIndex()) speckleLoad.gridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, layer);
-      if (gsaLoad.LoadCaseIndex.IsIndex()) speckleLoad.loadCase = GetLoadCaseFromIndex(gsaLoad.LoadCaseIndex.Value);
-      if (gsaLoad.Value1.HasValue && gsaLoad.Value2.HasValue) speckleLoad.values = new List<double>() { gsaLoad.Value1.Value, gsaLoad.Value2.Value };
-      return new ToSpeckleResult(speckleLoad);
+
+      if (layer == GSALayer.Both)
+      {
+        //analysis layer
+        analysisLoad = new GSALoadGridLine()
+        {
+          applicationId = applicationId,
+          nativeId = gsaLoad.Index ?? 0,
+          name = gsaLoad.Name,
+          loadCase = loadCase,
+          gridSurface = analysisGridSurface,
+          loadAxis = loadAxis,
+          isProjected = gsaLoad.Projected,
+          direction = direction,
+          polyline = polyline,
+          values = values,
+        };
+      }
+
+      var toSpeckleResult = (analysisLoad == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad })
+              : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad }, analysisLayerOnlyObjects: new List<Base>() { analysisLoad });
+      return toSpeckleResult;
 
       //TODO:
       //SpeckleObject:
@@ -1103,20 +1194,66 @@ namespace ConverterGSA
 
     private ToSpeckleResult GsaLoadGridPointToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaLoad = (GsaLoadGridPoint)nativeObject;
-      var speckleLoad = new GSALoadGridPoint()
+
+      //Defaults
+      GSALoadGridPoint analysisLoad = null;
+      GSAGridSurface designGridSurface = null, analysisGridSurface = null;
+      GSALoadCase loadCase = null;
+      Point position = null;
+      string applicationId = null;
+
+      //local variables
+      var loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex);
+      var direction = gsaLoad.LoadDirection.ToSpeckle();
+      if (gsaLoad.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGridPoint>(gsaLoad.Index.Value);
+      if (gsaLoad.LoadCaseIndex.IsIndex()) loadCase = GetLoadCaseFromIndex(gsaLoad.LoadCaseIndex.Value);
+      if (gsaLoad.X.HasValue && gsaLoad.Y.HasValue) position = new Point(gsaLoad.X.Value, gsaLoad.Y.Value, 0);
+      if (gsaLoad.GridSurfaceIndex.IsIndex())
       {
+        designGridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, GSALayer.Design);
+        analysisGridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, GSALayer.Analysis);
+      }
+
+      if (layer == GSALayer.Design && designGridSurface == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
+
+      //design layer
+      var designLoad = new GSALoadGridPoint()
+      {
+        applicationId = applicationId,
         nativeId = gsaLoad.Index ?? 0,
         name = gsaLoad.Name,
-        loadAxis = GetAxis(gsaLoad.AxisRefType, gsaLoad.AxisIndex),
-        direction = gsaLoad.LoadDirection.ToSpeckle(),
+        loadCase = loadCase,
+        gridSurface = designGridSurface,
+        loadAxis = loadAxis,
+        direction = direction,
         value = gsaLoad.Value ?? 0,
+        position = position,
       };
-      if (gsaLoad.Index.IsIndex()) speckleLoad.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaLoadGridPoint>(gsaLoad.Index.Value);
-      if (gsaLoad.GridSurfaceIndex.IsIndex()) speckleLoad.gridSurface = GetGridSurfaceFromIndex(gsaLoad.GridSurfaceIndex.Value, layer);
-      if (gsaLoad.LoadCaseIndex.IsIndex()) speckleLoad.loadCase = GetLoadCaseFromIndex(gsaLoad.LoadCaseIndex.Value);
-      if (gsaLoad.X.HasValue && gsaLoad.Y.HasValue) speckleLoad.position = new Point(gsaLoad.X.Value, gsaLoad.Y.Value, 0);
-      return new ToSpeckleResult(speckleLoad);
+
+      if (layer == GSALayer.Both)
+      {
+        //analysis layer
+        analysisLoad = new GSALoadGridPoint()
+        {
+          applicationId = applicationId,
+          nativeId = gsaLoad.Index ?? 0,
+          name = gsaLoad.Name,
+          loadCase = loadCase,
+          gridSurface = analysisGridSurface,
+          loadAxis = loadAxis,
+          direction = direction,
+          value = gsaLoad.Value ?? 0,
+          position = position,
+        };
+      }
+
+      var toSpeckleResult = (analysisLoad == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad })
+              : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designLoad }, analysisLayerOnlyObjects: new List<Base>() { analysisLoad });
+      return toSpeckleResult;
 
       //TODO:
       //SpeckleObject:
@@ -1156,7 +1293,8 @@ namespace ConverterGSA
       if (gsaSteel.Index.IsIndex()) speckleSteel.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaMatSteel>(gsaSteel.Index.Value);
       if (gsaSteel.Fy.IsPositive()) speckleSteel.yieldStrength = gsaSteel.Fy.Value;
       if (gsaSteel.Fu.IsPositive()) speckleSteel.ultimateStrength = gsaSteel.Fu.Value;
-      if (gsaSteel.EpsP.IsPositive()) speckleSteel.maxStrain = gsaSteel.EpsP.Value;
+      if (gsaSteel.Mat.Eps.IsPositive()) speckleSteel.maxStrain = gsaSteel.Mat.Eps.Value;
+      if (gsaSteel.Eh.HasValue) speckleSteel.strainHardeningModulus = gsaSteel.Eh.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaSteel.Mat.E, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.E, out var E)) speckleSteel.elasticModulus = E;
@@ -1166,7 +1304,6 @@ namespace ConverterGSA
       if (Choose(gsaSteel.Mat.Alpha, gsaSteel.Mat.Prop == null ? null : gsaSteel.Mat.Prop.Alpha, out var Alpha)) speckleSteel.thermalExpansivity = Alpha;
 
       //the following properties are not part of the schema
-      if (gsaSteel.Eh.IsPositive()) speckleSteel["Eh"] = gsaSteel.Eh.Value;
       speckleSteel["Mat"] = GetMat(gsaSteel.Mat);
 
       return new ToSpeckleResult(speckleSteel);
@@ -1184,7 +1321,8 @@ namespace ConverterGSA
         type = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
-        flexuralStrength = 0 //TODO: don't think this is part of the GSA definition
+        flexuralStrength = 0, //TODO: don't think this is part of the GSA definition
+        lightweight = gsaConcrete.Light,
       };
       if (gsaConcrete.Index.IsIndex()) speckleConcrete.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaMatConcrete>(gsaConcrete.Index.Value);
 
@@ -1193,6 +1331,7 @@ namespace ConverterGSA
       if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxCompressiveStrain = gsaConcrete.EpsU.Value;
       if (gsaConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaConcrete.Agg.Value;
       if (gsaConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaConcrete.Fcdt.Value;
+      if (gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.elasticModulus = E;
@@ -1205,7 +1344,6 @@ namespace ConverterGSA
       speckleConcrete["Mat"] = GetMat(gsaConcrete.Mat);
       speckleConcrete["Type"] = gsaConcrete.Type.ToString();
       speckleConcrete["Cement"] = gsaConcrete.Cement.ToString();
-      speckleConcrete["Light"] = gsaConcrete.Light;
       if (gsaConcrete.Fcd.HasValue) speckleConcrete["Fcd"] = gsaConcrete.Fcd.Value;
       if (gsaConcrete.Fcdc.HasValue) speckleConcrete["Fcdc"] = gsaConcrete.Fcdc.Value;
       if (gsaConcrete.Fcfib.HasValue) speckleConcrete["Fcfib"] = gsaConcrete.Fcfib.Value;
@@ -1250,21 +1388,30 @@ namespace ConverterGSA
         cost = gsaSection.Cost ?? 0,
         poolRef = gsaSection.PoolIndex,
       };
-      if (gsaSection.Index.IsIndex()) speckleProperty1D.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      if (gsaSection.Index.IsIndex())
+      {
+        speckleProperty1D.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaSection>(gsaSection.Index.Value);
+      }
       var gsaSectionComp = (SectionComp)gsaSection.Components.Find(x => x.GetType() == typeof(SectionComp));
       if (gsaSectionComp.MatAnalIndex.IsIndex()) //TODO: intention is to use this to convert MAT_ANAL to a material, but this is not currently possible
       {
         speckleProperty1D.material = null;
         ConversionErrors.Add(new Exception("GsaSectionToSpeckle: Conversion of MAT_ANAL keyword not currently supported"));
       }
-      if (gsaSectionComp.MaterialIndex.IsIndex()) speckleProperty1D.designMaterial = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
+      if (gsaSectionComp.MaterialIndex.IsIndex())
+      {
+        speckleProperty1D.designMaterial = GetMaterialFromIndex(gsaSectionComp.MaterialIndex.Value, gsaSectionComp.MaterialType);
+      }
       var fns = new Dictionary<Section1dProfileGroup, Func<ProfileDetails, SectionProfile>>
       { { Section1dProfileGroup.Catalogue, GetProfileCatalogue },
         { Section1dProfileGroup.Explicit, GetProfileExplicit },
         { Section1dProfileGroup.Perimeter, GetProfilePerimeter },
         { Section1dProfileGroup.Standard, GetProfileStandard }
       };
-      if (fns.ContainsKey(gsaSectionComp.ProfileGroup)) speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
+      if (fns.ContainsKey(gsaSectionComp.ProfileGroup))
+      {
+        speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
+      }
 
       return new ToSpeckleResult(speckleProperty1D);
       //TODO:
@@ -1388,14 +1535,14 @@ namespace ConverterGSA
       //Dictionary of fns used to apply spring type specific properties. 
       //Functions will pass by reference specklePropertySpring and make the necessary changes to it
       var fns = new Dictionary<StructuralSpringPropertyType, Func<GsaPropSpr, PropertySpring, bool>>
-      { { StructuralSpringPropertyType.Axial, SetProprtySpringAxial },
+      { { StructuralSpringPropertyType.Axial, SetPropertySpringAxial },
         { StructuralSpringPropertyType.Torsional, SetPropertySpringTorsional },
-        { StructuralSpringPropertyType.Compression, SetProprtySpringCompression },
-        { StructuralSpringPropertyType.Tension, SetProprtySpringTension },
-        { StructuralSpringPropertyType.Lockup, SetProprtySpringLockup },
-        { StructuralSpringPropertyType.Gap, SetProprtySpringGap },
-        { StructuralSpringPropertyType.Friction, SetProprtySpringFriction },
-        { StructuralSpringPropertyType.General, SetProprtySpringGeneral }
+        { StructuralSpringPropertyType.Compression, SetPropertySpringCompression },
+        { StructuralSpringPropertyType.Tension, SetPropertySpringTension },
+        { StructuralSpringPropertyType.Lockup, SetPropertySpringLockup },
+        { StructuralSpringPropertyType.Gap, SetPropertySpringGap },
+        { StructuralSpringPropertyType.Friction, SetPropertySpringFriction },
+        { StructuralSpringPropertyType.General, SetPropertySpringGeneral }
         //CONNECT not yet supported
         //MATRIX not yet supported
       };
@@ -1665,44 +1812,135 @@ namespace ConverterGSA
     #region Constraints
     private ToSpeckleResult GsaRigidToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaRigid = (GsaRigid)nativeObject;
-      var speckleRigid = new GSARigidConstraint()
-      {
-        nativeId = gsaRigid.Index ?? 0,
-        name = gsaRigid.Name,
-        constrainedNodes = gsaRigid.ConstrainedNodes.Select(i => GetNodeFromIndex(i)).ToList(),
-        stages = gsaRigid.Stage.Select(i => GetStageFromIndex(i)).ToList(),
-        type = gsaRigid.Type.ToSpeckle()
-      };
-      if (gsaRigid.Index.IsIndex()) speckleRigid.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaRigid>(gsaRigid.Index.Value);
+
+      //Defaults
+      GSARigidConstraint analysisRigid = null;
+      Node primaryNode = null;
+      List<Node> constrainedNodes = null;
+      List<GSAStage> designStages = null, analysisStages = null;
+      Dictionary<AxisDirection6, List<AxisDirection6>> constraintCondition = null;
+      string applicationId = null;
+      Base parentMember = null;
+
+      //local variables
+      if (gsaRigid.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaRigid>(gsaRigid.Index.Value);
       if (gsaRigid.PrimaryNode.IsIndex())
       {
-        speckleRigid.primaryNode = GetNodeFromIndex(gsaRigid.PrimaryNode.Value);
-        AddToMeaningfulNodeIndices(speckleRigid.primaryNode.applicationId);
+        primaryNode = GetNodeFromIndex(gsaRigid.PrimaryNode.Value);
+        AddToMeaningfulNodeIndices(primaryNode.applicationId);
       }
-      if (gsaRigid.Type == RigidConstraintType.Custom) speckleRigid.constraintCondition = GetRigidConstraint(gsaRigid.Link);
-      if (gsaRigid.ParentMember.HasValue && gsaRigid.ParentMember > 0) speckleRigid.parentMember = GetMemberFromIndex(gsaRigid.ParentMember.Value);
+      if (gsaRigid.Type == RigidConstraintType.Custom) constraintCondition = GetRigidConstraint(gsaRigid.Link);
+      if (gsaRigid.ParentMember.HasValue && gsaRigid.ParentMember > 0) parentMember = GetMemberFromIndex(gsaRigid.ParentMember.Value);
+      if (gsaRigid.ConstrainedNodes.HasValues())
+      {
+        constrainedNodes = gsaRigid.ConstrainedNodes.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(constrainedNodes.Select(cn => cn.applicationId));
+      }
+      if (gsaRigid.Stage.HasValues())
+      {
+        designStages = gsaRigid.Stage.Select(i => GetStageFromIndex(i, GSALayer.Design)).ToList();
+        analysisStages = gsaRigid.Stage.Select(i => GetStageFromIndex(i, GSALayer.Analysis)).ToList();
+      }
+      var type = gsaRigid.Type.ToSpeckle();
 
-      AddToMeaningfulNodeIndices(speckleRigid.constrainedNodes.Select(cn => cn.applicationId));
+      if (layer == GSALayer.Design && designStages == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
 
-      return new ToSpeckleResult(speckleRigid);
+      //design layer
+      var designRigid = new GSARigidConstraint()
+      {
+        applicationId = applicationId,
+        nativeId = gsaRigid.Index ?? 0,
+        name = gsaRigid.Name,
+        primaryNode = primaryNode,
+        constrainedNodes = constrainedNodes,
+        stages = designStages,
+        type = type,
+        constraintCondition = constraintCondition,
+        parentMember = parentMember,
+      };
+
+      if (layer == GSALayer.Both)
+      {
+        //analysis layer
+        analysisRigid = new GSARigidConstraint()
+        {
+          applicationId = applicationId,
+          nativeId = gsaRigid.Index ?? 0,
+          name = gsaRigid.Name,
+          primaryNode = primaryNode,
+          constrainedNodes = constrainedNodes,
+          stages = analysisStages,
+          type = type,
+          constraintCondition = constraintCondition,
+          parentMember = parentMember,
+        };
+      }
+
+      var toSpeckleResult = (analysisRigid == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designRigid })
+              : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designRigid }, analysisLayerOnlyObjects: new List<Base>() { analysisRigid });
+      return toSpeckleResult;
     }
 
     private ToSpeckleResult GsaGenRestToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaGenRest = (GsaGenRest)nativeObject;
-      var speckleGenRest = new GSAGeneralisedRestraint()
+
+      //Defaults
+      GSAGeneralisedRestraint analysisGenRest = null;
+      List<Node> nodes = null;
+      List<GSAStage> designStages = null, analysisStages = null;
+      string applicationId = null;
+
+      //local variables
+      if (gsaGenRest.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaGenRest>(gsaGenRest.Index.Value);
+      if (gsaGenRest.NodeIndices.HasValues())
       {
+        nodes = gsaGenRest.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
+        AddToMeaningfulNodeIndices(nodes.Select(n => n.applicationId));
+      }
+      if (gsaGenRest.StageIndices.HasValues())
+      {
+        designStages = gsaGenRest.StageIndices.Select(i => GetStageFromIndex(i, GSALayer.Design)).ToList();
+        analysisStages = gsaGenRest.StageIndices.Select(i => GetStageFromIndex(i, GSALayer.Analysis)).ToList();
+      }
+
+      if (layer == GSALayer.Design && designStages == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
+
+      //design layer
+      var designGenRest = new GSAGeneralisedRestraint()
+      {
+        applicationId = applicationId,
         nativeId = gsaGenRest.Index ?? 0,
         name = gsaGenRest.Name,
         restraint = GetRestraint(gsaGenRest),
+        nodes = nodes,
+        stages = designStages,
       };
-      if (gsaGenRest.Index.IsIndex()) speckleGenRest.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaGenRest>(gsaGenRest.Index.Value);
-      if (gsaGenRest.NodeIndices.HasValues()) speckleGenRest.nodes = gsaGenRest.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
-      if (gsaGenRest.StageIndices.HasValues()) speckleGenRest.stages = gsaGenRest.StageIndices.Select(i => GetStageFromIndex(i)).ToList();
-      AddToMeaningfulNodeIndices(speckleGenRest.nodes.Select(n => n.applicationId));
-      
-      return new ToSpeckleResult(speckleGenRest);
+
+      if (layer == GSALayer.Both)
+      {
+        //analysis layer
+        analysisGenRest = new GSAGeneralisedRestraint()
+        {
+          applicationId = applicationId,
+          nativeId = gsaGenRest.Index ?? 0,
+          name = gsaGenRest.Name,
+          restraint = GetRestraint(gsaGenRest),
+          nodes = nodes,
+          stages = analysisStages,
+        };
+      }
+
+      var toSpeckleResult = (analysisGenRest == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designGenRest })
+              : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designGenRest }, analysisLayerOnlyObjects: new List<Base>() { analysisGenRest });
+      return toSpeckleResult;
     }
     #endregion
 
@@ -1800,25 +2038,80 @@ namespace ConverterGSA
 
     private ToSpeckleResult GsaAlignToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaAlign = (GsaAlign)nativeObject;
-      var speckleAlign = new GSAAlignment()
+
+      //Defaults
+      GSAGridSurface designGridSurface = null, analysisGridSurface = null;
+      GSAAlignment analysisAlignment = null;
+      string applicationId = null;
+
+      //local variables
+      if (gsaAlign.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaAlign>(gsaAlign.Index.Value);
+      if (gsaAlign.GridSurfaceIndex.IsIndex())
       {
+        designGridSurface = GetGridSurfaceFromIndex(gsaAlign.GridSurfaceIndex.Value, GSALayer.Design);
+        analysisGridSurface = GetGridSurfaceFromIndex(gsaAlign.GridSurfaceIndex.Value, GSALayer.Analysis);
+      }
+
+      if (layer == GSALayer.Design && designGridSurface == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
+
+      var designAlignment = new GSAAlignment()
+      {
+        applicationId = applicationId,
         nativeId = gsaAlign.Index ?? 0,
         name = gsaAlign.Name,
         chainage = gsaAlign.Chain,
         curvature = gsaAlign.Curv,
+        gridSurface = designGridSurface,
       };
-      if (gsaAlign.Index.IsIndex()) speckleAlign.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaAlign>(gsaAlign.Index.Value);
-      if (gsaAlign.GridSurfaceIndex.IsIndex()) speckleAlign.gridSurface = GetGridSurfaceFromIndex(gsaAlign.GridSurfaceIndex.Value, layer);
 
-      return new ToSpeckleResult(speckleAlign);
+      if (layer == GSALayer.Both)
+      {
+        analysisAlignment = new GSAAlignment()
+        {
+          applicationId = applicationId,
+          nativeId = gsaAlign.Index ?? 0,
+          name = gsaAlign.Name,
+          chainage = gsaAlign.Chain,
+          curvature = gsaAlign.Curv,
+          gridSurface = analysisGridSurface,
+        };
+      }
+
+      var toSpeckleResult = (analysisAlignment == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designAlignment })
+        : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designAlignment }, analysisLayerOnlyObjects: new List<Base>() { analysisAlignment });
+      return toSpeckleResult;
     }
 
     private ToSpeckleResult GsaPathToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
     {
+      //Two different objects are required, one for the analysis layer and one for the design layer.
+      //All conversions will be assigned to local variables first and then the two speckle objects will be created.
+
       var gsaPath = (GsaPath)nativeObject;
-      var specklePath = new GSAPath()
+
+      //Defaults
+      GSAAlignment designAlignment = null, analysisAlignment = null;
+      GSAPath analysisPath = null;
+      string applicationId = null;
+
+      //local variables
+      if (gsaPath.Index.IsIndex()) applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaPath>(gsaPath.Index.Value);
+      if (gsaPath.Alignment.IsIndex())
       {
+        designAlignment = GetAlignmentFromIndex(gsaPath.Alignment.Value, GSALayer.Design);
+        analysisAlignment = GetAlignmentFromIndex(gsaPath.Alignment.Value, GSALayer.Analysis);
+      }
+
+      if (layer == GSALayer.Design && designAlignment == null) return new ToSpeckleResult(true); //assume this is meant for the analysis layer only
+
+      //design layer
+      var designPath = new GSAPath()
+      {
+        applicationId = applicationId,
         nativeId = gsaPath.Index ?? 0,
         name = gsaPath.Name,
         type = gsaPath.Type.ToSpeckle(),
@@ -1827,11 +2120,30 @@ namespace ConverterGSA
         right = gsaPath.Right ?? 0,
         factor = gsaPath.Factor ?? 0,
         numMarkedLanes = gsaPath.NumMarkedLanes ?? 0,
+        alignment = designAlignment,
       };
-      if (gsaPath.Index.IsIndex()) specklePath.applicationId = Instance.GsaModel.Cache.GetApplicationId<GsaPath>(gsaPath.Index.Value);
-      if (gsaPath.Alignment.IsIndex()) specklePath.alignment = GetAlignmentFromIndex(gsaPath.Alignment.Value);
 
-      return new ToSpeckleResult(specklePath);
+      if (layer == GSALayer.Both)
+      {
+        //analysis layer
+        analysisPath = new GSAPath()
+        {
+          applicationId = applicationId,
+          nativeId = gsaPath.Index ?? 0,
+          name = gsaPath.Name,
+          type = gsaPath.Type.ToSpeckle(),
+          group = gsaPath.Group ?? 0,
+          left = gsaPath.Left ?? 0,
+          right = gsaPath.Right ?? 0,
+          factor = gsaPath.Factor ?? 0,
+          numMarkedLanes = gsaPath.NumMarkedLanes ?? 0,
+          alignment = analysisAlignment,
+        };
+      }
+
+      var toSpeckleResult = (analysisPath == null) ? new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designPath })
+        : new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { designPath }, analysisLayerOnlyObjects: new List<Base>() { analysisPath });
+      return toSpeckleResult;
     }
 
     private ToSpeckleResult GsaUserVehicleToSpeckle(GsaRecord nativeObject, GSALayer layer = GSALayer.Both)
@@ -2947,6 +3259,13 @@ namespace ConverterGSA
       if (gsaMat == null) return null;
 
       var speckleMat = new Base();
+      if (gsaMat.Name != null) speckleMat["Name"] = gsaMat.Name;
+      if (gsaMat.E.HasValue) speckleMat["E"] = gsaMat.E.Value;
+      if (gsaMat.F.HasValue) speckleMat["F"] = gsaMat.F.Value;
+      if (gsaMat.Nu.HasValue) speckleMat["Nu"] = gsaMat.Nu.Value;
+      if (gsaMat.G.HasValue) speckleMat["G"] = gsaMat.G.Value;
+      if (gsaMat.Rho.HasValue) speckleMat["Rho"] = gsaMat.Rho.Value;
+      if (gsaMat.Alpha.HasValue) speckleMat["Alpha"] = gsaMat.Alpha.Value;
       speckleMat["Prop"] = GetMatAnal(gsaMat.Prop);
       if (gsaMat.NumUC > 0)
       {
@@ -2960,22 +3279,23 @@ namespace ConverterGSA
         speckleMat["OrdSC"] = gsaMat.OrdSC.ToString();
         speckleMat["PtsSC"] = gsaMat.PtsSC;
       }
-      if (gsaMat.NumUC > 0)
+      if (gsaMat.NumUT > 0)
       {
         speckleMat["AbsUT"] = gsaMat.AbsUT.ToString();
         speckleMat["OrdUT"] = gsaMat.OrdUT.ToString();
         speckleMat["PtsUT"] = gsaMat.PtsUT;
       }
-      if (gsaMat.NumUC > 0)
+      if (gsaMat.NumST > 0)
       {
         speckleMat["AbsST"] = gsaMat.AbsST.ToString();
         speckleMat["OrdST"] = gsaMat.OrdST.ToString();
         speckleMat["PtsST"] = gsaMat.PtsST;
       }
-      if (gsaMat.Eps.IsPositive()) speckleMat["Eps"] = gsaMat.Eps;
-      if (gsaMat.Cost.IsPositive()) speckleMat["Cost"] = gsaMat.Cost;
+      if (gsaMat.Eps.HasValue) speckleMat["Eps"] = gsaMat.Eps.Value;
       speckleMat["Uls"] = GetMatCurveParam(gsaMat.Uls);
       speckleMat["Sls"] = GetMatCurveParam(gsaMat.Sls);
+      if (gsaMat.Cost.HasValue) speckleMat["Cost"] = gsaMat.Cost.Value;
+      speckleMat["Type"] = gsaMat.Type.ToString();
       return speckleMat;
     }
 
@@ -2984,8 +3304,10 @@ namespace ConverterGSA
       if (gsaMatAnal == null) return null;
 
       var speckleMatAnal = new Base();
-      speckleMatAnal["Name"] = gsaMatAnal.Name;
-      speckleMatAnal["colour"] = gsaMatAnal.Colour.ToString();
+      if (gsaMatAnal.Name != null) speckleMatAnal["Name"] = gsaMatAnal.Name;
+      speckleMatAnal["Colour"] = gsaMatAnal.Colour.ToString();
+      speckleMatAnal["Type"] = gsaMatAnal.Type.ToString();
+      if (gsaMatAnal.NumParams.HasValue) speckleMatAnal["NumParams"] = gsaMatAnal.NumParams.Value;
       if (gsaMatAnal.E.HasValue) speckleMatAnal["E"] = gsaMatAnal.E.Value;
       if (gsaMatAnal.Nu.HasValue) speckleMatAnal["Nu"] = gsaMatAnal.Nu.Value;
       if (gsaMatAnal.Rho.HasValue) speckleMatAnal["Rho"] = gsaMatAnal.Rho.Value;
@@ -3061,7 +3383,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Axial;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3087,7 +3409,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.CompressionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3100,7 +3422,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.TensionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3113,7 +3435,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
       specklePropertySpring.springType = PropertyTypeSpring.LockUp;
@@ -3129,7 +3451,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Gap;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3142,7 +3464,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Friction;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3158,7 +3480,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.General;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3292,7 +3614,7 @@ namespace ConverterGSA
       var p = (ProfileDetailsStandard)gsaProfile;
       var speckleProfile = new SectionProfile();
       var fns = new Dictionary<Section1dStandardProfileType, Func<ProfileDetailsStandard, SectionProfile>>
-      { { Section1dStandardProfileType.Rectangular, GetProfileStandardRectangluar },
+      { { Section1dStandardProfileType.Rectangular, GetProfileStandardRectangular },
         { Section1dStandardProfileType.RectangularHollow, GetProfileStandardRHS },
         { Section1dStandardProfileType.Circular, GetProfileStandardCircular },
         { Section1dStandardProfileType.CircularHollow, GetProfileStandardCHS },
@@ -3306,7 +3628,7 @@ namespace ConverterGSA
 
       return speckleProfile;
     }
-    private SectionProfile GetProfileStandardRectangluar(ProfileDetailsStandard gsaProfile)
+    private SectionProfile GetProfileStandardRectangular(ProfileDetailsStandard gsaProfile)
     {
       var p = (ProfileDetailsRectangular)gsaProfile;
       var speckleProfile = new Rectangular()
@@ -3474,17 +3796,17 @@ namespace ConverterGSA
     #endregion
 
     #region Analysis Stage
-    private GSAStage GetStageFromIndex(int index)
+    private GSAStage GetStageFromIndex(int index, GSALayer layer = GSALayer.Both)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAnalStage, GSAStage>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0)
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAnalStage, GSAStage>(index, out var speckleObjects, layer) && speckleObjects != null && speckleObjects.Count > 0)
         ? speckleObjects.First() : null;
     }
     #endregion
 
     #region Bridge
-    private GSAAlignment GetAlignmentFromIndex(int index)
+    private GSAAlignment GetAlignmentFromIndex(int index, GSALayer layer = GSALayer.Both)
     {
-      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAlign, GSAAlignment>(index, out var speckleObjects) && speckleObjects != null && speckleObjects.Count > 0)
+      return (Instance.GsaModel.Cache.GetSpeckleObjects<GsaAlign, GSAAlignment>(index, out var speckleObjects, layer) && speckleObjects != null && speckleObjects.Count > 0)
         ? speckleObjects.First() : null;
     }
     #endregion

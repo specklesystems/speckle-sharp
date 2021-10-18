@@ -20,6 +20,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Objects.Structural.GSA.Bridge;
 using Objects.Structural.GSA.Loading;
+using Speckle.GSA.API;
+using Speckle.Core.Models;
+using Objects.Structural.Properties;
+using Objects.Structural.Materials;
 
 namespace ConverterGSA
 {
@@ -186,6 +190,16 @@ namespace ConverterGSA
       }
     }
 
+    public static Section1dType ToNative(this Objects.Structural.Geometry.MemberType speckleElementType)
+    {
+      switch (speckleElementType)
+      {
+        case Objects.Structural.Geometry.MemberType.Beam: return Section1dType.Beam;
+        case Objects.Structural.Geometry.MemberType.Column: return Section1dType.Column;
+        default: return Section1dType.Generic;
+      }
+    }
+
     public static ElementType1D ToSpeckle1d(this GwaMemberType gsaMemberType)
     {
       switch (gsaMemberType)
@@ -225,6 +239,20 @@ namespace ConverterGSA
         case Property2dType.Shell: return PropertyType2D.Shell;
         case Property2dType.Stress: return PropertyType2D.Stress;
         default: throw new Exception(gsaType.ToString() + " can not be converted to a valid speckle 2D property type.");
+      }
+    }
+
+    public static Property2dType ToNative(this PropertyType2D propertyType)
+    {
+      switch (propertyType)
+      {
+        case PropertyType2D.Curved : return Property2dType.Curved;
+        case PropertyType2D.Fabric : return Property2dType.Fabric;
+        case PropertyType2D.Load:   return Property2dType.Load; 
+        case PropertyType2D.Plate:  return Property2dType.Plate;
+        case PropertyType2D.Shell:  return Property2dType.Shell;
+        case PropertyType2D.Stress : return Property2dType.Stress;
+        default: throw new Exception(propertyType.ToString() + " can not be converted to a valid native 2D property type.");
       }
     }
 
@@ -414,6 +442,23 @@ namespace ConverterGSA
       }
     }
 
+    public static ReferencePoint ToNative(this BaseReferencePoint baseReferencePoint)
+    {
+      switch (baseReferencePoint)
+      {
+        case BaseReferencePoint.BotCentre: return ReferencePoint.BottomCentre;
+        case BaseReferencePoint.BotLeft: return ReferencePoint.BottomLeft;
+        case BaseReferencePoint.BotRight: return ReferencePoint.BottomRight;
+        case BaseReferencePoint.Centroid: return ReferencePoint.Centroid;
+        case BaseReferencePoint.MidLeft: return ReferencePoint.MiddleLeft;
+        case BaseReferencePoint.MidRight: return ReferencePoint.MiddleRight;
+        case BaseReferencePoint.TopCentre: return ReferencePoint.TopCentre;
+        case BaseReferencePoint.TopLeft: return ReferencePoint.TopLeft;
+        case BaseReferencePoint.TopRight: return ReferencePoint.TopRight;
+        default: return ReferencePoint.Centroid;
+      }
+    }
+
     public static ReferenceSurface ToSpeckle(this Property2dRefSurface gsaRefPt)
     {
       switch (gsaRefPt)
@@ -421,6 +466,16 @@ namespace ConverterGSA
         case Property2dRefSurface.BottomCentre: return ReferenceSurface.Bottom;
         case Property2dRefSurface.TopCentre: return ReferenceSurface.Top;
         default: return ReferenceSurface.Middle;
+      }
+    }
+
+    public static Property2dRefSurface ToNative(this ReferenceSurface refSurface)
+    {
+      switch (refSurface)
+      {
+        case ReferenceSurface.Bottom: return Property2dRefSurface.BottomCentre;
+        case ReferenceSurface.Top: return Property2dRefSurface.TopCentre;
+        default: return Property2dRefSurface.Centroid;
       }
     }
 
@@ -515,26 +570,17 @@ namespace ConverterGSA
     {
       switch (speckleType)
       {
-        case ElementType1D.Bar:
-          return ElementType.Bar;
-        case ElementType1D.Cable:
-          return ElementType.Cable;
-        case ElementType1D.Damper:
-          return ElementType.Damper;
-        case ElementType1D.Link:
-          return ElementType.Link;
-        case ElementType1D.Rod:
-          return ElementType.Rod;
-        case ElementType1D.Spacer:
-          return ElementType.Spacer;
-        case ElementType1D.Spring:
-          return ElementType.Spring;
-        case ElementType1D.Strut:
-          return ElementType.Strut;
-        case ElementType1D.Tie:
-          return ElementType.Tie;
-        default:
-          return ElementType.Beam;
+        case ElementType1D.Beam: return ElementType.Beam;
+        case ElementType1D.Bar: return ElementType.Bar;
+        case ElementType1D.Cable: return ElementType.Cable;
+        case ElementType1D.Damper: return ElementType.Damper;
+        case ElementType1D.Link: return ElementType.Link;
+        case ElementType1D.Rod: return ElementType.Rod;
+        case ElementType1D.Spacer: return ElementType.Spacer;
+        case ElementType1D.Spring: return ElementType.Spring;
+        case ElementType1D.Strut: return ElementType.Strut;
+        case ElementType1D.Tie: return ElementType.Tie;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum"); 
       }
     }
 
@@ -542,15 +588,100 @@ namespace ConverterGSA
     {
       switch (speckleType)
       {
-        case ElementType2D.Triangle3:
-          return ElementType.Triangle3;
-        case ElementType2D.Triangle6:
-          return ElementType.Triangle6;
-        case ElementType2D.Quad8:
-          return ElementType.Quad8;
-        case ElementType2D.Quad4:
-        default:
-          return ElementType.Quad4;
+        case ElementType2D.Triangle3: return ElementType.Triangle3;
+        case ElementType2D.Triangle6: return ElementType.Triangle6;
+        case ElementType2D.Quad8: return ElementType.Quad8;
+        case ElementType2D.Quad4: return ElementType.Quad4;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static Load2dFaceType ToNative(this FaceLoadType speckleType)
+    {
+      switch (speckleType)
+      {
+        case FaceLoadType.Constant: return Load2dFaceType.Uniform;
+        case FaceLoadType.Point: return Load2dFaceType.Point;
+        case FaceLoadType.Variable: return Load2dFaceType.General;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static GwaAxisDirection3 ToNative(this LoadDirection2D speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadDirection2D.X: return GwaAxisDirection3.X;
+        case LoadDirection2D.Y: return GwaAxisDirection3.Y;
+        case LoadDirection2D.Z: return GwaAxisDirection3.Z;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static AxisRefType ToNative(this LoadAxisType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadAxisType.Global: return AxisRefType.Global;
+        case LoadAxisType.Local: return AxisRefType.Local;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static LoadCategory LoadCategoryToNative(this string category)
+    {
+      switch(category.ToLowerInvariant())
+      {
+        case "residential": return LoadCategory.Residential;
+        case "office": return LoadCategory.Office;
+        case "congregationarea": return LoadCategory.CongregationArea;
+        case "shop": return LoadCategory.Shop;
+        case "storage": return LoadCategory.Storage;
+        case "lighttraffic": return LoadCategory.LightTraffic;
+        case "traffic": return LoadCategory.Traffic;
+        case "roofs": return LoadCategory.Roofs;
+        case "notset": return LoadCategory.NotSet;
+        default: throw new Exception(category + " speckle string can not be converted into native enum");
+      }
+    }
+
+    public static IncludeOption IncludeOptionToNative(this string include)
+    {
+      switch(include.ToLowerInvariant())
+      {
+        case "undefined": return IncludeOption.Undefined;
+        case "unfavourable": return IncludeOption.Unfavourable;
+        case "favourable": return IncludeOption.Favourable;
+        case "both": return IncludeOption.Both;
+        default: throw new Exception(include + " speckle string can not be converted into native enum");
+      }
+    }
+
+    public static StructuralLoadCaseType ToNative(this LoadType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadType.Dead: return StructuralLoadCaseType.Dead;
+        case LoadType.SeismicStatic: return StructuralLoadCaseType.Earthquake;
+        case LoadType.Live: return StructuralLoadCaseType.Live;
+        case LoadType.Rain: return StructuralLoadCaseType.Rain;
+        case LoadType.Snow: return StructuralLoadCaseType.Snow;
+        case LoadType.Soil: return StructuralLoadCaseType.Soil;
+        case LoadType.Thermal: return StructuralLoadCaseType.Thermal;
+        case LoadType.Wind: return StructuralLoadCaseType.Wind;
+        case LoadType.None: return StructuralLoadCaseType.NotSet;
+        default: return StructuralLoadCaseType.Generic;
+      }
+    }
+
+    public static Load2dThermalType ToNative(this Thermal2dLoadType speckleType)
+    {
+      switch (speckleType)
+      {
+        case Thermal2dLoadType.Uniform: return Load2dThermalType.Uniform;
+        case Thermal2dLoadType.Gradient: return Load2dThermalType.Gradient;
+        case Thermal2dLoadType.General: return Load2dThermalType.General;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
       }
     }
     #endregion
@@ -623,6 +754,57 @@ namespace ConverterGSA
     }
     #endregion
 
+    #region ResolveIndices
+    public static List<int> GetElementIndicies(this List<Base> speckleElements)
+    {
+      var gsaIndices = new List<int>();
+      foreach (var e in speckleElements)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaEl>(e.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
+    }
+
+    public static List<int> GetMemberIndicies(this List<Base> speckleElements)
+    {
+      var gsaIndices = new List<int>();
+      foreach (var e in speckleElements)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaMemb>(e.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
+    }
+
+    public static List<int> GetIndicies(this List<Node> speckleNodes)
+    {
+      var gsaIndices = new List<int>();
+      foreach (var e in speckleNodes)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaNode>(e.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
+    }
+
+    public static int ResolveElementIndex(this Base speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaEl>(speckleObject.applicationId);
+    public static int ResolveMemberIndex(this Base speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMemb>(speckleObject.applicationId);
+    public static int ResolveIndex(this Node speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaNode>(speckleObject.applicationId);
+    public static int ResolveIndex(this Axis speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadCase speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadCase>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadCombination speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaCombination>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadFace speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dFace>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadNode speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadNode>(speckleObject.applicationId);
+    public static int ResolveIndex(this GSALoadThermal2d speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dThermal>(speckleObject.applicationId);
+    public static int ResolveIndex(this LoadGravity speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadGravity>(speckleObject.applicationId);
+    public static int ResolveIndex(this Steel speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMatSteel>(speckleObject.applicationId);
+    public static int ResolveIndex(this Concrete speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMatConcrete>(speckleObject.applicationId);
+    public static int ResolveIndex(this Property1D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleObject.applicationId);
+    public static int ResolveIndex(this Property2D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaProp2d>(speckleObject.applicationId);
+    public static int ResolveIndex(this PropertyMass speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(speckleObject.applicationId);
+    public static int ResolveIndex(this PropertySpring speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropSpr>(speckleObject.applicationId);
+    #endregion
 
     public static List<double> Insert(this List<double> source, double item, int step)
     {
@@ -714,6 +896,59 @@ namespace ConverterGSA
           d[key].Add(v);
         }
       }
+    }
+
+    public static string RemoveWhitespace(this string input)
+    {
+      var len = input.Length;
+      var src = input.ToCharArray();
+      int dstIdx = 0;
+      for (int i = 0; i < len; i++)
+      {
+        var ch = src[i];
+        switch (ch)
+        {
+          case '\u0020':
+          case '\u00A0':
+          case '\u1680':
+          case '\u2000':
+          case '\u2001':
+          case '\u2002':
+          case '\u2003':
+          case '\u2004':
+          case '\u2005':
+          case '\u2006':
+          case '\u2007':
+          case '\u2008':
+          case '\u2009':
+          case '\u200A':
+          case '\u202F':
+          case '\u205F':
+          case '\u3000':
+          case '\u2028':
+          case '\u2029':
+          case '\u0009':
+          case '\u000A':
+          case '\u000B':
+          case '\u000C':
+          case '\u000D':
+          case '\u0085':
+            continue;
+          default:
+            src[dstIdx++] = ch;
+            break;
+        }
+      }
+      return new string(src, 0, dstIdx);
+    }
+    
+    //https://stackoverflow.com/questions/23921210/grouping-lists-into-groups-of-x-items-per-group
+    public static IEnumerable<IGrouping<int, TSource>> GroupBy<TSource>(this IEnumerable<TSource> source, int itemsPerGroup)
+    {
+      return source.Zip(Enumerable.Range(0, source.Count()),
+                        (s, r) => new { Group = r / itemsPerGroup, Item = s })
+                   .GroupBy(i => i.Group, g => g.Item)
+                   .ToList();
     }
   }
 }

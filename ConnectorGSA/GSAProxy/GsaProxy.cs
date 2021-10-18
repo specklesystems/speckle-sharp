@@ -64,6 +64,7 @@ namespace Speckle.ConnectorGSA.Proxy
       }
     };
 
+    /*
     //Note that When a GET_ALL is called for LOAD_BEAM, it returns LOAD_BEAM_UDL, LOAD_BEAM_LINE, LOAD_BEAM_PATCH and LOAD_BEAM_TRILIN
     public static GwaKeyword[] SetAtKeywords = new GwaKeyword[] 
     {
@@ -71,6 +72,7 @@ namespace Speckle.ConnectorGSA.Proxy
       GwaKeyword.LOAD_GRID_AREA, GwaKeyword.LOAD_2D_THERMAL, GwaKeyword.LOAD_GRAVITY, GwaKeyword.INF_BEAM, GwaKeyword.INF_NODE, 
       GwaKeyword.RIGID, GwaKeyword.GEN_REST 
     };
+    */
 
     #region nodeAt_factors
     public static bool NodeAtCalibrated = false;
@@ -233,13 +235,27 @@ namespace Speckle.ConnectorGSA.Proxy
 
         GSAObject = (IComAuto)gsaInstance ?? new ComAuto();
 
-        GSAObject.LogFeatureUsage("api::specklegsa::" +
-          FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
-            .ProductVersion + "::GSA " + GSAObject.VersionString()
-            .Split(new char[] { '\n' })[0]
-            .Split(new char[] { GwaDelimiter }, StringSplitOptions.RemoveEmptyEntries)[1]);
+        //Squash any exceptions from the telemetry
+        try
+        {
+          GSAObject.LogFeatureUsage("api::specklegsa::" +
+            FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
+              .ProductVersion + "::GSA " + GSAObject.VersionString()
+              .Split(new char[] { '\n' })[0]
+              .Split(new char[] { GwaDelimiter }, StringSplitOptions.RemoveEmptyEntries)[1]);
+        }
+        catch 
+        {
+        }
 
-        GSAObject.Open(path);
+        try
+        {
+          GSAObject.Open(path);
+        }
+        catch
+        {
+          return false;
+        }
         FilePath = path;
         GSAObject.SetLocale(Locale.LOC_EN_GB);
 
@@ -562,19 +578,70 @@ namespace Speckle.ConnectorGSA.Proxy
       var dataLock = new object();
       var setKeywords = new List<GwaKeyword>();
       var setAtKeywords = new List<GwaKeyword>();
+      var setNoIndexKeywords = new List<GwaKeyword>();
       var tempKeywordIndexCache = new Dictionary<GwaKeyword, List<int>>();
 
       var keywords = ParsersByKeyword.Lefts;
 
       foreach (var kw in keywords)
       {
-        if (SetAtKeywords.Any(b => kw == b))
+        if (ParsersByKeyword.FindRight(kw, out var parserType))
         {
-          setAtKeywords.Add(kw);
+          var sct = Helper.GetGwaSetCommandType(parserType);
+
+          if (sct == GwaSetCommandType.Set)
+          {
+            setKeywords.Add(kw);
+          }
+          else if (sct == GwaSetCommandType.SetAt)
+          {
+            setKeywords.Add(kw);
+          }
+          else
+          {
+            setNoIndexKeywords.Add(kw);
+          }
         }
-        else
+      }
+
+      for (int i = 0; i < setNoIndexKeywords.Count(); i++)
+      {
+        var newCommand = "GET_ALL" + GwaDelimiter + setNoIndexKeywords[i];
+
+        string[] gwaLines;
+
+        try
         {
-          setKeywords.Add(kw);
+          lock (syncLock)
+          {
+            gwaLines = ((string)GSAObject.GwaCommand(newCommand)).Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+          }
+        }
+        catch
+        {
+          gwaLines = new string[0];
+        }
+
+        foreach (var gwa in gwaLines)
+        {
+          var pieces = gwa.ListSplit(_GwaDelimiter).ToList();
+          if (pieces[0].StartsWith("set", StringComparison.InvariantCultureIgnoreCase))
+          {
+            pieces = pieces.Skip(1).ToList();
+          }
+          var keywordAndVersion = pieces.First();
+          var keywordPieces = keywordAndVersion.Split('.');
+          if (keywordPieces.Count() == 2 && keywordPieces.Last().All(c => char.IsDigit(c))
+            && int.TryParse(keywordPieces.Last(), out int ver)
+            && keywordPieces.First().TryParseStringValue(out GwaKeyword kw)
+            && ParsersByKeyword.FindRight(kw, out var t))
+          {
+            var parser = (IGwaParser)Activator.CreateInstance(t);
+            if (parser.FromGwa(gwa))
+            {
+              retRecords.Add(parser.Record);
+            }
+          }
         }
       }
 
@@ -596,12 +663,6 @@ namespace Speckle.ConnectorGSA.Proxy
         catch
         {
           gwaLines = new string[0];
-        }
-
-        //TO DO: review if this line is even needed anymore
-        if (setKeywords[i] == GwaKeyword.UNIT_DATA)
-        {
-          continue;
         }
 
         Parallel.ForEach(gwaLines, gwa =>
@@ -1592,6 +1653,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
 
     #region static_fns
+    //This should only be called if the GWA is known to be either Set or SetAt, not SetNoIndex
     public static bool ParseGeneralGwa(string fullGwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string applicationId,
       out string gwaWithoutSet, out string keywordAndVersion)
     {
