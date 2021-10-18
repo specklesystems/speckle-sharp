@@ -163,6 +163,9 @@ namespace Objects.Converter.Revit
         case DB.Architecture.TopRail _:
           returnObject = null;
           break;
+        case DB.Structure.Rebar o:
+          returnObject = RebarToSpeckle(o);
+          break;
         case DB.Ceiling o:
           returnObject = CeilingToSpeckle(o);
           break;

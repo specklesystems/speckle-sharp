@@ -257,10 +257,6 @@ namespace SpeckleRhino
       // give converter a way to access the base commit layer name
       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
 
-      var existingLayer = Doc.Layers.FindName(commitLayerName);
-      if (existingLayer != null)
-        Doc.Layers.Purge(existingLayer.Id, false);
-      
       // flatten the commit object to retrieve children objs
       int count = 0;
       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
@@ -435,7 +431,7 @@ namespace SpeckleRhino
       Exceptions.Clear();
 
       var commitObj = new Base();
-      
+
       int objCount = 0;
       bool renamedlayers = false;
 
@@ -487,7 +483,7 @@ namespace SpeckleRhino
             }
 
             foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
-                converted[key] = obj.Attributes.GetUserString(key);
+              converted[key] = obj.Attributes.GetUserString(key);
 
             if (obj is InstanceObject)
               containerName = "Blocks";
@@ -504,7 +500,7 @@ namespace SpeckleRhino
         catch
         {
           int viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
-          ViewInfo view = (viewIndex >= 0) ? Doc.NamedViews[viewIndex] : null; 
+          ViewInfo view = (viewIndex >= 0) ? Doc.NamedViews[viewIndex] : null;
           if (view != null)
           {
             converted = converter.ConvertToSpeckle(view);

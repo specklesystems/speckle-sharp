@@ -13,7 +13,8 @@ using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Hatch = Objects.Other.Hatch;
-using Point = Objects.Geometry.Point;
+using Polyline = Objects.Geometry.Polyline;
+using Text = Objects.Other.Text;
 using RH = Rhino.DocObjects;
 using Rhino;
 
@@ -109,10 +110,13 @@ namespace Objects.Converter.RhinoGh
           GeometryBase converted = null;
           switch (geo)
           {
-            case BlockInstance _:
-              var instance = (InstanceObject)ConvertToNative(geo);
-              converted = instance.Geometry;
-              Doc.Objects.Delete(instance);
+            case BlockInstance o:
+              var instance = BlockInstanceToNative(o);
+              if (instance != null)
+              {
+                converted = instance.DuplicateGeometry();
+                Doc.Objects.Delete(instance);
+              }
               break;
             default:
               converted = (GeometryBase)ConvertToNative(geo);
@@ -120,7 +124,7 @@ namespace Objects.Converter.RhinoGh
           }
           if (converted == null)
             continue;
-          var layerName = $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}";
+          var layerName = (geo["Layer"] != null) ? $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}" : $"{commitInfo}";
           int index = 1;
           if (layerName != null)
             GetLayer(Doc, layerName, out index, true);
@@ -139,6 +143,7 @@ namespace Objects.Converter.RhinoGh
         return null;
 
       var blockDefinition = Doc.InstanceDefinitions[definitionIndex];
+
       return blockDefinition;
     }
 
@@ -147,10 +152,10 @@ namespace Objects.Converter.RhinoGh
     public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
     {
       var t = instance.InstanceXform;
-      var transformArray = new double[] { 
-        t.M00, t.M01, t.M02, t.M03, 
-        t.M10, t.M11, t.M12, t.M13, 
-        t.M20, t.M21, t.M22, t.M23, 
+      var transformArray = new double[] {
+        t.M00, t.M01, t.M02, t.M03,
+        t.M10, t.M11, t.M12, t.M13,
+        t.M20, t.M21, t.M22, t.M23,
         t.M30, t.M31, t.M32, t.M33 };
 
       var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
@@ -172,19 +177,25 @@ namespace Objects.Converter.RhinoGh
       InstanceDefinition definition = BlockDefinitionToNative(instance.blockDefinition);
 
       // get the transform
-      if (instance.transform.Length != 16)
-        return null;
-      Transform transform = new Transform();
-      int count = 0;
-      for (int i = 0; i < 4; i++)
+      // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
+      Transform transform = Transform.Identity;
+      double[] t = instance.transform;
+      if (t.Length == 16)
       {
-        for (int j = 0; j < 4; j++)
+        int count = 0;
+        for (int i = 0; i < 4; i++)
         {
-          if (j == 3 && i != 3) // scale the delta values for translation transformations
-            transform[i, j] = ScaleToNative(instance.transform[count], instance.units);
-          else
-            transform[i, j] = instance.transform[count];
-          count++;
+          for (int j = 0; j < 4; j++)
+          {
+            if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
+              if (t[15] != 0)
+                transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], instance.units) : 1;
+              else
+                transform[i, j] = (i != 3) ? ScaleToNative(t[count], instance.units) : 1;
+            else
+              transform[i, j] = t[count];
+            count++;
+          }
         }
       }
 
@@ -197,6 +208,58 @@ namespace Objects.Converter.RhinoGh
         return null;
 
       return Doc.Objects.FindId(instanceId) as InstanceObject;
+    }
+
+    // Text
+    public Text TextToSpeckle(TextEntity text)
+    {
+      var _text = new Text();
+
+      // display value as list of polylines
+      var outlines = text.CreateCurves(text.DimensionStyle, false)?.ToList();
+      if (outlines != null)
+      {
+        foreach (var outline in outlines)
+        {
+          Rhino.Geometry.Polyline poly = null;
+          if (!outline.TryGetPolyline(out poly))
+            outline.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out poly); // this is from nurbs, should probably be refined for text
+          if (poly != null)
+            _text.displayValue.Add(PolylineToSpeckle(poly) as Polyline);
+        }
+      }
+
+      _text.plane = PlaneToSpeckle(text.Plane);
+      _text.rotation = text.TextRotationRadians;
+      _text.height = text.TextHeight * text.DimensionScale; // this needs to be multiplied by model space scale for true height
+      _text.value = text.PlainText;
+      _text.richText = text.RichText;
+      _text.units = ModelUnits;
+
+      // rhino specific props
+      _text["horizontalAlignment"] = text.TextHorizontalAlignment.ToString();
+      _text["verticalAlignment"] = text.TextVerticalAlignment.ToString();
+
+      return _text;
+    }
+    public TextEntity TextToNative(Text text)
+    {
+      var _text = new TextEntity();
+      _text.Plane = PlaneToNative(text.plane);
+      if (!string.IsNullOrEmpty(text.richText))
+        _text.RichText = text.richText;
+      else
+        _text.PlainText = text.value;
+      _text.TextHeight = ScaleToNative(text.height, text.units);
+      _text.TextRotationRadians = text.rotation;
+      
+      // rhino specific props
+      if (text["horizontalAlignment"] != null)
+        _text.TextHorizontalAlignment = Enum.TryParse(text["horizontalAlignment"] as string, out TextHorizontalAlignment horizontal) ? horizontal : TextHorizontalAlignment.Center;
+      if (text["verticalAlignment"] != null)
+        _text.TextVerticalAlignment = Enum.TryParse(text["verticalAlignment"] as string, out TextVerticalAlignment vertical) ? vertical : TextVerticalAlignment.Middle;
+
+      return _text;
     }
   }
 }

@@ -7,6 +7,6 @@
     <FullClassName>Speckle.ConnectorRevit.Entry.App</FullClassName>
     <ClientId>5AE0BD71-CDE6-40DC-8A9B-AB227DE75A52</ClientId>
     <VendorId>speckle</VendorId>
-    <VendorDescription>Speckle: The open source data platform for architecture, engineering and construction. Check it out at https://speckle.systems. For any problems, get in touch on https://discourse.speckle.works</VendorDescription>
+    <VendorDescription>Speckle: Empowering your design and construction data. For any problems, visit our community forum https://speckle.community</VendorDescription>
   </AddIn>
 </RevitAddIns>

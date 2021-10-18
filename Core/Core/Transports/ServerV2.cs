@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports.ServerUtils;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Transports
 {
@@ -170,6 +169,7 @@ namespace Speckle.Core.Transports
         throw new Exception("ServerTransport not sending");
       ShouldSendThreadRun = false;
       SendingThread.Join();
+      SendingThread = null;
     }
 
     public override string ToString()
@@ -192,12 +192,9 @@ namespace Speckle.Core.Transports
       List<string> childrenIds = new List<string>();
       try
       {
-        using (JsonDocument doc = JsonDocument.Parse(json))
-        {
-          JsonElement closures = doc.RootElement.GetProperty("__closure");
-          foreach (JsonProperty prop in closures.EnumerateObject())
-            childrenIds.Add(prop.Name);
-        }
+        JObject doc1 = JObject.Parse(json);
+        foreach (JToken prop in doc1["__closure"])
+          childrenIds.Add(((JProperty)prop).Name);
       }
       catch
       {

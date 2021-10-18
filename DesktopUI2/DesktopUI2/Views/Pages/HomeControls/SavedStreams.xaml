@@ -1,0 +1,187 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.HomeControls.SavedStreams"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <vm:DesignSavedStreamsViewModel />
+  </Design.DataContext>
+  <ItemsControl Items="{Binding SavedStreams}">
+    <ItemsControl.ItemTemplate>
+      <DataTemplate>
+        <m:Card
+          Margin="15,15,15,0"
+          VerticalAlignment="Stretch"
+          HorizontalContentAlignment="Stretch">
+          <Grid ColumnDefinitions="*, auto">
+            <Grid RowDefinitions="Auto,Auto,Auto">
+              <TextBlock
+                Margin="0,0,0,5"
+                Classes="Grotesk"
+                Text="{Binding Stream.name}"
+                TextTrimming="CharacterEllipsis" />
+              <!--  SENDER  -->
+              <Grid
+                Grid.Row="1"
+                ColumnDefinitions="auto,auto,auto,*"
+                IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}">
+                <icons:MaterialIcon
+                  Margin="0,0,5,0"
+                  Foreground="Gray"
+                  Kind="SourceBranch" />
+                <TextBlock
+                  Grid.Column="1"
+                  Classes="Caption"
+                  Text="{Binding StreamState.BranchName}"
+                  TextTrimming="CharacterEllipsis" />
+                <icons:MaterialIcon
+                  Grid.Column="2"
+                  Margin="10,0,5,0"
+                  Foreground="Gray"
+                  Kind="{Binding StreamState.Filter.Icon}" />
+                <TextBlock
+                  Grid.Column="3"
+                  Classes="Caption"
+                  Text="{Binding StreamState.Filter.Name}"
+                  TextTrimming="CharacterEllipsis" />
+              </Grid>
+              <!--  RECEIVER  -->
+              <Grid
+                Grid.Row="1"
+                ColumnDefinitions="auto,auto,auto,*"
+                IsVisible="{Binding StreamState.IsReceiver}">
+                <icons:MaterialIcon
+                  Margin="0,0,5,0"
+                  Foreground="Gray"
+                  Kind="SourceBranch" />
+                <TextBlock
+                  Grid.Column="1"
+                  Classes="Caption"
+                  Text="{Binding StreamState.BranchName}"
+                  TextTrimming="CharacterEllipsis" />
+
+                <icons:MaterialIcon
+                  Grid.Column="2"
+                  Margin="10,0,5,0"
+                  Foreground="Gray"
+                  Kind="SourceCommit" />
+                <TextBlock
+                  Grid.Column="3"
+                  Classes="Caption"
+                  Text="{Binding StreamState.CommitId}"
+                  TextTrimming="CharacterEllipsis" />
+              </Grid>
+              <Grid
+                Grid.Row="2"
+                Margin="0,5,0,0"
+                ColumnDefinitions="auto,auto,*">
+                <TextBlock
+                  Classes="Overline"
+                  Text="{Binding LastUpdated}"
+                  TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                  Grid.Column="1"
+                  Classes="Overline"
+                  Text=" - " />
+                <TextBlock
+                  Grid.Column="2"
+                  Classes="Overline"
+                  Text="{Binding LastUsed}"
+                  TextTrimming="CharacterEllipsis" />
+              </Grid>
+
+            </Grid>
+
+            <StackPanel
+              Grid.Column="1"
+              Orientation="Horizontal"
+              Spacing="5">
+              <Menu Items="{Binding MenuItems}">
+                <Menu.Styles>
+                  <Style Selector="MenuItem">
+                    <Setter Property="Header" Value="{Binding Header}" />
+                    <Setter Property="Icon" Value="{Binding Icon}" />
+                    <Setter Property="MinWidth" Value="28" />
+                    <Setter Property="Items" Value="{Binding Items}" />
+                    <Setter Property="Command" Value="{Binding Command}" />
+                    <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                  </Style>
+                </Menu.Styles>
+
+              </Menu>
+              <Grid>
+
+
+                <m:FloatingButton
+                  VerticalAlignment="Center"
+                  Command="{Binding ReceiveCommand}"
+                  IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+                  IsVisible="{Binding StreamState.IsReceiver}"
+                  ToolTip.Tip="Receive">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="20"
+                      Height="20"
+                      Foreground="White"
+                      Kind="CubeSend"
+                      ToolTip.Tip="Receive">
+                      <icons:MaterialIcon.RenderTransform>
+                        <TransformGroup>
+                          <RotateTransform Angle="30" />
+                          <ScaleTransform ScaleX="-1" />
+                        </TransformGroup>
+                      </icons:MaterialIcon.RenderTransform>
+                    </icons:MaterialIcon>
+
+                  </Button.Content>
+                </m:FloatingButton>
+
+                <m:FloatingButton
+                  VerticalAlignment="Center"
+                  Command="{Binding SendCommand}"
+                  IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+                  IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
+                  ToolTip.Tip="Send">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="20"
+                      Height="20"
+                      Foreground="White"
+                      Kind="CubeSend"
+                      ToolTip.Tip="Send">
+                      <icons:MaterialIcon.RenderTransform>
+                        <RotateTransform Angle="-30" />
+                      </icons:MaterialIcon.RenderTransform>
+                    </icons:MaterialIcon>
+
+                  </Button.Content>
+                </m:FloatingButton>
+
+                <Grid>
+                  <ProgressBar
+                    Width="40"
+                    Height="40"
+                    Classes="Circle"
+                    IsIndeterminate="{Binding Progress.IsIndeterminate}"
+                    IsVisible="{Binding Progress.IsProgressing}"
+                    Maximum="{Binding Progress.Max}"
+                    Value="{Binding Progress.Value}" />
+                </Grid>
+              </Grid>
+            </StackPanel>
+
+          </Grid>
+        </m:Card>
+
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+
+  </ItemsControl>
+</UserControl>

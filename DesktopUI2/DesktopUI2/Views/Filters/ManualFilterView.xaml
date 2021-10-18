@@ -1,0 +1,91 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Filters.ManualFilterView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <StackPanel Margin="0,4" Spacing="10">
+    <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+
+    <Button
+      assists:ButtonAssist.CornerRadius="16"
+      BorderBrush="Green"
+      Classes="Outline"
+      Command="{Binding SetObjectSelection}"
+      Foreground="Green"
+      ToolTip.Tip="Clears any existing objects,&#x0a;and sets the current selected ones.">
+      <StackPanel Orientation="Horizontal">
+        <icons:MaterialIcon Kind="AddCircle" />
+        <TextBlock
+          Margin="8,0"
+          VerticalAlignment="Center"
+          Classes="ButtonText"
+          Text="SET SELECTION" />
+      </StackPanel>
+    </Button>
+
+    <Button
+      assists:ButtonAssist.CornerRadius="16"
+      Classes="Outline"
+      Command="{Binding AddObjectSelection}"
+      ToolTip.Tip="Adds the currently selected objects to the&#x0a;existing list.&#x0a;Does not clear old ones.">
+      <StackPanel Orientation="Horizontal">
+        <icons:MaterialIcon Kind="AddCircle" />
+        <TextBlock
+          Margin="8,0"
+          VerticalAlignment="Center"
+          Classes="ButtonText"
+          Text="ADD SELECTION" />
+      </StackPanel>
+    </Button>
+
+    <Button
+      assists:ButtonAssist.CornerRadius="16"
+      BorderBrush="IndianRed"
+      Classes="Outline"
+      Command="{Binding RemoveObjectSelection}"
+      Foreground="IndianRed"
+      ToolTip.Tip="Removes the selected objects.">
+      <StackPanel Orientation="Horizontal">
+        <icons:MaterialIcon Kind="MinusCircle" />
+        <TextBlock
+          Margin="8,0"
+          VerticalAlignment="Center"
+          Classes="ButtonText"
+          Text="REMOVE SELECTION" />
+      </StackPanel>
+    </Button>
+
+    <Button
+      assists:ButtonAssist.CornerRadius="16"
+      BorderBrush="OrangeRed"
+      Classes="Outline"
+      Command="{Binding ClearObjectSelection}"
+      Foreground="OrangeRed"
+      ToolTip.Tip="Removes all selected objects.">
+      <StackPanel Orientation="Horizontal">
+        <icons:MaterialIcon Kind="RemoveCircleMultiple" />
+        <TextBlock
+          Margin="8,0"
+          VerticalAlignment="Center"
+          Classes="ButtonText"
+          Text="CLEAR SELECTION" />
+      </StackPanel>
+    </Button>
+
+    <TextBlock
+      Margin="0,12,0,8"
+      FontSize="14"
+      FontWeight="Medium"
+      Text="Current selection:" />
+    <TextBlock Text="{Binding Summary}" />
+
+  </StackPanel>
+
+</UserControl>

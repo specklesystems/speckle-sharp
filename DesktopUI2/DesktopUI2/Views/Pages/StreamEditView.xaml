@@ -1,0 +1,114 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.StreamEditView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
+  d:DesignHeight="550"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+
+  <Design.DataContext>
+    <viewModels:StreamViewModel />
+  </Design.DataContext>
+  <Grid RowDefinitions="auto,*">
+    <Grid Margin="15" ColumnDefinitions="auto,*">
+      <m:FloatingButton
+        VerticalAlignment="Center"
+        assists:ShadowAssist.ShadowDepth="0"
+        Background="Transparent"
+        Classes=""
+        Command="{Binding GoBack}"
+        ToolTip.Tip="Back">
+        <Button.Content>
+
+          <Viewbox
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Stretch="Fill">
+            <icons:MaterialIcon
+              Width="24"
+              Height="24"
+              Kind="ChevronLeft" />
+          </Viewbox>
+
+        </Button.Content>
+
+      </m:FloatingButton>
+      <Grid
+        Grid.Column="1"
+        Margin="15,0,0,0"
+        RowDefinitions="auto,auto">
+        <TextBlock
+          Classes="Grotesk"
+          FontSize="20"
+          Text="{Binding Stream.name}"
+          TextTrimming="CharacterEllipsis" />
+        <TextBlock
+          Grid.Row="1"
+          Classes="Overline"
+          Text="{Binding Stream.id}" />
+      </Grid>
+
+
+    </Grid>
+    <TabControl Grid.Row="1" SelectedIndex="{Binding IsReceiver}">
+
+
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              VerticalAlignment="Center"
+              Kind="CubeSend"
+              ToolTip.Tip="Send">
+              <icons:MaterialIcon.RenderTransform>
+                <RotateTransform Angle="-30" />
+              </icons:MaterialIcon.RenderTransform>
+            </icons:MaterialIcon>
+            <TextBlock
+              Margin="10,0,0,0"
+              VerticalAlignment="Center"
+              Text="Send" />
+          </StackPanel>
+        </TabItem.Header>
+        <uc:Send />
+      </TabItem>
+
+
+
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              Kind="CubeSend"
+              ToolTip.Tip="Receive">
+              <icons:MaterialIcon.RenderTransform>
+                <TransformGroup>
+                  <RotateTransform Angle="30" />
+                  <ScaleTransform ScaleX="-1" />
+                </TransformGroup>
+              </icons:MaterialIcon.RenderTransform>
+            </icons:MaterialIcon>
+            <TextBlock
+              Margin="10,0,0,0"
+              VerticalAlignment="Center"
+              Text="Receive" />
+          </StackPanel>
+        </TabItem.Header>
+        <uc:Receive />
+      </TabItem>
+    </TabControl>
+
+  </Grid>
+
+</UserControl>

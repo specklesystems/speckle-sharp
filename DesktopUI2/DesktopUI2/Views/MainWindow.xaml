@@ -1,0 +1,58 @@
+<Window
+  x:Class="DesktopUI2.Views.MainWindow"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:vm="using:DesktopUI2.ViewModels"
+  Title="{Binding TitleFull}"
+  Width="400"
+  Height="650"
+  Icon="/Assets/icon.ico"
+  mc:Ignorable="d">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+  <Grid RowDefinitions="auto, *">
+    <styles:Card Padding="10,7" CornerRadius="0">
+      <StackPanel
+        VerticalAlignment="Bottom"
+        Orientation="Horizontal"
+        Spacing="5">
+
+        <TextBlock
+          FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+          FontSize="20"
+          FontWeight="Bold"
+          Foreground="{DynamicResource PrimaryHueMidBrush}"
+          Text="Speckle" />
+        <TextBlock
+          FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+          FontSize="20"
+          FontWeight="Medium"
+          Text="{Binding Title}" />
+
+        <TextBlock
+          Margin="0,0,0,3"
+          VerticalAlignment="Bottom"
+          FontSize="8"
+          Foreground="Gray"
+          Text="{Binding Version}" />
+      </StackPanel>
+    </styles:Card>
+
+
+    <reactiveUi:RoutedViewHost
+      Grid.Row="1"
+      PageTransition="{x:Null}"
+      Router="{Binding Router}" />
+
+
+
+
+  </Grid>
+</Window>
