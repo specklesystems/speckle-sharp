@@ -35,9 +35,9 @@ namespace Objects.Structural.Geometry
         }
 
         [SchemaInfo("Element2D", "Creates a Speckle structural 2D element", "Structural", "Geometry")]
-        public Element2D(Mesh baseMesh, Property2D property, ElementType2D type, double offset = 0, double orientationAngle = 0)
+        public Element2D(Property2D property,List<Node> topology, ElementType2D type, double offset = 0, double orientationAngle = 0)
         {
-            this.baseMesh = baseMesh;
+            this.topology = topology;
             this.property = property;
             this.type = type; //derive from geom? 
             this.offset = offset;

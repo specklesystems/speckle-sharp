@@ -27,7 +27,7 @@ namespace Objects.Structural.ETABS.Properties
 
             public WaffleSlab() { }
 
-            [SchemaInfo("WaffleSlab","Create an ETABS Waffle Slab","Structural", "Properties")]
+            [SchemaInfo("WaffleSlab","Create an ETABS Waffle Slab","ETABS", "Properties")]
             public WaffleSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double Thickness ,double overAllDepth, double stemWidthBot, double stemWidthTop, double ribSpacingDir1, double ribSpacingDir2)
             {
 
@@ -61,7 +61,7 @@ namespace Objects.Structural.ETABS.Properties
 
             public RibbedSlab() { }
 
-            [SchemaInfo("RibbedSlab", "Create an ETABS Ribbed Slab", "Structural", "Properties")]
+            [SchemaInfo("RibbedSlab", "Create an ETABS Ribbed Slab", "ETABS", "Properties")]
             public RibbedSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double Thickness ,double overAllDepth, double stemWidthBot, double stemWidthTop, double ribSpacing, int ribsParallelTo)
             {
                 type2D = ETABSPropertyType2D.Slab;
@@ -83,7 +83,7 @@ namespace Objects.Structural.ETABS.Properties
 
         public class Slab : ETABSProperty2D
         {
-            [SchemaInfo("Slab", "Create an ETABS Slab", "Structural", "Properties")]
+            [SchemaInfo("Slab", "Create an ETABS Slab", "ETABS", "Properties")]
             public Slab(string PropertyName,ShellType shell, Material ConcreteMaterial,double Thickness )
             {
 
@@ -114,7 +114,7 @@ namespace Objects.Structural.ETABS.Properties
 
             public DeckFilled() { }
 
-            [SchemaInfo("DeckFilled", "Create an ETABS Filled Deck", "Structural", "Properties")]
+            [SchemaInfo("DeckFilled", "Create an ETABS Filled Deck", "ETABS", "Properties")]
             public DeckFilled(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
             {
                 type2D = ETABSPropertyType2D.Deck;
@@ -151,8 +151,8 @@ namespace Objects.Structural.ETABS.Properties
 
 
 
-            [SchemaInfo("DeckUnFilled", "Create an ETABS UnFilled Deck", "Structural", "Properties")]
-            public DeckUnFilled(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
+            [SchemaInfo("DeckUnFilled", "Create an ETABS UnFilled Deck", "ETABS", "Properties")]
+            public DeckUnFilled(string PropertyName, ShellType shell, Material Material, double DeckThickness,double slabDepth, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
             {
                 type2D = ETABSPropertyType2D.Deck;
                 slabType = SlabType.Null;
@@ -160,7 +160,7 @@ namespace Objects.Structural.ETABS.Properties
 
                 name = PropertyName;
                 shellType = shell;
-                material = ConcreteMaterial;
+                material = Material;
                 thickness = DeckThickness;
 
                 SlabDepth = slabDepth;
@@ -186,6 +186,7 @@ namespace Objects.Structural.ETABS.Properties
             public double ShearThickness { get; set; }
             public double UnitWeight { get; set; }
 
+            [SchemaInfo("DeckUnFilled", "Create an ETABS UnFilled Deck", "ETABS", "2DProperties")]
             public DeckSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt, double shearThickness, double unitWeight)
             {
                 type2D = ETABSPropertyType2D.Deck;
