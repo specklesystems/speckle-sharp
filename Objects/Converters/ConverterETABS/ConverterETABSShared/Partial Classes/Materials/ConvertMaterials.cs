@@ -42,7 +42,7 @@ namespace Objects.Converter.ETABS
             string materialName = material.name;
 
             //Material Problem 
-            if(material.designCode != null)
+            if (material.designCode != null)
             {
                 Model.PropMaterial.AddMaterial(ref materialName, eMaterialType, material.designCode, material.codeYear, material.grade);
                 Model.PropMaterial.ChangeName(materialName, material.name);
@@ -51,7 +51,6 @@ namespace Objects.Converter.ETABS
             {
                 Model.PropMaterial.SetMaterial(material.name, eMaterialType);
             }
-           
             return material.name;
         }
 

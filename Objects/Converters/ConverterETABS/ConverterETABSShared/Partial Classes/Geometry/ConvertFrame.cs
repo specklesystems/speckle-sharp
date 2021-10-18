@@ -18,6 +18,10 @@ namespace Objects.Converter.ETABS
             string[] properties = null;
             int number = 0;
             Model.PropFrame.GetNameList(ref number, ref properties);
+            if (!properties.Contains(element1D.property.name))
+            {
+                Property1DToNative(element1D.property);
+            }
             if (baseline != null)
             {
                 Point end1node = baseline.start;

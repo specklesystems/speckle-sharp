@@ -5,6 +5,7 @@ using ETABSv1;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
+using System.Linq;
 
 
 namespace Objects.Converter.ETABS
@@ -13,6 +14,13 @@ namespace Objects.Converter.ETABS
     {
         public object Property1DToNative(Property1D property1D)
         {
+            int numbMaterial = 0;
+            string[] materials = null;
+            Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
+            if (!materials.Contains(property1D.material.name)) ;
+            {
+                MaterialToNative(property1D.material);
+            }
             var catalogue = new SectionProfile.Catalogue();
             if (property1D.profile.GetType().Equals(catalogue.GetType()))
             {
@@ -23,17 +31,36 @@ namespace Objects.Converter.ETABS
             var rectangle = new SectionProfile.Rectangular();
             if (property1D.profile.GetType().Equals(rectangle.GetType()))
             {
-                SectionProfile.Rectangular sectionProfile = (SectionProfile.Rectangular)property1D.profile;
-                Model.PropFrame.SetRectangle(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width);
-                return property1D.name;
+                if(property1D.material.type == Structural.MaterialType.Concrete)
+                {
+                    SectionProfile.Rectangular sectionProfile = (SectionProfile.Rectangular)property1D.profile;
+                    Model.PropFrame.SetRectangle(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width);
+                    return property1D.name;
+                }
+                else
+                {
+                    SectionProfile.Rectangular sectionProfile = (SectionProfile.Rectangular)property1D.profile;
+                    Model.PropFrame.SetTube(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness); 
+                    return property1D.name;
+                }
+
             }
 
             var circular = new SectionProfile.Circular();
             if (property1D.profile.GetType().Equals(circular.GetType()))
             {
-                SectionProfile.Circular sectionProfile = (SectionProfile.Circular)property1D.profile;
-                Model.PropFrame.SetCircle(property1D.name, property1D.material.name, sectionProfile.radius * 2);
-                return property1D.name;
+                if(property1D.material.type == Structural.MaterialType.Concrete)
+                {
+                    SectionProfile.Circular sectionProfile = (SectionProfile.Circular)property1D.profile;
+                    Model.PropFrame.SetCircle(property1D.name, property1D.material.name, sectionProfile.radius * 2);
+                    return property1D.name;
+                }
+                else
+                {
+                    SectionProfile.Circular sectionProfile = (SectionProfile.Circular)property1D.profile;
+                    Model.PropFrame.SetPipe(property1D.name, property1D.material.name, sectionProfile.radius * 2, sectionProfile.wallThickness);
+                    return property1D.name;
+                }
             }
 
             var T = new SectionProfile.Tee();
@@ -41,6 +68,22 @@ namespace Objects.Converter.ETABS
             {
                 SectionProfile.Tee sectionProfile = (SectionProfile.Tee)property1D.profile;
                 Model.PropFrame.SetConcreteTee(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness, sectionProfile.webThickness, false);
+                return property1D.name;
+            }
+
+            var I = new SectionProfile.ISection();
+            if(property1D.profile.GetType().Equals(I.GetType()))
+            {
+                SectionProfile.ISection sectionProfile = (SectionProfile.ISection)property1D.profile;
+                Model.PropFrame.SetISection(property1D.name, property1D.material.name,sectionProfile.depth,sectionProfile.width,sectionProfile.flangeThickness,sectionProfile.webThickness,sectionProfile.width,sectionProfile.flangeThickness);
+                return property1D.name;
+            }   
+
+            var Channel = new SectionProfile.Channel();
+            if (property1D.profile.GetType().Equals(Channel.GetType()))
+            {
+                SectionProfile.Channel sectionProfile = (SectionProfile.Channel)property1D.profile;
+                Model.PropFrame.SetChannel(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness);
                 return property1D.name;
             }
 
