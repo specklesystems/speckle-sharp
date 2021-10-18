@@ -166,7 +166,7 @@ namespace ConverterGSATests
       Assert.Null(gsaConvertedEls[1].ParentIndex);
     }
 
-    [Fact (Skip = "Not implemented yet!")]
+    [Fact]
     public void MembToNative()
     {
       //Create native objects
@@ -193,7 +193,49 @@ namespace ConverterGSATests
       //Checks
       var gsaConvertedMembers = gsaConvertedRecords.FindAll(r => r is GsaMemb).Select(r => (GsaMemb)r).ToList();
       var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaMemb x) => x.Angle)); //example has 0 which is converted to null
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaMemb x) => x.End1OffsetX));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaMemb x) => x.End2OffsetX));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaMemb x) => x.OffsetY));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaMemb x) => x.OffsetZ));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaMemb x) => x.Offset2dZ));
       var result = compareLogic.Compare(gsaMembers, gsaConvertedMembers);
+      Assert.Empty(result.Differences);
+      Assert.Null(gsaConvertedMembers[0].Angle);
+      Assert.Null(gsaConvertedMembers[0].End1OffsetX);
+      Assert.Null(gsaConvertedMembers[0].End2OffsetX);
+      Assert.Null(gsaConvertedMembers[0].OffsetY);
+      Assert.Null(gsaConvertedMembers[0].OffsetZ);
+      Assert.Null(gsaConvertedMembers[1].Angle);
+      Assert.Null(gsaConvertedMembers[1].Offset2dZ);
+    }
+
+    [Fact]
+    public void AssemblyToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(5, "node 1", "node 2", "node 3", "node 4", "node 5"));
+      gsaRecords.Add(GsaProp2dExample("section 1"));
+      gsaRecords.AddRange(GsaElement2dExamples(2, "element 1", "element 2"));
+      var gsaAssemblies = GsaAssemblyExamples(2, "assembly 1", "assembly 2");
+      gsaRecords.AddRange(gsaAssemblies);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAAssembly).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedAssemblies = gsaConvertedRecords.FindAll(r => r is GsaAssembly).Select(r => (GsaAssembly)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaAssemblies, gsaConvertedAssemblies);
       Assert.Empty(result.Differences);
     }
     #endregion
@@ -299,10 +341,13 @@ namespace ConverterGSATests
       var gsaConvertedCombinations = gsaConvertedRecords.FindAll(r => r is GsaCombination).Select(r => (GsaCombination)r).ToList();
       var compareLogic = new CompareLogic();
       compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaCombination x) => x.Desc));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaCombination x) => x.Bridge));
       var result = compareLogic.Compare(gsaCombinations, gsaConvertedCombinations);
       Assert.Empty(result.Differences);
       Assert.Equal(gsaConvertedCombinations[0].Desc.RemoveWhitespace(), gsaConvertedCombinations[0].Desc);
+      Assert.False(gsaConvertedCombinations[0].Bridge);
       Assert.Equal(gsaConvertedCombinations[1].Desc.RemoveWhitespace(), gsaConvertedCombinations[1].Desc);
+      Assert.False(gsaConvertedCombinations[1].Bridge);
     }
 
     [Fact]
