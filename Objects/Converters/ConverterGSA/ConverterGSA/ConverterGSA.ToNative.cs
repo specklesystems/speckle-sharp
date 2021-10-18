@@ -71,6 +71,8 @@ namespace ConverterGSA
         { typeof(GSAProperty1D), GsaProperty1dToNative },
         { typeof(Property2D), Property2dToNative },
         { typeof(GSAProperty2D), GsaProperty2dToNative },
+        { typeof(PropertySpring), PropertySpringToNative },
+        { typeof(PropertyMass), PropertyMassToNative },
         // Bridge
         { typeof(GSAInfluenceNode), InfNodeToNative},
         { typeof(GSAInfluenceBeam), InfBeamToNative},
@@ -1320,6 +1322,131 @@ namespace ConverterGSA
       }
 
       return new List<GsaRecord>() { gsaProp2d };
+    }
+
+    private List<GsaRecord> PropertyMassToNative(Base speckleObject)
+    {
+      var specklePropertyMass = (PropertyMass)speckleObject;
+      var gsaPropMass = new GsaPropMass()
+      {
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(specklePropertyMass.applicationId),
+        Name = specklePropertyMass.name,
+        ApplicationId = specklePropertyMass.applicationId,
+        Mass = specklePropertyMass.mass,
+        Ixx = specklePropertyMass.inertiaXX,
+        Iyy = specklePropertyMass.inertiaYY,
+        Izz = specklePropertyMass.inertiaZZ,
+        Ixy = specklePropertyMass.inertiaXY,
+        Iyz = specklePropertyMass.inertiaYZ,
+        Izx = specklePropertyMass.inertiaZX
+      };
+      gsaPropMass.Mod = (specklePropertyMass.massModified) ? MassModification.Modified : MassModification.Defined;
+      gsaPropMass.ModXPercentage = specklePropertyMass.massModifierX;
+      gsaPropMass.ModYPercentage = specklePropertyMass.massModifierY;
+      gsaPropMass.ModZPercentage = specklePropertyMass.massModifierZ;
+
+      return new List<GsaRecord>() { gsaPropMass };
+    }
+
+    private List<GsaRecord> PropertySpringToNative(Base speckleObject)
+    {
+      var fns = new Dictionary<PropertyTypeSpring, Func<PropertySpring, GsaPropSpr, bool>>
+      { { PropertyTypeSpring.Axial, SetPropertySpringAxial },
+        { PropertyTypeSpring.Torsional, SetPropertySpringTorsional },
+        { PropertyTypeSpring.CompressionOnly, SetPropertySpringCompression },
+        { PropertyTypeSpring.TensionOnly, SetPropertySpringTension },
+        { PropertyTypeSpring.LockUp, SetPropertySpringLockup },
+        { PropertyTypeSpring.Gap, SetPropertySpringGap },
+        { PropertyTypeSpring.Friction, SetPropertySpringFriction },
+        { PropertyTypeSpring.General, SetPropertySpringGeneral }
+        //CONNECT not yet supported
+        //MATRIX not yet supported
+      };
+
+      var specklePropertySpring = (PropertySpring)speckleObject;
+      var gsaPropSpr = new GsaPropSpr()
+      {
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaPropSpr>(specklePropertySpring.applicationId),
+        Name = specklePropertySpring.name,
+        ApplicationId = specklePropertySpring.applicationId,
+        DampingRatio = specklePropertySpring.dampingRatio
+      };
+      if (fns.ContainsKey(specklePropertySpring.springType))
+      {
+        gsaPropSpr.Stiffnesses = new Dictionary<GwaAxisDirection6, double>();
+        fns[specklePropertySpring.springType](specklePropertySpring, gsaPropSpr);
+      }
+      else
+      {
+        ConversionErrors.Add(new Exception("PropertySpring: spring type (" + specklePropertySpring.springType.ToString() + ") is not currently supported"));
+      }
+
+      return new List<GsaRecord>() { gsaPropSpr };
+    }
+
+    private bool SetPropertySpringAxial(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Axial;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      return true;
+    }
+
+    private bool SetPropertySpringTorsional(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Torsional;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.XX, specklePropertySpring.stiffnessXX);
+      return true;
+    }
+
+    private bool SetPropertySpringCompression(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Compression;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      return true;
+    }
+
+    private bool SetPropertySpringTension(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Tension;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      return true;
+    }
+
+    private bool SetPropertySpringLockup(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Lockup;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      return true;
+    }
+
+    private bool SetPropertySpringGap(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Gap;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      return true;
+    }
+
+    private bool SetPropertySpringFriction(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.Friction;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.Y, specklePropertySpring.stiffnessY);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.Z, specklePropertySpring.stiffnessZ);
+      gsaPropSpr.FrictionCoeff = specklePropertySpring.frictionCoefficient;
+      return true;
+    }
+
+    private bool SetPropertySpringGeneral(PropertySpring specklePropertySpring, GsaPropSpr gsaPropSpr)
+    {
+      gsaPropSpr.PropertyType = StructuralSpringPropertyType.General;
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.X, specklePropertySpring.stiffnessX);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.Y, specklePropertySpring.stiffnessY);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.Z, specklePropertySpring.stiffnessZ);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.XX, specklePropertySpring.stiffnessXX);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.YY, specklePropertySpring.stiffnessYY);
+      gsaPropSpr.Stiffnesses.Add(GwaAxisDirection6.ZZ, specklePropertySpring.stiffnessZZ);
+      return true;
     }
 
     #endregion

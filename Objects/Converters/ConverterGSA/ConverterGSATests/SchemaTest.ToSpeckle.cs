@@ -4323,7 +4323,7 @@ namespace ConverterGSATests
         Name = "1",
         Colour = Colour.NO_RGB,
         PropertyType = StructuralSpringPropertyType.General,
-        Stiffnesses = new Dictionary<Speckle.GSA.API.GwaSchema.AxisDirection6, double>
+        Stiffnesses = new Dictionary<GwaAxisDirection6, double>
         {
           { GwaAxisDirection6.X, 10 },
           { GwaAxisDirection6.Y, 11 },
