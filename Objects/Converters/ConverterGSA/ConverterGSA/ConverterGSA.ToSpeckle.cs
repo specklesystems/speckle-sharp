@@ -133,15 +133,16 @@ namespace ConverterGSA
       if (gsaAssembly.OrientNode.IsIndex()) speckleAssembly.orientationNode = (GSANode)GetNodeFromIndex(gsaAssembly.OrientNode.Value);
       if (gsaAssembly.IntTopo.HasValues())
       {
-        speckleAssembly.entities.AddRange(gsaAssembly.IntTopo.Select(i => GetNodeFromIndex(i)).ToList());
-        AddToMeaningfulNodeIndices(speckleAssembly.entities.Select(e => e.applicationId));
+        var intTopo = gsaAssembly.IntTopo.Select(i => GetNodeFromIndex(i)).ToList();
+        speckleAssembly.entities.AddRange(intTopo);
+        AddToMeaningfulNodeIndices(intTopo.Select(n => n.applicationId));
       }
 
-      if (gsaAssembly.Type == GSAEntity.MEMBER) 
+      if (gsaAssembly.Type == GSAEntity.MEMBER)
       {
         return new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { speckleAssembly });
       }
-      else if (gsaAssembly.Type == GSAEntity.ELEMENT && layer == GSALayer.Both) 
+      else if (gsaAssembly.Type == GSAEntity.ELEMENT && layer == GSALayer.Both)
       {
         return new ToSpeckleResult(analysisLayerOnlyObjects: new List<Base>() { speckleAssembly });
       }
@@ -497,7 +498,7 @@ namespace ConverterGSA
         speckleMember1d["Areas"] = speckleAreas;
         AddToMeaningfulNodeIndices(speckleAreas.SelectMany(p => p.Select(p2 => p2.applicationId)), GSALayer.Design);
       }
-      if (gsaMemb.LimitingTemperature.HasValue) speckleMember1d["LimitingTemperature"] = gsaMemb.LimitingTemperature.Value;
+      if (gsaMemb.LimitingTemperature.HasValue) speckleMember1d["LimitingTemperature"] = gsaMemb.LimitingTemperature;
       if (gsaMemb.LoadHeight.HasValue) speckleMember1d["LoadHeight"] = gsaMemb.LoadHeight;
       if (gsaMemb.EffectiveLengthYY.HasValue) speckleMember1d["EffectiveLengthYY"] = gsaMemb.EffectiveLengthYY;
       if (gsaMemb.PercentageYY.HasValue) speckleMember1d["PercentageYY"] = gsaMemb.PercentageYY;
@@ -505,8 +506,14 @@ namespace ConverterGSA
       if (gsaMemb.PercentageZZ.HasValue) speckleMember1d["PercentageZZ"] = gsaMemb.PercentageZZ;
       if (gsaMemb.EffectiveLengthLateralTorsional.HasValue) speckleMember1d["EffectiveLengthLateralTorsional"] = gsaMemb.EffectiveLengthLateralTorsional;
       if (gsaMemb.FractionLateralTorsional.HasValue) speckleMember1d["FractionLateralTorsional"] = gsaMemb.FractionLateralTorsional;
-      if (gsaMemb.SpanRestraints != null) speckleMember1d["SpanRestraints"] = gsaMemb.SpanRestraints.Select(s => s.ToString()).ToList();
-      if (gsaMemb.PointRestraints != null) speckleMember1d["PointRestraints"] = gsaMemb.PointRestraints.Select(p => p.ToString()).ToList();
+      if (gsaMemb.SpanRestraints != null)
+      {
+        speckleMember1d["SpanRestraints"] = gsaMemb.SpanRestraints.Select(s => new RestraintDefinition() { All = s.All, Index = s.Index, Restraint = s.Restraint }).ToList();
+      }
+      if (gsaMemb.PointRestraints != null)
+      {
+        speckleMember1d["PointRestraints"] = gsaMemb.PointRestraints.Select(s => new RestraintDefinition() { All = s.All, Index = s.Index, Restraint = s.Restraint }).ToList();
+      }
 
       return speckleMember1d;
 
