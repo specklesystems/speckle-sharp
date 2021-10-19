@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Spatial.Euclidean;
 
-namespace SpeckleStructuralClasses.PolygonMesher
+namespace StructuralUtilities.PolygonMesher
 {
   internal class ClosedLoop
   {

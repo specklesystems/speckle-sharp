@@ -5,7 +5,7 @@ using ETABSv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
 using Objects.Structural.ETABS.Properties;
-using SpeckleStructuralClasses.PolygonMesher;
+using StructuralUtilities.PolygonMesher;
 using System.Linq;
 
 namespace Objects.Converter.ETABS

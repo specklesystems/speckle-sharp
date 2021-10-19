@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using MathNet.Numerics.Interpolation;
 using MathNet.Spatial.Euclidean;
 
-namespace SpeckleStructuralClasses.PolygonMesher
+namespace StructuralUtilities.PolygonMesher
 {
   public class PolygonMesher
   {
     private CoordinateSystem CoordinateTranslation = null;
-    
+
     private readonly ClosedLoop ExternalLoop = new ClosedLoop();
     private readonly List<ClosedLoop> Openings = new List<ClosedLoop>();
 
@@ -17,6 +19,8 @@ namespace SpeckleStructuralClasses.PolygonMesher
     private readonly List<TriangleIndexSet> Triangles = new List<TriangleIndexSet>();
 
     private readonly double tolerance = 0.001;
+
+    public static double PointComparisonEpsilon = 0.0001;
 
     public double[] Coordinates
     {

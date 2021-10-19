@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SpeckleStructuralClasses.PolygonMesher
+namespace StructuralUtilities.PolygonMesher
 {
   internal class IndexPair : IndexSet
   {

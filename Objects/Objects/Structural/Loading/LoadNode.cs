@@ -10,6 +10,7 @@ namespace Objects.Structural.Loading
     public class LoadNode : Load
     {
         [DetachProperty]
+        [Chunkable(5000)]
         public List<Node> nodes {get; set;}
 
         [DetachProperty]
