@@ -192,7 +192,7 @@ namespace ConverterGSATests
       Assert.Equal("node 4", speckleElement2D[0].topology[3].applicationId);
       p = speckleElement2D[0].topology.Select(n => n.basePoint).ToList();
       v = new List<double>() { p[0].x, p[0].y, p[0].z, p[1].x, p[1].y, p[1].z, p[2].x, p[2].y, p[2].z, p[3].x, p[3].y, p[3].z };
-      f = new List<int>() { 1, 1, 2, 3, 4 };
+      f = new List<int>() { 1, 0, 1, 2, 3 };
       Assert.Equal(v, speckleElement2D[0].displayMesh.vertices);
       Assert.Equal(f, speckleElement2D[0].displayMesh.faces);
       Assert.Equal(gsaEls[0].Colour.ToString(), speckleElement2D[0].colour);
@@ -217,7 +217,7 @@ namespace ConverterGSATests
       Assert.Equal("node 5", speckleElement2D[1].topology[2].applicationId);
       p = speckleElement2D[1].topology.Select(n => n.basePoint).ToList();
       v = new List<double>() { p[0].x, p[0].y, p[0].z, p[1].x, p[1].y, p[1].z, p[2].x, p[2].y, p[2].z };
-      f = new List<int>() { 0, 1, 2, 3 };
+      f = new List<int>() { 0, 0, 1, 2 };
       Assert.Equal(v, speckleElement2D[1].displayMesh.vertices);
       Assert.Equal(f, speckleElement2D[1].displayMesh.faces);
       Assert.Equal(gsaEls[1].Colour.ToString(), speckleElement2D[1].colour);
@@ -1049,6 +1049,7 @@ namespace ConverterGSATests
 
       foreach (var m in speckleModels)
       {
+        var isAnalysis = m.layerDescription.ToLower().Contains("analysis");
         Assert.NotNull(m);
         Assert.NotEmpty(m.loads);
         Assert.Contains(m.loads, o => o is GSALoadBeam);
@@ -1058,8 +1059,11 @@ namespace ConverterGSATests
         Assert.Equal("load beam 1", speckleBeamLoads[0].applicationId);
         Assert.Equal("1", speckleBeamLoads[0].name);
         Assert.Equal("load case 1", speckleBeamLoads[0].loadCase.applicationId);
-        Assert.Single(speckleBeamLoads[0].elements);
-        Assert.Equal("element 1", speckleBeamLoads[0].elements[0].applicationId);
+        if (isAnalysis)
+        {
+          Assert.Single(speckleBeamLoads[0].elements);
+          Assert.Equal("element 1", speckleBeamLoads[0].elements[0].applicationId);
+        }
         Assert.Equal(BeamLoadType.Point, speckleBeamLoads[0].loadType);
         Assert.Equal(LoadDirection.Z, speckleBeamLoads[0].direction);
         Assert.Null(speckleBeamLoads[0].loadAxis);
@@ -1075,8 +1079,11 @@ namespace ConverterGSATests
         Assert.Equal("load beam 2", speckleBeamLoads[1].applicationId);
         Assert.Equal("2", speckleBeamLoads[1].name);
         Assert.Equal("load case 1", speckleBeamLoads[1].loadCase.applicationId);
-        Assert.Single(speckleBeamLoads[1].elements);
-        Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
+        if (isAnalysis)
+        {
+          Assert.Single(speckleBeamLoads[1].elements);
+          Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
+        }
         Assert.Equal(BeamLoadType.Uniform, speckleBeamLoads[1].loadType);
         Assert.Equal(LoadDirection.X, speckleBeamLoads[1].direction);
         Assert.Equal("axis 1", speckleBeamLoads[1].loadAxis.applicationId);
@@ -1091,8 +1098,11 @@ namespace ConverterGSATests
         Assert.Equal("load beam 3", speckleBeamLoads[2].applicationId);
         Assert.Equal("3", speckleBeamLoads[2].name);
         Assert.Equal("load case 1", speckleBeamLoads[2].loadCase.applicationId);
-        Assert.Single(speckleBeamLoads[2].elements);
-        Assert.Equal("element 1", speckleBeamLoads[2].elements[0].applicationId);
+        if (isAnalysis)
+        {
+          Assert.Single(speckleBeamLoads[2].elements);
+          Assert.Equal("element 1", speckleBeamLoads[2].elements[0].applicationId);
+        }
         Assert.Equal(BeamLoadType.Linear, speckleBeamLoads[2].loadType);
         Assert.Equal(LoadDirection.Y, speckleBeamLoads[2].direction);
         Assert.Null(speckleBeamLoads[2].loadAxis);
@@ -3816,9 +3826,9 @@ namespace ConverterGSATests
           Uls = new GsaMatCurveParam()
           {
             Model = new List<MatCurveParamType>() { MatCurveParamType.RECTANGLE, MatCurveParamType.NO_TENSION },
-            StrainElasticCompression = 0.00068931,
+            StrainElasticCompression = 0.00039,
             StrainElasticTension = 0,
-            StrainPlasticCompression = 0.00069069,
+            StrainPlasticCompression = 0.00039,
             StrainPlasticTension = 0,
             StrainFailureCompression = 0.003,
             StrainFailureTension = 1,
@@ -3847,11 +3857,11 @@ namespace ConverterGSATests
         Fcdc = 16000000,
         Fcdt = 3794733.192,
         Fcfib = 2276839.915,
-        EmEs = 0,
+        EmEs = null,
         N = 2,
         Emod = 1,
         EpsPeak = 0.003,
-        EpsMax = 0.00069,
+        EpsMax = 0.00039,
         EpsU = 0.003,
         EpsAx = 0.0025,
         EpsTran = 0.002,
@@ -3860,12 +3870,12 @@ namespace ConverterGSATests
         Agg = 0.02,
         XdMin = 0,
         XdMax = 1,
-        Beta = 0.77,
-        Shrink = 0,
-        Confine = 0,
-        Fcc = 0,
-        EpsPlasC = 0,
-        EpsUC = 0
+        Beta = 0.87,
+        Shrink = null,
+        Confine = null,
+        Fcc = null,
+        EpsPlasC = null,
+        EpsUC = null
       };
     }
 
@@ -3915,7 +3925,7 @@ namespace ConverterGSATests
           Eps = 0.05,
           Uls = new GsaMatCurveParam()
           {
-            Model = new List<MatCurveParamType>() { MatCurveParamType.UNDEF },
+            Model = new List<MatCurveParamType>() { MatCurveParamType.ELAS_PLAS },
             StrainElasticCompression = 0.0018,
             StrainElasticTension = 0.0018,
             StrainPlasticCompression = 0.0018,
@@ -3959,14 +3969,10 @@ namespace ConverterGSATests
         Colour = Colour.NO_RGB,
         Type = Property2dType.Shell,
         AxisRefType = AxisRefType.Global,
-        AnalysisMaterialIndex = 0,
         MatType = Property2dMaterialType.Steel,
         GradeIndex = 1,
-        DesignIndex = 0,
         Thickness = 0.01,
         RefPt = Property2dRefSurface.Centroid,
-        RefZ = 0,
-        Mass = 0,
         BendingStiffnessPercentage = 1,
         ShearStiffnessPercentage = 1,
         InPlaneStiffnessPercentage = 1,
@@ -4327,7 +4333,7 @@ namespace ConverterGSATests
         Name = "1",
         Colour = Colour.NO_RGB,
         PropertyType = StructuralSpringPropertyType.General,
-        Stiffnesses = new Dictionary<Speckle.GSA.API.GwaSchema.AxisDirection6, double>
+        Stiffnesses = new Dictionary<GwaAxisDirection6, double>
         {
           { GwaAxisDirection6.X, 10 },
           { GwaAxisDirection6.Y, 11 },

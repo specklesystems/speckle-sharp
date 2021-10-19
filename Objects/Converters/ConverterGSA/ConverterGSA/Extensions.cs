@@ -242,6 +242,20 @@ namespace ConverterGSA
       }
     }
 
+    public static Property2dType ToNative(this PropertyType2D propertyType)
+    {
+      switch (propertyType)
+      {
+        case PropertyType2D.Curved : return Property2dType.Curved;
+        case PropertyType2D.Fabric : return Property2dType.Fabric;
+        case PropertyType2D.Load:   return Property2dType.Load; 
+        case PropertyType2D.Plate:  return Property2dType.Plate;
+        case PropertyType2D.Shell:  return Property2dType.Shell;
+        case PropertyType2D.Stress : return Property2dType.Stress;
+        default: throw new Exception(propertyType.ToString() + " can not be converted to a valid native 2D property type.");
+      }
+    }
+
     public static GridSurfaceSpanType ToSpeckle(this GridSurfaceSpan gsaGridSurfaceSpan)
     {
       switch (gsaGridSurfaceSpan)
@@ -455,6 +469,16 @@ namespace ConverterGSA
       }
     }
 
+    public static Property2dRefSurface ToNative(this ReferenceSurface refSurface)
+    {
+      switch (refSurface)
+      {
+        case ReferenceSurface.Bottom: return Property2dRefSurface.BottomCentre;
+        case ReferenceSurface.Top: return Property2dRefSurface.TopCentre;
+        default: return Property2dRefSurface.Centroid;
+      }
+    }
+
     public static LinkageType ToSpeckle(this RigidConstraintType gsaType)
     {
       switch (gsaType)
@@ -560,6 +584,25 @@ namespace ConverterGSA
       }
     }
 
+    public static GwaMemberType ToNativeMember(this ElementType1D speckleType)
+    {
+      switch (speckleType)
+      {
+        case ElementType1D.Beam:
+        case ElementType1D.Bar:
+        case ElementType1D.Cable:
+        case ElementType1D.Damper:
+        case ElementType1D.Link:
+        case ElementType1D.Rod:
+        case ElementType1D.Spacer:
+        case ElementType1D.Spring:
+        case ElementType1D.Strut: 
+        case ElementType1D.Tie: 
+          return GwaMemberType.Generic1d;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
     public static ElementType ToNative(this ElementType2D speckleType)
     {
       switch (speckleType)
@@ -568,6 +611,19 @@ namespace ConverterGSA
         case ElementType2D.Triangle6: return ElementType.Triangle6;
         case ElementType2D.Quad8: return ElementType.Quad8;
         case ElementType2D.Quad4: return ElementType.Quad4;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static GwaMemberType ToNativeMember(this ElementType2D speckleType)
+    {
+      switch (speckleType)
+      {
+        case ElementType2D.Triangle3:
+        case ElementType2D.Triangle6:
+        case ElementType2D.Quad4:
+        case ElementType2D.Quad8:
+          return GwaMemberType.Generic2d;
         default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
       }
     }
@@ -600,6 +656,17 @@ namespace ConverterGSA
       {
         case LoadAxisType.Global: return AxisRefType.Global;
         case LoadAxisType.Local: return AxisRefType.Local;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
+    public static LoadBeamAxisRefType ToNativeBeamAxisRefType(this LoadAxisType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadAxisType.Global: return LoadBeamAxisRefType.Global;
+        case LoadAxisType.Local: return LoadBeamAxisRefType.Local;
+        case LoadAxisType.DeformedLocal:  return LoadBeamAxisRefType.Local;
         default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
       }
     }
@@ -731,56 +798,39 @@ namespace ConverterGSA
     #endregion
 
     #region ResolveIndices
-    public static List<int> GetElementIndicies(this List<Base> speckleElements)
+    public static List<int> GetIndicies<T>(this List<Base> speckleObject)
     {
+      if (speckleObject == null) return null;
       var gsaIndices = new List<int>();
-      foreach (var e in speckleElements)
+      foreach (var o in speckleObject)
       {
-        var index = Instance.GsaModel.Cache.LookupIndex<GsaEl>(e.applicationId);
+        var index = Instance.GsaModel.Cache.LookupIndex<T>(o.applicationId);
         if (index.HasValue) gsaIndices.Add(index.Value);
       }
       return (gsaIndices.Count() > 0) ? gsaIndices : null;
     }
-
-    public static List<int> GetMemberIndicies(this List<Base> speckleElements)
-    {
-      var gsaIndices = new List<int>();
-      foreach (var e in speckleElements)
-      {
-        var index = Instance.GsaModel.Cache.LookupIndex<GsaMemb>(e.applicationId);
-        if (index.HasValue) gsaIndices.Add(index.Value);
-      }
-      return (gsaIndices.Count() > 0) ? gsaIndices : null;
-    }
-
-    public static List<int> GetIndicies(this List<Node> speckleNodes)
-    {
-      var gsaIndices = new List<int>();
-      foreach (var e in speckleNodes)
-      {
-        var index = Instance.GsaModel.Cache.LookupIndex<GsaNode>(e.applicationId);
-        if (index.HasValue) gsaIndices.Add(index.Value);
-      }
-      return (gsaIndices.Count() > 0) ? gsaIndices : null;
-    }
-
-    public static int ResolveElementIndex(this Base speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaEl>(speckleObject.applicationId);
-    public static int ResolveMemberIndex(this Base speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMemb>(speckleObject.applicationId);
-    public static int ResolveIndex(this Node speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaNode>(speckleObject.applicationId);
-    public static int ResolveIndex(this Axis speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaAxis>(speckleObject.applicationId);
-    public static int ResolveIndex(this LoadCase speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadCase>(speckleObject.applicationId);
-    public static int ResolveIndex(this LoadCombination speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaCombination>(speckleObject.applicationId);
-    public static int ResolveIndex(this LoadFace speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dFace>(speckleObject.applicationId);
-    public static int ResolveIndex(this LoadNode speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadNode>(speckleObject.applicationId);
-    public static int ResolveIndex(this GSALoadThermal2d speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoad2dThermal>(speckleObject.applicationId);
-    public static int ResolveIndex(this LoadGravity speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaLoadGravity>(speckleObject.applicationId);
-    public static int ResolveIndex(this Steel speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMatSteel>(speckleObject.applicationId);
-    public static int ResolveIndex(this Concrete speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaMatConcrete>(speckleObject.applicationId);
-    public static int ResolveIndex(this Property1D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaSection>(speckleObject.applicationId);
-    public static int ResolveIndex(this Property2D speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaProp2d>(speckleObject.applicationId);
-    public static int ResolveIndex(this PropertyMass speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropMass>(speckleObject.applicationId);
-    public static int ResolveIndex(this PropertySpring speckleObject) => Instance.GsaModel.Cache.ResolveIndex<GsaPropSpr>(speckleObject.applicationId);
+    public static int? GetIndex<T>(this Base speckleObject) => (speckleObject == null) ? null : (int?)Instance.GsaModel.Cache.ResolveIndex<T>(speckleObject.applicationId);
     #endregion
+
+    public static T GetDynamicValue<T>(this Base speckleObject, string member)
+    {
+      var members = speckleObject.GetMembers();
+      if (members.ContainsKey(member) && speckleObject[member] is T)
+      {
+        return (T)speckleObject[member];
+      }
+      return default(T);
+    }
+
+    public static T GetDynamicEnum<T>(this Base speckleObject, string member) where T : struct
+    {
+      var members = speckleObject.GetMembers();
+      if (members.ContainsKey(member) && speckleObject[member] is string)
+      {
+        return Enum.TryParse(speckleObject[member] as string, true, out T v) ? v : default(T);
+      }
+      return default(T);
+    }
 
     public static List<double> Insert(this List<double> source, double item, int step)
     {

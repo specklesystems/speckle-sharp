@@ -133,15 +133,16 @@ namespace ConverterGSA
       if (gsaAssembly.OrientNode.IsIndex()) speckleAssembly.orientationNode = (GSANode)GetNodeFromIndex(gsaAssembly.OrientNode.Value);
       if (gsaAssembly.IntTopo.HasValues())
       {
-        speckleAssembly.entities.AddRange(gsaAssembly.IntTopo.Select(i => GetNodeFromIndex(i)).ToList());
-        AddToMeaningfulNodeIndices(speckleAssembly.entities.Select(e => e.applicationId));
+        var intTopo = gsaAssembly.IntTopo.Select(i => GetNodeFromIndex(i)).ToList();
+        speckleAssembly.entities.AddRange(intTopo);
+        AddToMeaningfulNodeIndices(intTopo.Select(n => n.applicationId));
       }
 
-      if (gsaAssembly.Type == GSAEntity.MEMBER) 
+      if (gsaAssembly.Type == GSAEntity.MEMBER)
       {
         return new ToSpeckleResult(designLayerOnlyObjects: new List<Base>() { speckleAssembly });
       }
-      else if (gsaAssembly.Type == GSAEntity.ELEMENT && layer == GSALayer.Both) 
+      else if (gsaAssembly.Type == GSAEntity.ELEMENT && layer == GSALayer.Both)
       {
         return new ToSpeckleResult(analysisLayerOnlyObjects: new List<Base>() { speckleAssembly });
       }
@@ -497,7 +498,7 @@ namespace ConverterGSA
         speckleMember1d["Areas"] = speckleAreas;
         AddToMeaningfulNodeIndices(speckleAreas.SelectMany(p => p.Select(p2 => p2.applicationId)), GSALayer.Design);
       }
-      if (gsaMemb.LimitingTemperature.HasValue) speckleMember1d["LimitingTemperature"] = gsaMemb.LimitingTemperature.Value;
+      if (gsaMemb.LimitingTemperature.HasValue) speckleMember1d["LimitingTemperature"] = gsaMemb.LimitingTemperature;
       if (gsaMemb.LoadHeight.HasValue) speckleMember1d["LoadHeight"] = gsaMemb.LoadHeight;
       if (gsaMemb.EffectiveLengthYY.HasValue) speckleMember1d["EffectiveLengthYY"] = gsaMemb.EffectiveLengthYY;
       if (gsaMemb.PercentageYY.HasValue) speckleMember1d["PercentageYY"] = gsaMemb.PercentageYY;
@@ -505,8 +506,14 @@ namespace ConverterGSA
       if (gsaMemb.PercentageZZ.HasValue) speckleMember1d["PercentageZZ"] = gsaMemb.PercentageZZ;
       if (gsaMemb.EffectiveLengthLateralTorsional.HasValue) speckleMember1d["EffectiveLengthLateralTorsional"] = gsaMemb.EffectiveLengthLateralTorsional;
       if (gsaMemb.FractionLateralTorsional.HasValue) speckleMember1d["FractionLateralTorsional"] = gsaMemb.FractionLateralTorsional;
-      if (gsaMemb.SpanRestraints != null) speckleMember1d["SpanRestraints"] = gsaMemb.SpanRestraints.Select(s => s.ToString()).ToList();
-      if (gsaMemb.PointRestraints != null) speckleMember1d["PointRestraints"] = gsaMemb.PointRestraints.Select(p => p.ToString()).ToList();
+      if (gsaMemb.SpanRestraints != null)
+      {
+        speckleMember1d["SpanRestraints"] = gsaMemb.SpanRestraints.Select(s => new RestraintDefinition() { All = s.All, Index = s.Index, Restraint = s.Restraint }).ToList();
+      }
+      if (gsaMemb.PointRestraints != null)
+      {
+        speckleMember1d["PointRestraints"] = gsaMemb.PointRestraints.Select(s => new RestraintDefinition() { All = s.All, Index = s.Index, Restraint = s.Restraint }).ToList();
+      }
 
       return speckleMember1d;
 
@@ -1331,7 +1338,7 @@ namespace ConverterGSA
       if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxCompressiveStrain = gsaConcrete.EpsU.Value;
       if (gsaConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaConcrete.Agg.Value;
       if (gsaConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaConcrete.Fcdt.Value;
-      if (gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
+      if (gsaConcrete.Mat.Sls != null && gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.elasticModulus = E;
@@ -1535,14 +1542,14 @@ namespace ConverterGSA
       //Dictionary of fns used to apply spring type specific properties. 
       //Functions will pass by reference specklePropertySpring and make the necessary changes to it
       var fns = new Dictionary<StructuralSpringPropertyType, Func<GsaPropSpr, PropertySpring, bool>>
-      { { StructuralSpringPropertyType.Axial, SetProprtySpringAxial },
+      { { StructuralSpringPropertyType.Axial, SetPropertySpringAxial },
         { StructuralSpringPropertyType.Torsional, SetPropertySpringTorsional },
-        { StructuralSpringPropertyType.Compression, SetProprtySpringCompression },
-        { StructuralSpringPropertyType.Tension, SetProprtySpringTension },
-        { StructuralSpringPropertyType.Lockup, SetProprtySpringLockup },
-        { StructuralSpringPropertyType.Gap, SetProprtySpringGap },
-        { StructuralSpringPropertyType.Friction, SetProprtySpringFriction },
-        { StructuralSpringPropertyType.General, SetProprtySpringGeneral }
+        { StructuralSpringPropertyType.Compression, SetPropertySpringCompression },
+        { StructuralSpringPropertyType.Tension, SetPropertySpringTension },
+        { StructuralSpringPropertyType.Lockup, SetPropertySpringLockup },
+        { StructuralSpringPropertyType.Gap, SetPropertySpringGap },
+        { StructuralSpringPropertyType.Friction, SetPropertySpringFriction },
+        { StructuralSpringPropertyType.General, SetPropertySpringGeneral }
         //CONNECT not yet supported
         //MATRIX not yet supported
       };
@@ -3383,7 +3390,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringAxial(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Axial;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3409,7 +3416,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringCompression(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.CompressionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3422,7 +3429,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringTension(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.TensionOnly;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3435,7 +3442,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringLockup(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       //Also for LOCKUP, there are positive and negative parameters, but these aren't supported yet
       specklePropertySpring.springType = PropertyTypeSpring.LockUp;
@@ -3451,7 +3458,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringGap(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Gap;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3464,7 +3471,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringFriction(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.Friction;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
@@ -3480,7 +3487,7 @@ namespace ConverterGSA
     /// <param name="gsaPropSpr">GsaPropSpr object containing the spring definition</param>
     /// <param name="specklePropertySpring">Speckle PropertySPring object to be updated</param>
     /// <returns></returns>
-    private bool SetProprtySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
+    private bool SetPropertySpringGeneral(GsaPropSpr gsaPropSpr, PropertySpring specklePropertySpring)
     {
       specklePropertySpring.springType = PropertyTypeSpring.General;
       specklePropertySpring.stiffnessX = gsaPropSpr.Stiffnesses[GwaAxisDirection6.X];
