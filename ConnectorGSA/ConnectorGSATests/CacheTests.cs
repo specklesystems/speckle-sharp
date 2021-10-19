@@ -27,7 +27,7 @@ namespace ConnectorGSATests
       {
         proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-        Assert.True(proxy.GetGwaData(out var records));
+        Assert.True(proxy.GetGwaData(Instance.GsaModel.StreamLayer, out var records));
 
         for (int i = 0; i < records.Count(); i++)
         {

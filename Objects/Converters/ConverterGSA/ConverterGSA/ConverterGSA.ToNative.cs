@@ -383,7 +383,7 @@ namespace ConverterGSA
 
     private T LoadBeamBaseToNative<T>(LoadBeam speckleLoad) where T : GsaLoadBeam
     {
-      var gsaLoad = (T)Activator.CreateInstance(typeof(T), new object());
+      var gsaLoad = (T)Activator.CreateInstance(typeof(T));
       gsaLoad.ApplicationId = speckleLoad.applicationId;
       gsaLoad.Index = Instance.GsaModel.Cache.ResolveIndex<T>(speckleLoad.applicationId);
       gsaLoad.Name = speckleLoad.name;
@@ -392,13 +392,28 @@ namespace ConverterGSA
       gsaLoad.LoadDirection = speckleLoad.direction.ToNative();
       if (speckleLoad.elements != null)
       {
-        gsaLoad.ElementIndices = speckleLoad.elements.GetElementIndicies();
-        gsaLoad.MemberIndices = speckleLoad.elements.GetMemberIndicies();
+        var elementIndices = speckleLoad.elements.GetElementIndicies();
+        var memberIndices = speckleLoad.elements.GetMemberIndicies();
+        if (elementIndices != null)
+        {
+          gsaLoad.ElementIndices = elementIndices;
+        }
+        if (memberIndices != null)
+        {
+          gsaLoad.MemberIndices = memberIndices;
+        }
       }
-      if (GetLoadBeamAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+      if (speckleLoad.loadAxis == null)
       {
-        gsaLoad.AxisRefType = gsaAxisRefType;
-        gsaLoad.AxisIndex = gsaAxisIndex;
+        gsaLoad.AxisRefType = speckleLoad.loadAxisType.ToNativeBeamAxisRefType();
+      }
+      else
+      {
+        if (GetLoadBeamAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+        {
+          gsaLoad.AxisRefType = gsaAxisRefType;
+          gsaLoad.AxisIndex = gsaAxisIndex;
+        }
       }
       return gsaLoad;
     }

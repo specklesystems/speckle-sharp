@@ -628,6 +628,17 @@ namespace ConverterGSA
       }
     }
 
+    public static LoadBeamAxisRefType ToNativeBeamAxisRefType(this LoadAxisType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadAxisType.Global: return LoadBeamAxisRefType.Global;
+        case LoadAxisType.Local: return LoadBeamAxisRefType.Local;
+        case LoadAxisType.DeformedLocal:  return LoadBeamAxisRefType.Local;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
     public static LoadCategory LoadCategoryToNative(this string category)
     {
       switch(category.ToLowerInvariant())

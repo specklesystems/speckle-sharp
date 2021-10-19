@@ -63,6 +63,25 @@ namespace Speckle.ConnectorGSA.Proxy
       }
     }
 
+    public static void UpsertList<T>(this IList<T> l, T value)
+    {
+      if (!l.Contains(value))
+      {
+        l.Add(value);
+      }
+    }
+
+    public static void UpsertList<T>(this IList<T> l, IEnumerable<T> values)
+    {
+      foreach (var v in values)
+      {
+        if (!l.Contains(v))
+        {
+          l.Add(v);
+        }
+      }
+    }
+
     public static void UpsertDictionary<T,U>(this Dictionary<T, HashSet<U>> d, T key, U value)
     {
       if (!d.ContainsKey(key))

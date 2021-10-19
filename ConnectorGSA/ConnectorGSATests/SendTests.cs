@@ -1,5 +1,9 @@
 ﻿using ConnectorGSA;
 using Objects.Structural.Geometry;
+using Objects.Structural.GSA.Geometry;
+using Objects.Structural.GSA.Loading;
+using Objects.Structural.GSA.Materials;
+using Objects.Structural.GSA.Properties;
 using Objects.Structural.Loading;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
@@ -37,6 +41,7 @@ namespace ConnectorGSATests
     public async Task SendDesignLayer() //model only
     {
       //Configure settings for this transmission
+      Instance.GsaModel = new GsaModel(); //Use the real thing, not the mock
       Instance.GsaModel.StreamLayer = GSALayer.Design;
 
       var converter = new ConverterGSA.ConverterGSA();
@@ -53,12 +58,12 @@ namespace ConnectorGSATests
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
         { typeof(Axis), 3 },
-        { typeof(Concrete), 1 },
+        { typeof(GSAConcrete), 1 },
         { typeof(PropertySpring), 8 },
-        { typeof(Property1D), 1 },
-        { typeof(Property2D), 1 },
-        { typeof(Node), 7 },
-        { typeof(LoadCase), 3 },
+        { typeof(GSAProperty1D), 1 },
+        { typeof(GSAProperty2D), 1 },
+        { typeof(GSANode), 95 },
+        { typeof(GSALoadCase), 3 },
       };
 
       var convertedObjects = ModelToSingleObjectsList((Base)result.ConvertedObjectsByStream.Values.First());
@@ -78,10 +83,11 @@ namespace ConnectorGSATests
     public async Task SendBothLayersModelOnly()
     {
       //Configure settings for this transmission
+      Instance.GsaModel = new GsaModel(); //use the real thing
       Instance.GsaModel.StreamLayer = GSALayer.Both;
       var converter = new ConverterGSA.ConverterGSA();
       var memoryTransport = new MemoryTransport();
-      var result = await CoordinateSend(modelWithoutResultsFile, converter, memoryTransport);
+      var result = await CoordinateSend(modelWithResultsFile, converter, memoryTransport);
 
       Assert.True(result.Loaded);
       Assert.True(result.Converted);
@@ -92,21 +98,20 @@ namespace ConnectorGSATests
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
         { typeof(Axis), 3 },
-        { typeof(Concrete), 1 },
+        { typeof(GSAConcrete), 1 },
         { typeof(PropertySpring), 8 },
-        { typeof(Property1D), 1 },
-        { typeof(Property2D), 1 },
-        { typeof(Node), 7 },
-        { typeof(LoadCase), 3 },
-        { typeof(Element2D), 3297 }
+        { typeof(GSAProperty1D), 1 },
+        { typeof(GSAProperty2D), 1 },
+        { typeof(GSANode), 3486 },
+        { typeof(GSALoadCase), 3 },
+        { typeof(GSAElement2D), 3297 },
+        { typeof(GSAElement1D), 35 }
       };
 
       //Just compare analysis objects
       var objects = ModelToSingleObjectsList((Base)result.ConvertedObjectsByStream.Values.ToList()[1]);
 
-      var convertedObjects = (List<Base>) result.ConvertedObjectsByStream.First().Value;
-
-      var objectsByType = convertedObjects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
+      var objectsByType = objects.GroupBy(o => o.GetType()).ToDictionary(g => g.Key, g => g.ToList());
 
       foreach (var t in numExpectedByObjectType.Keys)
       {
@@ -121,6 +126,7 @@ namespace ConnectorGSATests
     public async Task SendAnalysisLayerWithSeparateResults()
     {
       //Configure settings for this transmission
+      Instance.GsaModel = new GsaModel(); //use the real thing
       Instance.GsaModel.StreamLayer = GSALayer.Both;
       Instance.GsaModel.ResultTypes = new List<ResultType>() { ResultType.NodalDisplacements };
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
@@ -143,12 +149,14 @@ namespace ConnectorGSATests
       var numExpectedByObjectType = new Dictionary<Type, int>()
       {
         { typeof(Axis), 3 },
-        { typeof(Concrete), 1 },
+        { typeof(GSAConcrete), 1 },
         { typeof(PropertySpring), 8 },
-        { typeof(Property1D), 1 },
-        { typeof(Property2D), 1 },
-        { typeof(Node), 7 },
-        { typeof(LoadCase), 3 },
+        { typeof(GSAProperty1D), 1 },
+        { typeof(GSAProperty2D), 1 },
+        { typeof(GSANode), 95 },
+        { typeof(GSALoadCase), 3 },
+        { typeof(GSAElement2D), 3297 },
+        { typeof(GSAElement1D), 35 },
         { typeof(ResultNode), 10 }  //Needs to be reviewed
       };
 

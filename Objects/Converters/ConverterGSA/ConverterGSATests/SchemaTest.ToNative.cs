@@ -330,7 +330,7 @@ namespace ConverterGSATests
       Instance.GsaModel.StreamLayer = GSALayer.Both;
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
       var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
-      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSALoadBeam).ToList();
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadBeam).ToList();
       var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
 
       //Checks

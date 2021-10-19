@@ -294,8 +294,7 @@ namespace ConnectorGSA
         onErrorAction: (s, e) =>
         {
           state.Errors.Add(e);
-        },
-        disposeTransports: true
+        }
         );
 
       if (transports.Any(t => t is ServerTransport))
@@ -510,7 +509,7 @@ namespace ConnectorGSA
 
       try
       {
-        if (Instance.GsaModel.Proxy.GetGwaData(out var records))
+        if (Instance.GsaModel.Proxy.GetGwaData(Instance.GsaModel.StreamLayer, out var records))
         {
           for (int i = 0; i < records.Count(); i++)
           {
