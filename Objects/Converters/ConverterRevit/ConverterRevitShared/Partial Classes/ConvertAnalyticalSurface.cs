@@ -76,7 +76,7 @@ namespace Objects.Converter.Revit
 		}
 		voidNodes.Add(loopNodes);
 	  }
-	  speckleElement2D.voids = voidNodes;
+	  //speckleElement2D.voids = voidNodes;
 
 	  //var mesh = new Geometry.Mesh();
 	  //var solidGeom = GetElementSolids(structuralElement);
@@ -88,21 +88,21 @@ namespace Objects.Converter.Revit
 	  // Material
 	  DB.Material structMaterial = null;
 	  double thickness = 0;
-	  var memberType = MemberType2D.Generic2D;
+	  var memberType = MemberType.Generic2D;
 
 	  if (structuralElement is DB.Floor)
 	  {
 		var floor = structuralElement as DB.Floor;
 		structMaterial = Doc.GetElement(floor.FloorType.StructuralMaterialId) as DB.Material;
 		thickness = GetParamValue<double>(structuralElement, BuiltInParameter.STRUCTURAL_FLOOR_CORE_THICKNESS);
-		memberType = MemberType2D.Slab;
+		memberType = MemberType.Slab;
 	  }
 	  else if (structuralElement is DB.Wall)
 	  {
 		var wall = structuralElement as DB.Wall;
 		structMaterial = Doc.GetElement(wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as DB.Material;
 		thickness = ScaleToSpeckle(wall.WallType.Width);
-		memberType = MemberType2D.Wall;
+		memberType = MemberType.Wall;
 	  }
 
 	  var materialAsset = ((PropertySetElement)Doc.GetElement(structMaterial.StructuralAssetId)).GetStructuralAsset();
@@ -189,8 +189,8 @@ namespace Objects.Converter.Revit
 
 	  prop.material = speckleMaterial;
 	  prop.name = Doc.GetElement(revitSurface.GetElementId()).Name;
-	  prop.type = memberType;
-	  prop.analysisType = Structural.AnalysisType2D.Shell;
+	  prop["memberType"] = memberType;
+	  prop.type = Structural.PropertyType2D.Shell;
 	  prop.thickness = thickness;
 
 	  speckleElement2D.property = prop;
