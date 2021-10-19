@@ -597,8 +597,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[1].Index.Value, speckleGridPlanes[1].nativeId);
       Assert.Equal("axis 1", speckleGridPlanes[1].axis.applicationId);
       Assert.Equal(gsaGridPlanes[1].Elevation.Value, speckleGridPlanes[1].elevation);
-      Assert.Equal(false, speckleGridPlanes[1].toleranceBelow.HasValue);
-      Assert.Equal(false, speckleGridPlanes[1].toleranceAbove.HasValue);
+      Assert.False(speckleGridPlanes[1].toleranceBelow.HasValue);
+      Assert.False(speckleGridPlanes[1].toleranceAbove.HasValue);
     }
 
     [Fact]
