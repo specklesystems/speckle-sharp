@@ -87,6 +87,14 @@ namespace Objects.Converter.ETABS
                 return property1D.name;
             }
 
+            var Angle = new SectionProfile.Angle();
+            if (property1D.profile.GetType().Equals(Channel.GetType()))
+            {
+                SectionProfile.Angle sectionProfile = (SectionProfile.Angle)property1D.profile;
+                Model.PropFrame.SetAngle(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness);
+                return property1D.name;
+            }
+
             return null;
 
         }
