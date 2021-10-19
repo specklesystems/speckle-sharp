@@ -24,7 +24,7 @@ namespace Objects.Converter.ETABS
             string notes = "";
             string GUID = "";
             var specklePropery2DWall = new ETABSProperty2D();
-            specklePropery2DWall.type = Structural.PropertyType2D.Wall;
+            specklePropery2DWall.type = Structural.Geometry.MemberType2D.Wall;
             Model.PropArea.GetWall(property, ref wallPropType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
             var speckleShellType = ConvertShellType(shellType);
             specklePropery2DWall.shellType = speckleShellType;

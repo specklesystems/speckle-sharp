@@ -319,43 +319,44 @@ namespace Objects.Converter.RhinoGh
 
         switch (obj.Geometry)
         {
-            case RH.Point o:
-                switch (schema)
-                {
-                    case "Node":
-                        return PointToSpeckleNode(o);
 
-                    default:
-                        throw new NotSupportedException();
-                }
+                //case RH.Point o:
+                //    switch (schema)
+                //    {
+                //        case "Node":
+                //            return PointToSpeckleNode(o);
 
-            case RH.Curve o:
-                switch (schema)
-                {
-                    case "Element1D":
-                        return CurveToSpeckleElement1D(o);
+                //        default:
+                //            throw new NotSupportedException();
+                //    }
 
-                    default:
-                        throw new NotSupportedException();
-                }
+                //case RH.Curve o:
+                //    switch (schema)
+                //    {
+                //        case "Element1D":
+                //            return CurveToSpeckleElement1D(o);
 
-            case RH.Mesh o:
-                switch (schema)
-                {
-                    case "Element2D":
-                        return MeshToSpeckleElement2D(o);
+                //        default:
+                //            throw new NotSupportedException();
+                //    }
 
-                case "Element3D":
-                    return MeshToSpeckleElement3D(o);
+                //case RH.Mesh o:
+                //    switch (schema)
+                //    {
+                //        case "Element2D":
+                //            return MeshToSpeckleElement2D(o);
 
-                        default:
-                        throw new NotSupportedException();
-                }
+                //    case "Element3D":
+                //        return MeshToSpeckleElement3D(o);
 
-            default:
-                throw new NotSupportedException();
+                //            default:
+                //            throw new NotSupportedException();
+                //    }
+
+                default:
+                    throw new NotSupportedException();
+            }
         }
-    }
 
     public List<Base> ConvertToSpeckleStr(List<object> objects)
     {

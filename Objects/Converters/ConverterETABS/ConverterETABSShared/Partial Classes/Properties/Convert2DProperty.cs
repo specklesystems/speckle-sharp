@@ -21,7 +21,7 @@ namespace Objects.Converter.ETABS
         }
         object Property2DToNative(ETABSProperty2D property2D)
         {
-            if (property2D.type == Structural.PropertyType2D.Wall)
+            if (property2D.type == Structural.Geometry.MemberType2D.Wall)
             {
                 WallPropertyToNative(property2D);
             }

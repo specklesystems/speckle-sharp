@@ -18,22 +18,22 @@ namespace Objects.Converter.ETABS
             var speckleLoadCase = new LoadCase();
 
 
-            speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
+            //speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
             
-            speckleLoadCase.name = loadPatternName;
-            var selfweight = GetSelfWeightMultiplier(loadPatternName);
-            if(selfweight != 0)
-            {
-                var gravityVector = new Geometry.Vector(0, 0, -selfweight);
-                var gravityLoad = new GravityLoad(loadPatternName, speckleLoadCase, gravityVector);
-                SpeckleModel.loads.Add(gravityLoad);
-            }
-            else
-            {
-                var gravityVector = new Geometry.Vector(0, 0,0);
-                var gravityLoad = new GravityLoad(loadPatternName, speckleLoadCase, gravityVector);
-                SpeckleModel.loads.Add(gravityLoad);
-            }
+            //speckleLoadCase.name = loadPatternName;
+            //var selfweight = GetSelfWeightMultiplier(loadPatternName);
+            //if(selfweight != 0)
+            //{
+            //    var gravityVector = new Geometry.Vector(0, 0, -selfweight);
+            //    var gravityLoad = new LoadGravity(loadPatternName, speckleLoadCase, gravityVector);
+            //    SpeckleModel.loads.Add(gravityLoad);
+            //}
+            //else
+            //{
+            //    var gravityVector = new Geometry.Vector(0, 0,0);
+            //    var gravityLoad = new GravityLoad(loadPatternName, speckleLoadCase, gravityVector);
+            //    SpeckleModel.loads.Add(gravityLoad);
+            //}
 
             return speckleLoadCase;
         }

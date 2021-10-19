@@ -183,11 +183,9 @@ namespace Objects.Structural.ETABS.Properties
             public double ShearStudDia { get; set; }
             public double ShearStudFu { get; set; }
             public double ShearStudHt { get; set; }
-            public double ShearThickness { get; set; }
-            public double UnitWeight { get; set; }
 
-            [SchemaInfo("DeckUnFilled", "Create an ETABS UnFilled Deck", "ETABS", "2DProperties")]
-            public DeckSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt, double shearThickness, double unitWeight)
+            [SchemaInfo("DeckSlab", "Create an ETABS Slab Deck", "ETABS", "Properties")]
+            public DeckSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt)
             {
                 type2D = ETABSPropertyType2D.Deck;
                 slabType = SlabType.Null;
@@ -202,8 +200,7 @@ namespace Objects.Structural.ETABS.Properties
                 ShearStudDia = shearStudDia;
                 ShearStudFu = shearStudFu;
                 ShearStudHt = shearStudHt;
-                ShearThickness = shearThickness;
-                UnitWeight = unitWeight;
+
             }
 
             public DeckSlab()
