@@ -395,6 +395,9 @@ namespace ConnectorGSA
                 if (received)
                 {
                   loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Received data from " + streamId + " stream"));
+                } else
+                {
+                  loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "Failed to receive data from " + streamId + " stream"));
                 }
 
                 if (streamState.Errors != null && streamState.Errors.Count > 0)
@@ -549,12 +552,13 @@ namespace ConnectorGSA
           if (!uniques.ContainsKey(t))
           {
             uniques.Add(t, new HashSet<string>() { @base.GetId() });
+            objects.Add(@base);
           }
           if (!uniques[t].Contains(id))
           {
-            objects.Add(@base);
             uniques[t].Add(id);
-          }
+            objects.Add(@base);
+          }          
 
           return objects;
         }
