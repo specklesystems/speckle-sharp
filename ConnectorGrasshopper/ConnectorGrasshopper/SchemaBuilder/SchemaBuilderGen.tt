@@ -28,12 +28,7 @@ using Grasshopper.Kernel;
 using ConnectorGrasshopperUtils;
 
 namespace ConnectorGrasshopper {
-<#
-    static bool IsDeprecated(string type)
-    {
-        return type == "Objects.BuiltElements.Roof";
-    }
-#>
+
 <# foreach(Type sType in availableTypes) { #>
 <# 
     var typeName = string.Join("", sType.Name.Split('.'));
@@ -42,13 +37,6 @@ namespace ConnectorGrasshopper {
     foreach (var constructor in constructorInfos)
     {
         var fullname = CSOUtils.MethodFullName(constructor);
-        
-        // HACK: Skip structural schema objects for now!
-        if(fullname.StartsWith("Objects.Structural")) 
-            continue;
-
-        var deprecated = IsDeprecated(sType.FullName);
-        
         var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
         i++;
         var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
@@ -71,8 +59,6 @@ public class <#= compName #>: CreateSchemaObjectBase {
     
     public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
     
-    public override bool Obsolete => <#= deprecated.ToString().ToLower() #>;
-
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("<#= CSOUtils.MethodFullName(constructor) #>","<#= constructor.DeclaringType.FullName #>");
         base.AddedToDocument(document);

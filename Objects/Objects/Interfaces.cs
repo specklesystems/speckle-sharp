@@ -26,7 +26,7 @@ namespace Objects
     double volume { get; set; }
   }
 
-  public interface ICurve
+  public interface ICurve   
   {
     double length { get; set; }
     Interval domain { get; set; }

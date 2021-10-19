@@ -23,7 +23,7 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
         public GSAMember1D(int nativeId, Line baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, Plane localAxis)
         {
             this.nativeId = nativeId;
-            this.baseLine = baseLine;
+            this.baseLine = (Line)baseLine;
             this.property = property;
             this.type = type;
             this.end1Releases = end1Releases;
@@ -37,7 +37,7 @@ namespace Objects.Structural.GSA.Geometry //GSA.Geometry?
         public GSAMember1D(int nativeId, Line baseLine, Property1D property, ElementType1D type, Restraint end1Releases, Restraint end2Releases, Vector end1Offset, Vector end2Offset, GSANode orientationNode, double orientationAngle)
         {
             this.nativeId = nativeId;
-            this.baseLine = baseLine;
+            this.baseLine = (Line)baseLine;
             this.property = property;
             this.type = type;
             this.end1Releases = end1Releases;
