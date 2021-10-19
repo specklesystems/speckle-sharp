@@ -13,14 +13,11 @@ using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API.CsvSchema;
-using GsaNode = Speckle.GSA.API.GwaSchema.GsaNode;
 
 namespace Speckle.ConnectorGSA.Proxy
 {
   public class GsaProxy : IGSAProxy
   {
-    //public List<Type> SchemaTypes { get => ParsersBySchemaType.Keys.ToList(); }
-
     private Dictionary<GSALayer, List<List<Type>>> nativeTypeDependencyGenerations; //leaves first, all the way up to roots
 
     //This is to store data for a requirement specific to sending, and specific to nodes: being filtered out if not referenced by other objects
@@ -29,11 +26,8 @@ namespace Speckle.ConnectorGSA.Proxy
     private Dictionary<GSALayer, List<KwTypeData>> typeInfo = new Dictionary<GSALayer, List<KwTypeData>>();
     private Dictionary<GSALayer, Dictionary<GwaKeyword, int>> typeInfoIndicesByKeyword = new Dictionary<GSALayer, Dictionary<GwaKeyword, int>>();
     private Dictionary<GSALayer, Dictionary<Type, int>> typeInfoIndicesBySchemaType = new Dictionary<GSALayer, Dictionary<Type, int>>();
-    //private Dictionary<Type, Type> ParsersBySchemaType = new Dictionary<Type, Type>();  //Used for writing to the GSA instance
-    //private IPairCollection<GwaKeyword, Type> ParsersByKeyword = new PairCollection<GwaKeyword, Type>();
     private bool initialised = false;
     private bool initialisedError = false;  //To ensure initialisation is only attempted once.
-    //private GSALayer prevLayer;
 
     private Dictionary<GSALayer, List<KwTypeData>> kwTypeData = new Dictionary<GSALayer, List<KwTypeData>>();
 
@@ -70,16 +64,6 @@ namespace Speckle.ConnectorGSA.Proxy
         } 
       }
     };
-
-    /*
-    //Note that When a GET_ALL is called for LOAD_BEAM, it returns LOAD_BEAM_UDL, LOAD_BEAM_LINE, LOAD_BEAM_PATCH and LOAD_BEAM_TRILIN
-    public static GwaKeyword[] SetAtKeywords = new GwaKeyword[] 
-    {
-      GwaKeyword.LOAD_NODE, GwaKeyword.LOAD_BEAM, GwaKeyword.LOAD_GRID_POINT, GwaKeyword.LOAD_GRID_LINE, GwaKeyword.LOAD_2D_FACE, 
-      GwaKeyword.LOAD_GRID_AREA, GwaKeyword.LOAD_2D_THERMAL, GwaKeyword.LOAD_GRAVITY, GwaKeyword.INF_BEAM, GwaKeyword.INF_NODE, 
-      GwaKeyword.RIGID, GwaKeyword.GEN_REST 
-    };
-    */
 
     #region nodeAt_factors
     public static bool NodeAtCalibrated = false;
@@ -327,22 +311,6 @@ namespace Speckle.ConnectorGSA.Proxy
     public List<Type> GetNodeDependentTypes(GSALayer layer)
     {
       return nodeDependentSchemaTypesByLayer[layer];
-
-      /*
-      var typeToFind = typeof(GsaNode);
-      InitialiseIfNecessary();
-      var dependencies = nativeTypeDependencyGenerations[layer];
-      for (int i = 0; i < dependencies.Count(); i++)
-      {
-        for (int j = 0; j < dependencies[i].Count(); j++)
-        {
-          if (dependencies[i][j] == typeToFind)
-          {
-            return gen[t];
-          }
-        }
-      }
-      */
     }
     #endregion
 
@@ -598,150 +566,6 @@ namespace Speckle.ConnectorGSA.Proxy
       return (!initialisedError);
     }
 
-    /*
-    private bool Initialise_old(GSALayer layer)
-    {
-      var assembly = GetType().Assembly; //This assembly
-      var assemblyTypes = assembly.GetTypes().ToList();
-
-      var gsaBaseType = typeof(GwaParser<GsaRecord>);
-      var gsaAttributeType = typeof(GsaType);
-      var gsaChildAttributeType = typeof(GsaChildType);
-      var gwaParserInterfaceType = typeof(IGwaParser);
-
-      var parserTypes = assemblyTypes.Where(t => Helper.InheritsOrImplements(t, gwaParserInterfaceType)
-        && (t.CustomAttributes.Any(ca => ca.AttributeType == gsaAttributeType)
-            && Helper.IsSelfContained(t)
-            && (layer == GSALayer.Both
-              || (layer == GSALayer.Design && Helper.IsDesignLayer(t))
-              || (layer == GSALayer.Analysis && Helper.IsAnalysisLayer(t)))
-          || (t.CustomAttributes.Any(ca => ca.AttributeType == gsaChildAttributeType)))
-        && !t.IsAbstract
-        ).ToDictionary(pt => pt, pt => Helper.GetGwaKeyword(pt));
-
-      var layerKeywords = parserTypes.Values.Distinct().ToList();
-      var kwDict = new Dictionary<GwaKeyword, GwaKeyword[]>();
-      foreach (var pt in parserTypes.Keys)
-      {
-        var allRefKw = Helper.GetReferencedKeywords(pt).Where(kw => layerKeywords.Any(k => k == kw)).ToArray();
-        if (kwDict.ContainsKey(parserTypes[pt]))
-        {
-          var values = kwDict[parserTypes[pt]].ToList();
-          foreach (var kw in allRefKw)
-          {
-            if (!values.Contains(kw))
-            {
-              values.Add(kw);
-            }
-          }
-          kwDict[parserTypes[pt]] = values.ToArray();
-        }
-        else
-        {
-          kwDict.Add(parserTypes[pt], allRefKw);
-        }
-
-        //Handling the special case of nodes
-        if (allRefKw.Contains(GwaKeyword.NODE))
-        {
-          var schemaType = pt.BaseType.GenericTypeArguments.First();
-          if (!nodeDependentSchemaTypesByLayer.ContainsKey(layer))
-          {
-            nodeDependentSchemaTypesByLayer.Add(layer, new List<Type>());
-          }
-          if (!nodeDependentSchemaTypesByLayer[layer].Contains(schemaType))
-          {
-            nodeDependentSchemaTypesByLayer[layer].Add(schemaType);
-          }
-        }
-      }
-
-      var retCol = new TypeTreeCollection<GwaKeyword>(kwDict.Keys);
-      foreach (var kw in kwDict.Keys)
-      {
-        retCol.Integrate(kw, kwDict[kw]);
-      }
-
-      var gens = retCol.Generations();
-      if (gens == null || gens.Count == 0)
-      {
-        return false;
-      }
-
-      //foreach (var kvp in parserTypes)
-      //{
-      //  if (!ParsersByKeyword.ContainsLeft(kvp.Value))
-      //  {
-      //    ParsersByKeyword.Add(kvp.Value, kvp.Key);
-      //  }
-      //}
-
-      //ParsersBySchemaType = parserTypes.Keys.ToDictionary(pt => pt.BaseType.GenericTypeArguments.First(), pt => pt);
-      ParsersBySchemaType = new Dictionary<Type, Type>();
-      foreach (var pt in parserTypes.Keys)
-      {
-        if (pt.CustomAttributes.Any(ca => ca.AttributeType == gsaChildAttributeType))
-        {
-          ParsersBySchemaType.Add((Type)pt.GetAttribute<GsaChildType>(GsaChildType.GsaSchemaTypeProperty), pt);
-          var kw = (GwaKeyword)pt.GetAttribute<GsaChildType>(GsaChildType.GwaKeywordProperty);
-          if (!ParsersByKeyword.ContainsLeft(kw))
-          {
-            ParsersByKeyword.Add(kw, pt);
-          }
-        }
-        else if (pt.BaseType.IsGenericType)
-        {
-          ParsersBySchemaType.Add(pt.BaseType.GenericTypeArguments.First(), pt);
-          if (!ParsersByKeyword.ContainsLeft(parserTypes[pt]))
-          {
-            ParsersByKeyword.Add(parserTypes[pt], pt);
-          }
-        }
-
-        //else
-        //{
-        //  Type baseType = pt.BaseType;
-        //  Func<Type, bool> foundFn = (Type t) => (t != typeof(object) && t.IsGenericType);
-        //  while (baseType != typeof(object))
-        //  {
-        //    if (baseType.IsGenericType && baseType.BaseType.IsAssignableFrom(typeof(IGwaParser)))
-        //    {
-        //      ParsersBySchemaType.Add(baseType.GenericTypeArguments.First(), pt);
-        //      break;
-        //    }
-        //    baseType = baseType.BaseType;
-        //  }
-        //}
-
-      }
-
-      if (nativeTypeDependencyGenerations == null)
-      {
-        nativeTypeDependencyGenerations = new Dictionary<GSALayer, List<List<Type>>>();
-      }
-      if (!nativeTypeDependencyGenerations.ContainsKey(layer))
-      {
-        nativeTypeDependencyGenerations.Add(layer, new List<List<Type>>());
-      }
-
-      foreach (var gen in gens)
-      {
-        var genSchemaTypes = new List<Type>();
-
-        foreach (var keyword in gen.Where(kw => ParsersByKeyword.ContainsLeft(kw)))
-        {
-          if (ParsersByKeyword.FindRight(keyword, out Type pt))
-          {
-            var schemaType = pt.BaseType.GenericTypeArguments.First();
-            genSchemaTypes.Add(schemaType);
-          }
-        }
-        nativeTypeDependencyGenerations[layer].Add(genSchemaTypes);
-      }
-
-      return (!initialisedError);
-    }
-    */
     #endregion
 
     #region extract_gwa_fns
@@ -759,21 +583,6 @@ namespace Speckle.ConnectorGSA.Proxy
         }
       }
       return "";
-      /*
-      if (!ParsersBySchemaType.ContainsKey(schemaType))
-      {
-        return "";
-      }
-      var parser = ParsersBySchemaType[schemaType];
-      if (!ParsersByKeyword.ContainsRight(parser))
-      {
-        return "";
-      }
-      ParsersByKeyword.FindLeft(parser, out GwaKeyword kw);
-
-      var appId = "gsa/" + kw + "-" + gsaIndex;
-      return appId;
-      */
     }
 
     //Tuple: keyword | index | Application ID | GWA command | Set or Set At
@@ -792,29 +601,23 @@ namespace Speckle.ConnectorGSA.Proxy
       var setNoIndexKeywords = new List<GwaKeyword>();
       var tempKeywordIndexCache = new Dictionary<GwaKeyword, List<int>>();
 
-      //var keywords = ParsersByKeyword.Lefts;
       var keywords = typeInfo[layer].Select(d => d.TableKeyword).ToList();
 
       foreach (var kw in keywords)
       {
-        //var tableParserType = typeInfo[layer].FirstOrDefault(d => d.TableKeyword == kw).TableParserType;
         var tableParserType = typeInfo[layer][typeInfoIndicesByKeyword[layer][kw]].TableParserType;
-        //if (ParsersByKeyword.FindRight(kw, out var parserType))
+        var sct = Helper.GetGwaSetCommandType(tableParserType);
+        if (sct == GwaSetCommandType.Set)
         {
-          //var sct = Helper.GetGwaSetCommandType(parserType);
-          var sct = Helper.GetGwaSetCommandType(tableParserType);
-          if (sct == GwaSetCommandType.Set)
-          {
-            setKeywords.Add(kw);
-          }
-          else if (sct == GwaSetCommandType.SetAt)
-          {
-            setAtKeywords.Add(kw);
-          }
-          else
-          {
-            setNoIndexKeywords.Add(kw);
-          }
+          setKeywords.Add(kw);
+        }
+        else if (sct == GwaSetCommandType.SetAt)
+        {
+          setAtKeywords.Add(kw);
+        }
+        else
+        {
+          setNoIndexKeywords.Add(kw);
         }
       }
 
@@ -847,15 +650,11 @@ namespace Speckle.ConnectorGSA.Proxy
           var keywordPieces = keywordAndVersion.Split('.');
           if (keywordPieces.Count() == 2 && keywordPieces.Last().All(c => char.IsDigit(c))
             && int.TryParse(keywordPieces.Last(), out int ver)
-            && keywordPieces.First().TryParseStringValue(out GwaKeyword kw)
-            //&& ParsersByKeyword.FindRight(kw, out var t)
-            )
+            && keywordPieces.First().TryParseStringValue(out GwaKeyword kw))
           {
-            //var ktd = typeInfo[layer].FirstOrDefault(d => d.ContainsKeyword(kw));
             var ktd = typeInfo[layer][typeInfoIndicesByKeyword[layer][kw]];
             if (ktd != null)
             {
-              //var parser = (IGwaParser)Activator.CreateInstance(t);
               var schemaType = ktd.GetSchemaType(kw);
               var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(schemaType));
               if (parser.FromGwa(gwa))
@@ -892,10 +691,8 @@ namespace Speckle.ConnectorGSA.Proxy
         Parallel.ForEach(gwaLines, gwa =>
         {
           if (ParseGeneralGwa(gwa, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet, out string keywordAndVersion)
-            && keyword.HasValue //&& ParsersByKeyword.ContainsLeft(keyword.Value)
-            )
+            && keyword.HasValue)
           {
-            //var ktd = typeInfo[layer].FirstOrDefault(d => d.ContainsKeyword(keyword.Value));
             var ktd = typeInfo[layer][typeInfoIndicesByKeyword[layer][keyword.Value]];
             if (ktd != null)
             {
@@ -914,10 +711,7 @@ namespace Speckle.ConnectorGSA.Proxy
                   {
                     try
                     {
-                      lock (syncLock)
-                      {
-                        streamId = GSAObject.GetSidTagValue(kwStr, index.Value, SID_STRID_TAG);
-                      }
+                      lock (syncLock) {streamId = GSAObject.GetSidTagValue(kwStr, index.Value, SID_STRID_TAG); }
                     }
                     catch { }
                   }
@@ -962,7 +756,6 @@ namespace Speckle.ConnectorGSA.Proxy
 
                 var schemaType = ktd.GetSchemaType(keyword.Value);
                 var t = ktd.GetParserType(schemaType);
-                //if (ParsersByKeyword.FindRight(keyword.Value, out Type t))
                 {
                   var parser = (IGwaParser)Activator.CreateInstance(t);
                   parser.FromGwa(gwa);
@@ -1025,9 +818,7 @@ namespace Speckle.ConnectorGSA.Proxy
             && ParseGeneralGwa(gwaLine, out GwaKeyword? keyword, out int? version, out int? index, out string streamId, out string appId, out string gwaWithoutSet,
               out string keywordAndVersion) && keyword.HasValue)
           {
-            //var ktd = typeInfo[layer].FirstOrDefault(d => d.ContainsKeyword(keyword.Value));
             var ktd = typeInfo[layer][typeInfoIndicesByKeyword[layer][keyword.Value]];
-            //if (keyword == setAtKeywords[i] && ParsersByKeyword.FindRight(setAtKeywords[i], out Type t))
             if (ktd != null)
             {
               var kwStr = keyword.Value.GetStringValue();
@@ -1177,7 +968,6 @@ namespace Speckle.ConnectorGSA.Proxy
         {
           parsersToUseBySchemaType.Add(t, new List<IGwaParser>());
         }
-        //var ktd = typeInfo[layer].FirstOrDefault(d => d.ContainsSchemaType(t));
         var ktd = typeInfo[layer][typeInfoIndicesBySchemaType[layer][t]];
         var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(t), r);
         parsersToUseBySchemaType[t].Add(parser);
