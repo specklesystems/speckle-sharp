@@ -14,7 +14,6 @@ using ETABSv1;
 using Speckle.Core.Logging;
 using Speckle.ConnectorETABS.Util;
 using Speckle.ConnectorETABS.UI;
-using Objects.Converter.ETABS;
 
 
 namespace SpeckleConnectorETABS
@@ -24,11 +23,8 @@ namespace SpeckleConnectorETABS
         public static cPluginCallback pluginCallback { get; set; }
         public static Bootstrapper Bootstrapper { get; set; }
         public static bool isSpeckleClosed { get; set; } = false;
-
         public Timer SelectionTimer;
-
-        public static cSapModel model
- {get; set;}
+        public static cSapModel model {get; set;}
 
         public static void OpenOrFocusSpeckle(cSapModel model)
         {

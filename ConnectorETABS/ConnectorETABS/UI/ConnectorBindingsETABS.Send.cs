@@ -12,7 +12,6 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.ConnectorETABS.Util;
 using System.Linq;
-using Objects.Converter.ETABS;
 
 namespace Speckle.ConnectorETABS.UI
 {

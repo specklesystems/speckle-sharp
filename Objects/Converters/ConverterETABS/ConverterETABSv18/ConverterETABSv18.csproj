@@ -20,8 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="CSI_ETABSv18_x64" Version="1.0.0" />
-    <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
-    <PackageReference Include="MathNet.Spatial" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>
