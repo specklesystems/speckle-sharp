@@ -11,10 +11,11 @@ namespace Objects.Structural.Properties.Profiles
     {
         public string name { get; set; }
         public ShapeType shapeType { get; set; }
-        public List<SectionProfile> children { get; set; }
+        public List<SectionProfile> children { get; set; } // better name it subComponent?
+        public ConcreteProperties concreteProperties { get; set; }
+        public SectionProperties sectionProperties { get; set; }
         public double weight { get; set; } // section weight, ex. kg/m
         public string units { get; set; }
-        public SectionProperties sectionProperties { get; set; }
 
         public SectionProfile() { }
 
@@ -66,6 +67,7 @@ namespace Objects.Structural.Properties.Profiles
             public double width { get; set; }
             public double webThickness { get; set; }
             public double flangeThickness { get; set; }
+            public double rootRadius { get; set; }
 
             public ISection() { }
 
