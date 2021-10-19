@@ -56,6 +56,7 @@ namespace ConverterGSA
         { typeof(GSAGridLine), GSAGridLineToNative },
         { typeof(Storey), StoreyToNative },
         { typeof(GSAGridPlane), GSAGridPlaneToNative },
+        { typeof(GSAGridSurface), GSAGridSurfaceToNative },
         //Loading
         { typeof(GSALoadCase), GSALoadCaseToNative },
         { typeof(LoadCase), LoadCaseToNative },
@@ -639,6 +640,164 @@ namespace ConverterGSA
 
       retList.Add(gsaGridPlane);
 
+      return retList;
+    }
+
+    private List<GsaRecord> GSAGridSurfaceToNative(Base speckleObject)
+    {
+      var retList = new List<GsaRecord>();
+      var speckleGridSurface = (GSAGridSurface)speckleObject;
+
+      var gsaGridSurface = new GsaGridSurface()
+      {
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaGridSurface>(speckleGridSurface.applicationId),
+        ApplicationId = speckleGridSurface.applicationId,
+        Name = speckleGridSurface.name,
+        Tolerance = speckleGridSurface.tolerance,
+        Angle = speckleGridSurface.spanDirection,
+        Expansion = speckleGridSurface.loadExpansion.ToNative(),
+        Span = speckleGridSurface.span.ToNative()
+      };
+
+      if (speckleGridSurface.elements != null)
+      {
+        //The ElementIndices collection should be initialised by the GsaGridSurface constructor
+        foreach (var e in speckleGridSurface.elements)
+        {
+          var isMemb = ((e is GSAMember1D) || (e is GSAMember2D));
+          bool found = false;
+          if (!string.IsNullOrEmpty(e.applicationId))
+          {
+            if (isMemb)
+            {
+              var index = Instance.GsaModel.Cache.LookupIndex<GsaMemb>(e.applicationId);
+              if (index.HasValue)
+              {
+                gsaGridSurface.MemberIndices.Add(index.Value);
+                found = true;
+              }
+            }
+            else
+            {
+              var index = Instance.GsaModel.Cache.LookupIndex<GsaEl>(e.applicationId);
+              if (index.HasValue)
+              {
+                gsaGridSurface.ElementIndices.Add(index.Value);
+                found = true;
+              }
+            }
+          }
+          if (!found)
+          {
+            int? index = null;
+            var nativeObjects = new List<GsaRecord>();
+            if (isMemb)
+            {
+              if (e is GSAMember1D)
+              {
+                nativeObjects.AddRange(GSAMember1dToNative(e));
+              }
+              else if (e is GSAMember2D)
+              {
+                nativeObjects.AddRange(GSAMember2dToNative(e));
+              }
+              if (nativeObjects.Count > 0)
+              {
+                var newMemb = nativeObjects.FirstOrDefault(o => o is GsaMemb);
+                if (newMemb != null)
+                {
+                  index = newMemb.Index;
+                }
+              }
+              if (index.HasValue)
+              {
+                gsaGridSurface.MemberIndices.Add(index.Value);
+              }
+            }
+            else  //element by default otherwise
+            {
+              if (e is GSAElement1D)
+              {
+                nativeObjects.AddRange(GSAElement1dToNative(e));
+              }
+              else if (e is Element1D)
+              {
+                nativeObjects.AddRange(Element1dToNative(e));
+              }
+              else if (e is GSAElement2D)
+              {
+                nativeObjects.AddRange(GSAMember2dToNative(e));
+              }
+              else if (e is Element2D)
+              {
+                nativeObjects.AddRange(Element2dToNative(e));
+              }
+              if (nativeObjects.Count > 0)
+              {
+                var newEl = nativeObjects.FirstOrDefault(o => o is GsaEl);
+                if (newEl != null)
+                {
+                  index = newEl.Index;
+                }
+              }
+              if (index.HasValue)
+              {
+                gsaGridSurface.ElementIndices.Add(index.Value);
+              }
+            }
+            retList.AddRange(nativeObjects);
+          }
+        }
+
+        if (speckleGridSurface.elements.Any(e => ((e is GSAElement1D) || (e is GSAMember1D) || (e is Element1D))))
+        {
+          gsaGridSurface.Type = GridSurfaceElementsType.OneD;
+        }
+        else if (speckleGridSurface.elements.Any(e => ((e is GSAElement2D) || (e is GSAMember2D) || (e is Element2D))))
+        {
+          gsaGridSurface.Type = GridSurfaceElementsType.TwoD;
+        }
+      }
+
+      if (speckleGridSurface.gridPlane != null)
+      {
+        if (!string.IsNullOrEmpty(speckleGridSurface.gridPlane.applicationId))
+        {
+          var planeIndex = Instance.GsaModel.Cache.LookupIndex<GsaGridPlane>(speckleGridSurface.gridPlane.applicationId);
+          if (planeIndex.IsIndex())
+          {
+            gsaGridSurface.PlaneIndex = planeIndex;
+            gsaGridSurface.PlaneRefType = GridPlaneAxisRefType.Reference;
+          }
+          else
+          {
+            var planeGsaRecords = GSAGridPlaneToNative(speckleGridSurface.gridPlane);
+            var gsaPlane = planeGsaRecords.FirstOrDefault(r => r is GsaGridPlane);
+            if (gsaPlane != null && gsaPlane.Index.IsIndex())
+            {
+              gsaGridSurface.PlaneIndex = gsaPlane.Index;
+              retList.Add(gsaPlane);
+            }
+          }
+        }
+        else if (speckleGridSurface.gridPlane.axis != null)
+        {
+          if (IsGlobalAxis(speckleGridSurface.gridPlane.axis))
+          {
+            gsaGridSurface.PlaneRefType = GridPlaneAxisRefType.Global;
+          }
+          else if (IsXElevationAxis(speckleGridSurface.gridPlane.axis))
+          {
+            gsaGridSurface.PlaneRefType = GridPlaneAxisRefType.XElevation;
+          }
+          else if (IsYElevationAxis(speckleGridSurface.gridPlane.axis))
+          {
+            gsaGridSurface.PlaneRefType = GridPlaneAxisRefType.YElevation;
+          }
+        }
+      }
+
+      retList.Add(gsaGridSurface);
       return retList;
     }
 

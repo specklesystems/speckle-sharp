@@ -266,6 +266,16 @@ namespace ConverterGSA
       }
     }
 
+    public static GridSurfaceSpan ToNative(this GridSurfaceSpanType gsaGridSurfaceSpan)
+    {
+      switch (gsaGridSurfaceSpan)
+      {
+        case GridSurfaceSpanType.OneWay: return GridSurfaceSpan.One;
+        case GridSurfaceSpanType.TwoWay: return GridSurfaceSpan.Two;
+        default: return GridSurfaceSpan.NotSet;
+      }
+    }
+
     public static LoadExpansion ToSpeckle(this GridExpansion gsaExpansion)
     {
       switch(gsaExpansion)
@@ -275,6 +285,18 @@ namespace ConverterGSA
         case GridExpansion.PlaneCorner: return LoadExpansion.PlaneCorner;
         case GridExpansion.PlaneSmooth: return LoadExpansion.PlaneSmooth;
         default: return LoadExpansion.NotSet;
+      }
+    }
+
+    public static GridExpansion ToNative(this LoadExpansion gsaExpansion)
+    {
+      switch (gsaExpansion)
+      {
+        case LoadExpansion.Legacy:      return GridExpansion.Legacy;
+        case LoadExpansion.PlaneAspect: return GridExpansion.PlaneAspect;
+        case LoadExpansion.PlaneCorner: return GridExpansion.PlaneCorner;
+        case LoadExpansion.PlaneSmooth: return GridExpansion.PlaneSmooth;
+        default: return GridExpansion.NotSet;
       }
     }
 
