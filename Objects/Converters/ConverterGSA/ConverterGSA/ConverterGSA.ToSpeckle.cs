@@ -1338,7 +1338,8 @@ namespace ConverterGSA
       if (gsaConcrete.EpsU.HasValue) speckleConcrete.maxCompressiveStrain = gsaConcrete.EpsU.Value;
       if (gsaConcrete.Agg.HasValue) speckleConcrete.maxAggregateSize = gsaConcrete.Agg.Value;
       if (gsaConcrete.Fcdt.HasValue) speckleConcrete.tensileStrength = gsaConcrete.Fcdt.Value;
-      if (gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
+      if (gsaConcrete.Mat.Sls != null)
+        if (gsaConcrete.Mat.Sls.StrainFailureTension.HasValue) speckleConcrete.maxTensileStrain = gsaConcrete.Mat.Sls.StrainFailureTension.Value;
 
       //the following properties are stored in multiple locations in GSA
       if (Choose(gsaConcrete.Mat.E, gsaConcrete.Mat.Prop == null ? null : gsaConcrete.Mat.Prop.E, out var E)) speckleConcrete.elasticModulus = E;
