@@ -23,6 +23,7 @@ using Objects.Structural;
 using Objects.Structural.Materials;
 using Objects;
 using Objects.Structural.Properties.Profiles;
+using Objects.BuiltElements;
 
 namespace ConverterGSA
 {
@@ -30,6 +31,12 @@ namespace ConverterGSA
   public partial class ConverterGSA
   {
     private Dictionary<Type, Func<Base, List<GsaRecord>>> ToNativeFns;
+
+    private static Point Origin = new Point(0, 0, 0);
+    private static Vector UnitX = new Vector(1, 0, 0);
+    private static Vector UnitY = new Vector(0, 1, 0);
+    private static Vector UnitZ = new Vector(0, 0, 1);
+    private static int GeometricDecimalPlaces = 6;
 
     void SetupToNativeFns()
     {
@@ -46,6 +53,9 @@ namespace ConverterGSA
         { typeof(GSAMember1D), GSAMember1dToNative },
         { typeof(GSAMember2D), GSAMember2dToNative },
         { typeof(GSAAssembly), GSAAssemblyToNative },
+        { typeof(GSAGridLine), GSAGridLineToNative },
+        { typeof(Storey), StoreyToNative },
+        { typeof(GSAGridPlane), GSAGridPlaneToNative },
         //Loading
         { typeof(GSALoadCase), GSALoadCaseToNative },
         { typeof(LoadCase), LoadCaseToNative },
@@ -491,6 +501,175 @@ namespace ConverterGSA
 
       return new List<GsaRecord>() { gsaAssembly };
     }
+
+    private List<GsaRecord> GSAGridLineToNative(Base speckleObject)
+    {
+      var speckleGridLine = (GSAGridLine)speckleObject;
+
+      var gsaGridLine = new GsaGridLine()
+      {
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaGridLine>(speckleObject.applicationId),
+        Name = speckleGridLine.label,
+        ApplicationId = speckleGridLine.applicationId
+      };
+      if (speckleGridLine.baseLine is Arc)
+      {
+        gsaGridLine.Type = GridLineType.Arc;
+        var speckleArc = (Arc)speckleGridLine.baseLine;
+        gsaGridLine.Length = speckleArc.radius;
+        gsaGridLine.XCoordinate = speckleArc.plane.origin.x;
+        gsaGridLine.YCoordinate = speckleArc.plane.origin.y;
+        if (speckleArc.startAngle != null)
+        {
+          gsaGridLine.Theta1 = speckleArc.startAngle.Value.Degrees();
+        }
+        if (speckleArc.endAngle != null)
+        {
+          gsaGridLine.Theta2 = speckleArc.endAngle.Value.Degrees();
+        }
+      }
+      else if (speckleGridLine.baseLine is Line)
+      {
+        gsaGridLine.Type = GridLineType.Line;
+        var speckleLine = (Line)speckleGridLine.baseLine;
+        gsaGridLine.XCoordinate = speckleLine.start.x;
+        gsaGridLine.YCoordinate = speckleLine.start.y;
+
+        var a = (speckleLine.end.x - speckleLine.start.x);
+        var o = (speckleLine.end.y - speckleLine.start.y);
+        var h = Hypotenuse(a, o);
+
+        gsaGridLine.Length = h;
+        gsaGridLine.Theta1 = Math.Acos(a / h);
+      }
+
+      return new List<GsaRecord>() { gsaGridLine };
+    }
+
+    private List<GsaRecord> StoreyToNative(Base speckleObject)
+    {
+      var speckleStorey = (Storey)speckleObject;
+
+      var gsaGridLine = new GsaGridPlane()
+      {
+        Index = Instance.GsaModel.Cache.ResolveIndex<GsaGridPlane>(speckleStorey.applicationId),
+        Name = speckleStorey.name,
+        ApplicationId = speckleStorey.applicationId,
+        Elevation = speckleStorey.elevation
+      };
+      return new List<GsaRecord>() { gsaGridLine };
+    }
+
+    private List<GsaRecord> GSAGridPlaneToNative(Base speckleObject)
+    {
+      var retList = new List<GsaRecord>();
+      var speckleGridPlane = (GSAGridPlane)speckleObject;
+      var gsaRecords = StoreyToNative(speckleObject);
+      if (gsaRecords == null || gsaRecords.Count == 0 || (!(gsaRecords.First() is GsaGridPlane)))
+      {
+        return null;
+      }
+
+      var gsaGridPlane = (GsaGridPlane)(gsaRecords.First());
+      if (speckleGridPlane.toleranceBelow.HasValue || speckleGridPlane.toleranceAbove.HasValue)
+      {
+        gsaGridPlane.Type = GridPlaneType.Storey;
+        if (speckleGridPlane.toleranceAbove == null)
+        {
+          gsaGridPlane.StoreyToleranceAboveAuto = true;
+        }
+        else
+        {
+          gsaGridPlane.StoreyToleranceAbove = speckleGridPlane.toleranceAbove;
+        }
+        if (speckleGridPlane.toleranceBelow == null)
+        {
+          gsaGridPlane.StoreyToleranceBelowAuto = true;
+        }
+        else
+        {
+          gsaGridPlane.StoreyToleranceBelow = speckleGridPlane.toleranceBelow;
+        }
+      }
+      else
+      {
+        gsaGridPlane.Type = GridPlaneType.General;
+      }
+
+      if (speckleGridPlane.axis != null)
+      {
+        if (IsGlobalAxis(speckleGridPlane.axis))
+        {
+          gsaGridPlane.AxisRefType = GridPlaneAxisRefType.Global;
+        }
+        else if (!string.IsNullOrEmpty(speckleGridPlane.axis.applicationId))
+        {
+          var axisIndex = Instance.GsaModel.Cache.LookupIndex<GsaAxis>(speckleGridPlane.axis.applicationId);
+          if (axisIndex.IsIndex())
+          {
+            gsaGridPlane.AxisIndex = axisIndex;
+          }
+          else
+          {
+            var axisGsaRecords = AxisToNative(speckleGridPlane.axis);
+            var gsaAxis = axisGsaRecords.FirstOrDefault(r => r is GsaAxis);
+            if (gsaAxis != null)
+            {
+              gsaGridPlane.AxisIndex = gsaAxis.Index;
+              retList.Add(gsaAxis); 
+            }
+          }
+          if (gsaGridPlane.AxisIndex.IsIndex())
+          {
+            gsaGridPlane.AxisRefType = GridPlaneAxisRefType.Reference;
+          }
+        }
+        else
+        {
+          if (IsXElevationAxis(speckleGridPlane.axis))
+          {
+            gsaGridPlane.AxisRefType = GridPlaneAxisRefType.XElevation;
+          }
+          else if (IsYElevationAxis(speckleGridPlane.axis))
+          {
+            gsaGridPlane.AxisRefType = GridPlaneAxisRefType.YElevation;
+          }
+        }
+      }
+
+      retList.Add(gsaGridPlane);
+
+      return retList;
+    }
+
+    private double Hypotenuse(double a, double o) => Math.Sqrt((a * a) + (o * o));
+
+    private bool IsGlobalAxis(Axis x) => ((x.axisType == AxisType.Cartesian)
+      && x.definition.origin.Equals(Origin, GeometricDecimalPlaces)
+      && x.definition.xdir.Equals(UnitX, GeometricDecimalPlaces)
+      && x.definition.ydir.Equals(UnitY, GeometricDecimalPlaces)
+      && x.definition.normal.Equals(UnitZ, GeometricDecimalPlaces));
+
+    private bool IsXElevationAxis(Axis x) => ((x.axisType == AxisType.Cartesian)
+      && x.definition.origin.Equals(Origin, GeometricDecimalPlaces)
+      && x.definition.xdir.Equals(UnitY * -1, GeometricDecimalPlaces)
+      && x.definition.ydir.Equals(UnitZ, GeometricDecimalPlaces)
+      && x.definition.normal.Equals(UnitX * -1, GeometricDecimalPlaces));
+
+    private bool IsYElevationAxis(Axis x) => ((x.axisType == AxisType.Cartesian)
+      && x.definition.origin.Equals(Origin, GeometricDecimalPlaces)
+      && x.definition.xdir.Equals(UnitX, GeometricDecimalPlaces)
+      && x.definition.ydir.Equals(UnitZ, GeometricDecimalPlaces)
+      && x.definition.normal.Equals(UnitY * -1, GeometricDecimalPlaces));
+
+    /* not used (yet) - review if needed
+    private bool IsVerticalAxis(Axis x) => ((x.axisType == AxisType.Cartesian)
+      && x.definition.origin.Equals(Origin, GeometricDecimalPlaces)
+      && x.definition.xdir.Equals(UnitZ, GeometricDecimalPlaces)
+      && x.definition.ydir.Equals(UnitZ, GeometricDecimalPlaces)
+      && x.definition.normal.Equals(UnitY, GeometricDecimalPlaces));
+    */
+    
     #endregion
 
     #region Loading
@@ -650,19 +829,37 @@ namespace ConverterGSA
 
     private T LoadBeamBaseToNative<T>(LoadBeam speckleLoad) where T : GsaLoadBeam
     {
-      var gsaLoad = (T)Activator.CreateInstance(typeof(T), new object());
+      var gsaLoad = (T)Activator.CreateInstance(typeof(T));
       gsaLoad.ApplicationId = speckleLoad.applicationId;
       gsaLoad.Index = speckleLoad.GetIndex<T>();
       gsaLoad.Name = speckleLoad.name;
       gsaLoad.LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>();
       gsaLoad.Projected = speckleLoad.isProjected;
       gsaLoad.LoadDirection = speckleLoad.direction.ToNative();
-      gsaLoad.ElementIndices = speckleLoad.elements.GetIndicies<GsaEl>();
-      gsaLoad.MemberIndices = speckleLoad.elements.GetIndicies<GsaMemb>();
-      if (GetLoadBeamAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+      if (speckleLoad.elements != null)
       {
-        gsaLoad.AxisRefType = gsaAxisRefType;
-        gsaLoad.AxisIndex = gsaAxisIndex;
+        var elementIndices = speckleLoad.elements.GetIndicies<GsaEl>();
+        var memberIndices = speckleLoad.elements.GetIndicies<GsaMemb>();
+        if (elementIndices != null)
+        {
+          gsaLoad.ElementIndices = elementIndices;
+        }
+        if (memberIndices != null)
+        {
+          gsaLoad.MemberIndices = memberIndices;
+        }
+      }
+      if (speckleLoad.loadAxis == null)
+      {
+        gsaLoad.AxisRefType = speckleLoad.loadAxisType.ToNativeBeamAxisRefType();
+      }
+      else
+      {
+        if (GetLoadBeamAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+        {
+          gsaLoad.AxisRefType = gsaAxisRefType;
+          gsaLoad.AxisIndex = gsaAxisIndex;
+        }
       }
       return gsaLoad;
     }

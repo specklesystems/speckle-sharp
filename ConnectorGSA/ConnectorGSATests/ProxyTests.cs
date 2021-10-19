@@ -39,10 +39,10 @@ namespace ConnectorGSATests
       var proxy = new GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-      Assert.True(proxy.GetGwaData(out var records));
+      Assert.True(proxy.GetGwaData(Instance.GsaModel.StreamLayer, out var records));
       proxy.Close();
 
-      Assert.Equal(188, records.Count());
+      Assert.Equal(197, records.Count());
     }
 
     [Fact]

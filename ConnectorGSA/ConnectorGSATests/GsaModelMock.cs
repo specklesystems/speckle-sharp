@@ -75,7 +75,7 @@ namespace ConnectorGSATests
 
     public bool OpenFile(string path, bool showWindow = true, object gsaInstance = null) => true;
 
-    public bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(GSALayer layer, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       records = new List<GsaRecord>();
       return true;

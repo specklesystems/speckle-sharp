@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 {
+  //This one keyword is recognised by the COM API as the key to all the child classes in this file - importantly, the index range is shared across all these types.
+  //So there is one table 
   [GsaType(GwaKeyword.LOAD_BEAM, GwaSetCommandType.SetAt, true, GwaKeyword.MEMB, GwaKeyword.EL)]
   public abstract class GsaLoadBeamParser : GwaParser<GsaLoadBeam>
   {  
@@ -119,10 +121,12 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     #endregion
   }
 
+  [GsaChildType(GwaKeyword.LOAD_BEAM_POINT, typeof(GsaLoadBeamPoint))]
   public class GsaLoadBeamPointParser : GsaLoadBeamParser
   {
     public double Position;
     public double? Load;
+
 
     public GsaLoadBeamPointParser(GsaLoadBeamPoint gsaLoadBeamPoint) : base(gsaLoadBeamPoint) 
     {
@@ -149,6 +153,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     }
   }
 
+  [GsaChildType(GwaKeyword.LOAD_BEAM_UDL, typeof(GsaLoadBeamUdl))]
   public class GsaLoadBeamUdlParser : GsaLoadBeamParser
   {
     public GsaLoadBeamUdlParser() : base(new GsaLoadBeamUdl())
@@ -176,6 +181,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     }
   }
 
+  [GsaChildType(GwaKeyword.LOAD_BEAM_LINE, typeof(GsaLoadBeamLine))]
   public class GsaLoadBeamLineParser : GsaLoadBeamParser
   {
     public GsaLoadBeamLineParser() : base(new GsaLoadBeamLine())
@@ -233,6 +239,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     }
   }
 
+  [GsaChildType(GwaKeyword.LOAD_BEAM_PATCH, typeof(GsaLoadBeamPatch))]
   public class GsaLoadBeamPatchParser : GsaLoadBeamPatchTrilinParser
   {
     public GsaLoadBeamPatchParser() : base(new GsaLoadBeamPatch())
@@ -246,6 +253,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     }
   }
 
+  [GsaChildType(GwaKeyword.LOAD_BEAM_TRILIN, typeof(GsaLoadBeamTrilin))]
   public class GsaLoadBeamTrilinParser : GsaLoadBeamPatchTrilinParser
   {
     public GsaLoadBeamTrilinParser() : base(new GsaLoadBeamTrilin())

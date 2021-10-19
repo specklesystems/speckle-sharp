@@ -240,6 +240,105 @@ namespace ConverterGSATests
       var result = compareLogic.Compare(gsaAssemblies, gsaConvertedAssemblies);
       Assert.Empty(result.Differences);
     }
+
+    [Fact]
+    public void GridLineToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      var gsaGridLines = GsaGridLineExamples(2, "grid line 1", "grid line 2");
+      gsaRecords.AddRange(gsaGridLines);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridLine);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleGridLines = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAGridLine).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleGridLines);
+
+      //Checks
+      var gsaConvertedGridLines = gsaConvertedRecords.FindAll(r => r is GsaGridLine).Select(r => (GsaGridLine)r).ToList();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridLine x) => x.Theta1));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridLine x) => x.Theta2));
+      var result = compareLogic.Compare(gsaGridLines, gsaConvertedGridLines);
+      Assert.Empty(result.Differences);
+
+      for (int i = 0; i < gsaConvertedGridLines.Count(); i++)
+      {
+        if (gsaGridLines[i].Theta1.HasValue)
+        {
+          Assert.Equal(Math.Round(gsaGridLines[i].Theta1.Value, 4), Math.Round(gsaConvertedGridLines[i].Theta1.Value, 4));
+        }
+        if (gsaGridLines[i].Theta2.HasValue)
+        {
+          Assert.Equal(Math.Round(gsaGridLines[i].Theta2.Value, 4), Math.Round(gsaConvertedGridLines[i].Theta2.Value, 4));
+        }
+      }
+    }
+
+    [Fact]
+    public void GridPlaneToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+
+      //Gen #2
+      var gsaGridPlanes = GsaGridPlaneExamples(2, "grid plane 1", "grid plane 2");
+      gsaRecords.AddRange(gsaGridPlanes);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      foreach (var record in gsaRecords)
+      {
+        var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
+        Assert.Empty(converter.ConversionErrors);
+
+        Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
+      }
+
+      Assert.True(Instance.GsaModel.Cache.GetSpeckleObjects(out var structuralObjects));
+
+      Assert.NotEmpty(structuralObjects);
+      Assert.Contains(structuralObjects, so => so is GSAGridPlane);
+
+      var speckleGridPlanes = structuralObjects.FindAll(so => so is GSAGridPlane).Select(so => (GSAGridPlane)so).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleGridPlanes.Select(p => (Base)p).ToList());
+
+      //Checks
+      var gsaConvertedGridPlanes = gsaConvertedRecords.FindAll(r => r is GsaGridPlane).Select(r => (GsaGridPlane)r).ToList();
+      var compareLogic = new CompareLogic();
+      //compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridPlane x) => x.Theta1));
+      var result = compareLogic.Compare(gsaGridPlanes, gsaConvertedGridPlanes);
+      Assert.Empty(result.Differences);
+
+      for (int i = 0; i < gsaConvertedGridPlanes.Count(); i++)
+      {
+       
+      }
+    }
     #endregion
 
     #region Loading
@@ -468,7 +567,7 @@ namespace ConverterGSATests
       Instance.GsaModel.StreamLayer = GSALayer.Both;
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
       var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
-      var speckleObjects = ((Model)speckleModels.First()).loads.FindAll(o => o is GSALoadBeam).ToList();
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadBeam).ToList();
       var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
 
       //Checks

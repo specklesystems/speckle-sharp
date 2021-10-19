@@ -42,4 +42,23 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       this.SelfContained = selfContained;
     }
   }
+
+  //Only used where there are more than one keyword/class that share the same GSA table - i.e. the LOAD_BEAM ones
+  [AttributeUsage(AttributeTargets.Class)]
+  public class GsaChildType : Attribute
+  {
+    public GwaKeyword Keyword { get; protected set; }
+
+    //Used in reflection
+    public static string GsaSchemaTypeProperty = "GsaSchemaType"; 
+    public static string GwaKeywordProperty = "Keyword";
+
+    public Type GsaSchemaType { get; protected set; }
+
+    public GsaChildType(GwaKeyword kw, Type t)
+    {
+      this.GsaSchemaType = t;
+      this.Keyword = kw;
+    }
+  }
 }
