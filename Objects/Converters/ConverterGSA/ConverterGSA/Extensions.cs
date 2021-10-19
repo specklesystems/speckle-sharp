@@ -660,6 +660,17 @@ namespace ConverterGSA
       }
     }
 
+    public static LoadBeamAxisRefType ToNativeBeamAxisRefType(this LoadAxisType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LoadAxisType.Global: return LoadBeamAxisRefType.Global;
+        case LoadAxisType.Local: return LoadBeamAxisRefType.Local;
+        case LoadAxisType.DeformedLocal:  return LoadBeamAxisRefType.Local;
+        default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
+      }
+    }
+
     public static LoadCategory LoadCategoryToNative(this string category)
     {
       switch(category.ToLowerInvariant())
@@ -729,9 +740,14 @@ namespace ConverterGSA
     {
       return Math.PI * degrees / 180;
     }
+    public static double Degrees(this double radians)
+    {
+      double degrees = (180 / Math.PI) * radians;
+      return (degrees);
+    }
     #endregion
 
-    #region Vector Fns
+    #region Geometric Fns
     /// <summary>
     /// Returns the dot product of two vectors
     /// </summary>
@@ -784,7 +800,46 @@ namespace ConverterGSA
 
       return v_rot1 + v_rot2 + v_rot3;
     }
+
+    public static bool Equals(this Point p1, Point p2, int decimalPlaces)
+    {
+      if (p1 == null && p2 == null)
+      {
+        return true;
+      }
+      else if (p1 == null || p2 == null)
+      {
+        return false;
+      }
+      double margin = 1;
+      for (int i = 0; i < decimalPlaces; i++)
+      {
+        margin *= 0.1;
+      }
+      return ((Math.Abs(p1.x - p2.x) < margin) && (Math.Abs(p1.y - p2.y) < margin) && (Math.Abs(p1.z - p2.z) < margin));
+    }
+
+    public static bool Equals(this Vector v1, Vector v2, int decimalPlaces)
+    {
+      if (v1 == null && v2 == null)
+      {
+        return true;
+      }
+      else if (v1 == null || v2 == null)
+      {
+        return false;
+      }
+      double margin = 1;
+      for (int i = 0; i < decimalPlaces; i++)
+      {
+        margin *= 0.1;
+      }
+      return ((Math.Abs(v1.x - v2.x) < margin) && (Math.Abs(v1.y - v2.y) < margin) && (Math.Abs(v1.z - v2.z) < margin));
+    }
+
     #endregion
+
+
 
     #region ResolveIndices
     public static List<int> GetIndicies<T>(this List<Base> speckleObject)

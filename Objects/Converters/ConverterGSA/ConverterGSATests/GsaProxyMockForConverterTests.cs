@@ -49,7 +49,7 @@ namespace ConverterGSATests
       NativesByKeywordId = null;
     }
 
-    public bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(GSALayer layer, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       records = null;
       return true;

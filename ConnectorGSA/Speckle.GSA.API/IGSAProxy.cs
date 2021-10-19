@@ -9,7 +9,7 @@ namespace Speckle.GSA.API
   {
     bool NewFile(bool showWindow = true, object gsaInstance = null);
     bool OpenFile(string path, bool showWindow = true, object gsaInstance = null);
-    bool GetGwaData(out List<GsaRecord> records, IProgress<int> incrementProgress = null);
+    bool GetGwaData(GSALayer layer, out List<GsaRecord> records, IProgress<int> incrementProgress = null);
     string GetTopLevelSid();
     bool SetTopLevelSid(string StreamState);
 

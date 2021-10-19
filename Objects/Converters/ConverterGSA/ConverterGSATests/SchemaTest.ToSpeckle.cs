@@ -597,8 +597,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[1].Index.Value, speckleGridPlanes[1].nativeId);
       Assert.Equal("axis 1", speckleGridPlanes[1].axis.applicationId);
       Assert.Equal(gsaGridPlanes[1].Elevation.Value, speckleGridPlanes[1].elevation);
-      Assert.Equal(false, speckleGridPlanes[1].toleranceBelow.HasValue);
-      Assert.Equal(false, speckleGridPlanes[1].toleranceAbove.HasValue);
+      Assert.False(speckleGridPlanes[1].toleranceBelow.HasValue);
+      Assert.False(speckleGridPlanes[1].toleranceAbove.HasValue);
     }
 
     [Fact]
@@ -1049,6 +1049,7 @@ namespace ConverterGSATests
 
       foreach (var m in speckleModels)
       {
+        var isAnalysis = m.layerDescription.ToLower().Contains("analysis");
         Assert.NotNull(m);
         Assert.NotEmpty(m.loads);
         Assert.Contains(m.loads, o => o is GSALoadBeam);
@@ -1058,8 +1059,11 @@ namespace ConverterGSATests
         Assert.Equal("load beam 1", speckleBeamLoads[0].applicationId);
         Assert.Equal("1", speckleBeamLoads[0].name);
         Assert.Equal("load case 1", speckleBeamLoads[0].loadCase.applicationId);
-        Assert.Single(speckleBeamLoads[0].elements);
-        Assert.Equal("element 1", speckleBeamLoads[0].elements[0].applicationId);
+        if (isAnalysis)
+        {
+          Assert.Single(speckleBeamLoads[0].elements);
+          Assert.Equal("element 1", speckleBeamLoads[0].elements[0].applicationId);
+        }
         Assert.Equal(BeamLoadType.Point, speckleBeamLoads[0].loadType);
         Assert.Equal(LoadDirection.Z, speckleBeamLoads[0].direction);
         Assert.Null(speckleBeamLoads[0].loadAxis);
@@ -1075,8 +1079,11 @@ namespace ConverterGSATests
         Assert.Equal("load beam 2", speckleBeamLoads[1].applicationId);
         Assert.Equal("2", speckleBeamLoads[1].name);
         Assert.Equal("load case 1", speckleBeamLoads[1].loadCase.applicationId);
-        Assert.Single(speckleBeamLoads[1].elements);
-        Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
+        if (isAnalysis)
+        {
+          Assert.Single(speckleBeamLoads[1].elements);
+          Assert.Equal("element 2", speckleBeamLoads[1].elements[0].applicationId);
+        }
         Assert.Equal(BeamLoadType.Uniform, speckleBeamLoads[1].loadType);
         Assert.Equal(LoadDirection.X, speckleBeamLoads[1].direction);
         Assert.Equal("axis 1", speckleBeamLoads[1].loadAxis.applicationId);
@@ -1091,8 +1098,11 @@ namespace ConverterGSATests
         Assert.Equal("load beam 3", speckleBeamLoads[2].applicationId);
         Assert.Equal("3", speckleBeamLoads[2].name);
         Assert.Equal("load case 1", speckleBeamLoads[2].loadCase.applicationId);
-        Assert.Single(speckleBeamLoads[2].elements);
-        Assert.Equal("element 1", speckleBeamLoads[2].elements[0].applicationId);
+        if (isAnalysis)
+        {
+          Assert.Single(speckleBeamLoads[2].elements);
+          Assert.Equal("element 1", speckleBeamLoads[2].elements[0].applicationId);
+        }
         Assert.Equal(BeamLoadType.Linear, speckleBeamLoads[2].loadType);
         Assert.Equal(LoadDirection.Y, speckleBeamLoads[2].direction);
         Assert.Null(speckleBeamLoads[2].loadAxis);
