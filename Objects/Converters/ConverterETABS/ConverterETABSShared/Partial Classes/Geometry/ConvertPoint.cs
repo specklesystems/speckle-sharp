@@ -16,8 +16,7 @@ namespace Objects.Converter.ETABS
             return speckleStructNode.name;
         }
         public Node PointToSpeckle(string name)
-        {
-           
+        {           
             var speckleStructNode = new Node();
             double x,y,z;
             x = y = z = 0;

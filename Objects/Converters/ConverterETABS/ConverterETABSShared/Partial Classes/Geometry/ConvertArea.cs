@@ -34,7 +34,7 @@ namespace Objects.Converter.ETABS
             return name;
 
         }
-        public  Element2D AreaToSpeckle(string name)
+        public Element2D AreaToSpeckle(string name)
         {
             string units = ModelUnits();
             var speckleStructArea = new Element2D();
