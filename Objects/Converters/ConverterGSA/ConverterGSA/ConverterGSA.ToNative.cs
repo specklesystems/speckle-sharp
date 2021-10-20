@@ -1360,7 +1360,6 @@ namespace ConverterGSA
       {
         ApplicationId = speckleSteel.applicationId,
         Index = speckleSteel.GetIndex<GsaMatSteel>(),
-        Name = speckleSteel.name,
         Mat = new GsaMat()
         {
           E = speckleSteel.elasticModulus,
@@ -1429,6 +1428,11 @@ namespace ConverterGSA
         EpsP = 0,
         Eh = speckleSteel.strainHardeningModulus,
       };
+
+      if (!string.IsNullOrEmpty(speckleSteel.name))
+      {
+        gsaSteel.Name = speckleSteel.name;
+      }
 
       //TODO:
       //SpeckleObject:
@@ -2641,7 +2645,7 @@ namespace ConverterGSA
         gsaMatAnal.Name = speckleObject.GetDynamicValue<string>("Name");
         gsaMatAnal.Colour = speckleObject.GetDynamicEnum<Colour>("Colour");
         gsaMatAnal.Type = speckleObject.GetDynamicEnum<MatAnalType>("Type");
-        gsaMatAnal.NumParams = speckleObject.GetDynamicValue<int?>("NumParams");
+        gsaMatAnal.NumParams = speckleObject.GetDynamicValue<int>("NumParams");
         gsaMatAnal.E = speckleObject.GetDynamicValue<double?>("E");
         gsaMatAnal.Nu = speckleObject.GetDynamicValue<double?>("Nu");
         gsaMatAnal.Rho = speckleObject.GetDynamicValue<double?>("Rho");
@@ -2680,7 +2684,14 @@ namespace ConverterGSA
       {
         gsaMatCurveParam.Name = speckleObject.GetDynamicValue<string>("Name");
         var model = speckleObject.GetDynamicValue<List<string>>("Model");
-        gsaMatCurveParam.Model = model.Select(s => Enum.TryParse(s, true, out MatCurveParamType v) ? v : MatCurveParamType.UNDEF).ToList();
+        if (model == null)
+        {
+          gsaMatCurveParam.Model = new List<MatCurveParamType>() { MatCurveParamType.UNDEF };
+        }
+        else
+        {
+          gsaMatCurveParam.Model = model.Select(s => Enum.TryParse(s, true, out MatCurveParamType v) ? v : MatCurveParamType.UNDEF).ToList();
+        }
         gsaMatCurveParam.StrainElasticCompression = speckleObject.GetDynamicValue<double?>("StrainElasticCompression");
         gsaMatCurveParam.StrainElasticTension = speckleObject.GetDynamicValue<double?>("StrainElasticTension");
         gsaMatCurveParam.StrainPlasticCompression = speckleObject.GetDynamicValue<double?>("StrainPlasticCompression");
