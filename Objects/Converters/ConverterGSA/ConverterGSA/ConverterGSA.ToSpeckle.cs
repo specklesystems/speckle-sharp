@@ -1357,6 +1357,7 @@ namespace ConverterGSA
       if (gsaConcrete.EmEs.HasValue) speckleConcrete["EmEs"] = gsaConcrete.EmEs.Value;
       if (gsaConcrete.N.HasValue) speckleConcrete["N"] = gsaConcrete.N.Value;
       if (gsaConcrete.Emod.HasValue) speckleConcrete["Emod"] = gsaConcrete.Emod.Value;
+      if (gsaConcrete.Eps.HasValue) speckleConcrete["Eps"] = gsaConcrete.Eps.Value;
       if (gsaConcrete.EpsPeak.HasValue) speckleConcrete["EpsPeak"] = gsaConcrete.EpsPeak.Value;
       if (gsaConcrete.EpsMax.HasValue) speckleConcrete["EpsMax"] = gsaConcrete.EpsMax.Value;
       if (gsaConcrete.EpsAx.HasValue) speckleConcrete["EpsAx"] = gsaConcrete.EpsAx.Value;

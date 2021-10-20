@@ -1370,6 +1370,7 @@ namespace ConverterGSA
       gsaConcrete.EmEs = speckleConcrete.GetDynamicValue<double?>("EmEs");
       gsaConcrete.N = speckleConcrete.GetDynamicValue<double?>("N");
       gsaConcrete.Emod = speckleConcrete.GetDynamicValue<double?>("Emod");
+      gsaConcrete.Eps = speckleConcrete.GetDynamicValue<double?>("Eps");
       gsaConcrete.EpsPeak = speckleConcrete.GetDynamicValue<double?>("EpsPeak");
       gsaConcrete.EpsMax = speckleConcrete.GetDynamicValue<double?>("EpsMax");
       gsaConcrete.EpsAx = speckleConcrete.GetDynamicValue<double?>("EpsAx");
