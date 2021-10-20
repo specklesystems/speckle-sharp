@@ -1590,7 +1590,7 @@ namespace ConverterGSATests
 
       Assert.Equal("concrete 1", speckleConcrete.applicationId);
       Assert.Equal("", speckleConcrete.grade);
-      Assert.Equal(MaterialType.Concrete, speckleConcrete.type);
+      Assert.Equal(MaterialType.Concrete, speckleConcrete.materialType);
       Assert.Equal("", speckleConcrete.designCode);
       Assert.Equal("", speckleConcrete.codeYear);
       Assert.Equal(gsaMatConcrete.Fc.Value, speckleConcrete.compressiveStrength);
@@ -1635,7 +1635,7 @@ namespace ConverterGSATests
 
       Assert.Equal("steel 1", speckleSteel.applicationId);
       Assert.Equal("", speckleSteel.grade);
-      Assert.Equal(MaterialType.Steel, speckleSteel.type);
+      Assert.Equal(MaterialType.Steel, speckleSteel.materialType);
       Assert.Equal("", speckleSteel.designCode);
       Assert.Equal("", speckleSteel.codeYear);
       Assert.Equal(gsaMatSteel.Fy.Value, speckleSteel.yieldStrength);
@@ -4789,7 +4789,7 @@ namespace ConverterGSATests
           Index = 2,
           Name = "2",
           Width = 4,
-          NumAxle = 2,
+          NumAxle = 3,
           AxlePosition = new List<double>(){ 0, 5, 9 },
           AxleOffset = new List<double>(){ 1, 6, 10 },
           AxleLeft = new List<double>(){ 2, 7, 11 },

@@ -773,12 +773,13 @@ namespace ConnectorGSATests
       }
     }
 
-    [Fact (Skip = "Bugs identified in keyword definition documentation")]
+    [Fact] // (Skip = "Bugs identified in keyword definition documentation")
     public void GsaMatConcreteSimple()
     {
       var matConcreteGwas = new List<string>()
       {
-        "MAT_CONCRETE.17\t1\tMAT.10\t40 MPa\t3.315274903e+10\t40000000\t0.2\t1.381364543e+10\t2400\t1e-05\tMAT_ANAL.1\tConcrete\t-268435456\tMAT_ELAS_ISO\t6\t3.315274903e+10\t0.2\t2400\t1e-05\t1.381364543e+10\t0\t0\t0\t0\t0\t0\t0\t0\tMAT_CURVE_PARAM.3\t\tRECTANGLE+NO_TENSION\t0.00068931\t0\t0.00069069\t0\t0.003\t1\t1\t1\tMAT_CURVE_PARAM.3\t\tLINEAR+INTERPOLATED\t0.003\t0\t0.003\t0\t0.003\t0.0001144620975\t1\t1\t0\tConcrete\tCYLINDER\tN\t40000000\t34000000\t16000000\t3794733.192\t2276839.915\t0\t1\t2\t0.003\t0.003\t0.00069\t0.003\t0.0025\t0.002\t0.0025\tNO\t0.02\t0\t1\t0.77\t0\t0\t0\t0\t0"
+        //"MAT_CONCRETE.17\t1\tMAT.11\t40 MPa\t3.315274903e+10\t40000000\t0.2\t1.381364543e+10\t2400\t1e-05\tMAT_ANAL.1\tConcrete\t-268435456\tMAT_ELAS_ISO\t6\t3.315274903e+10\t0.2\t2400\t1e-05\t1.381364543e+10\t0\t0\t0\t0\t0\t0\t0\t0\tMAT_CURVE_PARAM.3\t\tRECTANGLE+NO_TENSION\t0.00068931\t0\t0.00069069\t0\t0.003\t1\t1\t1\tMAT_CURVE_PARAM.3\t\tLINEAR+INTERPOLATED\t0.003\t0\t0.003\t0\t0.003\t0.0001144620975\t1\t1\t0\tConcrete\tNO\tCYLINDER\tN\t40000000\t34000000\t16000000\t3794733.192\t2276839.915\t0\t1\t2\t0.003\t0.003\t0.00069\t0.003\t0.0025\t0.002\t0.0025\tNO\t0.02\t0\t1\t0.77\t0\t0\t0\t0\t0"
+        "MAT_CONCRETE.17\t1\tMAT.11\t35 MPa\t26423.06328\t35\t0.2\t11009.6097\t2.3\t1e-05\tMAT_ANAL.1\tConcrete\t-268435456\tMAT_ELAS_ISO\t6\t26423.06328\t0.2\t2.3\t1e-05\t11009.6097\t0\t0\t0\t0\t0\t0\t0\t0\tMAT_CURVE_PARAM.3\t\tRECTANGLE+NO_TENSION\t0.00041083875\t0\t0.00041166125\t0\t0.0035\t1\t1.538461538\t1\tMAT_CURVE_PARAM.3\t\tPOPOVICS+INTERPOLATED\t0\t0\t0.00203720187\t0\t0.0035\t0.0001343389989\t1\t1\t0\tConcrete\tNO\tCYLINDER\tN\t35\t27.9125\t14\t3.54964787\t2.18894952\t0\t1\t2\t0.00203720187\t0.0035\t0.00041125\t0.0035\t0.0035\t0.002\t0.0035\tNO\t0.02\t0\t1\t0.8825\t0\t0\t0\t0\t0"
       };
       var matConcretes = new List<GsaMatConcrete>();
       foreach (var g in matConcreteGwas)
@@ -787,19 +788,19 @@ namespace ConnectorGSATests
         Assert.True(l.FromGwa(g));
         matConcretes.Add((GsaMatConcrete)l.Record);
       }
-      Assert.Equal(2e11, matConcretes[0].Mat.E);
-      Assert.Equal(360000000, matConcretes[0].Mat.F);
-      Assert.Equal(0.3, matConcretes[0].Mat.Nu);
-      Assert.Equal(7.692307692e+10, matConcretes[0].Mat.G);
-      Assert.Equal(7850, matConcretes[0].Mat.Rho);
-      Assert.Equal(1.2e-05, matConcretes[0].Mat.Alpha);
+      Assert.Equal(26423.06328, matConcretes[0].Mat.E);
+      Assert.Equal(35, matConcretes[0].Mat.F);
+      Assert.Equal(0.2, matConcretes[0].Mat.Nu);
+      Assert.Equal(11009.6097, matConcretes[0].Mat.G);
+      Assert.Equal(2.3, matConcretes[0].Mat.Rho);
+      Assert.Equal(1e-05, matConcretes[0].Mat.Alpha);
       Assert.Equal(MatAnalType.MAT_ELAS_ISO, matConcretes[0].Mat.Prop.Type);
       Assert.Equal(6, matConcretes[0].Mat.Prop.NumParams);
-      Assert.Equal(2e11, matConcretes[0].Mat.Prop.E);
-      Assert.Equal(0.3, matConcretes[0].Mat.Prop.Nu);
-      Assert.Equal(7850, matConcretes[0].Mat.Prop.Rho);
-      Assert.Equal(1.2e-5, matConcretes[0].Mat.Prop.Alpha);
-      Assert.Equal(7.692307692e+10, matConcretes[0].Mat.Prop.G);
+      Assert.Equal(26423.06328, matConcretes[0].Mat.Prop.E);
+      Assert.Equal(0.2, matConcretes[0].Mat.Prop.Nu);
+      Assert.Equal(2.3, matConcretes[0].Mat.Prop.Rho);
+      Assert.Equal(1e-5, matConcretes[0].Mat.Prop.Alpha);
+      Assert.Equal(11009.6097, matConcretes[0].Mat.Prop.G);
       Assert.Equal(0, matConcretes[0].Mat.Prop.Damp);
       Assert.Equal(0, matConcretes[0].Mat.NumUC);
       Assert.Equal(Dimension.NotSet, matConcretes[0].Mat.AbsUC);
@@ -817,46 +818,49 @@ namespace ConnectorGSATests
       Assert.Equal(Dimension.NotSet, matConcretes[0].Mat.AbsST);
       Assert.Equal(Dimension.NotSet, matConcretes[0].Mat.OrdST);
       Assert.Equal(new double[0], matConcretes[0].Mat.PtsST);
-      Assert.Equal(0.05, matConcretes[0].Mat.Eps);
-      Assert.Equal(new List<MatCurveParamType>() { MatCurveParamType.UNDEF }, matConcretes[0].Mat.Uls.Model);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Uls.StrainElasticCompression);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Uls.StrainElasticTension);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Uls.StrainPlasticCompression);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Uls.StrainPlasticTension);
-      Assert.Equal(0.05, matConcretes[0].Mat.Uls.StrainFailureCompression);
-      Assert.Equal(0.05, matConcretes[0].Mat.Uls.StrainFailureTension);
-      Assert.Equal(1, matConcretes[0].Mat.Uls.GammaF);
+      Assert.Equal(0, matConcretes[0].Mat.Eps);
+      Assert.Equal(new List<MatCurveParamType>() { MatCurveParamType.RECTANGLE, MatCurveParamType.NO_TENSION }, matConcretes[0].Mat.Uls.Model);
+      Assert.Equal(0.00041083875, matConcretes[0].Mat.Uls.StrainElasticCompression);
+      Assert.Equal(0, matConcretes[0].Mat.Uls.StrainElasticTension);
+      Assert.Equal(0.00041166125, matConcretes[0].Mat.Uls.StrainPlasticCompression);
+      Assert.Equal(0, matConcretes[0].Mat.Uls.StrainPlasticTension);
+      Assert.Equal(0.0035, matConcretes[0].Mat.Uls.StrainFailureCompression);
+      Assert.Equal(1, matConcretes[0].Mat.Uls.StrainFailureTension);
+      Assert.Equal(1.538461538, matConcretes[0].Mat.Uls.GammaF);
       Assert.Equal(1, matConcretes[0].Mat.Uls.GammaE);
-      Assert.Equal(new List<MatCurveParamType>() { MatCurveParamType.ELAS_PLAS }, matConcretes[0].Mat.Sls.Model);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Sls.StrainElasticCompression);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Sls.StrainElasticTension);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Sls.StrainPlasticCompression);
-      Assert.Equal(0.0018, matConcretes[0].Mat.Sls.StrainPlasticTension);
-      Assert.Equal(0.05, matConcretes[0].Mat.Sls.StrainFailureCompression);
-      Assert.Equal(0.05, matConcretes[0].Mat.Sls.StrainFailureTension);
+      Assert.Equal(new List<MatCurveParamType>() { MatCurveParamType.POPOVICS, MatCurveParamType.INTERPOLATED }, matConcretes[0].Mat.Sls.Model);
+      Assert.Equal(0, matConcretes[0].Mat.Sls.StrainElasticCompression);
+      Assert.Equal(0, matConcretes[0].Mat.Sls.StrainElasticTension);
+      Assert.Equal(0.00203720187, matConcretes[0].Mat.Sls.StrainPlasticCompression);
+      Assert.Equal(0, matConcretes[0].Mat.Sls.StrainPlasticTension);
+      Assert.Equal(0.0035, matConcretes[0].Mat.Sls.StrainFailureCompression);
+      Assert.Equal(0.0001343389989, matConcretes[0].Mat.Sls.StrainFailureTension);
       Assert.Equal(1, matConcretes[0].Mat.Sls.GammaF);
       Assert.Equal(1, matConcretes[0].Mat.Sls.GammaE);
       Assert.Equal(0, matConcretes[0].Mat.Cost);
-      Assert.Equal(MatType.STEEL, matConcretes[0].Mat.Type);
-      Assert.Equal(0, matConcretes[0].Fc);
-      Assert.Equal(0, matConcretes[0].Fcd);
-      Assert.Equal(0, matConcretes[0].Fcdc);
-      Assert.Equal(0, matConcretes[0].Fcdt);
-      Assert.Equal(0, matConcretes[0].Fcfib);
+      Assert.Equal(MatType.CONCRETE, matConcretes[0].Mat.Type);
+      Assert.Equal(MatConcreteType.CYLINDER, matConcretes[0].Type);
+      Assert.Equal(MatConcreteCement.N, matConcretes[0].Cement);
+      Assert.Equal(35, matConcretes[0].Fc);
+      Assert.Equal(27.9125, matConcretes[0].Fcd);
+      Assert.Equal(14, matConcretes[0].Fcdc);
+      Assert.Equal(3.54964787, matConcretes[0].Fcdt);
+      Assert.Equal(2.18894952, matConcretes[0].Fcfib);
       Assert.Equal(0, matConcretes[0].EmEs);
-      Assert.Equal(0, matConcretes[0].N);
-      Assert.Equal(0, matConcretes[0].Emod);
-      Assert.Equal(0, matConcretes[0].EpsPeak);
-      Assert.Equal(0, matConcretes[0].EpsMax);
-      Assert.Equal(0, matConcretes[0].EpsU);
-      Assert.Equal(0, matConcretes[0].EpsAx);
-      Assert.Equal(0, matConcretes[0].EpsTran);
-      Assert.Equal(0, matConcretes[0].EpsAxs);
+      Assert.Equal(1, matConcretes[0].Emod);
+      Assert.Equal(2, matConcretes[0].N);
+      Assert.Equal(0.00203720187, matConcretes[0].Eps);
+      Assert.Equal(0.0035, matConcretes[0].EpsPeak);
+      Assert.Equal(0.00041125, matConcretes[0].EpsMax);
+      Assert.Equal(0.0035, matConcretes[0].EpsU);
+      Assert.Equal(0.0035, matConcretes[0].EpsAx);
+      Assert.Equal(0.002, matConcretes[0].EpsTran);
+      Assert.Equal(0.0035, matConcretes[0].EpsAxs);
       Assert.False(matConcretes[0].Light);
-      Assert.Equal(0, matConcretes[0].Agg);
+      Assert.Equal(0.02, matConcretes[0].Agg);
       Assert.Equal(0, matConcretes[0].XdMin);
-      Assert.Equal(0, matConcretes[0].XdMax);
-      Assert.Equal(0, matConcretes[0].Beta);
+      Assert.Equal(1, matConcretes[0].XdMax);
+      Assert.Equal(0.8825, matConcretes[0].Beta);
       Assert.Equal(0, matConcretes[0].Shrink);
       Assert.Equal(0, matConcretes[0].Confine);
       Assert.Equal(0, matConcretes[0].Fcc);
@@ -869,8 +873,6 @@ namespace ConnectorGSATests
 
         //replace with scientific notation 
         //gwa can be read directly into GSA without any problems. This is just to simplify the comparison
-        gwa[0] = gwa[0].Replace("33152749030", "3.315274903e+10");
-        gwa[0] = gwa[0].Replace("13813645430", "1.381364543e+10");
         gwa[0] = gwa[0].Replace("1E-05", "1e-05");
         gwa[0] = gwa[0].Replace("\tCONCRETE", "\tConcrete");
 

@@ -1291,9 +1291,9 @@ namespace ConverterGSA
       var speckleSteel = new GSASteel()
       {
         nativeId = gsaSteel.Index ?? 0,
-        name = gsaSteel.Name,
+        name = gsaSteel.Mat.Name,
         grade = "",                                 //grade can be determined from gsaMatSteel.Mat.Name (assuming the user doesn't change the default value): e.g. "350(AS3678)"
-        type = MaterialType.Steel,
+        materialType = MaterialType.Steel,
         designCode = "",                            //designCode can be determined from SPEC_STEEL_DESIGN gwa keyword
         codeYear = "",                              //codeYear can be determined from SPEC_STEEL_DESIGN gwa keyword
       };
@@ -1323,9 +1323,9 @@ namespace ConverterGSA
       var speckleConcrete = new GSAConcrete()
       {
         nativeId = gsaConcrete.Index ?? 0,
-        name = gsaConcrete.Name,
+        name = gsaConcrete.Mat.Name,
         grade = "",                                 //grade can be determined from gsaMatConcrete.Mat.Name (assuming the user doesn't change the default value): e.g. "32 MPa"
-        type = MaterialType.Concrete,
+        materialType = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"
         codeYear = "",                              //codeYear can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" - "2018"
         flexuralStrength = 0, //TODO: don't think this is part of the GSA definition
@@ -1357,6 +1357,7 @@ namespace ConverterGSA
       if (gsaConcrete.EmEs.HasValue) speckleConcrete["EmEs"] = gsaConcrete.EmEs.Value;
       if (gsaConcrete.N.HasValue) speckleConcrete["N"] = gsaConcrete.N.Value;
       if (gsaConcrete.Emod.HasValue) speckleConcrete["Emod"] = gsaConcrete.Emod.Value;
+      if (gsaConcrete.Eps.HasValue) speckleConcrete["Eps"] = gsaConcrete.Eps.Value;
       if (gsaConcrete.EpsPeak.HasValue) speckleConcrete["EpsPeak"] = gsaConcrete.EpsPeak.Value;
       if (gsaConcrete.EpsMax.HasValue) speckleConcrete["EpsMax"] = gsaConcrete.EpsMax.Value;
       if (gsaConcrete.EpsAx.HasValue) speckleConcrete["EpsAx"] = gsaConcrete.EpsAx.Value;
@@ -1415,7 +1416,7 @@ namespace ConverterGSA
         { Section1dProfileGroup.Perimeter, GetProfilePerimeter },
         { Section1dProfileGroup.Standard, GetProfileStandard }
       };
-      if (fns.ContainsKey(gsaSectionComp.ProfileGroup))
+      if (gsaSectionComp.ProfileDetails != null && fns.ContainsKey(gsaSectionComp.ProfileGroup))
       {
         speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
       }
@@ -3312,6 +3313,7 @@ namespace ConverterGSA
 
       var speckleMatAnal = new Base();
       if (gsaMatAnal.Name != null) speckleMatAnal["Name"] = gsaMatAnal.Name;
+      speckleMatAnal["Index"] = gsaMatAnal.Index;
       speckleMatAnal["Colour"] = gsaMatAnal.Colour.ToString();
       speckleMatAnal["Type"] = gsaMatAnal.Type.ToString();
       if (gsaMatAnal.NumParams.HasValue) speckleMatAnal["NumParams"] = gsaMatAnal.NumParams.Value;

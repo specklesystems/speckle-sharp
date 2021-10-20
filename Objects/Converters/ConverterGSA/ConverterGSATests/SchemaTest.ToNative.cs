@@ -330,14 +330,102 @@ namespace ConverterGSATests
       //Checks
       var gsaConvertedGridPlanes = gsaConvertedRecords.FindAll(r => r is GsaGridPlane).Select(r => (GsaGridPlane)r).ToList();
       var compareLogic = new CompareLogic();
-      //compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridPlane x) => x.Theta1));
       var result = compareLogic.Compare(gsaGridPlanes, gsaConvertedGridPlanes);
       Assert.Empty(result.Differences);
+    }
 
-      for (int i = 0; i < gsaConvertedGridPlanes.Count(); i++)
-      {
-       
-      }
+    [Fact]
+    public void GridSurfaceToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(4, "node 1", "node 2", "node 3", "node 4"));
+      gsaRecords.Add(GsaProp2dExample("prop 2D 1"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #3
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+      var gsaElement2d = GsaElement2dExamples(1, "quad 1").FirstOrDefault();
+      gsaElement2d.Index = 2;
+      gsaRecords.Add(gsaElement2d);
+
+      //Gen #4
+      var gsaGridSurfaces = GsaGridSurfaceExamples(2, "grid surface 1", "grid surface 2");
+      gsaRecords.AddRange(gsaGridSurfaces);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      var speckleModelObjects = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      var speckleDesignModel = speckleModelObjects.Where(so => so.layerDescription == "Design").FirstOrDefault();
+      var speckleAnalysisModel = speckleModelObjects.Where(so => so.layerDescription == "Analysis").FirstOrDefault();
+
+      #region Design Layer
+      var speckleGridSurfaces = speckleDesignModel.elements.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
+      var gsaDesignRecords = converter.ConvertToNative(speckleGridSurfaces.Select(p => (Base)p).ToList());
+
+      //Checks
+      var gsaDesignConverted = gsaDesignRecords.FindAll(r => r is GsaGridSurface).Select(r => (GsaGridSurface)r).ToList();
+      var compareLogic = new CompareLogic();
+      //Ignore Type because this context didn't create any Design Layer members, so the Model object for the design layer doesn't have
+      //anything in its elements collection, so the ToNative of the Grid surface can't work out which type it is
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridSurface x) => x.Type));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridSurface x) => x.ElementIndices));
+      var result = compareLogic.Compare(gsaGridSurfaces, gsaDesignConverted);
+      Assert.Empty(result.Differences);
+
+      #endregion
+
+      #region Analysis Layer
+      speckleGridSurfaces = speckleAnalysisModel.elements.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
+      var gsaAnalysisRecords = converter.ConvertToNative(speckleGridSurfaces.Select(p => (Base)p).ToList());
+
+      //Checks
+      var gsaAnalysisConverted = gsaAnalysisRecords.FindAll(r => r is GsaGridSurface).Select(r => (GsaGridSurface)r).ToList();
+      compareLogic = new CompareLogic();  //Get new clear CompareLogic object with a fresh config without any ignores
+      result = compareLogic.Compare(gsaGridSurfaces, gsaAnalysisConverted);
+      Assert.Empty(result.Differences);
+
+      #endregion
+    }
+
+    [Fact]
+    public void PolylineToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+      var gsaPolylines = GsaPolylineExamples(2, "polyline 1", "polyline 2");
+      gsaRecords.AddRange(gsaPolylines);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAPolyline).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedPolylines = gsaConvertedRecords.FindAll(r => r is GsaPolyline).Select(r => (GsaPolyline)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaPolylines, gsaConvertedPolylines);
+      Assert.Empty(result.Differences);
     }
     #endregion
 
@@ -773,6 +861,113 @@ namespace ConverterGSATests
       Assert.Empty(result.Differences);
     }
 
+    [Fact]
+    public void GSALoadGridPointToNaitve()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+      gsaRecords.Add(GsaGridSurfaceExamples(1, "grid surface 1").FirstOrDefault());
+      var gsaLoadGridPoints = GsaLoadGridPointExamples(2, "load grid point 1", "load grid point 2");
+      gsaRecords.AddRange(gsaLoadGridPoints);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadGridPoint).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadGrids = gsaConvertedRecords.FindAll(r => r is GsaLoadGridPoint).Select(r => (GsaLoadGridPoint)r).ToList();
+      var compareLogic = new CompareLogic();
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaLoadGridPoint x) => x.X));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaLoadGridPoint x) => x.Y));
+      var result = compareLogic.Compare(gsaLoadGridPoints, gsaConvertedLoadGrids);
+      Assert.Empty(result.Differences);
+      Assert.Null(gsaConvertedLoadGrids[0].X);
+      Assert.Null(gsaConvertedLoadGrids[0].Y);
+      Assert.Null(gsaConvertedLoadGrids[1].X);
+      Assert.Null(gsaConvertedLoadGrids[1].Y);
+    }
+
+    [Fact]
+    public void GSALoadGridLineToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+      gsaRecords.Add(GsaPolylineExamples(1, "polyline 1").FirstOrDefault());
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+      gsaRecords.Add(GsaGridSurfaceExamples(1, "grid surface 1").FirstOrDefault());
+      var gsaLoadGridLines = GsaLoadGridLineExamples(2, "load grid line 1", "load grid line 2");
+      gsaRecords.AddRange(gsaLoadGridLines);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadGridLine).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadGrids = gsaConvertedRecords.FindAll(r => r is GsaLoadGridLine).Select(r => (GsaLoadGridLine)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoadGridLines, gsaConvertedLoadGrids);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSALoadGridAreaToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.AddRange(GsaLoadCaseExamples(2, "load case 1", "load case 2"));
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+      gsaRecords.Add(GsaPolylineExamples(1, "polyline 1").FirstOrDefault());
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+      gsaRecords.Add(GsaGridSurfaceExamples(1, "grid surface 1").FirstOrDefault());
+      var gsaLoadGridAreas = GsaLoadGridAreaExamples(2, "load grid area 1", "load grid area 2");
+      gsaRecords.AddRange(gsaLoadGridAreas);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).loads.FindAll(o => o is GSALoadGridArea).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedLoadGrids = gsaConvertedRecords.FindAll(r => r is GsaLoadGridArea).Select(r => (GsaLoadGridArea)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaLoadGridAreas, gsaConvertedLoadGrids);
+      Assert.Empty(result.Differences);
+    }
+
     //TODO: add app agnostic test methods
     #endregion
 
@@ -1055,12 +1250,196 @@ namespace ConverterGSATests
     #endregion
 
     #region Constraints
+    [Fact]
+    public void GSARigidConstraintToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(3, "node 1", "node 2", "node 3"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.AddRange(GsaElement1dExamples(2, "element 1", "element 2"));
+      gsaRecords.Add(GsaAnalStageExamples(1, "stage 1").FirstOrDefault());
+      var gsaRigids = GsaRigidExamples(2, "rigid 1", "rigid 2");
+      gsaRecords.AddRange(gsaRigids);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSARigidConstraint).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedRigids = gsaConvertedRecords.FindAll(r => r is GsaRigid).Select(r => (GsaRigid)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaRigids, gsaConvertedRigids);
+      Assert.Empty(result.Differences);
+    }
+
+    [Fact]
+    public void GSAGeneralisedRestraintToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+      gsaRecords.AddRange(GsaNodeExamples(3, "node 1", "node 2", "node 3"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.AddRange(GsaElement1dExamples(2, "element 1", "element 2"));
+      gsaRecords.AddRange(GsaAnalStageExamples(2, "stage 1", "stage 2"));
+      var gsaGenRests = GsaGenRestExamples(2, "gen rest 1", "gen rest 2");
+      gsaRecords.AddRange(gsaGenRests);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAGeneralisedRestraint).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedGenRests = gsaConvertedRecords.FindAll(r => r is GsaGenRest).Select(r => (GsaGenRest)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaGenRests, gsaConvertedGenRests);
+      Assert.Empty(result.Differences);
+    }
     #endregion
 
     #region Analysis Stages
+    [Fact]
+    public void GSAStageToNative()
+    {
+      var twoElements = new List<GSAElement1D>
+      {
+        GetElement1d1(),
+        new GSAElement1D(2, null, null, ElementType1D.Bar, orientationAngle: 0D),
+      }.Select(x => x as Base).ToList();
+
+      var twoLockedElements = new List<GSAElement1D>
+      {
+        new GSAElement1D(3, null, null, ElementType1D.Bar, orientationAngle: 0D),
+        new GSAElement1D(4, null, null, ElementType1D.Bar, orientationAngle: 0D),
+      }.Select(x => x as Base).ToList();
+
+      var gsaStage = new GSAStage(1, "", Colour.RED.ToString(), twoElements, 1, 2, twoLockedElements);
+      var gsaRecord = converter.ConvertToNative(gsaStage) as List<GsaRecord>;
+
+      var gsaAnalStage = GenericTestForList<GsaAnalStage>(gsaRecord);
+
+      Assert.Equal(gsaStage.colour, gsaAnalStage.Colour.ToString());
+      Assert.Equal(gsaStage.name, gsaAnalStage.Name);
+      Assert.Equal(gsaStage.creepFactor, gsaAnalStage.Phi);
+      Assert.Equal(gsaStage.stageTime, gsaAnalStage.Days);
+      Assert.Equal(gsaStage.elements.Count, twoElements.Count);
+      Assert.Equal(gsaStage.lockedElements.Count, twoLockedElements.Count);
+    }
     #endregion
 
     #region Bridges
+    [Fact]
+    public void GSAAlignmentToNativeTest()
+    {
+      var gsaAlignment = GetGsaAlignment();
+      var gsaRecord = converter.ConvertToNative(gsaAlignment) as List<GsaRecord>;
+
+      var gsaAlign = GenericTestForList<GsaAlign>(gsaRecord);
+
+      Assert.Equal(gsaAlignment.chainage, gsaAlign.Chain);
+      Assert.Equal(gsaAlignment.curvature, gsaAlign.Curv);
+      Assert.Equal(gsaAlignment.name, gsaAlign.Name);
+      Assert.Equal(gsaAlignment.id, gsaAlign.Sid);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
+      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
+
+      // var copy = converter.ConvertToSpeckle(
+      //   converter.ConvertToNative(gsaAlignment));
+      // Assert.Equal(gsaAlignment, copy);
+    }
+
+    [Fact]
+    public void GSAInfluenceBeamToNativeTest()
+    {
+      var gsaInfluenceBeam = new GSAInfluenceBeam(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetElement1d1(), 0.5);
+      var gsaRecord = converter.ConvertToNative(gsaInfluenceBeam) as List<GsaRecord>;
+      var gsaInfBeam = GenericTestForList<GsaInfBeam>(gsaRecord);
+
+      Assert.Equal(gsaInfluenceBeam.position, gsaInfBeam.Position);
+      Assert.Equal(gsaInfluenceBeam.direction.ToNative(), gsaInfBeam.Direction);
+      Assert.Equal(gsaInfluenceBeam.factor, gsaInfBeam.Factor);
+      Assert.Equal(gsaInfluenceBeam.id, gsaInfBeam.Sid);
+      Assert.Equal(gsaInfluenceBeam.element.nativeId, gsaInfBeam.Element);
+      Assert.Equal(gsaInfluenceBeam.type.ToNative(), gsaInfBeam.Type);
+      Assert.Equal(gsaInfluenceBeam.name, gsaInfBeam.Name);
+
+      //var copy = converter.ConvertToSpeckle(converter.ConvertToNative(gsaInfluenceBeam));
+      //Assert.Equal(gsaInfluenceBeam, copy);
+    }
+
+    [Fact]
+    public void GSAInfluenceNodeToNativeTest()
+    {
+      var gsaInfluenceNode = new GSAInfluenceNode(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetNode(), SpeckleGlobalAxis());
+      var gsaRecord = converter.ConvertToNative(gsaInfluenceNode) as List<GsaRecord>;
+      var gsaInfNode = GenericTestForList<GsaInfNode>(gsaRecord);
+
+      Assert.Equal(gsaInfluenceNode.direction.ToNative(), gsaInfNode.Direction);
+      Assert.Equal(gsaInfluenceNode.factor, gsaInfNode.Factor);
+      Assert.Equal(gsaInfluenceNode.id, gsaInfNode.Sid);
+      Assert.Equal(gsaInfluenceNode.type.ToNative(), gsaInfNode.Type);
+      Assert.Equal(gsaInfluenceNode.name, gsaInfNode.Name);
+      Assert.Equal(gsaInfluenceNode.applicationId, gsaInfNode.ApplicationId);
+      Assert.Equal(gsaInfluenceNode.nativeId, gsaInfNode.Index);
+    }
+
+    [Fact]
+    public void GSAPathToNativeTest()
+    {
+      var gsaPath = new GSAPath(1, "myPath", PathType.TRACK, 2, GetGsaAlignment(), 1, 2, 3, 4);
+      var gsaRecord = converter.ConvertToNative(gsaPath) as List<GsaRecord>;
+      var gsaP = GenericTestForList<GsaPath>(gsaRecord);
+
+      Assert.Equal(gsaPath.factor, gsaP.Factor);
+      Assert.Equal(gsaPath.id, gsaP.Sid);
+      Assert.Equal(gsaPath.name, gsaP.Name);
+      Assert.Equal(gsaPath.applicationId, gsaP.ApplicationId);
+      Assert.Equal(gsaPath.nativeId, gsaP.Index);
+
+      Assert.Equal(gsaPath.type.ToNative(), gsaP.Type);
+      Assert.Equal(gsaPath.left, gsaP.Left);
+      Assert.Equal(gsaPath.right, gsaP.Right);
+      Assert.Equal(gsaPath.numMarkedLanes, gsaP.NumMarkedLanes);
+      Assert.Equal(gsaPath.group, gsaP.Group);
+      Assert.Equal(gsaPath.factor, gsaP.Factor);
+    }
+
+    [Fact]
+    public void GSAUserVehicleToNative()
+    {
+      //Create native objects
+      var gsaRecords = new List<GsaRecord>();
+      var gsaVehicles = GsaUserVehicleExamples(2, "vehicle 1", "vehicle 2");
+      gsaRecords.AddRange(gsaVehicles);
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelOnly;
+      var speckleModels = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+      var speckleObjects = ((Model)speckleModels.Last()).elements.FindAll(o => o is GSAUserVehicle).ToList();
+      var gsaConvertedRecords = converter.ConvertToNative(speckleObjects);
+
+      //Checks
+      var gsaConvertedVehicles = gsaConvertedRecords.FindAll(r => r is GsaUserVehicle).Select(r => (GsaUserVehicle)r).ToList();
+      var compareLogic = new CompareLogic();
+      var result = compareLogic.Compare(gsaVehicles, gsaConvertedVehicles);
+      Assert.Empty(result.Differences);
+    }
     #endregion
 
     #region Helper
@@ -1272,7 +1651,7 @@ namespace ConverterGSATests
           nativeId = 1,
           name = "",
           grade = "",
-          type = MaterialType.Steel,
+          materialType = MaterialType.Steel,
           designCode = "",
           codeYear = "",
           strength = 2e8,
@@ -1295,7 +1674,7 @@ namespace ConverterGSATests
           nativeId = 2,
           name = "",
           grade = "",
-          type = MaterialType.Steel,
+          materialType = MaterialType.Steel,
           designCode = "",
           codeYear = "",
           strength = 2e8,
@@ -1426,27 +1805,6 @@ namespace ConverterGSATests
     #endregion
 
     #region Bridges
-    
-    [Fact]
-    public void GSAAlignmentToNativeTest()
-    {
-      var gsaAlignment = GetGsaAlignment();
-      var gsaRecord = converter.ConvertToNative(gsaAlignment) as List<GsaRecord>;
-      
-      var gsaAlign = GenericTestForList<GsaAlign>(gsaRecord);
-
-      Assert.Equal(gsaAlignment.chainage, gsaAlign.Chain);
-      Assert.Equal(gsaAlignment.curvature, gsaAlign.Curv);
-      Assert.Equal(gsaAlignment.name, gsaAlign.Name);
-      Assert.Equal(gsaAlignment.id, gsaAlign.Sid);
-      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
-      Assert.Equal(gsaAlignment.GetNumAlignmentPoints(), gsaAlign.NumAlignmentPoints);
-      
-      // var copy = converter.ConvertToSpeckle(
-      //   converter.ConvertToNative(gsaAlignment));
-      // Assert.Equal(gsaAlignment, copy);
-    }
-
     private GSAAlignment GetGsaAlignment()
     {
       var axis = SpeckleGlobalAxis();
@@ -1458,90 +1816,6 @@ namespace ConverterGSATests
         new List<double>() { 0, 1 },
         new List<double>() { 3, 3 });
       return gsaAlignment;
-    }
-
-    [Fact]
-    public void GSAInfluenceBeamToNativeTest()
-    {
-      var gsaInfluenceBeam = new GSAInfluenceBeam(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetElement1d1(), 0.5);
-      var gsaRecord = converter.ConvertToNative(gsaInfluenceBeam) as List<GsaRecord>;
-      var gsaInfBeam = GenericTestForList<GsaInfBeam>(gsaRecord);
-
-      Assert.Equal(gsaInfluenceBeam.position, gsaInfBeam.Position);
-      Assert.Equal(gsaInfluenceBeam.direction.ToNative(), gsaInfBeam.Direction);
-      Assert.Equal(gsaInfluenceBeam.factor, gsaInfBeam.Factor);
-      Assert.Equal(gsaInfluenceBeam.id, gsaInfBeam.Sid);
-      Assert.Equal(gsaInfluenceBeam.element.nativeId, gsaInfBeam.Element);
-      Assert.Equal(gsaInfluenceBeam.type.ToNative(), gsaInfBeam.Type);
-      Assert.Equal(gsaInfluenceBeam.name, gsaInfBeam.Name);
-
-      //var copy = converter.ConvertToSpeckle(converter.ConvertToNative(gsaInfluenceBeam));
-      //Assert.Equal(gsaInfluenceBeam, copy);
-    }
-    
-    [Fact]
-    public void GSAInfluenceNodeToNativeTest()
-    {
-      var gsaInfluenceNode = new GSAInfluenceNode(1, "hey", 1.4, InfluenceType.FORCE, LoadDirection.X, GetNode(), SpeckleGlobalAxis());
-      var gsaRecord = converter.ConvertToNative(gsaInfluenceNode) as List<GsaRecord>;
-      var gsaInfNode = GenericTestForList<GsaInfNode>(gsaRecord);
-
-      Assert.Equal(gsaInfluenceNode.direction.ToNative(), gsaInfNode.Direction);
-      Assert.Equal(gsaInfluenceNode.factor, gsaInfNode.Factor);
-      Assert.Equal(gsaInfluenceNode.id, gsaInfNode.Sid);
-      Assert.Equal(gsaInfluenceNode.type.ToNative(), gsaInfNode.Type);
-      Assert.Equal(gsaInfluenceNode.name, gsaInfNode.Name);
-      Assert.Equal(gsaInfluenceNode.applicationId, gsaInfNode.ApplicationId);
-      Assert.Equal(gsaInfluenceNode.nativeId, gsaInfNode.Index);
-    }
-    
-    [Fact]
-    public void GSAPathToNativeTest()
-    {
-      var gsaPath = new GSAPath(1, "myPath", PathType.TRACK, 2, GetGsaAlignment(), 1, 2, 3, 4);
-      var gsaRecord = converter.ConvertToNative(gsaPath) as List<GsaRecord>;
-      var gsaP = GenericTestForList<GsaPath>(gsaRecord);
-
-      Assert.Equal(gsaPath.factor, gsaP.Factor);
-      Assert.Equal(gsaPath.id, gsaP.Sid);
-      Assert.Equal(gsaPath.name, gsaP.Name);
-      Assert.Equal(gsaPath.applicationId, gsaP.ApplicationId);
-      Assert.Equal(gsaPath.nativeId, gsaP.Index);
-      
-      Assert.Equal(gsaPath.type.ToNative(), gsaP.Type);
-      Assert.Equal(gsaPath.left, gsaP.Left);
-      Assert.Equal(gsaPath.right, gsaP.Right);
-      Assert.Equal(gsaPath.numMarkedLanes, gsaP.NumMarkedLanes);
-      Assert.Equal(gsaPath.group, gsaP.Group);
-      Assert.Equal(gsaPath.factor, gsaP.Factor);
-    }
-    
-    [Fact]
-    public void GSAStageToNative()
-    {
-      var twoElements = new List<GSAElement1D>
-      {
-        GetElement1d1(),
-        new GSAElement1D(2, null, null, ElementType1D.Bar, orientationAngle: 0D),
-      }.Select(x => x as Base).ToList();
-      
-      var twoLockedElements = new List<GSAElement1D>
-      {
-        new GSAElement1D(3, null, null, ElementType1D.Bar, orientationAngle: 0D),
-        new GSAElement1D(4, null, null, ElementType1D.Bar, orientationAngle: 0D),
-      }.Select(x => x as Base).ToList();
-
-      var gsaStage = new GSAStage(1, "", Colour.RED.ToString(), twoElements, 1, 2, twoLockedElements);
-      var gsaRecord = converter.ConvertToNative(gsaStage) as List<GsaRecord>;
-      
-      var gsaAnalStage = GenericTestForList<GsaAnalStage>(gsaRecord);
-      
-      Assert.Equal(gsaStage.colour, gsaAnalStage.Colour.ToString());
-      Assert.Equal(gsaStage.name, gsaAnalStage.Name);
-      Assert.Equal(gsaStage.creepFactor, gsaAnalStage.Phi);
-      Assert.Equal(gsaStage.stageTime, gsaAnalStage.Days);
-      Assert.Equal(gsaStage.elements.Count, twoElements.Count);
-      Assert.Equal(gsaStage.lockedElements.Count, twoLockedElements.Count);
     }
 
     private static GSAElement1D GetElement1d1()

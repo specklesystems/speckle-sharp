@@ -51,6 +51,10 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     private string AddModel()
     {
       var str = "";
+      if (record.Model == null)
+      {
+        return "UNDEF";
+      }
       for (var i = 0; i < record.Model.Count; i++)
       {
         str += record.Model[i].ToString() + "+";

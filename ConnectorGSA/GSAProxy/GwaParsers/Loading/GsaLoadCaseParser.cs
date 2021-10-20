@@ -24,7 +24,16 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       //Only basic level of support is offered now - the arguments after type are ignored
       //LOAD_TITLE.2 | case | title | type | source | category | dir | include | bridge
       //Note: case is deserialised into the Index field
-      return FromGwaByFuncs(items, out _, AddTitle, AddType, v => AddNullableIntValue(v, out record.Source), AddCategory, AddDirection, AddInclude, AddBridge);
+      
+      if (!FromGwaByFuncs(items, out remainingItems, AddTitle, AddType, v => AddNullableIntValue(v, out record.Source), AddCategory, AddDirection, AddInclude))
+      {
+        return false;
+      }
+      if (remainingItems.Count > 0)
+      {
+        return FromGwaByFuncs(remainingItems, out _, AddBridge);
+      }
+      return true;
     }
 
     public override bool Gwa(out List<string> gwa, bool includeSet = false)

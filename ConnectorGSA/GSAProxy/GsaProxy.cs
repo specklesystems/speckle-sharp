@@ -586,7 +586,7 @@ namespace Speckle.ConnectorGSA.Proxy
     }
 
     //Tuple: keyword | index | Application ID | GWA command | Set or Set At
-    public bool GetGwaData(GSALayer layer, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
+    public bool GetGwaData(GSALayer layer, IProgress<string> loggingProgress, out List<GsaRecord> records, IProgress<int> incrementProgress = null)
     {
       if (!InitialiseIfNecessary())
       {
@@ -660,6 +660,10 @@ namespace Speckle.ConnectorGSA.Proxy
               if (parser.FromGwa(gwa))
               {
                 retRecords.Add(parser.Record);
+              }
+              else
+              {
+                loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
               }
             }
           }
@@ -758,25 +762,31 @@ namespace Speckle.ConnectorGSA.Proxy
                 var t = ktd.GetParserType(schemaType);
                 {
                   var parser = (IGwaParser)Activator.CreateInstance(t);
-                  parser.FromGwa(gwa);
-                  if (!parser.Record.Index.HasValue && index.HasValue)
+                  if (parser.FromGwa(gwa))
                   {
-                    parser.Record.Index = index.Value;
-                  }
-                  parser.Record.StreamId = streamId;
-                  parser.Record.ApplicationId = appId;
+                    if (!parser.Record.Index.HasValue && index.HasValue)
+                    {
+                      parser.Record.Index = index.Value;
+                    }
+                    parser.Record.StreamId = streamId;
+                    parser.Record.ApplicationId = appId;
 
-                  lock (dataLock)
+                    lock (dataLock)
+                    {
+                      if (!tempKeywordIndexCache.ContainsKey(keyword.Value))
+                      {
+                        tempKeywordIndexCache.Add(keyword.Value, new List<int>());
+                      }
+                      if (!tempKeywordIndexCache[keyword.Value].Contains(index.Value))
+                      {
+                        retRecords.Add(parser.Record);
+                        tempKeywordIndexCache[keyword.Value].Add(index.Value);
+                      }
+                    }
+                  }
+                  else
                   {
-                    if (!tempKeywordIndexCache.ContainsKey(keyword.Value))
-                    {
-                      tempKeywordIndexCache.Add(keyword.Value, new List<int>());
-                    }
-                    if (!tempKeywordIndexCache[keyword.Value].Contains(index.Value))
-                    {
-                      retRecords.Add(parser.Record);
-                      tempKeywordIndexCache[keyword.Value].Add(index.Value);
-                    }
+                    loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
                   }
                 }
               }
@@ -860,25 +870,31 @@ namespace Speckle.ConnectorGSA.Proxy
               var t = ktd.GetParserType(schemaType);
 
               var parser = (IGwaParser)Activator.CreateInstance(t);
-              parser.FromGwa(gwaLine);
-              if (!parser.Record.Index.HasValue)
+              if (parser.FromGwa(gwaLine))
               {
-                parser.Record.Index = j;
-              }
-              parser.Record.StreamId = streamId;
-              parser.Record.ApplicationId = appId;
+                if (!parser.Record.Index.HasValue)
+                {
+                  parser.Record.Index = j;
+                }
+                parser.Record.StreamId = streamId;
+                parser.Record.ApplicationId = appId;
 
-              lock (dataLock)
+                lock (dataLock)
+                {
+                  if (!tempKeywordIndexCache.ContainsKey(setAtKeywords[i]))
+                  {
+                    tempKeywordIndexCache.Add(setAtKeywords[i], new List<int>());
+                  }
+                  if (!tempKeywordIndexCache[setAtKeywords[i]].Contains(j))
+                  {
+                    retRecords.Add(parser.Record);
+                    tempKeywordIndexCache[setAtKeywords[i]].Add(j);
+                  }
+                }
+              }
+              else
               {
-                if (!tempKeywordIndexCache.ContainsKey(setAtKeywords[i]))
-                {
-                  tempKeywordIndexCache.Add(setAtKeywords[i], new List<int>());
-                }
-                if (!tempKeywordIndexCache[setAtKeywords[i]].Contains(j))
-                {
-                  retRecords.Add(parser.Record);
-                  tempKeywordIndexCache[setAtKeywords[i]].Add(j);
-                }
+                loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
               }
             }
           }
@@ -892,6 +908,23 @@ namespace Speckle.ConnectorGSA.Proxy
 
       records = retRecords;
       return true; 
+    }
+
+    private string FormulateParsingErrorContext(GsaRecord gsaRecord, string typeName)
+    {
+      var errorMessage = "Parsing the GWA data for: " + typeName;
+      if (gsaRecord != null)
+      {
+        if (gsaRecord.Index.HasValue)
+        {
+          errorMessage += " at index: " + gsaRecord.Index.Value.ToString();
+        }
+        if (!string.IsNullOrEmpty(gsaRecord.ApplicationId) && gsaRecord.ApplicationId.Length > 0)
+        {
+          errorMessage += " with ApplicationId = " + gsaRecord.ApplicationId;
+        }
+      }
+      return errorMessage;
     }
 
     private bool InitialiseIfNecessary()
@@ -968,9 +1001,16 @@ namespace Speckle.ConnectorGSA.Proxy
         {
           parsersToUseBySchemaType.Add(t, new List<IGwaParser>());
         }
-        var ktd = typeInfo[layer][typeInfoIndicesBySchemaType[layer][t]];
-        var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(t), r);
-        parsersToUseBySchemaType[t].Add(parser);
+        try
+        {
+          var ktd = typeInfo[layer][typeInfoIndicesBySchemaType[layer][t]];
+          var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(t), r);
+          parsersToUseBySchemaType[t].Add(parser);
+        }
+        catch
+        {
+
+        }
       }
 
       var typeGens = GetTxTypeDependencyGenerations(layer);
