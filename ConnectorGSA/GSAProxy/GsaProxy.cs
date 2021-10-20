@@ -1001,9 +1001,16 @@ namespace Speckle.ConnectorGSA.Proxy
         {
           parsersToUseBySchemaType.Add(t, new List<IGwaParser>());
         }
-        var ktd = typeInfo[layer][typeInfoIndicesBySchemaType[layer][t]];
-        var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(t), r);
-        parsersToUseBySchemaType[t].Add(parser);
+        try
+        {
+          var ktd = typeInfo[layer][typeInfoIndicesBySchemaType[layer][t]];
+          var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(t), r);
+          parsersToUseBySchemaType[t].Add(parser);
+        }
+        catch
+        {
+
+        }
       }
 
       var typeGens = GetTxTypeDependencyGenerations(layer);
