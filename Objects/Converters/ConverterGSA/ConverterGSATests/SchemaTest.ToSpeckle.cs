@@ -4789,7 +4789,7 @@ namespace ConverterGSATests
           Index = 2,
           Name = "2",
           Width = 4,
-          NumAxle = 2,
+          NumAxle = 3,
           AxlePosition = new List<double>(){ 0, 5, 9 },
           AxleOffset = new List<double>(){ 1, 6, 10 },
           AxleLeft = new List<double>(){ 2, 7, 11 },

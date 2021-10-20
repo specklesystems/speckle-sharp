@@ -16,6 +16,7 @@ using Objects.Structural.GSA.Loading;
 using Objects.Structural.GSA.Analysis;
 using Objects.Structural.GSA.Bridge;
 using GwaAxisDirection6 = Speckle.GSA.API.GwaSchema.AxisDirection6;
+using AxisDirection6 = Objects.Structural.GSA.Geometry.AxisDirection6;
 using Restraint = Objects.Structural.Geometry.Restraint;
 using Speckle.Core.Kits;
 using Objects.Structural.Loading;
@@ -57,6 +58,7 @@ namespace ConverterGSA
         { typeof(Storey), StoreyToNative },
         { typeof(GSAGridPlane), GSAGridPlaneToNative },
         { typeof(GSAGridSurface), GSAGridSurfaceToNative },
+        { typeof(GSAPolyline), GSAPolylineToNative },
         //Loading
         { typeof(GSALoadCase), GSALoadCaseToNative },
         { typeof(LoadCase), LoadCaseToNative },
@@ -72,6 +74,9 @@ namespace ConverterGSA
         { typeof(GSALoadGravity), GSALoadGravityToNative },
         { typeof(LoadGravity), LoadGravityToNative },
         { typeof(GSALoadThermal2d), GSALoadThermal2dToNative },
+        { typeof(GSALoadGridPoint), GSALoadGridPointToNative },
+        { typeof(GSALoadGridLine), GSALoadGridLineToNative },
+        { typeof(GSALoadGridArea), GSALoadGridAreaToNative },
         //Materials
         { typeof(GSASteel), GSASteelToNative },
         { typeof(Steel), SteelToNative },
@@ -84,11 +89,15 @@ namespace ConverterGSA
         { typeof(GSAProperty2D), GsaProperty2dToNative },
         { typeof(PropertySpring), PropertySpringToNative },
         { typeof(PropertyMass), PropertyMassToNative },
+        //Constraints
+        { typeof(GSARigidConstraint), GSARigidConstraintToNative },
+        { typeof(GSAGeneralisedRestraint), GSAGeneralisedRestraintToNative },
         // Bridge
         { typeof(GSAInfluenceNode), InfNodeToNative},
         { typeof(GSAInfluenceBeam), InfBeamToNative},
         {typeof(GSAAlignment), AlignToNative},
         {typeof(GSAPath), PathToNative},
+        {typeof(GSAUserVehicle), GSAUserVehicleToNative},
         // Analysis
         {typeof(GSAStage), AnalStageToNative},
       };
@@ -190,7 +199,7 @@ namespace ConverterGSA
         Type = speckleElement.type.ToNative(),
         //TaperOffsetPercentageEnd1 - currently not supported
         //TaperOffsetPercentageEnd2 - currently not supported
-        NodeIndices = speckleElement.topology?.Select(n=>(Base)n).ToList().GetIndicies<GsaNode>() ?? new List<int>(),
+        NodeIndices = speckleElement.topology?.GetIndicies() ?? new List<int>(),
         PropertyIndex = speckleElement.property.GetIndex<GsaSection>(),
         OrientationNodeIndex = speckleElement.orientationNode.GetIndex<GsaNode>(),
         ParentIndex = speckleElement.parent.GetIndex<GsaMemb>(),
@@ -259,7 +268,7 @@ namespace ConverterGSA
         Index = speckleElement.GetIndex<GsaEl>(),
         Name = speckleElement.name,
         Type = speckleElement.type.ToNative(),
-        NodeIndices = speckleElement.topology.Select(n => (Base)n).ToList().GetIndicies<GsaNode>(),
+        NodeIndices = speckleElement.topology.GetIndicies(),
         PropertyIndex = speckleElement.property.GetIndex<GsaProp2d>(),
         ReleaseInclusion = ReleaseInclusion.NotIncluded,
         ParentIndex = speckleElement.parent.GetIndex<GsaMemb>(),
@@ -283,7 +292,7 @@ namespace ConverterGSA
         Colour = speckleMember.colour?.ColourToNative() ?? Colour.NotSet,
         //TaperOffsetPercentageEnd1 - currently not supported
         //TaperOffsetPercentageEnd2 - currently not supported
-        NodeIndices = speckleMember.topology.Select(n => (Base)n).ToList().GetIndicies<GsaNode>(),
+        NodeIndices = speckleMember.topology.GetIndicies(),
         PropertyIndex = speckleMember.property.GetIndex<GsaSection>(),
         OrientationNodeIndex = speckleMember.orientationNode.GetIndex<GsaNode>(),
         Dummy = speckleMember.isDummy,
@@ -359,23 +368,23 @@ namespace ConverterGSA
       var members = speckleMember.GetMembers();
       if (members.ContainsKey("Voids") && speckleMember["Voids"] is List<List<Node>>)
       {
-        var speckleVoids = speckleObject["Voids"] as List<List<Base>>;
-        gsaMember.Voids = speckleVoids.Select(v => v.GetIndicies<GsaNode>()).ToList();
+        var speckleVoids = speckleObject["Voids"] as List<List<Node>>;
+        gsaMember.Voids = speckleVoids.Select(v => v.GetIndicies()).ToList();
       }
       if (members.ContainsKey("Points") && speckleMember["Points"] is List<Node>)
       {
-        var specklePoints = speckleObject["Points"] as List<Base>;
-        gsaMember.PointNodeIndices = specklePoints.GetIndicies<GsaNode>();
+        var specklePoints = speckleObject["Points"] as List<Node>;
+        gsaMember.PointNodeIndices = specklePoints.GetIndicies();
       }
       if (members.ContainsKey("Lines") && speckleMember["Lines"] is List<List<Node>>)
       {
-        var speckleLines = speckleObject["Lines"] as List<List<Base>>;
-        gsaMember.Polylines = speckleLines.Select(v => v.GetIndicies<GsaNode>()).ToList();
+        var speckleLines = speckleObject["Lines"] as List<List<Node>>;
+        gsaMember.Polylines = speckleLines.Select(v => v.GetIndicies()).ToList();
       }
       if (members.ContainsKey("Areas") && speckleMember["Areas"] is List<List<Node>>)
       {
-        var speckleAreas = speckleObject["Areas"] as List<List<Base>>;
-        gsaMember.AdditionalAreas = speckleAreas.Select(v => v.GetIndicies<GsaNode>()).ToList();
+        var speckleAreas = speckleObject["Areas"] as List<List<Node>>;
+        gsaMember.AdditionalAreas = speckleAreas.Select(v => v.GetIndicies()).ToList();
       }
       if (members.ContainsKey("SpanRestraints") && speckleMember["SpanRestraints"] is List<RestraintDefinition>)
       {
@@ -400,7 +409,7 @@ namespace ConverterGSA
         Index = speckleMember.GetIndex<GsaMemb>(),
         Name = speckleMember.name,
         Type = speckleMember.type.ToNativeMember(),
-        NodeIndices = speckleMember.topology.Select(n => (Base)n).ToList().GetIndicies<GsaNode>(),
+        NodeIndices = speckleMember.topology.GetIndicies(),
         Colour = speckleMember.colour?.ColourToNative() ?? Colour.NotSet,
         Dummy = speckleMember.isDummy,
         IsIntersector = speckleMember.intersectsWithOthers,
@@ -427,23 +436,23 @@ namespace ConverterGSA
       var members = speckleMember.GetMembers();
       if (members.ContainsKey("Voids") && speckleMember["Voids"] is List<List<Node>>)
       {
-        var speckleVoids = speckleObject["Voids"] as List<List<Base>>;
-        gsaMember.Voids = speckleVoids.Select(v => v.GetIndicies<GsaNode>()).ToList();
+        var speckleVoids = speckleObject["Voids"] as List<List<Node>>;
+        gsaMember.Voids = speckleVoids.Select(v => v.GetIndicies()).ToList();
       }
       if (members.ContainsKey("Points") && speckleMember["Points"] is List<Node>)
       {
-        var specklePoints = speckleObject["Points"] as List<Base>;
-        gsaMember.PointNodeIndices = specklePoints.GetIndicies<GsaNode>();
+        var specklePoints = speckleObject["Points"] as List<Node>;
+        gsaMember.PointNodeIndices = specklePoints.GetIndicies();
       }
       if (members.ContainsKey("Lines") && speckleMember["Lines"] is List<List<Node>>)
       {
-        var speckleLines = speckleObject["Lines"] as List<List<Base>>;
-        gsaMember.Polylines = speckleLines.Select(v => v.GetIndicies<GsaNode>()).ToList();
+        var speckleLines = speckleObject["Lines"] as List<List<Node>>;
+        gsaMember.Polylines = speckleLines.Select(v => v.GetIndicies()).ToList();
       }
       if (members.ContainsKey("Areas") && speckleMember["Areas"] is List<List<Node>>)
       {
-        var speckleAreas = speckleObject["Areas"] as List<List<Base>>;
-        gsaMember.AdditionalAreas = speckleAreas.Select(v => v.GetIndicies<GsaNode>()).ToList();
+        var speckleAreas = speckleObject["Areas"] as List<List<Node>>;
+        gsaMember.AdditionalAreas = speckleAreas.Select(v => v.GetIndicies()).ToList();
       }
 
       return new List<GsaRecord>() { gsaMember };
@@ -828,6 +837,24 @@ namespace ConverterGSA
       && x.definition.ydir.Equals(UnitZ, GeometricDecimalPlaces)
       && x.definition.normal.Equals(UnitY, GeometricDecimalPlaces));
     */
+
+    private List<GsaRecord> GSAPolylineToNative(Base speckleObject)
+    {
+      //TODO:
+      var specklePolyline = (GSAPolyline)speckleObject;
+      var gsaPolyline = new GsaPolyline()
+      {
+        ApplicationId = specklePolyline.applicationId,
+        Index = specklePolyline.GetIndex<GsaPolyline>(),
+        Name = specklePolyline.name,
+        GridPlaneIndex = specklePolyline.gridPlane.GetIndex<GsaGridPlane>(),
+        NumDim = specklePolyline.Is3d() ? 3 : 2,
+        Values = specklePolyline.GetValues(),
+        Units = specklePolyline.units,
+        Colour = specklePolyline.colour.ColourToNative(),
+      };
+      return new List<GsaRecord>() { gsaPolyline };
+    }
     
     #endregion
 
@@ -1014,7 +1041,7 @@ namespace ConverterGSA
       }
       else
       {
-        if (GetLoadBeamAxis(speckleLoad.loadAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+        if (GetLoadAxis(speckleLoad.loadAxis, out LoadBeamAxisRefType gsaAxisRefType, out var gsaAxisIndex))
         {
           gsaLoad.AxisRefType = gsaAxisRefType;
           gsaLoad.AxisIndex = gsaAxisIndex;
@@ -1048,7 +1075,7 @@ namespace ConverterGSA
         ElementIndices = speckleLoad.elements.GetIndicies<GsaEl>(),
         MemberIndices = speckleLoad.elements.GetIndicies<GsaMemb>(),
       };
-      if (GetLoadFaceAxis(speckleLoad.loadAxis, speckleLoad.loadAxisType, out var gsaAxisRefType, out var gsaAxisIndex))
+      if (GetLoadAxis(speckleLoad.loadAxis, speckleLoad.loadAxisType, out var gsaAxisRefType, out var gsaAxisIndex))
       {
         gsaLoad.AxisRefType = gsaAxisRefType;
         gsaLoad.AxisIndex = gsaAxisIndex;
@@ -1080,7 +1107,7 @@ namespace ConverterGSA
         Name = speckleLoad.name,
         LoadDirection = speckleLoad.direction.ToNative(),
         LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>(),
-        NodeIndices = speckleLoad.nodes.Select(o => (Base)o).ToList().GetIndicies<GsaNode>()
+        NodeIndices = speckleLoad.nodes.GetIndicies(),
       };
       if (speckleLoad.value != 0) gsaLoad.Value = speckleLoad.value;
       if (speckleLoad.loadAxis.definition.IsGlobal())
@@ -1141,6 +1168,92 @@ namespace ConverterGSA
         var speckleElements = speckleLoad.elements.Select(o => (Base)o).ToList();
         gsaLoad.ElementIndices = speckleElements.GetIndicies<GsaEl>();
         gsaLoad.MemberIndices = speckleElements.GetIndicies<GsaMemb>();
+      }
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private List<GsaRecord> GSALoadGridPointToNative(Base speckleObject)
+    {
+      var speckleLoad = (GSALoadGridPoint)speckleObject;
+      var gsaLoad = new GsaLoadGridPoint()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.GetIndex<GsaLoadGridPoint>(),
+        Name = speckleLoad.name,
+        LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>(),
+        GridSurfaceIndex = speckleLoad.gridSurface.GetIndex<GsaGridSurface>(),
+        LoadDirection = speckleLoad.direction.ToNative(),
+        Value = speckleLoad.value != 0 ? (double?)speckleLoad.value : null,
+      };
+      if (GetLoadAxis(speckleLoad.loadAxis, out AxisRefType gsaAxisRefType, out var gsaAxisIndex))
+      {
+        gsaLoad.AxisRefType = gsaAxisRefType;
+        gsaLoad.AxisIndex = gsaAxisIndex;
+      }
+      if (speckleLoad.position != null)
+      {
+        if (speckleLoad.position.x != 0) gsaLoad.X = speckleLoad.position.x;
+        if (speckleLoad.position.y != 0) gsaLoad.Y = speckleLoad.position.y;
+      }
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private List<GsaRecord> GSALoadGridLineToNative(Base speckleObject)
+    {
+      var speckleLoad = (GSALoadGridLine)speckleObject;
+      var gsaLoad = new GsaLoadGridLine()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.GetIndex<GsaLoadGridLine>(),
+        Name = speckleLoad.name,
+        LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>(),
+        GridSurfaceIndex = speckleLoad.gridSurface.GetIndex<GsaGridSurface>(),
+        LoadDirection = speckleLoad.direction.ToNative(),
+        Projected = speckleLoad.isProjected,
+      };
+      if (GetLoadAxis(speckleLoad.loadAxis, out AxisRefType gsaAxisRefType, out var gsaAxisIndex))
+      {
+        gsaLoad.AxisRefType = gsaAxisRefType;
+        gsaLoad.AxisIndex = gsaAxisIndex;
+      }
+      if (speckleLoad.values != null && speckleLoad.values.Count >= 2)
+      {
+        if (speckleLoad.values[0] != 0) gsaLoad.Value1 = speckleLoad.values[0];
+        if (speckleLoad.values[1] != 0) gsaLoad.Value2 = speckleLoad.values[1];
+      }
+      if (GetPolyline(speckleLoad.polyline, out LoadLineOption gsaOption, out var gsaPolygon, out var gsaPolygonIndex))
+      {
+        gsaLoad.Line = gsaOption;
+        gsaLoad.Polygon = gsaPolygon;
+        gsaLoad.PolygonIndex = gsaPolygonIndex;
+      }
+      return new List<GsaRecord>() { gsaLoad };
+    }
+
+    private List<GsaRecord> GSALoadGridAreaToNative(Base speckleObject)
+    {
+      var speckleLoad = (GSALoadGridArea)speckleObject;
+      var gsaLoad = new GsaLoadGridArea()
+      {
+        ApplicationId = speckleLoad.applicationId,
+        Index = speckleLoad.GetIndex<GsaLoadGridArea>(),
+        Name = speckleLoad.name,
+        LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>(),
+        GridSurfaceIndex = speckleLoad.gridSurface.GetIndex<GsaGridSurface>(),
+        LoadDirection = speckleLoad.direction.ToNative(),
+        Projected = speckleLoad.isProjected,
+        Value = speckleLoad.value != 0 ? (double?)speckleLoad.value : null,
+      };
+      if (GetLoadAxis(speckleLoad.loadAxis, out AxisRefType gsaAxisRefType, out var gsaAxisIndex))
+      {
+        gsaLoad.AxisRefType = gsaAxisRefType;
+        gsaLoad.AxisIndex = gsaAxisIndex;
+      }
+      if (GetPolyline(speckleLoad.polyline, out LoadAreaOption gsaOption, out var gsaPolygon, out var gsaPolygonIndex))
+      {
+        gsaLoad.Area = gsaOption;
+        gsaLoad.Polygon = gsaPolygon;
+        gsaLoad.PolygonIndex = gsaPolygonIndex;
       }
       return new List<GsaRecord>() { gsaLoad };
     }
@@ -1807,6 +1920,49 @@ namespace ConverterGSA
 
     #endregion
 
+    #region Constraints
+    private List<GsaRecord> GSAGeneralisedRestraintToNative(Base speckleObject)
+    {
+      var speckleGenRest = (GSAGeneralisedRestraint)speckleObject;
+      var gsaGenRest = new GsaGenRest()
+      {
+        ApplicationId = speckleGenRest.applicationId,
+        Index = speckleGenRest.GetIndex<GsaGenRest>(),
+        Name = speckleGenRest.name,
+        NodeIndices = speckleGenRest.nodes.GetIndicies(),
+        StageIndices = speckleGenRest.stages.Select(s=>(Base)s).ToList().GetIndicies<GsaAnalStage>(),
+      };
+      if (speckleGenRest.restraint != null && speckleGenRest.restraint.code.Length >= 6)
+      {
+        gsaGenRest.X = speckleGenRest.restraint.code[0] == 'F' ? RestraintCondition.Constrained : RestraintCondition.Free;
+        gsaGenRest.Y = speckleGenRest.restraint.code[1] == 'F' ? RestraintCondition.Constrained : RestraintCondition.Free;
+        gsaGenRest.Z = speckleGenRest.restraint.code[2] == 'F' ? RestraintCondition.Constrained : RestraintCondition.Free;
+        gsaGenRest.XX = speckleGenRest.restraint.code[3] == 'F' ? RestraintCondition.Constrained : RestraintCondition.Free;
+        gsaGenRest.YY = speckleGenRest.restraint.code[4] == 'F' ? RestraintCondition.Constrained : RestraintCondition.Free;
+        gsaGenRest.ZZ = speckleGenRest.restraint.code[5] == 'F' ? RestraintCondition.Constrained : RestraintCondition.Free;
+      }
+      return new List<GsaRecord>() { gsaGenRest };
+    }
+
+    private List<GsaRecord> GSARigidConstraintToNative(Base speckleObject)
+    {
+      var speckleRigid = (GSARigidConstraint)speckleObject;
+      var gsaRigid = new GsaRigid()
+      {
+        ApplicationId = speckleRigid.applicationId,
+        Index = speckleRigid.GetIndex<GsaRigid>(),
+        Name = speckleRigid.name,
+        Type = speckleRigid.type.ToNative(),
+        Link = GetRigidConstraint(speckleRigid.constraintCondition),
+        PrimaryNode = speckleRigid.primaryNode.GetIndex<GsaNode>(),
+        ConstrainedNodes = speckleRigid.constrainedNodes.GetIndicies(),
+        Stage = speckleRigid.stages.Select(s => (Base)s).ToList().GetIndicies<GsaAnalStage>(),
+        ParentMember = speckleRigid.parentMember != null ? speckleRigid.parentMember.GetIndex<GsaMemb>() : null
+      };
+      return new List<GsaRecord>() { gsaRigid };
+    }
+    #endregion
+
     #region Bridge
 
     private List<GsaRecord> AlignToNative(Base speckleObject)
@@ -1894,6 +2050,24 @@ namespace ConverterGSA
         return new List<GsaRecord>() { gsaAlign, gsaPath };
       else
         return new List<GsaRecord>() { gsaPath };
+    }
+
+    private List<GsaRecord> GSAUserVehicleToNative(Base speckleObject)
+    {
+      var speckleVehicle = (GSAUserVehicle)speckleObject;
+      var gsaVehicle = new GsaUserVehicle()
+      {
+        ApplicationId = speckleVehicle.applicationId,
+        Index = speckleVehicle.GetIndex<GsaUserVehicle>(),
+        Name = speckleVehicle.name,
+        Width = speckleVehicle.width > 0 ? (double?)speckleVehicle.width : null,
+        NumAxle = speckleVehicle.axlePositions.Count(),
+        AxlePosition = speckleVehicle.axlePositions,
+        AxleOffset = speckleVehicle.axleOffsets,
+        AxleLeft = speckleVehicle.axleLeft,
+        AxleRight = speckleVehicle.axleRight,
+      };
+      return new List<GsaRecord>() { gsaVehicle };
     }
     
     #endregion
@@ -2056,10 +2230,15 @@ namespace ConverterGSA
     #endregion
 
     #region Loading
-    private bool GetLoadBeamAxis(Axis speckleAxis, out LoadBeamAxisRefType gsaAxisRefType, out int? gsaAxisIndex)
+    private bool GetLoadAxis(Axis speckleAxis, out LoadBeamAxisRefType gsaAxisRefType, out int? gsaAxisIndex)
     {
       gsaAxisIndex = null;
-      if (speckleAxis.definition.IsGlobal())
+      if (speckleAxis == null)
+      {
+        gsaAxisRefType = LoadBeamAxisRefType.NotSet;
+        return false;
+      }
+      else if (speckleAxis.definition.IsGlobal())
       {
         gsaAxisRefType = LoadBeamAxisRefType.Global;
       }
@@ -2081,7 +2260,37 @@ namespace ConverterGSA
       return true;
     }
 
-    private bool GetLoadFaceAxis(Axis speckleAxis, LoadAxisType speckleAxisType, out AxisRefType gsaAxisRefType, out int? gsaAxisIndex)
+    private bool GetLoadAxis(Axis speckleAxis, out AxisRefType gsaAxisRefType, out int? gsaAxisIndex)
+    {
+      gsaAxisIndex = null;
+      if (speckleAxis == null)
+      {
+        gsaAxisRefType = AxisRefType.NotSet;
+        return false;
+      }
+      else if (speckleAxis.definition.IsGlobal())
+      {
+        gsaAxisRefType = AxisRefType.Global;
+      }
+      else
+      {
+        gsaAxisIndex = speckleAxis.GetIndex<GsaAxis>();
+        if (gsaAxisIndex == null)
+        {
+          //TODO: handle local, and natural cases
+          gsaAxisRefType = AxisRefType.NotSet;
+          return false;
+        }
+        else
+        {
+          gsaAxisRefType = AxisRefType.Reference;
+        }
+      }
+
+      return true;
+    }
+
+    private bool GetLoadAxis(Axis speckleAxis, LoadAxisType speckleAxisType, out AxisRefType gsaAxisRefType, out int? gsaAxisIndex)
     {
       gsaAxisIndex = null;
       if (speckleAxis == null)
@@ -2094,7 +2303,7 @@ namespace ConverterGSA
       }
       else
       {
-        gsaAxisIndex = Instance.GsaModel.Cache.LookupIndex<GsaAxis>(speckleAxis.applicationId);
+        gsaAxisIndex = speckleAxis.GetIndex<GsaAxis>();
         if (gsaAxisIndex == null)
         {
           //TODO: handle local, and natural cases
@@ -2168,6 +2377,44 @@ namespace ConverterGSA
 
       }
       return desc;
+    }
+
+    private bool GetPolyline(Polyline specklePolyline, out LoadLineOption gsaOption, out string gsaPolygon, out int? gsaPolgonIndex)
+    {
+      //Defaults outputs
+      gsaOption = LoadLineOption.NotSet;
+      gsaPolygon = "";
+      gsaPolgonIndex = null;
+
+      //Try and find index, else create string
+      if (specklePolyline == null) return false;
+      if (specklePolyline.applicationId != null) gsaPolgonIndex = Instance.GsaModel.Cache.LookupIndex<GsaPolyline>(specklePolyline.applicationId);
+      if (gsaPolgonIndex == null) gsaPolygon = specklePolyline.ToGwaString();
+      if (gsaPolgonIndex == null && gsaPolygon == "") return false;
+      else if (gsaPolgonIndex != null) gsaOption = LoadLineOption.PolyRef;
+      else gsaOption = LoadLineOption.Polygon;
+      return true;
+    }
+
+    private bool GetPolyline(Polyline specklePolyline, out LoadAreaOption gsaOption, out string gsaPolygon, out int? gsaPolgonIndex)
+    {
+      //Defaults outputs
+      gsaOption = LoadAreaOption.Plane;
+      gsaPolygon = "";
+      gsaPolgonIndex = null;
+
+      //Try and find index, else create string
+      if (specklePolyline == null) return true;
+      if (specklePolyline.applicationId != null) gsaPolgonIndex = Instance.GsaModel.Cache.LookupIndex<GsaPolyline>(specklePolyline.applicationId);
+      if (gsaPolgonIndex == null) gsaPolygon = specklePolyline.ToString();
+      if (gsaPolgonIndex == null && gsaPolygon == "")
+      {
+        gsaOption = LoadAreaOption.NotSet;
+        return false;
+      }
+      else if (gsaPolgonIndex != null) gsaOption = LoadAreaOption.PolyRef;
+      else gsaOption = LoadAreaOption.Polygon;
+      return true;
     }
     #endregion
 
@@ -2414,6 +2661,25 @@ namespace ConverterGSA
         },
         Environ = false
       };
+    }
+    #endregion
+
+    #region Constraint
+    private Dictionary<GwaAxisDirection6, List<GwaAxisDirection6>> GetRigidConstraint(Dictionary<AxisDirection6, List<AxisDirection6>> speckleConstraint)
+    {
+      if (speckleConstraint == null) return null;
+
+      var gsaConstraint = new Dictionary<GwaAxisDirection6, List<GwaAxisDirection6>>();
+      foreach (var key in speckleConstraint.Keys)
+      {
+        var speckleKey = key.ToNative();
+        gsaConstraint[speckleKey] = new List<GwaAxisDirection6>();
+        foreach (var val in speckleConstraint[key])
+        {
+          gsaConstraint[speckleKey].Add(val.ToNative());
+        }
+      }
+      return gsaConstraint;
     }
     #endregion
 
