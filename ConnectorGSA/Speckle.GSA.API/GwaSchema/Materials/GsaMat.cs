@@ -35,7 +35,7 @@
     public GsaMat() : base()
     {
       //Defaults
-      Version = 10;
+      Version = 11;
     }
   }
 }
