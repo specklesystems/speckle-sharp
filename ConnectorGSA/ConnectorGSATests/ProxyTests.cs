@@ -39,9 +39,13 @@ namespace ConnectorGSATests
       var proxy = new GsaProxy();
       proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-      Assert.True(proxy.GetGwaData(Instance.GsaModel.StreamLayer, out var records));
-      proxy.Close();
+      var errors = new List<string>();
 
+      var loggingProgress = new Progress<string>();
+      loggingProgress.ProgressChanged += (object s, string e) => errors.Add(e);
+      Assert.True(proxy.GetGwaData(Instance.GsaModel.StreamLayer, new Progress<string>(), out var records));
+      proxy.Close();
+      Assert.Empty(errors);
       Assert.Equal(197, records.Count());
     }
 
@@ -84,14 +88,14 @@ namespace ConnectorGSATests
 
       try
       {
-        loaded = Commands.LoadDataFromFile(resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
+        loaded = Commands.LoadDataFromFile(loggingProgress, resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
       }
       catch (Exception ex)
       {
       }
       finally
       {
-        Instance.GsaModel.Proxy.Close();
+        ((GsaProxy)Instance.GsaModel.Proxy).Close();
       }
 
       var indices = Instance.GsaModel.Cache.LookupIndices<GsaAssembly>();
@@ -139,10 +143,10 @@ namespace ConnectorGSATests
     public void TestDeserialisation()
     {
       Instance.GsaModel.Proxy = new GsaProxy();
-      Instance.GsaModel.Proxy.OpenFile(saveAsAlternativeFilepath(modelWithoutResultsFile));
+      ((GsaProxy)Instance.GsaModel.Proxy).OpenFile(saveAsAlternativeFilepath(modelWithoutResultsFile));
       try
       {
-        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+        var sid = ((GsaProxy)Instance.GsaModel.Proxy).GetTopLevelSid();
         var ss = JsonConvert.DeserializeObject<List<StreamState>>(sid);
       }
       catch (Exception ex)
@@ -151,7 +155,7 @@ namespace ConnectorGSATests
       }
       finally
       {
-        Instance.GsaModel.Proxy.Close();
+        ((GsaProxy)Instance.GsaModel.Proxy).Close();
       }
     }
 

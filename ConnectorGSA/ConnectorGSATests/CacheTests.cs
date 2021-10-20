@@ -1,6 +1,8 @@
-﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+﻿using Speckle.ConnectorGSA.Proxy;
+using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,14 +22,16 @@ namespace ConnectorGSATests
     public void HydrateCache()
     {
       Instance.GsaModel.StreamLayer = GSALayer.Design;
-      proxy = new Speckle.ConnectorGSA.Proxy.GsaProxy();
+      proxy = new GsaProxy();
       var errored = new Dictionary<int, GsaRecord>();
-
+      var errors = new List<string>();
+      var loggingProgress = new Progress<string>();
+      loggingProgress.ProgressChanged += (object o, string e) => errors.Add(e);
       try
       {
-        proxy.OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
+        ((GsaProxy)proxy).OpenFile(Path.Combine(TestDataDirectory, modelWithoutResultsFile), false);
 
-        Assert.True(proxy.GetGwaData(Instance.GsaModel.StreamLayer, out var records));
+        Assert.True(((GsaProxy)proxy).GetGwaData(Instance.GsaModel.StreamLayer, loggingProgress, out var records));
 
         for (int i = 0; i < records.Count(); i++)
         {
@@ -39,9 +43,9 @@ namespace ConnectorGSATests
       }
       finally
       {
-        proxy.Close();
+        ((GsaProxy)Instance.GsaModel.Proxy).Close();
       }
-
+      Assert.Empty(errors);
       Assert.Empty(errored);
     }
 

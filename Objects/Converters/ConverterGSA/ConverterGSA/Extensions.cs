@@ -266,6 +266,16 @@ namespace ConverterGSA
       }
     }
 
+    public static GridSurfaceSpan ToNative(this GridSurfaceSpanType gsaGridSurfaceSpan)
+    {
+      switch (gsaGridSurfaceSpan)
+      {
+        case GridSurfaceSpanType.OneWay: return GridSurfaceSpan.One;
+        case GridSurfaceSpanType.TwoWay: return GridSurfaceSpan.Two;
+        default: return GridSurfaceSpan.NotSet;
+      }
+    }
+
     public static LoadExpansion ToSpeckle(this GridExpansion gsaExpansion)
     {
       switch(gsaExpansion)
@@ -275,6 +285,18 @@ namespace ConverterGSA
         case GridExpansion.PlaneCorner: return LoadExpansion.PlaneCorner;
         case GridExpansion.PlaneSmooth: return LoadExpansion.PlaneSmooth;
         default: return LoadExpansion.NotSet;
+      }
+    }
+
+    public static GridExpansion ToNative(this LoadExpansion gsaExpansion)
+    {
+      switch (gsaExpansion)
+      {
+        case LoadExpansion.Legacy:      return GridExpansion.Legacy;
+        case LoadExpansion.PlaneAspect: return GridExpansion.PlaneAspect;
+        case LoadExpansion.PlaneCorner: return GridExpansion.PlaneCorner;
+        case LoadExpansion.PlaneSmooth: return GridExpansion.PlaneSmooth;
+        default: return GridExpansion.NotSet;
       }
     }
 
@@ -727,6 +749,43 @@ namespace ConverterGSA
         default: throw new Exception(speckleType.ToString() + " speckle enum can not be converted into native enum");
       }
     }
+
+    public static GwaAxisDirection6 ToNative(this AxisDirection6 speckleType)
+    {
+      switch (speckleType)
+      {
+        case AxisDirection6.X: return GwaAxisDirection6.X;
+        case AxisDirection6.Y: return GwaAxisDirection6.Y;
+        case AxisDirection6.Z: return GwaAxisDirection6.Z;
+        case AxisDirection6.XX: return GwaAxisDirection6.XX;
+        case AxisDirection6.YY: return GwaAxisDirection6.YY;
+        case AxisDirection6.ZZ: return GwaAxisDirection6.ZZ;
+        default: return GwaAxisDirection6.NotSet;
+      }
+    }
+
+    public static RigidConstraintType ToNative(this LinkageType speckleType)
+    {
+      switch (speckleType)
+      {
+        case LinkageType.ALL: return RigidConstraintType.ALL;
+        case LinkageType.XY_PLANE: return RigidConstraintType.XY_PLANE;
+        case LinkageType.YZ_PLANE: return RigidConstraintType.YZ_PLANE;
+        case LinkageType.ZX_PLANE: return RigidConstraintType.ZX_PLANE;
+        case LinkageType.XY_PLATE: return RigidConstraintType.XY_PLATE;
+        case LinkageType.YZ_PLATE: return RigidConstraintType.YZ_PLATE;
+        case LinkageType.ZX_PLATE: return RigidConstraintType.ZX_PLATE;
+        case LinkageType.PIN: return RigidConstraintType.PIN;
+        case LinkageType.XY_PLANE_PIN: return RigidConstraintType.XY_PLANE_PIN;
+        case LinkageType.YZ_PLANE_PIN: return RigidConstraintType.YZ_PLANE_PIN;
+        case LinkageType.ZX_PLANE_PIN: return RigidConstraintType.ZX_PLANE_PIN;
+        case LinkageType.XY_PLATE_PIN: return RigidConstraintType.XY_PLATE_PIN;
+        case LinkageType.YZ_PLATE_PIN: return RigidConstraintType.YZ_PLATE_PIN;
+        case LinkageType.ZX_PLATE_PIN: return RigidConstraintType.ZX_PLATE_PIN;
+        case LinkageType.Custom: return RigidConstraintType.Custom;
+        default: return RigidConstraintType.NotSet;
+      }
+    }
     #endregion
     #endregion
 
@@ -740,9 +799,14 @@ namespace ConverterGSA
     {
       return Math.PI * degrees / 180;
     }
+    public static double Degrees(this double radians)
+    {
+      double degrees = (180 / Math.PI) * radians;
+      return (degrees);
+    }
     #endregion
 
-    #region Vector Fns
+    #region Geometric Fns
     /// <summary>
     /// Returns the dot product of two vectors
     /// </summary>
@@ -795,7 +859,87 @@ namespace ConverterGSA
 
       return v_rot1 + v_rot2 + v_rot3;
     }
+
+    public static bool Equals(this Point p1, Point p2, int decimalPlaces)
+    {
+      if (p1 == null && p2 == null)
+      {
+        return true;
+      }
+      else if (p1 == null || p2 == null)
+      {
+        return false;
+      }
+      double margin = 1;
+      for (int i = 0; i < decimalPlaces; i++)
+      {
+        margin *= 0.1;
+      }
+      return ((Math.Abs(p1.x - p2.x) < margin) && (Math.Abs(p1.y - p2.y) < margin) && (Math.Abs(p1.z - p2.z) < margin));
+    }
+
+    public static bool Equals(this Vector v1, Vector v2, int decimalPlaces)
+    {
+      if (v1 == null && v2 == null)
+      {
+        return true;
+      }
+      else if (v1 == null || v2 == null)
+      {
+        return false;
+      }
+      double margin = 1;
+      for (int i = 0; i < decimalPlaces; i++)
+      {
+        margin *= 0.1;
+      }
+      return ((Math.Abs(v1.x - v2.x) < margin) && (Math.Abs(v1.y - v2.y) < margin) && (Math.Abs(v1.z - v2.z) < margin));
+    }
+
     #endregion
+
+    public static string ToGwaString(this Polyline specklePolyline)
+    {
+      var is3d = specklePolyline.Is3d();
+
+      //create string
+      var str = "";
+      for (var i = 0; i < specklePolyline.value.Count(); i += 3)
+      {
+        str += "(" + specklePolyline.value[i] + "," + specklePolyline.value[i + 1];
+        if (is3d) str += "," + specklePolyline.value[i + 2];
+        str += ") ";
+      }
+      str = str.Remove(str.Length - 1, 1) + "(m)"; //TODO: add units to end of string
+      return str;
+    }
+
+    public static bool Is3d(this Polyline specklePolyline)
+    {
+      for (var i = 0; i < specklePolyline.value.Count(); i+= 3)
+      {
+        if (specklePolyline.value[i + 2] != 0) return true;
+      }
+      return false;
+    }
+
+    public static List<double> GetValues(this Polyline specklePolyline)
+    {
+      if (specklePolyline.Is3d())
+      {
+        return specklePolyline.value;
+      }
+      else
+      {
+        var v = new List<double>();
+        for (var i = 0; i < specklePolyline.value.Count(); i += 3)
+        {
+          v.Add(specklePolyline.value[i]);
+          v.Add(specklePolyline.value[i + 1]);
+        }
+        return v;
+      }
+    }
 
     #region ResolveIndices
     public static List<int> GetIndicies<T>(this List<Base> speckleObject)
@@ -809,15 +953,39 @@ namespace ConverterGSA
       }
       return (gsaIndices.Count() > 0) ? gsaIndices : null;
     }
+    public static List<int> GetIndicies(this List<Node> speckleObject)
+    {
+      if (speckleObject == null) return null;
+      var gsaIndices = new List<int>();
+      foreach (var o in speckleObject)
+      {
+        var index = Instance.GsaModel.Cache.LookupIndex<GsaNode>(o.applicationId);
+        if (index.HasValue) gsaIndices.Add(index.Value);
+      }
+      return (gsaIndices.Count() > 0) ? gsaIndices : null;
+    }
+
     public static int? GetIndex<T>(this Base speckleObject) => (speckleObject == null) ? null : (int?)Instance.GsaModel.Cache.ResolveIndex<T>(speckleObject.applicationId);
     #endregion
 
     public static T GetDynamicValue<T>(this Base speckleObject, string member)
     {
       var members = speckleObject.GetMembers();
-      if (members.ContainsKey(member) && speckleObject[member] is T)
+      if (members.ContainsKey(member))
       {
-        return (T)speckleObject[member];
+        if (speckleObject[member] is T)
+        {
+          return (T)speckleObject[member];
+        }
+
+        T retValue = default(T);
+        try
+        {
+          retValue = (T)Convert.ChangeType(speckleObject[member], typeof(T));
+        }
+        catch { }
+
+        return retValue;
       }
       return default(T);
     }
@@ -851,7 +1019,7 @@ namespace ConverterGSA
 
     public static Colour ColourToNative(this string speckleColour)
     {
-      return Enum.TryParse(speckleColour, out Colour gsaColour) ? gsaColour : Colour.NO_RGB;
+      return Enum.TryParse(speckleColour, true, out Colour gsaColour) ? gsaColour : Colour.NO_RGB;
     }
 
     public static ReleaseCode ReleaseCodeToNative(this char speckleRelease)

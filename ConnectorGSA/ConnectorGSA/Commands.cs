@@ -115,7 +115,7 @@ namespace ConnectorGSA
     public static bool OpenFile(string filePath, bool visible)
     {
       Instance.GsaModel.Proxy = new GsaProxy(); //Use a real proxy
-      var opened = Instance.GsaModel.Proxy.OpenFile(filePath, visible);
+      var opened = ((GsaProxy)Instance.GsaModel.Proxy).OpenFile(filePath, visible);
       if (!opened)
       {
         return false;
@@ -128,7 +128,7 @@ namespace ConnectorGSA
       List<StreamState> allSaved;
       try
       {
-        var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+        var sid = ((GsaProxy)Instance.GsaModel.Proxy).GetTopLevelSid();
         allSaved = JsonConvert.DeserializeObject<List<StreamState>>(sid);
         if (allSaved == null) {
           allSaved = new List<StreamState>();
@@ -158,7 +158,7 @@ namespace ConnectorGSA
 
     public static bool UpsertSavedReceptionStreamInfo(bool? receive, bool? send, params StreamState[] streamStates)
     {
-      var sid = Instance.GsaModel.Proxy.GetTopLevelSid();
+      var sid = ((GsaProxy)Instance.GsaModel.Proxy).GetTopLevelSid();
       List<StreamState> allSs = null;
       try
       {
@@ -199,19 +199,19 @@ namespace ConnectorGSA
       }
 
       var newSid = JsonConvert.SerializeObject(allSs);
-      return Instance.GsaModel.Proxy.SetTopLevelSid(newSid);
+      return ((GsaProxy)Instance.GsaModel.Proxy).SetTopLevelSid(newSid);
     }
 
     public static bool CloseFile(string filePath, bool visible)
     {
-      Instance.GsaModel.Proxy.Close();
-      return Instance.GsaModel.Proxy.Clear();
+      ((GsaProxy)Instance.GsaModel.Proxy).Close();
+      return ((GsaProxy)Instance.GsaModel.Proxy).Clear();
     }
 
-    public static bool LoadDataFromFile(IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
+    public static bool LoadDataFromFile(IProgress<MessageEventArgs> loggingProgress, IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
-      Instance.GsaModel.Proxy.Clear();
-      var loadedCache = UpdateCache();
+      ((GsaProxy)Instance.GsaModel.Proxy).Clear();
+      var loadedCache = UpdateCache(loggingProgress);
       int cumulativeErrorRows = 0;
 
       if (resultGroups != null && resultGroups.Any() && resultTypes != null && resultTypes.Any())
@@ -222,7 +222,7 @@ namespace ConnectorGSA
         }
         foreach (var g in resultGroups)
         {
-          if (!Instance.GsaModel.Proxy.LoadResults(g, out int numErrorRows) || numErrorRows > 0)
+          if (!((GsaProxy)Instance.GsaModel.Proxy).LoadResults(g, out int numErrorRows) || numErrorRows > 0)
           {
             return false;
           }
@@ -233,7 +233,7 @@ namespace ConnectorGSA
       return (loadedCache && (cumulativeErrorRows == 0));
     }
 
-    public static bool ConvertToNative(ISpeckleConverter converter) //Includes writing to Cache
+    public static bool ConvertToNative(ISpeckleConverter converter, IProgress<MessageEventArgs> loggingProgress) //Includes writing to Cache
     {
       var speckleDependencyTree = ((GsaModel)Instance.GsaModel).SpeckleDependencyTree();
 
@@ -251,18 +251,20 @@ namespace ConnectorGSA
             {
               foreach (Base so in objectsByType[t])
               {
+                string appId = "";
                 try
                 {
                   if (converter.CanConvertToNative(so))
                   {
                     var nativeObjects = converter.ConvertToNative(new List<Base> { so }).Cast<GsaRecord>().ToList();
-                    var appId = string.IsNullOrEmpty(so.applicationId) ? so.id : so.applicationId;
+                    appId = string.IsNullOrEmpty(so.applicationId) ? so.id : so.applicationId;
                     Instance.GsaModel.Cache.SetNatives(so.GetType(), appId, nativeObjects);
                   }
                 }
                 catch (Exception ex)
                 {
-
+                  loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, "Unable to convert " + t.Name + " " + appId + " - refer to logs for more information"));
+                  loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, ex, "Unable to load file"));
                 }
               }
             }
@@ -349,7 +351,7 @@ namespace ConnectorGSA
 
       statusProgress.Report("Reading GSA data into cache");
       //Load data to cause merging
-      Commands.LoadDataFromFile();
+      Commands.LoadDataFromFile(loggingProgress);
 
       percentage = 10;
       percentageProgress.Report(percentage);
@@ -435,7 +437,7 @@ namespace ConnectorGSA
         percentageProgress.Report(percentage + Math.Round(((double)numConverted / (double)numToConvert) * totalConversionPercentage, 0));
       });
 
-      Commands.ConvertToNative(converter);
+      Commands.ConvertToNative(converter, loggingProgress);
 
       if (converter.ConversionErrors != null && converter.ConversionErrors.Count > 0)
       {
@@ -459,7 +461,7 @@ namespace ConnectorGSA
       //The cache is filled with natives
       if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
       {
-        Instance.GsaModel.Proxy.WriteModel(gsaRecords, Instance.GsaModel.StreamLayer);
+        ((GsaProxy)Instance.GsaModel.Proxy).WriteModel(gsaRecords);
       }
 
       percentageProgress.Report(100);
@@ -503,13 +505,20 @@ namespace ConnectorGSA
       return false;
     }
 
-    private static bool UpdateCache(bool onlyNodesWithApplicationIds = true)
+    private static bool UpdateCache(IProgress<MessageEventArgs> loggingProgress, bool onlyNodesWithApplicationIds = true)
     {
       var errored = new Dictionary<int, GsaRecord>();
 
+      var gwaLoggingProgress = new Progress<string>();
+      gwaLoggingProgress.ProgressChanged += (object o, string e) =>
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, e));
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, e));
+      };
+
       try
       {
-        if (Instance.GsaModel.Proxy.GetGwaData(Instance.GsaModel.StreamLayer, out var records))
+        if (((GsaProxy)Instance.GsaModel.Proxy).GetGwaData(Instance.GsaModel.StreamLayer, gwaLoggingProgress, out var records))
         {
           for (int i = 0; i < records.Count(); i++)
           {
@@ -549,11 +558,12 @@ namespace ConnectorGSA
           if (!uniques.ContainsKey(t))
           {
             uniques.Add(t, new HashSet<string>() { @base.GetId() });
+            objects.Add(@base);
           }
           if (!uniques[t].Contains(id))
           {
-            objects.Add(@base);
             uniques[t].Add(id);
+            objects.Add(@base);
           }
 
           return objects;
@@ -608,7 +618,7 @@ namespace ConnectorGSA
 
     internal static bool NewFile(TabCoordinator coordinator, IProgress<MessageEventArgs> loggingProgress)
     {
-      Instance.GsaModel.Proxy.NewFile(true);
+      ((GsaProxy)Instance.GsaModel.Proxy).NewFile(true);
 
       coordinator.ReceiverTab.ReceiverStreamStates.Clear();
       coordinator.SenderTab.SenderStreamStates.Clear();
@@ -690,13 +700,13 @@ namespace ConnectorGSA
         };
         if (saveFileDialog.ShowDialog() == true)
         {
-          Instance.GsaModel.Proxy.SaveAs(saveFileDialog.FileName);
+          ((GsaProxy)Instance.GsaModel.Proxy).SaveAs(saveFileDialog.FileName);
           coordinator.FilePath = saveFileDialog.FileName;
         }
       }
       else if (coordinator.FileStatus == GsaLoadedFileType.ExistingFile)
       {
-        Instance.GsaModel.Proxy.SaveAs(coordinator.FilePath);
+        ((GsaProxy)Instance.GsaModel.Proxy).SaveAs(coordinator.FilePath);
       }
       return true;
     }
@@ -747,7 +757,7 @@ namespace ConnectorGSA
       var startTime = DateTime.Now;
 
       statusProgress.Report("Preparing cache");
-      Commands.LoadDataFromFile(); //Ensure all nodes
+      Commands.LoadDataFromFile(loggingProgress); //Ensure all nodes
       loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Loaded data from file into cache"));
 
       percentage += 20;
@@ -800,7 +810,7 @@ namespace ConnectorGSA
           Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes);
           foreach (var rg in Instance.GsaModel.ResultGroups)
           {
-            Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
+            ((GsaProxy)Instance.GsaModel.Proxy).LoadResults(rg, out int numErrorRows);
           }
 
           percentage += 20;

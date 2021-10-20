@@ -597,8 +597,8 @@ namespace ConverterGSATests
       Assert.Equal(gsaGridPlanes[1].Index.Value, speckleGridPlanes[1].nativeId);
       Assert.Equal("axis 1", speckleGridPlanes[1].axis.applicationId);
       Assert.Equal(gsaGridPlanes[1].Elevation.Value, speckleGridPlanes[1].elevation);
-      Assert.Equal(false, speckleGridPlanes[1].toleranceBelow.HasValue);
-      Assert.Equal(false, speckleGridPlanes[1].toleranceAbove.HasValue);
+      Assert.False(speckleGridPlanes[1].toleranceBelow.HasValue);
+      Assert.False(speckleGridPlanes[1].toleranceAbove.HasValue);
     }
 
     [Fact]
@@ -4789,7 +4789,7 @@ namespace ConverterGSATests
           Index = 2,
           Name = "2",
           Width = 4,
-          NumAxle = 2,
+          NumAxle = 3,
           AxlePosition = new List<double>(){ 0, 5, 9 },
           AxleOffset = new List<double>(){ 1, 6, 10 },
           AxleLeft = new List<double>(){ 2, 7, 11 },

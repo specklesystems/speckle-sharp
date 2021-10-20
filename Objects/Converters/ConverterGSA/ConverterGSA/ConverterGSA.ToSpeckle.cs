@@ -1415,7 +1415,7 @@ namespace ConverterGSA
         { Section1dProfileGroup.Perimeter, GetProfilePerimeter },
         { Section1dProfileGroup.Standard, GetProfileStandard }
       };
-      if (fns.ContainsKey(gsaSectionComp.ProfileGroup))
+      if (gsaSectionComp.ProfileDetails != null && fns.ContainsKey(gsaSectionComp.ProfileGroup))
       {
         speckleProperty1D.profile = fns[gsaSectionComp.ProfileGroup](gsaSectionComp.ProfileDetails);
       }
