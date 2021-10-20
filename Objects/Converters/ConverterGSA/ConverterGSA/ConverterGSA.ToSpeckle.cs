@@ -1291,7 +1291,7 @@ namespace ConverterGSA
       var speckleSteel = new GSASteel()
       {
         nativeId = gsaSteel.Index ?? 0,
-        name = gsaSteel.Name,
+        name = gsaSteel.Mat.Name,
         grade = "",                                 //grade can be determined from gsaMatSteel.Mat.Name (assuming the user doesn't change the default value): e.g. "350(AS3678)"
         type = MaterialType.Steel,
         designCode = "",                            //designCode can be determined from SPEC_STEEL_DESIGN gwa keyword
@@ -1323,7 +1323,7 @@ namespace ConverterGSA
       var speckleConcrete = new GSAConcrete()
       {
         nativeId = gsaConcrete.Index ?? 0,
-        name = gsaConcrete.Name,
+        name = gsaConcrete.Mat.Name,
         grade = "",                                 //grade can be determined from gsaMatConcrete.Mat.Name (assuming the user doesn't change the default value): e.g. "32 MPa"
         type = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"
