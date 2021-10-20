@@ -12,7 +12,7 @@ namespace Speckle.ConnectorGSA.Proxy
   {
     public static string FormatApplicationId(Type t, int index)
     {
-      return Instance.GsaModel.Proxy.GenerateApplicationId(t, index);
+      return ((GsaProxy)Instance.GsaModel.Proxy).GenerateApplicationId(t, index);
     }
 
     public static GwaKeyword GetGwaKeyword(Type t)

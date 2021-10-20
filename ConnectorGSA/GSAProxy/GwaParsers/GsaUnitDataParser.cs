@@ -38,9 +38,17 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       {
         return false;
       }
-
+      
       //UNIT_DATA.1 | option | name | factor
-      return FromGwaByFuncs(items, out _, (v) => v.TryParseStringValue(out record.Option), AddName, (v) => double.TryParse(v, out record.Factor));
+      if (FromGwaByFuncs(items, out _, (v) => v.TryParseStringValue(out record.Option), AddName, (v) => double.TryParse(v, out record.Factor)))
+      {
+        //Unique for UNIT_DATA records because there is no index (which rules out auto generation using keyword and index) and the Name field
+        //is overloaded with meaning, which reasonably enables one to assume its name is unique among its peer records.
+        //If that name somehow is null, only then create a GUID.
+        record.ApplicationId = (string.IsNullOrEmpty(record.Name)) ? Guid.NewGuid().ToString() : record.Name;
+        return true;
+      }
+      return false;
     }
 
     public override bool Gwa(out List<string> gwa, bool includeSet = false)
