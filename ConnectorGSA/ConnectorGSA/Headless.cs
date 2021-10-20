@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Deployment.Application;
 using System.Threading.Tasks;
 using Speckle.GSA.API.GwaSchema;
+using Speckle.ConnectorGSA.Proxy;
 
 namespace ConnectorGSA
 {
@@ -43,6 +44,9 @@ namespace ConnectorGSA
 
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
+
+      var loggingProgress = new Progress<MessageEventArgs>();
+      //TO DO: add logging to console
 
       Instance.GsaModel = new GsaModel();
 
@@ -173,12 +177,12 @@ namespace ConnectorGSA
 
       if (sendReceive == SendReceive.Receive)
       {
-        Instance.GsaModel.Proxy.NewFile(false);
+        ((GsaProxy)Instance.GsaModel.Proxy).NewFile(false);
 
         //Instance.GsaModel.Messenger.Message(MessageIntent.Display, MessageLevel.Information, "Created new file.");
 
         //Ensure this new file has a file name, and internally sets the file name in the proxy
-        Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
+        ((GsaProxy)Instance.GsaModel.Proxy).SaveAs(saveAsFilePath);
       }
       else
       {
@@ -204,7 +208,7 @@ namespace ConnectorGSA
         cliResult = Task.Run(() =>
         {
           //Load data to cause merging
-          Commands.LoadDataFromFile(); //Ensure all nodes
+          Commands.LoadDataFromFile(loggingProgress); //Ensure all nodes
 
           foreach (var streamId in streamIds)
           {
@@ -223,12 +227,12 @@ namespace ConnectorGSA
             streamStates.Add(streamState);
           }
 
-          Commands.ConvertToNative(converter);
+          Commands.ConvertToNative(converter, loggingProgress);
 
           //The cache is filled with natives
           if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
           {
-            Instance.GsaModel.Proxy.WriteModel(gsaRecords, Instance.GsaModel.StreamLayer);
+            ((GsaProxy)Instance.GsaModel.Proxy).WriteModel(gsaRecords, Instance.GsaModel.StreamLayer);
           }
 
           Console.WriteLine("Receiving complete");
@@ -246,11 +250,11 @@ namespace ConnectorGSA
             Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes);
             foreach (var rg in Instance.GsaModel.ResultGroups)
             {
-              Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
+              ((GsaProxy)Instance.GsaModel.Proxy).LoadResults(rg, out int numErrorRows);
             }
           }
 
-          Commands.LoadDataFromFile(); //Ensure all nodes
+          Commands.LoadDataFromFile(loggingProgress); //Ensure all nodes
 
           var objs = Commands.ConvertToSpeckle(converter);
 
@@ -297,8 +301,8 @@ namespace ConnectorGSA
       }
 
       Commands.UpsertSavedReceptionStreamInfo(true, null, streamStates.ToArray());
-      Instance.GsaModel.Proxy.SaveAs(saveAsFilePath);
-      Instance.GsaModel.Proxy.Close();
+      ((GsaProxy)Instance.GsaModel.Proxy).SaveAs(saveAsFilePath);
+      ((GsaProxy)Instance.GsaModel.Proxy).Close();
 
       return cliResult;
     }

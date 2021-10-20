@@ -54,7 +54,7 @@ namespace ConnectorGSATests
 
 
       //First receive
-      var result = await CoordinateReceive(converter, client);
+      var result = await CoordinateReceive(converter, client, new Progress<MessageEventArgs>());
 
       Assert.True(result.Received);
       Assert.True(result.Converted);
@@ -70,7 +70,7 @@ namespace ConnectorGSATests
       }
 
       //Second receive
-      result = await CoordinateReceive(converter, client);
+      result = await CoordinateReceive(converter, client, new Progress<MessageEventArgs>());
 
       Assert.True(result.Received);
       Assert.True(result.Converted);
@@ -147,11 +147,15 @@ namespace ConnectorGSATests
     }
     */
 
-    private async Task<CoordinateReceiveResult> CoordinateReceive(ISpeckleConverter converter, Client client)
+    private async Task<CoordinateReceiveResult> CoordinateReceive(ISpeckleConverter converter, Client client, IProgress<MessageEventArgs> loggingProgress)
     {
       var result = new CoordinateReceiveResult();
 
       var streamState = await GetTestStream(client);
+      if (streamState.Stream == null)
+      {
+        return new CoordinateReceiveResult() { Received = false };
+      }
 
       //var branchName = streamState.Stream.branches.items.First().name;
       //var branch = await client.BranchGet(streamState.Stream.id, branchName, 1);
@@ -162,7 +166,7 @@ namespace ConnectorGSATests
       result.Received = await Commands.Receive(commitId, streamState, transport, converter.CanConvertToNative);
       if (result.Received)
       {
-        result.Converted = Commands.ConvertToNative(converter); //This writes it to the cache
+        result.Converted = Commands.ConvertToNative(converter, loggingProgress); //This writes it to the cache
       }
       if (!result.Received || !result.Converted)
       {
@@ -198,11 +202,13 @@ namespace ConnectorGSATests
 
       try
       {
-        var streams = await client.StreamsGet(1);
+        var streams = await client.StreamsGet(50);
         testStream = streams.FirstOrDefault(s => s.name.Contains(testStreamMarker));
-
-        var branches = await client.StreamGetBranches(testStream.id, 1);
-        testStream.branch = branches.First();
+        if (testStream != null)
+        {
+          var branches = await client.StreamGetBranches(testStream.id, 1);
+          testStream.branch = branches.First();
+        }
       }
       catch (Exception e)
       {

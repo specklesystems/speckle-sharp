@@ -971,9 +971,21 @@ namespace ConverterGSA
     public static T GetDynamicValue<T>(this Base speckleObject, string member)
     {
       var members = speckleObject.GetMembers();
-      if (members.ContainsKey(member) && speckleObject[member] is T)
+      if (members.ContainsKey(member))
       {
-        return (T)speckleObject[member];
+        if (speckleObject[member] is T)
+        {
+          return (T)speckleObject[member];
+        }
+
+        T retValue = default(T);
+        try
+        {
+          retValue = (T)Convert.ChangeType(speckleObject[member], typeof(T));
+        }
+        catch { }
+
+        return retValue;
       }
       return default(T);
     }

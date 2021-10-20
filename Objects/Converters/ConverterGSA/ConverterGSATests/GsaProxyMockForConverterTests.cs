@@ -181,8 +181,6 @@ namespace ConverterGSATests
 
     public bool SaveAs(string filePath) => true;
 
-    bool IGSAProxy.Clear() => true;
-
     public string GetTopLevelSid() => "";
 
     public bool SetTopLevelSid(string StreamState) => true;
