@@ -177,6 +177,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
         remainingItems = items;
         return false;
       }
+      record.Prop = (GsaMatAnal)gsaMatAnalParser.Record;
       return true;
     }
 
