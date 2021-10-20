@@ -132,6 +132,8 @@ namespace ConnectorGSATests
       Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
       var converter = new ConverterGSA.ConverterGSA();
       var memoryTransport = new MemoryTransport();
+      
+      
       var result = await CoordinateSend(modelWithResultsFile, converter, memoryTransport);
 
       Assert.True(result.Loaded);
@@ -204,26 +206,26 @@ namespace ConnectorGSATests
       var returnInfo = new CoordinateSendReturnInfo();
 
       Instance.GsaModel.Proxy = new GsaProxy(); //Use a real proxy
-      Instance.GsaModel.Proxy.OpenFile(Path.Combine(TestDataDirectory, testFileName), true);
+      ((GsaProxy)Instance.GsaModel.Proxy).OpenFile(Path.Combine(TestDataDirectory, testFileName), true);
 
       if (SendResults())
       {
         Instance.GsaModel.Proxy.PrepareResults(Instance.GsaModel.ResultTypes, Instance.GsaModel.Result1DNumPosition + 2);
         foreach (var rg in Instance.GsaModel.ResultGroups)
         {
-          Instance.GsaModel.Proxy.LoadResults(rg, out int numErrorRows);
+          ((GsaProxy)Instance.GsaModel.Proxy).LoadResults(rg, out int numErrorRows);
         }
       }
 
       returnInfo.Loaded = false;
       try
       {
-        returnInfo.Loaded = Commands.LoadDataFromFile();
+        returnInfo.Loaded = Commands.LoadDataFromFile(loggingProgress);
       }
       catch { }
       finally
       {
-        Instance.GsaModel.Proxy.Close();
+        ((GsaProxy)Instance.GsaModel.Proxy).Close();
       }
       if (!returnInfo.Loaded)
       {

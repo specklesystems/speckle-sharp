@@ -1,4 +1,5 @@
-﻿using Speckle.ConnectorGSA.Proxy.Cache;
+﻿using ConnectorGSA;
+using Speckle.ConnectorGSA.Proxy.Cache;
 using Speckle.ConnectorGSA.Proxy.GwaParsers;
 using Speckle.Core.Kits;
 using Speckle.GSA.API;
@@ -25,6 +26,9 @@ namespace ConnectorGSATests
     protected IGSACache cache => GsaModelMock.Cache;
     protected IGSAProxy proxy { get => GsaModelMock.Proxy; set => GsaModelMock.Proxy = value; }
 
+    protected IProgress<MessageEventArgs> loggingProgress = new Progress<MessageEventArgs>();
+    protected List<MessageEventArgs> errorEventArgs = new List<MessageEventArgs>();
+
     //protected ISpeckleConverter converter {  get =>  kit.LoadConverter(Applications.GSA); }
 
     //public ISpeckleKit kit { get=> KitManager.GetDefaultKit(); }
@@ -32,6 +36,7 @@ namespace ConnectorGSATests
     public SpeckleConnectorFixture()
     {
       Instance.GsaModel = GsaModelMock;
+      ((Progress<MessageEventArgs>)loggingProgress).ProgressChanged += (object o, MessageEventArgs me) => errorEventArgs.Add(me);
     }
 
     protected static GwaKeyword[] DesignLayerKeywords = new GwaKeyword[] {
