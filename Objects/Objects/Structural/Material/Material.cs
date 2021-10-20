@@ -10,7 +10,7 @@ namespace Objects.Structural.Materials
     {
         public string name { get; set; }
         public string grade { get; set; } //ex. 350W(G40.21 Plate), could be set in name too
-        public MaterialType type { get; set; }
+        public MaterialType materialType { get; set; }
         public string designCode { get; set; }
         public string codeYear { get; set; }
         public double strength { get; set; } 
@@ -31,7 +31,7 @@ namespace Objects.Structural.Materials
         public Material(string name, MaterialType type, string grade = null, string designCode = null, string codeYear = null)
         {
             this.name = name;
-            this.type = type;
+            this.materialType = type;
             this.grade = grade;
             this.designCode = designCode;
             this.codeYear = codeYear;
@@ -42,7 +42,7 @@ namespace Objects.Structural.Materials
         {
             this.name = name;
             this.grade = grade;
-            this.type = type;
+            this.materialType = type;
             this.designCode = designCode;
             this.codeYear = codeYear;
             this.strength = strength;
