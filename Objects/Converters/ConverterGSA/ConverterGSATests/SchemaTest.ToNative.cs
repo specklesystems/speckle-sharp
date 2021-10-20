@@ -330,14 +330,78 @@ namespace ConverterGSATests
       //Checks
       var gsaConvertedGridPlanes = gsaConvertedRecords.FindAll(r => r is GsaGridPlane).Select(r => (GsaGridPlane)r).ToList();
       var compareLogic = new CompareLogic();
-      //compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridPlane x) => x.Theta1));
       var result = compareLogic.Compare(gsaGridPlanes, gsaConvertedGridPlanes);
       Assert.Empty(result.Differences);
+    }
 
-      for (int i = 0; i < gsaConvertedGridPlanes.Count(); i++)
-      {
-       
-      }
+    [Fact]
+    public void GridSurfaceToNative()
+    {
+      //Define GSA objects
+      //These should be in order that respects the type dependency tree (which is only available in the GSAProxy library, which isn't referenced yet
+      var gsaRecords = new List<GsaRecord>();
+
+      //Generation #1: Types with no other dependencies - the leaves of the tree
+      gsaRecords.Add(GsaAxisExample("axis 1"));
+      gsaRecords.Add(GsaMatSteelExample("steel material 1"));
+      gsaRecords.Add(GsaPropMassExample("property mass 1"));
+      gsaRecords.Add(GsaPropSprExample("property spring 1"));
+
+      //Gen #2
+      gsaRecords.AddRange(GsaNodeExamples(4, "node 1", "node 2", "node 3", "node 4"));
+      gsaRecords.Add(GsaProp2dExample("prop 2D 1"));
+      gsaRecords.Add(GsaCatalogueSectionExample("section 1"));
+      gsaRecords.Add(GsaGridPlaneExamples(1, "grid plane 1").FirstOrDefault());
+
+      //Gen #3
+      gsaRecords.Add(GsaElement1dExamples(1, "beam 1").FirstOrDefault());
+      var gsaElement2d = GsaElement2dExamples(1, "quad 1").FirstOrDefault();
+      gsaElement2d.Index = 2;
+      gsaRecords.Add(gsaElement2d);
+
+      //Gen #4
+      var gsaGridSurfaces = GsaGridSurfaceExamples(2, "grid surface 1", "grid surface 2");
+      gsaRecords.AddRange(gsaGridSurfaces);
+
+      Instance.GsaModel.Cache.Upsert(gsaRecords);
+
+      //Convert
+      Instance.GsaModel.StreamLayer = GSALayer.Both;
+      Instance.GsaModel.StreamSendConfig = StreamContentConfig.ModelAndResults;
+      var speckleObjects = converter.ConvertToSpeckle(gsaRecords.Select(i => (object)i).ToList());
+
+      //Get speckle results
+      var speckleModelObjects = speckleObjects.FindAll(so => so is Model).Select(so => (Model)so).ToList();
+      var speckleDesignModel = speckleModelObjects.Where(so => so.layerDescription == "Design").FirstOrDefault();
+      var speckleAnalysisModel = speckleModelObjects.Where(so => so.layerDescription == "Analysis").FirstOrDefault();
+
+      #region Design Layer
+      var speckleGridSurfaces = speckleDesignModel.elements.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
+      var gsaDesignRecords = converter.ConvertToNative(speckleGridSurfaces.Select(p => (Base)p).ToList());
+
+      //Checks
+      var gsaDesignConverted = gsaDesignRecords.FindAll(r => r is GsaGridSurface).Select(r => (GsaGridSurface)r).ToList();
+      var compareLogic = new CompareLogic();
+      //Ignore Type because this context didn't create any Design Layer members, so the Model object for the design layer doesn't have
+      //anything in its elements collection, so the ToNative of the Grid surface can't work out which type it is
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridSurface x) => x.Type));
+      compareLogic.Config.MembersToIgnore.Add(GetPropertyName((GsaGridSurface x) => x.ElementIndices));
+      var result = compareLogic.Compare(gsaGridSurfaces, gsaDesignConverted);
+      Assert.Empty(result.Differences);
+
+      #endregion
+
+      #region Analysis Layer
+      speckleGridSurfaces = speckleAnalysisModel.elements.FindAll(so => so is GSAGridSurface).Select(so => (GSAGridSurface)so).ToList();
+      var gsaAnalysisRecords = converter.ConvertToNative(speckleGridSurfaces.Select(p => (Base)p).ToList());
+
+      //Checks
+      var gsaAnalysisConverted = gsaAnalysisRecords.FindAll(r => r is GsaGridSurface).Select(r => (GsaGridSurface)r).ToList();
+      compareLogic = new CompareLogic();  //Get new clear CompareLogic object with a fresh config without any ignores
+      result = compareLogic.Compare(gsaGridSurfaces, gsaAnalysisConverted);
+      Assert.Empty(result.Differences);
+
+      #endregion
     }
     #endregion
 
