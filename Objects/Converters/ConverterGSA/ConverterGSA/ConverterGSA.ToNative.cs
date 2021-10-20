@@ -1438,6 +1438,7 @@ namespace ConverterGSA
       gsaConcrete.EmEs = speckleConcrete.GetDynamicValue<double?>("EmEs");
       gsaConcrete.N = speckleConcrete.GetDynamicValue<double?>("N");
       gsaConcrete.Emod = speckleConcrete.GetDynamicValue<double?>("Emod");
+      gsaConcrete.Eps = speckleConcrete.GetDynamicValue<double?>("Eps");
       gsaConcrete.EpsPeak = speckleConcrete.GetDynamicValue<double?>("EpsPeak");
       gsaConcrete.EpsMax = speckleConcrete.GetDynamicValue<double?>("EpsMax");
       gsaConcrete.EpsAx = speckleConcrete.GetDynamicValue<double?>("EpsAx");
@@ -1582,7 +1583,7 @@ namespace ConverterGSA
         if (speckleProperty.designMaterial != null && gsaSection.Components != null && gsaSection.Components.Count > 0)
         {
           var sectionComp = (SectionComp)gsaSection.Components.First();
-          if (speckleProperty.designMaterial.type == MaterialType.Steel && speckleProperty.designMaterial != null)
+          if (speckleProperty.designMaterial.materialType == MaterialType.Steel && speckleProperty.designMaterial != null)
           {
             sectionComp.MaterialType = Section1dMaterialType.STEEL;
             sectionComp.MaterialIndex = IndexByConversionOrLookup<GsaMatSteel>(speckleProperty.designMaterial, ref retList);
@@ -1602,10 +1603,10 @@ namespace ConverterGSA
             };
             gsaSection.Components.Add(gsaSectionSteel);
           }
-          else if (speckleProperty.material.type == MaterialType.Concrete)
+          else if (speckleProperty.designMaterial.materialType == MaterialType.Concrete && speckleProperty.designMaterial != null)
           {
             sectionComp.MaterialType = Section1dMaterialType.CONCRETE;
-            sectionComp.MaterialIndex = Instance.GsaModel.Cache.LookupIndex<GsaMatConcrete>(speckleProperty.material.applicationId);
+            sectionComp.MaterialIndex = Instance.GsaModel.Cache.LookupIndex<GsaMatConcrete>(speckleProperty.designMaterial.applicationId);
 
             var gsaSectionConc = new SectionConc();
             var gsaSectionCover = new SectionCover();
@@ -1802,14 +1803,14 @@ namespace ConverterGSA
         if (speckleProperty.designMaterial != null)
         {
           int? materialIndex = null;
-          if (speckleProperty.designMaterial.type == MaterialType.Steel && speckleProperty.designMaterial is GSASteel)
+          if (speckleProperty.designMaterial.materialType == MaterialType.Steel && speckleProperty.designMaterial is GSASteel)
           {
             //var mat = (GSASteel)speckleProperty.designMaterial;
             materialIndex = IndexByConversionOrLookup<GsaMatSteel>(speckleProperty.designMaterial, ref retList);
             //materialIndex = Instance.GsaModel.Cache.LookupIndex<GsaMatSteel>(speckleProperty.designMaterial.applicationId);
             gsaProp2d.MatType = Property2dMaterialType.Steel;
           }
-          else if (speckleProperty.material.type == MaterialType.Concrete && speckleProperty.designMaterial is GSAConcrete)
+          else if (speckleProperty.designMaterial.materialType == MaterialType.Concrete && speckleProperty.designMaterial is GSAConcrete)
           {
             //materialIndex = Instance.GsaModel.Cache.LookupIndex<GsaMatConcrete>(speckleProperty.designMaterial.applicationId);
             materialIndex = IndexByConversionOrLookup<GsaMatConcrete>(speckleProperty.designMaterial, ref retList);
@@ -2634,6 +2635,9 @@ namespace ConverterGSA
       if (speckleObject != null)
       {
         gsaMatAnal.Name = speckleObject.GetDynamicValue<string>("Name");
+        var index = speckleObject.GetDynamicValue<long?>("Index");
+        if(index == null) index = speckleObject.GetDynamicValue<int?>("Index");
+        gsaMatAnal.Index = (int)index;
         gsaMatAnal.Colour = speckleObject.GetDynamicEnum<Colour>("Colour");
         gsaMatAnal.Type = speckleObject.GetDynamicEnum<MatAnalType>("Type");
         gsaMatAnal.NumParams = speckleObject.GetDynamicValue<int>("NumParams");
