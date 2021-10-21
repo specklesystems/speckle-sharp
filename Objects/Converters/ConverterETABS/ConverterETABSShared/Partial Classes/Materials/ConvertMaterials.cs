@@ -10,7 +10,7 @@ namespace Objects.Converter.ETABS
     {
         public object MaterialToNative(Material material)
         {
-            var matType = material.type;
+            var matType = material.materialType;
             var eMaterialType = eMatType.Steel; 
             switch (matType)
             {
@@ -66,28 +66,28 @@ namespace Objects.Converter.ETABS
             switch (matType)
             {
                 case eMatType.Steel:
-                    speckleStructMaterial.type = Structural.MaterialType.Steel;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Steel;
                     break;
                 case eMatType.Concrete:
-                    speckleStructMaterial.type = Structural.MaterialType.Concrete;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Concrete;
                     break;
                 case eMatType.NoDesign:
-                    speckleStructMaterial.type = Structural.MaterialType.Other;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Other;
                     break;
                 case eMatType.Aluminum:
-                    speckleStructMaterial.type = Structural.MaterialType.Aluminium;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Aluminium;
                     break;
                 case eMatType.Rebar:
-                    speckleStructMaterial.type = Structural.MaterialType.Rebar;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Rebar;
                     break;
                 case eMatType.ColdFormed:
-                    speckleStructMaterial.type = Structural.MaterialType.ColdFormed;
+                    speckleStructMaterial.materialType = Structural.MaterialType.ColdFormed;
                     break;
                 case eMatType.Tendon:
-                    speckleStructMaterial.type = Structural.MaterialType.Tendon;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Tendon;
                     break;
                 case eMatType.Masonry:
-                    speckleStructMaterial.type = Structural.MaterialType.Masonry;
+                    speckleStructMaterial.materialType = Structural.MaterialType.Masonry;
                     break;
             }
 
