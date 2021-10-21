@@ -26,7 +26,7 @@ namespace ConnectorGSA.ViewModels
     public TabCoordinator Coordinator { get; } = new TabCoordinator();
     public StateMachine StateMachine { get; } = new StateMachine();
 
-    public string Title { get => "SpeckleGSA - " + Coordinator.RunningVersion; }
+    public string Title { get => "SpeckleGSAV2 - " + Coordinator.RunningVersion; }
 
     public SpeckleAccountForUI Account { get => Coordinator.Account; }
 
