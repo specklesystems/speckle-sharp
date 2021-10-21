@@ -31,7 +31,7 @@ namespace Objects.Converter.ETABS
             var rectangle = new Rectangular();
             if (property1D.profile.GetType().Equals(rectangle.GetType()))
             {
-                if(property1D.material.type == Structural.MaterialType.Concrete)
+                if(property1D.material.materialType == Structural.MaterialType.Concrete)
                 {
                     Rectangular sectionProfile = (Rectangular)property1D.profile;
                     Model.PropFrame.SetRectangle(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width);
@@ -49,7 +49,7 @@ namespace Objects.Converter.ETABS
             var circular = new Circular();
             if (property1D.profile.GetType().Equals(circular.GetType()))
             {
-                if(property1D.material.type == Structural.MaterialType.Concrete)
+                if(property1D.material.materialType == Structural.MaterialType.Concrete)
                 {
                     Circular sectionProfile = (Circular)property1D.profile;
                     Model.PropFrame.SetCircle(property1D.name, property1D.material.name, sectionProfile.radius * 2);
