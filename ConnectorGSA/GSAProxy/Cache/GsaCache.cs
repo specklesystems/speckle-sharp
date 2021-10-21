@@ -732,8 +732,8 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
               : existingPrevious.First().GsaRecord.Index.Value;
           }
         }
-        else if (provisionals.ContainsKey(t) && provisionals[t] != null && provisionals[t].ContainsRight(appId)
-          && provisionals[t].FindLeft(appId, out int provisionalIndex))
+        else if (provisionals.ContainsKey(t) && provisionals[t] != null && appId != null
+          && provisionals[t].ContainsRight(appId) && provisionals[t].FindLeft(appId, out int provisionalIndex))
         {
           return provisionalIndex;
         }

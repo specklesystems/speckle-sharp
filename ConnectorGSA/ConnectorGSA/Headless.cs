@@ -45,8 +45,16 @@ namespace ConnectorGSA
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Applications.GSA);
 
-      var loggingProgress = new Progress<MessageEventArgs>();
+      IProgress<MessageEventArgs> loggingProgress = new Progress<MessageEventArgs>();
       //TO DO: add logging to console
+
+      //A simplified one just for use by the proxy class
+      var proxyLoggingProgress = new Progress<string>();
+      proxyLoggingProgress.ProgressChanged += (object o, string e) =>
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, e));
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, e));
+      };
 
       Instance.GsaModel = new GsaModel();
 
@@ -208,7 +216,7 @@ namespace ConnectorGSA
         cliResult = Task.Run(() =>
         {
           //Load data to cause merging
-          Commands.LoadDataFromFile(loggingProgress); //Ensure all nodes
+          Commands.LoadDataFromFile(null); //Ensure all nodes
 
           foreach (var streamId in streamIds)
           {
@@ -217,7 +225,7 @@ namespace ConnectorGSA
               Stream = new Speckle.Core.Api.Stream() { id = streamId }, 
               IsReceiving = true 
             };
-            streamState.RefreshStream().Wait();
+            streamState.RefreshStream(loggingProgress).Wait();
             streamState.Stream.branch = client.StreamGetBranches(streamId, 1).Result.First();
             var commitId = streamState.Stream.branch.commits.items.FirstOrDefault().referencedObject;
             var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
@@ -232,7 +240,7 @@ namespace ConnectorGSA
           //The cache is filled with natives
           if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
           {
-            ((GsaProxy)Instance.GsaModel.Proxy).WriteModel(gsaRecords, Instance.GsaModel.StreamLayer);
+            ((GsaProxy)Instance.GsaModel.Proxy).WriteModel(gsaRecords, null, Instance.GsaModel.StreamLayer);
           }
 
           Console.WriteLine("Receiving complete");
@@ -254,7 +262,7 @@ namespace ConnectorGSA
             }
           }
 
-          Commands.LoadDataFromFile(loggingProgress); //Ensure all nodes
+          Commands.LoadDataFromFile(proxyLoggingProgress); //Ensure all nodes
 
           var objs = Commands.ConvertToSpeckle(converter);
 

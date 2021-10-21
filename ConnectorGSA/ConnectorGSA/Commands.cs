@@ -208,10 +208,10 @@ namespace ConnectorGSA
       return ((GsaProxy)Instance.GsaModel.Proxy).Clear();
     }
 
-    public static bool LoadDataFromFile(IProgress<MessageEventArgs> loggingProgress, IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
+    public static bool LoadDataFromFile(IProgress<string> gwaLoggingProgress = null, IEnumerable<ResultGroup> resultGroups = null, IEnumerable<ResultType> resultTypes = null)
     {
       ((GsaProxy)Instance.GsaModel.Proxy).Clear();
-      var loadedCache = UpdateCache(loggingProgress);
+      var loadedCache = UpdateCache(gwaLoggingProgress);
       int cumulativeErrorRows = 0;
 
       if (resultGroups != null && resultGroups.Any() && resultTypes != null && resultTypes.Any())
@@ -341,6 +341,14 @@ namespace ConnectorGSA
       Instance.GsaModel.Units = UnitEnumToString(coordinator.ReceiverTab.CoincidentNodeUnits);
       Instance.GsaModel.LoggingMinimumLevel = (int)coordinator.LoggingMinimumLevel;
 
+      //A simplified one just for use by the proxy class
+      var proxyLoggingProgress = new Progress<string>();
+      proxyLoggingProgress.ProgressChanged += (object o, string e) =>
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, e));
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, e));
+      };
+
       var perecentageProgressLock = new object();
 
       var account = ((GsaModel)Instance.GsaModel).Account;
@@ -350,7 +358,7 @@ namespace ConnectorGSA
 
       statusProgress.Report("Reading GSA data into cache");
       //Load data to cause merging
-      Commands.LoadDataFromFile(loggingProgress);
+      Commands.LoadDataFromFile(proxyLoggingProgress);
 
       double factor = 1;
       if (Instance.GsaModel.Cache.GetNatives(typeof(GsaUnitData), out var gsaUnitDataRecords))
@@ -390,7 +398,7 @@ namespace ConnectorGSA
         };
         var transport = new ServerTransport(streamState.Client.Account, streamState.Stream.id);
 
-        receiveTasks.Add(streamState.RefreshStream()
+        receiveTasks.Add(streamState.RefreshStream(loggingProgress)
           .ContinueWith(async (refreshed) =>
             {
               if (refreshed.Result)
@@ -473,7 +481,7 @@ namespace ConnectorGSA
       //The cache is filled with natives
       if (Instance.GsaModel.Cache.GetNatives(out var gsaRecords))
       {
-        ((GsaProxy)Instance.GsaModel.Proxy).WriteModel(gsaRecords);
+        ((GsaProxy)Instance.GsaModel.Proxy).WriteModel(gsaRecords, proxyLoggingProgress);
       }
 
       percentageProgress.Report(100);
@@ -517,16 +525,9 @@ namespace ConnectorGSA
       return false;
     }
 
-    private static bool UpdateCache(IProgress<MessageEventArgs> loggingProgress, bool onlyNodesWithApplicationIds = true)
+    private static bool UpdateCache(IProgress<string> gwaLoggingProgress = null, bool onlyNodesWithApplicationIds = true)
     {
       var errored = new Dictionary<int, GsaRecord>();
-
-      var gwaLoggingProgress = new Progress<string>();
-      gwaLoggingProgress.ProgressChanged += (object o, string e) =>
-      {
-        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, e));
-        loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, e));
-      };
 
       try
       {
@@ -661,7 +662,7 @@ namespace ConnectorGSA
             //Since the buckets are stored in the SID tags, but not the stream names, get the stream names
             foreach (var r in coordinator.ReceiverTab.ReceiverStreamStates)
             {
-              if (!(await r.RefreshStream()))
+              if (!(await r.RefreshStream(loggingProgress)))
               {
                 invalidStreamStates.Add(r);
               }
@@ -683,7 +684,7 @@ namespace ConnectorGSA
             //Since the buckets are stored in the SID tags, but not the stream names, get the stream names
             foreach (var r in coordinator.SenderTab.SenderStreamStates)
             {
-              if (!(await r.RefreshStream()))
+              if (!(await r.RefreshStream(loggingProgress)))
               {
                 invalidStreamStates.Add(r);
               }
@@ -766,10 +767,18 @@ namespace ConnectorGSA
       var percentage = 0;
       var perecentageProgressLock = new object();
 
+      //A simplified one just for use by the proxy class
+      var proxyLoggingProgress = new Progress<string>();
+      proxyLoggingProgress.ProgressChanged += (object o, string e) =>
+      {
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Error, e));
+        loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, e));
+      };
+
       var startTime = DateTime.Now;
 
       statusProgress.Report("Preparing cache");
-      Commands.LoadDataFromFile(loggingProgress); //Ensure all nodes
+      Commands.LoadDataFromFile(proxyLoggingProgress); //Ensure all nodes
       loggingProgress.Report(new MessageEventArgs(MessageIntent.Display, MessageLevel.Information, "Loaded data from file into cache"));
 
       percentage += 20;

@@ -9,6 +9,7 @@ namespace ConverterGSATests
   {
     protected ISpeckleConverter converter;
     protected GsaModelMock gsaModelMock = new GsaModelMock();
+    protected int highestNodeIndex = 0;
 
     public SpeckleConversionFixture()
     {
@@ -18,6 +19,7 @@ namespace ConverterGSATests
       */
       converter = new ConverterGSA.ConverterGSA();
       Instance.GsaModel = gsaModelMock;
+      ((GsaProxyMockForConverterTests)Instance.GsaModel.Proxy).NodeAtFn = (double x, double y, double z) => (++highestNodeIndex);
     }
 
     public void Dispose()

@@ -445,7 +445,7 @@ namespace ConnectorGSA.ViewModels
           var newStreamName = o.ToString();
           var streamId = Coordinator.SenderTab.StreamList.SeletedStreamListItem.StreamId;
           var result = await Task.Run(() => Commands.RenameStream(Coordinator, streamId, newStreamName, loggingProgress));
-          await Coordinator.SenderTab.RefreshStream(streamId, newStreamName);
+          await Coordinator.SenderTab.RefreshStream(streamId, loggingProgress);
           Coordinator.SenderTab.StreamStatesToStreamList();
           Refresh(() => StateMachine.StoppedRenamingStream());
         },
