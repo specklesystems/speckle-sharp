@@ -17,18 +17,24 @@ namespace Speckle.ConnectorGSA.Proxy
       {
         if (!(uIsNullable && u == null))
         {
-          lefts.Add(u, v);
-          if (lefts.Count() == 0 || u.CompareTo(maxLeft) > 0)
+          if (!lefts.ContainsKey(u))
           {
-            maxLeft = u;
+            lefts.Add(u, v);
+            if (lefts.Count() == 0 || u.CompareTo(maxLeft) > 0)
+            {
+              maxLeft = u;
+            }
           }
         }
         if (!(vIsNullable && v == null))
         {
-          rights.Add(v, u);
-          if (rights.Count() == 0 || v.CompareTo(maxRight) > 0)
+          if (!rights.ContainsKey(v))
           {
-            maxRight = v;
+            rights.Add(v, u);
+            if (rights.Count() == 0 || v.CompareTo(maxRight) > 0)
+            {
+              maxRight = v;
+            }
           }
         }
       }

@@ -1,4 +1,6 @@
-﻿namespace ConnectorGSA.Models
+﻿using Speckle.GSA.API.GwaSchema;
+
+namespace ConnectorGSA.Models
 {
   public enum StreamMethod
   {
@@ -58,9 +60,13 @@
 
   public enum GsaUnit
   {
+    [StringValue("m")] // default
     None,
+    [StringValue("mm")]
     Millimetres,
+    [StringValue("m")]
     Metres,
+    [StringValue("in")]
     Inches
   }
 

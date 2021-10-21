@@ -145,18 +145,21 @@ namespace ConverterGSA
 
     private List<GsaRecord> NodeToNative(Base speckleObject)
     {
+      var retList = new List<GsaRecord>();
       var speckleNode = (Node)speckleObject;
+      var nodeIndex = Instance.GsaModel.Proxy.NodeAt(speckleNode.basePoint.x, speckleNode.basePoint.y, speckleNode.basePoint.z,
+        Instance.GsaModel.CoincidentNodeAllowance);
       var gsaNode = new GsaNode()
       {
         ApplicationId = speckleNode.applicationId,
-        Index = speckleNode.GetIndex<GsaNode>(),
+        Index = nodeIndex,
         Name = speckleNode.name,
         
         X = speckleNode.basePoint.x,
         Y = speckleNode.basePoint.y,
         Z = speckleNode.basePoint.z,
-        SpringPropertyIndex = speckleNode.springProperty.GetIndex<GsaPropSpr>(),
-        MassPropertyIndex = speckleNode.massProperty.GetIndex<GsaPropMass>(),
+        SpringPropertyIndex = IndexByConversionOrLookup<GsaPropSpr>(speckleNode.springProperty, ref retList),
+        MassPropertyIndex = IndexByConversionOrLookup<GsaPropMass>(speckleNode.massProperty, ref retList),
       };
 
       if (GetRestraint(speckleNode.restraint, out var gsaNodeRestraint, out var gsaRestraint))
@@ -169,9 +172,9 @@ namespace ConverterGSA
         gsaNode.AxisRefType = gsaAxisRefType;
         gsaNode.AxisIndex = gsaAxisIndex;
       }
-      
 
-      return new List<GsaRecord>() { gsaNode };
+      retList.Add(gsaNode);
+      return retList;
     }
 
     private List<GsaRecord> GSAElement1dToNative(Base speckleObject)
@@ -204,14 +207,16 @@ namespace ConverterGSA
         PropertyIndex = IndexByConversionOrLookup <GsaSection>(speckleElement.property, ref retList),
         ParentIndex = IndexByConversionOrLookup<GsaMemb>(speckleElement.parent, ref retList)
       };
+
       if (speckleElement.orientationNode != null)
       {
-        gsaElement.OrientationNodeIndex = IndexByConversionOrLookup<GsaNode>(speckleElement.orientationNode, ref retList);
+        gsaElement.OrientationNodeIndex = Instance.GsaModel.Proxy.NodeAt(speckleElement.orientationNode.basePoint.x, speckleElement.orientationNode.basePoint.y,
+          speckleElement.orientationNode.basePoint.z, Instance.GsaModel.CoincidentNodeAllowance);
       }
       if (speckleElement.topology != null && speckleElement.topology.Count > 0)
       {
-        gsaElement.NodeIndices = speckleElement.topology.Select(n => IndexByConversionOrLookup<GsaNode>(n, ref retList))
-          .Where(v => v != null).Cast<int>().ToList();
+        gsaElement.NodeIndices = speckleElement.topology.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z,
+          Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
 
       if (GetReleases(speckleElement.end1Releases, out var gsaRelease1, out var gsaStiffnesses1, out var gsaReleaseInclusion1))
@@ -286,8 +291,8 @@ namespace ConverterGSA
       };
       if (speckleElement.topology != null && speckleElement.topology.Count > 0)
       {
-        gsaElement.NodeIndices = speckleElement.topology.Select(n => IndexByConversionOrLookup<GsaNode>(n, ref retList))
-          .Where(v => v != null).Cast<int>().ToList();
+        gsaElement.NodeIndices = speckleElement.topology.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z,
+          Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
 
       if (speckleElement.orientationAngle != 0) gsaElement.Angle = speckleElement.orientationAngle;
@@ -342,12 +347,16 @@ namespace ConverterGSA
         //TaperOffsetPercentageEnd1 - currently not supported
         //TaperOffsetPercentageEnd2 - currently not supported
         PropertyIndex = IndexByConversionOrLookup<GsaSection>(speckleMember.property, ref retList),
-        OrientationNodeIndex = IndexByConversionOrLookup<GsaNode>(speckleMember.orientationNode, ref retList)
       };
+      if (speckleMember.orientationNode != null)
+      {
+        gsaMember.OrientationNodeIndex = Instance.GsaModel.Proxy.NodeAt(speckleMember.orientationNode.basePoint.x, speckleMember.orientationNode.basePoint.y,
+          speckleMember.orientationNode.basePoint.z, Instance.GsaModel.CoincidentNodeAllowance);
+      }
       if (speckleMember.topology != null && speckleMember.topology.Count > 0)
       {
-        gsaMember.NodeIndices = speckleMember.topology.Select(n => IndexByConversionOrLookup<GsaNode>(n, ref retList))
-          .Where(v => v != null).Cast<int>().ToList();
+        gsaMember.NodeIndices = speckleMember.topology.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, 
+          Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
       
       //Dynamic properties
@@ -484,8 +493,8 @@ namespace ConverterGSA
       }
       if (speckleMember.topology != null && speckleMember.topology.Count > 0)
       {
-        gsaMember.NodeIndices = speckleMember.topology.Select(n => IndexByConversionOrLookup<GsaNode>(n, ref retList))
-          .Where(v => v != null).Cast<int>().ToList();
+        gsaMember.NodeIndices = speckleMember.topology.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z,
+          Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
 
       if (speckleMember.orientationAngle != 0) gsaMember.Angle = speckleMember.orientationAngle;
@@ -1170,9 +1179,14 @@ namespace ConverterGSA
         Index = speckleLoad.GetIndex<GsaLoadNode>(),
         Name = speckleLoad.name,
         LoadDirection = speckleLoad.direction.ToNative(),
-        LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>(),
-        NodeIndices = speckleLoad.nodes.GetIndicies(),
+        LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>()
       };
+      if (speckleLoad.nodes != null && speckleLoad.nodes.Count > 0)
+      {
+        gsaLoad.NodeIndices = speckleLoad.nodes.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, 
+          Instance.GsaModel.CoincidentNodeAllowance)).ToList();
+      }
+
       if (speckleLoad.value != 0) gsaLoad.Value = speckleLoad.value;
       if (speckleLoad.loadAxis.definition.IsGlobal())
       {
@@ -1203,10 +1217,16 @@ namespace ConverterGSA
         Index = speckleLoad.GetIndex<GsaLoadGravity>(),
         Name = speckleLoad.name,
         LoadCaseIndex = speckleLoad.loadCase.GetIndex<GsaLoadCase>(),
-        Nodes = speckleLoad.nodes.GetIndicies<GsaNode>(),
         ElementIndices = speckleLoad.elements.GetIndicies<GsaEl>(),
         MemberIndices = speckleLoad.elements.GetIndicies<GsaMemb>(),
       };
+
+      if (speckleLoad.nodes != null && speckleLoad.nodes.Count > 0)
+      {
+        var nt = typeof(Node);
+        gsaLoad.Nodes = speckleLoad.nodes.Where(n => n.GetType().IsAssignableFrom(nt)).Select(n => (Node)n)
+          .Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, Instance.GsaModel.CoincidentNodeAllowance)).ToList();
+      }
 
       if (speckleLoad.gravityFactors.x != 0) gsaLoad.X = speckleLoad.gravityFactors.x;
       if (speckleLoad.gravityFactors.y != 0) gsaLoad.Y = speckleLoad.gravityFactors.y;
