@@ -46,10 +46,10 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
         gwa = new List<string>();
         return false;
       }
-
+      var thickness = $"{record.Thickness ?? 0}(mm)";
       //PROP_2D.7 | num | name | colour | type | axis | mat | mat_type | grade | design | profile | ref_pt | ref_z | mass | flex | shear | inplane | weight |
       AddItems(ref items, record.Name, "NO_RGB", record.Type.ToString().ToUpper(), AddAxis(), record.AnalysisMaterialIndex ?? 0, record.MatType.ToString().ToUpper(),
-        record.GradeIndex ?? 0, record.DesignIndex ?? 0, record.Thickness ?? 0, record.RefPt.GetStringValue(), record.RefZ, record.Mass,
+        record.GradeIndex ?? 0, record.DesignIndex ?? 0, thickness, record.RefPt.GetStringValue(), record.RefZ, record.Mass,
         AddPercentageOrValue(record.BendingStiffnessPercentage, record.Bending), AddPercentageOrValue(record.ShearStiffnessPercentage, record.Shear),
         AddPercentageOrValue(record.InPlaneStiffnessPercentage, record.InPlane), AddPercentageOrValue(record.VolumePercentage, record.Volume));
 
@@ -90,7 +90,8 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private bool AddThickness(string v)
     {
-      if (double.TryParse(v, out double thickness))
+      var vt = v.Contains('(') ? v.Split('(')[0] : v;
+      if (double.TryParse(vt, out double thickness))
       {
         record.Thickness = thickness;
       }
