@@ -339,7 +339,6 @@ namespace ConnectorGSA
 
       Instance.GsaModel.StreamLayer = coordinator.ReceiverTab.TargetLayer;
       Instance.GsaModel.Units = UnitEnumToString(coordinator.ReceiverTab.CoincidentNodeUnits);
-      Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance;
       Instance.GsaModel.LoggingMinimumLevel = (int)coordinator.LoggingMinimumLevel;
 
       var perecentageProgressLock = new object();
@@ -352,6 +351,19 @@ namespace ConnectorGSA
       statusProgress.Report("Reading GSA data into cache");
       //Load data to cause merging
       Commands.LoadDataFromFile(loggingProgress);
+
+      double factor = 1;
+      if (Instance.GsaModel.Cache.GetNatives(typeof(GsaUnitData), out var gsaUnitDataRecords))
+      {
+        var lengthUnitData = (GsaUnitData)gsaUnitDataRecords.FirstOrDefault(r => ((GsaUnitData)r).Option == UnitDimension.Length);
+        if (lengthUnitData != null)
+        {
+          var fromStr = coordinator.ReceiverTab.CoincidentNodeUnits.GetStringValue();
+          var toStr = lengthUnitData.Name;
+          factor = (lengthUnitData == null) ? 1 : Units.GetConversionFactor(fromStr, toStr);
+        }
+      }
+      Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance * factor;
 
       percentage = 10;
       percentageProgress.Report(percentage);
