@@ -45,6 +45,7 @@ namespace ConverterGSA
       {
         //Geometry
         { typeof(Axis), AxisToNative },
+        { typeof(Point), PointToNative },
         { typeof(GSANode), GSANodeToNative },
         { typeof(Node), NodeToNative },
         { typeof(GSAElement1D), GSAElement1dToNative },
@@ -134,6 +135,36 @@ namespace ConverterGSA
       return new List<GsaRecord>{ gsaAxis };
     }
 
+    private List<GsaRecord> PointToNative(Base speckleObject)
+    {
+      var speckleNode = new Node((Point)speckleObject, null, null, null);
+      var gsaNode = new GsaNode()
+      {
+        ApplicationId = speckleObject.id, // should be identical if xyz coordinates the same
+        Index = speckleNode.GetIndex<GsaNode>(),
+        Name = speckleNode.name,
+
+        X = speckleNode.basePoint.x,
+        Y = speckleNode.basePoint.y,
+        Z = speckleNode.basePoint.z,
+        SpringPropertyIndex = speckleNode.springProperty.GetIndex<GsaPropSpr>(),
+        MassPropertyIndex = speckleNode.massProperty.GetIndex<GsaPropMass>(),
+      };
+
+      if (GetRestraint(speckleNode.restraint, out var gsaNodeRestraint, out var gsaRestraint))
+      {
+        gsaNode.NodeRestraint = gsaNodeRestraint;
+        gsaNode.Restraints = gsaRestraint;
+      }
+      if (GetAxis(speckleNode.constraintAxis, out var gsaAxisRefType, out var gsaAxisIndex))
+      {
+        gsaNode.AxisRefType = gsaAxisRefType;
+        gsaNode.AxisIndex = gsaAxisIndex;
+      }
+
+      return new List<GsaRecord>() { gsaNode };
+    }
+
     private List<GsaRecord> GSANodeToNative(Base speckleObject)
     {
       var gsaNode = (GsaNode)NodeToNative(speckleObject).First(o => o is GsaNode);
@@ -212,6 +243,12 @@ namespace ConverterGSA
       {
         gsaElement.NodeIndices = speckleElement.topology.Select(n => IndexByConversionOrLookup<GsaNode>(n, ref retList))
           .Where(v => v != null).Cast<int>().ToList();
+      } else
+      {
+        var indices = new List<int>();
+        indices.Add((int) IndexByConversionOrLookup<GsaNode>(speckleElement.baseLine.start, ref retList));
+        indices.Add((int) IndexByConversionOrLookup<GsaNode>(speckleElement.baseLine.end, ref retList));
+        gsaElement.NodeIndices = indices;
       }
 
       if (GetReleases(speckleElement.end1Releases, out var gsaRelease1, out var gsaStiffnesses1, out var gsaReleaseInclusion1))
@@ -308,21 +345,30 @@ namespace ConverterGSA
       {
         index = Instance.GsaModel.Cache.LookupIndex<N>(obj.applicationId);
       }
-      if (!index.IsIndex())
+      if (!ConvertedObjectsList.Contains(obj.id))
       {
-        var nt = typeof(N);
-        var st = obj.GetType();
-        if (ToNativeFns.ContainsKey(st))
+        if (!index.IsIndex())
         {
-          var gsaRecords = ToNativeFns[st](obj);
-          var gsaRecord = gsaRecords.FirstOrDefault(r => r.GetType() == nt);
-          if (gsaRecord != null && gsaRecord.Index.IsIndex())
+          var nt = typeof(N);
+          var st = obj.GetType();
+          if (ToNativeFns.ContainsKey(st))
           {
-            index = gsaRecord.Index;
-            extra.AddRange(gsaRecords);
+            var gsaRecords = ToNativeFns[st](obj);
+            var gsaRecord = gsaRecords.FirstOrDefault(r => r.GetType() == nt);
+            if (gsaRecord != null && gsaRecord.Index.IsIndex())
+            {
+              index = gsaRecord.Index;
+              extra.AddRange(gsaRecords);
+              ConvertedObjectsList.Add(obj.id);
+            }
           }
         }
+      } else
+      {
+        index = Instance.GsaModel.Cache.LookupIndex<N>(obj.id);
       }
+
+
       return index;
     }
 
@@ -2087,7 +2133,7 @@ namespace ConverterGSA
       var speckleInfNode = (GSAInfluenceNode)speckleObject;
       GetAxis(speckleInfNode.axis, out var gsaRefType, out var axisIndex);
       var nodeIndex = ((GsaNode)(NodeToNative(speckleInfNode.node).First())).Index;
-      var gsaInfBeam = new GsaInfNode()
+      var gsaInfNode = new GsaInfNode()
       {
         ApplicationId = speckleObject.applicationId,
         Index = Instance.GsaModel.Cache.ResolveIndex<GsaInfNode>(speckleInfNode.applicationId),
@@ -2099,7 +2145,7 @@ namespace ConverterGSA
         AxisIndex = axisIndex,
         Node = nodeIndex
       };
-      return new List<GsaRecord>() { gsaInfBeam };
+      return new List<GsaRecord>() { gsaInfNode };
     }
     
     private List<GsaRecord> PathToNative(Base speckleObject)

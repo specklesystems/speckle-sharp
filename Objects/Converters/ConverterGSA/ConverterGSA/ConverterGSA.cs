@@ -37,6 +37,8 @@ namespace ConverterGSA
     #endregion ISpeckleConverter props
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    
+    public List<string> ConvertedObjectsList { get; set; } = new List<string>();
 
     private delegate ToSpeckleResult ToSpeckleMethodDelegate(GsaRecord gsaRecord, GSALayer layer = GSALayer.Both);
 
