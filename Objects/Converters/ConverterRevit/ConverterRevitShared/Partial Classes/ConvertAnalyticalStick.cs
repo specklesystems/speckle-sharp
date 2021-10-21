@@ -113,7 +113,7 @@ namespace Objects.Converter.Revit
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralT: // Tees structural sections
 		  var teeSection = new Tee();
 		  teeSection.name = section.StructuralSectionShapeName;
-		  teeSection.shapeType = Structural.ShapeType.I;
+		  teeSection.shapeType = Structural.ShapeType.Tee;
 		  teeSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralT).GetProperty("Height").GetValue(section);
 		  teeSection.width = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralT).GetProperty("Width").GetValue(section);
 		  teeSection.webThickness = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralT).GetProperty("WebThickness").GetValue(section);
@@ -128,7 +128,7 @@ namespace Objects.Converter.Revit
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralH: // Rectangular Pipe structural sections
 		  var rectSection = new Rectangular();
 		  rectSection.name = section.StructuralSectionShapeName;
-		  rectSection.shapeType = Structural.ShapeType.I;
+		  rectSection.shapeType = Structural.ShapeType.Rectangular;
 		  rectSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralH).GetProperty("Height").GetValue(section);
 		  rectSection.width = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralH).GetProperty("Width").GetValue(section);
 		  var wallThickness = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralH).GetProperty("WallNominalThickness").GetValue(section);
@@ -157,7 +157,7 @@ namespace Objects.Converter.Revit
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralF: // Flat Bar structural sections
 		  var flatRectSection = new Rectangular();
 		  flatRectSection.name = section.StructuralSectionShapeName;
-		  flatRectSection.shapeType = Structural.ShapeType.I;
+		  flatRectSection.shapeType = Structural.ShapeType.Rectangular;
 		  flatRectSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralF).GetProperty("Height").GetValue(section);
 		  flatRectSection.width = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralF).GetProperty("Width").GetValue(section);
 		  flatRectSection.area = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralF).GetProperty("SectionArea").GetValue(section);
@@ -229,7 +229,7 @@ namespace Objects.Converter.Revit
 		  var concreteMaterial = new Concrete
 		  {
 			name = Doc.GetElement(stickFamily.StructuralMaterialId).Name,
-			type = Structural.MaterialType.Concrete,
+			materialType = Structural.MaterialType.Concrete,
 			grade = null,
 			designCode = null,
 			codeYear = null,
@@ -253,7 +253,7 @@ namespace Objects.Converter.Revit
 		  var steelMaterial = new Steel
 		  {
 			name = Doc.GetElement(stickFamily.StructuralMaterialId).Name,
-			type = Structural.MaterialType.Steel,
+			materialType = Structural.MaterialType.Steel,
 			grade = materialAsset.Name,
 			designCode = null,
 			codeYear = null,
@@ -273,7 +273,7 @@ namespace Objects.Converter.Revit
 		  var timberMaterial = new Timber
 		  {
 			name = Doc.GetElement(structMat.StructuralAssetId).Name,
-			type = Structural.MaterialType.Timber,
+			materialType = Structural.MaterialType.Timber,
 			grade = materialAsset.WoodGrade,
 			designCode = null,
 			codeYear = null,

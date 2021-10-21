@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
       var cs = revitNode.GetCoordinateSystem();
       var localAxis = new Axis(revitNode.Name, Structural.AxisType.Cartesian, new Plane(PointToSpeckle(cs.Origin), VectorToSpeckle(cs.BasisZ), VectorToSpeckle(cs.BasisX), VectorToSpeckle(cs.BasisY)));
       var basePoint = PointToSpeckle(cs.Origin); // alternative to revitNode.Position
-      var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
+      var speckleNode = new Node(basePoint, revitNode.Name, null, null);
 
       GetAllRevitParamsAndIds(speckleNode, revitNode);
 
