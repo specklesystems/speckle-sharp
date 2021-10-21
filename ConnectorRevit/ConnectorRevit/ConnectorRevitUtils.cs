@@ -213,6 +213,12 @@ namespace Speckle.ConnectorRevit
     //list of currently supported Categories
     private static List<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>{
 
+      BuiltInCategory.OST_AnalyticalNodes,
+      BuiltInCategory.OST_BeamAnalytical,
+      BuiltInCategory.OST_ColumnAnalytical,
+      BuiltInCategory.OST_FloorAnalytical,
+      BuiltInCategory.OST_WallAnalytical,
+      BuiltInCategory.OST_AnalyticalNodes,
       BuiltInCategory.OST_CableTray,
       BuiltInCategory.OST_Ceilings,
       BuiltInCategory.OST_Columns,
@@ -252,9 +258,12 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_RoofSoffit,
       BuiltInCategory.OST_Roofs,
       BuiltInCategory.OST_Rooms,
+      BuiltInCategory.OST_RoomSeparationLines,
       BuiltInCategory.OST_SecurityDevices,
       BuiltInCategory.OST_ShaftOpening,
       BuiltInCategory.OST_Site,
+      BuiltInCategory.OST_MEPSpaces,
+      BuiltInCategory.OST_MEPSpaceSeparationLines,
       BuiltInCategory.OST_EdgeSlab,
       BuiltInCategory.OST_Stairs,
       BuiltInCategory.OST_AreaRein,
