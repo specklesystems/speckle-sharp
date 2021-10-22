@@ -12,8 +12,8 @@ namespace Objects.Structural.ETABS.Properties
 {
     public class ETABSProperty2D : Property2D
     {
-        public ETABSPropertyType2D type2D{ get; set; }
-        public SlabType slabType{ get; set; }
+        public ETABSPropertyType2D type2D { get; set; }
+        public SlabType slabType { get; set; }
         public DeckType deckType { get; set; } 
         public ShellType shellType{ get; set; }
 
@@ -84,7 +84,7 @@ namespace Objects.Structural.ETABS.Properties
         public class Slab : ETABSProperty2D
         {
             [SchemaInfo("Slab", "Create an ETABS Slab", "ETABS", "Properties")]
-            public Slab(string PropertyName,ShellType shell, Material ConcreteMaterial,double Thickness )
+            public Slab(string PropertyName, ShellType shell, Material ConcreteMaterial,double Thickness )
             {
 
                 type2D = ETABSPropertyType2D.Slab;

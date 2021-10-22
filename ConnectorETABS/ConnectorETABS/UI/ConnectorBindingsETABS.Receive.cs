@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
-using Objects.Converter.ETABS;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;

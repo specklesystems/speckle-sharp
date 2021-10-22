@@ -24,13 +24,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterETABSShared", "..\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorETABSShared", "ConnectorETABS\ConnectorETABSShared.shproj", "{1C661822-4524-4FAA-97F2-B5AAB9F9ECC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolygonMesher", "..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ConnectorETABS\ConnectorETABSShared.projitems*{1c661822-4524-4faa-97f2-b5aab9f9ecc4}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{53c96db6-c3cb-4f95-87f2-ee593d436b8f}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{7f5a5e2b-d74f-483d-8983-97dc049c6d28}*SharedItemsImports = 13
 		ConnectorETABS\ConnectorETABSShared.projitems*{cc1f6133-9dd5-437c-ab23-380ad00267a2}*SharedItemsImports = 4
-		..\Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{cc1f6133-9dd5-437c-ab23-380ad00267a2}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +80,14 @@ Global
 		{53C96DB6-C3CB-4F95-87F2-EE593D436B8F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{53C96DB6-C3CB-4F95-87F2-EE593D436B8F}.Release|x64.ActiveCfg = Release|Any CPU
 		{53C96DB6-C3CB-4F95-87F2-EE593D436B8F}.Release|x64.Build.0 = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|x64.Build.0 = Debug|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|x64.ActiveCfg = Release|Any CPU
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +99,7 @@ Global
 		{91E06A7D-241A-4819-B53E-8FB5D81E707B} = {8E8370E0-3112-4B42-AB96-A487BA00A87A}
 		{53C96DB6-C3CB-4F95-87F2-EE593D436B8F} = {91E06A7D-241A-4819-B53E-8FB5D81E707B}
 		{7F5A5E2B-D74F-483D-8983-97DC049C6D28} = {91E06A7D-241A-4819-B53E-8FB5D81E707B}
+		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21} = {8E8370E0-3112-4B42-AB96-A487BA00A87A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AC79A8E8-CF5D-483F-BA63-6AD5A10EE7D3}

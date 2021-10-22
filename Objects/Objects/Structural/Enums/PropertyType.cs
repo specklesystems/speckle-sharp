@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Structural
 {
-    public enum AnalysisType2D
+    public enum PropertyType2D
     {
         Stress,
         Fabric,

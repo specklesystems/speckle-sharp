@@ -4,7 +4,7 @@ using System.Linq;
 using MathNet.Numerics;
 using MathNet.Spatial.Euclidean;
 
-namespace SpeckleStructuralClasses.PolygonMesher
+namespace StructuralUtilities.PolygonMesher
 {
   public static class Extensions
   {
@@ -182,7 +182,7 @@ namespace SpeckleStructuralClasses.PolygonMesher
     public static bool IsOnLine(this Line3D l, Point3D p)
     {
       var closest = l.ClosestPointTo(p, true);
-      var ret = (closest.Equals(p, double.Epsilon));
+      var ret = (closest.Equals(p, PolygonMesher.PointComparisonEpsilon));
       return ret;
     }
 

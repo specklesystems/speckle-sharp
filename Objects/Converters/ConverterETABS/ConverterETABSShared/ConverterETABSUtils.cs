@@ -11,8 +11,8 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-    public string ModelUnits()
-        {   
+        public string ModelUnits()
+        {
             var units = Model.GetDatabaseUnits();
             if (units != 0)
             {
@@ -23,7 +23,7 @@ namespace Objects.Converter.ETABS
             {
                 return null;
             }
-}
+        }
         public static List<string> GetAllAreaNames(cSapModel model)
         {
             int num = 0;
@@ -105,55 +105,63 @@ namespace Objects.Converter.ETABS
             return shellType;
         }
 
-    public bool[] RestraintToNative(Restraint restraint)
+        public bool[] RestraintToNative(Restraint restraint)
         {
             bool[] restraints = new bool[6];
-            restraints[0] = Convert.ToBoolean(restraint.stiffnessX);
-            restraints[1] = Convert.ToBoolean(restraint.stiffnessY);
-            restraints[2] = Convert.ToBoolean(restraint.stiffnessZ);
-            restraints[3] = Convert.ToBoolean(restraint.stiffnessXX);
-            restraints[4] = Convert.ToBoolean(restraint.stiffnessYY);
-            restraints[5] = Convert.ToBoolean(restraint.stiffnessZZ);
+
+            var code = restraint.code;
+
+            int i = 0;
+            foreach (char c in code)
+            {
+                restraints[i] = c.Equals('F') ? true : false; // other assume default of released 
+                i++;
+            }
+
             return restraints;
         }
 
-    public Restraint RestraintToSpeckle(bool[] releases)
+        public Restraint RestraintToSpeckle(bool[] releases)
         {
-            Restraint restraint = new Restraint();
-            restraint.stiffnessX = Convert.ToInt32(!releases[0]);
-            restraint.stiffnessY = Convert.ToInt32(!releases[1]);
-            restraint.stiffnessZ = Convert.ToInt32(!releases[2]);
-            restraint.stiffnessXX = Convert.ToInt32(!releases[3]);
-            restraint.stiffnessYY = Convert.ToInt32(!releases[4]);
-            restraint.stiffnessZZ = Convert.ToInt32(!releases[5]);
-            return restraint;
+            var code = new List<string>() { "R", "R", "R", "R", "R", "R" }; // default to free
+            if (releases != null)
+            {
+                for (int i = 0; i < releases.Length; i++)
+                {
+                    if (releases[i]) code[i] = "F";
+                }
+            }
 
+            var restraint = new Restraint(string.Join("", code));
+            return restraint;
         }
 
-        public enum ETABSConverterSupported {
-        Line,
-        Element1D,
-        Element2D,
-        Model,
+        public enum ETABSConverterSupported
+        {
+            Node,
+            Line,
+            Element1D,
+            Element2D,
+            Model,
         }
 
         public enum ETABSAPIUsableTypes
-    {
-        Point,
-        Frame,
-        Area, // cAreaObj
-        LoadPattern,
-        Model,
-        Column,
-        Brace,
-        Beam,
-        Floor,
-        Wall
-        //ColumnResults,
-        //BeamResults,
-        //BraceResults,
-        //PierResults,
-        //SpandrelResults
+        {
+            Point,
+            Frame,
+            Area, // cAreaObj
+            LoadPattern,
+            Model,
+            Column,
+            Brace,
+            Beam,
+            Floor,
+            Wall
+            //ColumnResults,
+            //BeamResults,
+            //BraceResults,
+            //PierResults,
+            //SpandrelResults
+        }
     }
-}
 }

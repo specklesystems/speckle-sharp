@@ -5,7 +5,7 @@ using ETABSv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
 using Objects.Structural.ETABS.Properties;
-using SpeckleStructuralClasses.PolygonMesher;
+using StructuralUtilities.PolygonMesher;
 using System.Linq;
 
 namespace Objects.Converter.ETABS
@@ -34,7 +34,7 @@ namespace Objects.Converter.ETABS
             return name;
 
         }
-        public  Element2D AreaToSpeckle(string name)
+        public Element2D AreaToSpeckle(string name)
         {
             string units = ModelUnits();
             var speckleStructArea = new Element2D();

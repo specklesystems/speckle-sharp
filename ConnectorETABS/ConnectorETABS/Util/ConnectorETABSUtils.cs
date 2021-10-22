@@ -5,7 +5,6 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System.Linq;
 using Speckle.ConnectorETABS.UI;
-using Objects.Converter.ETABS;
 using ETABSv1;
 
 namespace Speckle.ConnectorETABS.Util

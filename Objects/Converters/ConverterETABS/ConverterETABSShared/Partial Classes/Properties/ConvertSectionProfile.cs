@@ -25,10 +25,10 @@ namespace Objects.Converter.ETABS
                 switch (propType)
                 {
                     case eFramePropType.SD:
-                        speckleSectionProfile = new SectionProfile.Explicit();
+                        speckleSectionProfile = new Explicit();
                         break;
                     default:
-                        speckleSectionProfile = new SectionProfile.Catalogue(property, catalogue, propType.ToString(), sectionPropertyName);
+                        speckleSectionProfile = new Catalogue(property, catalogue, propType.ToString(), sectionPropertyName);
                         break;
                 }
 
@@ -45,8 +45,7 @@ namespace Objects.Converter.ETABS
 
             if (s == 0)
             {
-                speckleSectionProfile = new SectionProfile.Rectangular(property,T3,T2);
-                return speckleSectionProfile;
+                speckleSectionProfile = new Rectangular(property,T3,T2);
             }
 
             double Tf = 0;
@@ -57,42 +56,40 @@ namespace Objects.Converter.ETABS
             s = Model.PropFrame.GetConcreteTee(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref TwF, ref Twt, ref mirrorAbout3, ref color, ref notes, ref GUID);
             if (s == 0)
             {
-                speckleSectionProfile = new SectionProfile.Tee(property,T3,T2,TwF,Tf);
-                return speckleSectionProfile;
+                speckleSectionProfile = new Tee(property,T3,T2,TwF,Tf);
             }
 
             s = Model.PropFrame.GetCircle(property, ref FileName, ref matProp, ref T3, ref color, ref notes, ref GUID);
             if (s == 0)
             {
-                speckleSectionProfile = new SectionProfile.Circular(property, T3 / 2);
-                return speckleSectionProfile;
+                speckleSectionProfile = new Circular(property, T3 / 2);
             }
 
             s = Model.PropFrame.GetAngle(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref color, ref notes, ref GUID);
             if( s == 0)
             {
-                speckleSectionProfile = new SectionProfile.Angle(property, T3, T2, Tw, Tf);
+                speckleSectionProfile = new Angle(property, T3, T2, Tw, Tf);
                 return speckleSectionProfile;
             }
 
             s = Model.PropFrame.GetChannel(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref color, ref notes, ref GUID);
             if (s== 0)
             {
-                speckleSectionProfile = new SectionProfile.Channel(property, T3, T2, Tw, Tf);
+                speckleSectionProfile = new Channel(property, T3, T2, Tw, Tf);
                 return speckleSectionProfile;
             }
 
             s = Model.PropFrame.GetTube(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref color, ref notes, ref GUID);
             if (s== 0)
             {
-                speckleSectionProfile = new SectionProfile.Rectangular(property, T3, T2, Tw, Tf);
+                speckleSectionProfile = new Rectangular(property, T3, T2, Tw, Tf);
                 return speckleSectionProfile;
             }
 
             s = Model.PropFrame.GetPipe(property, ref FileName, ref matProp, ref T3, ref Tw, ref color, ref notes, ref GUID);
             if (s == 0)
             {
-                speckleSectionProfile = new SectionProfile.Circular(property, T3, Tw);
+                speckleSectionProfile = new Circular(property, T3, Tw);
                 return speckleSectionProfile;
             }
             return null;

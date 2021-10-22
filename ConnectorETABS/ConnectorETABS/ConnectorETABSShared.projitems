@@ -12,7 +12,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Recieve.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsETABS.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorETABSUtils.cs" />
