@@ -143,7 +143,6 @@ Global
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
 		ConnectorETABS\ConnectorETABS\ConnectorETABSShared.projitems*{cc1f6133-9dd5-437c-ab23-380ad00267a2}*SharedItemsImports = 4
-		Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{cc1f6133-9dd5-437c-ab23-380ad00267a2}*SharedItemsImports = 4
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 4
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d9f443b5-c55b-4ad8-9c70-bc3d2be781be}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{ef418256-8118-47b4-8386-a945946fb92d}*SharedItemsImports = 4
