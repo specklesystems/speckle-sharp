@@ -138,6 +138,7 @@ namespace Objects.Converter.ETABS
 
         public enum ETABSConverterSupported
         {
+            Node,
             Line,
             Element1D,
             Element2D,

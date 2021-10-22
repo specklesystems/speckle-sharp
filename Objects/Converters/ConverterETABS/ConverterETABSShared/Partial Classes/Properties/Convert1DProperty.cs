@@ -17,15 +17,34 @@ namespace Objects.Converter.ETABS
             int numbMaterial = 0;
             string[] materials = null;
             Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
-            if (!materials.Contains(property1D.material.name)) ;
+            if(property1D.material != null)
             {
+                if (!materials.Contains(property1D.material.name))
+                {
+                    MaterialToNative(property1D.material);
+                }
+            }
+            else
+            {
+                Material material = new Material("default", Structural.MaterialType.Steel,"Grade 50", "United States", "ASTM A992");
+                property1D.material = material;
                 MaterialToNative(property1D.material);
             }
+
             var catalogue = new Catalogue();
             if (property1D.profile.GetType().Equals(catalogue.GetType()))
             {
                 Catalogue sectionProfile = (Catalogue)property1D.profile;
-                Model.PropFrame.ImportProp(property1D.name, property1D.material.name, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName);
+
+                switch (sectionProfile.catalogueName)
+                {
+                    case "CA":
+                        sectionProfile.catalogueName = "CISC10";
+                        break;
+                }
+
+
+                Model.PropFrame.ImportProp(property1D.name, property1D.material.name, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName.ToUpper());
                 return property1D.name;
             }
             var rectangle = new Rectangular();
