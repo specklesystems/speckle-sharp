@@ -21,11 +21,21 @@ namespace Objects.Converter.ETABS
             if (!properties.Contains(element1D.property.name))
             {
                 Property1DToNative(element1D.property);
+                Model.PropFrame.GetNameList(ref number, ref properties);
             }
             if (baseline != null)
             {
                 Point end1node = baseline.start;
                 Point end2node = baseline.end;
+                if(baseline.units == "m")
+                {
+                    end1node.x *= 1000;
+                    end1node.y *= 1000;
+                    end1node.z *= 1000;
+                    end2node.x *= 1000;
+                    end2node.y *= 1000;
+                    end2node.z *= 1000;
+                }
                 if (properties.Contains(element1D.property.name))
                 {
                     Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
@@ -39,6 +49,15 @@ namespace Objects.Converter.ETABS
             {
                 Point end1node = element1D.end1Node.basePoint;
                 Point end2node = element1D.end2Node.basePoint;
+                if (baseline.units == "m")
+                {
+                    end1node.x *= 1000;
+                    end1node.y *= 1000;
+                    end1node.z *= 1000;
+                    end2node.x *= 1000;
+                    end2node.y *= 1000;
+                    end2node.z *= 1000;
+                }
                 if (properties.Contains(element1D.property.name))
                 {
                     Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
