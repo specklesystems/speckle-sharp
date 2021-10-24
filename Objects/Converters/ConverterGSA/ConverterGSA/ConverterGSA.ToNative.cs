@@ -1183,7 +1183,8 @@ namespace ConverterGSA
       };
       if (speckleLoad.nodes != null && speckleLoad.nodes.Count > 0)
       {
-        gsaLoad.NodeIndices = speckleLoad.nodes.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, 
+        gsaLoad.NodeIndices = speckleLoad.nodes.Where(n => n!= null && n.basePoint != null)
+          .Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, 
           Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
 
@@ -1223,9 +1224,8 @@ namespace ConverterGSA
 
       if (speckleLoad.nodes != null && speckleLoad.nodes.Count > 0)
       {
-        var nt = typeof(Node);
-        gsaLoad.Nodes = speckleLoad.nodes.Where(n => n.GetType().IsAssignableFrom(nt)).Select(n => (Node)n)
-          .Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, Instance.GsaModel.CoincidentNodeAllowance)).ToList();
+        var nodes = speckleLoad.nodes.Select(n => (Node)n).ToList();
+        gsaLoad.Nodes = nodes.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z, Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
 
       if (speckleLoad.gravityFactors.x != 0) gsaLoad.X = speckleLoad.gravityFactors.x;
@@ -1880,11 +1880,14 @@ namespace ConverterGSA
 
       if (speckleProperty.orientationAxis != null)
       {
-        var axisIndex = IndexByConversionOrLookup<GsaAxis>(speckleProperty.orientationAxis, ref retList);
-        if (axisIndex.IsIndex())
+        if (!IsGlobalAxis(speckleProperty.orientationAxis))
         {
-          gsaProp2d.AxisIndex = axisIndex;
-          gsaProp2d.AxisRefType = AxisRefType.Reference;
+          var axisIndex = IndexByConversionOrLookup<GsaAxis>(speckleProperty.orientationAxis, ref retList);
+          if (axisIndex.IsIndex())
+          {
+            gsaProp2d.AxisIndex = axisIndex;
+            gsaProp2d.AxisRefType = AxisRefType.Reference;
+          }
         }
       }
       if (!gsaProp2d.AxisIndex.IsIndex())
@@ -2656,8 +2659,11 @@ namespace ConverterGSA
       {
         gsaMatAnal.Name = speckleObject.GetDynamicValue<string>("Name");
         var index = speckleObject.GetDynamicValue<long?>("Index");
-        if(index == null) index = speckleObject.GetDynamicValue<int?>("Index");
-        gsaMatAnal.Index = (int)index;
+        if (index == null) index = speckleObject.GetDynamicValue<int?>("Index");
+        if (index != null)
+        {
+          gsaMatAnal.Index = (int)index;
+        }
         gsaMatAnal.Colour = speckleObject.GetDynamicEnum<Colour>("Colour");
         gsaMatAnal.Type = speckleObject.GetDynamicEnum<MatAnalType>("Type");
         gsaMatAnal.NumParams = speckleObject.GetDynamicValue<int>("NumParams");
