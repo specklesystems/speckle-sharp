@@ -603,9 +603,19 @@ namespace Objects.Converter.RhinoGh
         return new int[] { 0, face.A, face.B, face.C };
       }).ToArray();
 
+      var textureCoordinates = new double[mesh.TextureCoordinates.Count * 2];
+      {
+        int i = 0;
+        foreach (var texCoord in mesh.TextureCoordinates)
+        {
+          textureCoordinates[i++] = texCoord.X;
+          textureCoordinates[i++] = texCoord.Y;
+        }
+      }
+      
       var Colors = mesh.VertexColors.Select(cl => cl.ToArgb()).ToArray();
 
-      var speckleMesh = new Mesh(verts, Faces, Colors, null, u);
+      var speckleMesh = new Mesh(verts, Faces, Colors, textureCoordinates, u);
       speckleMesh.volume = mesh.Volume();
       speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
 
