@@ -22,6 +22,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Structural\ApplicationSpecific\NewFolder\**" />
+    <EmbeddedResource Remove="Structural\ApplicationSpecific\NewFolder\**" />
+    <None Remove="Structural\ApplicationSpecific\NewFolder\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
