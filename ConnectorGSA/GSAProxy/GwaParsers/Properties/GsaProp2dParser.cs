@@ -46,10 +46,10 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
         gwa = new List<string>();
         return false;
       }
-      var thickness = $"{record.Thickness ?? 0}(mm)";
+
       //PROP_2D.7 | num | name | colour | type | axis | mat | mat_type | grade | design | profile | ref_pt | ref_z | mass | flex | shear | inplane | weight |
       AddItems(ref items, record.Name, "NO_RGB", record.Type.ToString().ToUpper(), AddAxis(), record.AnalysisMaterialIndex ?? 0, record.MatType.ToString().ToUpper(),
-        record.GradeIndex ?? 0, record.DesignIndex ?? 0, thickness, record.RefPt.GetStringValue(), record.RefZ, record.Mass,
+        record.GradeIndex ?? 0, record.DesignIndex ?? 0, AddThickness(), record.RefPt.GetStringValue(), record.RefZ, record.Mass,
         AddPercentageOrValue(record.BendingStiffnessPercentage, record.Bending), AddPercentageOrValue(record.ShearStiffnessPercentage, record.Shear),
         AddPercentageOrValue(record.InPlaneStiffnessPercentage, record.InPlane), AddPercentageOrValue(record.VolumePercentage, record.Volume));
 
@@ -58,6 +58,12 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     }
 
     #region to_gwa_fns
+    private string AddThickness()
+    {
+      //TO DO - use a new thickness member in the schema class which stores units for this
+      return (record.Thickness ?? 0) + "(mm)";
+    }
+
     private string AddPercentageOrValue(double? percentage, double? value)
     {
       if (percentage.HasValue)
