@@ -306,7 +306,7 @@ namespace ConnectorGSA
           streamId = state.Stream.id,
           objectId = commitObjId,
           branchName = "main",
-          message = "Pushed it real good",
+          message = "Pushed data from GSA",
           sourceApplication = Applications.GSA
         };
 
@@ -359,6 +359,19 @@ namespace ConnectorGSA
       statusProgress.Report("Reading GSA data into cache");
       //Load data to cause merging
       Commands.LoadDataFromFile(proxyLoggingProgress);
+
+      double factor = 1;
+      if (Instance.GsaModel.Cache.GetNatives(typeof(GsaUnitData), out var gsaUnitDataRecords))
+      {
+        var lengthUnitData = (GsaUnitData)gsaUnitDataRecords.FirstOrDefault(r => ((GsaUnitData)r).Option == UnitDimension.Length);
+        if (lengthUnitData != null)
+        {
+          var fromStr = coordinator.ReceiverTab.CoincidentNodeUnits.GetStringValue();
+          var toStr = lengthUnitData.Name;
+          factor = (lengthUnitData == null) ? 1 : Units.GetConversionFactor(fromStr, toStr);
+        }
+      }
+      Instance.GsaModel.CoincidentNodeAllowance = coordinator.ReceiverTab.CoincidentNodeAllowance * factor;
 
       double factor = 1;
       if (Instance.GsaModel.Cache.GetNatives(typeof(GsaUnitData), out var gsaUnitDataRecords))
@@ -517,10 +530,11 @@ namespace ConnectorGSA
       {
         var receivedObjects = FlattenCommitObject(commitObject, IsSingleObjectFn);
 
-        return (Instance.GsaModel.Cache.Upsert(receivedObjects.ToDictionary(
-            ro => string.IsNullOrEmpty(ro.applicationId) ? ro.id : ro.applicationId, 
+        var task = (Instance.GsaModel.Cache.Upsert(receivedObjects.ToDictionary(
+            ro => string.IsNullOrEmpty(ro.applicationId) ? ro.id : ro.applicationId,
             ro => (object)ro))
           && receivedObjects != null && receivedObjects.Any() && state.Errors.Count == 0);
+        return task;
       }
       return false;
     }

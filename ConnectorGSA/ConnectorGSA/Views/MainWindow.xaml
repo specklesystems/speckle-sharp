@@ -105,8 +105,6 @@
                 <MenuItem Header="Copy streamId" Command="{Binding CopyStreamIdCommand}" CommandParameter="Server"/>
 								<Separator />
                 <MenuItem Header="View stream" Command="{Binding ViewStreamCommand}" CommandParameter="Server"/>
-                <MenuItem Header="View stream data" Command="{Binding ViewStreamDataCommand}" CommandParameter="Server"/>
-                <MenuItem Header="View object data" Command="{Binding ViewObjectDataCommand}" CommandParameter="Server"/>
               </ContextMenu>
 						</DataGrid.ContextMenu>
 						<DataGrid.CellStyle>
@@ -230,8 +228,6 @@
                 <MenuItem Header="Copy streamId" Command="{Binding CopyStreamIdCommand}" CommandParameter="Sender" />
 								<Separator />
                 <MenuItem Header="View stream" Command="{Binding ViewStreamCommand}" CommandParameter="Sender" />
-                <MenuItem Header="View stream data" Command="{Binding ViewStreamDataCommand}" CommandParameter="Sender" />
-                <MenuItem Header="View object data" Command="{Binding ViewObjectDataCommand}" CommandParameter="Sender" />
 							</ContextMenu>
 						</DataGrid.ContextMenu>
 						<DataGrid.CellStyle>
@@ -316,8 +312,6 @@
                 <MenuItem Header="Copy streamId" Command="{Binding CopyStreamIdCommand}" CommandParameter="Receiver" />
 								<Separator />
                 <MenuItem Header="View stream" Command="{Binding ViewStreamCommand}" CommandParameter="Receiver" />
-                <MenuItem Header="View stream data" Command="{Binding ViewStreamDataCommand}" CommandParameter="Receiver" />
-                <MenuItem Header="View object data" Command="{Binding ViewObjectDataCommand}" CommandParameter="Receiver" />
               </ContextMenu>
 						</DataGrid.ContextMenu>
 						<DataGrid.CellStyle>

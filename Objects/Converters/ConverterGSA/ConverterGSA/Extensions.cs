@@ -1017,6 +1017,22 @@ namespace ConverterGSA
       return output;
     }
 
+    public static bool ValidateCoordinates(List<double> coords, out List<int> nodeIndices)
+    {
+      nodeIndices = new List<int>();
+      for (var i = 0; i < coords.Count(); i += 3)
+      {
+        var nodeIndex = Instance.GsaModel.Proxy.NodeAt(coords[i], coords[i + 1], coords[i + 2], Instance.GsaModel.CoincidentNodeAllowance);
+        if (nodeIndices.Contains(nodeIndex))
+        {
+          //Two nodes resolve to the same node
+          return false;
+        }
+        nodeIndices.Add(nodeIndex);
+      }
+      return true;
+    }
+
     public static Colour ColourToNative(this string speckleColour)
     {
       return Enum.TryParse(speckleColour, true, out Colour gsaColour) ? gsaColour : Colour.NO_RGB;
