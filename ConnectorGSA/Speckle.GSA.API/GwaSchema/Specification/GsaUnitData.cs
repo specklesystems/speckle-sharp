@@ -1,5 +1,4 @@
-﻿
-namespace Speckle.GSA.API.GwaSchema
+﻿namespace Speckle.GSA.API.GwaSchema
 {
   public class GsaUnitData : GsaRecord
   {

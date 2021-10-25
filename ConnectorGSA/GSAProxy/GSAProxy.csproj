@@ -49,8 +49,11 @@
     <Compile Include="Cache\GsaCache.cs" />
     <Compile Include="Cache\GsaCacheRecord.cs" />
     <Compile Include="GwaParsers\Geometry\GsaPolylineParser.cs" />
-    <Compile Include="GwaParsers\GsaUnitDataParser.cs" />
+    <Compile Include="GwaParsers\Specification\GsaTolParser.cs" />
+    <Compile Include="GwaParsers\Specification\GsaUnitDataParser.cs" />
     <Compile Include="GwaParsers\IGwaChildType.cs" />
+    <Compile Include="GwaParsers\Specification\GwaSpecConcDesignParser.cs" />
+    <Compile Include="GwaParsers\Specification\GwaSpecSteelDesignParser.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IPairCollection.cs" />
     <Compile Include="Merger\GsaRecordMerger.cs" />

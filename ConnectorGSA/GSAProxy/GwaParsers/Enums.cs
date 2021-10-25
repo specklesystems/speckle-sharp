@@ -113,6 +113,12 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
     [StringValue("USER_VEHICLE")]
     USER_VEHICLE,
     [StringValue("UNIT_DATA")]
-    UNIT_DATA
+    UNIT_DATA,
+    [StringValue("TOL")]
+    TOL,
+    [StringValue("SPEC_STEEL_DESIGN")]
+    SPEC_STEEL_DESIGN,
+    [StringValue("SPEC_CONC_DESIGN")]
+    SPEC_CONC_DESIGN
   }
 }
