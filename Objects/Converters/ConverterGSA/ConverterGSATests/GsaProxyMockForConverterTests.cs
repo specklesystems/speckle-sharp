@@ -34,7 +34,7 @@ namespace ConverterGSATests
 
     public List<int> ConvertGSAList(string list, GSAEntity entityType) => new List<int>() { 1 };
 
-    public int NodeAt(double x, double y, double z, double coincidenceTol) => 1;
+    public int NodeAt(double x, double y, double z, double coincidenceTol) => (NodeAtFn == null) ? 1 : NodeAtFn(x, y, z);
 
     public void Close() { }
 

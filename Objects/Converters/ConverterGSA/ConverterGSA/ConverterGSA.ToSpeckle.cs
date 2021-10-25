@@ -938,7 +938,7 @@ namespace ConverterGSA
       if (gsaLoadNode.NodeIndices.HasValues())
       {
         speckleNodeLoad.nodes = gsaLoadNode.NodeIndices.Select(i => GetNodeFromIndex(i)).ToList();
-        AddToMeaningfulNodeIndices(speckleNodeLoad.nodes.Select(n => n.applicationId));
+        AddToMeaningfulNodeIndices(speckleNodeLoad.nodes.Where(n => n != null && !string.IsNullOrEmpty(n.applicationId)).Select(n => n.applicationId));
       }
       if (gsaLoadNode.LoadCaseIndex.IsIndex()) speckleNodeLoad.loadCase = GetLoadCaseFromIndex(gsaLoadNode.LoadCaseIndex.Value);
       if (gsaLoadNode.GlobalAxis) speckleNodeLoad.loadAxis = GlobalAxis();
@@ -1291,7 +1291,7 @@ namespace ConverterGSA
       var speckleSteel = new GSASteel()
       {
         nativeId = gsaSteel.Index ?? 0,
-        name = gsaSteel.Mat.Name,
+        name = gsaSteel.Name,
         grade = "",                                 //grade can be determined from gsaMatSteel.Mat.Name (assuming the user doesn't change the default value): e.g. "350(AS3678)"
         materialType = MaterialType.Steel,
         designCode = "",                            //designCode can be determined from SPEC_STEEL_DESIGN gwa keyword
@@ -1323,7 +1323,7 @@ namespace ConverterGSA
       var speckleConcrete = new GSAConcrete()
       {
         nativeId = gsaConcrete.Index ?? 0,
-        name = gsaConcrete.Mat.Name,
+        name = gsaConcrete.Name,
         grade = "",                                 //grade can be determined from gsaMatConcrete.Mat.Name (assuming the user doesn't change the default value): e.g. "32 MPa"
         materialType = MaterialType.Concrete,
         designCode = "",                            //designCode can be determined from SPEC_CONCRETE_DESIGN gwa keyword: e.g. "AS3600_18" -> "AS3600"

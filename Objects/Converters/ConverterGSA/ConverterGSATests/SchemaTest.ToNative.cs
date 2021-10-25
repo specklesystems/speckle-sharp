@@ -707,7 +707,7 @@ namespace ConverterGSATests
       gsaRecords.Add(GsaPropMassExample("property mass 1"));
       gsaRecords.Add(GsaPropSprExample("property spring 1"));
       gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
-      gsaRecords.Add(GsaNodeExamples(1, "node 1").First());
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
       var gsaLoadNodes = GsaLoadNodeExamples(2, "load node 1", "load node 2");
       gsaRecords.AddRange(gsaLoadNodes);
       Instance.GsaModel.Cache.Upsert(gsaRecords);
@@ -735,9 +735,10 @@ namespace ConverterGSATests
       gsaRecords.Add(GsaPropMassExample("property mass 1"));
       gsaRecords.Add(GsaPropSprExample("property spring 1"));
       gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
-      gsaRecords.Add(GsaNodeExamples(1, "node 1").First());
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
       var gsaLoadNodes = GsaLoadNodeExamples(2, "load node 1", "load node 2");
       gsaRecords.AddRange(gsaLoadNodes);
+      
       Instance.GsaModel.Cache.Upsert(gsaRecords);
 
       //Convert

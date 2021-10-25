@@ -88,7 +88,7 @@ namespace ConnectorGSATests
 
       try
       {
-        loaded = Commands.LoadDataFromFile(loggingProgress, resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
+        loaded = Commands.LoadDataFromFile(null, resultTypesByGroup.Keys, resultTypesByGroup.Keys.SelectMany(g => resultTypesByGroup[g]));
       }
       catch (Exception ex)
       {

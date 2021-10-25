@@ -220,7 +220,7 @@ namespace ConnectorGSATests
       returnInfo.Loaded = false;
       try
       {
-        returnInfo.Loaded = Commands.LoadDataFromFile(loggingProgress);
+        returnInfo.Loaded = Commands.LoadDataFromFile(null);
       }
       catch { }
       finally
