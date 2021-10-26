@@ -33,10 +33,10 @@ namespace Objects.Converter.Revit
 	  curves.AddRange(revitStick.GetCurves(AnalyticalCurveType.ActiveCurves));
 	  curves.AddRange(revitStick.GetCurves(AnalyticalCurveType.RigidLinkTail));
 
-	  if (curves.Count > 1)
-		speckleElement1D.baseLine = CurveListToSpeckle(curves);
-	  else
-		speckleElement1D.baseLine = CurveToSpeckle(curves[0]);
+	 // if (curves.Count > 1)
+		//speckleElement1D.baseLine = CurveListToSpeckle(curves);
+	 // else
+		//speckleElement1D.baseLine = CurveToSpeckle(curves[0]);
 
 	  var coordinateSystem = revitStick.GetLocalCoordinateSystem();
 	  if (coordinateSystem != null)
@@ -90,7 +90,7 @@ namespace Objects.Converter.Revit
       switch (section.StructuralSectionGeneralShape)
       {
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralI: // Double T structural sections
-		  var ISection = new SectionProfile.ISection();
+		  var ISection = new ISection();
 		  ISection.name = section.StructuralSectionShapeName;
 		  ISection.shapeType = Structural.ShapeType.I;
 		  ISection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralI).GetProperty("Height").GetValue(section);
@@ -105,7 +105,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = ISection;
           break;
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralT: // Tees structural sections
-		  var teeSection = new SectionProfile.Tee();
+		  var teeSection = new Tee();
 		  teeSection.name = section.StructuralSectionShapeName;
 		  teeSection.shapeType = Structural.ShapeType.I;
 		  teeSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralT).GetProperty("Height").GetValue(section);
@@ -120,7 +120,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = teeSection;
 		  break;
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralH: // Rectangular Pipe structural sections
-		  var rectSection = new SectionProfile.Rectangular();
+		  var rectSection = new Rectangular();
 		  rectSection.name = section.StructuralSectionShapeName;
 		  rectSection.shapeType = Structural.ShapeType.I;
 		  rectSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralH).GetProperty("Height").GetValue(section);
@@ -136,7 +136,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = rectSection;
 		  break;
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralR: // Pipe structural sections
-		  var circSection = new SectionProfile.Circular();
+		  var circSection = new Circular();
 		  circSection.name = section.StructuralSectionShapeName;
 		  circSection.shapeType = Structural.ShapeType.Circular;
 		  circSection.radius = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralR).GetProperty("Diameter").GetValue(section) / 2;
@@ -149,7 +149,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = circSection;
           break;
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralF: // Flat Bar structural sections
-		  var flatRectSection = new SectionProfile.Rectangular();
+		  var flatRectSection = new Rectangular();
 		  flatRectSection.name = section.StructuralSectionShapeName;
 		  flatRectSection.shapeType = Structural.ShapeType.I;
 		  flatRectSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralF).GetProperty("Height").GetValue(section);
@@ -162,7 +162,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = flatRectSection;
 		  break;
         case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralS: // Round Bar structural sections
-		  var flatCircSection = new SectionProfile.Circular();
+		  var flatCircSection = new Circular();
 		  flatCircSection.name = section.StructuralSectionShapeName;
 		  flatCircSection.shapeType = Structural.ShapeType.Circular;
 		  flatCircSection.radius = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralS).GetProperty("Diameter").GetValue(section) / 2;
@@ -175,7 +175,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = flatCircSection;
 		  break;
 		case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralW: // Angle structural sections
-		  var angleSection = new SectionProfile.Angle();
+		  var angleSection = new Angle();
 		  angleSection.name = section.StructuralSectionShapeName;
 		  angleSection.shapeType = Structural.ShapeType.Angle;
 		  angleSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralW).GetProperty("Height").GetValue(section);
@@ -190,7 +190,7 @@ namespace Objects.Converter.Revit
 		  speckleSection = angleSection;
 		  break;
 		case DB.Structure.StructuralSections.StructuralSectionGeneralShape.GeneralU: // Channel  structural sections
-		  var channelSection = new SectionProfile.Channel();
+		  var channelSection = new Channel();
 		  channelSection.name = section.StructuralSectionShapeName;
 		  channelSection.shapeType = Structural.ShapeType.Channel;
 		  channelSection.depth = (double)typeof(DB.Structure.StructuralSections.StructuralSectionGeneralU).GetProperty("Height").GetValue(section);
@@ -223,7 +223,7 @@ namespace Objects.Converter.Revit
 		  var concreteMaterial = new Concrete
 		  {
 			name = Doc.GetElement(stickFamily.StructuralMaterialId).Name,
-			type = Structural.MaterialType.Concrete,
+			//type = Structural.MaterialType.Concrete,
 			grade = null,
 			designCode = null,
 			codeYear = null,
@@ -247,7 +247,7 @@ namespace Objects.Converter.Revit
 		  var steelMaterial = new Steel
 		  {
 			name = Doc.GetElement(stickFamily.StructuralMaterialId).Name,
-			type = Structural.MaterialType.Steel,
+			//type = Structural.MaterialType.Steel,
 			grade = materialAsset.Name,
 			designCode = null,
 			codeYear = null,
@@ -267,7 +267,7 @@ namespace Objects.Converter.Revit
 		  var timberMaterial = new Timber
 		  {
 			name = Doc.GetElement(structMat.StructuralAssetId).Name,
-			type = Structural.MaterialType.Timber,
+			//type = Structural.MaterialType.Timber,
 			grade = materialAsset.WoodGrade,
 			designCode = null,
 			codeYear = null,
@@ -304,7 +304,7 @@ namespace Objects.Converter.Revit
 
 	  if (revitStick is AnalyticalModelColumn)
       {
-		prop.memberType = MemberType1D.Column;
+		prop.memberType = MemberType.Column;
 		var locationMark = GetParamValue<string>(structuralElement, BuiltInParameter.COLUMN_LOCATION_MARK);
 		if (locationMark == null)
 		  speckleElement1D.name = mark;
@@ -313,7 +313,7 @@ namespace Objects.Converter.Revit
 	  }
       else
       {
-		prop.memberType = MemberType1D.Beam;
+		prop.memberType = MemberType.Beam;
 		speckleElement1D.name = mark;
 	  }
 		

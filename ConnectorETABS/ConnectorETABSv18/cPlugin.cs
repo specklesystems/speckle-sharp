@@ -54,6 +54,7 @@ namespace SpeckleConnectorETABS
             }
 
             MainWindow.Show();
+
         }
 
         private static void AppMain(Application app, string[] args)
@@ -94,23 +95,21 @@ namespace SpeckleConnectorETABS
 
 
 
-            //    var processes = Process.GetProcesses();
-            //    IntPtr ptr = IntPtr.Zero;
-            //    foreach (var process in processes)
-            //    {
-            //        if (process.ProcessName.ToLower().Contains("etabs"))
-            //        {
-            //            ptr = process.MainWindowHandle;
-            //            break;
-            //        }
-            //    }
-            //    if (ptr != IntPtr.Zero)
-            //    {
-            //        //Application.Current.MainWindow.Closed += SpeckleWindowClosed;
-            //        Bootstrapper.Start(Application.Current);
-            //        Bootstrapper.SetParent(ptr);
-            //        Application.Current.MainWindow.Closed += SpeckleWindowClosed;
-            //    }
+            var processes = Process.GetProcesses();
+            IntPtr ptr = IntPtr.Zero;
+            foreach (var process in processes)
+            {
+                if (process.ProcessName.ToLower().Contains("etabs"))
+                {
+                    ptr = process.MainWindowHandle;
+                    break;
+                }
+            }
+            if (ptr != IntPtr.Zero)
+            {
+                //Application.Current.MainWindow.Closed += SpeckleWindowClosed;
+                MainWindow.Closed += SpeckleWindowClosed;
+            }
             //}
             //catch
             //{
