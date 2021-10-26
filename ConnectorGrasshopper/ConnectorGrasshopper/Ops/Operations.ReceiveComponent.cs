@@ -577,6 +577,7 @@ namespace ConnectorGrasshopper.Ops
             return;
           }
 
+          
           ReceivedObject = await Operations.Receive(
             myCommit.referencedObject,
             CancellationToken,
@@ -587,6 +588,21 @@ namespace ConnectorGrasshopper.Ops
             count => TotalObjectCount = count,
             disposeTransports: true
           );
+          
+          try
+          {
+            await client.CommitReceived(new CommitReceivedInput
+            {
+              streamId = InputWrapper.StreamId,
+              commitId = myCommit.id,
+              message = myCommit.message,
+              sourceApplication = Applications.Grasshopper
+            });
+          }
+          catch
+          {
+            // Do nothing!
+          }
 
           if (CancellationToken.IsCancellationRequested)
           {
