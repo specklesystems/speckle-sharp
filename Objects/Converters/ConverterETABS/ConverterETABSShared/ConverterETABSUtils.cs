@@ -148,12 +148,13 @@ namespace Objects.Converter.ETABS
         Brace,
         Beam,
         Floor,
-        Wall
+        Wall,
         //ColumnResults,
         //BeamResults,
         //BraceResults,
         //PierResults,
-        //SpandrelResults
+        //SpandrelResults,
+        AnalysisResults
+        }
     }
-}
 }
