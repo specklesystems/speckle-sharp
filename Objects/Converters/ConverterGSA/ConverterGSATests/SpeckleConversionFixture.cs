@@ -2,6 +2,8 @@
 using Speckle.GSA.API;
 using Speckle.Core.Kits;
 using System.Linq.Expressions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ConverterGSATests
 {
@@ -9,7 +11,8 @@ namespace ConverterGSATests
   {
     protected ISpeckleConverter converter;
     protected GsaModelMock gsaModelMock = new GsaModelMock();
-    protected int highestNodeIndex = 0;
+    protected int? highestNodeIndex = null;
+    protected List<List<double>> nodeCoords = new List<List<double>>();
 
     public SpeckleConversionFixture()
     {
@@ -19,7 +22,20 @@ namespace ConverterGSATests
       */
       converter = new ConverterGSA.ConverterGSA();
       Instance.GsaModel = gsaModelMock;
-      ((GsaProxyMockForConverterTests)Instance.GsaModel.Proxy).NodeAtFn = (double x, double y, double z) => (++highestNodeIndex);
+      ((GsaProxyMockForConverterTests)Instance.GsaModel.Proxy).NodeAtFn = (double x, double y, double z) =>
+      {
+        var newCoords = new List<double> { Math.Round(x, 6), Math.Round(y, 6), Math.Round(z, 6) };
+        for (int i = 0; i < nodeCoords.Count(); i++)
+        {
+          if (newCoords.SequenceEqual(nodeCoords[i]))
+          {
+            return (i +  1);   //GSA records are base-1
+          }
+        }
+        highestNodeIndex = (highestNodeIndex == null) ? 0 : highestNodeIndex.Value + 1;
+        nodeCoords.Add(newCoords);
+        return (highestNodeIndex.Value + 1);  //GSA records are base-1
+      };
     }
 
     public void Dispose()

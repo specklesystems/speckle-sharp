@@ -132,6 +132,17 @@ namespace ConverterGSATests
     }
 
     [Fact]
+    public void Element1dBaseLineToNative()
+    {
+      var speckleElement = new GSAElement1D()
+      {
+        type = ElementType1D.Beam,
+        baseLine = new Line(new List<double>() { 20, 21, 22, 50, 51, 52 }),
+      };
+      var gsaConvertedRecords = converter.ConvertToNative(new List<Base>() { speckleElement });
+    }
+
+    [Fact]
     public void Element1dToNative()
     {
       //Create native objects
@@ -169,7 +180,18 @@ namespace ConverterGSATests
     }
 
     [Fact]
-    public void MembToNative()
+    public void GSAMember1dBaseLineToNative()
+    {
+      var speckleMember1d = new GSAMember1D()
+      {
+        type = ElementType1D.Beam,
+        baseLine = new Line(new List<double>() { 20, 21, 22, 50, 51, 52 }),
+      };
+      var gsaConvertedRecords = converter.ConvertToNative(new List<Base>() { speckleMember1d });
+    }
+
+    [Fact]
+    public void GSAMemberToNative()
     {
       //Create native objects
       var gsaRecords = new List<GsaRecord>();

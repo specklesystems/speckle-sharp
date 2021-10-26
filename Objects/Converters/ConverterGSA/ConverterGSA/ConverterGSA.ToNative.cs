@@ -255,46 +255,63 @@ namespace ConverterGSA
         gsaElement.NodeIndices = speckleElement.topology.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z,
           Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
+      else if (speckleElement.baseLine != null && speckleElement.baseLine.start != null && speckleElement.baseLine.end != null)
+      {
+        var line = (Line)speckleElement.baseLine;
+        gsaElement.NodeIndices = new List<int>
+        {
+          Instance.GsaModel.Proxy.NodeAt(line.start.x, line.start.y, line.start.z, Instance.GsaModel.CoincidentNodeAllowance),
+          Instance.GsaModel.Proxy.NodeAt(line.end.x, line.end.y, line.end.z, Instance.GsaModel.CoincidentNodeAllowance)
+        };
+      }
 
-      if (GetReleases(speckleElement.end1Releases, out var gsaRelease1, out var gsaStiffnesses1, out var gsaReleaseInclusion1))
+      if (speckleElement.end1Releases != null && GetReleases(speckleElement.end1Releases, out var gsaRelease1, out var gsaStiffnesses1, out var gsaReleaseInclusion1))
       {
         gsaElement.Releases1 = gsaRelease1;
         gsaElement.Stiffnesses1 = gsaStiffnesses1;
         gsaElement.ReleaseInclusion = gsaReleaseInclusion1;
       }
-      if (GetReleases(speckleElement.end2Releases, out var gsaRelease2, out var gsaStiffnesses2, out var gsaReleaseInclusion2))
+      if (speckleElement.end2Releases != null && GetReleases(speckleElement.end2Releases, out var gsaRelease2, out var gsaStiffnesses2, out var gsaReleaseInclusion2))
       {
         gsaElement.Releases2 = gsaRelease2;
         gsaElement.Stiffnesses2 = gsaStiffnesses2;
         gsaElement.ReleaseInclusion = gsaReleaseInclusion2;
       }
-      if (speckleElement.end1Offset.x != 0) gsaElement.End1OffsetX = speckleElement.end1Offset.x;
-      if (speckleElement.end2Offset.x != 0) gsaElement.End2OffsetX = speckleElement.end2Offset.x;
-      if (speckleElement.end1Offset.y == speckleElement.end2Offset.y)
+      if (speckleElement.end1Offset != null && speckleElement.end1Offset.x != 0)
       {
-        if (speckleElement.end1Offset.y != 0) gsaElement.OffsetY = speckleElement.end1Offset.y;
+        gsaElement.End1OffsetX = speckleElement.end1Offset.x;
       }
-      else
+      if (speckleElement.end2Offset != null && speckleElement.end2Offset.x != 0)
       {
-        gsaElement.OffsetY = speckleElement.end1Offset.y;
-        ConversionErrors.Add(new Exception("Element1dToNative: " 
-          + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
-          + "Different y offsets were assigned at either end."
-          + "end 1 y offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
+        gsaElement.End2OffsetX = speckleElement.end2Offset.x;
       }
-      if (speckleElement.end1Offset.z == speckleElement.end2Offset.z)
+      if (speckleElement.end1Offset != null && speckleElement.end2Offset != null)
       {
-        if (speckleElement.end1Offset.z != 0) gsaElement.OffsetZ = speckleElement.end1Offset.z;
+        if (speckleElement.end1Offset.y == speckleElement.end2Offset.y)
+        {
+          if (speckleElement.end1Offset.y != 0) gsaElement.OffsetY = speckleElement.end1Offset.y;
+        }
+        else
+        {
+          gsaElement.OffsetY = speckleElement.end1Offset.y;
+          ConversionErrors.Add(new Exception("Element1dToNative: "
+            + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
+            + "Different y offsets were assigned at either end."
+            + "end 1 y offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
+        }
+        if (speckleElement.end1Offset.z == speckleElement.end2Offset.z)
+        {
+          if (speckleElement.end1Offset.z != 0) gsaElement.OffsetZ = speckleElement.end1Offset.z;
+        }
+        else
+        {
+          gsaElement.OffsetZ = speckleElement.end1Offset.z;
+          ConversionErrors.Add(new Exception("Element1dToNative: "
+            + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
+            + "Different z offsets were assigned at either end."
+            + "end 1 z offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
+        }
       }
-      else
-      {
-        gsaElement.OffsetZ = speckleElement.end1Offset.z;
-        ConversionErrors.Add(new Exception("Element1dToNative: "
-          + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
-          + "Different z offsets were assigned at either end."
-          + "end 1 z offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
-      }
-      if (speckleElement.end1Offset.x != 0)       gsaElement.End1OffsetX = speckleElement.end1Offset.x;
       if (speckleElement.orientationAngle != 0)   gsaElement.Angle = speckleElement.orientationAngle;
 
       retList.Add(gsaElement);
@@ -405,7 +422,16 @@ namespace ConverterGSA
         gsaMember.NodeIndices = speckleMember.topology.Select(n => Instance.GsaModel.Proxy.NodeAt(n.basePoint.x, n.basePoint.y, n.basePoint.z,
           Instance.GsaModel.CoincidentNodeAllowance)).ToList();
       }
-      
+      else if (speckleMember.baseLine != null && speckleMember.baseLine.start != null && speckleMember.baseLine.end != null)
+      {
+        var line = (Line)speckleMember.baseLine;
+        gsaMember.NodeIndices = new List<int>
+        {
+          Instance.GsaModel.Proxy.NodeAt(line.start.x, line.start.y, line.start.z, Instance.GsaModel.CoincidentNodeAllowance),
+          Instance.GsaModel.Proxy.NodeAt(line.end.x, line.end.y, line.end.z, Instance.GsaModel.CoincidentNodeAllowance)
+        };
+      }
+
       //Dynamic properties
       gsaMember.Exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure");
       gsaMember.AnalysisType = speckleMember.GetDynamicEnum<AnalysisType>("AnalysisType");
@@ -430,43 +456,46 @@ namespace ConverterGSA
       gsaMember.EffectiveLengthLateralTorsional = speckleMember.GetDynamicValue<double?>("EffectiveLengthLateralTorsional");
       gsaMember.FractionLateralTorsional = speckleMember.GetDynamicValue<double?>("FractionLateralTorsional");
 
-      if (GetReleases(speckleMember.end1Releases, out var gsaRelease1, out var gsaStiffnesses1))
+      if (speckleMember.end1Releases != null && GetReleases(speckleMember.end1Releases, out var gsaRelease1, out var gsaStiffnesses1))
       {
         gsaMember.Releases1 = gsaRelease1;
         gsaMember.Stiffnesses1 = gsaStiffnesses1;
       }
-      if (GetReleases(speckleMember.end2Releases, out var gsaRelease2, out var gsaStiffnesses2))
+      if (speckleMember.end2Releases != null && GetReleases(speckleMember.end2Releases, out var gsaRelease2, out var gsaStiffnesses2))
       {
         gsaMember.Releases2 = gsaRelease2;
         gsaMember.Stiffnesses2 = gsaStiffnesses2;
       }
-      if (speckleMember.end1Offset.x != 0) gsaMember.End1OffsetX = speckleMember.end1Offset.x;
-      if (speckleMember.end2Offset.x != 0) gsaMember.End2OffsetX = speckleMember.end2Offset.x;
-      if (speckleMember.end1Offset.y == speckleMember.end2Offset.y)
+      if (speckleMember.end1Offset != null && speckleMember.end1Offset.x != 0) gsaMember.End1OffsetX = speckleMember.end1Offset.x;
+      if (speckleMember.end2Offset != null && speckleMember.end2Offset.x != 0) gsaMember.End2OffsetX = speckleMember.end2Offset.x;
+      if (speckleMember.end1Offset != null && speckleMember.end2Offset != null)
       {
-        if (speckleMember.end1Offset.y != 0) gsaMember.OffsetY = speckleMember.end1Offset.y;
+        if (speckleMember.end1Offset.y == speckleMember.end2Offset.y)
+        {
+          if (speckleMember.end1Offset.y != 0) gsaMember.OffsetY = speckleMember.end1Offset.y;
+        }
+        else
+        {
+          gsaMember.OffsetY = speckleMember.end1Offset.y;
+          ConversionErrors.Add(new Exception("GSAMember1dToNative: "
+            + "Error converting element1d with application id (" + speckleMember.applicationId + "). "
+            + "Different y offsets were assigned at either end."
+            + "end 1 y offset of " + gsaMember.OffsetY.ToString() + " has been applied"));
+        }
+        if (speckleMember.end1Offset.z == speckleMember.end2Offset.z)
+        {
+          if (speckleMember.end1Offset.z != 0) gsaMember.OffsetZ = speckleMember.end1Offset.z;
+        }
+        else
+        {
+          gsaMember.OffsetZ = speckleMember.end1Offset.z;
+          ConversionErrors.Add(new Exception("GSAMember1dToNative: "
+            + "Error converting element1d with application id (" + speckleMember.applicationId + "). "
+            + "Different z offsets were assigned at either end."
+            + "end 1 z offset of " + gsaMember.OffsetY.ToString() + " has been applied"));
+        }
       }
-      else
-      {
-        gsaMember.OffsetY = speckleMember.end1Offset.y;
-        ConversionErrors.Add(new Exception("GSAMember1dToNative: "
-          + "Error converting element1d with application id (" + speckleMember.applicationId + "). "
-          + "Different y offsets were assigned at either end."
-          + "end 1 y offset of " + gsaMember.OffsetY.ToString() + " has been applied"));
-      }
-      if (speckleMember.end1Offset.z == speckleMember.end2Offset.z)
-      {
-        if (speckleMember.end1Offset.z != 0) gsaMember.OffsetZ = speckleMember.end1Offset.z;
-      }
-      else
-      {
-        gsaMember.OffsetZ = speckleMember.end1Offset.z;
-        ConversionErrors.Add(new Exception("GSAMember1dToNative: "
-          + "Error converting element1d with application id (" + speckleMember.applicationId + "). "
-          + "Different z offsets were assigned at either end."
-          + "end 1 z offset of " + gsaMember.OffsetY.ToString() + " has been applied"));
-      }
-      if (speckleMember.end1Offset.x != 0) gsaMember.End1OffsetX = speckleMember.end1Offset.x;
+      
       if (speckleMember.orientationAngle != 0) gsaMember.Angle = speckleMember.orientationAngle;
       if (speckleMember.group > 0) gsaMember.Group = speckleMember.group;
       if (speckleMember.targetMeshSize > 0) gsaMember.MeshSize = speckleMember.targetMeshSize;
