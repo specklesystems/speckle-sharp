@@ -663,18 +663,26 @@ namespace Objects.Converter.RhinoGh
 
       while (i < mesh.faces.Count)
       {
-        if (mesh.faces[i] == 0 || mesh.faces[i] == 3)
+        int n = mesh.faces[i];
+        if (n < 3) n += 3; // 0 -> 3, 1 -> 4
+        
+        if (n == 3)
         {
           // triangle
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3]));
-          i += 4;
         }
-        else
+        else if(n == 4)
         {
           // quad
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3], mesh.faces[i + 4]));
-          i += 5;
         }
+        else
+        {
+          // n-gon
+          //TODO handle n-gons
+        }
+
+        i += n + 1;
       }
 
       try
