@@ -213,7 +213,21 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onErrorAction: (message, exception) => { Exceptions.Add(exception); },
         disposeTransports: true
         );
-
+      
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = state.Stream.id,
+          commitId = state.Commit.id,
+          message = state.Commit.message,
+          sourceApplication = Utils.AutocadAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
       if (Exceptions.Count != 0)
       {
         RaiseNotification($"Encountered error: {Exceptions.Last().Message}");
