@@ -62,6 +62,10 @@
       <Project>{c1d58c0e-702f-45f7-8b04-7aca00966809}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
+      <Project>{b5d2b524-39b5-45e8-af44-d4e9be2dc45c}</Project>
+      <Name>DesktopUI2</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
       <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
       <Name>DesktopUI</Name>
@@ -72,6 +76,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Avalonia">
+      <Version>0.10.7</Version>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Desktop">
+      <Version>0.10.7</Version>
+    </PackageReference>
+    <PackageReference Include="Avalonia.ReactiveUI">
+      <Version>0.10.7</Version>
+    </PackageReference>
     <PackageReference Include="CSI_ETABSv18_x64">
       <Version>1.0.0</Version>
     </PackageReference>

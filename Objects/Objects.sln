@@ -57,6 +57,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterETABSv18", "Conver
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterETABSShared", "Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.shproj", "{7F5A5E2B-D74F-483D-8983-97DC049C6D28}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterETABSv19", "Converters\ConverterETABS\ConverterETABSv19\ConverterETABSv19.csproj", "{5F9D82DF-ED00-426C-A8C9-A5537B4697A2}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
@@ -69,6 +71,7 @@ Global
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
+		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{5f9d82df-ed00-426c-a8c9-a5537b4697a2}*SharedItemsImports = 5
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{63b3f901-7c14-4530-8a6f-ccad68586664}*SharedItemsImports = 5
 		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{7f5a5e2b-d74f-483d-8983-97dc049c6d28}*SharedItemsImports = 13
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
@@ -142,6 +145,10 @@ Global
 		{19AB2B30-1AF8-4648-8926-0798F3993A08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19AB2B30-1AF8-4648-8926-0798F3993A08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19AB2B30-1AF8-4648-8926-0798F3993A08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,6 +178,7 @@ Global
 		{853ECEC9-B1D5-4155-B8D7-EBE9E8277848} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{19AB2B30-1AF8-4648-8926-0798F3993A08} = {853ECEC9-B1D5-4155-B8D7-EBE9E8277848}
 		{7F5A5E2B-D74F-483D-8983-97DC049C6D28} = {853ECEC9-B1D5-4155-B8D7-EBE9E8277848}
+		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2} = {853ECEC9-B1D5-4155-B8D7-EBE9E8277848}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

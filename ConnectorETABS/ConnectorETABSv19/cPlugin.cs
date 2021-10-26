@@ -28,49 +28,49 @@ namespace SpeckleConnectorETABS
 
         public static void OpenOrFocusSpeckle(cSapModel model)
         {
-            try
-            {
-                Setup.Init("ConnectorETABS");
-                if (Bootstrapper != null)
-                {
-                    Bootstrapper.ShowRootView();
-                    return;
-                }
+            //try
+            //{
+            //    Setup.Init("ConnectorETABS");
+            //    if (Bootstrapper != null)
+            //    {
+            //        Bootstrapper.ShowRootView();
+            //        return;
+            //    }
 
-                Bootstrapper = new Bootstrapper()
-                {
-                    Bindings = new ConnectorBindingsETABS(model)
-                };
+            //    Bootstrapper = new Bootstrapper()
+            //    {
+            //        Bindings = new ConnectorBindingsETABS(model)
+            //    };
 
-                if (Application.Current != null)
-                    new StyletAppLoader() { Bootstrapper = Bootstrapper };
-                else
-                    new App(Bootstrapper);
+            //    if (Application.Current != null)
+            //        new StyletAppLoader() { Bootstrapper = Bootstrapper };
+            //    else
+            //        new App(Bootstrapper);
 
 
 
-                var processes = Process.GetProcesses();
-                IntPtr ptr = IntPtr.Zero;
-                foreach (var process in processes)
-                {
-                    if (process.ProcessName.ToLower().Contains("etabs"))
-                    {
-                        ptr = process.MainWindowHandle;
-                        break;
-                    }
-                }
-                if (ptr != IntPtr.Zero)
-                {
-                    //Application.Current.MainWindow.Closed += SpeckleWindowClosed;
-                    Bootstrapper.Start(Application.Current);
-                    Bootstrapper.SetParent(ptr);
-                    Application.Current.MainWindow.Closed += SpeckleWindowClosed;
-                }
-            }
-            catch
-            {
-                Bootstrapper = null;
-            }
+            //    var processes = Process.GetProcesses();
+            //    IntPtr ptr = IntPtr.Zero;
+            //    foreach (var process in processes)
+            //    {
+            //        if (process.ProcessName.ToLower().Contains("etabs"))
+            //        {
+            //            ptr = process.MainWindowHandle;
+            //            break;
+            //        }
+            //    }
+            //    if (ptr != IntPtr.Zero)
+            //    {
+            //        //Application.Current.MainWindow.Closed += SpeckleWindowClosed;
+            //        Bootstrapper.Start(Application.Current);
+            //        Bootstrapper.SetParent(ptr);
+            //        Application.Current.MainWindow.Closed += SpeckleWindowClosed;
+            //    }
+            //}
+            //catch
+            //{
+            //    Bootstrapper = null;
+            //}
         }
 
         private static void SpeckleWindowClosed(object sender, EventArgs e)

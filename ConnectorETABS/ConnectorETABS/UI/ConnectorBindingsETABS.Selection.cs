@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
 using Speckle.ConnectorETABS.Util;
 using System.Linq;
 

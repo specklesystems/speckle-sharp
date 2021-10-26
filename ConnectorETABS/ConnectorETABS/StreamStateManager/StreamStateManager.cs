@@ -2,7 +2,7 @@
 using Speckle.ConnectorETABS.Util;
 using System.Collections.Generic;
 using Speckle.Core.Logging;
-using Speckle.DesktopUI.Utils;
+using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
 using System.IO;
 using System.Text;
@@ -50,6 +50,17 @@ namespace ConnectorETABS.Storage
                     streamWriter.Flush();
                     Tracker.TrackPageview(Tracker.SERIALIZE);
                 }
+            }
+            catch { }
+        }
+
+        public static void ClearStreamStateList(cSapModel model)
+        {
+            if (_speckleFilePath == null) GetOrCreateSpeckleFilePath(model);
+            FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            try
+            {
+                fileStream.SetLength(0);
             }
             catch { }
         }
