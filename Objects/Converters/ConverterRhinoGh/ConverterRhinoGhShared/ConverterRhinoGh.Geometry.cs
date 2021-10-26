@@ -651,6 +651,11 @@ namespace Objects.Converter.RhinoGh
 
     public RH.Mesh MeshToNative(Mesh mesh)
     {
+      if (mesh.textureCoordinates.Count > 0 && mesh.textureCoordinates.Count / 2 != mesh.vertices.Count / 3)
+      {
+        mesh.DuplicateSharedVertices();
+      }
+
       RH.Mesh m = new RH.Mesh();
       m.Vertices.AddVertices(PointListToNative(mesh.vertices, mesh.units));
 
@@ -658,7 +663,7 @@ namespace Objects.Converter.RhinoGh
 
       while (i < mesh.faces.Count)
       {
-        if (mesh.faces[i] == 0)
+        if (mesh.faces[i] == 0 || mesh.faces[i] == 3)
         {
           // triangle
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3]));

@@ -13,6 +13,77 @@ namespace Objects.Geometry
     [Chunkable(31250)]
     public List<double> vertices { get; set; } = new List<double>();
 
+
+    public void DuplicateSharedVertices()
+    {
+      var facesUnique = new List<int>(faces.Count);
+      var verticesUnique = new List<double>(vertices.Count); //will be resized larger
+      
+      int nIndex = 0;
+      while (nIndex < faces.Count)
+      {
+        int n = faces[nIndex];
+        if (n < 3) n += 3; // 0 -> 3, 1 -> 4
+        
+        if (nIndex + n >= faces.Count) break; //Malformed face list
+        
+        facesUnique.Add(n);
+        for (int i = 1; i <= n; i++)
+        {
+          int vertIndex = faces[nIndex + i];
+          int xIndex = vertIndex * 3;
+          int newVertIndex = verticesUnique.Count / 3;
+          
+          verticesUnique.Add(vertices[xIndex]); //x
+          verticesUnique.Add(vertices[xIndex + 1]); //y
+          verticesUnique.Add(vertices[xIndex + 2]); //z
+
+          facesUnique.Add(newVertIndex);
+        }
+        
+        nIndex += n + 1;
+      }
+      
+      vertices = verticesUnique;
+      faces = facesUnique;
+    }
+    
+    
+    
+    
+    // public void DuplicateSharedVertices()
+    // {
+    //   var verticesUnique = new List<double>(); //vertices.Count); 
+    //   var facesUnique = new List<int>(); //faces.Count);
+    //   
+    //   int nIndex = 0;
+    //   while (nIndex < faces.Count)
+    //   {
+    //     int n = faces[nIndex];
+    //     if (n < 3) n += 3; // 0 -> 3, 1 -> 4
+    //
+    //     if (nIndex + n >= faces.Count) break; //Malformed face list
+    //     
+    //     facesUnique.Add(n);
+    //     for (int i = 1; i <= n; i++)
+    //     {
+    //       int xIndex = faces[nIndex + i] * 3;
+    //       int vertIndex = verticesUnique.Count / 3;
+    //         
+    //       verticesUnique.Add(vertices[xIndex]);
+    //       verticesUnique.Add(vertices[xIndex + 1]);
+    //       verticesUnique.Add(vertices[xIndex + 2]);
+    //       
+    //       facesUnique.Add(vertIndex);
+    //     }
+    //
+    //     nIndex += n + 1;
+    //   }
+    //
+    //   vertices = verticesUnique;
+    //   faces = facesUnique;
+    // }
+
     [DetachProperty]
     [Chunkable(62500)]
     public List<int> faces { get; set; } = new List<int>();
