@@ -215,12 +215,14 @@ namespace SpeckleRhino
       string referencedObject = state.Commit.referencedObject;
 
       var commitId = state.Commit.id;
+      var commitMsg = state.Commit.message;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (commitId == "latest")
       {
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
         var commit = res.commits.items.FirstOrDefault();
         commitId = commit.id;
+        commitMsg = commit.message;
         referencedObject = commit.referencedObject;
       }
 
@@ -238,9 +240,9 @@ namespace SpeckleRhino
       {
         await state.Client.CommitReceived(new CommitReceivedInput
         {
-          streamId = state.Stream.id,
-          commitId = state.Commit.id,
-          message = state.Commit.message,
+          streamId = stream.id,
+          commitId = commitId,
+          message = commitMsg,
           sourceApplication = Utils.RhinoAppName
         });
       }
