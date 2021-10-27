@@ -651,16 +651,14 @@ namespace Objects.Converter.RhinoGh
 
     public RH.Mesh MeshToNative(Mesh mesh)
     {
-      if (mesh.textureCoordinates.Count > 0 && mesh.textureCoordinates.Count / 2 != mesh.vertices.Count / 3)
-      {
-        mesh.DuplicateSharedVertices();
-      }
+      mesh.AlignVerticesWithTexCoordsByIndex();
 
       RH.Mesh m = new RH.Mesh();
       m.Vertices.AddVertices(PointListToNative(mesh.vertices, mesh.units));
 
-      int i = 0;
 
+      //bool requiresCompacting = false;
+      int i = 0;
       while (i < mesh.faces.Count)
       {
         int n = mesh.faces[i];
@@ -671,19 +669,33 @@ namespace Objects.Converter.RhinoGh
           // triangle
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3]));
         }
-        else if(n == 4)
+        else //if(n == 4)
         {
           // quad
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3], mesh.faces[i + 4]));
         }
-        else
-        {
-          // n-gon
-          //TODO handle n-gons
-        }
+        /* else  // For now, I've commented this all out because it doesn't work with texture coordinates.
+         {      
+           // n-gon
+           
+           var points = new List<Point3d>(n);
+           for (int j = 1; j <= n; j++)
+           {
+             int vertIndex = mesh.faces[i + j];
+             var (x, y, z) = mesh.GetPointAtIndex(vertIndex);
+             points.Add(new Point3d(x,y,z));
+           }
+           
+           var subMesh = RH.Mesh.CreateFromClosedPolyline(new RH.Polyline(points));
+           m.Append(subMesh);
+           
+           requiresCompacting = true;
+        }*/
 
         i += n + 1;
       }
+
+      //if (requiresCompacting) m.Compact();
 
       try
       {
