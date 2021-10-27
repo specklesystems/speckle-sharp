@@ -75,6 +75,11 @@ namespace Speckle.ConnectorRevit.UI
             continue;
           }
 
+          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          {
+            return;
+          }
+
           var conversionResult = converter.ConvertToSpeckle(revitElement);
 
           conversionProgressDict["Conversion"]++;

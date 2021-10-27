@@ -140,7 +140,7 @@ namespace DesktopUI2.ViewModels
     public async void SendCommand()
     {
       Progress = new ProgressViewModel();
-      await Bindings.SendStream(StreamState, Progress);
+      await Task.Run(() =>  Bindings.SendStream(StreamState, Progress));
       Progress.Value = 0;
       LastUsed = DateTime.Now.ToString();
 
@@ -149,7 +149,7 @@ namespace DesktopUI2.ViewModels
     public async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
-      await Bindings.ReceiveStream(StreamState, Progress);
+      await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
       Progress.Value = 0;
       LastUsed = DateTime.Now.ToString();
     }
