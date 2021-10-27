@@ -46,6 +46,8 @@ namespace Speckle.ConnectorRevit.UI
       string referencedObject = state.ReferencedObject;
       Commit myCommit = null;
 
+      var stream = await state.Client.StreamGet(state.StreamId);
+
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
@@ -80,7 +82,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         await state.Client.CommitReceived(new CommitReceivedInput
         {
-          streamId = state.StreamId,
+          streamId = stream,
           commitId = myCommit?.id,
           message = myCommit?.message,
           sourceApplication = ConnectorRevitUtils.RevitAppName 
