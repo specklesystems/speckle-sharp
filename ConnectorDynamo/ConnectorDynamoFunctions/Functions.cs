@@ -162,6 +162,21 @@ namespace Speckle.ConnectorDynamo.Functions
         disposeTransports: true
       ).Result;
 
+      try
+      {
+        client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream.StreamId,
+          commitId = commit.id,
+          message = commit.message,
+          sourceApplication = Applications.DynamoRevit
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
+
       if (cancellationToken.IsCancellationRequested)
         return null;
 

@@ -234,6 +234,21 @@ namespace SpeckleRhino
         disposeTransports: true
         );
 
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = state.Stream.id,
+          commitId = state.Commit.id,
+          message = state.Commit.message,
+          sourceApplication = Utils.RhinoAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
+
       if (Exceptions.Count != 0)
       {
         RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
