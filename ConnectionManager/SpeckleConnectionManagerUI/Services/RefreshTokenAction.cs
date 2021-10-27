@@ -8,21 +8,23 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Data.Sqlite;
+using SpeckleConnectionManagerUI.Models;
 
 namespace SpeckleConnectionManagerUI.Services
 {
-  class RefreshTokenAction
-  {
-      public async Task<string> Run()
+    class RefreshTokenAction
+    {
+        public async Task<string> Run()
         {
             HttpClient client = new();
             string appDataFolder =
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                
+
             string appFolderFullName = Path.Combine(appDataFolder, "Speckle");
 
 
-            if(!Directory.Exists(appFolderFullName)) {
+            if (!Directory.Exists(appFolderFullName))
+            {
                 Directory.CreateDirectory(appFolderFullName);
             }
 
@@ -41,20 +43,23 @@ namespace SpeckleConnectionManagerUI.Services
             {
                 object[] objs = new object[3];
                 var row = query.GetValues(objs);
-                
-                entries.Add(new Row {
+
+                entries.Add(new Row
+                {
                     hash = objs[0].ToString(),
                     content = JsonSerializer.Deserialize<SqliteContent>(objs[1].ToString())
                 });
             }
 
 
-            foreach(var entry in entries) {
-                var content = entry.content;                
+            foreach (var entry in entries)
+            {
+                var content = entry.content;
                 var url = content.serverInfo.url;
                 Console.WriteLine($"Auth token: {content.token}");
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {content.token}");
-                HttpResponseMessage response = await client.PostAsJsonAsync($"{url}/auth/token", new {
+                HttpResponseMessage response = await client.PostAsJsonAsync($"{url}/auth/token", new
+                {
                     appId = "sdm",
                     appSecret = "sdm",
                     refreshToken = content.refreshToken,
@@ -72,13 +77,13 @@ namespace SpeckleConnectionManagerUI.Services
                 Console.WriteLine(tokens.token);
 
                 var command = connection.CreateCommand();
-                command.CommandText = 
+                command.CommandText =
                     @"
                     UPDATE objects
                     SET content = @content
                     WHERE hash = @hash
                 ";
-                
+
                 Console.WriteLine(connection.State);
 
                 command.Parameters.AddWithValue("@hash", content.GetHashCode());
@@ -90,31 +95,5 @@ namespace SpeckleConnectionManagerUI.Services
             return "";
         }
     }
-
-  public partial class Row
-  {
-      public string hash { get; set; }
-      public SqliteContent content { get; set; }
-  }
-  public partial class SqliteContent
-  {
-      public string id { get; set; }
-      public bool isDefault { get; set; }
-      public string token { get; set; }
-      public object user { get; set; }
-      public ServerInfo serverInfo { get; set; }
-      public string refreshToken { get; set; }
-  }
-
-  public partial class ServerInfo {
-      public string name { get; set; }
-      public string url {get; set; }
-  }
-  public partial class Tokens
-  {
-      public string token { get; set; }
-
-      public string refreshToken { get; set; }
-  }
 }
 

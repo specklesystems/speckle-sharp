@@ -13,7 +13,9 @@ namespace SpeckleConnectionManagerUI.ViewModels
             Items = new ObservableCollection<ConnectStatusItem>(items);
         }
 
+        public ConnectStatusViewModel() {}
 
         public ObservableCollection<ConnectStatusItem> Items { get; }
+
     }
 }

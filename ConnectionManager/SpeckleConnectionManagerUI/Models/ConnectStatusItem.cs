@@ -6,12 +6,30 @@ namespace SpeckleConnectionManagerUI.Models
     {
         public string? ServerName { get; set; }
 
+        public string? ServerUrl { get; set; }
+
         private bool _disconnected = true;
+
+        private bool _default = false;
+
+        public string? _defaultServerLabel;
 
         public bool Disconnected
         {
             get => _disconnected;
             set => this.RaiseAndSetIfChanged(ref _disconnected, value);
+        }
+
+        public bool Default
+        {
+            get => _default;
+            set => this.RaiseAndSetIfChanged(ref _default, value);
+        }
+
+        public string? DefaultServerLabel
+        {
+            get => _defaultServerLabel;
+            set => this.RaiseAndSetIfChanged(ref _defaultServerLabel, value);
         }
 
         private string _colour = "Red";
