@@ -7,20 +7,21 @@
         xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
         xmlns:vm="clr-namespace:SpeckleConnectionManagerUI.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="225"
-        Width="400" Height="225"
+        mc:Ignorable="d" d:DesignWidth="430" d:DesignHeight="225"
+        Width="430" Height="175"
         x:Class="SpeckleConnectionManagerUI.Views.AddNewConnectionWindow"
         Icon="/Assets/s2block.ico"
         Title="Add New Connection">
   <StackPanel Margin="10">
-    <TextBlock Margin="0,15,0,0" TextWrapping="Wrap"  Text="To add a new account, please input the server's url below:" TextTrimming="CharacterEllipsis" />
+    <TextBlock Margin="0,15,0,0" TextWrapping="Wrap" Text="To add a new account, please input the server's url below:" TextTrimming="CharacterEllipsis" />
     <styles:Card Margin="0,15,0,0" Padding="0">
       <TextBox
-        x:Name="newServerUrl"
+        x:Name="ServerUrlTextBox"
         Margin="0"
         Padding="0"
         Classes="Solo"
-        Watermark="Speckle Server Address"
+        Focusable="True"
+        Watermark="Speckle Server Url (ex. https://v2.speckle.arup.com)"
         Text="{Binding NewServerUrl}">
       </TextBox>
     </styles:Card>

@@ -2,8 +2,11 @@ using System;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Avalonia.Controls;
 using SpeckleConnectionManagerUI.ViewModels;
 using ReactiveUI;
+using ReactiveUI.Validation.Extensions;
+using ReactiveUI.Validation.Formatters;
 
 namespace SpeckleConnectionManagerUI.Views
 {
@@ -21,6 +24,13 @@ namespace SpeckleConnectionManagerUI.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+            this.Activated += OnActivated;
+        }
+
+        private void OnActivated(object sender, EventArgs e)
+        {
+            this.Activated -= OnActivated;
+            this.FindControl<TextBox>("ServerUrlTextBox").Focus(); 
         }
     }
 }

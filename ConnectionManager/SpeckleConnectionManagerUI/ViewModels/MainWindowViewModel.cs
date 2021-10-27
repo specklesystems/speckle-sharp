@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Net;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Diagnostics;
 using System.Reactive;
@@ -36,6 +38,8 @@ namespace SpeckleConnectionManagerUI.ViewModels
         private ReactiveCommand<int, Unit> SetDefaultServerCommand { get; }
         private ReactiveCommand<int, Unit> RemoveServerCommand { get; }
         private ReactiveCommand<Unit, Unit> GetNewServerUrlCommand { get; }
+        public ReactiveCommand<object, Unit> ShowMsgBoxCommand { get; }
+
         public MainWindowViewModel() { }
 
         public MainWindowViewModel(Database db)
@@ -67,7 +71,8 @@ namespace SpeckleConnectionManagerUI.ViewModels
             if (updatedLoginWindowViewModel != null)
             {
                 NewServerUrl = updatedLoginWindowViewModel.NewServerUrl;
-                AddNewConnection();
+                if (NewServerUrl.EndsWith("/")) NewServerUrl = NewServerUrl.Remove(NewServerUrl.Length - 1);
+                if (AddConnectionViewModel.CheckServerUrl(NewServerUrl)) AddNewConnection();
             }
             else { }
 
@@ -89,7 +94,6 @@ namespace SpeckleConnectionManagerUI.ViewModels
             List.Items.Select(i => i).Where(i => i.Default == false).ToList().ForEach(i => Sqlite.SetDefaultServer(i.ServerUrl, false));
         }
 
-
         public void AddNewConnection()
         {
             var identifier = List.Items.Select(i => i.Identifier).Max() + 1;
@@ -99,7 +103,6 @@ namespace SpeckleConnectionManagerUI.ViewModels
 
             RunConnectToServer(identifier);
         }
-
 
         public void DeleteAllAuthData()
         {

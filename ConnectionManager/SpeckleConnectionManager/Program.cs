@@ -145,10 +145,17 @@ namespace SpeckleConnectionManager
             }
 
             // Restart the Speckle Connection Manager
-            var killProcess = Process.Start("taskkill", "/F /IM SpeckleConnectionManagerUI.exe");
-            killProcess.WaitForExit();
+            Process p = new Process();
+            p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.FileName = "taskkill";
+            p.StartInfo.Arguments = "/F /IM SpeckleConnectionManagerUI.exe";
+            p.Start();
+            p.WaitForExit();
 
             var uiProcess = new Process();
+            uiProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
             var uiExeFolder = Path.Combine(appDataFolder, "speckle-connection-manager-ui");
             uiProcess.StartInfo.FileName = Path.Combine(uiExeFolder, "SpeckleConnectionManagerUI.exe");
             uiProcess.Start();
