@@ -17,7 +17,7 @@
       <ItemsControl Margin="10 0 0 0" Items="{Binding Items}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid ShowGridLines="True" ColumnDefinitions="*,3*,1.5*,*" RowDefinitions="Auto,Auto">
+            <Grid ShowGridLines="False" ColumnDefinitions="*,3*,1.5*,*" RowDefinitions="Auto,Auto">
               <Button FontSize="20"
                       Margin="0 5 10 5"
                       Grid.Row="0"
