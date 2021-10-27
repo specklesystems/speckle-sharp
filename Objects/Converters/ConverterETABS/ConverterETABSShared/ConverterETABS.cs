@@ -20,6 +20,8 @@ namespace Objects.Converter.ETABS
         public static string ETABSAppName = Applications.ETABSv18;
 #elif ETABSV19
         public static string ETABSAppName = Applications.ETABSv19;
+#else 
+        public static string ETABSAppName = Applications.ETABS;
 #endif
         public string Description => "Default Speckle Kit for ETABS";
 

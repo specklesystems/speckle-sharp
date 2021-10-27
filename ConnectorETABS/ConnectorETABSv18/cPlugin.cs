@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using Speckle.DesktopUI;
 using System.Timers;
 using System.Diagnostics;
 
@@ -28,7 +27,6 @@ namespace SpeckleConnectorETABS
     public class cPlugin
     {
         public static cPluginCallback pluginCallback { get; set; }
-        public static Bootstrapper Bootstrapper { get; set; }
         public static bool isSpeckleClosed { get; set; } = false;
         public Timer SelectionTimer;
         public static cSapModel model {get; set;}
@@ -109,6 +107,7 @@ namespace SpeckleConnectorETABS
             {
                 //Application.Current.MainWindow.Closed += SpeckleWindowClosed;
                 MainWindow.Closed += SpeckleWindowClosed;
+                MainWindow.Closing += SpeckleWindowClosed;
             }
             //}
             //catch
@@ -120,6 +119,7 @@ namespace SpeckleConnectorETABS
         private static void SpeckleWindowClosed(object sender, EventArgs e)
         {
             isSpeckleClosed = true;
+            pluginCallback.Finish(0);
         }
 
         private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)

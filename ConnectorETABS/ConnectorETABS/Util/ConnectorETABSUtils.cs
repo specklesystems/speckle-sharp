@@ -15,6 +15,8 @@ namespace Speckle.ConnectorETABS.Util
         public static string ETABSAppName = Applications.ETABSv18;
 #elif ETABSV19
         public static string ETABSAppName = Applications.ETABSv19;
+#else
+        public static string ETABSAppName = Applications.ETABS;
 #endif
 
         public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }

@@ -66,10 +66,6 @@
       <Project>{b5d2b524-39b5-45e8-af44-d4e9be2dc45c}</Project>
       <Name>DesktopUI2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
-      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
-      <Name>DesktopUI</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
       <Project>{6185b1a1-0a12-44b1-8ac5-0ed48147fb21}</Project>
       <Name>PolygonMesher</Name>
