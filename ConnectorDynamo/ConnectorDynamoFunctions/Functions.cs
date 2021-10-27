@@ -167,10 +167,10 @@ namespace Speckle.ConnectorDynamo.Functions
         client.CommitReceived(new CommitReceivedInput
         {
           streamId = stream.StreamId,
-          commitId = commit.id,
-          message = commit.message,
+          commitId = commit?.id,
+          message = commit?.message,
           sourceApplication = Applications.DynamoRevit
-        });
+        }).Wait();
       }
       catch
       {

@@ -78,7 +78,7 @@ namespace Speckle.Core.Api
           streamId = sw.StreamId,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Applications.Grasshopper
+          sourceApplication = Applications.Other
         });
       }
       catch
