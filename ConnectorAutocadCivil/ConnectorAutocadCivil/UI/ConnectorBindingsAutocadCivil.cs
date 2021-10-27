@@ -204,6 +204,19 @@ namespace Speckle.ConnectorAutocadCivil.UI
         id = res.id;
       }
 
+      string commitId = state.Commit.id;
+      string commitMsg = state.Commit.message;
+      try
+      {
+        var commit = await state.Client.CommitGet(state.Stream.id, id);
+        commitId = commit.id;
+        commitMsg = commit.message;
+      }
+      catch
+      {
+
+      }
+
       var commitObject = await Operations.Receive(
         referencedObject,
         state.CancellationTokenSource.Token,
@@ -218,9 +231,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         await state.Client.CommitReceived(new CommitReceivedInput
         {
-          streamId = state.Stream.id,
-          commitId = state.Commit.id,
-          message = state.Commit.message,
+          streamId = stream.id,
+          commitId = commitId,
+          message = commitMsg,
           sourceApplication = Utils.AutocadAppName
         });
       }
