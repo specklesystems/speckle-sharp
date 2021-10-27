@@ -77,19 +77,19 @@ jobs:
 
     - name: Restore Speckle Connection Manager
       run: dotnet restore
-      working-directory: SpeckleConnectionManager
+      working-directory: ConnectionManager/SpeckleConnectionManager
 
     - name: Build SpeckleConnectionManager
       run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: SpeckleConnectionManager
+      working-directory: ConnectionManager/SpeckleConnectionManager
 
-    - name: Restore Speckle Connection Manager
+    - name: Restore Speckle Connection Manager UI
       run: dotnet restore
-      working-directory: SpeckleConnectionManagerUI
+      working-directory: ConnectionManager/SpeckleConnectionManagerUI
 
-    - name: Build SpeckleConnectionManager
+    - name: Build SpeckleConnectionManager UI
       run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: SpeckleConnectionManagerUI
+      working-directory: ConnectionManager/SpeckleConnectionManagerUI
 
     - name: create Installer
       id: installer
