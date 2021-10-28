@@ -76,7 +76,7 @@ namespace Objects.Converter.Revit
 		}
 		voidNodes.Add(loopNodes);
 	  }
-	  speckleElement2D.voids = voidNodes;
+	  //speckleElement2D.voids = voidNodes;
 
 	  //var mesh = new Geometry.Mesh();
 	  //var solidGeom = GetElementSolids(structuralElement);
@@ -115,7 +115,7 @@ namespace Objects.Converter.Revit
 		  var concreteMaterial = new Concrete
 		  {
 			name = Doc.GetElement(structMaterial.StructuralAssetId).Name,
-			type = Structural.MaterialType.Concrete,
+			//type = Structural.MaterialType.Concrete,
 			grade = null,
 			designCode = null,
 			codeYear = null,
@@ -139,7 +139,7 @@ namespace Objects.Converter.Revit
 		  var steelMaterial = new Steel
 		  {
 			name = Doc.GetElement(structMaterial.StructuralAssetId).Name,
-			type = Structural.MaterialType.Steel,
+			//type = Structural.MaterialType.Steel,
 			grade = materialAsset.Name,
 			designCode = null,
 			codeYear = null,
@@ -159,7 +159,7 @@ namespace Objects.Converter.Revit
 		  var timberMaterial = new Timber
 		  {
 			name = Doc.GetElement(structMaterial.StructuralAssetId).Name,
-			type = Structural.MaterialType.Timber,
+			//type = Structural.MaterialType.Timber,
 			grade = materialAsset.WoodGrade,
 			designCode = null,
 			codeYear = null,
@@ -189,8 +189,8 @@ namespace Objects.Converter.Revit
 
 	  prop.material = speckleMaterial;
 	  prop.name = Doc.GetElement(revitSurface.GetElementId()).Name;
-	  prop.type = memberType;
-	  prop.analysisType = Structural.AnalysisType2D.Shell;
+	  //prop.type = memberType;
+	  //prop.analysisType = Structural.AnalysisType2D.Shell;
 	  prop.thickness = thickness;
 
 	  speckleElement2D.property = prop;

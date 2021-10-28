@@ -25,7 +25,8 @@ namespace Objects.Converter.Revit
       var cs = revitNode.GetCoordinateSystem();
       var localAxis = new Plane(PointToSpeckle(cs.Origin), VectorToSpeckle(cs.BasisZ), VectorToSpeckle(cs.BasisX), VectorToSpeckle(cs.BasisY));
       var basePoint = PointToSpeckle(cs.Origin); // alternative to revitNode.Position
-      var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
+                                                 //var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
+            var speckleNode = new Node();
 
       GetAllRevitParamsAndIds(speckleNode, revitNode);
 
@@ -76,8 +77,9 @@ namespace Objects.Converter.Revit
       var restraint = GetRestraintCode(revitBoundary, restraintType, state);
 
       foreach (var point in points)
-      {                
-        var speckleNode = new Node(PointToSpeckle(point), null, restraint, localAxis);
+      {
+                var speckleNode = new Node();
+        //var speckleNode = new Node(PointToSpeckle(point), null, restraint, localAxis);
 
         GetAllRevitParamsAndIds(speckleNode, revitBoundary);
 
