@@ -2313,11 +2313,20 @@ namespace ConverterGSA
       {
         Name = analStage.name,
         Days = analStage.stageTime,
-        Colour = analStage.colour.ColourToNative(),
-        ElementIndices = analStage.elements.Select(x => GetElementIndex(x)).ToList(),
-        LockElementIndices = analStage.lockedElements.Select(x => ((GSAElement1D)x).nativeId).ToList(),
-        Phi = analStage.creepFactor,
+        Phi = analStage.creepFactor
       };
+      if (analStage.colour != null)
+      {
+        gsaAnalStage.Colour = analStage.colour.ColourToNative();
+      }
+      if (analStage.elements != null)
+      {
+        gsaAnalStage.ElementIndices = analStage.elements.Select(x => GetElementIndex(x)).ToList();
+      }
+      if (analStage.lockedElements != null)
+      {
+        gsaAnalStage.LockElementIndices = analStage.lockedElements.Select(x => ((GSAElement1D)x).nativeId).ToList();
+      }
       return new List<GsaRecord>() { gsaAnalStage };
     }
 

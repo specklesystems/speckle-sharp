@@ -245,11 +245,13 @@ namespace ConnectorGSA
 
         foreach (var gen in speckleDependencyTree)
         {
-          foreach (var t in gen)
+          //foreach (var t in gen)
+          Parallel.ForEach(gen, t =>
           {
             if (objectsByType.ContainsKey(t))
             {
               foreach (Base so in objectsByType[t])
+              //Parallel.ForEach(objectsByType[t].Cast<Base>(), so =>
               {
                 string appId = "";
                 try
@@ -267,8 +269,10 @@ namespace ConnectorGSA
                   loggingProgress.Report(new MessageEventArgs(MessageIntent.TechnicalLog, MessageLevel.Error, ex, "Unable to load file"));
                 }
               }
+              //);
             }
           }
+          );
         }
       }
 
@@ -517,11 +521,31 @@ namespace ConnectorGSA
       {
         var receivedObjects = FlattenCommitObject(commitObject, IsSingleObjectFn);
 
-        var task = (Instance.GsaModel.Cache.Upsert(receivedObjects.ToDictionary(
-            ro => string.IsNullOrEmpty(ro.applicationId) ? ro.id : ro.applicationId,
-            ro => (object)ro))
-          && receivedObjects != null && receivedObjects.Any() && state.Errors.Count == 0);
-        return task;
+        var receivedByType = receivedObjects.GroupBy(ro => ro.GetType()).ToDictionary(ro => ro.Key, ro => ro.ToList());
+        //var receivedByTypeAppId = new Dictionary<Type, Dictionary<string, List<object>>>();
+
+        int index = 0;
+        bool found = false;
+        do
+        {
+          foreach (var t in receivedByType.Keys)
+          {
+            var receivedByTypeAppId = receivedByType[t].GroupBy(o => o.applicationId).ToDictionary(g => g.Key, g => g.ToList());
+            found = receivedByTypeAppId.Any(kvp => kvp.Value.Count > index);
+            if (found)
+            {
+              if (!Instance.GsaModel.Cache.Upsert(receivedByTypeAppId.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value[index])))
+              {
+                return false;
+              }
+            }
+          }
+          index++;
+        } while (found);
+
+        //var task = (Instance.GsaModel.Cache.Upsert(objDict)
+        //  && receivedObjects != null && receivedObjects.Any() && state.Errors.Count == 0);
+        return true;
       }
       return false;
     }
@@ -568,10 +592,10 @@ namespace ConnectorGSA
         if (IsSingleObjectFn(@base))
         {
           var t = obj.GetType();
-          var id = @base.GetId();
+          var id = (string.IsNullOrEmpty(@base.id)) ? @base.GetId() : @base.id;
           if (!uniques.ContainsKey(t))
           {
-            uniques.Add(t, new HashSet<string>() { @base.GetId() });
+            uniques.Add(t, new HashSet<string>() { id });
             objects.Add(@base);
           }
           if (!uniques[t].Contains(id))

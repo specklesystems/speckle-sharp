@@ -1024,9 +1024,17 @@ namespace Speckle.ConnectorGSA.Proxy
 
             foreach (var op in orderedParsers)
             {
-              if (op.Gwa(out var gwas, true))
+              try
               {
-                gwas.ForEach(g => SetGwa(g));
+                if (op.Gwa(out var gwas, true))
+                {
+                  gwas.ForEach(g => SetGwa(g));
+                }
+              }
+              catch (Exception ex)
+              {
+                loggingProgress.Report("Unable to generate GWA for " + t.Name 
+                  + (string.IsNullOrEmpty(op.Record.ApplicationId) ? "" : " with applicationID = " + op.Record.ApplicationId));
               }
             }
           }

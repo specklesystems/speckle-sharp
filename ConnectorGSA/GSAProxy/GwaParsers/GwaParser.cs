@@ -183,7 +183,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       }
       if (elementIndices != null && elementIndices.Count > 0)
       {
-        var listStr = AddEntities(memberIndices, GSALayer.Analysis);
+        var listStr = AddEntities(elementIndices, GSALayer.Analysis);
         if (!string.IsNullOrEmpty(listStr))
         {
           entityLists.Add(listStr);
