@@ -34,6 +34,12 @@ namespace SpeckleConnectionManager
             var serverLocationStore = Path.Combine(appFolderFullName, "server.txt");
             var challengeCodeStore = Path.Combine(appFolderFullName, "challenge.txt");
 
+            if (!args[0].Contains("access_code"))
+            {
+                RestartConnectionManagerUI(appDataFolder);
+                return "";
+            }
+
             var accessCode = args[0].Split('=')[1];
             var savedUrl = File.ReadAllText(serverLocationStore);
             var savedChallenge = File.ReadAllText(challengeCodeStore);
@@ -145,6 +151,13 @@ namespace SpeckleConnectionManager
             }
 
             // Restart the Speckle Connection Manager
+            RestartConnectionManagerUI(appDataFolder);
+
+            return "";
+        }
+
+        private static void RestartConnectionManagerUI(string appDataFolder)
+        {
             Process p = new Process();
             p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             p.StartInfo.UseShellExecute = false;
@@ -159,10 +172,10 @@ namespace SpeckleConnectionManager
             var uiExeFolder = Path.Combine(appDataFolder, "speckle-connection-manager-ui");
             uiProcess.StartInfo.FileName = Path.Combine(uiExeFolder, "SpeckleConnectionManagerUI.exe");
             uiProcess.Start();
-
-            return "";
         }
+
     }
+
 
     public class Tokens
     {
