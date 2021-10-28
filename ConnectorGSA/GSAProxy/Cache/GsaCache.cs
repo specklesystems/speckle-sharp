@@ -321,7 +321,10 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
       {
         provisionals.Add(t, new PairCollectionComparable<int, string>());
       }
-      provisionals[t].Add(index, string.IsNullOrEmpty(applicationId) ? null : applicationId);
+      if (!provisionals[t].ContainsLeft(index))
+      {
+        provisionals[t].Add(index, string.IsNullOrEmpty(applicationId) ? null : applicationId);
+      }
     }
     #endregion
 
@@ -728,6 +731,11 @@ namespace Speckle.ConnectorGSA.Proxy.Cache
               ? existingLatest.First().GsaRecord.Index.Value 
               : existingPrevious.First().GsaRecord.Index.Value;
           }
+        }
+        else if (provisionals.ContainsKey(t) && provisionals[t] != null && appId != null
+          && provisionals[t].ContainsRight(appId) && provisionals[t].FindLeft(appId, out int provisionalIndex))
+        {
+          return provisionalIndex;
         }
         else
         {

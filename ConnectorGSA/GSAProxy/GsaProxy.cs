@@ -661,7 +661,7 @@ namespace Speckle.ConnectorGSA.Proxy
               {
                 retRecords.Add(parser.Record);
               }
-              else
+              else if (loggingProgress != null)
               {
                 loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
               }
@@ -784,7 +784,7 @@ namespace Speckle.ConnectorGSA.Proxy
                       }
                     }
                   }
-                  else
+                  else if (loggingProgress != null)
                   {
                     loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
                   }
@@ -892,7 +892,7 @@ namespace Speckle.ConnectorGSA.Proxy
                   }
                 }
               }
-              else
+              else if (loggingProgress != null)
               {
                 loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
               }
@@ -991,7 +991,7 @@ namespace Speckle.ConnectorGSA.Proxy
 
     #region writing_gwa
 
-    public void WriteModel(List<GsaRecord> gsaRecords, GSALayer layer = GSALayer.Both)
+    public void WriteModel(List<GsaRecord> gsaRecords, IProgress<string> loggingProgress, GSALayer layer = GSALayer.Both)
     {
       var parsersToUseBySchemaType = new Dictionary<Type, List<IGwaParser>>();
       foreach (var r in gsaRecords)
@@ -1024,16 +1024,34 @@ namespace Speckle.ConnectorGSA.Proxy
 
             foreach (var op in orderedParsers)
             {
-              if (op.Gwa(out var gwas, true))
+              try
               {
-                gwas.ForEach(g => SetGwa(g));
+                if (op.Gwa(out var gwas, true))
+                {
+                  gwas.ForEach(g => SetGwa(g));
+                }
+              }
+              catch (Exception ex)
+              {
+                loggingProgress.Report("Unable to generate GWA for " + t.Name 
+                  + (string.IsNullOrEmpty(op.Record.ApplicationId) ? "" : " with applicationID = " + op.Record.ApplicationId));
               }
             }
           }
         }
       }
 
-      Sync();
+      try
+      {
+        Sync();
+      }
+      catch (Exception ex)
+      {
+        if (loggingProgress != null)
+        {
+          loggingProgress.Report("Unable to write to the GSA model: " + ex.Message);
+        }
+      }
     }
 
     //Assumed to be the full SET or SET_AT command
@@ -1486,7 +1504,7 @@ namespace Speckle.ConnectorGSA.Proxy
         for (int i = 0; i < existingIndices.Count(); i++)
         {
           var testNode = new GSA.API.GwaSchema.GsaNode() { Index = existingIndices[i], Name = existingIndices[i].ToString() };
-          gsaProxyTemp.WriteModel(new List<GsaRecord> { testNode }, GSALayer.Both);
+          gsaProxyTemp.WriteModel(new List<GsaRecord> { testNode }, null, GSALayer.Both);
         }
         gsaProxyTemp.Sync();
         var tempSpec = string.Join(" ", specParts.Select(a => RemoveMarker(a)));

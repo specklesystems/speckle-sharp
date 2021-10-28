@@ -1130,7 +1130,7 @@ namespace ConverterGSATests
       gsaRecords.Add(GsaLoadCaseExamples(1, "load case 1").First());
 
       //Gen #2
-      gsaRecords.Add(GsaNodeExamples(1, "node 1").First());
+      gsaRecords.AddRange(GsaNodeExamples(2, "node 1", "node 2"));
 
       //Gen #3
       var gsaLoadNodes = GsaLoadNodeExamples(2, "load node 1", "load node 2");
@@ -1169,7 +1169,7 @@ namespace ConverterGSATests
       Assert.Equal(gsaLoadNodes[1].Name, speckleNodeLoads[1].name);
       Assert.Equal("load case 1", speckleNodeLoads[1].loadCase.applicationId);  //assume conversion of load case is tested elsewhere
       Assert.Single(speckleNodeLoads[1].nodes);
-      Assert.Equal("node 1", speckleNodeLoads[1].nodes[0].applicationId); //assume conversion of node is tested elsewhere
+      Assert.Equal("node 2", speckleNodeLoads[1].nodes[0].applicationId); //assume conversion of node is tested elsewhere
       Assert.Equal("axis 1", speckleNodeLoads[1].loadAxis.applicationId); //assume conversion of axis is tested elsewhere
       Assert.Equal(LoadDirection.X, speckleNodeLoads[1].direction);
       Assert.Equal(gsaLoadNodes[1].Value, speckleNodeLoads[1].value);
@@ -3565,7 +3565,7 @@ namespace ConverterGSATests
           Index = 2,
           Name  = "2",
           LoadCaseIndex = 1,
-          NodeIndices = new List<int>() { 1 },
+          NodeIndices = new List<int>() { 2 },
           GlobalAxis = false,
           AxisIndex = 1,
           LoadDirection = GwaAxisDirection6.X,

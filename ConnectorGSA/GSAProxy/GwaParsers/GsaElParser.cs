@@ -96,9 +96,16 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
       //Again uses the integer value of the Type - this time to determine how many node index items to add
       var numNodes = NumNodes();
-      for (var i = 0; i < numNodes; i++)
+      if (record.NodeIndices == null)
       {
-        items.Add(((i >= record.NodeIndices.Count()) ? 0 : record.NodeIndices[i]).ToString());
+        items.Add("");
+      }
+      else
+      {
+        for (var i = 0; i < Math.Min(numNodes, record.NodeIndices.Count()) ; i++)
+        {
+          items.Add(((i >= record.NodeIndices.Count()) ? 0 : record.NodeIndices[i]).ToString());
+        }
       }
 
       AddItems(ref items, record.OrientationNodeIndex ?? 0, record.Angle ?? 0, record.ReleaseInclusion.GetStringValue());

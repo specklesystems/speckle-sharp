@@ -671,7 +671,9 @@
 
   public enum MatConcreteType
   {
+    [StringValue("CUBE")]
     CUBE,
+    [StringValue("CYLINDER")]
     CYLINDER
   }
 

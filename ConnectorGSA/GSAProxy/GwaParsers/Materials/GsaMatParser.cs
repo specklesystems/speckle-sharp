@@ -1,4 +1,5 @@
 ﻿using Speckle.ConnectorGSA.Proxy.GwaParsers;
+using Speckle.GSA.API;
 using Speckle.GSA.API.GwaSchema;
 using System;
 using System.Collections.Generic;
@@ -66,7 +67,16 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
       //TODO: process environmental variables
       if (remainingItems[0].ToUpper() == "NO") remainingItems = remainingItems.Skip(1).ToList();
-      else remainingItems = remainingItems.Skip(13).ToList();
+      else
+      {
+        var concreteTypes = Enum.GetValues(typeof(MatConcreteType)).OfType<MatConcreteType>().Select(v => v.GetStringValue());
+        var nextMatConcreteArg = remainingItems.FirstOrDefault(v => concreteTypes.Any(ct => v.Equals(ct, StringComparison.InvariantCultureIgnoreCase)));
+        if (string.IsNullOrEmpty(nextMatConcreteArg))
+        {
+          return false;
+        }
+        remainingItems = remainingItems.Skip(remainingItems.IndexOf(nextMatConcreteArg)).ToList();
+      }
 
       //Process final items
       return true;

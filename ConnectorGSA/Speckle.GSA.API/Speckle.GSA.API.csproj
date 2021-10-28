@@ -67,8 +67,10 @@
     <Compile Include="GwaSchema\GsaEl.cs" />
     <Compile Include="GwaSchema\GsaMemb.cs" />
     <Compile Include="GwaSchema\GsaNode.cs" />
-    <Compile Include="GwaSchema\GsaTol.cs" />
-    <Compile Include="GwaSchema\GsaUnitData.cs" />
+    <Compile Include="GwaSchema\Specification\GsaSpecConcDesign.cs" />
+    <Compile Include="GwaSchema\Specification\GsaSpecSteelDesign.cs" />
+    <Compile Include="GwaSchema\Specification\GsaTol.cs" />
+    <Compile Include="GwaSchema\Specification\GsaUnitData.cs" />
     <Compile Include="GwaSchema\Loading\2dElement\GsaLoad2dFace.cs" />
     <Compile Include="GwaSchema\Loading\2dElement\GsaLoad2dThermal.cs" />
     <Compile Include="GwaSchema\Loading\Beam\GsaLoadBeam.cs" />
