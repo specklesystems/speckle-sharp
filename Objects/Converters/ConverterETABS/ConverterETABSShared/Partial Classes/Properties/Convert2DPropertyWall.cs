@@ -4,6 +4,7 @@ using System.Text;
 using ETABSv1;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
+using Objects.Structural.ETABS.Analysis;
 using Objects.Structural.ETABS.Properties;
 
 namespace Objects.Converter.ETABS
@@ -24,7 +25,7 @@ namespace Objects.Converter.ETABS
             string notes = "";
             string GUID = "";
             var specklePropery2DWall = new ETABSProperty2D();
-            specklePropery2DWall.type = Structural.Geometry.MemberType2D.Wall;
+            specklePropery2DWall.type = Structural.PropertyType2D.Shell;
             Model.PropArea.GetWall(property, ref wallPropType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
             var speckleShellType = ConvertShellType(shellType);
             specklePropery2DWall.shellType = speckleShellType;

@@ -21,6 +21,8 @@ namespace Objects.Converter.ETABS
         public static string ETABSAppName = Applications.ETABSv18;
 #elif ETABSV19
         public static string ETABSAppName = Applications.ETABSv19;
+#else 
+        public static string ETABSAppName = Applications.ETABS;
 #endif
         public string Description => "Default Speckle Kit for ETABS";
 
@@ -75,6 +77,8 @@ namespace Objects.Converter.ETABS
             {
                 //case osg.node o:
                 //    return pointtonative(o);
+                case OSG.Node o:
+                    return PointToNative(o);
                 case Geometry.Line o:
                     return LineToNative(o);
                 case OSG.Element1D o:

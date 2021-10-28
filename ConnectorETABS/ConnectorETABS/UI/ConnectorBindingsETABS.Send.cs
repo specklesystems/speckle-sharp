@@ -5,14 +5,14 @@ using SCT = Speckle.Core.Transports;
 using Stylet;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
+using DesktopUI2;
+using DesktopUI2.Models;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.ConnectorETABS.Util;
 using System.Linq;
-using Objects.Converter.ETABS;
+using DesktopUI2.ViewModels;
 
 namespace Speckle.ConnectorETABS.UI
 {
@@ -20,18 +20,18 @@ namespace Speckle.ConnectorETABS.UI
 
     {
         #region sending
-        private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
-        {
-            if (progress == null) return;
+        //private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
+        //{
+        //    if (progress == null) return;
 
-            Execute.PostToUIThread(() =>
-            {
-                progress.ProgressDict = dict;
-                progress.Value = dict.Values.Last();
-            });
-        }
+        //    Execute.PostToUIThread(() =>
+        //    {
+        //        progress.ProgressDict = dict;
+        //        progress.Value = dict.Values.Last();
+        //    });
+        //}
 
-        public override async Task<StreamState> SendStream(StreamState state)
+        public override async Task SendStream(StreamState state, ProgressViewModel progress)
         {
             //throw new NotImplementedException();
             var kit = KitManager.GetDefaultKit();
@@ -52,13 +52,13 @@ namespace Speckle.ConnectorETABS.UI
 
             if (totalObjectCount == 0)
             {
-                RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
-                return state;
+                //RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+                //return state;
             }
 
             var conversionProgressDict = new ConcurrentDictionary<string, int>();
             conversionProgressDict["Conversion"] = 0;
-            Execute.PostToUIThread(() => state.Progress.Maximum = totalObjectCount);
+            progress.Update(conversionProgressDict);
 
 
             //if( commitObj["@Stories"] == null)
@@ -68,9 +68,9 @@ namespace Speckle.ConnectorETABS.UI
 
             foreach (var applicationId in state.SelectedObjectIds)
             {
-                if (state.CancellationTokenSource.Token.IsCancellationRequested)
+                if (progress.CancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    return null;
+                    return;
                 }
 
                 Base converted = null;
@@ -83,7 +83,7 @@ namespace Speckle.ConnectorETABS.UI
 
                 if (!converter.CanConvertToSpeckle(selectedObjectType))
                 {
-                    state.Errors.Add(new Exception($"Objects of type ${selectedObjectType} are not supported"));
+                    //state.Errors.Add(new Exception($"Objects of type ${selectedObjectType} are not supported"));
                     continue;
                 }
 
@@ -97,7 +97,7 @@ namespace Speckle.ConnectorETABS.UI
 
                 if (converted == null)
                 {
-                    state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${selectedObjectType}."));
+                    //state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${selectedObjectType}."));
                     continue;
                 }
 
@@ -114,7 +114,7 @@ namespace Speckle.ConnectorETABS.UI
 
                 objCount++;
                 conversionProgressDict["Conversion"]++;
-                UpdateProgress(conversionProgressDict, state.Progress);
+                progress.Update(conversionProgressDict);
             }
             if (commitObj["@Model"] == null)
             {
@@ -128,42 +128,55 @@ namespace Speckle.ConnectorETABS.UI
 
             if (objCount == 0)
             {
-                RaiseNotification("Zero objects converted successfully. Send stopped.");
-                return state;
+                return;
+                //RaiseNotification("Zero objects converted successfully. Send stopped.");
+                //return state;
             }
 
-            if (state.CancellationTokenSource.Token.IsCancellationRequested)
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             {
-                return null;
+                return;
             }
 
-            Execute.PostToUIThread(() => state.Progress.Maximum = objCount);
-
-            var streamId = state.Stream.id;
+            var streamId = state.StreamId;
             var client = state.Client;
 
             var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
 
-            var commitObjId = await Operations.Send(
-              commitObj,
-              state.CancellationTokenSource.Token,
-              transports,
-              onProgressAction: dict => UpdateProgress(dict, state.Progress),
-              /* TODO: a wee bit nicer handling here; plus request cancellation! */
-              onErrorAction: (err, exception) => { Exceptions.Add(exception); }
-              );
+            var objectId = await Operations.Send(
+                @object: commitObj,
+                cancellationToken: progress.CancellationTokenSource.Token,
+                transports: transports,
+                onProgressAction: dict => progress.Update(dict),
+                onErrorAction: (Action<string, Exception>)((s, e) =>
+                {
+                    this.Exceptions.Add(e); // TODO!
+                              //state.Errors.Add(e);
+                    progress.CancellationTokenSource.Cancel();
+                 }),    
+                disposeTransports: true
+                );
+
+            //var commitObjId = await Operations.Send(
+            //  commitObj,
+            //  state.CancellationTokenSource.Token,
+            //  transports,
+            //  onProgressAction: dict => UpdateProgress(dict, state.Progress),
+            //  /* TODO: a wee bit nicer handling here; plus request cancellation! */
+            //  onErrorAction: (err, exception) => { Exceptions.Add(exception); }
+            //  );
 
             if (Exceptions.Count != 0)
             {
-                RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
-                return null;
+                //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
+                return;
             }
 
             var actualCommit = new CommitCreateInput
             {
                 streamId = streamId,
-                objectId = commitObjId,
-                branchName = state.Branch.name,
+                objectId = objectId,
+                branchName = state.BranchName,
                 message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from ETABS.",
                 sourceApplication = ConnectorETABSUtils.ETABSAppName
             };
@@ -174,19 +187,19 @@ namespace Speckle.ConnectorETABS.UI
             {
                 var commitId = await client.CommitCreate(actualCommit);
 
-                await state.RefreshStream();
+                //await state.RefreshStream();
                 state.PreviousCommitId = commitId;
 
-                PersistAndUpdateStreamInFile(state);
-                RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
+                //PersistAndUpdateStreamInFile(state);
+                //RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
             }
             catch (Exception e)
             {
-                Globals.Notify($"Failed to create commit.\n{e.Message}");
-                state.Errors.Add(e);
+                //Globals.Notify($"Failed to create commit.\n{e.Message}");
+                //state.Errors.Add(e);
             }
 
-            return state;
+            //return state;
         }
 
         #endregion

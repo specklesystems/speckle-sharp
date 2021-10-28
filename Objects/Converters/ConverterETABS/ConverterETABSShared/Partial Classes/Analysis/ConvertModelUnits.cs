@@ -7,6 +7,10 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        public object UnitsToNative()
+        {
+            return null;
+        }
         public ModelUnits UnitsToSpeckle()
         {
             var modelUnits = new ModelUnits();

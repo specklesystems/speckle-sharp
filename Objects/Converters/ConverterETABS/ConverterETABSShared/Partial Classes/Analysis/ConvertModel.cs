@@ -6,6 +6,8 @@ using Objects.Structural.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.ETABS.Properties;
+using Objects.Structural.GSA.Properties;
+using Objects.Structural.GSA.Geometry;
 using Speckle.Core.Models;
 using System.Linq;
 using ETABSv1;
@@ -18,33 +20,55 @@ namespace Objects.Converter.ETABS
         {
             var Element1D = new Element1D();
             var Property1D = new Property1D();
-            foreach(Material material in model.materials)
+            var GSAProperty = new GSAProperty1D();
+            var GSAElement1D = new GSAMember1D();
+            if(model.materials != null)
             {
-                MaterialToNative(material);
-            }
-            foreach(var property in model.properties)
-            {
-                if (property.GetType().ToString() == Property1D.GetType().ToString())
+                foreach (Material material in model.materials)
                 {
-                    Property1DToNative((Property1D)property);
-                }
-                else
-                {
-                    Property2DToNative((ETABSProperty2D)property);
+                    MaterialToNative(material);
                 }
             }
-            foreach(var element in model.elements)
+
+            if(model.properties != null)
             {
-               
-                if (element.GetType().ToString() == Element1D.GetType().ToString())
+                foreach (var property in model.properties)
                 {
-                    FrameToNative((Element1D)element);
-                }
-                else
-                {
-                    AreaToNative((Element2D)element);
+                    if (property.GetType().ToString() == Property1D.GetType().ToString())
+                    {
+                        Property1DToNative((Property1D)property);
+                    }
+                    else if (property.GetType().Equals(GSAProperty.GetType()))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Property2DToNative((ETABSProperty2D)property);
+                    }
                 }
             }
+
+            if( model.elements != null)
+            {
+                foreach (var element in model.elements)
+                {
+
+                    if (element.GetType().ToString() == Element1D.GetType().ToString())
+                    {
+                        FrameToNative((Element1D)element);
+                    }
+                    else if (element.GetType().Equals(GSAElement1D.GetType()))
+                    {
+                        FrameToNative((Element1D)element);
+                    }
+                    else
+                    {
+                        AreaToNative((Element2D)element);
+                    }
+                }
+            }
+
             if(model.nodes != null)
             {
                 foreach (Node node in model.nodes)

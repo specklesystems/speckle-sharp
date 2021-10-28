@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
+using DesktopUI2;
+using DesktopUI2.Models;
 using Speckle.Core.Models;
 using Speckle.ConnectorETABS.Util;
 using System.Timers;
@@ -34,9 +34,11 @@ namespace Speckle.ConnectorETABS.UI
             }
 
             var selection = GetSelectedObjects();
+            //TO DO
 
-            NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
-            NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
+
+            //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
+            //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
         }
 
 

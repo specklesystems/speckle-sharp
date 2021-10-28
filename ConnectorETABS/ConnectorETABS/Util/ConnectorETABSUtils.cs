@@ -5,7 +5,6 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System.Linq;
 using Speckle.ConnectorETABS.UI;
-using Objects.Converter.ETABS;
 using ETABSv1;
 
 namespace Speckle.ConnectorETABS.Util
@@ -16,6 +15,8 @@ namespace Speckle.ConnectorETABS.Util
         public static string ETABSAppName = Applications.ETABSv18;
 #elif ETABSV19
         public static string ETABSAppName = Applications.ETABSv19;
+#else
+        public static string ETABSAppName = Applications.ETABS;
 #endif
 
         public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
