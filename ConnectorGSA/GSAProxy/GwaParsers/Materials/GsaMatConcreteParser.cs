@@ -23,7 +23,7 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
       if (!AddMat(remainingItems, out remainingItems)) return false;
 
       //MAT_CONCRETE | num | <mat> | type | cement | fc | fcd | fcdc | fcdt | fcfib | EmEs | Emod | n | ? | eps_peak | eps_max | eps_u | eps_ax | eps_tran | eps_axs | light | agg | xd_min | xd_max | beta | shrink | confine | fcc | eps_plas_c |eps_u_c
-      return FromGwaByFuncs(remainingItems, out var _, (v) => Enum.TryParse<MatConcreteType>(v, true, out record.Type), (v) => Enum.TryParse<MatConcreteCement>(v, true, out record.Cement),
+      return FromGwaByFuncs(remainingItems, out var _, (v) => Enum.TryParse<MatConcreteType >(v, true, out record.Type), (v) => Enum.TryParse<MatConcreteCement>(v, true, out record.Cement),
         (v) => AddNullableDoubleValue(v, out record.Fc), (v) => AddNullableDoubleValue(v, out record.Fcd), (v) => AddNullableDoubleValue(v, out record.Fcdc),
         (v) => AddNullableDoubleValue(v, out record.Fcdt), (v) => AddNullableDoubleValue(v, out record.Fcfib), (v) => AddNullableDoubleValue(v, out record.EmEs),
         (v) => AddNullableDoubleValue(v, out record.Emod), (v) => AddNullableDoubleValue(v, out record.N), (v) => AddNullableDoubleValue(v, out record.Eps), 
