@@ -28,6 +28,8 @@ namespace ConnectorGrasshopper
     protected override Bitmap Icon => Properties.Resources.SchemaBuilder;
     public string Seed;
 
+    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
+
     public CreateSchemaObjectBase(string name, string nickname, string description, string category, string subCategory)
       : base(name, nickname, description, category, subCategory)
     {
@@ -116,6 +118,25 @@ namespace ConnectorGrasshopper
       }
 
       if(Params.Input.Count == 0) SetupComponent(SelectedConstructor);
+      
+      Params.ParameterChanged += (sender, args) =>
+      {
+        if (args.ParameterSide != GH_ParameterSide.Input) return;
+        switch (args.OriginalArguments.Type)
+        {
+          case GH_ObjectEventType.NickName:
+            // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
+            // Prevents UI from locking too soon while writing new names for inputs.
+            args.Parameter.Name = args.Parameter.NickName;
+            nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
+            break;
+          case GH_ObjectEventType.NickNameAccepted:
+            args.Parameter.Name = args.Parameter.NickName;
+            ExpireSolution(true);
+            break;
+        }
+      };
+
       base.AddedToDocument(document);
     }
 
