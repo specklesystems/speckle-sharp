@@ -1051,6 +1051,38 @@ namespace Speckle.Core.Api
       }
     }
 
+
+    public Task<bool> CommitReceived(CommitReceivedInput commitReceivedInput)
+    {
+      return CommitReceived(CancellationToken.None, commitReceivedInput);
+    }
+    
+    public async Task<bool> CommitReceived(CancellationToken cancellationToken, CommitReceivedInput commitReceivedInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"mutation($myInput:CommitReceivedInput!){ commitReceive(input:$myInput) }",
+          Variables = new
+          {
+            myInput = commitReceivedInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+
+        return (bool)res.Data["commitReceive"];
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+    
     #endregion
 
     #region objects
