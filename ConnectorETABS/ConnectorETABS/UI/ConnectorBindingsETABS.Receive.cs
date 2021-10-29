@@ -58,14 +58,18 @@ namespace Speckle.ConnectorETABS.UI
             string referencedObject = state.ReferencedObject;
 
             var commitId = state.CommitId;
-
+            var commitMsg = state.CommitMessage;
             if (commitId == "latest")
             {
                 var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
                 var commit = res.commits.items.FirstOrDefault();
+                referencedObject = res.commits.items.FirstOrDefault().referencedObject;
                 commitId = commit.id;
-                referencedObject = commit.referencedObject;
+                commitMsg = commit.message;
             }
+
+            
+
 
             var commitObject = await Operations.Receive(
                 referencedObject,
@@ -81,6 +85,21 @@ namespace Speckle.ConnectorETABS.UI
                 //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
                 disposeTransports: true
                 );
+
+            try
+            {
+                await state.Client.CommitReceived(new CommitReceivedInput
+                {
+                    streamId = stream.id,
+                    commitId = commitId,
+                    message = commitMsg,
+                    sourceApplication = ConnectorETABSUtils.ETABSAppName
+                });
+            }
+            catch
+            {
+                // Do nothing!
+            }
 
             //var commitObject = await Operations.Receive(
             //  referencedObject,
@@ -118,6 +137,7 @@ namespace Speckle.ConnectorETABS.UI
                 BakeObject(commitObj, state, converter);
                 updateProgressAction?.Invoke();
             }
+
 
             try
             {
