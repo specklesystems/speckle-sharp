@@ -146,22 +146,23 @@ namespace Objects.Converter.ETABS
         }
 
         public enum ETABSAPIUsableTypes
-        {
-            Point,
-            Frame,
-            Area, // cAreaObj
-            LoadPattern,
-            Model,
-            Column,
-            Brace,
-            Beam,
-            Floor,
-            Wall
-            //ColumnResults,
-            //BeamResults,
-            //BraceResults,
-            //PierResults,
-            //SpandrelResults
+    {
+        Point,
+        Frame,
+        Area, // cAreaObj
+        LoadPattern,
+        Model,
+        Column,
+        Brace,
+        Beam,
+        Floor,
+        Wall,
+        //ColumnResults,
+        //BeamResults,
+        //BraceResults,
+        //PierResults,
+        //SpandrelResults,
+        AnalysisResults
         }
     }
 }
