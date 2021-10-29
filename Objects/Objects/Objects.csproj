@@ -33,6 +33,9 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Structural\ApplicationSpecific\ETABS\Loading\" />
+  </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>

@@ -42,13 +42,6 @@ namespace ConnectorGrasshopper {
     foreach (var constructor in constructorInfos)
     {
         var fullname = CSOUtils.MethodFullName(constructor);
-        
-        // HACK: Skip structural schema objects for now!
-        if(fullname.StartsWith("Objects.Structural")) 
-            continue;
-
-        var deprecated = IsDeprecated(sType.FullName);
-        
         var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
         i++;
         var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");

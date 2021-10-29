@@ -33,6 +33,8 @@ namespace Objects.Structural.Analysis
         [Chunkable(5000)]
         public List<Base> materials { get; set; } //materials list
 
+        // add "other" - ex. assemblies, grid lines, grid planes, storeys etc? alignment/paths?
+
         public string layerDescription { get; set; } //design layer, analysis layer
         public Model() { }
 
@@ -47,7 +49,7 @@ namespace Objects.Structural.Analysis
         /// <param name="properties"></param>
         /// <param name="materials"></param>
         [SchemaInfo("Model", "Creates a Speckle structural model object", "Structural", "Analysis")]
-        public Model(ModelInfo specs, List<Base> nodes, List<Base> elements, List<Base> loads, List<Base> restraints, List<Base> properties, List<Base> materials) 
+        public Model(ModelInfo specs= null, List<Base> nodes = null, List<Base> elements = null, List<Base> loads= null, List<Base> restraints = null, List<Base> properties= null, List<Base> materials= null) 
         {
             this.specs = specs;
             this.nodes = nodes;

@@ -82,7 +82,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         await state.Client.CommitReceived(new CommitReceivedInput
         {
-          streamId = stream,
+          streamId = stream?.id,
           commitId = myCommit?.id,
           message = myCommit?.message,
           sourceApplication = ConnectorRevitUtils.RevitAppName 

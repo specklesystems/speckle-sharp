@@ -181,6 +181,21 @@ namespace Objects.Converter.Revit
         case DB.Grid o:
           returnObject = GridLineToSpeckle(o);
           break;
+        case DB.ReferencePoint o:
+          if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
+          {
+            returnObject = AnalyticalNodeToSpeckle(o);
+          }        
+          break;
+        case DB.Structure.BoundaryConditions o:
+          returnObject = BoundaryConditionsToSpeckle(o);
+          break;
+        case DB.Structure.AnalyticalModelStick o:
+          returnObject = AnalyticalStickToSpeckle(o);
+          break;
+        case DB.Structure.AnalyticalModelSurface o:
+          returnObject = AnalyticalSurfaceToSpeckle(o);
+          break;
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
           if ((@object as Element).IsElementSupported())
@@ -407,6 +422,10 @@ namespace Objects.Converter.Revit
         DB.ProjectInfo _ => true,
         DB.ElementType _ => true,
         DB.Grid _ => true,
+        DB.ReferencePoint _ => true,
+        DB.Structure.AnalyticalModelStick _ => true,
+        DB.Structure.AnalyticalModelSurface _ => true,
+        DB.Structure.BoundaryConditions _ => true,
         _ => (@object as Element).IsElementSupported()
       };
     }

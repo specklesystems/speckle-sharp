@@ -78,6 +78,7 @@ namespace Objects.Structural.ETABS.Analysis
         public SolverOption solverOption { get; set; }
         public AnalysisProcess analysisProcess { get; set; }
         public SAPFireOptions() { }
+        
         public SAPFireOptions(SolverOption solverOption, AnalysisProcess analysisProcess)
         {
             this.solverOption = solverOption;
