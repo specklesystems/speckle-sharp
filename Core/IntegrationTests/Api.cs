@@ -251,16 +251,24 @@ namespace TestsIntegration
     }
 
     [Test, Order(47)]
+    public async Task CommitReceived()
+    {
+      var res = await myClient.CommitReceived(new CommitReceivedInput { commitId = commitId, streamId = streamId, sourceApplication = "sharp-tests", message = "The test message"});
+      
+      Assert.IsTrue(res);
+    }
+    
+    [Test, Order(48)]
     public async Task CommitDelete()
     {
       var res = await myClient.CommitDelete(new CommitDeleteInput { id = commitId, streamId = streamId }
       );
       Assert.IsTrue(res);
     }
-
+    
     #endregion
 
-    [Test, Order(48)]
+    [Test, Order(49)]
     public async Task BranchUpdate()
     {
       var res = await myClient.BranchUpdate(new BranchUpdateInput

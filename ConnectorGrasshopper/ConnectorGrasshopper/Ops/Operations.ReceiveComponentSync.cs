@@ -286,6 +286,21 @@ namespace ConnectorGrasshopper.Ops
           disposeTransports: true
           ).Result;
 
+          try
+          {
+            await client.CommitReceived(new CommitReceivedInput
+            {
+              streamId = StreamWrapper.StreamId,
+              commitId = myCommit.id,
+              message = myCommit.message,
+              sourceApplication = Applications.Grasshopper
+            });
+          }
+          catch
+          {
+            // Do nothing!
+          }
+          
           return ReceivedObject;
         }, source.Token);
         TaskList.Add(task);
