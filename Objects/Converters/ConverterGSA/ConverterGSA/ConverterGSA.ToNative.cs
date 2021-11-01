@@ -434,7 +434,10 @@ namespace ConverterGSA
 
       //Dynamic properties
       gsaMember.Exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure");
-      gsaMember.AnalysisType = speckleMember.GetDynamicEnum<AnalysisType>("AnalysisType");
+      var exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure");
+      gsaMember.Exposure = exposure == ExposedSurfaces.NotSet ? ExposedSurfaces.ALL : exposure;
+      var analysisType = speckleMember.GetDynamicEnum<AnalysisType>("AnalysisType");
+      gsaMember.AnalysisType = analysisType == AnalysisType.NotSet ? AnalysisType.BEAM : analysisType;   
       gsaMember.Fire = speckleMember.GetDynamicEnum<FireResistance>("Fire");
       gsaMember.RestraintEnd1 = speckleMember.GetDynamicEnum<Speckle.GSA.API.GwaSchema.Restraint>("RestraintEnd1");
       gsaMember.RestraintEnd2 = speckleMember.GetDynamicEnum<Speckle.GSA.API.GwaSchema.Restraint>("RestraintEnd2");
@@ -497,6 +500,7 @@ namespace ConverterGSA
       }
       
       if (speckleMember.orientationAngle != 0) gsaMember.Angle = speckleMember.orientationAngle;
+      else gsaMember.Angle = 0;
       if (speckleMember.group > 0) gsaMember.Group = speckleMember.group;
       if (speckleMember.targetMeshSize > 0) gsaMember.MeshSize = speckleMember.targetMeshSize;
 
