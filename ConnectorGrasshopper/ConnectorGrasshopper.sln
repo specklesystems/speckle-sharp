@@ -20,9 +20,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRhino6", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj", "{4902152D-64BC-4DF0-A588-61EC7BE93AF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino6", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj", "{4902152D-64BC-4DF0-A588-61EC7BE93AF0}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{4902152d-64bc-4df0-a588-61ec7be93af0}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

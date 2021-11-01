@@ -7,10 +7,10 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.Geometry
 {
-    public class Element1D : Base
-    {
+    public class Element1D : Base, IDisplayMesh
+  {
         public string name { get; set; } //add unique id as base identifier, name can change too easily
-        public ICurve baseLine { get; set; }
+        public Line baseLine { get; set; }
 
         [DetachProperty]
         public Property1D property { get; set; }
@@ -34,9 +34,12 @@ namespace Objects.Structural.Geometry
 
         [DetachProperty]
         public List<Node> topology { get; set; }
+
+        [DetachProperty]
+        public Mesh displayMesh { get; set; }
         public string units { get; set; }
         public Element1D() { }
-        public Element1D(ICurve baseLine)
+        public Element1D(Line baseLine)
         {
             this.baseLine = baseLine;
         }
@@ -54,7 +57,7 @@ namespace Objects.Structural.Geometry
         /// <param name="end2Offset"></param>
         /// <param name="localAxis"></param>
         [SchemaInfo("Element1D (from local axis)", "Creates a Speckle structural 1D element (from local axis)", "Structural", "Geometry")]
-        public Element1D(ICurve baseLine, Property1D property, ElementType1D type,
+        public Element1D(Line baseLine, Property1D property, ElementType1D type,
             string name = null,
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
             [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,
@@ -86,7 +89,7 @@ namespace Objects.Structural.Geometry
         /// <param name="orientationNode"></param>
         /// <param name="orientationAngle"></param>
         [SchemaInfo("Element1D (from orientation node and angle)", "Creates a Speckle structural 1D element (from orientation node and angle)", "Structural", "Geometry")]
-        public Element1D(ICurve baseLine, Property1D property, ElementType1D type,
+        public Element1D(Line baseLine, Property1D property, ElementType1D type,
              string name = null,
              [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
              [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,

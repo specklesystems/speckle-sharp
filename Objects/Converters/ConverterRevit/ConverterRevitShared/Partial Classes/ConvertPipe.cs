@@ -61,9 +61,10 @@ namespace Objects.Converter.Revit
       if ( speckleRevitPipe != null )
       {
         TrySetParam(pipe, BuiltInParameter.RBS_START_LEVEL_PARAM, level);
+        TrySetParam(pipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM, speckleRevitPipe.diameter, speckleRevitPipe.units);
+
         SetInstanceParameters(pipe, speckleRevitPipe);
       }
-      TrySetParam(pipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM, specklePipe.diameter, specklePipe.units);
 
       var placeholders = new List<ApplicationPlaceholderObject>
       {

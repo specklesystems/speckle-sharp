@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1BA03BE5-F893-46A3-B569-4FAB87F0B60E}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>ConnectorGSA</RootNamespace>
+    <AssemblyName>ConnectorGSA</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
+    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
+    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>ConnectorGSA.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GsaModel.cs" />
+    <Compile Include="Headless.cs" />
+    <Compile Include="MessageEventArgs.cs" />
+    <Compile Include="Models\DisplayLog.cs" />
+    <Compile Include="Models\DisplayLogItem.cs" />
+    <Compile Include="Models\Enums.cs" />
+    <Compile Include="Models\ResultSettingItem.cs" />
+    <Compile Include="Models\ResultSettings.cs" />
+    <Compile Include="Models\SpeckleAccountForUI.cs" />
+    <Compile Include="Models\StateMachine.cs" />
+    <Compile Include="Models\StreamList.cs" />
+    <Compile Include="Models\StreamListItem.cs" />
+    <Compile Include="Models\Tabs\ReceiverTab.cs" />
+    <Compile Include="Models\Tabs\SenderTab.cs" />
+    <Compile Include="Models\Tabs\TabBase.cs" />
+    <Compile Include="Models\Tabs\TabCoordinator.cs" />
+    <Compile Include="StatusEventArgs.cs" />
+    <Compile Include="StreamState.cs" />
+    <Compile Include="Utilities\DelegateCommand.cs" />
+    <Compile Include="Utilities\EnterKeyDownEventTrigger.cs" />
+    <Compile Include="Utilities\EnumConverter.cs" />
+    <Compile Include="Utilities\ProgressMessenger.cs" />
+    <Compile Include="Utilities\TextBoxEnterKeyUpdateBehaviour.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands.cs" />
+    <Page Include="Views\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{a2c8730a-b605-483e-914e-61f3ed7954d9}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
+      <Project>{6185b1a1-0a12-44b1-8ac5-0ed48147fb21}</Project>
+      <Name>PolygonMesher</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GSAProxy\GSAProxy.csproj">
+      <Project>{11db7d37-a6ed-4c8a-b354-d9fb3c82386c}</Project>
+      <Name>GSAProxy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Speckle.GSA.API\Speckle.GSA.API.csproj">
+      <Project>{b17705b9-0d8f-41c8-a868-d46ef3e45e40}</Project>
+      <Name>Speckle.GSA.API</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignColors">
+      <Version>2.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="MaterialDesignExtensions">
+      <Version>3.3.0</Version>
+    </PackageReference>
+    <PackageReference Include="MaterialDesignThemes">
+      <Version>4.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
+      <Version>1.1.37</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog">
+      <Version>2.10.0</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog.Settings.AppSettings">
+      <Version>2.2.2</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog.Sinks.File">
+      <Version>5.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog.Sinks.RollingFile">
+      <Version>3.3.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Windows.Interactivity.WPF">
+      <Version>2.0.20525</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
+  <!-- POST BUILD EVENTS START -->
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Oasys\SpeckleGSA" />
+  </Target>
+  <Target Name="AfterBuild">
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+    <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Oasys\SpeckleGSA\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+  <Target Name="AfterBuildRelease">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Oasys\SpeckleGSA\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+</Project>
