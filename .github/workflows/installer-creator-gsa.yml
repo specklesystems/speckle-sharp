@@ -1,0 +1,149 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow will build, test, sign and package a WPF or Windows Forms desktop application
+# built on .NET Core.
+# To learn how to migrate your existing application to .NET Core,
+# refer to https://docs.microsoft.com/en-us/dotnet/desktop-wpf/migration/convert-project-from-net-framework
+#
+# To configure this workflow:
+#
+# 1. Configure environment variables
+# GitHub sets default environment variables for every workflow run.
+# Replace the variables relative to your project in the "env" section below.
+#
+# 2. Signing
+# Generate a signing certificate in the Windows Application
+# Packaging Project or add an existing signing certificate to the project.
+# Next, use PowerShell to encode the .pfx file using Base64 encoding
+# by running the following Powershell script to generate the output string:
+#
+# $pfx_cert = Get-Content '.\SigningCertificate.pfx' -Encoding Byte
+# [System.Convert]::ToBase64String($pfx_cert) | Out-File 'SigningCertificate_Encoded.txt'
+#
+# Open the output file, SigningCertificate_Encoded.txt, and copy the
+# string inside. Then, add the string to the repo as a GitHub secret
+# and name it "Base64_Encoded_Pfx."
+# For more information on how to configure your signing certificate for
+# this workflow, refer to https://github.com/microsoft/github-actions-for-desktop-apps#signing
+#
+# Finally, add the signing certificate password to the repo as a secret and name it "Pfx_Key".
+# See "Build the Windows Application Packaging project" below to see how the secret is used.
+#
+# For more information on GitHub Actions, refer to https://github.com/features/actions
+# For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
+# refer to https://github.com/microsoft/github-actions-for-desktop-apps
+
+name: Create Installer for GSA Connector
+
+on:
+  push:
+    tags: 'v*.*.*-cx'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version of the installer to make'     
+        required: true
+
+jobs:
+  build:
+    runs-on: windows-latest # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+        
+    - name: Install the latest version of nuget
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: 'latest'       
+
+    - name: NuGet restore
+      run: |
+        nuget restore ConnectorGSA/ConnectorGSA.sln
+        nuget restore Objects/Converters/ConverterGSA/ConverterGSA/ConverterGSA.csproj
+        
+    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Restore all the applications
+      shell: cmd
+      run: |
+        for %%x in (Objects, ConnectorGSA) do (
+          cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
+        )
+        
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Build all Solutions
+      shell: cmd
+      run: |
+        SET _version=${{ github.event.inputs.version }}
+        for %%x in (Objects, ConnectorGSA) do (
+          cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
+        )               
+    - name: create Installer
+      id: installer
+      run: | 
+        iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-gsa-installer.iss
+        $filename = (ls *.exe).Name
+        echo "::set-output name=filename::$filename"          
+          
+    - name: Install Azure Key Vault signtool
+      run: dotnet tool install --global AzureSignTool --version 2.0.17
+        
+    # https://github.com/vcsjones/AzureSignTool
+    - name: Sign Installer
+      shell: powershell
+      run: |
+        AzureSignTool sign `
+          --description-url "https://speckle.arup.com" `
+          --azure-key-vault-url "https://oasysevkv.vault.azure.net/" `
+          --azure-key-vault-client-id "${{ secrets.AZURE_CLIENT_ID }}" `
+          --azure-key-vault-client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+          --azure-key-vault-certificate "OasysCodeSigning" `
+          --timestamp-rfc3161 "http://timestamp.digicert.com" `
+          --verbose `
+          ${{ github.workspace }}\${{ steps.installer.outputs.filename }}          
+          
+    - name: Upload a Build Artifact      
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.installer.outputs.filename }}
+        path: ${{ steps.installer.outputs.filename }}
+        retention-days: 1
+
+    - name: Calculate tag version
+      id: calculate-tag-version
+      run: |
+        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
+        echo "::set-output name=tag::$tag"
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      id: create-release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name: ${{ steps.calculate-tag-version.outputs.tag }}
+        release_name: Speckle-cx Installer ${{ steps.calculate-tag-version.outputs.tag }}
+        body: |
+          Automated release of Speckle 2.0 Connector for Oasys GSA
+        draft: false
+        prerelease: true
+
+    - name: Upload Release Asset
+      if: github.ref == 'refs/heads/main'
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}  
+        asset_path: ./${{ steps.installer.outputs.filename }}
+        asset_name: ${{ steps.installer.outputs.filename }}
+        asset_content_type: application/vnd.microsoft.portable-executable
