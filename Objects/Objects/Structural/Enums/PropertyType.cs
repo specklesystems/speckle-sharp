@@ -77,9 +77,10 @@ namespace Objects.Structural
         Tee,
         Angle,
         Channel,
-        Explicit,
         Perimeter,
-        Catalogue
+        Box,
+        Catalogue,
+        Explicit
     }
 
 }
