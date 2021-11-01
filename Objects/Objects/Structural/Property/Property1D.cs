@@ -8,7 +8,7 @@ using Objects.Structural.Properties.Profiles;
 
 namespace Objects.Structural.Properties
 {
-    public class Property1D : Property //SectionProperty as alt class name
+    public class Property1D : Property
     {
         public MemberType memberType { get; set; }
 
