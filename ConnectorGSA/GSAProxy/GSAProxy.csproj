@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{11DB7D37-A6ED-4C8A-B354-D9FB3C82386C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Speckle.ConnectorGSA.Proxy</RootNamespace>
+    <AssemblyName>ConnectorGSAProxy</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Interop.Gsa_10_1">
+      <HintPath>..\Resource\Interop.Gsa_10_1.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Cache\GsaCache.cs" />
+    <Compile Include="Cache\GsaCacheRecord.cs" />
+    <Compile Include="GwaParsers\Geometry\GsaPolylineParser.cs" />
+    <Compile Include="GwaParsers\Specification\GsaTolParser.cs" />
+    <Compile Include="GwaParsers\Specification\GsaUnitDataParser.cs" />
+    <Compile Include="GwaParsers\IGwaChildType.cs" />
+    <Compile Include="GwaParsers\Specification\GwaSpecConcDesignParser.cs" />
+    <Compile Include="GwaParsers\Specification\GwaSpecSteelDesignParser.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="IPairCollection.cs" />
+    <Compile Include="Merger\GsaRecordMerger.cs" />
+    <Compile Include="Merger\IgnoreNullResolver.cs" />
+    <Compile Include="Merger\IGsaRecordMerger.cs" />
+    <Compile Include="PairCollection.cs" />
+    <Compile Include="PairCollectionComparable.cs" />
+    <Compile Include="Cache\TypeTreeCollection.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GsaProxy.cs" />
+    <Compile Include="GwaParsers\AnalysisStages\GsaAnalStageParser.cs" />
+    <Compile Include="GwaParsers\Bridge\GsaAlignParser.cs" />
+    <Compile Include="GwaParsers\Bridge\GsaPathParser.cs" />
+    <Compile Include="GwaParsers\Bridge\GsaUserVehicleParser.cs" />
+    <Compile Include="GwaParsers\Bridge\InfluenceEffects\GsaInfBeamParser.cs" />
+    <Compile Include="GwaParsers\Bridge\InfluenceEffects\GsaInfNodeParser.cs" />
+    <Compile Include="GwaParsers\Constraints\GsaGenRestParser.cs" />
+    <Compile Include="GwaParsers\Constraints\GsaRigidParser.cs" />
+    <Compile Include="GwaParsers\Enums.cs" />
+    <Compile Include="GwaParsers\Geometry\GsaGridLineParser.cs" />
+    <Compile Include="GwaParsers\Geometry\GsaGridPlaneParser.cs" />
+    <Compile Include="GwaParsers\Geometry\GsaGridSurfaceParser.cs" />
+    <Compile Include="GwaParsers\GsaAssemblyParser.cs" />
+    <Compile Include="GwaParsers\Geometry\GsaAxisParser.cs" />
+    <Compile Include="GwaParsers\GsaElParser.cs" />
+    <Compile Include="GwaParsers\GsaMembParser.cs" />
+    <Compile Include="GwaParsers\GsaType.cs" />
+    <Compile Include="GwaParsers\Loading\2dElement\GsaLoad2dFaceParser.cs" />
+    <Compile Include="GwaParsers\Loading\2dElement\GsaLoad2dThermalParser.cs" />
+    <Compile Include="GwaParsers\Loading\Beam\GsaLoadBeamParser.cs" />
+    <Compile Include="GwaParsers\Loading\Grid\GsaLoadGridAreaParser.cs" />
+    <Compile Include="GwaParsers\Loading\Grid\GsaLoadGridLineParser.cs" />
+    <Compile Include="GwaParsers\Loading\Grid\GsaLoadGridPointParser.cs" />
+    <Compile Include="GwaParsers\Loading\GsaLoadCaseParser.cs" />
+    <Compile Include="GwaParsers\Loading\GsaLoadGravityParser.cs" />
+    <Compile Include="GwaParsers\Loading\Nodal\GsaLoadNodeParser.cs" />
+    <Compile Include="GwaParsers\Materials\Advanced\GsaMatAnalParser.cs" />
+    <Compile Include="GwaParsers\Materials\Advanced\GsaMatCurveParamParser.cs" />
+    <Compile Include="GwaParsers\Materials\Advanced\GsaMatCurveParser.cs" />
+    <Compile Include="GwaParsers\Materials\GsaMatParser.cs" />
+    <Compile Include="GwaParsers\Materials\GsaMatConcreteParser.cs" />
+    <Compile Include="GwaParsers\Materials\GsaMatSteelParser.cs" />
+    <Compile Include="GwaParsers\GsaNodeParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaProp2dParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaPropMassParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaPropSprParser.cs" />
+    <Compile Include="GwaParsers\GwaParser.cs" />
+    <Compile Include="GwaParsers\IGwaParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionCompParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionConcParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionCoverParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionLinkParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionSteelParser.cs" />
+    <Compile Include="GwaParsers\Properties\GsaSectionTmplParser.cs" />
+    <Compile Include="GwaParsers\Properties\ISectionComponentGwaParser.cs" />
+    <Compile Include="GwaParsers\TasksAndCases\GsaAnalParser.cs" />
+    <Compile Include="GwaParsers\TasksAndCases\GsaCombinationParser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Results\CsvAssembly.cs" />
+    <Compile Include="Results\CsvElem1d.cs" />
+    <Compile Include="Results\CsvElem2d.cs" />
+    <Compile Include="Results\CsvNode.cs" />
+    <Compile Include="Results\Enums.cs" />
+    <Compile Include="Results\IResultsProcessor.cs" />
+    <Compile Include="Results\Results1dProcessor.cs" />
+    <Compile Include="Results\Results2dProcessor.cs" />
+    <Compile Include="Results\ResultsAssemblyProcessor.cs" />
+    <Compile Include="Results\ResultsNodeProcessor.cs" />
+    <Compile Include="Results\ResultsProcessorBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Speckle.GSA.API\Speckle.GSA.API.csproj">
+      <Project>{b17705b9-0d8f-41c8-a868-d46ef3e45e40}</Project>
+      <Name>Speckle.GSA.API</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <PackageReference Include="AutoMapper">
+      <Version>10.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="CsvHelper">
+      <Version>27.1.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

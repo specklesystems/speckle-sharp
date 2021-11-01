@@ -62,7 +62,7 @@ jobs:
     - name: Restore all the applications
       shell: cmd
       run: |
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino) do (
+        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
         )
         
@@ -71,17 +71,25 @@ jobs:
       shell: cmd
       run: |
         SET _version=${{ github.event.inputs.version }}
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino) do (
+        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )
 
     - name: Restore Speckle Connection Manager
       run: dotnet restore
-      working-directory: SpeckleConnectionManager
+      working-directory: ConnectionManager/SpeckleConnectionManager
 
     - name: Build SpeckleConnectionManager
       run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: SpeckleConnectionManager
+      working-directory: ConnectionManager/SpeckleConnectionManager
+
+    - name: Restore Speckle Connection Manager UI
+      run: dotnet restore
+      working-directory: ConnectionManager/SpeckleConnectionManagerUI
+
+    - name: Build SpeckleConnectionManager UI
+      run: dotnet publish -c Release -r win10-x64 --self-contained true
+      working-directory: ConnectionManager/SpeckleConnectionManagerUI
 
     - name: create Installer
       id: installer

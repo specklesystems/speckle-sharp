@@ -62,7 +62,7 @@ namespace Objects.Converter.RhinoGh
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
-    public RhinoDoc Doc { get; private set; } = Rhino.RhinoDoc.ActiveDoc ?? null;
+    public RhinoDoc Doc { get; private set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 

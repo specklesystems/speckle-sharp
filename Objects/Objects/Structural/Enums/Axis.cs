@@ -16,11 +16,8 @@ namespace Objects.Structural
     public enum LoadAxisType
     {
         Global,
-        Local,
-        DeformedLocal
+        Local, // local element axes
+        DeformedLocal // element local axis that is embedded in the element as it deforms 
     }
-
-
-
 }
 
