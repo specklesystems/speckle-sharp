@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpeckleConnectionManager", "SpeckleConnectionManager\SpeckleConnectionManager.csproj", "{151E4EE5-CD76-4C7C-B5E7-50136B569509}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpeckleConnectionManagerUI", "SpeckleConnectionManagerUI\SpeckleConnectionManagerUI.csproj", "{F1CD84E3-2E3B-42DB-827D-1A3FFD71F8FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{151E4EE5-CD76-4C7C-B5E7-50136B569509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{151E4EE5-CD76-4C7C-B5E7-50136B569509}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{151E4EE5-CD76-4C7C-B5E7-50136B569509}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{151E4EE5-CD76-4C7C-B5E7-50136B569509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1CD84E3-2E3B-42DB-827D-1A3FFD71F8FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1CD84E3-2E3B-42DB-827D-1A3FFD71F8FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1CD84E3-2E3B-42DB-827D-1A3FFD71F8FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1CD84E3-2E3B-42DB-827D-1A3FFD71F8FE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64F13F7E-B454-4081-92B3-7EC3A73C128D}
+	EndGlobalSection
+EndGlobal

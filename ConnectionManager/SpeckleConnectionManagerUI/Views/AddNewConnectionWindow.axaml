@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:reactiveUi="http://reactiveui.net"
+        xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+        xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+        xmlns:vm="clr-namespace:SpeckleConnectionManagerUI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="430" d:DesignHeight="225"
+        Width="430" Height="175"
+        x:Class="SpeckleConnectionManagerUI.Views.AddNewConnectionWindow"
+        Icon="/Assets/s2block.ico"
+        Title="Add New Connection">
+  <StackPanel Margin="10">
+    <TextBlock Margin="0,15,0,0" TextWrapping="Wrap" Text="To add a new account, please input the server's url below:" TextTrimming="CharacterEllipsis" />
+    <styles:Card Margin="0,15,0,0" Padding="0">
+      <TextBox
+        x:Name="ServerUrlTextBox"
+        Margin="0"
+        Padding="0"
+        Classes="Solo"
+        Focusable="True"
+        Watermark="Speckle Server Url (ex. https://v2.speckle.arup.com)"
+        Text="{Binding NewServerUrl}">
+      </TextBox>
+    </styles:Card>
+    <Button
+      Margin="0,15,0,0"
+      Classes="ButtonText"
+      Content="Go"
+      HorizontalAlignment="Stretch"
+      Command="{Binding SubmitCommand}">
+    </Button>
+  </StackPanel>
+</Window>

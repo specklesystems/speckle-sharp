@@ -1,26 +1,26 @@
 ;defining variables
-#define AppName      "Spec-v2"
-#define Autocad2021Version  GetVersionNumbersString("ConnectorAutocadCivil\ConnectorAutocad2021\bin\Release\SpeckleConnectorAutocad.dll")
-#define Autocad2022Version  GetVersionNumbersString("ConnectorAutocadCivil\ConnectorAutocad2022\bin\Release\SpeckleConnectorAutocad.dll")
-#define Civil2021Version  GetVersionNumbersString("ConnectorAutocadCivil\ConnectorCivil2021\bin\Release\SpeckleConnectorCivil.dll")
-#define Civil2022Version  GetVersionNumbersString("ConnectorAutocadCivil\ConnectorCivil2022\bin\Release\SpeckleConnectorCivil.dll")
+#define AppName      "Speckle@Arup-SpeckleV2"
+#define Autocad2021Version  GetFileVersion("ConnectorAutocadCivil\ConnectorAutocad2021\bin\Release\SpeckleConnectorAutocad.dll")
+#define Autocad2022Version  GetFileVersion("ConnectorAutocadCivil\ConnectorAutocad2022\bin\Release\SpeckleConnectorAutocad.dll")
+#define Civil2021Version  GetFileVersion("ConnectorAutocadCivil\ConnectorCivil2021\bin\Release\SpeckleConnectorCivil.dll")
+#define Civil2022Version  GetFileVersion("ConnectorAutocadCivil\ConnectorCivil2022\bin\Release\SpeckleConnectorCivil.dll")
 
-#define DynamoVersion  GetVersionNumbersString("ConnectorDynamo\ConnectorDynamo\bin\Release\SpeckleConnectorDynamo.dll")
-#define DynamoExtensionVersion  GetVersionNumbersString("ConnectorDynamo\ConnectorDynamoExtension\bin\Release\SpeckleConnectorDynamoExtension.dll")
-#define DynamoFunctionsVersion  GetVersionNumbersString("ConnectorDynamo\ConnectorDynamoFunctions\bin\Release\SpeckleConnectorDynamoFunctions.dll")
+#define DynamoVersion  GetFileVersion("ConnectorDynamo\ConnectorDynamo\bin\Release\SpeckleConnectorDynamo.dll")
+#define DynamoExtensionVersion  GetFileVersion("ConnectorDynamo\ConnectorDynamoExtension\bin\Release\SpeckleConnectorDynamoExtension.dll")
+#define DynamoFunctionsVersion  GetFileVersion("ConnectorDynamo\ConnectorDynamoFunctions\bin\Release\SpeckleConnectorDynamoFunctions.dll")
 
-#define GrasshopperVersion  GetVersionNumbersString("ConnectorGrasshopper\ConnectorGrasshopper\bin\SpeckleConnectorGrasshopper.dll")
+#define GrasshopperVersion  GetFileVersion("ConnectorGrasshopper\ConnectorGrasshopper\bin\SpeckleConnectorGrasshopper.dll")
 
-#define Revit2019Version  GetVersionNumbersString("ConnectorRevit\ConnectorRevit2019\bin\Release\SpeckleConnectorRevit.dll")
-#define Revit2020Version  GetVersionNumbersString("ConnectorRevit\ConnectorRevit2020\bin\Release\SpeckleConnectorRevit.dll")
-#define Revit2021Version  GetVersionNumbersString("ConnectorRevit\ConnectorRevit2021\bin\Release\SpeckleConnectorRevit.dll")
-#define Revit2022Version  GetVersionNumbersString("ConnectorRevit\ConnectorRevit2022\bin\Release\SpeckleConnectorRevit.dll")
+#define Revit2019Version  GetFileVersion("ConnectorRevit\ConnectorRevit2019\bin\Release\SpeckleConnectorRevit.dll")
+#define Revit2020Version  GetFileVersion("ConnectorRevit\ConnectorRevit2020\bin\Release\SpeckleConnectorRevit.dll")
+#define Revit2021Version  GetFileVersion("ConnectorRevit\ConnectorRevit2021\bin\Release\SpeckleConnectorRevit.dll")
+#define Revit2022Version  GetFileVersion("ConnectorRevit\ConnectorRevit2022\bin\Release\SpeckleConnectorRevit.dll")
 
-#define Rhino6Version  GetVersionNumbersString("ConnectorRhino\ConnectorRhino6\bin\Release\SpeckleConnectorRhino.rhp")
-#define Rhino7Version  GetVersionNumbersString("ConnectorRhino\ConnectorRhino7\bin\Release\SpeckleConnectorRhino.rhp")
+#define Rhino6Version  GetFileVersion("ConnectorRhino\ConnectorRhino6\bin\Release\SpeckleConnectorRhino.rhp")
+#define Rhino7Version  GetFileVersion("ConnectorRhino\ConnectorRhino7\bin\Release\SpeckleConnectorRhino.rhp")
 
-#define AppPublisher "Spec-cx"
-#define AppURL       "https://docs.speckle.arup.com"
+#define AppPublisher "Speckle@Arup"
+#define AppURL       "https://speckle.arup.com"
 #define SpeckleFolder "{localappdata}\Speckle"
 
 [Setup]
@@ -38,7 +38,7 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 DisableWelcomePage=no
 OutputDir="."
-OutputBaseFilename=Speckle-cx-{#AppVersion}
+OutputBaseFilename=Speckle@ArupInstaller-v{#AppVersion}
 SetupIconFile=DesktopUI\DesktopUI\Resources\s2block.ico
 Compression=lzma
 SolidCompression=yes
@@ -64,8 +64,8 @@ Name: autocad21; Description: Speckle for AutoCAD 2021 ALPHA - v{#Autocad2021Ver
 Name: autocad22; Description: Speckle for AutoCAD 2022 ALPHA - v{#Autocad2022Version};  Types: full
 Name: civil21; Description: Speckle for AutoCADCivil 2021 ALPHA - v{#Civil2021Version};  Types: full
 Name: civil22; Description: Speckle for AutoCADCivil 2022 ALPHA - v{#Civil2022Version};  Types: full
-Name: connectionmanager; Description: Connection Manager - v{#AppVersion};  Types: full; Flags: fixed
-Name: kits; Description: Speckle Kits - v{#AppVersion};  Types: full; Flags: fixed
+Name: connectionmanager; Description: Speckle@Arup ConnectionManager - v{#AppVersion};  Types: full custom; Flags: fixed
+Name: kits; Description: Speckle Kits - v{#AppVersion};  Types: full custom; Flags: fixed
 
 [Types]
 Name: "full"; Description: "Full installation"
@@ -164,7 +164,8 @@ Source: "ConnectorDynamo\ConnectorDynamoFunctions\bin\Release\*"; DestDir: "{use
 Source: "ConnectorDynamo\ConnectorDynamoFunctions\bin\Release\*"; DestDir: "{userappdata}\Dynamo\Dynamo Revit\2.10\packages\SpeckleDynamo2\bin\"; Flags: ignoreversion recursesubdirs; Components: dynamofunc
 
 ;connectionmanager
-Source: "SpeckleConnectionManager\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
+Source: "ConnectionManager\SpeckleConnectionManager\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
+Source: "ConnectionManager\SpeckleConnectionManagerUI\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager-ui\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
 
 ;kits
 Source: "Objects\Objects\bin\Release\netstandard2.0\*"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
@@ -187,7 +188,6 @@ Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.1\packages\Spec
 Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.5\packages\SpeckleDynamo2\*"
 Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.6\packages\SpeckleDynamo2\*"
 Type: filesandordirs; Name: "{userappdata}\Dynamo\*"
-Type: filesandordirs; Name: "{userappdata}\Speckle\*"
 
 [Registry]
 Root: HKCU; Subkey: "SOFTWARE\McNeel\Rhinoceros\6.0\Plug-ins\8dd5f30b-a13d-4a24-abdc-3e05c8c87143"; ValueType: string; ValueName: "Name"; ValueData: "Speckle";
@@ -215,10 +215,10 @@ Root: HKCU; Subkey: "Software\Classes\speckle\shell\open\command"; ValueType: "s
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
-
+Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe";
 
 [Run]
-Filename: "{userappdata}\speckle-connection-manager\SpeckleConnectionManager.exe"; Description: "Authenticate with the Speckle Server"
+Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"; Flags: nowait postinstall skipifsilent
 
 ;checks if minimun requirements are met
 [Code]

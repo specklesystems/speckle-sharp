@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:reactiveUi="http://reactiveui.net"
+        xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+        xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+        xmlns:vm="clr-namespace:SpeckleConnectionManagerUI.ViewModels"
+        x:Class="SpeckleConnectionManagerUI.Views.MainWindow"
+        mc:Ignorable="d"
+        Background="Transparent"
+        Title="{Binding Title}"
+        Icon="/Assets/favicon.ico"
+        Width="800" Height="500">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+  <Grid ShowGridLines="False" ColumnDefinitions="*" RowDefinitions="auto, *">
+    <styles:Card Padding="10,7" CornerRadius="0">
+      <DockPanel VerticalAlignment="Bottom">
+        <TextBlock
+            FontSize="20" FontWeight="Bold" Foreground="Black"
+            Text="SPECKLE@ARUP " TextWrapping="Wrap" />
+        <TextBlock
+            FontSize="20" FontWeight="Regular" Foreground="Black"
+            Text="ACCOUNTMANAGER" TextWrapping="Wrap" />
+        <TextBlock Height="29" VerticalAlignment="Bottom"
+            Margin="10,0,0,-12"
+            FontSize="12" FontWeight="Regular" Foreground="Black"
+            Text="{Binding Version}" TextWrapping="Wrap" />
+        <Button HorizontalAlignment="Right" Height="20" Width="30" Background="Transparent" assists:ShadowAssist.ShadowDepth="0" Command="{Binding LaunchDocs}">
+          <icons:MaterialIcon HorizontalAlignment="Center" VerticalAlignment="Center" Kind="HelpCircle" ToolTip.Tip="Help and Documentation"/>
+        </Button>
+      </DockPanel>
+    </styles:Card>
+    <Grid ShowGridLines="True" Grid.Row="1" >
+      <DockPanel >
+        <ContentControl Margin="10" Content="{Binding Content}"/>
+      </DockPanel>
+    </Grid>
+  </Grid>
+</Window>
