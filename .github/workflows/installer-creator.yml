@@ -54,6 +54,13 @@ jobs:
       with:
         fetch-depth: 2
 
+    - name: Calculate tag version
+      id: calculateTagVersion
+      shell: powershell
+      run: |
+        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
+        echo "::set-output name=tag::$tag"
+
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
@@ -94,7 +101,7 @@ jobs:
     - name: Create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-installer.iss
+        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-installer.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
 
