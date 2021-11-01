@@ -30,7 +30,7 @@
                   VerticalAlignment="Center"
                   FontSize="14"
                   Classes="ButtonText"
-                  Foreground="Black"
+                  Foreground="White"
                   Text="CONNECT"/>
               </Button>
               <TextBlock VerticalAlignment="Center"
@@ -52,14 +52,14 @@
                   VerticalAlignment="Center"
                   FontSize="14"
                   Classes="ButtonText"
-                  Foreground="Black"
+                  Foreground="White"
                   Text="{Binding DefaultServerLabel}"/>  
               </Button>
               <Button FontSize="20"
                       Margin="0 5 10 5"
                       Grid.Row="0"
                       Grid.Column="2"
-                      Background="LightGray"
+                      Background="Gray"
                       IsVisible="{Binding Default, Converter={x:Static BoolConverters.Not}}"
                       IsEnabled="{Binding Disconnected, Converter={x:Static BoolConverters.Not}}"
                       Command="{Binding $parent[Window].DataContext.SetDefaultServerCommand}"
@@ -68,7 +68,7 @@
                   VerticalAlignment="Center"
                   FontSize="14"
                   Classes="ButtonText"
-                  Foreground="Black"
+                  Foreground="White"
                   Text="{Binding DefaultServerLabel}"/>
               </Button>
               <Button FontSize="10"
@@ -83,7 +83,7 @@
                   VerticalAlignment="Center"
                   FontSize="14"
                   Classes="ButtonText"
-                  Foreground="Black"
+                  Foreground="White"
                   Text="REMOVE"/>
               </Button>
             </Grid>

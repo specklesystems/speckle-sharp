@@ -216,8 +216,6 @@ Root: HKCU; Subkey: "Software\Classes\speckle\shell\open\command"; ValueType: "s
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe";
-Name: "{userstartup}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"
-
 
 [Run]
 Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"; Flags: nowait postinstall skipifsilent

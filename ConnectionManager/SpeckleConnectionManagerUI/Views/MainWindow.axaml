@@ -11,7 +11,7 @@
         mc:Ignorable="d"
         Background="Transparent"
         Title="{Binding Title}"
-        Icon="/Assets/s2block.ico"
+        Icon="/Assets/favicon.ico"
         Width="800" Height="500">
   <Design.DataContext>
     <vm:MainWindowViewModel/>
