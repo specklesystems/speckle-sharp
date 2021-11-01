@@ -71,7 +71,7 @@ namespace Objects.Geometry
         applicationId
         );
     }
-    
+
     /// <summary>
     /// If not already so, this method will align <see cref="Mesh.vertices"/>
     /// such that a vertex and its corresponding texture coordinates have the same index.
@@ -82,9 +82,8 @@ namespace Objects.Geometry
     /// <code>vertices.count == textureCoordinates.count</code>
     /// Then this method should be called by the <c>MeshToNative</c> method before parsing <see cref="Mesh.vertices"/> and <see cref="Mesh.faces"/>
     /// to ensure compatibility with geometry originating from applications that map vertices to texture-coordinates using vertex instance index (rather than vertex index)
-    ///
-    /// The result of this process is a new <see cref="Mesh.vertices"/> list with no shared vertices (vertices shared between polygons)
-    /// Also re-aligns vertex <see cref="Mesh.colors"/> the same way.
+    /// <br/>
+    /// <see cref="Mesh.vertices"/>, <see cref="Mesh.colors"/>, and <see cref="faces"/> lists will be modified to contain no shared vertices (vertices shared between polygons)
     /// </remarks>
     public void AlignVerticesWithTexCoordsByIndex()
     {
