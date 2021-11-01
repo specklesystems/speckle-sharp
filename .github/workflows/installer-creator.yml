@@ -91,10 +91,17 @@ jobs:
       run: dotnet publish -c Release -r win10-x64 --self-contained true
       working-directory: ConnectionManager/SpeckleConnectionManagerUI
 
-    - name: create Installer
+    - name: Create Installer
       id: installer
       run: | 
         iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-installer.iss
+        $filename = (ls *.exe).Name
+        echo "::set-output name=filename::$filename"
+
+    - name: Get Name of exe File
+      id: listName
+      shell: powershell
+      run: |
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
 
@@ -122,4 +129,39 @@ jobs:
         path: ${{ steps.installer.outputs.filename }}
         retention-days: 1
 
+    - name: Create Release
+      if: github.ref == 'refs/heads/master'
+      id: create-release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name: ${{ steps.calculateTagVersion.outputs.tag }}
+        release_name: Speckle@Arup Installer ${{ steps.calculateTagVersion.outputs.tag }}
+        body: |
+          Speckle@Arup installer includes the following version of the default Objects Kit:
 
+          - [Objects](https://github.com/arup-group/speckle-sharp/tree/master/Objects)
+
+          And SpeckleV2 connectors for:
+
+          - [Grasshopper](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGrasshopper)
+          - [Rhino 6/7](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRhino)
+          - [Revit 2019/2020/2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRevit)
+          - [Dynamo] (https://github.com/arup-group/speckle-sharp/tree/master/ConnectorDynamo)
+          - [AutoCAD 2021/2022 and Civil3D 2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorAutocadCivil)
+          - [Oasys GSA 10.1](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGSA)
+        draft: false
+        prerelease: true
+
+    - name: Upload Release Asset
+      if: github.ref == 'refs/heads/master'
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}  
+        asset_path: ./${{ steps.listName.outputs.filename }}
+        asset_name: ${{ steps.listName.outputs.filename }}
+        asset_content_type: application/vnd.microsoft.portable-executable
