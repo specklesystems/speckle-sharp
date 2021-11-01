@@ -639,35 +639,35 @@ namespace Speckle.ConnectorGSA.Proxy
           gwaLines = new string[0];
         }
 
-        foreach (var gwa in gwaLines)
-        {
-          var pieces = gwa.ListSplit(_GwaDelimiter).ToList();
-          if (pieces[0].StartsWith("set", StringComparison.InvariantCultureIgnoreCase))
+          foreach (var gwa in gwaLines)
           {
-            pieces = pieces.Skip(1).ToList();
-          }
-          var keywordAndVersion = pieces.First();
-          var keywordPieces = keywordAndVersion.Split('.');
-          if (keywordPieces.Count() == 2 && keywordPieces.Last().All(c => char.IsDigit(c))
-            && int.TryParse(keywordPieces.Last(), out int ver)
-            && keywordPieces.First().TryParseStringValue(out GwaKeyword kw))
-          {
-            var ktd = typeInfo[layer][typeInfoIndicesByKeyword[layer][kw]];
-            if (ktd != null)
+            var pieces = gwa.ListSplit(_GwaDelimiter).ToList();
+            if (pieces[0].StartsWith("set", StringComparison.InvariantCultureIgnoreCase))
             {
-              var schemaType = ktd.GetSchemaType(kw);
-              var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(schemaType));
-              if (parser.FromGwa(gwa))
+              pieces = pieces.Skip(1).ToList();
+            }
+            var keywordAndVersion = pieces.First();
+            var keywordPieces = keywordAndVersion.Split('.');
+            if (keywordPieces.Count() == 2 && keywordPieces.Last().All(c => char.IsDigit(c))
+              && int.TryParse(keywordPieces.Last(), out int ver)
+              && keywordPieces.First().TryParseStringValue(out GwaKeyword kw))
+            {
+              var ktd = typeInfo[layer][typeInfoIndicesByKeyword[layer][kw]];
+              if (ktd != null)
               {
-                retRecords.Add(parser.Record);
-              }
-              else if (loggingProgress != null)
-              {
-                loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
+                var schemaType = ktd.GetSchemaType(kw);
+                var parser = (IGwaParser)Activator.CreateInstance(ktd.GetParserType(schemaType));
+                if (parser.FromGwa(gwa))
+                {
+                  retRecords.Add(parser.Record);
+                }
+                else if (loggingProgress != null)
+                {
+                  loggingProgress.Report(FormulateParsingErrorContext(parser.Record, schemaType.Name));
+                }
               }
             }
           }
-        }
       }
 
 
@@ -865,8 +865,10 @@ namespace Speckle.ConnectorGSA.Proxy
               {
                 gwaWithoutSet.Replace(originalSid, newSid);
               }
+              
+              var kw = ktd.HasDifferentatedKeywords ? (GwaKeyword)Enum.Parse(typeof(GwaKeyword), keywordAndVersion.Split('.')[0]) : keyword.Value;
 
-              var schemaType = ktd.GetSchemaType(keyword.Value);
+              var schemaType = ktd.GetSchemaType(kw);
               var t = ktd.GetParserType(schemaType);
 
               var parser = (IGwaParser)Activator.CreateInstance(t);
