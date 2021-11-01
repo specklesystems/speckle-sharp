@@ -1,0 +1,131 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:reactiveUi="http://reactiveui.net"
+             xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:vm="clr-namespace:SpeckleConnectionManagerUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SpeckleConnectionManagerUI.Views.ConnectStatusView">
+  <Design.DataContext>
+    <vm:ConnectStatusViewModel />
+  </Design.DataContext>
+  <Grid Margin="15" RowDefinitions="auto,auto,auto,auto, *, auto">
+    <styles:Card Grid.Row="4" Padding="0,4">
+      <ItemsControl Margin="10 0 0 0" Items="{Binding Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ShowGridLines="False" ColumnDefinitions="*,3*,1.5*,*" RowDefinitions="Auto,Auto">
+              <Button FontSize="20"
+                      Margin="0 5 10 5"
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Foreground="White"
+                      IsEnabled="{Binding Disconnected}"
+                      Command="{Binding $parent[Window].DataContext.RunConnectToServerCommand}"
+                      CommandParameter="{Binding Identifier}">
+                <TextBlock
+                  VerticalAlignment="Center"
+                  FontSize="14"
+                  Classes="ButtonText"
+                  Foreground="White"
+                  Text="CONNECT"/>
+              </Button>
+              <TextBlock VerticalAlignment="Center"
+                         Margin="10 0 0 0"
+                         FontSize="20"
+                         Grid.Row="0"
+                         Grid.Column="1"
+                         Text="{Binding ServerUrl}"
+                         Foreground="{Binding Colour}" />
+              <Button FontSize="20"
+                      Margin="0 5 10 5"
+                      Grid.Row="0"
+                      Grid.Column="2"
+                      IsVisible="{Binding Default}"
+                      IsEnabled="{Binding Disconnected, Converter={x:Static BoolConverters.Not}}"
+                      Command="{Binding $parent[Window].DataContext.SetDefaultServerCommand}"
+                      CommandParameter="{Binding Identifier}">
+                <TextBlock
+                  VerticalAlignment="Center"
+                  FontSize="14"
+                  Classes="ButtonText"
+                  Foreground="White"
+                  Text="{Binding DefaultServerLabel}"/>  
+              </Button>
+              <Button FontSize="20"
+                      Margin="0 5 10 5"
+                      Grid.Row="0"
+                      Grid.Column="2"
+                      Background="Gray"
+                      IsVisible="{Binding Default, Converter={x:Static BoolConverters.Not}}"
+                      IsEnabled="{Binding Disconnected, Converter={x:Static BoolConverters.Not}}"
+                      Command="{Binding $parent[Window].DataContext.SetDefaultServerCommand}"
+                      CommandParameter="{Binding Identifier}">
+                <TextBlock
+                  VerticalAlignment="Center"
+                  FontSize="14"
+                  Classes="ButtonText"
+                  Foreground="White"
+                  Text="{Binding DefaultServerLabel}"/>
+              </Button>
+              <Button FontSize="10"
+                      Margin="0 5 10 5"
+                      Grid.Row="0"
+                      Grid.Column="3"
+                      Background="Red"
+                      assists:ShadowAssist.ShadowDepth="0"
+                      Command="{Binding $parent[Window].DataContext.RemoveServerCommand}"
+                      CommandParameter="{Binding Identifier}">
+                <TextBlock
+                  VerticalAlignment="Center"
+                  FontSize="14"
+                  Classes="ButtonText"
+                  Foreground="White"
+                  Text="REMOVE"/>
+              </Button>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </styles:Card>
+    <Grid
+      Grid.Row="5" Margin="0,15,0,0" ColumnDefinitions="*,*">
+      <Button
+        Margin="0,0,7,0"
+        HorizontalAlignment="Stretch"
+        Command="{Binding $parent[Window].DataContext.GetNewServerUrlCommand}">
+        <Grid ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="Plus" Foreground="White" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            VerticalAlignment="Center"
+            Classes="ButtonText"
+            Foreground="White"
+            Text="Add New Connection"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+      <Button
+        Grid.Column="1"
+        Margin="7,0,0,0"
+        HorizontalAlignment="Stretch"
+        Command="{Binding $parent[Window].DataContext.DeleteAllAuthData}">
+        <Grid ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="DeleteForever" Foreground="White"/>
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            VerticalAlignment="Center"
+            Classes="ButtonText"
+            Foreground="White"
+            Text="Delete All Auth Data"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+    </Grid>
+  </Grid>
+</UserControl>
