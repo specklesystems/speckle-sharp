@@ -45,11 +45,18 @@ namespace Objects.Converter.RhinoGh
     public static string GrasshopperAppName = Applications.Grasshopper;
 #endif
 
+    public ConverterRhinoGh()
+    {
+      var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
+      Report.Log($"Using converter: {Name} v{ver}");
+    }
     public string Description => "Default Speckle Kit for Rhino & Grasshopper";
     public string Name => nameof(ConverterRhinoGh);
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
-
+    
+    public ProgressReport Report { get; private set; } = new ProgressReport();
+    
     public IEnumerable<string> GetServicedApplications()
     {
       
@@ -73,6 +80,8 @@ namespace Objects.Converter.RhinoGh
     public void SetContextDocument(object doc)
     {
       Doc = (RhinoDoc)doc;
+      Report.Log($"Using document: {Doc.Path}");
+      Report.Log($"Using units: {ModelUnits}");
     }
 
     // speckle user string for custom schemas
