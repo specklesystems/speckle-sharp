@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using System.Linq;
 using System.Text;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.ETABS
 {
@@ -12,8 +13,9 @@ namespace Objects.Converter.ETABS
     {
         
         Dictionary<string, LoadBeam> LoadStoringBeam = new Dictionary<string, LoadBeam>();
-        Dictionary<string, List<Element1D>> FrameStoring = new Dictionary<string, List<Element1D>>();
-            void LoadFrameToSpeckle(string name)
+        Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
+        int counter = 0;
+        Base LoadFrameToSpeckle(string name,int frameNumber)
         {
             int numberItems = 0;
             string[] frameName = null;
@@ -28,7 +30,7 @@ namespace Objects.Converter.ETABS
             double[] val1 = null;
             double[] val2 = null;
 
-            var element1DList = new List<Element1D>();
+            //var element1DList = new List<Base>();
             
             Model.FrameObj.GetLoadDistributed(name, ref numberItems, ref frameName,ref loadPat,ref MyType,ref csys, ref dir, ref RD1, ref RD2 , ref dist1, ref dist2, ref val1, ref val2);
             foreach (int index in Enumerable.Range(0, numberItems))
@@ -36,7 +38,8 @@ namespace Objects.Converter.ETABS
                 var speckleLoadFrame = new LoadBeam();
                 var element = FrameToSpeckle(frameName[index]);
                 var loadID = String.Concat(loadPat[index],val1[index],val2[index],dist1[index],dist2[index],dir[index],MyType[index]);
-                FrameStoring.TryGetValue(loadID, out element1DList);
+                FrameStoring.TryGetValue(loadID, out var element1DList);
+                if(element1DList == null) { element1DList = new List<Base> { }; }
                 element1DList.Add(element);
                 FrameStoring[loadID] = element1DList;
 
@@ -89,16 +92,31 @@ namespace Objects.Converter.ETABS
                         speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
                         break;
                 }
+                if (speckleLoadFrame.values == null) { speckleLoadFrame.values = new List<double> { }; }
                 speckleLoadFrame.values.Add(val1[index]);
                 speckleLoadFrame.values.Add(val2[index]);
+                if (speckleLoadFrame.positions == null) { speckleLoadFrame.positions = new List<double> { }; }
                 speckleLoadFrame.positions.Add(dist1[index]);
                 speckleLoadFrame.positions.Add(dist2[index]);
                 speckleLoadFrame.loadType = BeamLoadType.Uniform;
                 speckleLoadFrame.loadCase = LoadPatternToSpeckle(loadPat[index]);
                 LoadStoringBeam[loadID] = speckleLoadFrame;
             }
+            counter += 1;
 
-            return;
+            if (counter == frameNumber)
+            {
+                foreach (var entry in LoadStoringBeam.Keys)
+                {
+                LoadStoringBeam.TryGetValue(entry, out var loadBeam);
+                FrameStoring.TryGetValue(entry, out var elements);
+                loadBeam.elements = elements;
+                SpeckleModel.loads.Add(loadBeam);
+                }
+            }
+            var speckleObject = new Base();
+            return speckleObject;
         }
+
     }
 }

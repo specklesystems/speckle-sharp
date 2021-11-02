@@ -143,6 +143,18 @@ namespace Objects.Converter.ETABS
                 //case "LoadCase":
                 //    returnObject = LoadCaseToSpeckle(name);
                 //    break;
+                case "BeamLoading":
+                    return LoadFrameToSpeckle(name, GetBeamNames(Model).Count());
+                    break;
+                case "ColumnLoading":
+                    return LoadFrameToSpeckle(name, GetColumnNames(Model).Count());
+                    break;
+                case "BraceLoading":
+                    return LoadFrameToSpeckle(name, GetBraceNames(Model).Count());
+                    break;
+                case "FrameLoading":
+                    return LoadFrameToSpeckle(name,GetAllFrameNames(Model).Count());
+                    break;
                 case "LoadPattern":
                     returnObject = LoadPatternToSpeckle(name);
                     break;
