@@ -65,6 +65,14 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Analytics CLI - Restore NuGets
+      run: dotnet restore
+      working-directory: Analytics
+
+    - name: Analytics CLI - Compile CLI
+      run: dotnet build --configuration Release --runtime win-x64
+      working-directory: Analytics     
+
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore all the applications
       shell: cmd
@@ -82,7 +90,7 @@ jobs:
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )
 
-    - name: Restore Speckle Connection Manager
+    - name: Restore SpeckleConnectionManager
       run: dotnet restore
       working-directory: ConnectionManager/SpeckleConnectionManager
 
@@ -90,11 +98,11 @@ jobs:
       run: dotnet publish -c Release -r win10-x64 --self-contained true
       working-directory: ConnectionManager/SpeckleConnectionManager
 
-    - name: Restore Speckle Connection Manager UI
+    - name: Restore SpeckleConnectionManagerUI
       run: dotnet restore
       working-directory: ConnectionManager/SpeckleConnectionManagerUI
 
-    - name: Build SpeckleConnectionManager UI
+    - name: Build SpeckleConnectionManagerUI
       run: dotnet publish -c Release -r win10-x64 --self-contained true
       working-directory: ConnectionManager/SpeckleConnectionManagerUI
 
@@ -104,6 +112,8 @@ jobs:
         iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-installer.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
+      env:
+        ENABLE_TELEMETRY_DOMAIN: arup        
 
     - name: Get Name of exe File
       id: listName

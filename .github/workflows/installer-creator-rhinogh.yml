@@ -36,7 +36,7 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: Create Installer for Rhino/Gh
+name: Create Installer for Rhino/Gh Connectors
 
 on:
   workflow_dispatch:
@@ -69,7 +69,7 @@ jobs:
     - name: Restore all the applications
       shell: cmd
       run: |
-        for %%x in (Objects, ConnectorRhino) do (
+        for %%x in (Objects, ConnectorRhino, ConnectorGrasshopper) do (
           cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
         )
         
@@ -78,14 +78,14 @@ jobs:
       shell: cmd
       run: |
         SET _version=${{ github.event.inputs.version }}
-        for %%x in (Objects, ConnectorRhino) do (
+        for %%x in (Objects, ConnectorRhino, ConnectorGrasshopper) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )
 
     - name: Create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-rhino-installer.iss
+        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-rhinogh-installer.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
 

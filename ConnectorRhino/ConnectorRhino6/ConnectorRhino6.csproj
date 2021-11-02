@@ -93,6 +93,9 @@
     <PostBuildEvent>
       Copy "$(TargetPath)" "$(TargetDir)$(TargetName).rhp"
       Erase "$(TargetPath)"
+	  Erase "$(TargetDir)RhinoCommon.dll"
+	  Erase "$(TargetDir)Rhino.UI.dll"
+	  
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
