@@ -24,6 +24,8 @@
 #define AppPublisher "Speckle@Arup"
 #define AppURL       "https://speckle.arup.com"
 #define SpeckleFolder "{localappdata}\Speckle"
+#define AnalyticsFolder "{localappdata}\SpeckleAnalytics"      
+#define AnalyticsFilename       "analytics.exe"
 
 [Setup]
 AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
@@ -176,6 +178,9 @@ Source: "ConnectionManager\SpeckleConnectionManagerUI\bin\Release\net5.0\win10-x
 ;kits
 Source: "Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
 
+;analytics
+Source: "Analytics\bin\Release\net461\win-x64\*"; DestDir: "{#AnalyticsFolder}"; Flags: ignoreversion recursesubdirs;
+
 [InstallDelete]
 Type: filesandordirs; Name: "{userappdata}\McNeel\Rhinoceros\6.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\*"
 Type: filesandordirs; Name: "{userappdata}\McNeel\Rhinoceros\7.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\*"
@@ -196,6 +201,7 @@ Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.6\packages\Spec
 Type: filesandordirs; Name: "{userappdata}\Dynamo\*"
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA\*"
 Type: filesandordirs; Name: "{userappdata}\Speckle\Kits\Objects\*"
+Type: filesandordirs; Name: "{localappdata}\SpeckleAnalytics\*"
 
 [Registry]
 Root: HKCU; Subkey: "SOFTWARE\McNeel\Rhinoceros\6.0\Plug-ins\8dd5f30b-a13d-4a24-abdc-3e05c8c87143"; ValueType: string; ValueName: "Name"; ValueData: "Speckle";
@@ -228,6 +234,7 @@ Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-co
 
 [Run]
 Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"; Flags: nowait postinstall skipifsilent
+Filename: "{#AnalyticsFolder}\analytics.exe"; Parameters: "{#AppVersion} {#GetEnv('ENABLE_TELEMETRY_DOMAIN')}"; Description: "Send anonymous analytics to Arup. No project data or personally identifiable information will be sent."
 
 ;checks if minimun requirements are met
 [Code]
