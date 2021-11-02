@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
 using Rhino.Display;
+using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 
 namespace SpeckleRhino
 {
