@@ -1,5 +1,5 @@
 ;defining variables
-#define AppName      "Speckle@Arup-SpeckleV2"
+#define AppName      "Speckle@Arup v2 Bundle"
 #define Autocad2021Version  GetFileVersion("ConnectorAutocadCivil\ConnectorAutocad2021\bin\Release\SpeckleConnectorAutocad.dll")
 #define Autocad2022Version  GetFileVersion("ConnectorAutocadCivil\ConnectorAutocad2022\bin\Release\SpeckleConnectorAutocad.dll")
 #define Civil2021Version  GetFileVersion("ConnectorAutocadCivil\ConnectorCivil2021\bin\Release\SpeckleConnectorCivil.dll")
@@ -51,7 +51,10 @@ PrivilegesRequired=lowest
 VersionInfoVersion={#AppVersion}
 
 [Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "english"; MessagesFile: "compiler:Default.isl" 
+
+[Messages]
+WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt is recommended that you close all other applications before continuing.%n%nThis installer is intended for Arup staff only, and will replace the Speckle Systems / AEC Systems Ltd Speckle Manager with Arup's own account manager.
 
 [Components]
 Name: dynamo; Description: Speckle for Dynamo 2.1+ - v{#DynamoVersion}; Types: full
