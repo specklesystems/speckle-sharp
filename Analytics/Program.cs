@@ -21,7 +21,7 @@ namespace analytics
             string _internalDomain = args[1];
             string _machineName = Environment.MachineName.ToLower(new CultureInfo("en-GB", false));
             string _domainName = Dns.GetHostEntry("").HostName;
-            string _appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string _appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
             // If the cache has been set up this is an update, otherwise it's a new user
             string _installType = File.Exists(_appDataFolder + CacheLocation) ? "update" : "new";
