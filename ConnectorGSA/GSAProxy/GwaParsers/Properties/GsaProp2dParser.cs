@@ -66,11 +66,17 @@ namespace Speckle.ConnectorGSA.Proxy.GwaParsers
 
     private string AddPercentageOrValue(double? percentage, double? value)
     {
-      if (percentage.HasValue)
+      if(percentage == null && value == null)
       {
-        return percentage.Value + "%";
+        return "100%"; 
+      } else
+      {
+        if (percentage.HasValue)
+        {
+          return percentage.Value + "%";
+        }
+        return value.Value.ToString();
       }
-      return value.Value.ToString();
     }
 
     private string AddAxis()
