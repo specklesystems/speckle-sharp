@@ -34,7 +34,7 @@ namespace Objects.Converter.Revit
       var templatePath = GetTemplatePath("Mass");
       if (!File.Exists(templatePath))
       {
-        Report.LogConversionError(new Exception($"Could not find file {templatePath}"));
+        Report.LogConversionError(new Exception($"Could not find file {Path.GetFileName(templatePath)}"));
         return null;
       }
 

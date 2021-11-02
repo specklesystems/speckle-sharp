@@ -19,6 +19,7 @@ using Material.Dialog.Views;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Splat;
 
 namespace DesktopUI2.ViewModels
@@ -247,7 +248,11 @@ namespace DesktopUI2.ViewModels
     {
       var s = SavedStreams.FirstOrDefault(x => x.StreamState.Id == id);
       if (s != null)
+      {
         SavedStreams.Remove(s);
+        Tracker.TrackPageview("stream", "remove");
+      }
+
       this.RaisePropertyChanged("HasSavedStreams");
     }
 
@@ -305,6 +310,7 @@ namespace DesktopUI2.ViewModels
     {
       var stream = parameter as Stream;
       Process.Start(new ProcessStartInfo($"{SelectedAccount.serverInfo.url.TrimEnd('/')}/streams/{stream.id}") { UseShellExecute = true });
+      Tracker.TrackPageview(Tracker.STREAM_VIEW);
     }
 
     public void SendCommand(object parameter)
@@ -377,6 +383,8 @@ namespace DesktopUI2.ViewModels
           var streamState = new StreamState(SelectedAccount, stream);
 
           OpenStream(streamState);
+
+          Tracker.TrackPageview(Tracker.STREAM_CREATE);
 
           GetStreams().ConfigureAwait(false); //update streams
         }
@@ -451,6 +459,8 @@ namespace DesktopUI2.ViewModels
           var streamState = new StreamState(account, stream);
 
           OpenStream(streamState);
+
+          Tracker.TrackPageview("stream", "add-from-url");
         }
         catch (Exception e)
         {

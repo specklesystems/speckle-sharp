@@ -7,6 +7,7 @@ using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -163,18 +164,21 @@ namespace DesktopUI2.ViewModels
     public void EditSavedStreamCommand()
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamEditViewModel(HostScreen, StreamState));
+      Tracker.TrackPageview("stream", "edit");
     }
 
     public void ViewOnlineSavedStreamCommand()
     {
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
+      Tracker.TrackPageview(Tracker.STREAM_VIEW);
 
     }
 
     public void CopyStreamURLCommand()
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
+      Tracker.TrackPageview("stream", "copy-link");
 
     }
 
@@ -185,6 +189,7 @@ namespace DesktopUI2.ViewModels
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
+      Tracker.TrackPageview(Tracker.SEND);
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";

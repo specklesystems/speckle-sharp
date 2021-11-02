@@ -204,6 +204,19 @@ namespace Speckle.ConnectorAutocadCivil.UI
         id = res.id;
       }
 
+      string commitId = state.Commit.id;
+      string commitMsg = state.Commit.message;
+      try
+      {
+        var commit = await state.Client.CommitGet(state.Stream.id, id);
+        commitId = commit.id;
+        commitMsg = commit.message;
+      }
+      catch
+      {
+
+      }
+
       var commitObject = await Operations.Receive(
         referencedObject,
         state.CancellationTokenSource.Token,
@@ -213,7 +226,21 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onErrorAction: (message, exception) => { Exceptions.Add(exception); },
         disposeTransports: true
         );
-
+      
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream.id,
+          commitId = commitId,
+          message = commitMsg,
+          sourceApplication = Utils.AutocadAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
       if (Exceptions.Count != 0)
       {
         RaiseNotification($"Encountered error: {Exceptions.Last().Message}");

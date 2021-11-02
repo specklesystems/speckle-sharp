@@ -9,6 +9,7 @@ using Material.Dialog;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -271,6 +272,10 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState());
+      if (IsReceiver)
+        Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
+      else Tracker.TrackPageview(Tracker.SEND_ADDED);
+
     }
 
     private async void SendCommand()
@@ -316,12 +321,14 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState(), true);
+      Tracker.TrackPageview(Tracker.SEND_ADDED);
     }
 
     private void SaveReceiveCommand()
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState(), false, true);
+      Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
     }
 
     [DependsOn(nameof(SelectedBranch))]

@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleRoof.outline == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only outline based Floor are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException("Only outline based Roof are currently supported.");
       }
 
       DB.RoofBase revitRoof = null;
@@ -60,7 +60,6 @@ namespace Objects.Converter.Revit
             revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
             break;
           }
-
         case RevitFootprintRoof speckleFootprintRoof:
           {
             ModelCurveArray curveArray = new ModelCurveArray();

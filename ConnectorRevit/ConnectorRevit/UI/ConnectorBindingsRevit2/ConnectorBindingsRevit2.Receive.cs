@@ -42,6 +42,9 @@ namespace Speckle.ConnectorRevit.UI
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
       string referencedObject = state.ReferencedObject;
+      Commit myCommit = null;
+
+      var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
@@ -52,7 +55,8 @@ namespace Speckle.ConnectorRevit.UI
       if (state.CommitId == "latest")
       {
         var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        myCommit = res.commits.items.FirstOrDefault();
+        referencedObject = myCommit.referencedObject;
       }
 
       var commitObject = await Operations.Receive(
@@ -68,6 +72,21 @@ namespace Speckle.ConnectorRevit.UI
           onTotalChildrenCountKnown: count => { progress.Max = count; },
           disposeTransports: true
           );
+
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream?.id,
+          commitId = myCommit?.id,
+          message = myCommit?.message,
+          sourceApplication = ConnectorRevitUtils.RevitAppName 
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
 
       if (progress.Report.OperationErrorsCount != 0)
       {

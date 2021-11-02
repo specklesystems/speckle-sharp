@@ -61,7 +61,7 @@ namespace Objects.Converter.Revit
       var placeholders = new List<ApplicationPlaceholderObject>
       {
         new ApplicationPlaceholderObject
-          {applicationId = speckleRevitDuct.applicationId, ApplicationGeneratedId = duct.UniqueId, NativeObject = duct}
+          {applicationId = speckleDuct.applicationId, ApplicationGeneratedId = duct.UniqueId, NativeObject = duct}
       };
 
       return placeholders;
