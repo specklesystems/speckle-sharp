@@ -85,7 +85,7 @@ jobs:
     - name: Create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-rhino-installer.iss
+        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-rhinogh-installer.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
 
