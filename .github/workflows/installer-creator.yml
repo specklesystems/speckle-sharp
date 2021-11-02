@@ -113,7 +113,7 @@ jobs:
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
       env:
-        ENABLE_TELEMETRY_DOMAIN: Arup        
+        ENABLE_TELEMETRY_DOMAIN: arup        
 
     - name: Get Name of exe File
       id: listName
