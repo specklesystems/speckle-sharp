@@ -173,7 +173,7 @@ namespace SpeckleRhino
       {
         return null;
       }
-      
+
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.CommitId == "latest")
       {
@@ -198,6 +198,11 @@ namespace SpeckleRhino
           disposeTransports: true
           );
 
+      if (progress.Report.OperationErrorsCount != 0)
+      {
+        return state;
+      }
+
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -221,7 +226,7 @@ namespace SpeckleRhino
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }
-      
+
       progress.Report.Merge(converter.Report);
       Doc.Views.Redraw();
       Doc.EndUndoRecord(undoRecord);
@@ -272,9 +277,8 @@ namespace SpeckleRhino
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            var e = new Exception(
-              $"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked.");
-            converter.Report.LogOperationError(e);
+
+            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
           }
           return objects;
         }
@@ -375,7 +379,7 @@ namespace SpeckleRhino
         }
         else
         {
-          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}");
+          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "");}");
           converter.Report.LogConversionError(exception);
         }
       }
@@ -398,7 +402,7 @@ namespace SpeckleRhino
 
       var streamId = state.StreamId;
       var client = state.Client;
-      
+
       int objCount = 0;
       bool renamedlayers = false;
 
@@ -409,7 +413,7 @@ namespace SpeckleRhino
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.",false));
+        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
         return;
       }
 
@@ -435,7 +439,7 @@ namespace SpeckleRhino
           {
             if (!converter.CanConvertToSpeckle(obj))
             {
-              progress.Report.Log($"Objects of type ${obj.Geometry.ObjectType} are not supported");
+              progress.Report.Log($"Skipped not supported type:  ${obj.Geometry.ObjectType}");
               continue;
             }
             converted = converter.ConvertToSpeckle(obj);
@@ -479,7 +483,7 @@ namespace SpeckleRhino
           {
             var exception = new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}.");
             converter.Report.LogConversionError(exception);
-            
+
             continue;
           }
           containerName = "Named Views";
@@ -504,9 +508,9 @@ namespace SpeckleRhino
 
         objCount++;
       }
-      
+
       progress.Report.Merge(converter.Report);
-      
+
       if (objCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
@@ -517,7 +521,7 @@ namespace SpeckleRhino
       {
         progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
       }
-      
+
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return;
@@ -544,6 +548,11 @@ namespace SpeckleRhino
         },
         disposeTransports: true
         );
+
+      if (progress.Report.OperationErrorsCount != 0)
+      {
+        return;
+      }
 
       var actualCommit = new CommitCreateInput
       {

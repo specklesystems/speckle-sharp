@@ -108,12 +108,14 @@ namespace Speckle.Core.Models
         var converted = ConversionLog.Count(x => x.ToLowerInvariant().Contains("converted"));
         var created = ConversionLog.Count(x => x.ToLowerInvariant().Contains("created"));
         var skipped = ConversionLog.Count(x => x.ToLowerInvariant().Contains("skipped"));
+        var failed = ConversionLog.Count(x => x.ToLowerInvariant().Contains("failed"));
         var updated = ConversionLog.Count(x => x.ToLowerInvariant().Contains("updated"));
 
         summary += converted > 0 ? $"CONVERTED: {converted}\n" : "";
         summary += created > 0 ? $"CREATED: {created}\n" : "";
         summary += updated > 0 ? $"UPDATED: {updated}\n" : "";
         summary += skipped > 0 ? $"SKIPPED: {skipped}\n" : "";
+        summary += failed > 0 ? $"FAILED: {failed}\n" : "";
 
         summary = !string.IsNullOrEmpty(summary) ? $"SUMMARY\n\n{summary}\n\n" : "";
 

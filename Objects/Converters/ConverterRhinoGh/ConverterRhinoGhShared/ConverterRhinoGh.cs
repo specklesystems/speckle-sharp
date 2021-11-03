@@ -54,14 +54,14 @@ namespace Objects.Converter.RhinoGh
     public string Name => nameof(ConverterRhinoGh);
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
-    
+
     public ProgressReport Report { get; private set; } = new ProgressReport();
-    
+
     public IEnumerable<string> GetServicedApplications()
     {
-      
+
 #if RHINO6
-      return new string[] {RhinoAppName, Applications.Grasshopper};
+      return new string[] { RhinoAppName, Applications.Grasshopper };
 #elif RHINO7
       return new string[] {RhinoAppName};
 #endif   
@@ -100,14 +100,14 @@ namespace Objects.Converter.RhinoGh
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
         {
-            try
-            {
-                schema = ConvertToSpeckleBE(ro);
-            }
-            catch 
-            {
-                schema = ConvertToSpeckleStr(ro);
-            }
+          try
+          {
+            schema = ConvertToSpeckleBE(ro);
+          }
+          catch
+          {
+            schema = ConvertToSpeckleStr(ro);
+          }
         }
 
 
@@ -119,11 +119,11 @@ namespace Objects.Converter.RhinoGh
       {
         case Point3d o:
           @base = PointToSpeckle(o);
-          Report.Log($"Converted point {o}");
+          Report.Log($"Converted Point {o}");
           break;
         case Rhino.Geometry.Point o:
           @base = PointToSpeckle(o);
-          Report.Log($"Converted point {o}");
+          Report.Log($"Converted Point {o}");
           break;
         case PointCloud o:
           @base = PointcloudToSpeckle(o);
@@ -285,9 +285,9 @@ namespace Objects.Converter.RhinoGh
       if (obj is InstanceObject)
       {
         if (schema == "AdaptiveComponent")
-            return InstanceToAdaptiveComponent(obj as InstanceObject, args);
+          return InstanceToAdaptiveComponent(obj as InstanceObject, args);
         else
-            throw new NotSupportedException();
+          throw new NotSupportedException();
       }
 
       switch (obj.Geometry)
@@ -387,54 +387,54 @@ namespace Objects.Converter.RhinoGh
 
     public Base ConvertToSpeckleStr(object @object)
     {
-        // get schema if it exists
-        RhinoObject obj = @object as RhinoObject;
-        string schema = GetSchema(obj, out string[] args);
+      // get schema if it exists
+      RhinoObject obj = @object as RhinoObject;
+      string schema = GetSchema(obj, out string[] args);
 
-        switch (obj.Geometry)
-        {
+      switch (obj.Geometry)
+      {
 
-                //case RH.Point o:
-                //    switch (schema)
-                //    {
-                //        case "Node":
-                //            return PointToSpeckleNode(o);
+        //case RH.Point o:
+        //    switch (schema)
+        //    {
+        //        case "Node":
+        //            return PointToSpeckleNode(o);
 
-                //        default:
-                //            throw new NotSupportedException();
-                //    }
+        //        default:
+        //            throw new NotSupportedException();
+        //    }
 
-                //case RH.Curve o:
-                //    switch (schema)
-                //    {
-                //        case "Element1D":
-                //            return CurveToSpeckleElement1D(o);
+        //case RH.Curve o:
+        //    switch (schema)
+        //    {
+        //        case "Element1D":
+        //            return CurveToSpeckleElement1D(o);
 
-                //        default:
-                //            throw new NotSupportedException();
-                //    }
+        //        default:
+        //            throw new NotSupportedException();
+        //    }
 
-                //case RH.Mesh o:
-                //    switch (schema)
-                //    {
-                //        case "Element2D":
-                //            return MeshToSpeckleElement2D(o);
+        //case RH.Mesh o:
+        //    switch (schema)
+        //    {
+        //        case "Element2D":
+        //            return MeshToSpeckleElement2D(o);
 
-                //    case "Element3D":
-                //        return MeshToSpeckleElement3D(o);
+        //    case "Element3D":
+        //        return MeshToSpeckleElement3D(o);
 
-                //            default:
-                //            throw new NotSupportedException();
-                //    }
+        //            default:
+        //            throw new NotSupportedException();
+        //    }
 
-                default:
-                    throw new NotSupportedException();
-            }
-        }
+        default:
+          throw new NotSupportedException();
+      }
+    }
 
     public List<Base> ConvertToSpeckleStr(List<object> objects)
     {
-        return objects.Select(x => ConvertToSpeckleStr(x)).ToList();
+      return objects.Select(x => ConvertToSpeckleStr(x)).ToList();
     }
 
 
@@ -445,7 +445,7 @@ namespace Objects.Converter.RhinoGh
       {
         case Point o:
           rhinoObj = PointToNative(o);
-          Report.Log($"Created point {o.id}");
+          Report.Log($"Created Point {o.id}");
           break;
 
         case Pointcloud o:
@@ -457,7 +457,7 @@ namespace Objects.Converter.RhinoGh
           rhinoObj = VectorToNative(o);
           Report.Log($"Created Vector {o.id}");
           break;
-        
+
         case Hatch o:
           rhinoObj = HatchToNative(o);
           Report.Log($"Created Hatch {o.id}");
@@ -648,7 +648,7 @@ case RH.SubD _:
     {
       switch (@object)
       {
-        case Point _ :
+        case Point _:
         case Vector _:
         case Interval _:
         case Interval2d _:
@@ -666,7 +666,7 @@ case RH.SubD _:
         case Brep _:
         case Surface _:
           return true;
-        
+
         //TODO: This types are not supported in GH!
         case Pointcloud _:
         case ModelCurve _:
@@ -677,7 +677,7 @@ case RH.SubD _:
         case Alignment _:
         case Text _:
           return true;
-        
+
         default:
           return false;
       }
