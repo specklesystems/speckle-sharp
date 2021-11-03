@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 
+using DesktopUI2.Models;
+using Speckle.Newtonsoft.Json;
+
 namespace Speckle.ConnectorAutocadCivil.Storage
 {
   /// <summary>
@@ -14,7 +17,6 @@ namespace Speckle.ConnectorAutocadCivil.Storage
   /// This is because NOD persists after a document is closed (unlike file User Data).
   /// Custom data is stored as XRecord key value entries of type (string, ResultBuffer).
   /// ResultBuffers are TypedValue arrays, with the DxfCode of the input type as an integer.
-  /// Methods use Document locks, which are needed whenever you are modifying a doc from a modeless dialog or in a command with the session flag.
   /// </remarks>
   public static class SpeckleStreamManager
   {
@@ -119,6 +121,70 @@ namespace Speckle.ConnectorAutocadCivil.Storage
           }
           tr.Commit();
         }
+      }
+    }
+  }
+
+  /// <summary>
+  /// Manages the serialisation of speckle stream state
+  /// (stream info, account info, and filter type) in an autocad document.
+  /// </summary>
+  /// <remarks>
+  /// Uses a child dictionary for custom data in the Named Object Dictionary (NOD) which is the root level dictionary.
+  /// This is because NOD persists after a document is closed (unlike file User Data).
+  /// Custom data is stored as XRecord key value entries of type (string, ResultBuffer).
+  /// ResultBuffers are TypedValue arrays, with the DxfCode of the input type as an integer.
+  /// Used for DesktopUI2
+  /// </remarks>
+  public static class SpeckleStreamManager2
+  {
+    readonly static string SpeckleExtensionDictionary = "Speckle";
+    readonly static string SpeckleStreamStates = "StreamStates";
+
+    private static Xrecord GetSpeckleStreamRecord(Document doc)
+    {
+      Xrecord record = null;
+      using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+      {
+        var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
+        if (NOD.Contains(SpeckleExtensionDictionary))
+        {
+          var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
+          if (speckleDict != null && speckleDict.Count > 0)
+          {
+            foreach (DBDictionaryEntry entry in speckleDict)
+            {
+              if (entry.Key == SpeckleStreamStates)
+              {
+                record = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord;
+              }
+            }
+          }
+        }
+        tr.Commit();
+      }
+      return record;
+    }
+
+    public static List<StreamState> ReadState(Document doc)
+    {
+      if (doc == null)
+        return new List<StreamState>();
+
+      try
+      {
+        var streamStatesRecord = GetSpeckleStreamRecord(doc);
+        if (streamStatesRecord == null)
+          return new List<StreamState>();
+
+        var str = streamStatesRecord.Data.AsArray()[0].Value as string;
+        var states = JsonConvert.DeserializeObject<List<StreamState>>(str);
+
+        return states;
+      }
+      catch (Exception e)
+      {
+        return new List<StreamState>();
       }
     }
   }
