@@ -33,11 +33,6 @@ namespace SpeckleRhino
 
     private static string SpeckleKey = "speckle";
 
-    /// <summary>
-    /// TODO: Any errors thrown should be stored here and passed to the ui state (somehow).
-    /// </summary>
-    public List<Exception> Exceptions { get; set; } = new List<Exception>();
-
     public ConnectorBindingsRhino2()
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
@@ -178,10 +173,7 @@ namespace SpeckleRhino
       {
         return null;
       }
-
-
-      Exceptions.Clear();
-
+      
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.CommitId == "latest")
       {
@@ -199,23 +191,12 @@ namespace SpeckleRhino
           onProgressAction: dict => progress.Update(dict),
           onErrorAction: (s, e) =>
           {
-            Exceptions.Add(e);
             progress.Report.LogOperationError(e);
-            //state.Errors.Add(e);
             progress.CancellationTokenSource.Cancel();
           },
           onTotalChildrenCountKnown: (c) => progress.Max = c,
           disposeTransports: true
           );
-
-
-
-      if (Exceptions.Count != 0)
-      {
-        //RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
-        progress.Report.LogOperationError(new AggregateException("Encountered some errors", Exceptions));
-        return state;
-      }
 
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
@@ -293,7 +274,6 @@ namespace SpeckleRhino
           {
             var e = new Exception(
               $"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked.");
-            Exceptions.Add(e);
             converter.Report.LogOperationError(e);
           }
           return objects;
@@ -384,28 +364,24 @@ namespace SpeckleRhino
             if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
             {
               var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
-              Exceptions.Add(exception);
               converter.Report.LogConversionError(exception);
             }
           }
           else
           {
             var exception = new Exception($"Could not create layer {layerPath} to bake objects into.");
-            Exceptions.Add(exception);
             converter.Report.LogConversionError(exception);
           }
         }
         else
         {
           var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}");
-          Exceptions.Add(exception);
           converter.Report.LogConversionError(exception);
         }
       }
       else if (converted == null)
       {
         var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}.");
-        Exceptions.Add(exception);
         converter.Report.LogConversionError(exception);
       }
     }
@@ -416,8 +392,6 @@ namespace SpeckleRhino
 
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
-      Exceptions.Clear();
-      
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
@@ -461,17 +435,14 @@ namespace SpeckleRhino
           {
             if (!converter.CanConvertToSpeckle(obj))
             {
-              var exception = new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported");
-              Exceptions.Add(exception);
-              progress.Report.LogOperationError(exception);
+              progress.Report.Log($"Objects of type ${obj.Geometry.ObjectType} are not supported");
               continue;
             }
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
               var exception = new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}.");
-              Exceptions.Add(exception);
-              progress.Report.LogOperationError(exception);
+              progress.Report.LogConversionError(exception);
               continue;
             }
 
@@ -501,14 +472,12 @@ namespace SpeckleRhino
           else
           {
             var exception = new Exception($"Failed to find local view ${applicationId}.");
-            Exceptions.Add(exception);
             progress.Report.LogOperationError(exception);
             continue;
           }
           if (converted == null)
           {
             var exception = new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}.");
-            Exceptions.Add(exception);
             converter.Report.LogConversionError(exception);
             
             continue;
@@ -546,7 +515,7 @@ namespace SpeckleRhino
 
       if (renamedlayers)
       {
-        progress.Report.LogOperationError(new SpeckleException("Replaced illegal chars ./ with - in one or more layer names.", false));
+        progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
       }
       
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -576,12 +545,6 @@ namespace SpeckleRhino
         disposeTransports: true
         );
 
-      if (Exceptions.Count != 0)
-      {
-        progress.Report.LogOperationError(new SpeckleException($"Failed to send: \n {Exceptions.Last().Message}"));
-        return;
-      }
-
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
@@ -608,7 +571,6 @@ namespace SpeckleRhino
         //TODO
         //Globals.Notify($"Failed to create commit.\n{e.Message}");
         progress.Report.LogOperationError(e);
-        Exceptions.Add(e);
       }
 
       //return state;
