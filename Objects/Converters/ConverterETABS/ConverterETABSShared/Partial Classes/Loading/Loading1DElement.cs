@@ -32,7 +32,8 @@ namespace Objects.Converter.ETABS
 
             //var element1DList = new List<Base>();
             
-            Model.FrameObj.GetLoadDistributed(name, ref numberItems, ref frameName,ref loadPat,ref MyType,ref csys, ref dir, ref RD1, ref RD2 , ref dist1, ref dist2, ref val1, ref val2);
+            int s = Model.FrameObj.GetLoadDistributed(name, ref numberItems, ref frameName,ref loadPat,ref MyType,ref csys, ref dir, ref RD1, ref RD2 , ref dist1, ref dist2, ref val1, ref val2);
+            if (s == 0) { 
             foreach (int index in Enumerable.Range(0, numberItems))
             {
                 var speckleLoadFrame = new LoadBeam();
@@ -99,7 +100,7 @@ namespace Objects.Converter.ETABS
                 speckleLoadFrame.positions.Add(dist1[index]);
                 speckleLoadFrame.positions.Add(dist2[index]);
                 speckleLoadFrame.loadType = BeamLoadType.Uniform;
-                speckleLoadFrame.loadCase = LoadPatternToSpeckle(loadPat[index]);
+                //speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
                 LoadStoringBeam[loadID] = speckleLoadFrame;
             }
             counter += 1;
@@ -112,6 +113,95 @@ namespace Objects.Converter.ETABS
                 FrameStoring.TryGetValue(entry, out var elements);
                 loadBeam.elements = elements;
                 SpeckleModel.loads.Add(loadBeam);
+                }
+            }
+            }
+
+            double[] dist = null;
+            double[] relDist = null;
+            double[] val = null;
+            s = Model.FrameObj.GetLoadPoint(name, ref numberItems, ref frameName, ref loadPat, ref MyType, ref csys, ref dir, ref relDist, ref dist, ref val);
+            if (s == 0)
+            {
+                foreach (int index in Enumerable.Range(0, numberItems))
+                {
+                    var speckleLoadFrame = new LoadBeam();
+                    var element = FrameToSpeckle(frameName[index]);
+                    var loadID = String.Concat(loadPat[index], val, dist[index], dir[index], MyType[index]);
+                    FrameStoring.TryGetValue(loadID, out var element1DList);
+                    if (element1DList == null) { element1DList = new List<Base> { }; }
+                    element1DList.Add(element);
+                    FrameStoring[loadID] = element1DList;
+
+                    switch (dir[index])
+                    {
+                        case 1:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.X : LoadDirection.XX;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Local;
+                            break;
+                        case 2:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Y : LoadDirection.YY;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Local;
+                            break;
+                        case 3:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Z : LoadDirection.ZZ;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Local;
+                            break;
+                        case 4:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.X : LoadDirection.XX;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 5:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Y : LoadDirection.YY;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 6:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Z : LoadDirection.ZZ;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 7:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.X : LoadDirection.XX;
+                            speckleLoadFrame.isProjected = true;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 8:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Y : LoadDirection.YY;
+                            speckleLoadFrame.isProjected = true;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 9:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Z : LoadDirection.ZZ;
+                            speckleLoadFrame.isProjected = true;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 10:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Z : LoadDirection.ZZ;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                        case 11:
+                            speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Z : LoadDirection.ZZ;
+                            speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
+                            break;
+                    }
+                    if (speckleLoadFrame.values == null) { speckleLoadFrame.values = new List<double> { }; }
+                    speckleLoadFrame.values.Add(val[index]);
+                    if (speckleLoadFrame.positions == null) { speckleLoadFrame.positions = new List<double> { }; }
+                    speckleLoadFrame.positions.Add(dist[index]);
+                    speckleLoadFrame.loadType = BeamLoadType.Point;
+                    //speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
+                    LoadStoringBeam[loadID] = speckleLoadFrame;
+                }
+                counter += 1;
+
+                if (counter == frameNumber)
+                {
+                    foreach (var entry in LoadStoringBeam.Keys)
+                    {
+                        LoadStoringBeam.TryGetValue(entry, out var loadBeam);
+                        FrameStoring.TryGetValue(entry, out var elements);
+                        loadBeam.elements = elements;
+                        SpeckleModel.loads.Add(loadBeam);
+                    }
                 }
             }
             var speckleObject = new Base();

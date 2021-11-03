@@ -16,10 +16,7 @@ namespace Objects.Converter.ETABS
         public LoadCase LoadPatternToSpeckle(string loadPatternName)
         {
             var speckleLoadCase = new LoadCase();
-
-
             speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
-
             speckleLoadCase.name = loadPatternName;
             var selfweight = GetSelfWeightMultiplier(loadPatternName);
            
@@ -36,7 +33,21 @@ namespace Objects.Converter.ETABS
                 var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
                 SpeckleModel.loads.Add(gravityLoad);
             }
+            if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
+            else { SpeckleModel.loads.Add(speckleLoadCase); }
+
                 
+            return speckleLoadCase;
+        }
+
+        public LoadCase LoadPatternCaseToSpeckle(string loadPatternName)
+        {
+            //Converts just the load case name
+            var speckleLoadCase = new LoadCase();
+            speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
+            speckleLoadCase.name = loadPatternName;
+            if (!SpeckleModel.loads.Contains(speckleLoadCase)) { }
+            else { SpeckleModel.loads.Add(speckleLoadCase); }
             return speckleLoadCase;
         }
 
