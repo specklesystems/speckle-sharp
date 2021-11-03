@@ -14,9 +14,10 @@ namespace Objects.Converter.ETABS
         
         Dictionary<string, LoadBeam> LoadStoringBeam = new Dictionary<string, LoadBeam>();
         Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
-        int counter = 0;
+        int counterFrame = 0;
         Base LoadFrameToSpeckle(string name,int frameNumber)
         {
+
             int numberItems = 0;
             string[] frameName = null;
             string[] loadPat = null;
@@ -103,9 +104,9 @@ namespace Objects.Converter.ETABS
                 //speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
                 LoadStoringBeam[loadID] = speckleLoadFrame;
             }
-            counter += 1;
+            counterFrame += 1;
 
-            if (counter == frameNumber)
+            if (counterFrame == frameNumber)
             {
                 foreach (var entry in LoadStoringBeam.Keys)
                 {
@@ -114,6 +115,7 @@ namespace Objects.Converter.ETABS
                 loadBeam.elements = elements;
                 SpeckleModel.loads.Add(loadBeam);
                 }
+                    counterFrame = 0;
             }
             }
 
@@ -185,15 +187,16 @@ namespace Objects.Converter.ETABS
                     }
                     if (speckleLoadFrame.values == null) { speckleLoadFrame.values = new List<double> { }; }
                     speckleLoadFrame.values.Add(val[index]);
+
                     if (speckleLoadFrame.positions == null) { speckleLoadFrame.positions = new List<double> { }; }
                     speckleLoadFrame.positions.Add(dist[index]);
                     speckleLoadFrame.loadType = BeamLoadType.Point;
                     //speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
                     LoadStoringBeam[loadID] = speckleLoadFrame;
                 }
-                counter += 1;
+                counterFrame += 1;
 
-                if (counter == frameNumber)
+                if (counterFrame == frameNumber)
                 {
                     foreach (var entry in LoadStoringBeam.Keys)
                     {
