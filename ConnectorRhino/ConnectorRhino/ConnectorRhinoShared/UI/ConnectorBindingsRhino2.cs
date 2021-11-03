@@ -379,7 +379,7 @@ namespace SpeckleRhino
         }
         else
         {
-          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "");}");
+          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}");
           converter.Report.LogConversionError(exception);
         }
       }
