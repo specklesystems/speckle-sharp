@@ -6,6 +6,7 @@ using Objects.Structural.Geometry;
 using System.Linq;
 using System.Text;
 using Speckle.Core.Models;
+using Objects.Structural.ETABS.Loading;
 
 namespace Objects.Converter.ETABS
 {
@@ -14,7 +15,8 @@ namespace Objects.Converter.ETABS
 
         Dictionary<string, LoadFace> LoadStoringArea = new Dictionary<string, LoadFace>();
         Dictionary<string, List<Base>> AreaStoring = new Dictionary<string, List<Base>>();
-        int counterArea = 0;
+        int counterAreaLoadUniform = 0;
+        int counterAreaLoadWind = 0;
         Base LoadFaceToSpeckle(string name,int areaNumber)
         {
 
@@ -94,8 +96,8 @@ namespace Objects.Converter.ETABS
                     LoadStoringArea[loadID] = speckleLoadFace;
 
                 }
-                counterArea += 1;
-                if(counterArea == areaNumber)
+                counterAreaLoadUniform += 1;
+                if(counterAreaLoadUniform == areaNumber)
                 {
                     foreach(var entry in LoadStoringArea.Keys)
                     {
@@ -104,12 +106,52 @@ namespace Objects.Converter.ETABS
                         loadFace.elements = areas;
                         SpeckleModel.loads.Add(loadFace);
                     }
-                    counterArea=0;
+                    counterAreaLoadUniform=0;
                 }
 
             }
 
-
+            int[] myType = null;
+            double[] cp = null;
+            s = Model.AreaObj.GetLoadWindPressure(name, ref numberItems, ref areaName, ref loadPat, ref myType, ref cp);
+            if (s == 0)
+            {
+                foreach (int index in Enumerable.Range(0, numberItems))
+                {
+                    var speckleLoadFace = new ETABSWindLoadingFace();
+                    var element = AreaToSpeckle(areaName[index]);
+                    var loadID = string.Concat(loadPat[index], myType[index], cp[index]);
+                    AreaStoring.TryGetValue(loadID, out var element2Dlist);
+                    if (element2Dlist == null) { element2Dlist = new List<Base> { }; }
+                    element2Dlist.Add(element);
+                    AreaStoring[loadID] = element2Dlist;
+                    if (speckleLoadFace.values == null) { speckleLoadFace.values = new List<double> { }; }
+                    speckleLoadFace.Cp = cp[index];
+                    switch (myType[index])
+                    {
+                        case 1:
+                            speckleLoadFace.WindPressureType = Structural.ETABS.Analysis.WindPressureType.Windward;
+                            break;
+                        case 2:
+                            speckleLoadFace.WindPressureType = Structural.ETABS.Analysis.WindPressureType.other;
+                            break;
+                    }
+                    //speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
+                    LoadStoringArea[loadID] = speckleLoadFace;
+                }
+                counterAreaLoadWind += 1;
+                if (counterAreaLoadWind == areaNumber)
+                {
+                    foreach (var entry in LoadStoringArea.Keys)
+                    {
+                        LoadStoringArea.TryGetValue(entry, out var loadFace);
+                        AreaStoring.TryGetValue(entry, out var areas);
+                        loadFace.elements = areas;
+                        SpeckleModel.loads.Add(loadFace);
+                    }
+                    counterAreaLoadWind = 0;
+                }
+            }
 
             var speckleBase = new Base();
             return speckleBase;
