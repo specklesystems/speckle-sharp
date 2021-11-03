@@ -119,100 +119,140 @@ namespace Objects.Converter.RhinoGh
       {
         case Point3d o:
           @base = PointToSpeckle(o);
+          Report.Log($"Converted point {o}");
           break;
         case Rhino.Geometry.Point o:
           @base = PointToSpeckle(o);
+          Report.Log($"Converted point {o}");
           break;
         case PointCloud o:
           @base = PointcloudToSpeckle(o);
+          Report.Log($"Converted PointCloud");
           break;
         case Vector3d o:
           @base = VectorToSpeckle(o);
+          Report.Log($"Converted Vector3d {o}");
           break;
         case RH.Interval o:
           @base = IntervalToSpeckle(o);
+          Report.Log($"Converted Interval {o}");
           break;
         case UVInterval o:
           @base = Interval2dToSpeckle(o);
+          Report.Log($"Converted Interval2d {o}");
           break;
         case RH.Line o:
           @base = LineToSpeckle(o);
+          Report.Log($"Converted Line");
           break;
         case LineCurve o:
           @base = LineToSpeckle(o);
+          Report.Log($"Converted LineCurve");
           break;
         case RH.Plane o:
           @base = PlaneToSpeckle(o);
+          Report.Log($"Converted Plane");
           break;
         case Rectangle3d o:
           @base = PolylineToSpeckle(o);
+          Report.Log($"Converted Polyline");
           break;
         case RH.Circle o:
           @base = CircleToSpeckle(o);
+          Report.Log($"Converted Circle");
           break;
         case RH.Arc o:
           @base = ArcToSpeckle(o);
+          Report.Log($"Converted Arc");
           break;
         case ArcCurve o:
           @base = ArcToSpeckle(o);
+          Report.Log($"Converted Arc");
           break;
         case RH.Ellipse o:
           @base = EllipseToSpeckle(o);
+          Report.Log($"Converted Ellipse");
           break;
         case RH.Polyline o:
           @base = PolylineToSpeckle(o) as Base;
+          Report.Log($"Converted Polyline");
           break;
         case NurbsCurve o:
           if (o.TryGetEllipse(out RH.Ellipse ellipse))
+          {
             @base = EllipseToSpeckle(ellipse);
+            Report.Log($"Converted NurbsCurve as Ellipse");
+          }
           else
+          {
             @base = CurveToSpeckle(o) as Base;
+            Report.Log($"Converted NurbsCurve");
+          }
           break;
         case PolylineCurve o:
           @base = PolylineToSpeckle(o);
+          Report.Log($"Converted Polyline Curve");
           break;
         case PolyCurve o:
           @base = PolycurveToSpeckle(o);
+          Report.Log($"Converted PolyCurve");
           break;
         case RH.Box o:
           @base = BoxToSpeckle(o);
+          Report.Log($"Converted Box");
           break;
         case RH.Hatch o:
           @base = HatchToSpeckle(o);
+          Report.Log($"Converted Hatch");
           break;
         case RH.Mesh o:
           @base = MeshToSpeckle(o);
+          Report.Log($"Converted Mesh");
           break;
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
+          {
             @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()));
+            Report.Log($"Converted SubD as BREP");
+          }
           else
+          {
             @base = MeshToSpeckle(o);
+            Report.Log($"Converted SubD as Mesh");
+          }
           break;
 #endif
         case RH.Extrusion o:
           @base = BrepToSpeckle(o);
+          Report.Log($"Converted Extrusion as BREP");
           break;
         case RH.Brep o:
           @base = BrepToSpeckle(o.DuplicateBrep());
+          Report.Log($"Converted Brep");
           break;
         case NurbsSurface o:
           @base = SurfaceToSpeckle(o);
+          Report.Log($"Converted NurbsSurface");
           break;
         case ViewInfo o:
           @base = ViewToSpeckle(o);
+          Report.Log($"Converted ViewInfo");
           break;
         case InstanceDefinition o:
           @base = BlockDefinitionToSpeckle(o);
+          Report.Log($"Converted InstanceDefinition {o.Id}");
           break;
         case InstanceObject o:
           @base = BlockInstanceToSpeckle(o);
+          Report.Log($"Converted BlockInstance {o.Id}");
           break;
         case TextEntity o:
           @base = TextToSpeckle(o);
+          Report.Log($"Converted TextEntity");
           break;
         default:
+          Report.Log($"Skipped not supported type: {@object.GetType()}");
           throw new NotSupportedException();
       }
 
@@ -375,91 +415,153 @@ namespace Objects.Converter.RhinoGh
 
     public object ConvertToNative(Base @object)
     {
+      object rhinoObj = null;
       switch (@object)
       {
         case Point o:
-          return PointToNative(o);
+          rhinoObj = PointToNative(o);
+          Report.Log($"Created point {o.id}");
+          break;
 
         case Pointcloud o:
-          return PointcloudToNative(o);
+          rhinoObj = PointcloudToNative(o);
+          Report.Log($"Created PointCloud {o.id}");
+          break;
 
         case Vector o:
-          return VectorToNative(o);
-
+          rhinoObj = VectorToNative(o);
+          Report.Log($"Created Vector {o.id}");
+          break;
+        
         case Hatch o:
-          return HatchToNative(o);
+          rhinoObj = HatchToNative(o);
+          Report.Log($"Created Hatch {o.id}");
+          break;
 
         case Interval o:
-          return IntervalToNative(o);
+          rhinoObj = IntervalToNative(o);
+          Report.Log($"Created Interval {o.id}");
+          break;
 
         case Interval2d o:
-          return Interval2dToNative(o);
+          rhinoObj = Interval2dToNative(o);
+          Report.Log($"Created Interval2d {o.id}");
+          break;
 
         case Line o:
-          return LineToNative(o);
+          rhinoObj = LineToNative(o);
+          Report.Log($"Created Line {o.id}");
+          break;
 
         case Plane o:
-          return PlaneToNative(o);
+          rhinoObj = PlaneToNative(o);
+          Report.Log($"Created Plane {o.id}");
+          break;
 
         case Circle o:
-          return CircleToNative(o);
+          rhinoObj = CircleToNative(o);
+          Report.Log($"Created Circle {o.id}");
+          break;
 
         case Arc o:
-          return ArcToNative(o);
+          rhinoObj = ArcToNative(o);
+          Report.Log($"Created Arc {o.id}");
+          break;
 
         case Ellipse o:
-          return EllipseToNative(o);
+          rhinoObj = EllipseToNative(o);
+          Report.Log($"Created Ellipse {o.id}");
+          break;
 
         case Polyline o:
-          return PolylineToNative(o);
+          rhinoObj = PolylineToNative(o);
+          Report.Log($"Created Polyline {o.id}");
+          break;
 
         case Polycurve o:
-          return PolycurveToNative(o);
+          rhinoObj = PolycurveToNative(o);
+          Report.Log($"Created PolyCurve {o.id}");
+          break;
 
         case Curve o:
-          return CurveToNative(o);
+          rhinoObj = CurveToNative(o);
+          Report.Log($"Created Curve {o.id}");
+          break;
 
         case Box o:
-          return BoxToNative(o);
+          rhinoObj = BoxToNative(o);
+          Report.Log($"Created Box {o.id}");
+          break;
 
         case Mesh o:
-          return MeshToNative(o);
+          rhinoObj = MeshToNative(o);
+          Report.Log($"Created Mesh {o.id}");
+          break;
 
         case Brep o:
           // Brep conversion should always fallback to mesh if it fails.
           var b = BrepToNative(o);
           if (b == null)
-            return (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
+          {
+            rhinoObj = (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
+            Report.Log($"Created Brep {o.id} as Mesh");
+          }
           else
-            return b;
-
+          {
+            rhinoObj = b;
+            Report.Log($"Created Brep {o.id}");
+          }
+          break;
         case Surface o:
-          return SurfaceToNative(o);
+          rhinoObj = SurfaceToNative(o);
+          Report.Log($"Created Surface {o.id}");
+          break;
 
         case Alignment o:
-          return CurveToNative(o.baseCurve);
+          rhinoObj = CurveToNative(o.baseCurve);
+          Report.Log($"Created Alignment {o.id}");
+          break;
 
         case ModelCurve o:
-          return CurveToNative(o.baseCurve);
+          rhinoObj = CurveToNative(o.baseCurve);
+          Report.Log($"Created ModelCurve {o.id}");
+          break;
 
         case DirectShape o:
-          return (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
+          if (o.displayMesh != null)
+          {
+            rhinoObj = MeshToNative(o.displayMesh);
+            Report.Log($"Created DirectShape {o.id}");
+          }
+          Report.Log($"Skipping DirectShape {o.id} because it has no displayMesh");
+          break;
 
         case View3D o:
-          return ViewToNative(o);
+          rhinoObj = ViewToNative(o);
+          Report.Log($"Created View3D {o.id}");
+          break;
 
         case BlockDefinition o:
-          return BlockDefinitionToNative(o);
+          rhinoObj = BlockDefinitionToNative(o);
+          Report.Log($"Created BlockDefinition {o.id}");
+          break;
 
         case BlockInstance o:
-          return BlockInstanceToNative(o);
+          rhinoObj = BlockInstanceToNative(o);
+          Report.Log($"Created BlockInstance {o.id}");
+          break;
 
         case Text o:
-          return TextToNative(o);
+          rhinoObj = TextToNative(o);
+          Report.Log($"Created Text {o.id}");
+          break;
 
         default:
+          Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
           throw new NotSupportedException();
       }
+
+      return rhinoObj;
     }
 
     public List<object> ConvertToNative(List<Base> objects)

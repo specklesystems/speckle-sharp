@@ -20,6 +20,7 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
 using System.Threading;
+using Speckle.Core.Logging;
 using Timer = System.Timers.Timer;
 
 namespace SpeckleRhino
@@ -199,6 +200,7 @@ namespace SpeckleRhino
           onErrorAction: (s, e) =>
           {
             Exceptions.Add(e);
+            progress.Report.LogOperationError(e);
             //state.Errors.Add(e);
             progress.CancellationTokenSource.Cancel();
           },
@@ -211,6 +213,7 @@ namespace SpeckleRhino
       if (Exceptions.Count != 0)
       {
         //RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
+        progress.Report.LogOperationError(new AggregateException("Encountered some errors", Exceptions));
         return state;
       }
 
@@ -237,7 +240,8 @@ namespace SpeckleRhino
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }
-
+      
+      progress.Report.Merge(converter.Report);
       Doc.Views.Redraw();
       Doc.EndUndoRecord(undoRecord);
 
@@ -395,17 +399,13 @@ namespace SpeckleRhino
 
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
-      Exceptions.Clear();
-
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
 
       var streamId = state.StreamId;
       var client = state.Client;
-
-
-
+      
       int objCount = 0;
       bool renamedlayers = false;
 
@@ -416,8 +416,7 @@ namespace SpeckleRhino
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        //TODO
-        //RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.",false));
         return;
       }
 
@@ -443,13 +442,13 @@ namespace SpeckleRhino
           {
             if (!converter.CanConvertToSpeckle(obj))
             {
-              Exceptions.Add(new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported"));
+              progress.Report.LogOperationError(new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported"));
               continue;
             }
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
-              Exceptions.Add(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}."));
+              progress.Report.LogOperationError(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}."));
               continue;
             }
 
@@ -478,7 +477,7 @@ namespace SpeckleRhino
           }
           else
           {
-            Exceptions.Add(new Exception($"Failed to find local view ${applicationId}."));
+            progress.Report.LogOperationError(new Exception($"Failed to find local view ${applicationId}."));
             continue;
           }
           if (converted == null)
@@ -508,7 +507,9 @@ namespace SpeckleRhino
 
         objCount++;
       }
-
+      
+      progress.Report.Merge(converter.Report);
+      
       if (objCount == 0)
       {
         //TODO
@@ -541,8 +542,7 @@ namespace SpeckleRhino
         },
         onErrorAction: (s, e) =>
         {
-          Exceptions.Add(e); // TODO!
-                             //state.Errors.Add(e);
+          progress.Report.LogOperationError(e);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
@@ -552,6 +552,7 @@ namespace SpeckleRhino
       {
         //TODO
         //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
+        progress.Report.LogOperationError(new SpeckleException($"Failed to send: \n {Exceptions.Last().Message}"));
         return;
       }
 

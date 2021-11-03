@@ -36,7 +36,9 @@ Test
 Test
 Type 'rocket' is not supported 🚀";
 
-      public int OperationErrorsCount = 0;
+      public int OperationErrorsCount { get; set; }
+
+      public int ConversionErrorsCount { get; set; }
       public string OperationErrorsString { get; set; } = @"Something went wrong";
       public string ConversionLogString { get; set; } = @"This is a sample log
 Some elements were created
