@@ -296,12 +296,17 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "Column":
-              return CurveToSpeckleColumn(o);
+              var curveToSpeckleColumn = CurveToSpeckleColumn(o);
+              Report.Log($"Converted Curve to Column");
+              return curveToSpeckleColumn;
 
             case "Beam":
-              return CurveToSpeckleBeam(o);
+              var curveToSpeckleBeam = CurveToSpeckleBeam(o);
+              Report.Log("Converted Curve to Beam");
+              return curveToSpeckleBeam;
 
             default:
+              Report.Log($"Skipping Curve conversion to schema {schema}");
               throw new NotSupportedException();
           }
 
@@ -309,21 +314,32 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "Floor":
-              return BrepToSpeckleFloor(o);
+              var brepToSpeckleFloor = BrepToSpeckleFloor(o);
+              Report.Log($"Converted Brep to Floor");
+              return brepToSpeckleFloor;
 
             case "Roof":
-              return BrepToSpeckleRoof(o);
+              var convertToSpeckleBe = BrepToSpeckleRoof(o);
+              Report.Log($"Converted Brep to Roof");
+              return convertToSpeckleBe;
 
             case "Wall":
-              return BrepToSpeckleWall(o);
+              var brepToSpeckleWall = BrepToSpeckleWall(o);
+              Report.Log($"Converted Brep to Wall");
+              return brepToSpeckleWall;
 
             case "FaceWall":
-              return BrepToFaceWall(o, args);
+              var brepToFaceWall = BrepToFaceWall(o, args);
+              Report.Log($"Converted Brep to Face Wall");
+              return brepToFaceWall;
 
             case "DirectShape":
-              return BrepToDirectShape(o, args);
+              var brepToDirectShape = BrepToDirectShape(o, args);
+              Report.Log($"Converted Brep to DirectShape");
+              return brepToDirectShape;
 
             default:
+              Report.Log($"Skipping Brep Conversion to schema {schema}");
               throw new NotSupportedException();
           }
 
@@ -331,12 +347,17 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "FaceWall":
-              return BrepToFaceWall(o.ToBrep(), args);
+              var convertToSpeckleBe = BrepToFaceWall(o.ToBrep(), args);
+              Report.Log($"Converted Extrusion to FaceWall");
+              return convertToSpeckleBe;
 
             case "DirectShape":
-              return ExtrusionToDirectShape(o, args);
+              var extrusionToDirectShape = ExtrusionToDirectShape(o, args);
+              Report.Log($"Converted Extrusion to DirectShape");
+              return extrusionToDirectShape;
 
             default:
+              Report.Log($"Skipping Extrusion conversion to unsupported schema {schema}");
               throw new NotSupportedException();
           }
 
@@ -344,13 +365,17 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "DirectShape":
-              return MeshToDirectShape(o, args);
+              var convertToSpeckleBe = MeshToDirectShape(o, args);
+              Report.Log($"Converted Mesh to DirectShape");
+              return convertToSpeckleBe;
 
             default:
+              Report.Log($"Skipping Mesh conversion to unsupported schema {schema}");
               throw new NotSupportedException();
           }
 
         default:
+          Report.Log($"{obj.GetType()} is not supported in schema conversions.");
           throw new NotSupportedException();
       }
     }
