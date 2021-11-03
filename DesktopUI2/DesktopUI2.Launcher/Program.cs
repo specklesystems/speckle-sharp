@@ -10,7 +10,8 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Pages;
 using ReactiveUI;
 using Splat;
-
+using System.Diagnostics;
+using System.Threading;
 
 namespace DesktopUI2.Launcher
 {
@@ -25,6 +26,12 @@ namespace DesktopUI2.Launcher
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
     {
+
+
+      //Debugger.Launch();
+      //while (!Debugger.IsAttached)
+      //  Thread.Sleep(100);
+
       string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
 
       string nativeLib = Path.Combine(path, "Native", "libAvalonia.Native.OSX.dylib");
