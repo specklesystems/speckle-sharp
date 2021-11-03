@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections;
 
-
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -30,72 +29,74 @@ using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
-  public partial class ConnectorBindingsAutocad : ConnectorBindings
+  public partial class ConnectorBindingsAutocad2 : ConnectorBindings
   {
     public Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     /// <summary>
-    /// TODO: Any errors thrown should be stored here and passed to the ui state
+    /// Keeps track of errors in conversions.
     /// </summary>
-    public List<Exception> Exceptions { get; set; } = new List<Exception>();
+    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
+   
+    /// <summary>
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
+
 
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
     public System.Windows.Forms.Control Control; 
-    public ConnectorBindingsAutocad() : base()
+
+    public ConnectorBindingsAutocad2() : base()
     {
       Control = new System.Windows.Forms.Control();
       Control.CreateControl();
     }
 
-    public void SetExecutorAndInit()
-    {
-      Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
-      Doc.BeginDocumentClose += Application_DocumentClosed;
-    }
-
     #region local streams 
-
-    public override void AddNewStream(StreamState state)
+    public override void WriteStreamsToFile(List<StreamState> streams)
     {
-      SpeckleStreamManager.AddSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
-    }
-
-    public override void RemoveStreamFromFile(string streamId)
-    {
-      SpeckleStreamManager.RemoveSpeckleStream(streamId);
-    }
-
-    public override void PersistAndUpdateStreamInFile(StreamState state)
-    {
-      SpeckleStreamManager.UpdateSpeckleStream(state.Stream.id, JsonConvert.SerializeObject(state));
+      SpeckleStreamManager2.WriteStreamStateList(Doc, streams);
     }
 
     public override List<StreamState> GetStreamsInFile()
     {
-      List<string> strings = SpeckleStreamManager.GetSpeckleStreams();
-      return strings.Select(s => JsonConvert.DeserializeObject<StreamState>(s)).ToList();
+      var streams = new List<StreamState>();
+      if (Doc != null)
+        streams = SpeckleStreamManager2.ReadState(Doc);
+      return streams;
     }
     #endregion
 
     #region boilerplate
+    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
 
-    public override string GetActiveViewName()
+    private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
+    
+    public override string GetDocumentId()
     {
-      return "Entire Document"; // TODO: handle views
+      string path = GetDocPath(Doc);
+      var hash = Core.Models.Utilities.hashString(path + Doc?.Name, Core.Models.Utilities.HashingFuctions.MD5);
+      return hash;
     }
 
-    public override List<string> GetObjectsInView() // TODO: this returns all visible doc objects. handle views later.
+    public override string GetDocumentLocation() => GetDocPath(Doc);
+
+    public override string GetFileName() => Doc?.Name;
+
+    public override string GetActiveViewName() => "Entire Document";
+
+    public override List<string> GetObjectsInView() // this returns all visible doc objects.
     {
       var objs = new List<string>();
-      using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        AcadDb.BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
-        AcadDb.BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
-        foreach (AcadDb.ObjectId id in blckTblRcrd)
+        BlockTableRecord modelSpace = Doc.Database.GetModelSpace();
+        foreach (ObjectId id in modelSpace)
         {
-          var dbObj = tr.GetObject(id, AcadDb.OpenMode.ForRead);
+          var dbObj = tr.GetObject(id, OpenMode.ForRead);
           if (dbObj.Visible())
             objs.Add(dbObj.Handle.ToString());
         }
@@ -103,18 +104,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return objs;
     }
-
-    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
-
-    public override string GetDocumentId()
-    {
-      string path = AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
-      return Speckle.Core.Models.Utilities.hashString("X" + path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5); // what is the "X" prefix for?
-    }
-
-    public override string GetDocumentLocation() => AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
-
-    public override string GetFileName() => Doc?.Name;
 
     public override List<string> GetSelectedObjects()
     {
@@ -133,12 +122,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var layers = new List<string>();
       if (Doc != null)
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
-          AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-          foreach (AcadDb.ObjectId objId in lyrTbl)
+          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+          foreach (ObjectId objId in lyrTbl)
           {
-            AcadDb.LayerTableRecord lyrTblRec = tr.GetObject(objId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTableRecord;
+            LayerTableRecord lyrTblRec = tr.GetObject(objId, OpenMode.ForRead) as LayerTableRecord;
             layers.Add(lyrTblRec.Name);
           }
           tr.Commit();
@@ -151,30 +140,29 @@ namespace Speckle.ConnectorAutocadCivil.UI
       };
     }
 
+    //TODO
+    public override List<MenuItem> GetCustomStreamMenuItems()
+    {
+      return new List<MenuItem>();
+    }
+
     public override void SelectClientObjects(string args)
     {
       throw new NotImplementedException();
     }
 
-    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
+    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressViewModel progress)
     {
-      if (progress == null)
-      {
-        return;
-      }
-
       Execute.PostToUIThread(() =>
       {
         progress.ProgressDict = dict;
         progress.Value = dict.Values.Last();
       });
     }
-
     #endregion
 
     #region receiving 
-
-    public override async Task<StreamState> ReceiveStream(StreamState state)
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       if (Doc == null)
       {
@@ -516,7 +504,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     #region sending
 
-    public override async Task<StreamState> SendStream(StreamState state)
+    public override async Task<StreamState> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.AutocadAppName);

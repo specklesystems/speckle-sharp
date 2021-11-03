@@ -166,11 +166,13 @@ namespace Speckle.ConnectorAutocadCivil.Storage
       return record;
     }
 
+    /// <summary>
+    /// Returns all the speckle stream states present in the current document.
+    /// </summary>
+    /// <param name="doc"></param>
+    /// <returns></returns>
     public static List<StreamState> ReadState(Document doc)
     {
-      if (doc == null)
-        return new List<StreamState>();
-
       try
       {
         var streamStatesRecord = GetSpeckleStreamRecord(doc);
@@ -185,6 +187,43 @@ namespace Speckle.ConnectorAutocadCivil.Storage
       catch (Exception e)
       {
         return new List<StreamState>();
+      }
+    }
+
+    /// <summary>
+    /// Writes the stream states to the current document.
+    /// </summary>
+    /// <param name="doc"></param>
+    /// <param name="wrap"></param>
+    public static void WriteStreamStateList(Document doc, List<StreamState> streamStates)
+    {
+      if (doc == null)
+        return;
+
+      using (DocumentLock l = doc.LockDocument())
+      {
+        using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+        {
+          var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
+          DBDictionary speckleDict;
+          if (NOD.Contains(SpeckleExtensionDictionary))
+          {
+            speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
+          }
+          else
+          {
+            speckleDict = new DBDictionary();
+            NOD.UpgradeOpen();
+            NOD.SetAt(SpeckleExtensionDictionary, speckleDict);
+            tr.AddNewlyCreatedDBObject(speckleDict, true);
+          }
+          var xRec = new Xrecord();
+          var value = JsonConvert.SerializeObject(streamStates) as string;
+          xRec.Data = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), value));
+          speckleDict.SetAt(SpeckleStreamStates, xRec);
+          tr.AddNewlyCreatedDBObject(xRec, true);
+          tr.Commit();
+        }
       }
     }
   }
