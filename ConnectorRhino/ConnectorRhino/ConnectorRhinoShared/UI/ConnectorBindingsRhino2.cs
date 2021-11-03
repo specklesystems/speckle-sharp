@@ -291,7 +291,10 @@ namespace SpeckleRhino
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            Exceptions.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
+            var e = new Exception(
+              $"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked.");
+            Exceptions.Add(e);
+            converter.Report.LogOperationError(e);
           }
           return objects;
         }
@@ -379,17 +382,31 @@ namespace SpeckleRhino
               attributes.SetUserString("SpeckleSchema", schema);
 
             if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
-              Exceptions.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+            {
+              var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
+              Exceptions.Add(exception);
+              converter.Report.LogConversionError(exception);
+            }
           }
           else
-            Exceptions.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
+          {
+            var exception = new Exception($"Could not create layer {layerPath} to bake objects into.");
+            Exceptions.Add(exception);
+            converter.Report.LogConversionError(exception);
+          }
         }
         else
-          Exceptions.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}"));
+        {
+          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}");
+          Exceptions.Add(exception);
+          converter.Report.LogConversionError(exception);
+        }
       }
       else if (converted == null)
       {
-        Exceptions.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}.");
+        Exceptions.Add(exception);
+        converter.Report.LogConversionError(exception);
       }
     }
 
@@ -399,6 +416,8 @@ namespace SpeckleRhino
 
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
+      Exceptions.Clear();
+      
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
@@ -442,13 +461,17 @@ namespace SpeckleRhino
           {
             if (!converter.CanConvertToSpeckle(obj))
             {
-              progress.Report.LogOperationError(new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported"));
+              var exception = new Exception($"Objects of type ${obj.Geometry.ObjectType} are not supported");
+              Exceptions.Add(exception);
+              progress.Report.LogOperationError(exception);
               continue;
             }
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
-              progress.Report.LogOperationError(new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}."));
+              var exception = new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}.");
+              Exceptions.Add(exception);
+              progress.Report.LogOperationError(exception);
               continue;
             }
 
@@ -477,12 +500,17 @@ namespace SpeckleRhino
           }
           else
           {
-            progress.Report.LogOperationError(new Exception($"Failed to find local view ${applicationId}."));
+            var exception = new Exception($"Failed to find local view ${applicationId}.");
+            Exceptions.Add(exception);
+            progress.Report.LogOperationError(exception);
             continue;
           }
           if (converted == null)
           {
-            Exceptions.Add(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
+            var exception = new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}.");
+            Exceptions.Add(exception);
+            converter.Report.LogConversionError(exception);
+            
             continue;
           }
           containerName = "Named Views";
@@ -512,15 +540,15 @@ namespace SpeckleRhino
       
       if (objCount == 0)
       {
-        //TODO
-        //RaiseNotification("Zero objects converted successfully. Send stopped.");
+        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
         return;
       }
 
-      //TODO
-      //if (renamedlayers)
-      //  RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
-
+      if (renamedlayers)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Replaced illegal chars ./ with - in one or more layer names.", false));
+      }
+      
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return;
@@ -550,8 +578,6 @@ namespace SpeckleRhino
 
       if (Exceptions.Count != 0)
       {
-        //TODO
-        //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
         progress.Report.LogOperationError(new SpeckleException($"Failed to send: \n {Exceptions.Last().Message}"));
         return;
       }
@@ -581,6 +607,7 @@ namespace SpeckleRhino
       {
         //TODO
         //Globals.Notify($"Failed to create commit.\n{e.Message}");
+        progress.Report.LogOperationError(e);
         Exceptions.Add(e);
       }
 
