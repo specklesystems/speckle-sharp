@@ -10,34 +10,34 @@ namespace Objects.Structural.Results
     public class ResultGlobal : Result
     {
         [DetachProperty]
-        public Model model { get; set; }
-        public double loadX { get; set; }
-        public double loadY { get; set; }
-        public double loadZ { get; set; }
-        public double loadXX { get; set; }
-        public double loadYY { get; set; }
-        public double loadZZ { get; set; }
-        public double reactionX { get; set; }
-        public double reactionY { get; set; }
-        public double reactionZ { get; set; }
-        public double reactionXX { get; set; }
-        public double reactionYY { get; set; }
-        public double reactionZZ { get; set; }
-        public double mode { get; set; }
-        public double frequency { get; set; }
-        public double loadFactor { get; set; }
-        public double modalStiffness { get; set; }
-        public double modalGeoStiffness { get; set; }
-        public double effMassX { get; set; }
-        public double effMassY { get; set; }
-        public double effMassZ { get; set; }
-        public double effMassXX { get; set; }
-        public double effMassYY { get; set; }
-        public double effMassZZ { get; set; }
+        public Model model { get; set; } // this should be a model identifier instead
+        public float? loadX { get; set; }
+        public float? loadY { get; set; }
+        public float? loadZ { get; set; }
+        public float? loadXX { get; set; }
+        public float? loadYY { get; set; }
+        public float? loadZZ { get; set; }
+        public float? reactionX { get; set; }
+        public float? reactionY { get; set; }
+        public float? reactionZ { get; set; }
+        public float? reactionXX { get; set; }
+        public float? reactionYY { get; set; }
+        public float? reactionZZ { get; set; }
+        public float? mode { get; set; }
+        public float? frequency { get; set; }
+        public float? loadFactor { get; set; }
+        public float? modalStiffness { get; set; }
+        public float? modalGeoStiffness { get; set; }
+        public float? effMassX { get; set; }
+        public float? effMassY { get; set; }
+        public float? effMassZ { get; set; }
+        public float? effMassXX { get; set; }
+        public float? effMassYY { get; set; }
+        public float? effMassZZ { get; set; }
         public ResultGlobal() { }
 
         [SchemaInfo("ResultGlobal (load case)", "Creates a Speckle global result object (for load case)", "Structural", "Results")]
-        public ResultGlobal(LoadCase resultCase, double loadX, double loadY, double loadZ, double loadXX, double loadYY, double loadZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double mode, double frequency, double loadFactor, double modalStiffness, double modalGeoStiffness, double effMassX, double effMassY, double effMassZ, double effMassXX, double effMassYY, double effMassZZ)
+        public ResultGlobal(LoadCase resultCase, float loadX, float loadY, float loadZ, float loadXX, float loadYY, float loadZZ, float reactionX, float reactionY, float reactionZ, float reactionXX, float reactionYY, float reactionZZ, float mode, float frequency, float loadFactor, float modalStiffness, float modalGeoStiffness, float effMassX, float effMassY, float effMassZ, float effMassXX, float effMassYY, float effMassZZ)
         {            
             this.resultCase = resultCase;
             this.loadX = loadX;
@@ -66,7 +66,7 @@ namespace Objects.Structural.Results
         }
 
         [SchemaInfo("ResultGlobal (load combination)", "Creates a Speckle global result object (for load combination)", "Structural", "Results")]
-        public ResultGlobal(LoadCombination resultCase, double loadX, double loadY, double loadZ, double loadXX, double loadYY, double loadZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double mode, double frequency, double loadFactor, double modalStiffness, double modalGeoStiffness, double effMassX, double effMassY, double effMassZ, double effMassXX, double effMassYY, double effMassZZ)
+        public ResultGlobal(LoadCombination resultCase, float loadX, float loadY, float loadZ, float loadXX, float loadYY, float loadZZ, float reactionX, float reactionY, float reactionZ, float reactionXX, float reactionYY, float reactionZZ, float mode, float frequency, float loadFactor, float modalStiffness, float modalGeoStiffness, float effMassX, float effMassY, float effMassZ, float effMassXX, float effMassYY, float effMassZZ)
         {
             this.resultCase = resultCase;
             this.loadX = loadX;

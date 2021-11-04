@@ -80,7 +80,15 @@ namespace Speckle.Core.Api
     public string streamId { get; set; }
     public string id { get; set; }
   }
-
+  
+  public class CommitReceivedInput 
+  {
+    public string streamId { get; set;}
+    public string commitId { get; set;}
+    public string sourceApplication { get; set;}
+    public string message { get; set;}
+  }
+  
   #endregion
 
   public class Stream

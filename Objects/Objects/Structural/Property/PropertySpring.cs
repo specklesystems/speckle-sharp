@@ -23,13 +23,13 @@ namespace Objects.Structural.Properties
         public double springCurveZZ { get; set; } = 0; //if 0 spring is elastic, otherwise refers to a material curve by number
         public double stiffnessZZ { get; set; }
         public double dampingRatio { get; set; }
-        public double dampingX { get; set; }
-        public double dampingY { get; set; }
-        public double dampingZ { get; set; }
-        public double dampingXX { get; set; }
-        public double dampingYY { get; set; }
-        public double dampingZZ { get; set; }
-        public double matrix { get; set; } //refers to spring matrix record
+        public double dampingX { get; set; } //is this needed? springType can't be set to DAMPER
+        public double dampingY { get; set; } //is this needed? springType can't be set to DAMPER
+        public double dampingZ { get; set; } //is this needed? springType can't be set to DAMPER
+        public double dampingXX { get; set; } //is this needed? springType can't be set to DAMPER
+        public double dampingYY { get; set; } //is this needed? springType can't be set to DAMPER
+        public double dampingZZ { get; set; } //is this needed? springType can't be set to DAMPER
+        public double matrix { get; set; } //refers to spring matrix record.
         public double positiveLockup { get; set; }
         public double negativeLockup { get; set; }
         public double frictionCoefficient { get; set; }

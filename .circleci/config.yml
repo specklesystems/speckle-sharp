@@ -56,6 +56,9 @@ parameters:
   run_connector_autocadcivil:
     type: boolean
     default: false
+  run_connector_etabs:
+    type: boolean
+    default: false
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   
@@ -74,7 +77,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorDynamo/.*", "param_name": "run_connector_dynamo"},
             {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
-            {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"}
+            {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
+            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"}
           ]'
           base-branch: 'main'
   
@@ -100,7 +104,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           POSTGRES_DB: speckle2_test
           POSTGRES_PASSWORD: speckle
           POSTGRES_USER: speckle
-      - image: 'speckle/speckle-server:2'
+      - image: 'speckle/speckle-server:latest'
         command: ["bash", "-c", "/wait && node bin/www"]
         environment:
           POSTGRES_URL: "localhost"
@@ -306,6 +310,15 @@ workflows:
           name: build-connector-autocadcivil
           slnname: ConnectorAutocadCivil
           dllname: SpeckleConnectorCivil.dll
+  
+  # ETABS Connector -Build/Test
+  connector_etabs:
+    when: << pipeline.parameters.run_connector_etabs>>
+    jobs:
+      - build-connector: 
+          name: build-connector-etabs
+          slnname: ConnectorETABS
+          dllname: SpeckleConnectorETABS.dll
 
   nuget:
     jobs:
@@ -348,7 +361,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"         
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -439,6 +452,21 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+            
+      # ETABS Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-etabs
+          slnname: ConnectorETABS
+          dllname: SpeckleConnectorETABS.dll
+          slug: etabs
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
      
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
@@ -450,6 +478,7 @@ workflows:
             - build-deploy-connector-rhino
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
+            - build-deploy-connector-etabs
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/

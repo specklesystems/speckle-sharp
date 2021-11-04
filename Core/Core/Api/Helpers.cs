@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -31,7 +32,8 @@ namespace Speckle.Core.Api
       var transport = new ServerTransport(client.Account, sw.StreamId);
 
       string objectId = "";
-
+      Commit commit = null;
+      
       //OBJECT URL
       if (!string.IsNullOrEmpty(sw.ObjectId))
       {
@@ -41,7 +43,7 @@ namespace Speckle.Core.Api
       //COMMIT URL
       else if (!string.IsNullOrEmpty(sw.CommitId))
       {
-        var commit = await client.CommitGet(sw.StreamId, sw.CommitId);
+        commit = await client.CommitGet(sw.StreamId, sw.CommitId);
         objectId = commit.referencedObject;
       }
 
@@ -54,12 +56,13 @@ namespace Speckle.Core.Api
         if (!branch.commits.items.Any())
           throw new SpeckleException($"The selected branch has no commits.", level: SentryLevel.Info);
 
+        commit = branch.commits.items[0];
         objectId = branch.commits.items[0].referencedObject;
       }
 
       Tracker.TrackPageview(Tracker.RECEIVE);
 
-      return await Operations.Receive(
+      var receiveRes = await Operations.Receive(
         objectId,
         remoteTransport: transport,
         onErrorAction: onErrorAction,
@@ -67,7 +70,22 @@ namespace Speckle.Core.Api
         onTotalChildrenCountKnown: onTotalChildrenCountKnown,
         disposeTransports: true
       );
-
+      
+      try
+      {
+        await client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = sw.StreamId,
+          commitId = commit?.id,
+          message = commit?.message,
+          sourceApplication = Applications.Other
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
+      return receiveRes;
     }
 
     /// <summary>

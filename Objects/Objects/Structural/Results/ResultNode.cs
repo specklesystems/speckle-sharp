@@ -30,40 +30,40 @@ namespace Objects.Structural.Results
     {
         [DetachProperty]
         public Node node { get; set; }
-        public double dispX { get; set; }
-        public double dispY { get; set; }
-        public double dispZ { get; set; }
-        public double rotXX { get; set; }
-        public double rotYY { get; set; }
-        public double rotZZ { get; set; }
-        public double reactionX { get; set; }
-        public double reactionY { get; set; }
-        public double reactionZ { get; set; }
-        public double reactionXX { get; set; }
-        public double reactionYY { get; set; }
-        public double reactionZZ { get; set; }
-        public double constraintX { get; set; }
-        public double constraintY { get; set; }
-        public double constraintZ { get; set; }
-        public double constraintXX { get; set; }
-        public double constraintYY { get; set; }
-        public double constraintZZ { get; set; }
-        public double velX { get; set; }
-        public double velY { get; set; }
-        public double velZ { get; set; }
-        public double velXX { get; set; }
-        public double velYY { get; set; }
-        public double velZZ { get; set; }
-        public double accX { get; set; }
-        public double accY { get; set; }
-        public double accZ { get; set; }
-        public double accXX { get; set; }
-        public double accYY { get; set; }
-        public double accZZ { get; set; }
+        public float? dispX { get; set; }
+        public float? dispY { get; set; }
+        public float? dispZ { get; set; }
+        public float? rotXX { get; set; }
+        public float? rotYY { get; set; }
+        public float? rotZZ { get; set; }
+        public float? reactionX { get; set; }
+        public float? reactionY { get; set; }
+        public float? reactionZ { get; set; }
+        public float? reactionXX { get; set; }
+        public float? reactionYY { get; set; }
+        public float? reactionZZ { get; set; }
+        public float? constraintX { get; set; }
+        public float? constraintY { get; set; }
+        public float? constraintZ { get; set; }
+        public float? constraintXX { get; set; }
+        public float? constraintYY { get; set; }
+        public float? constraintZZ { get; set; }
+        public float? velX { get; set; }
+        public float? velY { get; set; }
+        public float? velZ { get; set; }
+        public float? velXX { get; set; }
+        public float? velYY { get; set; }
+        public float? velZZ { get; set; }
+        public float? accX { get; set; }
+        public float? accY { get; set; }
+        public float? accZ { get; set; }
+        public float? accXX { get; set; }
+        public float? accYY { get; set; }
+        public float? accZZ { get; set; }
         public ResultNode() { }
 
         [SchemaInfo("ResultNode (load case)", "Creates a Speckle structural nodal result object", "Structural", "Results")]
-        public ResultNode(LoadCase resultCase, Node node, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double constraintX, double constraintY, double constraintZ, double constraintXX, double constraintYY, double constraintZZ, double velX, double velY, double velZ, double velXX, double velYY, double velZZ, double accX, double accY, double accZ, double accXX, double accYY, double accZZ)
+        public ResultNode(LoadCase resultCase, Node node, float dispX, float dispY, float dispZ, float rotXX, float rotYY, float rotZZ, float reactionX, float reactionY, float reactionZ, float reactionXX, float reactionYY, float reactionZZ, float constraintX, float constraintY, float constraintZ, float constraintXX, float constraintYY, float constraintZZ, float velX, float velY, float velZ, float velXX, float velYY, float velZZ, float accX, float accY, float accZ, float accXX, float accYY, float accZZ)
         {
             this.resultCase = resultCase;
             this.node = node;
@@ -100,7 +100,7 @@ namespace Objects.Structural.Results
         }
 
         [SchemaInfo("ResultNode (load combination)", "Creates a Speckle structural nodal result object", "Structural", "Results")]
-        public ResultNode(LoadCombination resultCase, Node node, double dispX, double dispY, double dispZ, double rotXX, double rotYY, double rotZZ, double reactionX, double reactionY, double reactionZ, double reactionXX, double reactionYY, double reactionZZ, double constraintX, double constraintY, double constraintZ, double constraintXX, double constraintYY, double constraintZZ, double velX, double velY, double velZ, double velXX, double velYY, double velZZ, double accX, double accY, double accZ, double accXX, double accYY, double accZZ)
+        public ResultNode(LoadCombination resultCase, Node node, float dispX, float dispY, float dispZ, float rotXX, float rotYY, float rotZZ, float reactionX, float reactionY, float reactionZ, float reactionXX, float reactionYY, float reactionZZ, float constraintX, float constraintY, float constraintZ, float constraintXX, float constraintYY, float constraintZZ, float velX, float velY, float velZ, float velXX, float velYY, float velZZ, float accX, float accY, float accZ, float accXX, float accYY, float accZZ)
         {
             this.resultCase = resultCase;
             this.node = node;
