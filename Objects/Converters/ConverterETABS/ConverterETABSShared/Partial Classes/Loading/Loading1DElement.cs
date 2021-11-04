@@ -205,6 +205,7 @@ namespace Objects.Converter.ETABS
                         loadBeam.elements = elements;
                         SpeckleModel.loads.Add(loadBeam);
                     }
+                    counterFrame = 0;
                 }
             }
             var speckleObject = new Base();
