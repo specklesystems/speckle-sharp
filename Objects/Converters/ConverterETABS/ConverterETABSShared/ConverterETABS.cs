@@ -161,6 +161,8 @@ namespace Objects.Converter.ETABS
                     return LoadFaceToSpeckle(name, GetAllWallNames(Model).Count());
                 case "AreaLoading":
                     return LoadFaceToSpeckle(name, GetAllAreaNames(Model).Count());
+                case "NodeLoading":
+                    return LoadNodeToSpeckle(name, GetAllPointNames(Model).Count());
                 case "LoadPattern":
                     returnObject = LoadPatternToSpeckle(name);
                     break;

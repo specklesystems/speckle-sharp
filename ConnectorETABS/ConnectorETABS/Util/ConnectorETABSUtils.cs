@@ -85,6 +85,8 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllWallNames(model);
                 case "AreaLoading":
                     return GetAllAreaNames(model);
+                case "NodeLoading":
+                    return GetAllPointNames(model);
                 case "Model":
                     var names = new string[] { };
                     names.Append(model.GetModelFilename());
@@ -576,6 +578,7 @@ namespace Speckle.ConnectorETABS.Util
             FloorLoading,
             AreaLoading,
             WallLoading,
+            NodeLoading,
 
             //ColumnResults,
             //BeamResults,

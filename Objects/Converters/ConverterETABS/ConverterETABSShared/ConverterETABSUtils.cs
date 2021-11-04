@@ -215,6 +215,18 @@ namespace Objects.Converter.ETABS
             var restraint = new Restraint(string.Join("", code));
             return restraint;
         }
+        public static List<string> GetAllPointNames(cSapModel model)
+        {
+            int num = 0;
+            var names = new string[] { };
+            try
+            {
+                model.PointObj.GetNameList(ref num, ref names);
+                return names.ToList();
+            }
+            catch { return null; }
+
+        }
 
         public enum ETABSConverterSupported
         {
@@ -244,6 +256,7 @@ namespace Objects.Converter.ETABS
             FloorLoading,
             AreaLoading,
             WallLoading,
+            NodeLoading,
             //ColumnResults,
             //BeamResults,
             //BraceResults,
