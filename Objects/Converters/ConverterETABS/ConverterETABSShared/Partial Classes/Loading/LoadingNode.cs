@@ -15,6 +15,14 @@ namespace Objects.Converter.ETABS
         Dictionary<string, LoadNode> LoadStoringNode = new Dictionary<string, LoadNode>();
         Dictionary<string, List<Node>> NodeStoring = new Dictionary<string, List<Node>>();
         int counterPoint = 0;
+        //need to figure out how to recombine forces into val6
+        //void LoadNodeToNative(LoadNode loadNode)
+        //{
+        //    foreach(var node in loadNode.nodes)
+        //    {
+        //        Model.PointObj.SetLoadForce(node.name,loadNode.loadCase,load)
+        //    }
+        //}
         Base LoadNodeToSpeckle(string name, int pointNumber)
         {
             double[] F1 = null;
@@ -39,42 +47,42 @@ namespace Objects.Converter.ETABS
                         var speckleLoadNode = new LoadNode();
                         speckleLoadNode.direction = LoadDirection.X;
                         var loadID = string.Concat(loadPat[index], F1[index], "F1");
-                        generateIDAndElements(loadID, pointName[index], F1[index], speckleLoadNode);
+                        generateIDAndElements(loadID,loadPat[index], pointName[index], F1[index], speckleLoadNode);
                     }
                     else if(F2[index] != 0)
                     {
                         var speckleLoadNode = new LoadNode();
                         speckleLoadNode.direction = LoadDirection.Y;
                         var loadID = string.Concat(loadPat[index], F2[index], "F2");
-                        generateIDAndElements(loadID, pointName[index], F2[index], speckleLoadNode);
+                        generateIDAndElements(loadID, loadPat[index], pointName[index], F2[index], speckleLoadNode);
                     }
                     else if(F3[index] != 0)
                     {
                         var speckleLoadNode = new LoadNode();
                         speckleLoadNode.direction = LoadDirection.Z;
                         var loadID = string.Concat(loadPat[index], F3[index], "F3");
-                        generateIDAndElements(loadID, pointName[index], F3[index], speckleLoadNode);
+                        generateIDAndElements(loadID, loadPat[index], pointName[index], F3[index], speckleLoadNode);
                     }
                     else if(M1[index] != 0)
                     {
                         var speckleLoadNode = new LoadNode();
                         speckleLoadNode.direction = LoadDirection.XX;
                         var loadID = string.Concat(loadPat[index], M1[index], "M1");
-                        generateIDAndElements(loadID, pointName[index], M1[index], speckleLoadNode);
+                        generateIDAndElements(loadID, loadPat[index], pointName[index], M1[index], speckleLoadNode);
                     }
                     else if (M2[index] != 0)
                     {
                         var speckleLoadNode = new LoadNode();
                         speckleLoadNode.direction = LoadDirection.YY;
                         var loadID = string.Concat(loadPat[index], M2[index], "M2");
-                        generateIDAndElements(loadID, pointName[index], M2[index], speckleLoadNode);
+                        generateIDAndElements(loadID, loadPat[index], pointName[index], M2[index], speckleLoadNode);
                     }
                     else if(M3[index]!= 0)
                     {
                         var speckleLoadNode = new LoadNode();
                         speckleLoadNode.direction = LoadDirection.ZZ;
                         var loadID = string.Concat(loadPat[index], M3[index], "M3");
-                        generateIDAndElements(loadID, pointName[index], M3[index], speckleLoadNode);
+                        generateIDAndElements(loadID, loadPat[index], pointName[index], M3[index], speckleLoadNode);
                     }
                     //speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
 
@@ -89,6 +97,7 @@ namespace Objects.Converter.ETABS
                         LoadStoringNode.TryGetValue(entry, out var loadStoringNode);
                         loadStoringNode.nodes = listNode;
                         SpeckleModel.loads.Add(loadStoringNode);
+                        
                     }
                 }
             }
@@ -97,15 +106,17 @@ namespace Objects.Converter.ETABS
             return speckleBase;
         }
 
-        void generateIDAndElements(string loadID, string nodeName, double value,LoadNode speckleLoadNode)
+        void generateIDAndElements(string loadID,string loadPat, string nodeName, double value,LoadNode speckleLoadNode)
         {
             speckleLoadNode.value = value;
             Node speckleNode = PointToSpeckle(nodeName);
+            speckleLoadNode.loadCase = LoadPatternCaseToSpeckle(loadPat);
             NodeStoring.TryGetValue(loadID, out var nodeList);
             if(nodeList == null) { nodeList = new List<Node> { }; }
             nodeList.Add(speckleNode);
             NodeStoring[loadID] = nodeList;
             LoadStoringNode[loadID] = speckleLoadNode;
+
         }
     }
 }

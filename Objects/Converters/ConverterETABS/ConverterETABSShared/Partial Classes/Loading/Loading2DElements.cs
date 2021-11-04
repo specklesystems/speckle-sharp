@@ -17,6 +17,46 @@ namespace Objects.Converter.ETABS
         Dictionary<string, List<Base>> AreaStoring = new Dictionary<string, List<Base>>();
         int counterAreaLoadUniform = 0;
         int counterAreaLoadWind = 0;
+        void LoadFaceToNative(LoadFace loadFace)
+        {
+            foreach(Element2D element in loadFace.elements)
+            {
+                if (loadFace.loadType == FaceLoadType.Constant)
+                {
+                    switch (loadFace.direction)
+                    {
+                        case LoadDirection2D.X:
+                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0],0);
+                            break;
+                        case LoadDirection2D.Y:
+                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 1);
+                            break;
+                        case LoadDirection2D.Z:
+                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 2);
+                            break;  
+                    }
+                }
+            }
+        }
+
+        void LoadWindToNative(ETABSWindLoadingFace windLoadingFace)
+        {
+            foreach(Element2D element in windLoadingFace.elements)
+            {
+                switch (windLoadingFace.WindPressureType)
+                {
+                    case Structural.ETABS.Analysis.WindPressureType.Windward:
+                        Model.AreaObj.SetLoadWindPressure(element.name, windLoadingFace.loadCase.name,1,windLoadingFace.Cp);
+                        break;
+                    case Structural.ETABS.Analysis.WindPressureType.other:
+                        Model.AreaObj.SetLoadWindPressure(element.name, windLoadingFace.loadCase.name, 2, windLoadingFace.Cp);
+                        break;
+                    
+                }
+
+            }
+        }
+
         Base LoadFaceToSpeckle(string name,int areaNumber)
         {
 
@@ -92,9 +132,9 @@ namespace Objects.Converter.ETABS
                     }
                     if(speckleLoadFace.values == null) { speckleLoadFace.values = new List<double> { }; }
                     speckleLoadFace.values.Add(value[index]);
-                    //speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
+                    speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
                     LoadStoringArea[loadID] = speckleLoadFace;
-
+                    speckleLoadFace.loadType = FaceLoadType.Constant;
                 }
                 counterAreaLoadUniform += 1;
                 if(counterAreaLoadUniform == areaNumber)

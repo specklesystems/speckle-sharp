@@ -15,6 +15,206 @@ namespace Objects.Converter.ETABS
         Dictionary<string, LoadBeam> LoadStoringBeam = new Dictionary<string, LoadBeam>();
         Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
         int counterFrame = 0;
+        void LoadUniformFrameToSpeckle(LoadBeam loadBeam)
+        {
+            int direction = 11;
+            int myType = 1;
+
+            if(loadBeam.isProjected == true)
+            {
+                switch (loadBeam.direction)
+                {
+                    case LoadDirection.X:
+                        direction = 7;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Y:
+                        direction = 8;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Z:
+                        direction = 9;
+                        myType = 2;
+                        break;
+                    case LoadDirection.XX:
+                        direction = 7;
+                        myType = 2;
+                        break;
+                    case LoadDirection.YY:
+                        direction = 8;
+                        myType = 2;
+                        break;
+                    case LoadDirection.ZZ:
+                        direction = 9;
+                        myType = 2;
+                        break;
+                }
+            }
+            else if(loadBeam.loadAxisType == Structural.LoadAxisType.Local)
+            {
+                switch (loadBeam.direction)
+                {
+                    case LoadDirection.X:
+                        direction = 1;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Y:
+                        direction = 2;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Z:
+                        direction = 3;
+                        myType = 2;
+                        break;
+                    case LoadDirection.XX:
+                        direction = 1;
+                        myType = 2;
+                        break;
+                    case LoadDirection.YY:
+                        direction = 2;
+                        myType = 2;
+                        break;
+                    case LoadDirection.ZZ:
+                        direction = 3;
+                        myType = 2;
+                        break;
+                }
+            }
+            else
+            {
+                switch (loadBeam.direction)
+                {
+                    case LoadDirection.X:
+                        direction = 4;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Y:
+                        direction = 5;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Z:
+                        direction = 6;
+                        myType = 2;
+                        break;
+                    case LoadDirection.XX:
+                        direction = 4;
+                        myType = 2;
+                        break;
+                    case LoadDirection.YY:
+                        direction = 5;
+                        myType = 2;
+                        break;
+                    case LoadDirection.ZZ:
+                        direction = 6;
+                        myType = 2;
+                        break;
+                }
+            }
+            foreach(Element1D element in loadBeam.elements)
+            {
+                Model.FrameObj.SetLoadDistributed(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]);
+            }
+        }
+        void LoadPointFrameToSpeckle(LoadBeam loadBeam)
+        {
+            int direction = 11;
+            int myType = 1;
+
+            if (loadBeam.isProjected == true)
+            {
+                switch (loadBeam.direction)
+                {
+                    case LoadDirection.X:
+                        direction = 7;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Y:
+                        direction = 8;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Z:
+                        direction = 9;
+                        myType = 2;
+                        break;
+                    case LoadDirection.XX:
+                        direction = 7;
+                        myType = 2;
+                        break;
+                    case LoadDirection.YY:
+                        direction = 8;
+                        myType = 2;
+                        break;
+                    case LoadDirection.ZZ:
+                        direction = 9;
+                        myType = 2;
+                        break;
+                }
+            }
+            else if (loadBeam.loadAxisType == Structural.LoadAxisType.Local)
+            {
+                switch (loadBeam.direction)
+                {
+                    case LoadDirection.X:
+                        direction = 1;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Y:
+                        direction = 2;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Z:
+                        direction = 3;
+                        myType = 2;
+                        break;
+                    case LoadDirection.XX:
+                        direction = 1;
+                        myType = 2;
+                        break;
+                    case LoadDirection.YY:
+                        direction = 2;
+                        myType = 2;
+                        break;
+                    case LoadDirection.ZZ:
+                        direction = 3;
+                        myType = 2;
+                        break;
+                }
+            }
+            else
+            {
+                switch (loadBeam.direction)
+                {
+                    case LoadDirection.X:
+                        direction = 4;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Y:
+                        direction = 5;
+                        myType = 1;
+                        break;
+                    case LoadDirection.Z:
+                        direction = 6;
+                        myType = 2;
+                        break;
+                    case LoadDirection.XX:
+                        direction = 4;
+                        myType = 2;
+                        break;
+                    case LoadDirection.YY:
+                        direction = 5;
+                        myType = 2;
+                        break;
+                    case LoadDirection.ZZ:
+                        direction = 6;
+                        myType = 2;
+                        break;
+                }
+            }
+            foreach (Element1D element in loadBeam.elements)
+            {
+                Model.FrameObj.SetLoadPoint(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0],loadBeam.values[0]);
+            }
+        }
         Base LoadFrameToSpeckle(string name,int frameNumber)
         {
 
@@ -91,6 +291,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case 11:
                         speckleLoadFrame.direction = (MyType[index] == 1) ? LoadDirection.Z : LoadDirection.ZZ;
+                        speckleLoadFrame.isProjected = true;
                         speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
                         break;
                 }
@@ -101,7 +302,7 @@ namespace Objects.Converter.ETABS
                 speckleLoadFrame.positions.Add(dist1[index]);
                 speckleLoadFrame.positions.Add(dist2[index]);
                 speckleLoadFrame.loadType = BeamLoadType.Uniform;
-                //speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
+                speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
                 LoadStoringBeam[loadID] = speckleLoadFrame;
             }
             counterFrame += 1;
@@ -191,7 +392,7 @@ namespace Objects.Converter.ETABS
                     if (speckleLoadFrame.positions == null) { speckleLoadFrame.positions = new List<double> { }; }
                     speckleLoadFrame.positions.Add(dist[index]);
                     speckleLoadFrame.loadType = BeamLoadType.Point;
-                    //speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
+                    speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
                     LoadStoringBeam[loadID] = speckleLoadFrame;
                 }
                 counterFrame += 1;
