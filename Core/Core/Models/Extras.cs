@@ -1,6 +1,7 @@
 ﻿using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Speckle.Core.Models
 {
@@ -90,5 +91,89 @@ namespace Speckle.Core.Models
 
     [JsonIgnore]
     public object NativeObject;
+  }
+
+  public class ProgressReport
+  {
+    /// <summary>
+    /// Keeps track of the conversion process
+    /// </summary>
+    public List<string> ConversionLog { get; } = new List<string>();
+
+    public string ConversionLogString
+    {
+      get
+      {
+        var summary = "";
+        var converted = ConversionLog.Count(x => x.ToLowerInvariant().Contains("converted"));
+        var created = ConversionLog.Count(x => x.ToLowerInvariant().Contains("created"));
+        var skipped = ConversionLog.Count(x => x.ToLowerInvariant().Contains("skipped"));
+        var failed = ConversionLog.Count(x => x.ToLowerInvariant().Contains("failed"));
+        var updated = ConversionLog.Count(x => x.ToLowerInvariant().Contains("updated"));
+
+        summary += converted > 0 ? $"CONVERTED: {converted}\n" : "";
+        summary += created > 0 ? $"CREATED: {created}\n" : "";
+        summary += updated > 0 ? $"UPDATED: {updated}\n" : "";
+        summary += skipped > 0 ? $"SKIPPED: {skipped}\n" : "";
+        summary += failed > 0 ? $"FAILED: {failed}\n" : "";
+
+        summary = !string.IsNullOrEmpty(summary) ? $"SUMMARY\n\n{summary}\n\n" : "";
+
+        return summary + string.Join("\n", ConversionLog);
+      }
+    }
+
+    public void Log(string text)
+    {
+      ConversionLog.Add(text);
+    }
+    /// <summary>
+    /// Keeps track of errors in the conversions.
+    /// </summary>
+    public List<Exception> ConversionErrors { get; } = new List<Exception>();
+    public string ConversionErrorsString
+    {
+      get
+      {
+        return string.Join("\n", ConversionErrors.Select(x => x.Message).Distinct());
+      }
+    }
+
+    public int ConversionErrorsCount => ConversionErrors.Count;
+
+    public void LogConversionError(Exception exception)
+    {
+      ConversionErrors.Add(exception);
+      Log(exception.Message);
+    }
+
+
+    /// <summary>
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> OperationErrors { get; } = new List<Exception>();
+    public string OperationErrorsString
+    {
+      get
+      {
+        return string.Join("\n", OperationErrors.Select(x => x.Message).Distinct());
+      }
+    }
+
+
+    public int OperationErrorsCount => OperationErrors.Count;
+
+    public void LogOperationError(Exception exception)
+    {
+      OperationErrors.Add(exception);
+      Log(exception.Message);
+    }
+
+    public void Merge(ProgressReport report)
+    {
+      this.ConversionErrors.AddRange(report.ConversionErrors);
+      this.OperationErrors.AddRange(report.OperationErrors);
+      this.ConversionLog.AddRange(report.ConversionLog);
+    }
   }
 }

@@ -16,11 +16,12 @@ namespace Objects.Converter.Revit
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
       var level = LevelToNative(speckleRoom.level);
 
-
+      var isUpdate = true;
       if (revitRoom == null)
       {
         var basePoint = PointToNative(speckleRoom.basePoint);
         revitRoom = Doc.Create.NewRoom(level, new UV(basePoint.X, basePoint.Y));
+        isUpdate = false;
       }
 
 
@@ -38,7 +39,7 @@ namespace Objects.Converter.Revit
         NativeObject = revitRoom
         }
       };
-
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} Room {revitRoom.Id}");
       return placeholders;
 
     }
@@ -62,7 +63,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRoom, revitRoom);
       speckleRoom.displayMesh = GetElementDisplayMesh(revitRoom);
-
+      Report.Log($"Converted Room {revitRoom.Id}");
       return speckleRoom;
     }
 

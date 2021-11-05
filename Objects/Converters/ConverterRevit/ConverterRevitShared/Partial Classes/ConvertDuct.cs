@@ -25,36 +25,36 @@ namespace Objects.Converter.Revit
       level = LevelToNative(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromCurve(baseLine));
 
       var ductType = GetElementType<DB.DuctType>(speckleDuct);
-      var systemFamily = ( speckleDuct is RevitDuct rd ) ? rd.systemName : "";
+      var systemFamily = (speckleDuct is RevitDuct rd) ? rd.systemName : "";
 
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType()
         .OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();
       var system = types.FirstOrDefault(x => x.Name == systemFamily);
-      if ( system == null )
+      if (system == null)
       {
         system = types.FirstOrDefault();
-        ConversionErrors.Add(new Exception($"Duct type {systemFamily} not found; replaced with {system.Name}"));
+        Report.LogConversionError(new Exception($"Duct type {systemFamily} not found; replaced with {system.Name}"));
       }
 
-      var docObj = GetExistingElementByApplicationId(( ( Base ) speckleDuct ).applicationId);
+      var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);
 
 
       // deleting instead of updating for now!
-      if ( docObj != null )
+      if (docObj != null)
       {
         Doc.Delete(docObj.Id);
       }
 
       DB.Duct duct = DB.Duct.Create(Doc, system.Id, ductType.Id, level.Id, startPoint, endPoint);
 
-      if ( speckleRevitDuct != null )
+      if (speckleRevitDuct != null)
       {
         TrySetParam(duct, BuiltInParameter.RBS_CURVE_HEIGHT_PARAM, speckleRevitDuct.height, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_CURVE_WIDTH_PARAM, speckleRevitDuct.width, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM, speckleRevitDuct.diameter, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitDuct.length, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_VELOCITY, speckleRevitDuct.velocity, speckleRevitDuct.units);
-
+        Report.Log($"Created Duct {duct.Id}");
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
@@ -70,7 +70,7 @@ namespace Objects.Converter.Revit
     public BuiltElements.Duct DuctToSpeckle(DB.Duct revitDuct)
     {
       var baseGeometry = LocationToSpeckle(revitDuct);
-      if ( !( baseGeometry is Line baseLine ) )
+      if (!(baseGeometry is Line baseLine))
       {
         throw new Speckle.Core.Logging.SpeckleException("Only line based Ducts are currently supported.");
       }
@@ -100,7 +100,7 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
-
+      Report.Log($"Converted Duct {revitDuct.Id}");
       return speckleDuct;
     }
   }

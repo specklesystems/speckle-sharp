@@ -27,8 +27,6 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
-      ConversionErrors.Clear();
-      OperationErrors.Clear();
 
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
@@ -44,8 +42,7 @@ namespace Speckle.ConnectorRevit.UI
 
       if (!selectedObjects.Any())
       {
-        //TODO
-        //state.Errors.Add(new Exception("There are zero objects to send. Please use a filter, or set some via selection."));
+        progress.Report.LogOperationError(new Exception("There are zero objects to send. Please use a filter, or set some via selection."));
         return;
       }
 
@@ -55,8 +52,8 @@ namespace Speckle.ConnectorRevit.UI
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      //TODO
-      //state.Progress.Maximum = selectedObjects.Count()
+
+      progress.Max = selectedObjects.Count();
       var convertedCount = 0;
 
       var placeholders = new List<Base>();
@@ -71,7 +68,7 @@ namespace Speckle.ConnectorRevit.UI
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
-            //state.Errors.Add(new Exception($"Skipping not supported type: {revitElement.GetType()}, name {revitElement.Name}"));
+            progress.Report.Log($"Skipped not supported type: {revitElement.GetType()}, name {revitElement.Name}");
             continue;
           }
 
@@ -105,24 +102,20 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception e)
         {
-          //state.Errors.Add(e);
+          progress.Report.LogConversionError(e);
         }
 
       }
 
-      if (converter.ConversionErrors.Count != 0)
-      {
-        ConversionErrors.AddRange(converter.ConversionErrors);
-        //state.Errors.AddRange(converter.ConversionErrors);
-      }
+
+      progress.Report.Merge(converter.Report);
+
 
       if (convertedCount == 0)
       {
-        //Globals.Notify("Zero objects converted successfully. Send stopped.");
+        progress.Report.LogConversionError(new Exception("Zero objects converted successfully. Send stopped."));
         return;
       }
-
-      //Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
@@ -138,17 +131,14 @@ namespace Speckle.ConnectorRevit.UI
         onProgressAction: dict => progress.Update(dict),
         onErrorAction: (s, e) =>
         {
-          OperationErrors.Add(e); // TODO!
-          //state.Errors.Add(e);
+          progress.Report.LogOperationError(e);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
         );
 
-      if (OperationErrors.Count != 0)
+      if (progress.Report.OperationErrorsCount != 0)
       {
-        //Globals.Notify("Failed to send.");
-        //state.Errors.AddRange(OperationErrors);
         return;
       }
 
@@ -174,14 +164,10 @@ namespace Speckle.ConnectorRevit.UI
 
         //await state.RefreshStream();
         state.PreviousCommitId = commitId;
-
-        //WriteStateToFile();
-        //RaiseNotification($"{convertedCount} objects sent to Speckle 🚀");
       }
       catch (Exception e)
       {
-        //state.Errors.Add(e);
-        //Globals.Notify($"Failed to create commit.\n{e.Message}");
+        progress.Report.LogOperationError(e);
       }
 
       //return state;

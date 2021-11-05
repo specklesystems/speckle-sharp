@@ -23,6 +23,7 @@ namespace Objects.Converter.Revit
 
       //delete and re-create line
       //TODO: check if can be modified
+      var isUpdate = false;
       if (revitGrid != null)
       {
         if (revitGrid.IsCurved)
@@ -60,6 +61,7 @@ namespace Objects.Converter.Revit
           {
             System.Diagnostics.Debug.WriteLine("Failed to set grid endpoints.");
           }
+          isUpdate = true;
         }
       }
 
@@ -87,7 +89,7 @@ namespace Objects.Converter.Revit
         }
       };
 
-
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} GridLine {revitGrid.Id}");
       return placeholders;
     }
 
@@ -100,6 +102,7 @@ namespace Objects.Converter.Revit
       //speckleGridline.elementId = revitCurve.Id.ToString(); this would need a RevitGridLine element
       speckleGridline.applicationId = revitGridLine.UniqueId;
       speckleGridline.units = ModelUnits;
+      Report.Log($"Converted GridLine {revitGridLine.Id}");
       return speckleGridline;
     }
 
