@@ -34,7 +34,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     /// <summary>
     /// Main command to initialize Speckle Connector
     /// </summary>
-    [CommandMethod("Speckle", CommandFlags.Modal)]
+    [CommandMethod("Speckle2", CommandFlags.Modal)]
     public static void SpeckleCommand()
     {
       CreateOrFocusSpeckle();
@@ -55,36 +55,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     private static void AppMain(Avalonia.Application app, string[] args)
     {
       AvaloniaApp = app;
-    }
-
-    [CommandMethod("SpeckleCommunity", CommandFlags.ActionMacro)]
-    public static void SpeckleCommunity()
-    {
-      try
-      {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.community ", false, false, true);
-      }
-      catch { }
-    }
-
-    [CommandMethod("SpeckleTutorials", CommandFlags.ActionMacro)]
-    public static void SpeckleTutorials()
-    {
-      try
-      {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.systems/tutorials ", false, false, true);
-      }
-      catch { }
-    }
-
-    [CommandMethod("SpeckleDocs", CommandFlags.ActionMacro)]
-    public static void SpeckleDocs()
-    {
-      try
-      {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.guide/user/autocadcivil.html ", false, false, true);
-      }
-      catch { }
     }
 
   }
