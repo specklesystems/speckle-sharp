@@ -34,7 +34,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case LoadDirection.Z:
                         direction = 9;
-                        myType = 2;
+                        myType = 1;
                         break;
                     case LoadDirection.XX:
                         direction = 7;
@@ -64,7 +64,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case LoadDirection.Z:
                         direction = 3;
-                        myType = 2;
+                        myType = 1;
                         break;
                     case LoadDirection.XX:
                         direction = 1;
@@ -94,7 +94,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case LoadDirection.Z:
                         direction = 6;
-                        myType = 2;
+                        myType = 1;
                         break;
                     case LoadDirection.XX:
                         direction = 4;
@@ -134,7 +134,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case LoadDirection.Z:
                         direction = 9;
-                        myType = 2;
+                        myType = 1;
                         break;
                     case LoadDirection.XX:
                         direction = 7;
@@ -164,7 +164,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case LoadDirection.Z:
                         direction = 3;
-                        myType = 2;
+                        myType = 1;
                         break;
                     case LoadDirection.XX:
                         direction = 1;
@@ -194,7 +194,7 @@ namespace Objects.Converter.ETABS
                         break;
                     case LoadDirection.Z:
                         direction = 6;
-                        myType = 2;
+                        myType = 1;
                         break;
                     case LoadDirection.XX:
                         direction = 4;

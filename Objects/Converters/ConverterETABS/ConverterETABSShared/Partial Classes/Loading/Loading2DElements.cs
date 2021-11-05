@@ -26,13 +26,14 @@ namespace Objects.Converter.ETABS
                     switch (loadFace.direction)
                     {
                         case LoadDirection2D.X:
-                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0],0);
+                            
+                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0],4);
                             break;
                         case LoadDirection2D.Y:
-                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 1);
+                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 5);
                             break;
                         case LoadDirection2D.Z:
-                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 2);
+                            Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 6);
                             break;  
                     }
                 }
