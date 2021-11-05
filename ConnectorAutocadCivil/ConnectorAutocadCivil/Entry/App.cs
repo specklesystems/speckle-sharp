@@ -98,7 +98,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
 
       // DUI2
-      RibbonButton button2 = CreateButton("Connector 2" + Utils.AppName, "Speckle2", panel, null, speckleTip, "logo");
+      RibbonButton button2 = CreateButton("Connector 2 " + Utils.AppName, "SpeckleNewUi", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
@@ -237,13 +237,13 @@ namespace Speckle.ConnectorAutocadCivil.Entry
               SpeckleAutocadCommand2.SpeckleCommand();
               break;
             case "SpeckleCommunity":
-              SpeckleAutocadCommand.SpeckleCommunity();
+              SpeckleAutocadCommand2.SpeckleCommunity();
               break;
             case "SpeckleTutorials":
-              SpeckleAutocadCommand.SpeckleTutorials();
+              SpeckleAutocadCommand2.SpeckleTutorials();
               break;
             case "SpeckleDocs":
-              SpeckleAutocadCommand.SpeckleDocs();
+              SpeckleAutocadCommand2.SpeckleDocs();
               break;
           }
       }

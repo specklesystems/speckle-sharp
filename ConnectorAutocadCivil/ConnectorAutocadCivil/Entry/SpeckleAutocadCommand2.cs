@@ -17,12 +17,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
   {
     public static Window MainWindow { get; private set; }
     public static ConnectorBindingsAutocad2 Bindings { get; set; }
-    private static Avalonia.Application AvaloniaApp { get; set; }
-
-    public static async void InitAvalonia()
-    {
-      BuildAvaloniaApp().Start(AppMain, null);
-    }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
@@ -34,7 +28,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     /// <summary>
     /// Main command to initialize Speckle Connector
     /// </summary>
-    [CommandMethod("Speckle2", CommandFlags.Modal)]
+    [CommandMethod("SpeckleNewUi", CommandFlags.Modal)]
     public static void SpeckleCommand()
     {
       CreateOrFocusSpeckle();
@@ -43,18 +37,8 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
-      {
         BuildAvaloniaApp().Start(AppMain, null);
 
-        /*
-        var viewModel = new MainWindowViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel,
-        };
-        Task.Run(() => AvaloniaApp.Run(MainWindow));
-        */
-      }
       MainWindow.Show();
     }
     private static void AppMain(Avalonia.Application app, string[] args)
@@ -68,6 +52,35 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       Task.Run(() => app.Run(MainWindow));
     }
 
+    [CommandMethod("SpeckleCommunity", CommandFlags.ActionMacro)]
+    public static void SpeckleCommunity()
+    {
+      try
+      {
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.community ", false, false, true);
+      }
+      catch { }
+    }
+
+    [CommandMethod("SpeckleTutorials", CommandFlags.ActionMacro)]
+    public static void SpeckleTutorials()
+    {
+      try
+      {
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.systems/tutorials ", false, false, true);
+      }
+      catch { }
+    }
+
+    [CommandMethod("SpeckleDocs", CommandFlags.ActionMacro)]
+    public static void SpeckleDocs()
+    {
+      try
+      {
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.guide/user/autocadcivil.html ", false, false, true);
+      }
+      catch { }
+    }
   }
 
     /*

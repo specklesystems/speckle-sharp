@@ -13,6 +13,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
+using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;

@@ -26,23 +26,13 @@ using Autodesk.AutoCAD.Colors;
 
 using Stylet;
 using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
   public partial class ConnectorBindingsAutocad2 : ConnectorBindings
   {
     public Document Doc => Application.DocumentManager.MdiActiveDocument;
-
-    /// <summary>
-    /// Keeps track of errors in conversions.
-    /// </summary>
-    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
-   
-    /// <summary>
-    /// Keeps track of errors in the operations of send/receive.
-    /// </summary>
-    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
-
 
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
@@ -135,8 +125,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return new List<ISelectionFilter>()
       {
-         new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-         new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+        new ManualSelectionFilter(),
+        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
+        new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -156,17 +147,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #region receiving 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      if (Doc == null)
-      {
-        OperationErrors.Add(new Exception($"No Document is open."));
-        return null;
-      }
-
-      ConversionErrors.Clear();
-      OperationErrors.Clear();
-
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.AutocadAppName);
+      if (converter == null)
+        throw new Exception("Could not find any Kit!");
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
       var stream = await state.Client.StreamGet(state.StreamId);
@@ -174,6 +158,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
+      }
+
+      if (Doc == null)
+      {
+        converter.Report.LogOperationError(new Exception($"No Document is open."));
+        progress.CancellationTokenSource.Cancel();
       }
 
       string referencedObject = state.ReferencedObject;
@@ -194,8 +184,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onProgressAction: dict => progress.Update(dict),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
         onErrorAction: (message, exception) => 
-        { 
-          OperationErrors.Add(exception);
+        {
+          progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
@@ -215,7 +205,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         // Do nothing!
       }
-      if (OperationErrors.Count != 0)
+      if (progress.Report.OperationErrorsCount != 0)
       {
         return state;
       }
@@ -264,9 +254,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
             DeleteBlocksWithPrefix(commitPrefix, tr);
             DeleteLayersWithPrefix(commitPrefix, tr);
           }
-          catch (Exception e)
+          catch
           {
-            OperationErrors.Add(new Exception($"could not remove existing layers starting with {commitPrefix} before importing new geometry."));
+            converter.Report.LogOperationError(new Exception($"Failed to remove existing layers or blocks starting with {commitPrefix} before importing new geometry."));
           }
 
           // flatten the commit object to retrieve children objs
@@ -330,24 +320,21 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 }
                 else
                 {
-                  ConversionErrors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+                  progress.Report.LogConversionError(new Exception($"Failed to add converted object {obj.id} of type {obj.speckle_type} to the document."));
                 }
 
               }
               else
-                ConversionErrors.Add(new Exception($"Could not create layer {layerName} to bake objects into."));
+                progress.Report.LogOperationError(new Exception($"Failed to create layer {layerName} to bake objects into."));
             }
             else if (converted == null)
             {
-              ConversionErrors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
             }
           }
 
-          /*
-          // raise any warnings from layer name modification
           if (changedLayerNames)
-            state.Errors.Add(new Exception($"Layer names were modified: one or more layers contained invalid characters {Utils.invalidChars}"));
-          */
+            progress.Report.Log($"Layer names were modified: one or more layers contained invalid characters {Utils.invalidChars}");
 
           // remove commit info from doc userdata
           Doc.UserData.Remove("commit");
@@ -387,7 +374,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             }
           }
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-            ConversionErrors.Add(new Exception($"Receiving {@base.speckle_type} objects is not supported. Object {@base.id} not baked."));
+            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
           return objects;
         }
       }
@@ -501,9 +488,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
-      ConversionErrors.Clear();
-      OperationErrors.Clear();
-
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.AutocadAppName);
       converter.SetContextDocument(Doc);
@@ -526,7 +510,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        OperationErrors.Add(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
         return;
       }
 
@@ -552,31 +536,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
         if (obj == null)
         {
-          OperationErrors.Add(new Exception($"Failed to find local object ${autocadObjectHandle}."));
+          progress.Report.Log($"Skipped not found object: ${autocadObjectHandle}.");
           continue;
         }
 
         if (!converter.CanConvertToSpeckle(obj))
         {
-          ConversionErrors.Add(new Exception($"Objects of type ${type} are not supported"));
+          progress.Report.Log($"Skipped not supported type: ${type}. Object ${obj.Id} not sent.");
           continue;
         }
 
         // convert obj
         Base converted = null;
         string containerName = string.Empty;
-        try
+        converted = converter.ConvertToSpeckle(obj);
+        if (converted == null)
         {
-          converted = converter.ConvertToSpeckle(obj);
-          if (converted == null)
-          {
-            ConversionErrors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
-            continue;
-          }
-        }
-        catch
-        {
-          ConversionErrors.Add(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+          progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
           continue;
         }
 
@@ -610,10 +586,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         convertedCount++;
       }
 
-      /*
+      progress.Report.Merge(converter.Report);
+
+      if (convertedCount == 0)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+        return;
+      }
+
       if (renamedlayers)
-        RaiseNotification("Replaced illegal chars ./ with - in one or more layer names.");
-      */
+        progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return;
@@ -628,47 +610,37 @@ namespace Speckle.ConnectorAutocadCivil.UI
         transports,
         onProgressAction: dict => progress.Update(dict),
         onErrorAction: (err, exception) => 
-        { 
-          OperationErrors.Add(exception);
+        {
+          progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
         );
 
-      if (OperationErrors.Count != 0)
+      if (progress.Report.OperationErrorsCount != 0)
       {
         return;
       }
 
-      if (convertedCount > 0)
+      var actualCommit = new CommitCreateInput
       {
-        var actualCommit = new CommitCreateInput
-        {
-          streamId = streamId,
-          objectId = commitObjId,
-          branchName = state.BranchName,
-          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-          sourceApplication = Utils.AutocadAppName
-        };
+        streamId = streamId,
+        objectId = commitObjId,
+        branchName = state.BranchName,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+        sourceApplication = Utils.AutocadAppName
+      };
 
-        if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-        try
-        {
-          var commitId = await client.CommitCreate(actualCommit);
-
-          state.PreviousCommitId = commitId;
-
-          //RaiseNotification($"{convertedCount} objects sent to {state.Stream.name}.");
-        }
-        catch (Exception e)
-        {
-          //Globals.Notify($"Failed to create commit.\n{e.Message}");
-        }
+      try
+      {
+        var commitId = await client.CommitCreate(actualCommit);
+        state.PreviousCommitId = commitId;
       }
-      else
+      catch (Exception e)
       {
-        //Globals.Notify($"Did not create commit: no objects could be converted.");
+        progress.Report.LogOperationError(e);
       }
     }
 
@@ -677,6 +649,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var selection = new List<string>();
       switch (filter.Slug)
       {
+        case "manual":
+          return GetSelectedObjects();
         case "all":
           return Doc.ConvertibleObjects(converter);
         case "layer":
