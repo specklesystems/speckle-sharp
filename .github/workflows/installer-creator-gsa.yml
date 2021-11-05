@@ -39,8 +39,6 @@
 name: Create Installer for GSA Connector
 
 on:
-  push:
-    tags: 'v*.*.*-cx'
   workflow_dispatch:
     inputs:
       version:
@@ -55,6 +53,13 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 2
+        
+    - name: Calculate tag version
+      id: calculateTagVersion
+      shell: powershell
+      run: |
+        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
+        echo "::set-output name=tag::$tag"        
         
     - name: Install the latest version of nuget
       uses: nuget/setup-nuget@v1
@@ -89,7 +94,7 @@ jobs:
     - name: create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-gsa-installer.iss
+        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-gsa-installer.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"          
           
@@ -117,11 +122,6 @@ jobs:
         path: ${{ steps.installer.outputs.filename }}
         retention-days: 1
 
-    - name: Calculate tag version
-      id: calculate-tag-version
-      run: |
-        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
-        echo "::set-output name=tag::$tag"
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       id: create-release
@@ -129,10 +129,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
-        tag_name: ${{ steps.calculate-tag-version.outputs.tag }}
-        release_name: Speckle-cx Installer ${{ steps.calculate-tag-version.outputs.tag }}
+        tag_name: gsa/${{ steps.calculateTagVersion.outputs.tag }}
+        release_name: gsa/${{ steps.calculateTagVersion.outputs.tag }}
         body: |
-          Automated release of Speckle 2.0 Connector for Oasys GSA
+          Automated release of Speckle v2 Connector for Oasys GSA
         draft: false
         prerelease: true
 

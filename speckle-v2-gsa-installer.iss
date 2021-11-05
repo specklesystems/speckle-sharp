@@ -1,8 +1,8 @@
 ;defining variables
-#define AppName      "Spec-v2-GSAConnector"
+#define AppName      "Speckle@Arup v2 GSA Connector"
 #define AppVersion  GetFileVersion("ConnectorGSA\ConnectorGSA\bin\Release\ConnectorGSA.exe")
-#define AppPublisher "Spec-cx"
-#define AppURL       "https://docs.speckle.arup.com"
+#define AppPublisher "Speckle@Arup"
+#define AppURL       "https://speckle.arup.com"
 #define SpeckleFolder "{localappdata}\Speckle"
 ;#define AnalyticsFolder "{localappdata}\SpeckleAnalytics"   
 ;#define AnalyticsFilename       "analytics.exe"
@@ -22,7 +22,7 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 DisableWelcomePage=no
 OutputDir="."
-OutputBaseFilename=Speckle-cx-GSA-{#AppVersion}
+OutputBaseFilename=Speckle@ArupGSAConnector-v{#AppVersion}
 SetupIconFile=ConnectorGSA\ConnectorGSA\icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -34,7 +34,7 @@ VersionInfoVersion={#AppVersion}
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Components]
-Name: gsa; Description: Speckle for Oasys GSA ALPHA - v{#AppVersion};  Types: full
+Name: gsa; Description: Speckle for Oasys GSA - v{#AppVersion};  Types: full
 Name: kits; Description: Speckle Kit - v{#AppVersion};  Types: full custom; Flags: fixed
 
 [Types]
