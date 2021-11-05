@@ -1599,7 +1599,7 @@ namespace ConverterGSA
           var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
           if (gsaResult.CaseId[0] == 'A')
           {
-            result.resultCase = GetLoadCaseFromIndex(gsaCaseIndex);
+            result.resultCase = GetAnalysisCaseFromIndex(gsaCaseIndex);
           }
           else if (gsaResult.CaseId[0] == 'C')
           {
@@ -1679,7 +1679,7 @@ namespace ConverterGSA
           var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
           if (gsaResult.CaseId[0] == 'A')
           {
-            result.resultCase = GetLoadCaseFromIndex(gsaCaseIndex);
+            result.resultCase = GetAnalysisCaseFromIndex(gsaCaseIndex);
           }
           else if (gsaResult.CaseId[0] == 'C')
           {
@@ -1747,7 +1747,7 @@ namespace ConverterGSA
           var gsaCaseIndex = Convert.ToInt32(gsaResult.CaseId.Substring(1));
           if (gsaResult.CaseId[0] == 'A')
           {
-            result.resultCase = GetLoadCaseFromIndex(gsaCaseIndex);
+            result.resultCase = GetAnalysisCaseFromIndex(gsaCaseIndex);
           }
           else if (gsaResult.CaseId[0] == 'C')
           {
