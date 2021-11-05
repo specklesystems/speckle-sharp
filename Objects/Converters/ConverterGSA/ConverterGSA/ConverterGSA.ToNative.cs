@@ -433,7 +433,6 @@ namespace ConverterGSA
       }
 
       //Dynamic properties
-      gsaMember.Exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure");
       var exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure");
       gsaMember.Exposure = exposure == ExposedSurfaces.NotSet ? ExposedSurfaces.ALL : exposure;
       var analysisType = speckleMember.GetDynamicEnum<AnalysisType>("AnalysisType");
@@ -556,8 +555,6 @@ namespace ConverterGSA
         IsIntersector = speckleMember.intersectsWithOthers,
 
         //Dynamic properties
-        Exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure"),
-        AnalysisType = speckleMember.GetDynamicEnum<AnalysisType>("AnalysisType"),
         Fire = speckleMember.GetDynamicEnum<FireResistance>("Fire"),
         CreationFromStartDays = speckleMember.GetDynamicValue<int>("CreationFromStartDays"),
         StartOfDryingDays = speckleMember.GetDynamicValue<int>("StartOfDryingDays"),
@@ -566,6 +563,12 @@ namespace ConverterGSA
         OffsetAutomaticInternal = speckleMember.GetDynamicValue<bool>("OffsetAutomaticInternal"),
         LimitingTemperature = speckleMember.GetDynamicValue<double?>("LimitingTemperature"),
       };
+
+
+      var exposure = speckleMember.GetDynamicEnum<ExposedSurfaces>("Exposure");
+      gsaMember.Exposure = exposure == ExposedSurfaces.NotSet ? ExposedSurfaces.ALL : exposure;
+      var analysisType = speckleMember.GetDynamicEnum<AnalysisType>("AnalysisType");
+      gsaMember.AnalysisType = analysisType == AnalysisType.NotSet ? AnalysisType.LINEAR : analysisType;
 
       if (speckleMember.property != null)
       {
