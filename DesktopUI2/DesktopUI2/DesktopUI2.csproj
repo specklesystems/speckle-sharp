@@ -62,9 +62,7 @@
     <AvaloniaResource Include="Styles\Styles.xaml">
       <Generator></Generator>
     </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Text.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Text.xaml" />
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>

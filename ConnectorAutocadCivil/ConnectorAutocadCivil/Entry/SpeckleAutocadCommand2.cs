@@ -42,19 +42,30 @@ namespace Speckle.ConnectorAutocadCivil.Entry
 
     public static void CreateOrFocusSpeckle()
     {
-      if (MainWindow != null)
+      if (MainWindow == null)
       {
+        BuildAvaloniaApp().Start(AppMain, null);
+
+        /*
         var viewModel = new MainWindowViewModel(Bindings);
         MainWindow = new MainWindow
         {
-          DataContext = viewModel
+          DataContext = viewModel,
         };
         Task.Run(() => AvaloniaApp.Run(MainWindow));
+        */
       }
+      MainWindow.Show();
     }
     private static void AppMain(Avalonia.Application app, string[] args)
     {
-      AvaloniaApp = app;
+      var viewModel = new MainWindowViewModel(Bindings);
+      MainWindow = new MainWindow
+      {
+        DataContext = viewModel
+      };
+
+      Task.Run(() => app.Run(MainWindow));
     }
 
   }

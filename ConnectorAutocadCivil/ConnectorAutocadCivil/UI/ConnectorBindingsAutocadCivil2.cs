@@ -151,14 +151,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       throw new NotImplementedException();
     }
 
-    private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressViewModel progress)
-    {
-      Execute.PostToUIThread(() =>
-      {
-        progress.ProgressDict = dict;
-        progress.Value = dict.Values.Last();
-      });
-    }
     #endregion
 
     #region receiving 
