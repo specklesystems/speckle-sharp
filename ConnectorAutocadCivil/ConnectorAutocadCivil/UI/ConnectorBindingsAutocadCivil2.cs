@@ -332,6 +332,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
             }
           }
+          progress.Report.Merge(converter.Report);
 
           if (changedLayerNames)
             progress.Report.Log($"Layer names were modified: one or more layers contained invalid characters {Utils.invalidChars}");
@@ -525,65 +526,70 @@ namespace Speckle.ConnectorAutocadCivil.UI
       int convertedCount = 0;
 
       bool renamedlayers = false;
-      foreach (var autocadObjectHandle in state.SelectedObjectIds)
+
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return;
-
-        // get the db object from id
-        Handle hn = Utils.GetHandle(autocadObjectHandle);
-        DBObject obj = hn.GetObject(out string type, out string layer);
-
-        if (obj == null)
+        foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
-          progress.Report.Log($"Skipped not found object: ${autocadObjectHandle}.");
-          continue;
+          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            return;
+
+          // get the db object from id
+          Handle hn = Utils.GetHandle(autocadObjectHandle);
+          DBObject obj = hn.GetObject(out string type, out string layer);
+
+          if (obj == null)
+          {
+            progress.Report.Log($"Skipped not found object: ${autocadObjectHandle}.");
+            continue;
+          }
+
+          if (!converter.CanConvertToSpeckle(obj))
+          {
+            progress.Report.Log($"Skipped not supported type: ${type}. Object ${obj.Id} not sent.");
+            continue;
+          }
+
+          // convert obj
+          Base converted = null;
+          string containerName = string.Empty;
+          converted = converter.ConvertToSpeckle(obj);
+          if (converted == null)
+          {
+            progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+            continue;
+          }
+
+          /* TODO: adding the extension dictionary / xdata per object 
+          foreach (var key in obj.ExtensionDictionary)
+          {
+            converted[key] = obj.ExtensionDictionary.GetUserString(key);
+          }
+          */
+
+          if (obj is BlockReference)
+            containerName = "Blocks";
+          else
+          {
+            // remove invalid chars from layer name
+            string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+            containerName = cleanLayerName;
+            if (!cleanLayerName.Equals(layer))
+              renamedlayers = true;
+          }
+
+          if (commitObj[$"@{containerName}"] == null)
+            commitObj[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+          conversionProgressDict["Conversion"]++;
+          progress.Update(conversionProgressDict);
+
+          converted.applicationId = autocadObjectHandle;
+
+          convertedCount++;
         }
-
-        if (!converter.CanConvertToSpeckle(obj))
-        {
-          progress.Report.Log($"Skipped not supported type: ${type}. Object ${obj.Id} not sent.");
-          continue;
-        }
-
-        // convert obj
-        Base converted = null;
-        string containerName = string.Empty;
-        converted = converter.ConvertToSpeckle(obj);
-        if (converted == null)
-        {
-          progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
-          continue;
-        }
-
-        /* TODO: adding the extension dictionary / xdata per object 
-        foreach (var key in obj.ExtensionDictionary)
-        {
-          converted[key] = obj.ExtensionDictionary.GetUserString(key);
-        }
-        */
-
-        if (obj is BlockReference)
-          containerName = "Blocks";
-        else
-        {
-          // remove invalid chars from layer name
-          string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-          containerName = cleanLayerName;
-          if (!cleanLayerName.Equals(layer))
-            renamedlayers = true;
-        }
-
-        if (commitObj[$"@{containerName}"] == null)
-          commitObj[$"@{containerName}"] = new List<Base>();
-        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
-
-        conversionProgressDict["Conversion"]++;
-        progress.Update(conversionProgressDict);
-
-        converted.applicationId = autocadObjectHandle;
-
-        convertedCount++;
+        tr.Commit();
       }
 
       progress.Report.Merge(converter.Report);
