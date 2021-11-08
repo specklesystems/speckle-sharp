@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
 using Objects.Geometry;
@@ -18,6 +19,7 @@ using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Surface = Objects.Geometry.Surface;
 using Units = Speckle.Core.Kits.Units;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Revit
 {
@@ -543,32 +545,27 @@ namespace Objects.Converter.Revit
       while (i < mesh.faces.Count)
       {
         int n = mesh.faces[i];
-        if (n < 3) n += 3; // 0 -> 3, 1 -> 4
-
-        //if (n == 3)
-        //{ // triangle
-        //  var points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]] };
-        //  var face = new TessellatedFace(points, ElementId.InvalidElementId);
-        //  var check = !tsb.DoesFaceHaveEnoughLoopsAndVertices(face);
-        //  tsb.AddFace(face);
-        //}
-        //else 
-        //{ // quad
-        //  var points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 4]] };
-        //  var face1 = new TessellatedFace(points, ElementId.InvalidElementId);
-        //  var check1 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face1);
-        //  tsb.AddFace(face1);
-        //  points = new List<XYZ> { vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
-        //  var face2 = new TessellatedFace(points, ElementId.InvalidElementId);
-        //  var check2 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face2);
-
-        //  tsb.AddFace(face2);
-        //}
-
-        // This code might do the same as above, but with support for N-gons.
+        if (n < 3) n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+        
         var points = mesh.faces.GetRange(i + 1, n).Select(x => vertices[x]).ToArray();
-        var face = new TessellatedFace(points, ElementId.InvalidElementId);
-        tsb.AddFace(face);
+
+        if (IsNonPlanarQuad(points))
+        {
+          //Non-planar quads will be triangulated as it's more desirable than `TessellatedShapeBuilder.Build`'s attempt to make them planar.
+          //TODO consider triangulating all n > 3 polygons
+          var triPoints = new List<XYZ> { points[0], points[1], points[3] };
+          var face1 = new TessellatedFace(triPoints, ElementId.InvalidElementId);
+          tsb.AddFace(face1);
+        
+          triPoints = new List<XYZ> { points[1], points[2], points[3] };;
+          var face2 = new TessellatedFace(triPoints, ElementId.InvalidElementId);
+          tsb.AddFace(face2);
+        }
+        else
+        {
+          var face = new TessellatedFace(points, ElementId.InvalidElementId);
+          tsb.AddFace(face);
+        }
 
         i += n + 1;
       }
@@ -586,6 +583,19 @@ namespace Objects.Converter.Revit
       var result = tsb.GetBuildResult();
       return result.GetGeometricalObjects();
 
+      
+      static bool IsNonPlanarQuad(IList<XYZ> points)
+      {
+        if (points.Count != 4) return false;
+        
+        var matrix = new Matrix4x4(
+          (float)points[0].X, (float)points[1].X, (float)points[2].X, (float)points[3].X,
+          (float)points[0].Y, (float)points[1].Y, (float)points[2].Y, (float)points[3].Y,
+          (float)points[0].Z, (float)points[1].Z, (float)points[2].Z, (float)points[3].Z,
+          1, 1, 1, 1
+        );
+        return matrix.GetDeterminant() != 0;
+      }
     }
 
     public XYZ[] ArrayToPoints(IEnumerable<double> arr, string units = null)
