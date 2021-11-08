@@ -27,7 +27,7 @@ namespace Speckle.ConnectorRevit.Entry
     private static Avalonia.Application AvaloniaApp { get; set; }
     UIApplication uiapp;
 
-    public static async void InitAvalonia()
+    public static void InitAvalonia()
     {
       BuildAvaloniaApp().Start(AppMain, null);
     }

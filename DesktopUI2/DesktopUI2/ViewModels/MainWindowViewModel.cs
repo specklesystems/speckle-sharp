@@ -8,6 +8,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Views.Pages;
 using Material.Colors;
 using Material.Styles.Themes;
+using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Splat;
@@ -35,7 +36,6 @@ namespace DesktopUI2.ViewModels
     public MainWindowViewModel()
     {
       Init();
-
     }
 
     private void Init()
@@ -50,8 +50,43 @@ namespace DesktopUI2.ViewModels
       Router.Navigate.Execute(new HomeViewModel(this));
 
       Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
+
+      var theme = PaletteHelper.GetTheme();
+      theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
+      PaletteHelper.SetTheme(theme);
     }
 
+    #region theme
+    private static PaletteHelper m_paletteHelper;
+    private static PaletteHelper PaletteHelper
+    {
+      get
+      {
+        if (m_paletteHelper is null)
+          m_paletteHelper = new PaletteHelper();
+        return m_paletteHelper;
+      }
+    }
+
+    public void ToggleDarkThemeCommand()
+    {
+      var theme = PaletteHelper.GetTheme();
+
+      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
+        theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
+      else
+        theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());
+      PaletteHelper.SetTheme(theme);
+    }
+
+
+    public void RefreshCommand()
+    {
+      HomeViewModel.Instance.Init();
+    }
+
+
+    #endregion
 
   }
 }

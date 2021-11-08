@@ -161,7 +161,8 @@ namespace TestsIntegration
       var res = await myClient.StreamGetBranches(streamId);
 
       Assert.NotNull(res);
-      Assert.AreEqual("sample-branch", res[0].name);
+      // Branches are now returned in order of creation so 'main' should always go first.
+      Assert.AreEqual("main", res[0].name);
     }
 
     #region commit

@@ -218,9 +218,11 @@
 
   <Design.PreviewWith>
     <Border Padding="20">
-      <StackPanel Orientation="Vertical">
+      <StackPanel Orientation="Vertical" Spacing="10">
         <cc:FloatingButton />
         <cc:FloatingButton Classes="Mini" />
+
+
       </StackPanel>
     </Border>
   </Design.PreviewWith>

@@ -28,7 +28,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception e)
           {
-            ConversionErrors.Add(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.", e));
+            Report.LogConversionError(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.", e));
             var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                 .Select(m => m as DB.Solid);
             solids.AddRange(brepMeshSolids);
@@ -57,6 +57,7 @@ namespace Objects.Converter.Revit
       var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
 
       SetInstanceParameters(freeform, freeformElement);
+      Report.Log($"Created FreeformElement {freeform.Id}");
       return new ApplicationPlaceholderObject
       {
         applicationId = freeformElement.id,
@@ -91,6 +92,7 @@ namespace Objects.Converter.Revit
           ApplicationGeneratedId = form.UniqueId,
           NativeObject = s
         });
+        Report.Log($"Created FreeformElement {form.Id}");
       }
 
 
@@ -119,6 +121,7 @@ namespace Objects.Converter.Revit
           ApplicationGeneratedId = form.UniqueId,
           NativeObject = s
         });
+        Report.Log($"Created FreeformElement {form.Id}");
       }
 
       return applicationPlaceholders;
@@ -149,6 +152,7 @@ namespace Objects.Converter.Revit
 
       var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
       SetInstanceParameters(freeform, brep);
+      Report.Log($"Created FreeformElement {freeform.Id}");
       return new ApplicationPlaceholderObject
       {
         applicationId = brep.applicationId,
@@ -187,7 +191,7 @@ namespace Objects.Converter.Revit
       so.OverwriteExistingFile = true;
       famDoc.SaveAs(tempFamilyPath, so);
       famDoc.Close();
-
+      Report.Log($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
   }
