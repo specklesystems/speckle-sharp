@@ -183,12 +183,12 @@ namespace ConnectorGrasshopper.Objects
       // Report all conversion errors as warnings
       if(Converter != null)
       {
-        foreach (var error in Converter.ConversionErrors)
+        foreach (var error in Converter.Report.ConversionErrors)
         {
           Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
             error.Message + ": " + error.InnerException?.Message);
         }
-        Converter.ConversionErrors.Clear();
+        Converter.Report.ConversionErrors.Clear();
       }
       outputDict = null;
       (Parent as ExpandSpeckleObjectAsync).State = 0;
