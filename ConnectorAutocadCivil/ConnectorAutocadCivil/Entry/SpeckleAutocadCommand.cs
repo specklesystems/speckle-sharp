@@ -44,36 +44,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
 
       }
     }
-    
-    [CommandMethod("SpeckleCommunity", CommandFlags.ActionMacro)]
-    public static void SpeckleCommunity()
-    {
-      try
-      {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.community ", false, false, true);
-      }
-      catch { }
-    }
-
-    [CommandMethod("SpeckleTutorials", CommandFlags.ActionMacro)]
-    public static void SpeckleTutorials()
-    {
-      try
-      {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.systems/tutorials ", false, false, true);
-      }
-      catch { }
-    }
-
-    [CommandMethod("SpeckleDocs", CommandFlags.ActionMacro)]
-    public static void SpeckleDocs()
-    {
-      try
-      {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.guide/user/autocadcivil.html ", false, false, true);
-      }
-      catch { }
-    }
 
   }
 
