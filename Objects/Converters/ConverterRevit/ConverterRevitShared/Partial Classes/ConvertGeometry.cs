@@ -542,37 +542,29 @@ namespace Objects.Converter.Revit
 
       while (i < mesh.faces.Count)
       {
-        //int n = mesh.faces[i];
-        //if (n < 3) n += 3; // 0 -> 3, 1 -> 4
+        var points = new List<XYZ>();
 
-        //var points = mesh.faces.GetRange(i + 1, n).Select(x => vertices[x]).ToArray();
-        //var face = new TessellatedFace(points, ElementId.InvalidElementId);
-        //tsb.AddFace(face);
-        
-        //i += n + 1;
-        
-        
-        // if (mesh.faces[i] == 0)
-        // { // triangle
-        //   var points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]] };
-        //   var face = new TessellatedFace(points, ElementId.InvalidElementId);
-        //   var check = !tsb.DoesFaceHaveEnoughLoopsAndVertices(face);
-        //   tsb.AddFace(face);
-        //   i += 4;
-        // }
-        // else
-        // { // quad
-        //   var points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 4]] };
-        //   var face1 = new TessellatedFace(points, ElementId.InvalidElementId);
-        //   var check1 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face1);
-        //   tsb.AddFace(face1);
-        //   points = new List<XYZ> { vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
-        //   var face2 = new TessellatedFace(points, ElementId.InvalidElementId);
-        //   var check2 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face2);
-        //
-        //   tsb.AddFace(face2);
-        //   i += 5;
-        // }
+        if (mesh.faces[i] == 0)
+        { // triangle
+          points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]] };
+          var face = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check = !tsb.DoesFaceHaveEnoughLoopsAndVertices(face);
+          tsb.AddFace(face);
+          i += 4;
+        }
+        else
+        { // quad
+          points = new List<XYZ> { vertices[mesh.faces[i + 1]], vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 4]] };
+          var face1 = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check1 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face1);
+          tsb.AddFace(face1);
+          points = new List<XYZ> { vertices[mesh.faces[i + 2]], vertices[mesh.faces[i + 3]], vertices[mesh.faces[i + 4]] };
+          var face2 = new TessellatedFace(points, ElementId.InvalidElementId);
+          var check2 = tsb.DoesFaceHaveEnoughLoopsAndVertices(face2);
+
+          tsb.AddFace(face2);
+          i += 5;
+        }
       }
 
       tsb.CloseConnectedFaceSet();
