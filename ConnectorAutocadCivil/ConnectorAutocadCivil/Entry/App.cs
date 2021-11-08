@@ -233,7 +233,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
             case "Speckle":
               SpeckleAutocadCommand.SpeckleCommand();
               break;
-            case "Speckle2":
+            case "SpeckleNewUi":
               SpeckleAutocadCommand2.SpeckleCommand();
               break;
             case "SpeckleCommunity":

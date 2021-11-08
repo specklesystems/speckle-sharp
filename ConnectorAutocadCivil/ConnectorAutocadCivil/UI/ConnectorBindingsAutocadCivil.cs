@@ -325,7 +325,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 if (!cleanName.Equals(layerName))
                   changedLayerNames = true;
 
-                var appended = convertedEntity.Append(cleanName, tr);
+                var appended = convertedEntity.Append(cleanName);
                 if (appended.IsValid)
                 {
                   // handle display

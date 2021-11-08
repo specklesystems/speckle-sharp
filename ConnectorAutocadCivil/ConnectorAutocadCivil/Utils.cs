@@ -78,14 +78,13 @@ public static string AutocadAppName = Applications.Autocad2022;
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="tr"></param>
-    public static ObjectId Append(this Entity entity, string layer = null, Transaction tr = null)
+    public static ObjectId Append(this Entity entity, string layer = null)
     {
-      if (tr == null)
-        tr = entity.Database.TransactionManager.TopTransaction;
-      if (tr == null)
-        return ObjectId.Null;
+      var db = (entity.Database == null) ? Application.DocumentManager.MdiActiveDocument.Database : entity.Database;
+      Transaction tr = db.TransactionManager.TopTransaction;
+      if (tr == null) return ObjectId.Null;
 
-      BlockTableRecord btr = entity.Database.GetModelSpace(OpenMode.ForWrite);
+      BlockTableRecord btr = db.GetModelSpace(OpenMode.ForWrite);
       if (entity.IsNewObject)
       {
         if (layer != null)
