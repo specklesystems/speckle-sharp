@@ -37,6 +37,7 @@ namespace ConnectorGrasshopper {
 <# foreach(Type sType in availableTypes) { #>
 <# 
     var typeName = string.Join("", sType.Name.Split('.'));
+    var deprecated = IsDeprecated(sType.FullName);
     var constructorInfos = CSOUtils.GetValidConstr(sType);
     int i = 0;
     foreach (var constructor in constructorInfos)
