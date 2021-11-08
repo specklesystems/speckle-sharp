@@ -50,7 +50,7 @@ namespace Objects.Geometry
       this.units = units;
     }
     
-    #region Conveniance Methods
+    #region Convenience Methods
     
     public int VerticesCount => vertices.Count / 3;
     public int TextureCoordinatesCount => textureCoordinates.Count / 2;
