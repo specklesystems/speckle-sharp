@@ -7,7 +7,7 @@
 This repo holds Speckle's ETABS Connector and it is currently released as ⚠ **ALPHA** ⚠, please use at your own risk!
 
 ## Acknowledgement 
-The initial bindings for this ETABS Connector was dervived from Soroush Mohammadzadeh's [repo](https://bitbucket.org/smzadeh/connectoretabs/src/main/ConnectorETABS/Bindings/) which was built in collaboration. Also huge thanks to Dan Naughton for his collaboration and contributions.
+The initial bindings for this ETABS Connector was dervived from Soroush Mohammadzadeh's [repo](https://bitbucket.org/smzadeh/connectoretabs/src/main/ConnectorETABS/Bindings/) which was built in collaboration. Also huge thanks to [Dan Naughton](https://github.com/dtnaughton) for his collaboration and contributions.
 
 ## Documentation
 
