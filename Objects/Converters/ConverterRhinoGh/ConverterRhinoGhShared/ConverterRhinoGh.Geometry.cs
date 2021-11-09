@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using Grasshopper.Kernel.Types;
@@ -655,9 +656,18 @@ namespace Objects.Converter.RhinoGh
 
       RH.Mesh m = new RH.Mesh();
       m.Vertices.AddVertices(PointListToNative(mesh.vertices, mesh.units));
+      m.VertexColors.SetColors(mesh.colors.Select(Color.FromArgb).ToArray());
+      
+      var textureCoordinates = new Point2f[mesh.TextureCoordinatesCount];
+      for(int ti = 0; ti < mesh.TextureCoordinatesCount; ti++)
+      {
+        var (u, v) = mesh.GetTextureCoordinateAtIndex(ti); 
+        textureCoordinates[ti] = new Point2f(u,v);
+      }
+      m.TextureCoordinates.SetTextureCoordinates(textureCoordinates);
+     
 
-
-      //bool requiresCompacting = false;
+      bool requiresCompacting = false;
       int i = 0;
       while (i < mesh.faces.Count)
       {
@@ -669,46 +679,74 @@ namespace Objects.Converter.RhinoGh
           // triangle
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3]));
         }
-        else //if(n == 4)
+        else if(n == 4)
         {
           // quad
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3], mesh.faces[i + 4]));
         }
-        /* else  // For now, I've commented this all out because it doesn't work with texture coordinates.
-         {      
-           // n-gon
-           
-           var points = new List<Point3d>(n);
-           for (int j = 1; j <= n; j++)
-           {
-             int vertIndex = mesh.faces[i + j];
-             var (x, y, z) = mesh.GetPointAtIndex(vertIndex);
-             points.Add(new Point3d(x,y,z));
-           }
-           
-           var subMesh = RH.Mesh.CreateFromClosedPolyline(new RH.Polyline(points));
-           m.Append(subMesh);
-           
-           requiresCompacting = true;
-        }*/
+        else  // For now, I've commented this all out because it doesn't work with texture coordinates.
+        {      
+          // n-gon
+
+          var points = new List<Point3d>(n);
+          var indexMap = new Dictionary<Point3f, int>(n);
+          for (int j = 1; j <= n; j++)
+          {
+            int vertIndex = mesh.faces[i + j];
+            var (x, y, z) = mesh.GetPointAtIndex(vertIndex);
+            var key = (Point3f)new Point3d(x, y, z);
+        
+            points.Add(key);
+            if (!indexMap.ContainsKey(key))
+            {
+              indexMap.Add(key, vertIndex);
+            }
+          }
+          
+          points.Add(points[0]);
+          
+          var subMesh = RH.Mesh.CreateFromClosedPolyline(new RH.Polyline(points));
+
+          var faceIndices = new List<int>(n);
+          if (subMesh != null)
+          {
+            foreach (var face in subMesh.Faces)
+            {
+              faceIndices.Add(m.Faces.Count);
+              m.Faces.AddFace(
+                indexMap[subMesh.Vertices[face.A]],
+                indexMap[subMesh.Vertices[face.B]],
+                indexMap[subMesh.Vertices[face.C]],
+                indexMap[subMesh.Vertices[face.D]]
+              );
+            }
+
+            MeshNgon foo = MeshNgon.Create(mesh.faces.GetRange(i + 1, n), faceIndices);
+            m.Ngons.AddNgon(foo);
+          
+            requiresCompacting = true;
+          }
+        }
 
         i += n + 1;
       }
 
-      //if (requiresCompacting) m.Compact();
+      
 
-      try
-      {
-        m.VertexColors.AppendColors(mesh.colors.Select(c => System.Drawing.Color.FromArgb((int)c)).ToArray());
-      }
-      catch
-      { }
+      // try
+      // {
+      //   m.VertexColors.AppendColors(mesh.colors.Select(c => System.Drawing.Color.FromArgb((int)c)).ToArray());
+      // }
+      // catch
+      // { }
+      
+      if (requiresCompacting) m.Compact();
 
-      if (mesh.textureCoordinates != null)
-        for (int j = 0; j < mesh.textureCoordinates.Count; j += 2)
-        {
-          m.TextureCoordinates.Add(mesh.textureCoordinates[j], mesh.textureCoordinates[j + 1]);
-        }
+      // if (mesh.textureCoordinates != null)
+      //   for (int j = 0; j < mesh.textureCoordinates.Count; j += 2)
+      //   {
+      //     m.TextureCoordinates.Add(mesh.textureCoordinates[j], mesh.textureCoordinates[j + 1]);
+      //   }
 
       return m;
     }

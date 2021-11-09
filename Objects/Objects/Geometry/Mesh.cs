@@ -64,12 +64,23 @@ namespace Objects.Geometry
     {
       index *= 3;
       return new Point(
-        vertices[index++],
-        vertices[index++], 
         vertices[index],
+        vertices[index + 1], 
+        vertices[index + 2],
         units,
         applicationId
         );
+    }
+    
+    /// <summary>
+    /// Gets a texture coordinate as a <see cref="ValueTuple{T1,T2}"/> by <paramref name="index"/>
+    /// </summary>
+    /// <param name="index">The index of the texture coordinate</param>
+    /// <returns>Texture coordinate as a <see cref="ValueTuple{T1,T2}"/></returns>
+    public (double,double) GetTextureCoordinateAtIndex(int index)
+    {
+      index *= 2;
+      return (textureCoordinates[index], textureCoordinates[index + 1]);
     }
 
     /// <summary>
@@ -108,12 +119,13 @@ namespace Objects.Geometry
         for (int i = 1; i <= n; i++)
         {
           int vertIndex = faces[nIndex + i];
-          int xIndex = vertIndex * 3;
-          int newVertIndex = verticesUnique.Count / 3;
           
-          verticesUnique.Add(vertices[xIndex]);     //x
-          verticesUnique.Add(vertices[xIndex + 1]); //y
-          verticesUnique.Add(vertices[xIndex + 2]); //z
+          var (x, y, z) = GetPointAtIndex(vertIndex);
+          verticesUnique.Add(x);
+          verticesUnique.Add(y);
+          verticesUnique.Add(z);
+          
+          int newVertIndex = verticesUnique.Count / 3;
           
           colorsUnique?.Add(colors[vertIndex]);
           facesUnique.Add(newVertIndex);
@@ -123,7 +135,7 @@ namespace Objects.Geometry
       }
       
       vertices = verticesUnique;
-      colors = colorsUnique;
+      colors = colorsUnique ?? colors;
       faces = facesUnique;
     }
     
