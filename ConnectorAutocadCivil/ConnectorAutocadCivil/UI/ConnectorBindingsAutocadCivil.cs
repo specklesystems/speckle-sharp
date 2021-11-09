@@ -542,8 +542,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       var commitObj = new Base();
 
+      /* Deprecated until we decide whether or not commit objs need units. If so, should add UnitsToSpeckle conversion method to connector
       var units = Units.GetUnitsFromString(Doc.Database.Insunits.ToString());
       commitObj["units"] = units;
+      */
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
