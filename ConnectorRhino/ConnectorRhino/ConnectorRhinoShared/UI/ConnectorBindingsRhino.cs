@@ -525,7 +525,7 @@ namespace SpeckleRhino
           }
           else
           {
-            state.Errors.Add(new Exception($"Failed to find local view ${applicationId}."));
+            state.Errors.Add(new Exception($"Failed to find doc object ${applicationId}."));
             continue;
           }
           if (converted == null)
