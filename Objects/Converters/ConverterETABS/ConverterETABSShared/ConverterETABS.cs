@@ -43,6 +43,8 @@ namespace Objects.Converter.ETABS
 
         public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
+        public ProgressReport Report { get; private set; } = new ProgressReport();
+
         public bool CanConvertToNative(Base @object)
         {
             foreach (var type in Enum.GetNames(typeof(ConverterETABS.ETABSConverterSupported)))
@@ -75,17 +77,22 @@ namespace Objects.Converter.ETABS
                 //    return pointtonative(o);
                 case OSG.Node o:
                     return PointToNative(o);
+                    Report.Log($"Created Node {o.id}");
                 case Geometry.Line o:
                     return LineToNative(o);
+                    Report.Log($"Created Line {o.id}");
                 case OSG.Element1D o:
                     return FrameToNative(o);
+                    Report.Log($"Created Element1D {o.id}");
                 case OSG.Element2D o:
                     return AreaToNative(o);
+                    Report.Log($"Created Element2D {o.id}");
                 case Model o:
                     return ModelToNative(o);
+                    Report.Log($"Created Model {o.id}");
                 default:
-                    ConversionErrors.Add(new SpeckleException("Unsupported Speckle Object: Can not convert to native", level: Sentry.SentryLevel.Warning));
-                    return null;
+                    Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
+                    throw new NotSupportedException();
             }
         }
 
@@ -102,9 +109,11 @@ namespace Objects.Converter.ETABS
             {
                 case "Point":
                     returnObject = PointToSpeckle(name);
+                    Report.Log($"Created Node");
                     break;
                 case "Frame":
                     returnObject = FrameToSpeckle(name);
+                    Report.Log($"Created Frame");
                     break;
                 case "Model":
                     returnObject = SpeckleModel;
@@ -114,37 +123,70 @@ namespace Objects.Converter.ETABS
                     break;
                 case "Area":
                     returnObject = AreaToSpeckle(name);
+                    Report.Log($"Created Area");
                     break;
                 case "Wall":
                     returnObject = WallToSpeckle(name);
+                    Report.Log($"Created Wall");
                     break;
                 case "Floor":
                     returnObject = FloorToSpeckle(name);
+                    Report.Log($"Created Floor");
                     break;
                 case "Column":
                     returnObject = ColumnToSpeckle(name);
+                    Report.Log($"Created Column");
                     break;
                 case "Beam":
                     returnObject = BeamToSpeckle(name);
+                    Report.Log($"Created Beam");
                     break;
                 case "Brace":
                     returnObject = BraceToSpeckle(name);
+                    Report.Log($"Created Brace");
                     break;
 
                 //case "Link":
                 //    returnObject = LinkToSpeckle(name);
                 //    break;
-                //case "PropMaterial":
-                //    returnObject = PropMaterialToSpeckle(name);
-                //    break;
-                //case "PropFrame":
-                //    returnObject = PropFrameToSpeckle(type, name);
-                //    break;
                 //case "LoadCase":
                 //    returnObject = LoadCaseToSpeckle(name);
                 //    break;
+                case "BeamLoading":
+                    returnObject = LoadFrameToSpeckle(name, GetBeamNames(Model).Count());
+                    Report.Log($"Created Loading Beam");
+                    break;
+                case "ColumnLoading":
+                    returnObject = LoadFrameToSpeckle(name, GetColumnNames(Model).Count());
+                    Report.Log($"Created Loading Column");
+                    break;
+                case "BraceLoading":
+                    returnObject = LoadFrameToSpeckle(name, GetBraceNames(Model).Count());
+                    Report.Log($"Created Loading Brace");
+                    break;
+                case "FrameLoading":
+                    returnObject = LoadFrameToSpeckle(name,GetAllFrameNames(Model).Count());
+                    Report.Log($"Created Loading Frame");
+                    break;
+                case "FloorLoading":
+                    returnObject = LoadFaceToSpeckle(name, GetAllFloorNames(Model).Count());
+                    Report.Log($"Created Loading Floor");
+                    break;
+                case "WallLoading":
+                    returnObject = LoadFaceToSpeckle(name, GetAllWallNames(Model).Count());
+                    Report.Log($"Created Loading Wall");
+                    break;
+                case "AreaLoading":
+                    returnObject = LoadFaceToSpeckle(name, GetAllAreaNames(Model).Count());
+                    Report.Log($"Created Loading Area");
+                    break;
+                case "NodeLoading":
+                    returnObject = LoadNodeToSpeckle(name, GetAllPointNames(Model).Count());
+                    Report.Log($"Created Loading Node");
+                    break;
                 case "LoadPattern":
                     returnObject = LoadPatternToSpeckle(name);
+                    Report.Log($"Created Loading Pattern");
                     break;
                     //case "ColumnResults":
 

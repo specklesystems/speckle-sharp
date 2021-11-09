@@ -20,16 +20,6 @@ namespace Speckle.ConnectorETABS.UI
 
     {
         #region sending
-        //private void UpdateProgress(ConcurrentDictionary<string, int> dict, ProgressReport progress)
-        //{
-        //    if (progress == null) return;
-
-        //    Execute.PostToUIThread(() =>
-        //    {
-        //        progress.ProgressDict = dict;
-        //        progress.Value = dict.Values.Last();
-        //    });
-        //}
 
         public override async Task SendStream(StreamState state, ProgressViewModel progress)
         {
@@ -52,8 +42,8 @@ namespace Speckle.ConnectorETABS.UI
 
             if (totalObjectCount == 0)
             {
-                //RaiseNotification("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
-                //return state;
+                progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
+                return;
             }
 
             var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -83,7 +73,7 @@ namespace Speckle.ConnectorETABS.UI
 
                 if (!converter.CanConvertToSpeckle(selectedObjectType))
                 {
-                    //state.Errors.Add(new Exception($"Objects of type ${selectedObjectType} are not supported"));
+                    progress.Report.Log($"Skipped not supported type:  ${selectedObjectType} are not supported");
                     continue;
                 }
 
@@ -97,7 +87,8 @@ namespace Speckle.ConnectorETABS.UI
 
                 if (converted == null)
                 {
-                    //state.Errors.Add(new Exception($"Failed to convert object ${applicationId} of type ${selectedObjectType}."));
+                    var exception = new Exception($"Failed to convert object ${applicationId} of type ${selectedObjectType}.");
+                    progress.Report.LogConversionError(exception);
                     continue;
                 }
 
@@ -121,11 +112,12 @@ namespace Speckle.ConnectorETABS.UI
                 commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));
             }
 
+            progress.Report.Merge(converter.Report);
+
             if (objCount == 0)
             {
+                progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
                 return;
-                //RaiseNotification("Zero objects converted successfully. Send stopped.");
-                //return state;
             }
 
             if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -145,23 +137,14 @@ namespace Speckle.ConnectorETABS.UI
                 onProgressAction: dict => progress.Update(dict),
                 onErrorAction: (Action<string, Exception>)((s, e) =>
                 {
-                    this.Exceptions.Add(e); // TODO!
-                              //state.Errors.Add(e);
+                    progress.Report.LogOperationError(e);
                     progress.CancellationTokenSource.Cancel();
                  }),    
                 disposeTransports: true
                 );
 
-            //var commitObjId = await Operations.Send(
-            //  commitObj,
-            //  state.CancellationTokenSource.Token,
-            //  transports,
-            //  onProgressAction: dict => UpdateProgress(dict, state.Progress),
-            //  /* TODO: a wee bit nicer handling here; plus request cancellation! */
-            //  onErrorAction: (err, exception) => { Exceptions.Add(exception); }
-            //  );
 
-            if (Exceptions.Count != 0)
+            if (progress.Report.OperationErrorsCount != 0)
             {
                 //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
                 return;
@@ -191,7 +174,7 @@ namespace Speckle.ConnectorETABS.UI
             catch (Exception e)
             {
                 //Globals.Notify($"Failed to create commit.\n{e.Message}");
-                //state.Errors.Add(e);
+                progress.Report.LogOperationError(e);
             }
 
             //return state;

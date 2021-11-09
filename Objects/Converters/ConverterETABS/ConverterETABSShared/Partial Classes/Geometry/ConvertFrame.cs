@@ -12,6 +12,9 @@ namespace Objects.Converter.ETABS
     {
         public object FrameToNative(Element1D element1D)
         {
+            if (GetAllFrameNames(Model).Contains(element1D.name)){
+                return null;
+            }
             string units = ModelUnits();
             string newFrame = "";
             Line baseline = element1D.baseLine;
@@ -27,6 +30,7 @@ namespace Objects.Converter.ETABS
             {
                 Point end1node = baseline.start;
                 Point end2node = baseline.end;
+                //temp fix code for m 
                 if(baseline.units == "m")
                 {
                     end1node.x *= 1000;
@@ -87,6 +91,7 @@ namespace Objects.Converter.ETABS
 
 
             Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
+            Model.FrameObj.ChangeName(newFrame, element1D.name);
             return element1D.name;
         }
         

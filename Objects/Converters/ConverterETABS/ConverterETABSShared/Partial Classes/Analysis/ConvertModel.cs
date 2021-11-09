@@ -8,6 +8,8 @@ using Objects.Structural.Materials;
 using Objects.Structural.ETABS.Properties;
 using Objects.Structural.GSA.Properties;
 using Objects.Structural.GSA.Geometry;
+using Objects.Structural.Loading;
+using Objects.Structural.ETABS.Loading;
 using Speckle.Core.Models;
 using System.Linq;
 using ETABSv1;
@@ -20,6 +22,11 @@ namespace Objects.Converter.ETABS
         {
             var Element1D = new Element1D();
             var Property1D = new Property1D();
+            var Loading1D = new LoadBeam();
+            var Loading2D = new LoadFace();
+            var LoadingNode = new LoadNode();
+            var LoadGravity = new LoadGravity();
+            var Loading2DWind = new ETABSWindLoadingFace();
             var GSAProperty = new GSAProperty1D();
             var GSAElement1D = new GSAMember1D();
             if(model.materials != null)
@@ -77,6 +84,50 @@ namespace Objects.Converter.ETABS
                 }
             }
 
+            if (model.nodes != null)
+            {
+                foreach (Node node in model.nodes)
+                {
+                    PointToNative(node);
+                }
+            }
+
+            if (model.loads != null)
+            {
+                foreach (var load in model.loads)
+                {
+                    //import loadpatterns in first
+                    if (load.GetType().Equals(LoadGravity.GetType()))
+                    {
+                        LoadPatternToNative((LoadGravity)load);
+                    }
+                }
+                foreach (var load in model.loads)
+                {
+                    if (load.GetType().Equals(Loading2D.GetType())) 
+                    {
+                        LoadFaceToNative((LoadFace)load);
+                    }
+                    else if(load.GetType().Equals(Loading2DWind.GetType()))
+                    {
+                        LoadFaceToNative((ETABSWindLoadingFace)load);
+                    }
+                    else if (load.GetType().Equals(Loading1D.GetType()))
+                    {
+                        var loading1D = (LoadBeam)load;
+                        if(loading1D.loadType == BeamLoadType.Uniform)
+                        {
+                            LoadUniformFrameToSpeckle(loading1D);
+                        }
+                        else if(loading1D.loadType == BeamLoadType.Point)
+                        {
+                            LoadPointFrameToSpeckle(loading1D);
+                        }
+                    }
+                    
+                }
+            }
+
             return "Finished";
         }
         Model ModelToSpeckle()
@@ -122,6 +173,7 @@ namespace Objects.Converter.ETABS
                 var speckleMaterial = MaterialToSpeckle(material);
                 model.materials.Add(speckleMaterial);
             }
+
 
 
            
