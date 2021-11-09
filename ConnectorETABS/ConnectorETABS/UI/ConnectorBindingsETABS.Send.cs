@@ -112,6 +112,11 @@ namespace Speckle.ConnectorETABS.UI
                 commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));
             }
 
+            if(commitObj["AnalysisResults"] == null)
+            {
+                commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "ETABS"));
+            }
+            
             progress.Report.Merge(converter.Report);
 
             if (objCount == 0)
