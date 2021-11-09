@@ -73,7 +73,7 @@ namespace Objects.Converter.Revit
     private AdaptiveComponent AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
-      speckleAc.type = Doc.GetElement(revitAc.GetTypeId()).Name;
+      speckleAc.family = Doc.GetElement(revitAc.GetTypeId()).Name;
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
       speckleAc.displayMesh = GetElementMesh(revitAc);
