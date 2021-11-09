@@ -27,7 +27,7 @@ namespace ConverterRevitTests
         if (spkElem is Base re)
           AssertValidSpeckleElement(elem, re);
       }
-      Assert.Empty(converter.ConversionErrors);
+      Assert.Equal(0, converter.Report.ConversionErrorsCount);
     }
 
     internal void NativeToSpeckleBase()
@@ -40,7 +40,8 @@ namespace ConverterRevitTests
         var spkElem = kit.ConvertToSpeckle(elem);
         Assert.NotNull(spkElem);
       }
-      Assert.Empty(kit.ConversionErrors);
+
+      Assert.Equal(0, kit.Report.ConversionErrorsCount);
     }
 
     /// <summary>
@@ -100,15 +101,15 @@ namespace ConverterRevitTests
           }
           catch (Exception e)
           {
-            converter.ConversionErrors.Add(new Exception(e.Message, e));
+            converter.Report.LogConversionError(new Exception(e.Message, e));
           }
 
           if (res is List<ApplicationPlaceholderObject> apls)
           {
             resEls.AddRange(apls);
             flatSpkElems.Add(el);
-            if ( el[ "elements" ] == null ) continue;
-            flatSpkElems.AddRange(( el[ "elements" ] as List<Base> ).Where(b => converter.CanConvertToNative(b)));
+            if (el["elements"] == null) continue;
+            flatSpkElems.AddRange((el["elements"] as List<Base>).Where(b => converter.CanConvertToNative(b)));
           }
           else
           {
@@ -118,7 +119,7 @@ namespace ConverterRevitTests
         }
       }, fixture.NewDoc).Wait();
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.Equal(0, converter.Report.ConversionErrorsCount);
 
       for (var i = 0; i < spkElems.Count; i++)
       {
@@ -173,7 +174,7 @@ namespace ConverterRevitTests
         }
       }, fixture.NewDoc).Wait();
 
-      Assert.Empty(converter.ConversionErrors);
+      Assert.Equal(0, converter.Report.ConversionErrorsCount);
 
       for (var i = 0; i < revitEls.Count; i++)
       {
@@ -229,7 +230,7 @@ namespace ConverterRevitTests
       if (expecedParam == null)
         return;
 
-      switch ( expecedParam.StorageType )
+      switch (expecedParam.StorageType)
       {
         case StorageType.Double:
           Assert.Equal(expecedParam.AsDouble(), actual.get_Parameter(param).AsDouble(), 4);
@@ -241,15 +242,15 @@ namespace ConverterRevitTests
           Assert.Equal(expecedParam.AsString(), actual.get_Parameter(param).AsString());
           break;
         case StorageType.ElementId:
-        {
-          var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
-          var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
-          if (e1 is Level l1 && e2 is Level l2)
-            Assert.Equal(l1.Elevation, l2.Elevation, 3);
-          else if (e1 != null && e2 != null)
-            Assert.Equal(e1.Name, e2.Name);
-          break;
-        }
+          {
+            var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
+            var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
+            if (e1 is Level l1 && e2 is Level l2)
+              Assert.Equal(l1.Elevation, l2.Elevation, 3);
+            else if (e1 != null && e2 != null)
+              Assert.Equal(e1.Name, e2.Name);
+            break;
+          }
         case StorageType.None:
           break;
         default:

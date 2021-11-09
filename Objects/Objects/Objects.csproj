@@ -34,7 +34,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Structural\ApplicationSpecific\ETABS\Loading\" />
+    <Folder Include="Structural\ApplicationSpecific\ETABS\Geometry\" />
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>

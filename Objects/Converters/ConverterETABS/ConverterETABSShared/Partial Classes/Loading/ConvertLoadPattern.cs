@@ -8,18 +8,16 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
-        public object LoadPatternToNative(Load gravityLoad)
+        public void LoadPatternToNative(LoadGravity gravityLoad)
         {
-            return gravityLoad.name;
-            
+            var selfweight = -1*gravityLoad.gravityFactors.z;
+            var LoadType = GetAndConvertToETABSPatternType(gravityLoad.loadCase.loadType);
+            Model.LoadPatterns.Add(gravityLoad.name,LoadType,selfweight);        
         }
         public LoadCase LoadPatternToSpeckle(string loadPatternName)
         {
             var speckleLoadCase = new LoadCase();
-
-
             speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
-
             speckleLoadCase.name = loadPatternName;
             var selfweight = GetSelfWeightMultiplier(loadPatternName);
            
@@ -28,18 +26,64 @@ namespace Objects.Converter.ETABS
             {
                 var gravityVector = new Geometry.Vector(0, 0, -selfweight);
                 var gravityLoad = new LoadGravity(speckleLoadCase,gravityVector);
+                gravityLoad.name = loadPatternName;
                 SpeckleModel.loads.Add(gravityLoad);
             }
             else
             {
                 var gravityVector = new Geometry.Vector(0, 0, 0);
                 var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
+                gravityLoad.name = loadPatternName;
                 SpeckleModel.loads.Add(gravityLoad);
             }
+            if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
+            else { SpeckleModel.loads.Add(speckleLoadCase); }
+
                 
             return speckleLoadCase;
         }
 
+        public LoadCase LoadCaseToSpeckle(string name)
+        {
+            var speckleLoadCase = new LoadCase();
+            return speckleLoadCase;
+        }
+
+        public LoadCase LoadPatternCaseToSpeckle(string loadPatternName)
+        {
+            //Converts just the load case name
+            var speckleLoadCase = new LoadCase();
+            speckleLoadCase.loadType = GetAndConvertEtabsLoadType(loadPatternName);
+            speckleLoadCase.name = loadPatternName;
+            if (!SpeckleModel.loads.Contains(speckleLoadCase)) { }
+            else { SpeckleModel.loads.Add(speckleLoadCase); }
+            return speckleLoadCase;
+        }
+
+        public eLoadPatternType GetAndConvertToETABSPatternType(LoadType loadType)
+        {
+            switch (loadType)
+            {
+                case LoadType.Dead:
+                    return eLoadPatternType.Dead;
+                case LoadType.SuperDead:
+                    return eLoadPatternType.SuperDead;
+                case LoadType.Live:
+                    return eLoadPatternType.Live;
+                case LoadType.ReducibleLive:
+                    return eLoadPatternType.ReduceLive;
+                case LoadType.SeismicStatic:
+                    return eLoadPatternType.Quake;
+                case LoadType.Snow:
+                    return eLoadPatternType.Snow;
+                case LoadType.Wind:
+                    return eLoadPatternType.Wind;
+                case LoadType.Other:
+                    return eLoadPatternType.Other;
+                default:
+                    return eLoadPatternType.Other;
+            }
+        }
         public LoadType GetAndConvertEtabsLoadType(string name)
         {
             eLoadPatternType patternType = new eLoadPatternType();

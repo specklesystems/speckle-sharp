@@ -78,13 +78,18 @@ namespace Speckle.ConnectorETABS.UI
                 onProgressAction: dict => progress.Update(dict),
                 onErrorAction: (Action<string, Exception>)((s, e) =>
                 {
-                    this.Exceptions.Add(e);
-                          //state.Errors.Add(e);
-                          progress.CancellationTokenSource.Cancel();
+                    progress.Report.LogOperationError(e);
+                    progress.CancellationTokenSource.Cancel();
                 }),
                 //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
                 disposeTransports: true
                 );
+
+            if (progress.Report.OperationErrorsCount != 0)
+            {
+                return state;
+            }
+
 
             try
             {
@@ -101,18 +106,9 @@ namespace Speckle.ConnectorETABS.UI
                 // Do nothing!
             }
 
-            //var commitObject = await Operations.Receive(
-            //  referencedObject,
-            //  state.CancellationTokenSource.Token,
-            //  transport,
-            //  onProgressAction: d => UpdateProgress(d, state.Progress),
-            //  onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => state.Progress.Maximum = num),
-            //  onErrorAction: (message, exception) => { Exceptions.Add(exception); }
-            //  );
 
-            if (Exceptions.Count != 0)
+            if (progress.Report.OperationErrorsCount != 0)
             {
-                //RaiseNotification($"Encountered some errors: {Exceptions.Last().Message}");
                 return state;
             }
 
@@ -131,12 +127,14 @@ namespace Speckle.ConnectorETABS.UI
                 progress.Update(conversionProgressDict);
             };
 
+
             var commitObjs = FlattenCommitObject(commitObject, converter);
             foreach (var commitObj in commitObjs)
             {
                 BakeObject(commitObj, state, converter);
                 updateProgressAction?.Invoke();
             }
+
 
 
             try
@@ -146,12 +144,12 @@ namespace Speckle.ConnectorETABS.UI
             }
             catch (Exception e)
             {
-                Exceptions.Add(e);
+                progress.Report.LogOperationError(e);
                 WriteStateToFile();
                 //state.Errors.Add(e);
                 //Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
             }
-
+            progress.Report.Merge(converter.Report);
             return state;
         }
 
@@ -175,9 +173,9 @@ namespace Speckle.ConnectorETABS.UI
             }
             catch (Exception e)
             {
-                Exceptions.Add(e);
+                var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}");
+                converter.Report.LogOperationError(exception);
                 return;
-                //state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}"));
             }
         }
 

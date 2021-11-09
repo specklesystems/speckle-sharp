@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
       {
         SetInstanceParameters(revitSurface, rt);
       }
-
+      Report.Log($"Created Topography {revitSurface.Id}");
       return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId, NativeObject = revitSurface };
     }
 
@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
       var speckleTopo = new RevitTopography();
       speckleTopo.displayMesh = GetElementMesh(revitTopo);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
-
+      Report.Log($"Converted Topography {revitTopo.Id}");
       return speckleTopo;
     }
   }

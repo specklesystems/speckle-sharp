@@ -111,18 +111,17 @@
       <Button
         Classes="Flat"
         Command="{Binding SendCommand}"
-        Content="Send"
+        Content="Quick Send"
         ToolTip.Tip="Send once to Speckle" />
       <Button
-        Classes="Flat"
         Command="{Binding SaveCommand}"
         Content="Save"
         ToolTip.Tip="Save this sender to the file without sending" />
-      <Button
+      <!--<Button
         Command="{Binding SaveSendCommand}"
         Content="Send &amp; Save"
         Foreground="White"
-        ToolTip.Tip="Send to Speckle and save this sender to the file" />
+        ToolTip.Tip="Send to Speckle and save this sender to the file" />-->
     </StackPanel>
   </Grid>
 

@@ -50,7 +50,7 @@ namespace Objects.Converter.Revit
             converted.AddRange(rMesh);
             break;
           default:
-            ConversionErrors.Add(new Exception($"Incompatible geometry type: {b.GetType()} is not supported in DirectShape conversions."));
+            Report.LogConversionError(new Exception($"Incompatible geometry type: {b.GetType()} is not supported in DirectShape conversions."));
             break;
         }
       });
@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
       revitDs.SetShape(converted);
       revitDs.Name = speckleDs.name;
       SetInstanceParameters(revitDs, speckleDs);
-
+      Report.Log($"Created DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
@@ -99,11 +99,11 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(new Exception(e.Message));
+        Report.LogConversionError(new Exception(e.Message));
         var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
       }
-
+      Report.Log($"Converted DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
@@ -133,17 +133,17 @@ namespace Objects.Converter.Revit
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(converted);
       revitDs.Name = "Mesh " + mesh.applicationId;
-
+      Report.Log($"Converted DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = mesh.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
     private Mesh SolidToSpeckleMesh(Solid solid)
     {
       var mesh = new Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid>{solid});
+      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid> { solid });
       return mesh;
     }
-    
+
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();

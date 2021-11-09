@@ -2,11 +2,13 @@
   x:Class="DesktopUI2.Views.MainWindow"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:reactiveUi="http://reactiveui.net"
-  xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:vm="using:DesktopUI2.ViewModels"
   Title="{Binding TitleFull}"
   Width="400"
@@ -18,32 +20,73 @@
     <vm:MainWindowViewModel />
   </Design.DataContext>
   <Grid RowDefinitions="auto, *">
-    <styles:Card Padding="10,7" CornerRadius="0">
-      <StackPanel
-        VerticalAlignment="Bottom"
-        Orientation="Horizontal"
-        Spacing="5">
-
-        <TextBlock
-          FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
-          FontSize="20"
-          FontWeight="Bold"
-          Foreground="{DynamicResource PrimaryHueMidBrush}"
-          Text="Speckle" />
-        <TextBlock
-          FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
-          FontSize="20"
-          FontWeight="Medium"
-          Text="{Binding Title}" />
-
-        <TextBlock
-          Margin="0,0,0,3"
+    <m:Card Padding="10,7" CornerRadius="0">
+      <Grid ColumnDefinitions="auto,*">
+        <StackPanel
           VerticalAlignment="Bottom"
-          FontSize="8"
-          Foreground="Gray"
-          Text="{Binding Version}" />
-      </StackPanel>
-    </styles:Card>
+          Orientation="Horizontal"
+          Spacing="6">
+          <TextBlock
+            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            FontSize="18"
+            FontWeight="Bold"
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            Text="SPECKLE" />
+          <TextBlock
+            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            FontSize="18"
+            FontWeight="Medium"
+            Text="{Binding Title}" />
+
+          <TextBlock
+            Margin="0,0,0,4"
+            VerticalAlignment="Bottom"
+            FontSize="8"
+            Foreground="Gray"
+            Text="{Binding Version}" />
+        </StackPanel>
+
+        <StackPanel
+          Grid.Column="1"
+          HorizontalAlignment="Right"
+          VerticalAlignment="Bottom"
+          Orientation="Horizontal"
+          Spacing="6">
+          <m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding ToggleDarkThemeCommand}"
+            ToolTip.Tip="Toggle dark theme">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                assists:ShadowAssist.ShadowDepth="0"
+                Kind="SunMoonStars" />
+
+            </Button.Content>
+          </m:FloatingButton>
+          <m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding RefreshCommand}"
+            ToolTip.Tip="Refresh">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                assists:ShadowAssist.ShadowDepth="0"
+                Kind="Refresh" />
+
+            </Button.Content>
+          </m:FloatingButton>
+        </StackPanel>
+      </Grid>
+    </m:Card>
 
 
     <reactiveUi:RoutedViewHost
