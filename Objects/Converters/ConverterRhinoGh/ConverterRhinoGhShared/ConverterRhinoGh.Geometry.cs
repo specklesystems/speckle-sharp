@@ -684,7 +684,7 @@ namespace Objects.Converter.RhinoGh
           // quad
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3], mesh.faces[i + 4]));
         }
-        else  // For now, I've commented this all out because it doesn't work with texture coordinates.
+        else
         {      
           // n-gon
 
@@ -721,8 +721,8 @@ namespace Objects.Converter.RhinoGh
               );
             }
 
-            MeshNgon foo = MeshNgon.Create(mesh.faces.GetRange(i + 1, n), faceIndices);
-            m.Ngons.AddNgon(foo);
+            MeshNgon ngon = MeshNgon.Create(mesh.faces.GetRange(i + 1, n), faceIndices);
+            m.Ngons.AddNgon(ngon);
           
             requiresCompacting = true;
           }
@@ -731,22 +731,7 @@ namespace Objects.Converter.RhinoGh
         i += n + 1;
       }
 
-      
-
-      // try
-      // {
-      //   m.VertexColors.AppendColors(mesh.colors.Select(c => System.Drawing.Color.FromArgb((int)c)).ToArray());
-      // }
-      // catch
-      // { }
-      
       if (requiresCompacting) m.Compact();
-
-      // if (mesh.textureCoordinates != null)
-      //   for (int j = 0; j < mesh.textureCoordinates.Count; j += 2)
-      //   {
-      //     m.TextureCoordinates.Add(mesh.textureCoordinates[j], mesh.textureCoordinates[j + 1]);
-      //   }
 
       return m;
     }

@@ -119,14 +119,13 @@ namespace Objects.Geometry
         for (int i = 1; i <= n; i++)
         {
           int vertIndex = faces[nIndex + i];
+          int newVertIndex = verticesUnique.Count / 3;
           
           var (x, y, z) = GetPointAtIndex(vertIndex);
           verticesUnique.Add(x);
           verticesUnique.Add(y);
           verticesUnique.Add(z);
-          
-          int newVertIndex = verticesUnique.Count / 3;
-          
+
           colorsUnique?.Add(colors[vertIndex]);
           facesUnique.Add(newVertIndex);
         }
