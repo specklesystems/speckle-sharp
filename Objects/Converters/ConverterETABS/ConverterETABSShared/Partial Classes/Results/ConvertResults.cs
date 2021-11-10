@@ -44,7 +44,7 @@ namespace Objects.Converter.ETABS
 
             #endregion
 
-            ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), new ResultSet2D(), new ResultSet3D(), new ResultGlobal(), new ResultSetNode());
+            ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), new ResultSet2D(), new ResultSet3D(), new ResultGlobal(), AllResultSetNodesToSpeckle());
 
             return results;
         }
