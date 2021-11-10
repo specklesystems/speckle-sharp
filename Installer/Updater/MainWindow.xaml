@@ -1,0 +1,58 @@
+﻿<Window
+  x:Class="SpeckleUpdater.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:SpeckleUpdater"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Title="Speckle@Arup Auto-Updater"
+  Width="250"
+  MinHeight="300"
+  Background="#007fff"
+  BorderThickness="0"
+  Icon="favicon.ico"
+  ResizeMode="NoResize"
+  SizeToContent="Height"
+  WindowStartupLocation="CenterScreen"
+  WindowStyle="None"
+  mc:Ignorable="d">
+  <Grid>
+    <StackPanel Orientation="Vertical">
+      <Image Margin="10,20,10,30" Width="100" Source="logo.png" />
+      <TextBlock
+        Name="UpdateMessage"
+        Width="160"
+        HorizontalAlignment="Center"
+        Foreground="White"
+        Text="Checking for updates..."
+        TextAlignment="Center"
+        TextWrapping="Wrap" />
+      <Button
+        Name="YesBtn"
+        Margin="10,15,10,10"
+        Click="Yes_Click"
+        Content="YES!"
+        FontWeight="Bold"
+        Foreground="White"
+        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+        Visibility="Collapsed" />
+      <Button
+        Name="OkBtn"
+        Margin="10,15,10,10"
+        Click="No_Click"
+        Content="OK!"
+        FontWeight="Bold"
+        Foreground="White"
+        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+        Visibility="Collapsed" />
+      <Button
+        Name="NoBtn"
+        Margin="0,0,0,20"
+        Click="No_Click"
+        Content="No, I want an old Speckle"
+        Foreground="White"
+        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+        Visibility="Collapsed" />
+    </StackPanel>
+  </Grid>
+</Window>
