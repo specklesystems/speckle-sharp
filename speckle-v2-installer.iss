@@ -26,6 +26,8 @@
 #define SpeckleFolder "{localappdata}\Speckle"
 #define AnalyticsFolder "{localappdata}\SpeckleAnalytics"      
 #define AnalyticsFilename       "analytics.exe"
+#define ExcelAddinRequestFolder "{localappdata}\SpeckleExcelAddinRequest"      
+#define ExcelAddinRequestFilename       "ExcelAddinRequest.exe"
 
 [Setup]
 AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
@@ -72,6 +74,7 @@ Name: autocad22; Description: Speckle for AutoCAD 2022 - v{#Autocad2022Version};
 Name: civil21; Description: Speckle for AutoCADCivil 2021 - v{#Civil2021Version};  Types: full
 Name: civil22; Description: Speckle for AutoCADCivil 2022 - v{#Civil2022Version};  Types: full
 Name: gsa; Description: Speckle for Oasys GSA - v{#GSAVersion};  Types: full
+Name: excel; Description: Speckle for Excel;  Types: full
 Name: connectionmanager; Description: Speckle@Arup ConnectionManager - v{#AppVersion};  Types: full custom; Flags: fixed
 Name: kits; Description: Speckle Kits - v{#AppVersion};  Types: full custom; Flags: fixed
 
@@ -174,6 +177,9 @@ Source: "ConnectorDynamo\ConnectorDynamoFunctions\bin\Release\*"; DestDir: "{use
 Source: "ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys\SpeckleGSA\"; Flags: ignoreversion recursesubdirs; Components: gsa
 Source: "Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
 
+;excel
+Source: "ExcelAddin\ExcelAddinRequest\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{#ExcelAddinRequestFolder}"; Flags: ignoreversion recursesubdirs; Components: excel
+
 ;connectionmanager
 Source: "ConnectionManager\SpeckleConnectionManager\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
 Source: "ConnectionManager\SpeckleConnectionManagerUI\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager-ui\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
@@ -203,6 +209,7 @@ Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.5\packages\Spec
 Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.6\packages\SpeckleDynamo2\*"
 Type: filesandordirs; Name: "{userappdata}\Dynamo\*"
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA\*"
+Type: filesandordirs; Name: "{localappdata}\SpeckleExcelAddinRequest\*"
 Type: filesandordirs; Name: "{userappdata}\Speckle\Kits\Objects\*"
 Type: filesandordirs; Name: "{localappdata}\SpeckleAnalytics\*"
 
@@ -238,6 +245,7 @@ Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-co
 [Run]
 Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"; Flags: nowait postinstall skipifsilent
 Filename: "{#AnalyticsFolder}\analytics.exe"; Parameters: "{#AppVersion} {#GetEnv('ENABLE_TELEMETRY_DOMAIN')}"; Description: "Send anonymous analytics to Arup. No project data or personally identifiable information will be sent."
+Filename: "{#ExcelAddinRequestFolder}\ExcelAddinRequest.exe"; Parameters: "{#GetEnv('ENABLE_TELEMETRY_DOMAIN')}"; Description: "Request install of Speckle Excel Add-in. Installation will be pushed from Software Center."; Components: excel
 
 ;checks if minimun requirements are met
 [Code]
