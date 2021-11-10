@@ -22,9 +22,18 @@ namespace ExcelAddinRequest
       {
         string _userEmail = Environment.UserName + "@" + _internalDomain + ".com";
 
+        // TODO: switch to KeyVault for secrets/settings storage
+        AppConfig _config = new()
+        {
+          Tenant = args[1],
+          ClientId = args[2],
+          ClientSecret = args[3],
+          GroupId = args[4]
+        };
+
         try
         {
-          RunAsync(_userEmail).GetAwaiter().GetResult();
+          RunAsync(_userEmail, _config).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {
@@ -39,33 +48,19 @@ namespace ExcelAddinRequest
       public string ClientId { get; set; }
       public string ClientSecret { get; set; }
       public string GroupId { get; set; }
-      public static AppConfig ReadEnvironmentVariables()
-      {
-        var config = new AppConfig
-        {
-          Tenant = Environment.GetEnvironmentVariable("EXCEL_ADDIN_APP_TENANT"),
-          ClientId = Environment.GetEnvironmentVariable("EXCEL_ADDIN_APP_CLIENT_ID"),
-          ClientSecret = Environment.GetEnvironmentVariable("EXCEL_ADDIN_APP_CLIENT_SECRET"),
-          GroupId = Environment.GetEnvironmentVariable("EXCEL_ADDIN_APP_GROUP_ID")
-        };
-
-        return config;
-      }
     }
 
-    private static async Task RunAsync(string _userEmail)
+    private static async Task RunAsync(string _userEmail, AppConfig _config)
     {
-      AppConfig config = AppConfig.ReadEnvironmentVariables();
-
       // Requested and preconfigured on app registration in Azure
       var scopes = new[] { "https://graph.microsoft.com/.default" };
 
       // The tenant ID from the Azure portal
-      var tenantId = config.Tenant;
+      var tenantId = _config.Tenant;
 
       // Values from app registration
-      var clientId = config.ClientId;
-      var clientSecret = config.ClientSecret;
+      var clientId = _config.ClientId;
+      var clientSecret = _config.ClientSecret;
 
       // using Azure.Identity;
       var options = new TokenCredentialOptions
@@ -83,7 +78,7 @@ namespace ExcelAddinRequest
           .Request()
           .GetAsync();
 
-      var membership = await graphClient.Users[user.Id].CheckMemberGroups(new List<string> { config.GroupId })
+      var membership = await graphClient.Users[user.Id].CheckMemberGroups(new List<string> { _config.GroupId })
           .Request()
           .PostAsync();
 
@@ -96,7 +91,7 @@ namespace ExcelAddinRequest
           Id = user.Id
         };
 
-        await graphClient.Groups[config.GroupId].Members.References
+        await graphClient.Groups[_config.GroupId].Members.References
         .Request()
         .AddAsync(directoryObject);
 

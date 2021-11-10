@@ -245,7 +245,7 @@ Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-co
 [Run]
 Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"; Flags: nowait postinstall skipifsilent
 Filename: "{#AnalyticsFolder}\analytics.exe"; Parameters: "{#AppVersion} {#GetEnv('ENABLE_TELEMETRY_DOMAIN')}"; Description: "Send anonymous analytics to Arup. No project data or personally identifiable information will be sent."
-Filename: "{#ExcelAddinRequestFolder}\ExcelAddinRequest.exe"; Parameters: "{#GetEnv('ENABLE_TELEMETRY_DOMAIN')}"; Description: "Request install of Speckle Excel Add-in. Installation will be pushed from Software Center."; Components: excel
+Filename: "{#ExcelAddinRequestFolder}\ExcelAddinRequest.exe"; Parameters: "{#GetEnv('ENABLE_TELEMETRY_DOMAIN')} {#GetEnv('EXCEL_ADDIN_APP_TENANT')} {#GetEnv('EXCEL_ADDIN_APP_CLIENT_ID')} {#GetEnv('EXCEL_ADDIN_APP_CLIENT_SECRET')} {#GetEnv('EXCEL_ADDIN_APP_GROUP_ID')}"; Description: "Request install of Speckle Excel Add-in. Installation will be pushed from Software Center."; Components: excel
 
 ;checks if minimun requirements are met
 [Code]

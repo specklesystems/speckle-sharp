@@ -73,6 +73,14 @@ jobs:
       run: dotnet build --configuration Release --runtime win-x64
       working-directory: Analytics     
 
+    - name: Excel Addin Request CLI - Restore NuGets
+      run: dotnet restore
+      working-directory: ExcelAddin/ExcelAddinRequest
+
+    - name: Excel Addin Request - Compile CLI
+      run: dotnet build --configuration Release --runtime win-x64
+      working-directory: ExcelAddin/ExcelAddinRequest   
+
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore all the applications
       shell: cmd
@@ -113,7 +121,11 @@ jobs:
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
       env:
-        ENABLE_TELEMETRY_DOMAIN: arup        
+        ENABLE_TELEMETRY_DOMAIN: arup      
+        EXCEL_ADDIN_APP_TENANT: ${{ secrets.EXCEL_ADDIN_APP_TENANT }}  
+        EXCEL_ADDIN_APP_CLIENT_ID: ${{ secrets.EXCEL_ADDIN_APP_CLIENT_ID }}  
+        EXCEL_ADDIN_APP_CLIENT_SECRET: ${{ secrets.EXCEL_ADDIN_APP_CLIENT_SECRET }}  
+        EXCEL_ADDIN_APP_GROUP_ID: ${{ secrets.EXCEL_ADDIN_APP_GROUP_ID }}          
 
     - name: Get Name of exe File
       id: listName
@@ -156,9 +168,7 @@ jobs:
         tag_name: ${{ steps.calculateTagVersion.outputs.tag }}
         release_name: Speckle@Arup Installer ${{ steps.calculateTagVersion.outputs.tag }}
         body: |
-          The Speckle@Arup installer includes the default [Objects Kit](https://github.com/arup-group/speckle-sharp/tree/master/Objects), an account manager,        
-
-          And SpeckleV2 connectors for:
+          The Speckle@Arup installer includes the default [Objects Kit](https://github.com/arup-group/speckle-sharp/tree/master/Objects), an account manager, and SpeckleV2 connectors for:
 
           - [Grasshopper](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGrasshopper)
           - [Rhino 6/7](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRhino)
@@ -166,6 +176,7 @@ jobs:
           - [Dynamo](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorDynamo)
           - [AutoCAD 2021/2022 and Civil3D 2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorAutocadCivil)
           - [Oasys GSA 10.1](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGSA)
+          - [Excel](https://github.com/specklesystems/speckle-excel)
           
           Check out the Speckle@Arup docs [here](https://speckle.arup.com/)!
         draft: false
