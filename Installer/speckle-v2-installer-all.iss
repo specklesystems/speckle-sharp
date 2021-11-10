@@ -28,6 +28,7 @@
 #define AnalyticsFilename       "analytics.exe"
 #define ExcelAddinRequestFolder "{localappdata}\SpeckleExcelAddinRequest"      
 #define ExcelAddinRequestFilename       "ExcelAddinRequest.exe"
+#define UpdaterFilename       "SpeckleUpdater.exe"
 
 [Setup]
 AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
@@ -75,8 +76,9 @@ Name: civil21; Description: Speckle for AutoCADCivil 2021 - v{#Civil2021Version}
 Name: civil22; Description: Speckle for AutoCADCivil 2022 - v{#Civil2022Version};  Types: full
 Name: gsa; Description: Speckle for Oasys GSA - v{#GSAVersion};  Types: full
 Name: excel; Description: Speckle for Excel;  Types: full
-Name: connectionmanager; Description: Speckle@Arup ConnectionManager - v{#AppVersion};  Types: full custom; Flags: fixed
 Name: kits; Description: Speckle Kits - v{#AppVersion};  Types: full custom; Flags: fixed
+Name: connectionmanager; Description: Speckle@Arup ConnectionManager - v{#AppVersion};  Types: full custom; Flags: fixed
+Name: updater; Description: Speckle Updater - v{#AppVersion}; Types: full custom; Flags: fixed
 
 [Types]
 Name: "full"; Description: "Full installation"
@@ -180,15 +182,18 @@ Source: "..\Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Con
 ;excel
 Source: "ExcelAddin\ExcelAddinRequest\bin\Release\net5.0\win-x64\*"; DestDir: "{#ExcelAddinRequestFolder}"; Flags: ignoreversion recursesubdirs; Components: excel
 
+;kits
+Source: "..\Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
+
 ;connectionmanager
 Source: "ConnectionManager\SpeckleConnectionManager\bin\Release\net5.0\*"; DestDir: "{userappdata}\speckle-connection-manager\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
 Source: "ConnectionManager\SpeckleConnectionManagerUI\bin\Release\net5.0\*"; DestDir: "{userappdata}\speckle-connection-manager-ui\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
 
-;kits
-Source: "..\Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
-
 ;analytics
 Source: "Analytics\bin\Release\net461\win-x64\*"; DestDir: "{#AnalyticsFolder}"; Flags: ignoreversion recursesubdirs;
+
+;updater
+Source: "Updater\bin\Release\*"; DestDir: "{#SpeckleFolder}"; Flags: ignoreversion recursesubdirs;
 
 [InstallDelete]
 Type: filesandordirs; Name: "{userappdata}\McNeel\Rhinoceros\6.0\Plug-ins\SpeckleRhino2 (8dd5f30b-a13d-4a24-abdc-3e05c8c87143)\*"
@@ -209,9 +214,10 @@ Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.5\packages\Spec
 Type: filesandordirs; Name: "{userappdata}\Dynamo\Dynamo Revit\2.6\packages\SpeckleDynamo2\*"
 Type: filesandordirs; Name: "{userappdata}\Dynamo\*"
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA\*"
-Type: filesandordirs; Name: "{localappdata}\SpeckleExcelAddinRequest\*"
 Type: filesandordirs; Name: "{userappdata}\Speckle\Kits\Objects\*"
+Type: filesandordirs; Name: "{localappdata}\SpeckleExcelAddinRequest\*"
 Type: filesandordirs; Name: "{localappdata}\SpeckleAnalytics\*"
+Type: filesandordirs; Name: "{localappdata}\Speckle\*"
 
 [Registry]
 Root: HKCU; Subkey: "SOFTWARE\McNeel\Rhinoceros\6.0\Plug-ins\8dd5f30b-a13d-4a24-abdc-3e05c8c87143"; ValueType: string; ValueName: "Name"; ValueData: "Speckle";
@@ -239,6 +245,7 @@ Root: HKCU; Subkey: "Software\Classes\speckle\shell\open\command"; ValueType: "s
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\Check for Updates"; Filename: "{#SpeckleFolder}\{#UpdaterFilename}"; Parameters: "-showprogress"
 Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Oasys\SpeckleGSAV2"; Filename: "{userappdata}\Oasys\SpeckleGSA\ConnectorGSA.exe";
 Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe";
 

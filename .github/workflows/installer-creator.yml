@@ -65,6 +65,10 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Speckle Updater - Compile
+      run: msbuild SpeckleUpdater.sln /property:Configuration=Release
+      working-directory: Installer/Updater
+
     - name: Analytics CLI - Restore NuGets
       run: dotnet restore
       working-directory: Installer/Analytics
@@ -80,7 +84,7 @@ jobs:
     - name: Excel Addin Request - Compile CLI
       run: dotnet build ExcelAddinRequest.csproj --configuration Release --runtime win-x64
       working-directory: Installer/ExcelAddin/ExcelAddinRequest   
-
+      
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore all the applications
       shell: cmd
