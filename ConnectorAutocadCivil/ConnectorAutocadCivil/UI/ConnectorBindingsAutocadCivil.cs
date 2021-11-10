@@ -270,25 +270,26 @@ namespace Speckle.ConnectorAutocadCivil.UI
           bool changedLayerNames = false;
 
           // create a commit layer prefix: all nested layers will be concatenated with this
-          var layerPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, id);
+          var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", layerPrefix);
+          Doc.UserData.Add("commit", commitPrefix);
 
-          // delete existing commit layers
+          // delete existing commit layers and block instances
           try
           {
-            DeleteLayersWithPrefix(layerPrefix, tr);
+            DeleteBlocksWithPrefix(commitPrefix, tr);
+            DeleteLayersWithPrefix(commitPrefix, tr);
           }
           catch
           {
-            RaiseNotification($"could not remove existing layers starting with {layerPrefix} before importing new geometry.");
-            state.Errors.Add(new Exception($"could not remove existing layers starting with {layerPrefix} before importing new geometry."));
+            RaiseNotification($"could not remove existing layers or blocks starting with {commitPrefix} before importing new geometry.");
+            state.Errors.Add(new Exception($"could not remove existing layers or blocks starting with {commitPrefix} before importing new geometry."));
           }
 
           // flatten the commit object to retrieve children objs
           int count = 0;
-          var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state, ref count);
+          var commitObjs = FlattenCommitObject(commitObject, converter, commitPrefix, state, ref count);
 
           // TODO: create dictionaries here for linetype and layer linewidth
           // More efficient this way than doing this per object
@@ -467,6 +468,19 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
 
           layer.Erase();
+        }
+      }
+    }
+    private void DeleteBlocksWithPrefix(string prefix, Transaction tr)
+    {
+      BlockTable blockTable = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+      foreach (ObjectId blockId in blockTable)
+      {
+        BlockTableRecord block = (BlockTableRecord)tr.GetObject(blockId, OpenMode.ForRead);
+        if (block.Name.StartsWith(prefix))
+        {
+          block.UpgradeOpen();
+          block.Erase();
         }
       }
     }
