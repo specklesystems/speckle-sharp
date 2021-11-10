@@ -406,10 +406,8 @@ namespace SpeckleRhino
       int objCount = 0;
       bool renamedlayers = false;
 
-      var selectedObjects = GetObjectsFromFilter(state.Filter);
-      state.SelectedObjectIds = selectedObjects.Where(o => Doc.Objects.FindId(new Guid(o)) != null).ToList();
+      state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
       var commitObject = new Base();
-
 
       if (state.SelectedObjectIds.Count == 0)
       {
@@ -432,61 +430,62 @@ namespace SpeckleRhino
         Base converted = null;
         string containerName = string.Empty;
 
+        // applicationId can either be doc obj guid or name of view
+        RhinoObject obj = null;
+        int viewIndex = -1;
         try
         {
-          RhinoObject obj = Doc.Objects.FindId(new Guid(applicationId)); // try get geom object
-          if (obj != null)
-          {
-            if (!converter.CanConvertToSpeckle(obj))
-            {
-              progress.Report.Log($"Skipped not supported type:  ${obj.Geometry.ObjectType}");
-              continue;
-            }
-            converted = converter.ConvertToSpeckle(obj);
-            if (converted == null)
-            {
-              var exception = new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}.");
-              progress.Report.LogConversionError(exception);
-              continue;
-            }
-
-            foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
-              converted[key] = obj.Attributes.GetUserString(key);
-
-            if (obj is InstanceObject)
-              containerName = "Blocks";
-            else
-            {
-              var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
-              string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
-              containerName = cleanLayerPath;
-              if (!cleanLayerPath.Equals(layerPath))
-                renamedlayers = true;
-            }
-          }
+          obj = Doc.Objects.FindId(new Guid(applicationId)); // try get geom object
         }
         catch
         {
-          int viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
-          ViewInfo view = (viewIndex >= 0) ? Doc.NamedViews[viewIndex] : null;
-          if (view != null)
+          viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
+        }
+
+        if (obj != null)
+        {
+          if (!converter.CanConvertToSpeckle(obj))
           {
-            converted = converter.ConvertToSpeckle(view);
-          }
-          else
-          {
-            var exception = new Exception($"Failed to find local view ${applicationId}.");
-            progress.Report.LogOperationError(exception);
+            progress.Report.Log($"Skipped not supported type:  ${obj.Geometry.ObjectType}");
             continue;
           }
+          converted = converter.ConvertToSpeckle(obj);
           if (converted == null)
           {
-            var exception = new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}.");
-            converter.Report.LogConversionError(exception);
+            var exception = new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}.");
+            progress.Report.LogConversionError(exception);
+            continue;
+          }
 
+          foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
+            converted[key] = obj.Attributes.GetUserString(key);
+
+          if (obj is InstanceObject)
+            containerName = "Blocks";
+          else
+          {
+            var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+            string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
+            containerName = cleanLayerPath;
+            if (!cleanLayerPath.Equals(layerPath))
+              renamedlayers = true;
+          }
+        }
+        else if (viewIndex != -1)
+        {
+          ViewInfo view = Doc.NamedViews[viewIndex];
+          converted = converter.ConvertToSpeckle(view);
+          if (converted == null)
+          {
+            converter.Report.LogConversionError(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
             continue;
           }
           containerName = "Named Views";
+        }
+        else
+        {
+          progress.Report.LogOperationError(new Exception($"Failed to find doc object ${applicationId}."));
+          continue;
         }
 
         if (commitObject[$"@{containerName}"] == null)
@@ -495,7 +494,6 @@ namespace SpeckleRhino
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
-
 
         // set application ids, also set for speckle schema base object if it exists
         converted.applicationId = applicationId;
