@@ -11,6 +11,7 @@ namespace Objects.Converter.ETABS
 {
     public partial class ConverterETABS
     {
+        
         public string ModelUnits()
         {
             var units = Model.GetDatabaseUnits();
@@ -23,6 +24,83 @@ namespace Objects.Converter.ETABS
             {
                 return null;
             }
+        }
+        public static List<string> GetAllFrameNames(cSapModel model)
+        {
+            int num = 0;
+            var names = new string[] { };
+            try
+            {
+                model.FrameObj.GetNameList(ref num, ref names);
+                return names.ToList();
+            }
+            catch { return null; }
+        }
+
+        public static List<string> GetColumnNames(cSapModel model)
+        {
+            var frameNames = GetAllFrameNames(model);
+
+            List<string> columnNames = new List<string>();
+
+            string frameLabel = "";
+            string frameStory = "";
+
+            foreach (var frameName in frameNames)
+            {
+                model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+
+                if (frameLabel.ToLower().StartsWith("c"))
+                {
+                    columnNames.Add(frameName);
+                }
+            }
+
+            return columnNames;
+        }
+
+        public static List<string> GetBeamNames(cSapModel model)
+        {
+            var frameNames = GetAllFrameNames(model);
+
+            List<string> beamNames = new List<string>();
+
+            string frameLabel = "";
+            string frameStory = "";
+
+            foreach (var frameName in frameNames)
+            {
+                model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+
+                if (frameLabel.ToLower().StartsWith("b"))
+                {
+                    beamNames.Add(frameName);
+                }
+            }
+
+            return beamNames;
+        }
+
+        public static List<string> GetBraceNames(cSapModel model)
+        {
+            var frameNames = GetAllFrameNames(model);
+
+            List<string> braceNames = new List<string>();
+
+            string frameLabel = "";
+            string frameStory = "";
+
+            foreach (var frameName in frameNames)
+            {
+                model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+
+                if (frameLabel.ToLower().StartsWith("d"))
+                {
+                    braceNames.Add(frameName);
+                }
+            }
+
+            return braceNames;
         }
         public static List<string> GetAllAreaNames(cSapModel model)
         {
@@ -77,6 +155,8 @@ namespace Objects.Converter.ETABS
 
             return FloorName;
         }
+
+
         public ShellType ConvertShellType(eShellType eShellType)
         {
             ShellType shellType = new ShellType();
@@ -135,6 +215,18 @@ namespace Objects.Converter.ETABS
             var restraint = new Restraint(string.Join("", code));
             return restraint;
         }
+        public static List<string> GetAllPointNames(cSapModel model)
+        {
+            int num = 0;
+            var names = new string[] { };
+            try
+            {
+                model.PointObj.GetNameList(ref num, ref names);
+                return names.ToList();
+            }
+            catch { return null; }
+
+        }
 
         public enum ETABSConverterSupported
         {
@@ -156,7 +248,15 @@ namespace Objects.Converter.ETABS
             Brace,
             Beam,
             Floor,
-            Wall
+            Wall,
+            BeamLoading,
+            ColumnLoading,
+            BraceLoading,
+            FrameLoading,
+            FloorLoading,
+            AreaLoading,
+            WallLoading,
+            NodeLoading,
             //ColumnResults,
             //BeamResults,
             //BraceResults,

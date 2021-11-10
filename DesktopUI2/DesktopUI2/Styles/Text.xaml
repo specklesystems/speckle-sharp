@@ -1,4 +1,7 @@
-﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<Styles
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles">
   <Design.PreviewWith>
     <Border
       Width="360"
@@ -10,7 +13,7 @@
           VerticalAlignment="Center"
           Content="Hello!" />
 
-        <TextBlock Classes="Grotesk">Test Text</TextBlock>
+        <TextBlock Classes="Grotesk" Text="Test Text" />
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -25,6 +28,11 @@
     <Setter Property="FontSize" Value="14" />
     <Setter Property="FontWeight" Value="Medium" />
   </Style>
+
+
+  <!--<Style Selector="TextBox.Search TextPresenter">
+    <Setter Property="FontSize" Value="12" />
+  </Style>-->
 
   <!--<Style Selector="cc|FloatingButton &gt; TextBlock, TextBlock.FloatingButtonText">
     <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />

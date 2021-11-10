@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
 
       GetHostedElements(speckleCeiling, revitCeiling);
       speckleCeiling.displayMesh = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-
+      Report.Log($"Converted BuildingPad {revitCeiling.Id}");
       return speckleCeiling;
     }
 
@@ -92,7 +92,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Exception($"Could not create openings in ceiling {speckleCeiling.applicationId}", ex));
+        Report.LogConversionError(new Exception($"Could not create openings in ceiling {speckleCeiling.applicationId}", ex));
       }
 
       SetInstanceParameters(revitCeiling, speckleCeiling);
@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleCeiling, revitCeiling);
       placeholders.AddRange(hostedElements);
-
+      Report.Log($"Created Ceiling {revitCeiling.Id}");
       return placeholders;
     }
 #endif

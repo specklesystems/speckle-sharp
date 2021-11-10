@@ -40,17 +40,28 @@ namespace Objects.Geometry
 
     }
 
-    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
+    public Mesh(List<double> vertices, List<int> faces, List<int> colors = null, List<double> texture_coords = null, string units = Units.Meters, string applicationId = null)
     {
-      this.vertices = vertices.ToList();
-      this.faces = faces.ToList();
-      this.colors = colors?.ToList();
-      this.textureCoordinates = texture_coords?.ToList();
+      this.vertices = vertices;
+      this.faces = faces;
+      this.colors = colors ?? this.colors;
+      this.textureCoordinates = texture_coords?? this.textureCoordinates;
       this.applicationId = applicationId;
       this.units = units;
     }
     
-    #region Conveniance Methods
+    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
+    : this(
+    vertices.ToList(),
+      faces.ToList(),
+      colors?.ToList(),
+      texture_coords?.ToList(),
+      applicationId,
+      units
+    )
+    { }
+
+    #region Convenience Methods
     
     public int VerticesCount => vertices.Count / 3;
     public int TextureCoordinatesCount => textureCoordinates.Count / 2;
@@ -64,12 +75,23 @@ namespace Objects.Geometry
     {
       index *= 3;
       return new Point(
-        vertices[index++],
-        vertices[index++], 
         vertices[index],
+        vertices[index + 1], 
+        vertices[index + 2],
         units,
         applicationId
         );
+    }
+    
+    /// <summary>
+    /// Gets a texture coordinate as a <see cref="ValueTuple{T1,T2}"/> by <paramref name="index"/>
+    /// </summary>
+    /// <param name="index">The index of the texture coordinate</param>
+    /// <returns>Texture coordinate as a <see cref="ValueTuple{T1,T2}"/></returns>
+    public (double,double) GetTextureCoordinateAtIndex(int index)
+    {
+      index *= 2;
+      return (textureCoordinates[index], textureCoordinates[index + 1]);
     }
 
     /// <summary>
@@ -108,13 +130,13 @@ namespace Objects.Geometry
         for (int i = 1; i <= n; i++)
         {
           int vertIndex = faces[nIndex + i];
-          int xIndex = vertIndex * 3;
           int newVertIndex = verticesUnique.Count / 3;
           
-          verticesUnique.Add(vertices[xIndex]);     //x
-          verticesUnique.Add(vertices[xIndex + 1]); //y
-          verticesUnique.Add(vertices[xIndex + 2]); //z
-          
+          var (x, y, z) = GetPointAtIndex(vertIndex);
+          verticesUnique.Add(x);
+          verticesUnique.Add(y);
+          verticesUnique.Add(z);
+
           colorsUnique?.Add(colors[vertIndex]);
           facesUnique.Add(newVertIndex);
         }
@@ -123,7 +145,7 @@ namespace Objects.Geometry
       }
       
       vertices = verticesUnique;
-      colors = colorsUnique;
+      colors = colorsUnique ?? colors;
       faces = facesUnique;
     }
     

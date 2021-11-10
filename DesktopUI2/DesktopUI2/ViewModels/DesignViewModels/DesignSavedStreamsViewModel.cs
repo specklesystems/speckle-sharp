@@ -19,33 +19,48 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     {
       SavedStreams = new List<DesignSavedStreamViewModel>
       {
+        new DesignSavedStreamViewModel()
+        {
+
+          Stream = new DesignStream { name = "Sample stream" },
+
+          StreamState = new DesignStreamState()
+          {
+            BranchName = "test",
+            CommitId = "latest",
+
+            IsReceiver = true,
+            //Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
+            SelectedObjectIds = new List<string> { "", "", "" },
+          }
+        },
          new DesignSavedStreamViewModel()
          {
 
-           Stream = new DesignStream{name = "Sample stream"},
-           StreamState = new StreamState(null, new Speckle.Core.Api.Stream{id = "999" })
-           {
-             BranchName = "test",
-             CommitId = "latest",
-             IsReceiver = true,
-             Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
-             SelectedObjectIds = new List<string> { "", "", "" },
-           }
-         },
-         new DesignSavedStreamViewModel()
-         {
-
-           Stream = new DesignStream{name = "BIM data is cool"},
-           StreamState = new StreamState(null, new Speckle.Core.Api.Stream{id = "999" })
+           Stream = new DesignStream { name = "BIM data is cool" },
+           StreamState = new DesignStreamState()
            {
              BranchName = "main",
-           IsReceiver = false,
-           Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
-           SelectedObjectIds = new List<string> { "", "", "" },
+             IsReceiver = false,
+             //Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
+             SelectedObjectIds = new List<string> { "", "", "" },
            }
          }
 
       };
+    }
+  }
+
+  public class DesignStreamState
+  {
+    public string BranchName { get; set; }
+    public string CommitId { get; set; }
+    public bool IsReceiver { get; set; }
+    //public ListSelectionFilter Filter { get; set; }
+    public List<string> SelectedObjectIds { get; set; }
+    public DesignStreamState()
+    {
+
     }
   }
 
@@ -57,7 +72,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
   public class DesignSavedStreamViewModel
   {
-    public StreamState StreamState { get; set; }
+    public DesignStreamState StreamState { get; set; }
     public DesignStream Stream { get; set; }
   }
 }

@@ -35,7 +35,7 @@ namespace Objects.Converter.Revit
       {
         level = LevelToNative(LevelFromCurve(baseLine));
       }
-
+      var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
 
@@ -61,6 +61,7 @@ namespace Objects.Converter.Revit
               revitBeam.ChangeTypeId(familySymbol.Id);
             }
           }
+          isUpdate = true;
         }
         catch
         {
@@ -89,6 +90,8 @@ namespace Objects.Converter.Revit
 
       // TODO: nested elements.
 
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} AdaptiveComponent {revitBeam.Id}");
+
       return placeholders;
     }
 
@@ -98,6 +101,7 @@ namespace Objects.Converter.Revit
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
+        Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
         return RevitElementToSpeckle(revitBeam);
       }
 
@@ -109,6 +113,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
+      Report.Log($"Converted Beam {revitBeam.Id}");
       return speckleBeam;
     }
   }

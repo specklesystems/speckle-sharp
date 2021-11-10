@@ -19,6 +19,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBraces.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertColumn.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertLine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading1DElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading2DElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\LoadingNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert1DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert2DProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\Convert2DPropertyFloor.cs" />
@@ -41,7 +44,6 @@
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Materials\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Results\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\" />
   </ItemGroup>

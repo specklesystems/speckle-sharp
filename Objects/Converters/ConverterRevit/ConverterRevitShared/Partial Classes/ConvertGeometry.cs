@@ -577,7 +577,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(e);
+        Report.LogConversionError(e);
         return null;
       }
       var result = tsb.GetBuildResult();
@@ -1141,7 +1141,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
+        Report.LogConversionError(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
         var mesh = MeshToNative(brep.displayMesh);
         revitDs.SetShape(mesh);
       }

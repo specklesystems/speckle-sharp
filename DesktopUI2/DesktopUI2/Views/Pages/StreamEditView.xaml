@@ -3,6 +3,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
@@ -13,9 +14,13 @@
   d:DesignWidth="400"
   mc:Ignorable="d">
 
-  <Design.DataContext>
-    <viewModels:StreamViewModel />
-  </Design.DataContext>
+  <!-- <Design.DataContext> -->
+  <!--   <viewModels:StreamViewModel /> -->
+  <!-- </Design.DataContext> -->
+  <UserControl.Resources>
+    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+    <conv:RoleValueConverter x:Key="RoleValueConverter" />
+  </UserControl.Resources>
   <Grid RowDefinitions="auto,*">
     <Grid Margin="15" ColumnDefinitions="auto,*">
       <m:FloatingButton
@@ -49,10 +54,25 @@
           FontSize="20"
           Text="{Binding Stream.name}"
           TextTrimming="CharacterEllipsis" />
-        <TextBlock
+        <Grid
           Grid.Row="1"
-          Classes="Overline"
-          Text="{Binding Stream.id}" />
+          Margin="0,3,0,0"
+          ColumnDefinitions="auto,auto,*">
+          <TextBlock
+            Classes="Overline"
+            Text="{Binding Stream.id}"
+            TextTrimming="CharacterEllipsis" />
+          <TextBlock
+            Grid.Column="1"
+            Classes="Overline"
+            Text=" - " />
+          <TextBlock
+            Grid.Column="2"
+            Classes="Overline"
+            Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+
       </Grid>
 
 
@@ -79,7 +99,7 @@
               Text="Send" />
           </StackPanel>
         </TabItem.Header>
-        <uc:Send />
+        <uc:Send IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" />
       </TabItem>
 
 

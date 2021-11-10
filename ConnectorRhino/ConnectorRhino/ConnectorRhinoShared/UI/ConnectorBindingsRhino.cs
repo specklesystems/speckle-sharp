@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
 using Rhino.Display;
+using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 
 namespace SpeckleRhino
 {
@@ -428,7 +429,7 @@ namespace SpeckleRhino
             state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
         }
         else
-          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log}"));
+          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}"));
       }
       else if (converted == null)
       {

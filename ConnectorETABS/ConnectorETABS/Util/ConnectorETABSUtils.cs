@@ -71,6 +71,22 @@ namespace Speckle.ConnectorETABS.Util
                     return GetAllWallNames(model);
                 case "LoadPattern":
                     return GetAllLoadPatternNames(model);
+                case "BeamLoading":
+                    return GetBeamNames(model);
+                case "ColumnLoading":
+                    return GetColumnNames(model);
+                case "BraceLoading":
+                    return GetBraceNames(model);
+                case "FrameLoading":
+                    return GetAllFrameNames(model);
+                case "FloorLoading":
+                    return GetAllFloorNames(model);
+                case "WallLoading":
+                    return GetAllWallNames(model);
+                case "AreaLoading":
+                    return GetAllAreaNames(model);
+                case "NodeLoading":
+                    return GetAllPointNames(model);
                 case "Model":
                     var names = new string[] { };
                     names.Append(model.GetModelFilename());
@@ -555,6 +571,15 @@ namespace Speckle.ConnectorETABS.Util
             Floor,
             LoadPattern,
             Model,
+            BeamLoading,
+            ColumnLoading,
+            BraceLoading,
+            FrameLoading,
+            FloorLoading,
+            AreaLoading,
+            WallLoading,
+            NodeLoading,
+
             //ColumnResults,
             //BeamResults,
             //BraceResults,

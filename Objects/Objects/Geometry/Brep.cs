@@ -250,12 +250,61 @@ namespace Objects.Geometry
     internal void OnDeserialized(StreamingContext context)
     {
       Surfaces.ForEach(s => s.units = units);
-      Edges.ForEach(e => e.Brep = this);
-      Loops.ForEach(l => l.Brep = this);
-      Trims.ForEach(t => t.Brep = this);
-      Faces.ForEach(f => f.Brep = this);
+      
+      for (var i = 0; i < Edges.Count; i++)
+      {
+        var e = Edges[i];
+        lock (e)
+          if (e.Brep != null)
+          {
+            e = new BrepEdge(this, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.Curve3dIndex, e.ProxyCurveIsReversed,
+              e.Domain);
+            Edges[i] = e;
+          }
+          else
+            e.Brep = this;
+        
+      }
+      
+      for(var i = 0; i < Loops.Count; i++)
+      {
+        var l = Loops[i];
+        lock(l)
+          if (l.Brep != null)
+          {
+            l = new BrepLoop(this, l.FaceIndex, l.TrimIndices, l.Type);
+            Loops[i] = l;
+          }
+          else
+            l.Brep = this;
+      }
 
-      //TODO: all the data props to the real props
+      for (var i = 0; i < Trims.Count; i++)
+      {
+        var t = Trims[i];
+        lock(t)
+          if (t.Brep != null)
+          {
+            t = new BrepTrim(this, t.EdgeIndex, t.FaceIndex, t.LoopIndex, t.CurveIndex, t.IsoStatus, t.TrimType,
+              t.IsReversed, t.StartIndex, t.EndIndex);
+            Trims[i] = t;
+          }
+          else
+            t.Brep = this;
+      }
+
+      for (var i = 0; i < Faces.Count; i++)
+      {
+        var f = Faces[i];
+        lock(f)
+          if (f.Brep != null)
+          {
+            f = new BrepFace(this, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed);
+            Faces[i] = f;
+          }
+          else
+            f.Brep = this;
+      }
     }
   }
 

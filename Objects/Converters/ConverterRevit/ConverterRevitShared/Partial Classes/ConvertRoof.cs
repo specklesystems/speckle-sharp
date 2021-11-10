@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
             //this is for schema builder specifically
             //if no roof edge has a slope defined but a slope angle is defined on the roof
             //set each edge to have that slope
-            if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope!=0)
+            if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope != 0)
             {
               for (var i = 0; i < curveArray.Size; i++)
               {
@@ -112,7 +112,7 @@ namespace Objects.Converter.Revit
             break;
           }
         default:
-          ConversionErrors.Add(new Exception("Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof"));
+          Report.LogConversionError(new Exception("Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof"));
           return null;
 
       }
@@ -125,7 +125,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        ConversionErrors.Add(new Exception($"Could not create openings in roof {speckleRoof.applicationId}", ex));
+        Report.LogConversionError(new Exception($"Could not create openings in roof {speckleRoof.applicationId}", ex));
       }
 
       if (speckleRevitRoof != null)
@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleRoof, revitRoof);
       placeholders.AddRange(hostedElements);
-
+      Report.Log($"Created Roof {revitRoof.Id}");
       return placeholders;
     }
 
@@ -197,7 +197,7 @@ namespace Objects.Converter.Revit
       speckleRoof.displayMesh = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleRoof, revitRoof);
-
+      Report.Log($"Converted Roof {revitRoof.Id}");
       return speckleRoof;
     }
 

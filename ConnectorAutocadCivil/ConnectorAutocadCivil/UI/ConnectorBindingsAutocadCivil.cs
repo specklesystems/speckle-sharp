@@ -13,6 +13,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
+using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
@@ -87,13 +88,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override List<string> GetObjectsInView() // TODO: this returns all visible doc objects. handle views later.
     {
       var objs = new List<string>();
-      using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        AcadDb.BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
-        AcadDb.BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
-        foreach (AcadDb.ObjectId id in blckTblRcrd)
+        BlockTableRecord modelSpace = Doc.Database.GetModelSpace(); 
+        foreach (ObjectId id in modelSpace)
         {
-          var dbObj = tr.GetObject(id, AcadDb.OpenMode.ForRead);
+          var dbObj = tr.GetObject(id, OpenMode.ForRead);
           if (dbObj.Visible())
             objs.Add(dbObj.Handle.ToString());
         }
@@ -106,8 +106,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override string GetDocumentId()
     {
-      string path = AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
-      return Speckle.Core.Models.Utilities.hashString("X" + path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5); // what is the "X" prefix for?
+      string path = HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, FindFileHint.Default);
+      return Core.Models.Utilities.hashString("X" + path + Doc?.Name, Core.Models.Utilities.HashingFuctions.MD5); // what is the "X" prefix for?
     }
 
     public override string GetDocumentLocation() => AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
@@ -131,12 +131,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var layers = new List<string>();
       if (Doc != null)
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
-          AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-          foreach (AcadDb.ObjectId objId in lyrTbl)
+          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+          foreach (ObjectId objId in lyrTbl)
           {
-            AcadDb.LayerTableRecord lyrTblRec = tr.GetObject(objId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTableRecord;
+            LayerTableRecord lyrTblRec = tr.GetObject(objId, OpenMode.ForRead) as LayerTableRecord;
             layers.Add(lyrTblRec.Name);
           }
           tr.Commit();
@@ -260,7 +260,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       using (DocumentLock l = Doc.LockDocument())
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
           // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
           converter.SetContextDocument(Doc);
@@ -299,14 +299,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
           int count = 0;
           var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state, ref count);
 
-          // open model space block table record for write
-          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-
           // TODO: create dictionaries here for linetype and layer linewidth
           // More efficient this way than doing this per object
           var lineTypeDictionary = new Dictionary<string, ObjectId>();
           var lineTypeTable = (LinetypeTable)tr.GetObject(Doc.Database.LinetypeTableId, OpenMode.ForRead);
-          foreach (AcadDb.ObjectId lineTypeId in lineTypeTable)
+          foreach (ObjectId lineTypeId in lineTypeTable)
           {
             var linetype = (LinetypeTableRecord)tr.GetObject(lineTypeId, OpenMode.ForRead);
             lineTypeDictionary.Add(linetype.Name, lineTypeId);
@@ -328,7 +325,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 if (!cleanName.Equals(layerName))
                   changedLayerNames = true;
 
-                if (convertedEntity.Append(cleanName, tr, btr))
+                var appended = convertedEntity.Append(cleanName);
+                if (appended.IsValid)
                 {
                   // handle display
                   Base display = obj[@"displayStyle"] as Base;

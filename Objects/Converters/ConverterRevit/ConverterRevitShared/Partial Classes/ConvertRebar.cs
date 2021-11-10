@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
       var curveLoops = closedCurves.Select(o => CurveArrayToCurveLoop(o)).ToList();
 
       DB.Structure.Rebar rebar = null;
-      
+
       // get host element
       var host = GetExistingElementByApplicationId(speckleRevitRebar.host);
       if (host == null)
@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
         new ApplicationPlaceholderObject
           {applicationId = speckleRebar.applicationId, ApplicationGeneratedId = rebar.UniqueId, NativeObject = rebar}
       };
-
+      Report.Log($"Created Rebar {rebar.Id}");
       return placeholders;
     }
 
@@ -136,7 +136,7 @@ namespace Objects.Converter.Revit
       RebarShapeDrivenAccessor accessor = null;
       if (revitRebar.IsRebarShapeDriven())
         accessor = revitRebar.GetShapeDrivenAccessor();
-        
+
       for (int i = 0; i < bars.Count; i++)
       {
         var bar = (accessor != null) ? bars[i].CreateTransformed(accessor.GetBarPositionTransform(i)) : bars[i];

@@ -18,6 +18,7 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
+    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
   </UserControl.Resources>
   <Grid Margin="15" RowDefinitions="auto,auto,auto,auto, *, auto">
     <Grid Grid.Row="0" ColumnDefinitions="auto,*">
@@ -85,12 +86,13 @@
       <TextBlock Text="Select a stream to use:" TextTrimming="CharacterEllipsis" />
 
     </StackPanel>
+
+    <!--  SEARCH STREAMS  -->
     <Grid Grid.Row="2" Margin="0,15,0,0">
       <m:Card Padding="0">
         <TextBox
-          Margin="0"
-          Padding="0"
-          Classes="Solo"
+          Margin="5"
+          Classes="Solo Small"
           Text="{Binding SearchQuery}"
           Watermark="Search streams">
           <TextBox.InnerRightContent>
@@ -100,12 +102,12 @@
               Classes="Flat"
               Command="{Binding ClearSearchCommand}"
               Content="{icons:MaterialIconExt CloseCircle,
-                                              Size=20}" />
+                                              Size=15}" />
           </TextBox.InnerRightContent>
           <TextBox.InnerLeftContent>
             <icons:MaterialIcon
-              Width="20"
-              Height="20"
+              Width="15"
+              Height="15"
               Margin="4,0,0,0"
               Kind="Search" />
           </TextBox.InnerLeftContent>
@@ -208,6 +210,7 @@
                   Classes="Mini"
                   Command="{Binding $parent[local:HomeView].DataContext.SendCommand}"
                   CommandParameter="{Binding}"
+                  IsEnabled="{Binding role, Converter={StaticResource RoleCanSendValueConverter}}"
                   ToolTip.Tip="Send to this stream">
                   <Button.Content>
                     <icons:MaterialIcon
@@ -267,7 +270,7 @@
             Margin="8,0"
             VerticalAlignment="Center"
             Classes="ButtonText"
-            Text="Create new Stream"
+            Text="Create New"
             TextTrimming="CharacterEllipsis" />
         </Grid>
       </Button>
