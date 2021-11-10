@@ -194,27 +194,18 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
 
       string referencedObject = state.Commit.referencedObject;
-      string id = state.Commit.id;
+
+      var commitId = state.Commit.id;
+      var commitMsg = state.Commit.message;
 
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (id == "latest")
+      if (commitId == "latest")
       {
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
-        id = res.id;
-      }
-
-      string commitId = state.Commit.id;
-      string commitMsg = state.Commit.message;
-      try
-      {
-        var commit = await state.Client.CommitGet(state.Stream.id, id);
+        var commit = res.commits.items.FirstOrDefault();
         commitId = commit.id;
         commitMsg = commit.message;
-      }
-      catch
-      {
-
+        referencedObject = commit.referencedObject;
       }
 
       var commitObject = await Operations.Receive(
@@ -248,9 +239,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
-        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, stream, id });
+        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, stream, commitId });
       else
-        ConvertCommit(commitObject, converter, state, stream, id);
+        ConvertCommit(commitObject, converter, state, stream, commitId);
 
       return state;
     }
