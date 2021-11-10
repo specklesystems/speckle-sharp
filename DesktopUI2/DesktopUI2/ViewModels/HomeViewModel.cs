@@ -226,7 +226,7 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    private void Init()
+    internal void Init()
     {
       Accounts = AccountManager.GetAccounts().ToList();
 

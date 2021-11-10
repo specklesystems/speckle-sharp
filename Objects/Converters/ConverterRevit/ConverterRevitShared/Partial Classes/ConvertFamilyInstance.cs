@@ -12,14 +12,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    //TODO: might need to clean this up and split the logic by beam, FI, etc...
+    //TODO: might need to clean this up and split the ConversionLog.Addic by beam, FI, etc...
     public List<ApplicationPlaceholderObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = LevelToNative(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
-
+      var isUpdate = false;
       //try update existing
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
       if (docObj != null)
@@ -55,6 +55,7 @@ namespace Objects.Converter.Revit
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
           }
+          isUpdate = true;
         }
         catch
         {
@@ -113,7 +114,7 @@ namespace Objects.Converter.Revit
         NativeObject = familyInstance
         }
       };
-
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} FamilyInstance ({familyInstance.Category.Name}) {familyInstance.Id}");
       return placeholders;
     }
 
@@ -217,7 +218,7 @@ namespace Objects.Converter.Revit
 
       // TODO:
       // revitFi.GetSubelements();
-
+      Report.Log($"Converted FamilyInstance {revitFi.Id}");
       return speckleFi;
     }
 

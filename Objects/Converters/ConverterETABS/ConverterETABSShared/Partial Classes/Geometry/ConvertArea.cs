@@ -14,6 +14,10 @@ namespace Objects.Converter.ETABS
     {
         public object AreaToNative(Element2D area)
         {
+            if (GetAllAreaNames(Model).Contains(area.name))
+            {
+                return null;
+            }
             string name = "";
             int numPoints = area.topology.Count();
             List<double> X = new List<double> { };
@@ -30,7 +34,7 @@ namespace Objects.Converter.ETABS
             double[] z = Z.ToArray();
 
             Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name,area.property.name);
-
+            Model.AreaObj.ChangeName(name, area.name);
             return name;
 
         }

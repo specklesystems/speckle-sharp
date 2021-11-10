@@ -20,6 +20,7 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
+      Report.Log($"Converted ModelCurve {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -48,6 +49,7 @@ namespace Objects.Converter.Revit
           revitCurve.LineStyle = Doc.GetElement(lineStyleId);
         }
         placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
+        Report.Log($"Created ModelCurve {revitCurve.Id}");
       }
 
       return placeholders;
@@ -97,7 +99,7 @@ namespace Objects.Converter.Revit
           revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
         }
 
-
+        Report.Log($"Created ModelCurve {revitCurve.Id}");
         placeholders.Add(new ApplicationPlaceholderObject()
         {
           applicationId = (speckleLine as Base).applicationId,
@@ -115,6 +117,7 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
+      Report.Log($"Converted DetailCurve {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -140,7 +143,7 @@ namespace Objects.Converter.Revit
         }
         catch (Exception)
         {
-          ConversionErrors.Add(new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
+          Report.LogConversionError(new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
           throw;
         }
 
@@ -151,6 +154,7 @@ namespace Objects.Converter.Revit
           revitCurve.LineStyle = Doc.GetElement(lineStyleId);
         }
         placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
+        Report.Log($"Created DetailCurve {revitCurve.Id}");
       }
 
       return placeholders;
@@ -163,6 +167,7 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
+      Report.Log($"Converted RoomBoundaryLine {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -180,13 +185,14 @@ namespace Objects.Converter.Revit
 
       try
       {
-        var res = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        Report.Log($"Created RoomBoundaryLine {revitCurve.Id}");
         return new ApplicationPlaceholderObject()
-        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
       }
       catch (Exception)
       {
-        ConversionErrors.Add(new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
+        Report.LogConversionError(new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
         throw;
       }
 
@@ -199,6 +205,7 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
+      Report.Log($"Converted SpaceSeparationLine {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -218,29 +225,31 @@ namespace Objects.Converter.Revit
           bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
           if (!fullOverlap)
           {
-              docCurve.SetGeometryCurve(speckleGeom, false);
+            docCurve.SetGeometryCurve(speckleGeom, false);
           }
+          Report.Log($"Updated SpaceSeparationLine {docCurve.Id}");
           return new ApplicationPlaceholderObject()
           { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
         }
         catch
         {
-              //delete and try to create new line as fallback
-              Doc.Delete(docObj.Id);
+          //delete and try to create new line as fallback
+          Doc.Delete(docObj.Id);
         }
       }
 
       try
       {
-          var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
-          return new ApplicationPlaceholderObject()
-          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+        var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        Report.Log($"Created SpaceSeparationLine {res.Id}");
+        return new ApplicationPlaceholderObject()
+        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
       }
       catch (Exception)
       {
-          ConversionErrors.Add(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
-          throw;
-      }        
+        Report.LogConversionError(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
+        throw;
+      }
     }
 
     /// <summary>

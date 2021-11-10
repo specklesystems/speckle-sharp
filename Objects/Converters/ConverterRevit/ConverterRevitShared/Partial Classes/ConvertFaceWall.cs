@@ -34,7 +34,7 @@ namespace Objects.Converter.Revit
       var templatePath = GetTemplatePath("Mass");
       if (!File.Exists(templatePath))
       {
-        ConversionErrors.Add(new Exception($"Could not find file {Path.GetFileName(templatePath)}"));
+        Report.LogConversionError(new Exception($"Could not find file {Path.GetFileName(templatePath)}"));
         return null;
       }
 
@@ -73,7 +73,7 @@ namespace Objects.Converter.Revit
       var wallType = GetElementType<WallType>(speckleWall);
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
-        ConversionErrors.Add(new Exception($"Wall type not valid for face wall ${speckleWall.applicationId}."));
+        Report.LogConversionError(new Exception($"Wall type not valid for face wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -87,7 +87,7 @@ namespace Objects.Converter.Revit
 
       if (revitWall == null)
       {
-        ConversionErrors.Add(new Exception($"Failed to create face wall ${speckleWall.applicationId}."));
+        Report.LogConversionError(new Exception($"Failed to create face wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
-
+      Report.Log($"Created FaceWall {revitWall.Id}");
       return placeholders;
     }
 
@@ -183,7 +183,7 @@ namespace Objects.Converter.Revit
       so.OverwriteExistingFile = true;
       famDoc.SaveAs(tempFamilyPath, so);
       famDoc.Close();
-
+      Report.Log($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
 

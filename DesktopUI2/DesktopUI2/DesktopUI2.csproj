@@ -25,19 +25,26 @@
     <None Remove="Styles\FloatingButton.xaml" />
     <None Remove="Styles\ListBox.xaml" />
     <None Remove="Styles\MenuItem.xaml" />
+    <None Remove="Styles\Playground.xaml" />
     <None Remove="Styles\Styles.xaml" />
     <None Remove="Styles\Text.xaml" />
+    <None Remove="Styles\TextBox.xaml" />
     <None Remove="Views\Filters\AllFilterView.xaml" />
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\AllStreams.xaml" />
+    <None Remove="Views\Pages\HomeControls\SavedStream.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
+    <None Remove="Views\Windows\Report.xaml" />
+    <AvaloniaResource Include="Styles\Playground.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
     <AvaloniaResource Include="Styles\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
@@ -62,8 +69,12 @@
     <AvaloniaResource Include="Styles\Styles.xaml">
       <Generator></Generator>
     </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Text.xaml">
+    <AvaloniaResource Include="Styles\TextBox.xaml">
+      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Styles\Text.xaml">
+      <Generator></Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -87,6 +98,9 @@
     <AvaloniaXaml Include="Views\Pages\HomeControls\AllStreams.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\HomeControls\SavedStream.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\HomeControls\SavedStreams.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -102,16 +116,19 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Report.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.7" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
-    <PackageReference Include="Material.Avalonia" Version="2.3.0" />
+    <PackageReference Include="Avalonia" Version="0.10.8" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.8" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.8" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.8" />
+    <PackageReference Include="Material.Avalonia" Version="2.4.1" />
     <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +156,9 @@
     <Compile Update="Views\Pages\HomeControls\AllStreams.xaml.cs">
       <DependentUpon>AllStreams.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Pages\HomeControls\SavedStream.xaml.cs">
+      <DependentUpon>SavedStream.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Pages\HomeControls\SavedStreams.xaml.cs">
       <DependentUpon>SavedStreams.xaml</DependentUpon>
     </Compile>
@@ -153,6 +173,9 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Report.xaml.cs">
+      <DependentUpon>Report.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

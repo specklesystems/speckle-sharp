@@ -1011,7 +1011,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(new Exception("Failed to convert brep.", e));
+        Report.LogConversionError(new Exception("Failed to convert brep.", e));
         return null;
       }
     }

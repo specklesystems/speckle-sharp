@@ -10,9 +10,14 @@ namespace Objects.Converter.ETABS
     {
         public object PointToNative(Node speckleStructNode)
         {
+            if (GetAllPointNames(Model).Contains(speckleStructNode.name))
+            {
+                return null;
+            }
             var point = speckleStructNode.basePoint;
             string name = "";
             Model.PointObj.AddCartesian(point.x, point.y, point.z, ref name);
+            Model.PointObj.ChangeName(name, speckleStructNode.name);
             return speckleStructNode.name;
         }
         public Node PointToSpeckle(string name)

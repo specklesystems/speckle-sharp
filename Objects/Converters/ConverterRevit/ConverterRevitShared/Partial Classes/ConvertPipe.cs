@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
           baseLine = LineToNative(line);
           break;
         default:
-          ConversionErrors.Add(new Exception($"Pipe baseCurve is not a line"));
+          Report.LogConversionError(new Exception($"Pipe baseCurve is not a line"));
           return null;
       }
 
@@ -36,16 +36,17 @@ namespace Objects.Converter.Revit
       var systemFamily = speckleRevitPipe?.systemType ?? "";
       var system = types.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
                    types.FirstOrDefault(x => x.Name == systemFamily);
-      if ( system == null )
+      if (system == null)
       {
         system = types.FirstOrDefault();
-        ConversionErrors.Add(new Exception($"Pipe type {systemFamily} not found; replaced with {system.Name}"));
+        Report.LogConversionError(new Exception($"Pipe type {systemFamily} not found; replaced with {system.Name}"));
       }
 
       // create or update the pipe
       DB.Plumbing.Pipe pipe;
+      var isUpdate = false;
       var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
-      if ( docObj == null )
+      if (docObj == null)
       {
         pipe = DB.Plumbing.Pipe.Create(Doc, system.Id, pipeType.Id, level.Id,
           baseLine.GetEndPoint(0),
@@ -53,12 +54,13 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        pipe = ( DB.Plumbing.Pipe ) docObj;
+        pipe = (DB.Plumbing.Pipe)docObj;
         pipe.SetSystemType(system.Id);
-        ( ( LocationCurve ) pipe.Location ).Curve = baseLine;
+        ((LocationCurve)pipe.Location).Curve = baseLine;
+        isUpdate = true;
       }
 
-      if ( speckleRevitPipe != null )
+      if (speckleRevitPipe != null)
       {
         TrySetParam(pipe, BuiltInParameter.RBS_START_LEVEL_PARAM, level);
         SetInstanceParameters(pipe, speckleRevitPipe);
@@ -70,7 +72,7 @@ namespace Objects.Converter.Revit
         new ApplicationPlaceholderObject
           {applicationId = specklePipe.applicationId, ApplicationGeneratedId = pipe.UniqueId, NativeObject = pipe}
       };
-
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} Pipe {pipe.Id}");
       return placeholders;
     }
 
@@ -78,7 +80,7 @@ namespace Objects.Converter.Revit
     {
       // geometry 
       var baseGeometry = LocationToSpeckle(revitPipe);
-      if ( !( baseGeometry is Line baseLine ) )
+      if (!(baseGeometry is Line baseLine))
       {
         throw new Speckle.Core.Logging.SpeckleException("Only line based Pipes are currently supported.");
       }
@@ -106,7 +108,7 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
-
+      Report.Log($"Converted Pipe {revitPipe.Id}");
       return specklePipe;
     }
   }

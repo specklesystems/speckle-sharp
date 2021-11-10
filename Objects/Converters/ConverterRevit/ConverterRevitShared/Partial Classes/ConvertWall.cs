@@ -45,7 +45,7 @@ namespace Objects.Converter.Revit
       }
       if (revitWall == null)
       {
-        ConversionErrors.Add(new Exception($"Failed to create wall ${speckleWall.applicationId}."));
+        Report.LogConversionError(new Exception($"Failed to create wall ${speckleWall.applicationId}."));
         return null;
       }
 
@@ -55,7 +55,7 @@ namespace Objects.Converter.Revit
 
       if (revitWall.WallType.Name != wallType.Name)
       {
-        
+
         revitWall.ChangeTypeId(wallType.Id);
       }
 
@@ -119,6 +119,10 @@ namespace Objects.Converter.Revit
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
 
+
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} Wall {revitWall.Id}");
+
+
       return placeholders;
     }
 
@@ -146,16 +150,16 @@ namespace Objects.Converter.Revit
 
       if (revitWall.CurtainGrid == null)
       {
-        if ( revitWall.IsStackedWall )
+        if (revitWall.IsStackedWall)
         {
           var wallMembers = revitWall.GetStackedWallMemberIds().Select(id => (Wall)Doc.GetElement(id));
           speckleWall.elements = new List<Base>();
-          foreach (  var wall in wallMembers )
+          foreach (var wall in wallMembers)
             speckleWall.elements.Add(WallToSpeckle(wall));
         }
 
         speckleWall.displayMesh = GetElementDisplayMesh(revitWall,
-          new Options() {DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false});
+          new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       }
       else
       {
@@ -167,8 +171,8 @@ namespace Objects.Converter.Revit
 
         var mullions = new Base
         {
-          [ "@displayMesh" ] = mullionsMesh,
-          [ "renderMaterial" ] = new Other.RenderMaterial() {diffuse = System.Drawing.Color.DarkGray.ToArgb()}
+          ["@displayMesh"] = mullionsMesh,
+          ["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() }
         };
         speckleWall.elements = new List<Base> { mullions };
 
@@ -185,7 +189,7 @@ namespace Objects.Converter.Revit
       });
 
       GetHostedElements(speckleWall, revitWall);
-
+      Report.Log($"Converted Wall {revitWall.Id}");
       return speckleWall;
     }
 

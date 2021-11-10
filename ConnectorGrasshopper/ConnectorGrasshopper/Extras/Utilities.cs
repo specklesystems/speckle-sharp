@@ -254,7 +254,7 @@ namespace ConnectorGrasshopper.Extras
           }
           catch (Exception e)
           {
-            converter.ConversionErrors.Add(new Exception($"Could not convert {@base}", e));
+            converter.Report.ConversionErrors.Add(new Exception($"Could not convert {@base}", e));
           }
         }
         if(recursive)

@@ -8,13 +8,14 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 {
   public class DesignAllStreamsViewModel
   {
-    public bool InProgress = false;
+    public bool InProgress { get; set; } = false;
 
-    public Account SelectedAccount = null;
+    public Account SelectedAccount { get; set; }= null;
 
-    public List<Account> Accounts = new List<Account>();
+    public List<Account> Accounts { get; set; }= new List<Account>();
 
-    public List<Stream> Streams = new List<Stream>();
+    public List<Stream> Streams { get; set; }  = new List<Stream>();
+
     public DesignAllStreamsViewModel()
     {
       var acc = AccountManager.GetDefaultAccount();
