@@ -74,17 +74,18 @@ namespace Objects.Converter.Revit
       return pointToSpeckle;
     }
 
-    public List<XYZ> PointListToNative(IEnumerable<double> arr, string units = null)
+    public List<XYZ> PointListToNative(IList<double> arr, string units = null)
     {
-      var coords = arr.ToList();
-      if (coords.Count % 3 != 0) throw new SpeckleException("Array malformed: length%3 != 0.");
+      if (arr.Count % 3 != 0) throw new SpeckleException("Array malformed: length%3 != 0.");
 
-      var points = new List<XYZ>();
-      for (int i = 2; i < coords.Count; i += 3)
+      var u = units ?? ModelUnits;
+      
+      var points = new List<XYZ>(arr.Count / 3);
+      for (int i = 2; i < arr.Count; i += 3)
         points.Add(new XYZ(
-          ScaleToNative(coords[i - 2], units ?? ModelUnits),
-          ScaleToNative(coords[i - 1], units ?? ModelUnits),
-          ScaleToNative(coords[i], units ?? ModelUnits)));
+          ScaleToNative(arr[i - 2], u),
+          ScaleToNative(arr[i - 1], u),
+          ScaleToNative(arr[i], u)));
 
       return points;
     }
@@ -282,7 +283,7 @@ namespace Objects.Converter.Revit
       speckleCurve.units = units ?? ModelUnits;
       speckleCurve.domain = new Interval(revitCurve.GetEndParameter(0), revitCurve.GetEndParameter(1));
       speckleCurve.length = ScaleToSpeckle(revitCurve.Length);
-      var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToArray();
+      var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList());
       speckleCurve.displayValue = new Polyline(coords, units);
 
       return speckleCurve;
@@ -505,27 +506,29 @@ namespace Objects.Converter.Revit
 
     public Mesh MeshToSpeckle(DB.Mesh mesh, string units = null)
     {
-      var speckleMesh = new Mesh();
+      var vertices = new List<double>(mesh.Vertices.Count * 3);
       foreach (var vert in mesh.Vertices)
       {
-        var vertex = PointToSpeckle(vert);
-        speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
+        vertices.AddRange(PointToSpeckle(vert).ToList());
       }
-
+      
+      var faces = new List<int>(mesh.NumTriangles * 4);
       for (int i = 0; i < mesh.NumTriangles; i++)
       {
         var triangle = mesh.get_Triangle(i);
         var A = triangle.get_Index(0);
         var B = triangle.get_Index(1);
         var C = triangle.get_Index(2);
-        speckleMesh.faces.Add(0);
-        speckleMesh.faces.AddRange(new int[]
+        faces.Add(0);
+        faces.AddRange(new int[]
         {
           (int)A, (int)B, (int)C
         });
       }
-
-      speckleMesh.units = units ?? ModelUnits;
+      
+      var u = units ?? ModelUnits;
+      var speckleMesh = new Mesh(vertices, faces, units: u );
+      
       return speckleMesh;
     }
 
@@ -598,18 +601,18 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public XYZ[] ArrayToPoints(IEnumerable<double> arr, string units = null)
+    public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
-      if (arr.Count() % 3 != 0)
+      if (arr.Count % 3 != 0)
       {
         throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
       }
 
-      XYZ[] points = new XYZ[arr.Count() / 3];
-      var asArray = arr.ToArray();
-      for (int i = 2, k = 0; i < arr.Count(); i += 3)
+      XYZ[] points = new XYZ[arr.Count / 3];
+
+      for (int i = 2, k = 0; i < arr.Count; i += 3)
       {
-        var point = new Point(asArray[i - 2], asArray[i - 1], asArray[i], units);
+        var point = new Point(arr[i - 2], arr[i - 1], arr[i], units);
         points[k++] = PointToNative(point);
       }
 
