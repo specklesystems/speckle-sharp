@@ -40,16 +40,27 @@ namespace Objects.Geometry
 
     }
 
-    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
+    public Mesh(List<double> vertices, List<int> faces, List<int> colors = null, List<double> texture_coords = null, string units = Units.Meters, string applicationId = null)
     {
-      this.vertices = vertices.ToList();
-      this.faces = faces.ToList();
-      this.colors = colors?.ToList();
-      this.textureCoordinates = texture_coords?.ToList();
+      this.vertices = vertices;
+      this.faces = faces;
+      this.colors = colors ?? this.colors;
+      this.textureCoordinates = texture_coords?? this.textureCoordinates;
       this.applicationId = applicationId;
       this.units = units;
     }
     
+    public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
+    : this(
+    vertices.ToList(),
+      faces.ToList(),
+      colors?.ToList(),
+      texture_coords?.ToList(),
+      applicationId,
+      units
+    )
+    { }
+
     #region Convenience Methods
     
     public int VerticesCount => vertices.Count / 3;
