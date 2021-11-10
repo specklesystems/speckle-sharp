@@ -78,7 +78,7 @@ jobs:
       working-directory: ExcelAddin/ExcelAddinRequest
 
     - name: Excel Addin Request - Compile CLI
-      run: dotnet build --configuration Release --runtime win-x64
+      run: dotnet build ExcelAddinRequest.csproj --configuration Release --runtime win-x64
       working-directory: ExcelAddin/ExcelAddinRequest   
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
