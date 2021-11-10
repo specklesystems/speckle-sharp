@@ -132,8 +132,8 @@ namespace ConnectorGrasshopper.Objects
 
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
+      
       // Check for single param rename, if so, just rename it and go on.
-      var singleRename = HasSingleRename();
       if (HasSingleRename())
       {
         var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName));
