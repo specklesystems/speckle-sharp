@@ -1,11 +1,9 @@
 ;defining variables
-#define AppName      "Spec-v2-GSAConnector"
-#define AppVersion  GetFileVersion("ConnectorGSA\ConnectorGSA\bin\Release\ConnectorGSA.exe")
-#define AppPublisher "Spec-cx"
+#define AppName      "Speckle@Arup v2 GSA Connector"
+#define AppVersion  GetFileVersion("..\ConnectorGSA\ConnectorGSA\bin\Release\ConnectorGSA.exe")
+#define AppPublisher "Speckle@Arup"
 #define AppURL       "https://docs.speckle.arup.com"
 #define SpeckleFolder "{localappdata}\Speckle"
-;#define AnalyticsFolder "{localappdata}\SpeckleAnalytics"   
-;#define AnalyticsFilename       "analytics.exe"
 
 [Setup]
 AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
@@ -22,8 +20,8 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 DisableWelcomePage=no
 OutputDir="."
-OutputBaseFilename=Speckle-cx-GSA-{#AppVersion}
-SetupIconFile=ConnectorGSA\ConnectorGSA\icon.ico
+OutputBaseFilename=Speckle@ArupGSAConnector-v{#AppVersion}
+SetupIconFile=..\ConnectorGSA\ConnectorGSA\icon.ico
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
@@ -34,7 +32,7 @@ VersionInfoVersion={#AppVersion}
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Components]
-Name: gsa; Description: Speckle for Oasys GSA ALPHA - v{#AppVersion};  Types: full
+Name: gsa; Description: Speckle for Oasys GSA - v{#AppVersion};  Types: full
 Name: kits; Description: Speckle Kit - v{#AppVersion};  Types: full custom; Flags: fixed
 
 [Types]
@@ -46,11 +44,11 @@ Name: "{app}"; Permissions: everyone-full
 
 [Files]
 ;gsa
-Source: "ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys\SpeckleGSA\"; Flags: ignoreversion recursesubdirs; Components: gsa
-Source: "Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
+Source: "..\ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys\SpeckleGSA\"; Flags: ignoreversion recursesubdirs; Components: gsa
+Source: "..\Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
 
 ;kits
-Source: "Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
+Source: "..\Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
 
 [InstallDelete]
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA\*"
