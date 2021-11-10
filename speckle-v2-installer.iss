@@ -178,7 +178,7 @@ Source: "ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys
 Source: "Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
 
 ;excel
-Source: "ExcelAddin\ExcelAddinRequest\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{#ExcelAddinRequestFolder}"; Flags: ignoreversion recursesubdirs; Components: excel
+Source: "ExcelAddin\ExcelAddinRequest\bin\Release\net5.0\win10-x64\*"; DestDir: "{#ExcelAddinRequestFolder}"; Flags: ignoreversion recursesubdirs; Components: excel
 
 ;connectionmanager
 Source: "ConnectionManager\SpeckleConnectionManager\bin\Release\net5.0\win10-x64\publish\*"; DestDir: "{userappdata}\speckle-connection-manager\"; Flags: ignoreversion recursesubdirs; Components: connectionmanager
