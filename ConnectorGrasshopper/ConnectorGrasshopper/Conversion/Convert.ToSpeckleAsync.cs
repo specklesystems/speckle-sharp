@@ -117,7 +117,7 @@ namespace ConnectorGrasshopper.Conversion
       if (CancellationToken.IsCancellationRequested)return;
       
       // Report all conversion errors as warnings
-      foreach (var error in Converter.ConversionErrors)
+      foreach (var error in Converter.Report.ConversionErrors)
       {
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
       }

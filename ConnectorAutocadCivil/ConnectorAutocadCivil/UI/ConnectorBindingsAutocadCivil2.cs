@@ -162,7 +162,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       if (Doc == null)
       {
-        converter.Report.LogOperationError(new Exception($"No Document is open."));
+        progress.Report.LogOperationError(new Exception($"No Document is open."));
         progress.CancellationTokenSource.Cancel();
       }
 
