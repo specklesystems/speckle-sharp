@@ -47,16 +47,16 @@ namespace Speckle.ConnectorRevit.Entry
       }
 
       //desktopui 2
-      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector\nNew UI (alpha)!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
+      // var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector\nNew UI (alpha)!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
-      if (speckleButton2 != null)
-      {
-        speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
-        speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        speckleButton2.ToolTip = "Speckle Connector for Revit - With a new UI";
-        speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
+      // if (speckleButton2 != null)
+      // {
+      //   speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+      //   speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+      //   speckleButton2.ToolTip = "Speckle Connector for Revit - With a new UI";
+      //   speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+      //   speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      // }
 
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;

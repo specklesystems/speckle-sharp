@@ -167,18 +167,22 @@ namespace SpeckleRhino
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-      string referencedObject = state.ReferencedObject;
-
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
 
+      string referencedObject = null;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.CommitId == "latest")
       {
         var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
         referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+      }
+      else
+      {
+        var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+        referencedObject = res.referencedObject;
       }
 
       var contex = SynchronizationContext.Current;
