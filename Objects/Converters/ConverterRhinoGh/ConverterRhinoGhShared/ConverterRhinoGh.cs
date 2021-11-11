@@ -99,17 +99,7 @@ namespace Objects.Converter.RhinoGh
         style = GetStyle(ro);
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
-        {
-          try
-          {
-            schema = ConvertToSpeckleBE(ro);
-          }
-          catch
-          {
-            schema = ConvertToSpeckleStr(ro);
-          }
-        }
-
+           schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
 
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
@@ -224,8 +214,8 @@ namespace Objects.Converter.RhinoGh
           break;
 #endif
         case RH.Extrusion o:
-          @base = BrepToSpeckle(o);
-          Report.Log($"Converted Extrusion as BREP");
+          @base = BrepToSpeckle(o.ToBrep());
+          Report.Log($"Converted Extrusion as Brep");
           break;
         case RH.Brep o:
           @base = BrepToSpeckle(o.DuplicateBrep());
@@ -282,12 +272,13 @@ namespace Objects.Converter.RhinoGh
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
 
+      Base schemaBase = null;
       if (obj is InstanceObject)
       {
         if (schema == "AdaptiveComponent")
-          return InstanceToAdaptiveComponent(obj as InstanceObject, args);
+          schemaBase = InstanceToAdaptiveComponent(obj as InstanceObject, args);
         else
-          throw new NotSupportedException();
+          Report.Log($"Skipping Instance conversion to unsupported schema {schema}");
       }
 
       switch (obj.Geometry)
@@ -296,88 +287,108 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "Column":
-              var curveToSpeckleColumn = CurveToSpeckleColumn(o);
+              schemaBase = CurveToSpeckleColumn(o);
               Report.Log($"Converted Curve to Column");
-              return curveToSpeckleColumn;
+              break;
 
             case "Beam":
-              var curveToSpeckleBeam = CurveToSpeckleBeam(o);
+              schemaBase = CurveToSpeckleBeam(o);
               Report.Log("Converted Curve to Beam");
-              return curveToSpeckleBeam;
+              break;
 
             default:
               Report.Log($"Skipping Curve conversion to schema {schema}");
-              throw new NotSupportedException();
+              break;
           }
+          break;
 
         case RH.Brep o:
           switch (schema)
           {
             case "Floor":
-              var brepToSpeckleFloor = BrepToSpeckleFloor(o);
+              schemaBase = BrepToSpeckleFloor(o);
               Report.Log($"Converted Brep to Floor");
-              return brepToSpeckleFloor;
+              break;
 
             case "Roof":
-              var convertToSpeckleBe = BrepToSpeckleRoof(o);
+              schemaBase = BrepToSpeckleRoof(o);
               Report.Log($"Converted Brep to Roof");
-              return convertToSpeckleBe;
+              break;
 
             case "Wall":
-              var brepToSpeckleWall = BrepToSpeckleWall(o);
+              schemaBase = BrepToSpeckleWall(o);
               Report.Log($"Converted Brep to Wall");
-              return brepToSpeckleWall;
+              break;
 
             case "FaceWall":
-              var brepToFaceWall = BrepToFaceWall(o, args);
+              schemaBase = BrepToFaceWall(o, args);
               Report.Log($"Converted Brep to Face Wall");
-              return brepToFaceWall;
+              break;
 
             case "DirectShape":
-              var brepToDirectShape = BrepToDirectShape(o, args);
+              schemaBase = BrepToDirectShape(o, args);
               Report.Log($"Converted Brep to DirectShape");
-              return brepToDirectShape;
+              break;
 
             default:
-              Report.Log($"Skipping Brep Conversion to schema {schema}");
-              throw new NotSupportedException();
+              Report.Log($"Skipping Brep Conversion to unsupported schema {schema}");
+              break;
           }
+          break;
 
         case RH.Extrusion o:
           switch (schema)
           {
+            case "Floor":
+              schemaBase = BrepToSpeckleFloor(o.ToBrep());
+              Report.Log($"Converted Extrusion to Floor");
+              break;
+
+            case "Roof":
+              schemaBase = BrepToSpeckleRoof(o.ToBrep());
+              Report.Log($"Converted Extrusion to Roof");
+              break;
+
+            case "Wall":
+              schemaBase = BrepToSpeckleWall(o.ToBrep());
+              Report.Log($"Converted Extrusion to Wall");
+              break;
+
             case "FaceWall":
-              var convertToSpeckleBe = BrepToFaceWall(o.ToBrep(), args);
+              schemaBase = BrepToFaceWall(o.ToBrep(), args);
               Report.Log($"Converted Extrusion to FaceWall");
-              return convertToSpeckleBe;
+              break;
 
             case "DirectShape":
-              var extrusionToDirectShape = ExtrusionToDirectShape(o, args);
+              schemaBase = ExtrusionToDirectShape(o, args);
               Report.Log($"Converted Extrusion to DirectShape");
-              return extrusionToDirectShape;
+              break;
 
             default:
               Report.Log($"Skipping Extrusion conversion to unsupported schema {schema}");
-              throw new NotSupportedException();
+              break;
           }
+          break;
 
         case RH.Mesh o:
           switch (schema)
           {
             case "DirectShape":
-              var convertToSpeckleBe = MeshToDirectShape(o, args);
+              schemaBase = MeshToDirectShape(o, args);
               Report.Log($"Converted Mesh to DirectShape");
-              return convertToSpeckleBe;
+              break;
 
             default:
               Report.Log($"Skipping Mesh conversion to unsupported schema {schema}");
-              throw new NotSupportedException();
+              break;
           }
+          break;
 
         default:
           Report.Log($"{obj.GetType()} is not supported in schema conversions.");
-          throw new NotSupportedException();
+          break;
       }
+      return schemaBase;
     }
 
     public List<Base> ConvertToSpeckleBE(List<object> objects)
