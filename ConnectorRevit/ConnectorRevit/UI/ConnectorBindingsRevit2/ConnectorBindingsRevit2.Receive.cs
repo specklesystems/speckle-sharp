@@ -41,9 +41,6 @@ namespace Speckle.ConnectorRevit.UI
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-      string referencedObject = state.ReferencedObject;
-      Commit myCommit = null;
-
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -51,13 +48,18 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
+      Commit myCommit = null;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
       if (state.CommitId == "latest")
       {
         var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
         myCommit = res.commits.items.FirstOrDefault();
-        referencedObject = myCommit.referencedObject;
       }
+      else
+      {
+        myCommit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+      }
+      string referencedObject = myCommit.referencedObject;
 
       var commitObject = await Operations.Receive(
           referencedObject,
