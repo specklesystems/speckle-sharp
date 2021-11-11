@@ -40,5 +40,13 @@ namespace Objects.Geometry
     public double weight { get; set; }
 
     public override string ToString() => $"{{{x},{y},{z},{weight}}}";
+    
+    public void Deconstruct(out double x, out double y, out double z, out double weight) => Deconstruct(out x, out y, out z, out weight, out _);
+
+    public void Deconstruct(out double x, out double y, out double z, out double weight, out string units)
+    {
+      Deconstruct(out x, out y, out z, out units);
+      weight = this.weight;
+    }
   }
 }

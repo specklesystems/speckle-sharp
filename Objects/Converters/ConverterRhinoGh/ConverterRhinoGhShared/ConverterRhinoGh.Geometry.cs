@@ -668,7 +668,7 @@ namespace Objects.Converter.RhinoGh
       var textureCoordinates = new Point2f[mesh.TextureCoordinatesCount];
       for(int ti = 0; ti < mesh.TextureCoordinatesCount; ti++)
       {
-        var (u, v) = mesh.GetTextureCoordinateAtIndex(ti); 
+        var (u, v) = mesh.GetTextureCoordinate(ti); 
         textureCoordinates[ti] = new Point2f(u,v);
       }
       m.TextureCoordinates.SetTextureCoordinates(textureCoordinates);
@@ -700,7 +700,7 @@ namespace Objects.Converter.RhinoGh
           for (int j = 1; j <= n; j++)
           {
             int vertIndex = mesh.faces[i + j];
-            var (x, y, z) = mesh.GetPointAtIndex(vertIndex);
+            var (x, y, z) = mesh.GetPoint(vertIndex);
             var key = (Point3f)new Point3d(x, y, z);
         
             points.Add(key);

@@ -56,12 +56,16 @@ namespace Objects.Geometry
     public static Point FromList(List<double> list, string units) => new Point(list[0], list[1], list[2], units);
 
     public void Deconstruct(out double x, out double y, out double z, out string units)
-    { 
+    {
+      Deconstruct(out x, out y, out z);
+      units = this.units;
+    }
+
+    public void Deconstruct(out double x, out double y, out double z)
+    {
       x = this.x;
       y = this.y;
       z = this.z;
-      units = this.units;
     }
-    public void Deconstruct(out double x, out double y, out double z) => Deconstruct(out x, out y, out z, out _);
   }
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
@@ -37,18 +38,22 @@ namespace Objects.Geometry
       this.units = units;
     }
 
-    [JsonIgnore]
-    public List<Point> points
+    [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
+    public List<Point> points => GetPoints();
+    
+    
+    /// <returns><see cref="value"/> as List of <see cref="Point"/>s</returns>
+    /// <exception cref="SpeckleException">when list is malformed</exception>
+    public List<Point> GetPoints()
     {
-      get
+      if (value.Count % 3 != 0) throw new SpeckleException($"{nameof(Polyline)}.{nameof(value)} list is malformed: expected length to be multiple of 3");
+      
+      var pts = new List<Point>(value.Count / 3);
+      for (int i = 2; i < value.Count; i += 3)
       {
-        List<Point> points = new List<Point>();
-        for (int i = 0; i < value.Count; i += 3)
-        {
-          points.Add(new Point(value[i], value[i + 1], value[i + 2], units));
-        }
-        return points;
+        pts.Add(new Point(value[i - 2], value[i - 1], value[i], units));
       }
+      return pts;
     }
 
     public List<double> ToList()
