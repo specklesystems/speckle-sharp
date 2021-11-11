@@ -104,7 +104,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           POSTGRES_DB: speckle2_test
           POSTGRES_PASSWORD: speckle
           POSTGRES_USER: speckle
-      - image: 'speckle/speckle-server:2'
+      - image: 'speckle/speckle-server:latest'
         command: ["bash", "-c", "/wait && node bin/www"]
         environment:
           POSTGRES_URL: "localhost"
@@ -361,7 +361,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"         
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -481,4 +481,4 @@ workflows:
             - build-deploy-connector-etabs
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/

@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
           return existingLevel;
         else
         {
-          ConversionErrors.Add(new Exception($"Could not find level '{speckleLevel.name}' in this document."));
+          Report.LogConversionError(new Exception($"Could not find level '{speckleLevel.name}' in this document."));
           return null;
         }
       }
@@ -55,6 +55,7 @@ namespace Objects.Converter.Revit
       {
         CreateViewPlan(speckleLevel.name, level.Id);
       }
+      Report.Log($"Created Level {level.Name} {level.Id}");
       return level;
 
     }
@@ -68,6 +69,8 @@ namespace Objects.Converter.Revit
       speckleLevel.createView = true;
 
       GetAllRevitParamsAndIds(speckleLevel, revitLevel);
+
+      Report.Log($"Converted Level {revitLevel.Id}");
       return speckleLevel;
     }
 
@@ -81,6 +84,8 @@ namespace Objects.Converter.Revit
         view.Name = name;
       }
       catch { }
+
+      Report.Log($"Created ViewPlan {view.Id}");
     }
 
     private Level GetLevelByName(string name)
@@ -101,7 +106,7 @@ namespace Objects.Converter.Revit
         return revitLevel;
       }
 
-      ConversionErrors.Add(new Exception($"Could not find level `{name}`, a default level will be used."));
+      Report.LogConversionError(new Exception($"Could not find level `{name}`, a default level will be used."));
 
       return collector.FirstOrDefault();
     }

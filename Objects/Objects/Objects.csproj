@@ -16,7 +16,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
     <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+    <Copyright>Copyright (c) AEC Systems Ltd and Speckle Contributors</Copyright>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -34,7 +34,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Structural\ApplicationSpecific\ETABS\Loading\" />
+    <Folder Include="Structural\ApplicationSpecific\ETABS\Geometry\" />
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>

@@ -74,32 +74,36 @@ public static string AutocadAppName = Applications.Autocad2022;
     }
 
     /// <summary>
-    /// Adds an entity to the autocad database block table
+    /// Adds an entity to the autocad database model space record
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="tr"></param>
-    public static bool Append(this Entity entity, string layer, Transaction tr, BlockTableRecord btr)
+    public static ObjectId Append(this Entity entity, string layer = null)
     {
-      Document Doc = Application.DocumentManager.MdiActiveDocument;
-      
+      var db = (entity.Database == null) ? Application.DocumentManager.MdiActiveDocument.Database : entity.Database;
+      Transaction tr = db.TransactionManager.TopTransaction;
+      if (tr == null) return ObjectId.Null;
+
+      BlockTableRecord btr = db.GetModelSpace(OpenMode.ForWrite);
       if (entity.IsNewObject)
       {
-        try
-        {
+        if (layer != null)
           entity.Layer = layer;
-          btr.AppendEntity(entity);
-          tr.AddNewlyCreatedDBObject(entity, true);
-        }
-        catch
-        {
-          return false;
-        }
+        var id = btr.AppendEntity(entity);
+        tr.AddNewlyCreatedDBObject(entity, true);
+        return id;
       }
       else
       {
-        entity.Layer = layer;
+        if (layer != null)
+          entity.Layer = layer;
+        return entity.Id;
       }
-      return true;
+    }
+
+    public static BlockTableRecord GetModelSpace(this Database db, OpenMode mode = OpenMode.ForRead)
+    {
+      return (BlockTableRecord)SymbolUtilityServices.GetBlockModelSpaceId(db).GetObject(mode);
     }
 
     /// <summary>

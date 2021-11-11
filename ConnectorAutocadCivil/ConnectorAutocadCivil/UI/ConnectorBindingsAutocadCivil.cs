@@ -13,6 +13,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Api;
 using Speckle.DesktopUI;
 using Speckle.DesktopUI.Utils;
+using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
@@ -87,13 +88,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override List<string> GetObjectsInView() // TODO: this returns all visible doc objects. handle views later.
     {
       var objs = new List<string>();
-      using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        AcadDb.BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, AcadDb.OpenMode.ForRead) as AcadDb.BlockTable;
-        AcadDb.BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[AcadDb.BlockTableRecord.ModelSpace], AcadDb.OpenMode.ForRead) as AcadDb.BlockTableRecord;
-        foreach (AcadDb.ObjectId id in blckTblRcrd)
+        BlockTableRecord modelSpace = Doc.Database.GetModelSpace(); 
+        foreach (ObjectId id in modelSpace)
         {
-          var dbObj = tr.GetObject(id, AcadDb.OpenMode.ForRead);
+          var dbObj = tr.GetObject(id, OpenMode.ForRead);
           if (dbObj.Visible())
             objs.Add(dbObj.Handle.ToString());
         }
@@ -106,8 +106,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override string GetDocumentId()
     {
-      string path = AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
-      return Speckle.Core.Models.Utilities.hashString("X" + path + Doc?.Name, Speckle.Core.Models.Utilities.HashingFuctions.MD5); // what is the "X" prefix for?
+      string path = HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, FindFileHint.Default);
+      return Core.Models.Utilities.hashString("X" + path + Doc?.Name, Core.Models.Utilities.HashingFuctions.MD5); // what is the "X" prefix for?
     }
 
     public override string GetDocumentLocation() => AcadDb.HostApplicationServices.Current.FindFile(Doc.Name, Doc.Database, AcadDb.FindFileHint.Default);
@@ -131,12 +131,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var layers = new List<string>();
       if (Doc != null)
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
-          AcadDb.LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTable;
-          foreach (AcadDb.ObjectId objId in lyrTbl)
+          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+          foreach (ObjectId objId in lyrTbl)
           {
-            AcadDb.LayerTableRecord lyrTblRec = tr.GetObject(objId, AcadDb.OpenMode.ForRead) as AcadDb.LayerTableRecord;
+            LayerTableRecord lyrTblRec = tr.GetObject(objId, OpenMode.ForRead) as LayerTableRecord;
             layers.Add(lyrTblRec.Name);
           }
           tr.Commit();
@@ -194,14 +194,18 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
 
       string referencedObject = state.Commit.referencedObject;
-      string id = state.Commit.id;
+
+      var commitId = state.Commit.id;
+      var commitMsg = state.Commit.message;
 
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (id == "latest")
+      if (commitId == "latest")
       {
         var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
-        id = res.id;
+        var commit = res.commits.items.FirstOrDefault();
+        commitId = commit.id;
+        commitMsg = commit.message;
+        referencedObject = commit.referencedObject;
       }
 
       var commitObject = await Operations.Receive(
@@ -213,7 +217,21 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onErrorAction: (message, exception) => { Exceptions.Add(exception); },
         disposeTransports: true
         );
-
+      
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream.id,
+          commitId = commitId,
+          message = commitMsg,
+          sourceApplication = Utils.AutocadAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
       if (Exceptions.Count != 0)
       {
         RaiseNotification($"Encountered error: {Exceptions.Last().Message}");
@@ -221,9 +239,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
-        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, stream, id });
+        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, stream, commitId });
       else
-        ConvertCommit(commitObject, converter, state, stream, id);
+        ConvertCommit(commitObject, converter, state, stream, commitId);
 
       return state;
     }
@@ -233,7 +251,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       using (DocumentLock l = Doc.LockDocument())
       {
-        using (AcadDb.Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
         {
           // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
           converter.SetContextDocument(Doc);
@@ -252,34 +270,32 @@ namespace Speckle.ConnectorAutocadCivil.UI
           bool changedLayerNames = false;
 
           // create a commit layer prefix: all nested layers will be concatenated with this
-          var layerPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, id);
+          var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", layerPrefix);
+          Doc.UserData.Add("commit", commitPrefix);
 
-          // delete existing commit layers
+          // delete existing commit layers and block instances
           try
           {
-            DeleteLayersWithPrefix(layerPrefix, tr);
+            DeleteBlocksWithPrefix(commitPrefix, tr);
+            DeleteLayersWithPrefix(commitPrefix, tr);
           }
           catch
           {
-            RaiseNotification($"could not remove existing layers starting with {layerPrefix} before importing new geometry.");
-            state.Errors.Add(new Exception($"could not remove existing layers starting with {layerPrefix} before importing new geometry."));
+            RaiseNotification($"could not remove existing layers or blocks starting with {commitPrefix} before importing new geometry.");
+            state.Errors.Add(new Exception($"could not remove existing layers or blocks starting with {commitPrefix} before importing new geometry."));
           }
 
           // flatten the commit object to retrieve children objs
           int count = 0;
-          var commitObjs = FlattenCommitObject(commitObject, converter, layerPrefix, state, ref count);
-
-          // open model space block table record for write
-          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+          var commitObjs = FlattenCommitObject(commitObject, converter, commitPrefix, state, ref count);
 
           // TODO: create dictionaries here for linetype and layer linewidth
           // More efficient this way than doing this per object
           var lineTypeDictionary = new Dictionary<string, ObjectId>();
           var lineTypeTable = (LinetypeTable)tr.GetObject(Doc.Database.LinetypeTableId, OpenMode.ForRead);
-          foreach (AcadDb.ObjectId lineTypeId in lineTypeTable)
+          foreach (ObjectId lineTypeId in lineTypeTable)
           {
             var linetype = (LinetypeTableRecord)tr.GetObject(lineTypeId, OpenMode.ForRead);
             lineTypeDictionary.Add(linetype.Name, lineTypeId);
@@ -301,7 +317,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 if (!cleanName.Equals(layerName))
                   changedLayerNames = true;
 
-                if (convertedEntity.Append(cleanName, tr, btr))
+                var appended = convertedEntity.Append(cleanName);
+                if (appended.IsValid)
                 {
                   // handle display
                   Base display = obj[@"displayStyle"] as Base;
@@ -454,6 +471,19 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
     }
+    private void DeleteBlocksWithPrefix(string prefix, Transaction tr)
+    {
+      BlockTable blockTable = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+      foreach (ObjectId blockId in blockTable)
+      {
+        BlockTableRecord block = (BlockTableRecord)tr.GetObject(blockId, OpenMode.ForRead);
+        if (block.Name.StartsWith(prefix))
+        {
+          block.UpgradeOpen();
+          block.Erase();
+        }
+      }
+    }
 
     private bool GetOrMakeLayer(string layerName, AcadDb.Transaction tr, out string cleanName)
     {
@@ -517,8 +547,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       var commitObj = new Base();
 
+      /* Deprecated until we decide whether or not commit objs need units. If so, should add UnitsToSpeckle conversion method to connector
       var units = Units.GetUnitsFromString(Doc.Database.Insunits.ToString());
       commitObj["units"] = units;
+      */
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;

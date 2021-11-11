@@ -40,13 +40,13 @@ namespace Objects.Converter.Revit
               curve = curve.CreateTransformed(tf);
             }
 
-            return CurveToSpeckle(curve)as Base;
+            return CurveToSpeckle(curve) as Base;
           }
         case LocationPoint locationPoint:
           {
             return PointToSpeckle(locationPoint.Point);
           }
-          // TODO what is the correct way to handle this?
+        // TODO what is the correct way to handle this?
         case null:
           return null;
 
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
         var analyticalModel = familyInstance.GetAnalyticalModel();
         if (analyticalModel != null)
         {
-          return CurveToSpeckle(analyticalModel.GetCurve())as Base;
+          return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
         }
       }
       var point = PointToSpeckle((familyInstance.Location as LocationPoint).Point);
@@ -80,7 +80,7 @@ namespace Objects.Converter.Revit
         var topOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
         var topLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
-        var baseLine = new Line(new [ ] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
+        var baseLine = new Line(new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
         baseLine.length = Math.Abs(baseLine.start.z - baseLine.end.z);
 
         return baseLine;

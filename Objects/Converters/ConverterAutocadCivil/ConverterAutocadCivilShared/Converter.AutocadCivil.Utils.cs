@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.Other;
@@ -51,6 +50,7 @@ namespace Objects.Converter.AutocadCivil
       return value * f;
     }
 
+    // Note: Difference between International Foot and US Foot is ~ 0.0000006 as described in: https://www.pobonline.com/articles/98788-us-survey-feet-versus-international-feet
     private string UnitToSpeckle(UnitsValue units)
     {
       switch (units)
@@ -64,12 +64,16 @@ namespace Objects.Converter.AutocadCivil
         case UnitsValue.Kilometers:
           return Units.Kilometers;
         case UnitsValue.Inches:
+        case UnitsValue.USSurveyInch:
           return Units.Inches;
         case UnitsValue.Feet:
+        case UnitsValue.USSurveyFeet:
           return Units.Feet;
         case UnitsValue.Yards:
+        case UnitsValue.USSurveyYard:
           return Units.Yards;
         case UnitsValue.Miles:
+        case UnitsValue.USSurveyMile:
           return Units.Miles;
         default:
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");

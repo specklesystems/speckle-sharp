@@ -9,11 +9,15 @@ namespace Speckle.Core.Kits
     public const string Centimeters = "cm";
     public const string Meters = "m";
     public const string Kilometers = "km";
-    public const string Inches = "in";
+    public const string Inches = "in"; // smelly ones
     public const string Feet = "ft"; // smelly ones
     public const string Yards = "yd"; // smelly ones
-    public const string Miles = "mi";
+    public const string Miles = "mi"; // smelly ones
     public const string None = "none";
+    // public const string USInches = "us_in"; the smelliest ones, can add later if people scream "USA #1"
+    // public const string USFeet = "us_ft"; the smelliest ones, can add later if people scream "USA #1"
+    // public const string USYards = "us_yd"; the smelliest ones, can add later if people scream "USA #1"
+    // public const string USMiles = "us_mi"; the smelliest ones, can add later if people scream "USA #1"
 
     public static double GetConversionFactor(string from, string to)
     {

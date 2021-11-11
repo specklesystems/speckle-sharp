@@ -146,7 +146,7 @@ namespace SpeckleRhino
         case SupportedSchema.Roof:
           try // assumes xy planar single surface
           {
-            Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
+            Brep brp = obj.Geometry as Brep ?? (obj.Geometry as Extrusion).ToBrep(); // assumes this has already been filtered for single surface
             if (IsPlanar(brp.Surfaces.First(), out bool singleH, out bool singleV))
               if (singleH)
                   return true;
@@ -156,7 +156,7 @@ namespace SpeckleRhino
         case SupportedSchema.Wall:
           try // assumes z vertical planar single surface
           {
-            Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
+            Brep brp = obj.Geometry as Brep ?? (obj.Geometry as Extrusion).ToBrep(); // assumes this has already been filtered for single surface
             if (brp.Edges.Where(o => o.GetLength() < minDimension).Count() > 0)
               return false;
             if (IsPlanar(brp.Surfaces.First(), out bool singleH, out bool singleV))
@@ -168,7 +168,7 @@ namespace SpeckleRhino
         case SupportedSchema.FaceWall:
           try
           {
-            Brep brp = obj.Geometry as Brep; // assumes this has already been filtered for single surface
+            Brep brp = obj.Geometry as Brep ?? (obj.Geometry as Extrusion).ToBrep(); // assumes this has already been filtered for single surface
             return true;
           }
           catch { }
@@ -221,11 +221,9 @@ namespace SpeckleRhino
             SupportedSchema.Roof };
           break;
         case ObjectType.PolysrfFilter:
-          objSchemas = new List<SupportedSchema> {
-            SupportedSchema.Wall };
-          break;
         case ObjectType.Brep:
         case ObjectType.Mesh:
+        case ObjectType.Extrusion:
           break;
         default:
           break;
@@ -244,6 +242,20 @@ namespace SpeckleRhino
             return ObjectType.Surface;
           else if (!brp.IsSolid && brp.IsManifold)
             return ObjectType.PolysrfFilter;
+          else return obj.ObjectType;
+        case ObjectType.Extrusion:
+          var ext = obj.Geometry as Extrusion;
+          if (ext.IsPlanar())
+            return ObjectType.Surface;
+          else if (ext.HasBrepForm && !ext.IsSolid)
+          {
+            Brep convertedBrp = ext.ToBrep();
+            if (convertedBrp.Faces.Count == 1)
+              return ObjectType.Surface;
+            else if (convertedBrp.IsManifold)
+              return ObjectType.PolysrfFilter;
+            else return obj.ObjectType;
+          }
           else return obj.ObjectType;
         case ObjectType.Curve:
         case ObjectType.Surface:
