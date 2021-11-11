@@ -36,6 +36,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelUnits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConverrtResultGlobal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultNodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultSet1D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertSectionProfile.cs" />
@@ -45,7 +47,6 @@
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Materials\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Results\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\" />
   </ItemGroup>
