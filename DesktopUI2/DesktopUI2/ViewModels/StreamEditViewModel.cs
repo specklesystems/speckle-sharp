@@ -205,10 +205,7 @@ namespace DesktopUI2.ViewModels
       _streamState.BranchName = SelectedBranch.name;
       _streamState.IsReceiver = IsReceiver;
       if (IsReceiver)
-      {
         _streamState.CommitId = SelectedCommit.id;
-        _streamState.ReferencedObject = SelectedCommit.referencedObject;
-      }
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
       return _streamState;
