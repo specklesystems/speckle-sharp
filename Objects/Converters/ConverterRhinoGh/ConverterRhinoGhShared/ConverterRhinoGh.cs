@@ -396,6 +396,58 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToSpeckleBE(x)).ToList();
     }
 
+    public Base ConvertToSpeckleStr(object @object)
+    {
+      // get schema if it exists
+      RhinoObject obj = @object as RhinoObject;
+      string schema = GetSchema(obj, out string[] args);
+
+      switch (obj.Geometry)
+      {
+
+        //case RH.Point o:
+        //    switch (schema)
+        //    {
+        //        case "Node":
+        //            return PointToSpeckleNode(o);
+
+        //        default:
+        //            throw new NotSupportedException();
+        //    }
+
+        //case RH.Curve o:
+        //    switch (schema)
+        //    {
+        //        case "Element1D":
+        //            return CurveToSpeckleElement1D(o);
+
+        //        default:
+        //            throw new NotSupportedException();
+        //    }
+
+        //case RH.Mesh o:
+        //    switch (schema)
+        //    {
+        //        case "Element2D":
+        //            return MeshToSpeckleElement2D(o);
+
+        //    case "Element3D":
+        //        return MeshToSpeckleElement3D(o);
+
+        //            default:
+        //            throw new NotSupportedException();
+        //    }
+
+        default:
+          throw new NotSupportedException();
+      }
+    }
+
+    public List<Base> ConvertToSpeckleStr(List<object> objects)
+    {
+      return objects.Select(x => ConvertToSpeckleStr(x)).ToList();
+    }
+
     public object ConvertToNative(Base @object)
     {
       object rhinoObj = null;

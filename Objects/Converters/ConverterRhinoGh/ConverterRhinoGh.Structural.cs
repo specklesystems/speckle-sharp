@@ -33,34 +33,22 @@ namespace Objects.Converter.RhinoGh
   {
     public Node PointToSpeckleNode(RH.Point point)
     {
-      return new Node((Point)ConvertToSpeckle(point), null, null, null) { units = ModelUnits };
+        return new Node((Point)ConvertToSpeckle(point)) { units = ModelUnits };
     }
 
     public Element1D CurveToSpeckleElement1D(RH.Curve curve)
     {
-      return new Element1D((Geometry.Line)ConvertToSpeckle(curve)) { units = ModelUnits };
+      return new Element1D((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Element2D MeshToSpeckleElement2D(RH.Mesh mesh)
     {
-      var outlines = mesh.GetOutlines(RH.Plane.WorldXY);
-
-      var nodes = new List<Node>();
-      var edges = mesh.GetNakedEdges().ToList();
-      var outerEdgeArea = edges.Max(x => AreaMassProperties.Compute(x.ToPolylineCurve()).Area);
-      var outerEdge = edges.First(x => AreaMassProperties.Compute(x.ToPolylineCurve()).Area == outerEdgeArea);
-      foreach (var point in outerEdge)
-      {
-        var pt = new RH.Point(point);
-        nodes.Add(PointToSpeckleNode(pt));
-      }
-
-      return new Element2D(nodes) { units = ModelUnits };
+      return new Element2D((Mesh)ConvertToSpeckle(mesh)) { units = ModelUnits };
     }
 
     public Element3D MeshToSpeckleElement3D(RH.Mesh mesh)
     {
-      return new Element3D((Mesh)ConvertToSpeckle(mesh)) { units = ModelUnits };
+        return new Element3D((Mesh)ConvertToSpeckle(mesh)) { units = ModelUnits };
     }
   }
 }

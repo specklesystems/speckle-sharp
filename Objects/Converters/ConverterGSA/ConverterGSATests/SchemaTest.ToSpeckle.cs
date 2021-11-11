@@ -58,7 +58,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -103,7 +103,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -157,7 +157,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(o => o.applicationId, o => (object)o));
       }
@@ -253,7 +253,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -353,7 +353,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -425,7 +425,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -510,7 +510,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -570,7 +570,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -722,7 +722,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -772,7 +772,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -829,7 +829,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -886,7 +886,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -1141,7 +1141,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -1576,7 +1576,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -1621,7 +1621,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -1682,7 +1682,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -1935,7 +1935,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -1987,7 +1987,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);        
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -2030,7 +2030,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -2601,7 +2601,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -2658,7 +2658,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }
@@ -2850,7 +2850,7 @@ namespace ConverterGSATests
       foreach (var record in gsaRecords)
       {
         var speckleObjects = converter.ConvertToSpeckle(new List<object> { record });
-        Assert.Empty(converter.ConversionErrors);
+        Assert.Empty(converter.Report.ConversionErrors);
 
         Instance.GsaModel.Cache.SetSpeckleObjects(record, speckleObjects.ToDictionary(so => so.applicationId, so => (object)so));
       }

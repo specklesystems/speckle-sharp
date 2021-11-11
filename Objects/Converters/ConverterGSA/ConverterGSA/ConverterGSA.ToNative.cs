@@ -294,7 +294,7 @@ namespace ConverterGSA
         else
         {
           gsaElement.OffsetY = speckleElement.end1Offset.y;
-          ConversionErrors.Add(new Exception("Element1dToNative: "
+          Report.ConversionErrors.Add(new Exception("Element1dToNative: "
             + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
             + "Different y offsets were assigned at either end."
             + "end 1 y offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
@@ -306,7 +306,7 @@ namespace ConverterGSA
         else
         {
           gsaElement.OffsetZ = speckleElement.end1Offset.z;
-          ConversionErrors.Add(new Exception("Element1dToNative: "
+          Report.ConversionErrors.Add(new Exception("Element1dToNative: "
             + "Error converting element1d with application id (" + speckleElement.applicationId + "). "
             + "Different z offsets were assigned at either end."
             + "end 1 z offset of " + gsaElement.OffsetY.ToString() + " has been applied"));
@@ -479,7 +479,7 @@ namespace ConverterGSA
         else
         {
           gsaMember.OffsetY = speckleMember.end1Offset.y;
-          ConversionErrors.Add(new Exception("GSAMember1dToNative: "
+          Report.ConversionErrors.Add(new Exception("GSAMember1dToNative: "
             + "Error converting element1d with application id (" + speckleMember.applicationId + "). "
             + "Different y offsets were assigned at either end."
             + "end 1 y offset of " + gsaMember.OffsetY.ToString() + " has been applied"));
@@ -491,7 +491,7 @@ namespace ConverterGSA
         else
         {
           gsaMember.OffsetZ = speckleMember.end1Offset.z;
-          ConversionErrors.Add(new Exception("GSAMember1dToNative: "
+          Report.ConversionErrors.Add(new Exception("GSAMember1dToNative: "
             + "Error converting element1d with application id (" + speckleMember.applicationId + "). "
             + "Different z offsets were assigned at either end."
             + "end 1 z offset of " + gsaMember.OffsetY.ToString() + " has been applied"));
@@ -1105,7 +1105,7 @@ namespace ConverterGSA
       }
       else
       {
-        ConversionErrors.Add(new Exception("LoadBeamToNative: beam load type (" + speckleLoad.loadType.ToString() + ") is not currently supported"));
+        Report.ConversionErrors.Add(new Exception("LoadBeamToNative: beam load type (" + speckleLoad.loadType.ToString() + ") is not currently supported"));
       }
 
       return new List<GsaRecord>() { gsaLoad };
@@ -2086,7 +2086,7 @@ namespace ConverterGSA
       }
       else
       {
-        ConversionErrors.Add(new Exception("PropertySpring: spring type (" + specklePropertySpring.springType.ToString() + ") is not currently supported"));
+        Report.ConversionErrors.Add(new Exception("PropertySpring: spring type (" + specklePropertySpring.springType.ToString() + ") is not currently supported"));
       }
 
       return new List<GsaRecord>() { gsaPropSpr };

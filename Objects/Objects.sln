@@ -61,7 +61,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterETABSv19", "Conver
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StructuralUtilities", "StructuralUtilities", "{B1FE70B5-BF09-4A08-99CC-69A4DE3716F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolygonMesher", "Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolygonMesher", "Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterETABS", "ConverterETABS", "{CE4D7AFF-26B4-49F7-A698-8AEDD19A0AF4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterETABSv18", "Converters\ConverterETABS\ConverterETABSv18\ConverterETABSv18.csproj", "{46D1F214-59D9-40D2-9C0C-464941BE5DE0}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterETABSShared", "Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.shproj", "{7F5A5E2B-D74F-483D-8983-97DC049C6D28}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -71,11 +77,13 @@ Global
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2c68e80f-38f4-41d0-9b38-473031d1b541}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{46d1f214-59d9-40d2-9c0c-464941be5de0}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{5f9d82df-ed00-426c-a8c9-a5537b4697a2}*SharedItemsImports = 5
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{63b3f901-7c14-4530-8a6f-ccad68586664}*SharedItemsImports = 5
+		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{7f5a5e2b-d74f-483d-8983-97dc049c6d28}*SharedItemsImports = 13
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b9649e07-f7b4-4fcc-9e44-076993621d0a}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{bc110327-3c61-4c15-ae4c-daae7ca82a7b}*SharedItemsImports = 5
@@ -159,6 +167,10 @@ Global
 		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46D1F214-59D9-40D2-9C0C-464941BE5DE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46D1F214-59D9-40D2-9C0C-464941BE5DE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46D1F214-59D9-40D2-9C0C-464941BE5DE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46D1F214-59D9-40D2-9C0C-464941BE5DE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,9 +200,12 @@ Global
 		{DEC9601B-7C56-49B0-9316-E7B33B5DDD45} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{6E561E4F-A3B4-4277-A2F7-B934A4141394} = {DEC9601B-7C56-49B0-9316-E7B33B5DDD45}
 		{F8521EEA-6C45-4B01-A002-542824B97062} = {DEC9601B-7C56-49B0-9316-E7B33B5DDD45}
-		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2} = {853ECEC9-B1D5-4155-B8D7-EBE9E8277848}
+		{5F9D82DF-ED00-426C-A8C9-A5537B4697A2} = {CE4D7AFF-26B4-49F7-A698-8AEDD19A0AF4}
 		{B1FE70B5-BF09-4A08-99CC-69A4DE3716F6} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21} = {B1FE70B5-BF09-4A08-99CC-69A4DE3716F6}
+		{CE4D7AFF-26B4-49F7-A698-8AEDD19A0AF4} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{46D1F214-59D9-40D2-9C0C-464941BE5DE0} = {CE4D7AFF-26B4-49F7-A698-8AEDD19A0AF4}
+		{7F5A5E2B-D74F-483D-8983-97DC049C6D28} = {CE4D7AFF-26B4-49F7-A698-8AEDD19A0AF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

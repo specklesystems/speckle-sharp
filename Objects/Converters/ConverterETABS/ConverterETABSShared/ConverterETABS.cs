@@ -43,6 +43,7 @@ namespace Objects.Converter.ETABS
 
         public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
+
         public ProgressReport Report { get; private set; } = new ProgressReport();
 
         public bool CanConvertToNative(Base @object)
