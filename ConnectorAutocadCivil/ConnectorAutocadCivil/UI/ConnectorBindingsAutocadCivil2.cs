@@ -176,7 +176,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       else
       {
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-        
       }
       string referencedObject = commit.referencedObject;
 
