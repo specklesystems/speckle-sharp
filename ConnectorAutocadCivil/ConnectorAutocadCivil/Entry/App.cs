@@ -98,7 +98,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
 
       // DUI2
-      // RibbonButton button2 = CreateButton("Connector " + Utils.AppName + "New UI (alpha)!", "SpeckleNewUi", panel, null, speckleTip, "logo");
+      RibbonButton button2 = CreateButton("Connector " + Utils.AppName + "New UI (alpha)!", "SpeckleNewUi", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
