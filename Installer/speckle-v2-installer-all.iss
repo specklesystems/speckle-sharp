@@ -32,7 +32,6 @@
 #define ExcelAddinRequestFolder "{localappdata}\SpeckleExcelAddinRequest"      
 #define ExcelAddinRequestFilename       "ExcelAddinRequest.exe"
 #define UpdaterFilename       "SpeckleUpdater.exe"
-#define AppVersion "123" 
 
 [Setup]
 AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
