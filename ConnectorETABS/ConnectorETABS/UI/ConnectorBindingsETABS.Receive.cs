@@ -55,23 +55,19 @@ namespace Speckle.ConnectorETABS.UI
 
             Exceptions.Clear();
 
-            string referencedObject = state.ReferencedObject;
-
-            var commitId = state.CommitId;
-            var commitMsg = state.CommitMessage;
-            if (commitId == "latest")
+            Commit commit = null;
+            if (state.CommitId == "latest")
             {
-                var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-                var commit = res.commits.items.FirstOrDefault();
-                referencedObject = res.commits.items.FirstOrDefault().referencedObject;
-                commitId = commit.id;
-                commitMsg = commit.message;
+              var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+              commit = res.commits.items.FirstOrDefault();
             }
+            else
+            {
+              commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+            }
+            string referencedObject = commit.referencedObject;
 
-            
-
-
-            var commitObject = await Operations.Receive(
+      var commitObject = await Operations.Receive(
                 referencedObject,
                 progress.CancellationTokenSource.Token,
                 transport,
@@ -90,14 +86,13 @@ namespace Speckle.ConnectorETABS.UI
                 return state;
             }
 
-
             try
             {
                 await state.Client.CommitReceived(new CommitReceivedInput
                 {
-                    streamId = stream.id,
-                    commitId = commitId,
-                    message = commitMsg,
+                    streamId = stream?.id,
+                    commitId = commit?.id,
+                    message = commit?.message,
                     sourceApplication = ConnectorETABSUtils.ETABSAppName
                 });
             }

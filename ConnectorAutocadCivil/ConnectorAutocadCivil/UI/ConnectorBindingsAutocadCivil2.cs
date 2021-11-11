@@ -166,16 +166,18 @@ namespace Speckle.ConnectorAutocadCivil.UI
         progress.CancellationTokenSource.Cancel();
       }
 
-      string referencedObject = state.ReferencedObject;
-      Commit commit = null;
-
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      Commit commit = null;
       if (state.CommitId == "latest")
       {
         var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
         commit = res.commits.items.FirstOrDefault();
-        referencedObject = commit.referencedObject;
       }
+      else
+      {
+        commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+      }
+      string referencedObject = commit.referencedObject;
 
       var commitObject = await Operations.Receive(
         referencedObject,
