@@ -65,14 +65,30 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Speckle Updater - Restore NuGets
+      run: dotnet restore
+      working-directory: Installer/Updater
+
+    - name: Speckle Updater - Compile
+      run: msbuild SpeckleUpdater.sln /property:Configuration=Release
+      working-directory: Installer/Updater
+
     - name: Analytics CLI - Restore NuGets
       run: dotnet restore
-      working-directory: Analytics
+      working-directory: Installer/Analytics
 
     - name: Analytics CLI - Compile CLI
       run: dotnet build --configuration Release --runtime win-x64
-      working-directory: Analytics     
+      working-directory: Installer/Analytics     
 
+    - name: Excel Addin Request CLI - Restore NuGets
+      run: dotnet restore
+      working-directory: Installer/ExcelAddin/ExcelAddinRequest
+
+    - name: Excel Addin Request - Compile CLI
+      run: dotnet build ExcelAddinRequest.csproj --configuration Release --runtime win-x64
+      working-directory: Installer/ExcelAddin/ExcelAddinRequest   
+      
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore all the applications
       shell: cmd
@@ -92,35 +108,33 @@ jobs:
 
     - name: Restore SpeckleConnectionManager
       run: dotnet restore
-      working-directory: ConnectionManager/SpeckleConnectionManager
+      working-directory: Installer/ConnectionManager/SpeckleConnectionManager
 
     - name: Build SpeckleConnectionManager
       run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: ConnectionManager/SpeckleConnectionManager
+      working-directory: Installer/ConnectionManager/SpeckleConnectionManager
 
     - name: Restore SpeckleConnectionManagerUI
       run: dotnet restore
-      working-directory: ConnectionManager/SpeckleConnectionManagerUI
+      working-directory: Installer/ConnectionManager/SpeckleConnectionManagerUI
 
     - name: Build SpeckleConnectionManagerUI
       run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: ConnectionManager/SpeckleConnectionManagerUI
+      working-directory: Installer/ConnectionManager/SpeckleConnectionManagerUI
 
     - name: Create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-installer.iss
+        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-installer-all.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
       env:
-        ENABLE_TELEMETRY_DOMAIN: arup        
-
-    - name: Get Name of exe File
-      id: listName
-      shell: powershell
-      run: |
-        $filename = (ls *.exe).Name
-        echo "::set-output name=filename::$filename"
+        ENABLE_TELEMETRY_DOMAIN: arup      
+        EXCEL_ADDIN_APP_TENANT: ${{ secrets.EXCEL_ADDIN_APP_TENANT }}  
+        EXCEL_ADDIN_APP_CLIENT_ID: ${{ secrets.EXCEL_ADDIN_APP_CLIENT_ID }}  
+        EXCEL_ADDIN_APP_CLIENT_SECRET: ${{ secrets.EXCEL_ADDIN_APP_CLIENT_SECRET }}  
+        EXCEL_ADDIN_APP_GROUP_ID: ${{ secrets.EXCEL_ADDIN_APP_GROUP_ID }}     
+      working-directory: Installer       
 
     - name: Install Azure Key Vault signtool
       run: dotnet tool install --global AzureSignTool --version 2.0.17
@@ -137,13 +151,13 @@ jobs:
           --azure-key-vault-certificate "OasysCodeSigning" `
           --timestamp-rfc3161 "http://timestamp.digicert.com" `
           --verbose `
-          ${{ github.workspace }}\${{ steps.installer.outputs.filename }}
+          ${{ github.workspace }}\Installer\${{ steps.installer.outputs.filename }}
 
     - name: Upload a Build Artifact      
       uses: actions/upload-artifact@v2
       with:
         name: ${{ steps.installer.outputs.filename }}
-        path: ${{ steps.installer.outputs.filename }}
+        path: ./Installer/${{ steps.installer.outputs.filename }}
         retention-days: 1
 
     - name: Create Release
@@ -156,9 +170,7 @@ jobs:
         tag_name: ${{ steps.calculateTagVersion.outputs.tag }}
         release_name: Speckle@Arup Installer ${{ steps.calculateTagVersion.outputs.tag }}
         body: |
-          The Speckle@Arup installer includes the default [Objects Kit](https://github.com/arup-group/speckle-sharp/tree/master/Objects), an account manager,        
-
-          And SpeckleV2 connectors for:
+          The Speckle@Arup installer includes the default [Objects Kit](https://github.com/arup-group/speckle-sharp/tree/master/Objects), an account manager, and SpeckleV2 connectors for:
 
           - [Grasshopper](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGrasshopper)
           - [Rhino 6/7](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRhino)
@@ -166,6 +178,7 @@ jobs:
           - [Dynamo](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorDynamo)
           - [AutoCAD 2021/2022 and Civil3D 2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorAutocadCivil)
           - [Oasys GSA 10.1](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGSA)
+          - [Excel](https://github.com/specklesystems/speckle-excel)
           
           Check out the Speckle@Arup docs [here](https://speckle.arup.com/)!
         draft: false
@@ -179,6 +192,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }}  
-        asset_path: ./${{ steps.listName.outputs.filename }}
-        asset_name: ${{ steps.listName.outputs.filename }}
+        asset_path: ./Installer/${{ steps.installer.outputs.filename }}
+        asset_name: ${{ steps.installer.outputs.filename }}
         asset_content_type: application/vnd.microsoft.portable-executable

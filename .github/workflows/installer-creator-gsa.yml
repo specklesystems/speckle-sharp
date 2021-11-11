@@ -39,6 +39,8 @@
 name: Create Installer for GSA Connector
 
 on:
+  push:
+    tags: 'v*.*.*-cx'
   workflow_dispatch:
     inputs:
       version:
@@ -53,13 +55,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 2
-        
-    - name: Calculate tag version
-      id: calculateTagVersion
-      shell: powershell
-      run: |
-        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
-        echo "::set-output name=tag::$tag"        
         
     - name: Install the latest version of nuget
       uses: nuget/setup-nuget@v1
@@ -94,9 +89,10 @@ jobs:
     - name: create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-gsa-installer.iss
+        iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-installer-gsa.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"          
+      working-directory: Installer          
           
     - name: Install Azure Key Vault signtool
       run: dotnet tool install --global AzureSignTool --version 2.0.17
@@ -113,15 +109,21 @@ jobs:
           --azure-key-vault-certificate "OasysCodeSigning" `
           --timestamp-rfc3161 "http://timestamp.digicert.com" `
           --verbose `
-          ${{ github.workspace }}\${{ steps.installer.outputs.filename }}          
+          ${{ github.workspace }}\Installer\${{ steps.installer.outputs.filename }}           
           
     - name: Upload a Build Artifact      
       uses: actions/upload-artifact@v2
       with:
         name: ${{ steps.installer.outputs.filename }}
-        path: ${{ steps.installer.outputs.filename }}
+        path: ./Installer/${{ steps.installer.outputs.filename }}
         retention-days: 1
 
+    - name: Calculate tag version
+      id: calculate-tag-version
+      run: |
+        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
+        echo "::set-output name=tag::$tag"
+        
     - name: Create Release
       if: github.ref == 'refs/heads/main'
       id: create-release
@@ -129,8 +131,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
-        tag_name: gsa/${{ steps.calculateTagVersion.outputs.tag }}
-        release_name: gsa/${{ steps.calculateTagVersion.outputs.tag }}
+        tag_name: ${{ steps.calculate-tag-version.outputs.tag }}
+        release_name: Speckle-cx Installer ${{ steps.calculate-tag-version.outputs.tag }}
         body: |
           Automated release of Speckle v2 Connector for Oasys GSA
         draft: false
@@ -144,6 +146,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }}  
-        asset_path: ./${{ steps.installer.outputs.filename }}
+        asset_path: ./Installer/${{ steps.installer.outputs.filename }}
         asset_name: ${{ steps.installer.outputs.filename }}
         asset_content_type: application/vnd.microsoft.portable-executable

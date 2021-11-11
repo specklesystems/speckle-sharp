@@ -1,11 +1,9 @@
 ;defining variables
 #define AppName      "Speckle@Arup v2 GSA Connector"
-#define AppVersion  GetFileVersion("ConnectorGSA\ConnectorGSA\bin\Release\ConnectorGSA.exe")
+#define AppVersion  GetFileVersion("..\ConnectorGSA\ConnectorGSA\bin\Release\ConnectorGSA.exe")
 #define AppPublisher "Speckle@Arup"
-#define AppURL       "https://speckle.arup.com"
+#define AppURL       "https://docs.speckle.arup.com"
 #define SpeckleFolder "{localappdata}\Speckle"
-;#define AnalyticsFolder "{localappdata}\SpeckleAnalytics"   
-;#define AnalyticsFilename       "analytics.exe"
 
 [Setup]
 AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
@@ -23,7 +21,7 @@ DisableProgramGroupPage=yes
 DisableWelcomePage=no
 OutputDir="."
 OutputBaseFilename=Speckle@ArupGSAConnector-v{#AppVersion}
-SetupIconFile=ConnectorGSA\ConnectorGSA\icon.ico
+SetupIconFile=..\ConnectorGSA\ConnectorGSA\icon.ico
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
@@ -46,11 +44,11 @@ Name: "{app}"; Permissions: everyone-full
 
 [Files]
 ;gsa
-Source: "ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys\SpeckleGSA\"; Flags: ignoreversion recursesubdirs; Components: gsa
-Source: "Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
+Source: "..\ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys\SpeckleGSA\"; Flags: ignoreversion recursesubdirs; Components: gsa
+Source: "..\Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
 
 ;kits
-Source: "Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
+Source: "..\Objects\Objects\bin\Release\netstandard2.0\Objects.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: kits
 
 [InstallDelete]
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA\*"
