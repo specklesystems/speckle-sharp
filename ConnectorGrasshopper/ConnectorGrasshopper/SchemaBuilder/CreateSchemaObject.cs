@@ -26,6 +26,7 @@ namespace ConnectorGrasshopper
     private ConstructorInfo SelectedConstructor;
     private bool readFailed = false;
     private GH_Document _document;
+    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
 
     public override Guid ComponentGuid => new Guid("4dc285e3-810d-47db-bfb5-cd96fe459fdd");
     protected override Bitmap Icon => Properties.Resources.SchemaBuilder;
@@ -83,6 +84,23 @@ namespace ConnectorGrasshopper
       {
         base.AddedToDocument(document);
         SwitchConstructor(dialog.model.SelectedItem.Tag as ConstructorInfo);
+        Params.ParameterChanged += (sender, args) =>
+        {
+          if (args.ParameterSide != GH_ParameterSide.Input) return;
+          switch (args.OriginalArguments.Type)
+          {
+            case GH_ObjectEventType.NickName:
+              // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
+              // Prevents UI from locking too soon while writing new names for inputs.
+              args.Parameter.Name = args.Parameter.NickName;
+              nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
+              break;
+            case GH_ObjectEventType.NickNameAccepted:
+              args.Parameter.Name = args.Parameter.NickName;
+              ExpireSolution(true);
+              break;
+          }
+        };
       }
       else
       {
@@ -107,6 +125,8 @@ namespace ConnectorGrasshopper
       SelectedConstructor = constructor;
       Params.Output[0].NickName = constructor.DeclaringType.Name;
       Params.OnParametersChanged();
+
+
       ExpireSolution(true);
     }
 

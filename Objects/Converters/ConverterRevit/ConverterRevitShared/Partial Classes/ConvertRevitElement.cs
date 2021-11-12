@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
         return null;
 
       GetAllRevitParamsAndIds(speckleElement, revitElement);
-
+      Report.Log($"Converted Generic Element ({revitElement.Category.Name}) {revitElement.Id}");
       return speckleElement;
     }
   }

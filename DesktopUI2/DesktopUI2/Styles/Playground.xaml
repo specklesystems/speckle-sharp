@@ -1,0 +1,147 @@
+﻿<Styles
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles">
+  <Design.PreviewWith>
+    <Border
+      Width="360"
+      Height="200"
+      Padding="20">
+      <m:Card
+        Margin="15,15,15,0"
+        VerticalAlignment="Top"
+        HorizontalContentAlignment="Stretch">
+        <Grid
+          VerticalAlignment="Top"
+          ColumnDefinitions="*, auto"
+          RowDefinitions="auto,auto">
+          <Grid RowDefinitions="Auto,Auto,Auto">
+            <TextBlock
+              Margin="0,0,0,5"
+              Classes="Grotesk"
+              Text="Sample stream"
+              TextTrimming="CharacterEllipsis" />
+            <!--  SENDER  -->
+            <Grid Grid.Row="1" ColumnDefinitions="auto,auto,auto,*">
+              <icons:MaterialIcon
+                Margin="0,0,5,0"
+                Foreground="Gray"
+                Kind="SourceBranch" />
+              <TextBlock
+                Grid.Column="1"
+                Classes="Caption"
+                Text="main"
+                TextTrimming="CharacterEllipsis" />
+              <icons:MaterialIcon
+                Grid.Column="2"
+                Margin="0,0,5,0"
+                Foreground="Gray"
+                Kind="Mouse" />
+              <TextBlock
+                Grid.Column="3"
+                Classes="Caption"
+                Text="Selection"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+
+            <Grid
+              Grid.Row="2"
+              Margin="0,5,0,0"
+              ColumnDefinitions="auto,auto,*">
+              <TextBlock
+                Classes="Overline"
+                Text="Last update 5h ago"
+                TextTrimming="CharacterEllipsis" />
+              <TextBlock
+                Grid.Column="1"
+                Classes="Overline"
+                Text=" - " />
+              <TextBlock
+                Grid.Column="2"
+                Classes="Overline"
+                Text="Last used 1min ago"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+
+          </Grid>
+
+          <StackPanel
+            Grid.Column="1"
+            Orientation="Horizontal"
+            Spacing="5">
+
+            <Grid>
+
+
+
+
+              <m:FloatingButton VerticalAlignment="Center" ToolTip.Tip="Send">
+                <Button.Content>
+                  <icons:MaterialIcon
+                    Width="20"
+                    Height="20"
+                    Foreground="White"
+                    Kind="CubeSend"
+                    ToolTip.Tip="Send">
+                    <icons:MaterialIcon.RenderTransform>
+                      <RotateTransform Angle="-30" />
+                    </icons:MaterialIcon.RenderTransform>
+                  </icons:MaterialIcon>
+
+                </Button.Content>
+              </m:FloatingButton>
+
+              <Grid />
+            </Grid>
+          </StackPanel>
+
+          <Grid Grid.Row="1" Grid.ColumnSpan="2">
+            <TextBox
+              Margin="0,8,0,0"
+              Classes="Small"
+              Foreground="Gray"
+              Watermark="Commit message" />
+            <m:ColorZone
+              Margin="0,10,0,0"
+              CornerRadius="25"
+              Mode="PrimaryMid">
+              <Grid ColumnDefinitions="*, auto">
+                <TextBlock
+                  Margin="10,5"
+                  VerticalAlignment="Center"
+                  Classes="Overline"
+                  FontWeight="Medium"
+                  Foreground="White"
+                  Text="Test notification"
+                  TextWrapping="Wrap" />
+
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  ToolTip.Tip="Close notification">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="Close" />
+
+                  </Button.Content>
+                </m:FloatingButton>
+              </Grid>
+            </m:ColorZone>
+
+
+          </Grid>
+
+        </Grid>
+      </m:Card>
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="Button">
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+</Styles>

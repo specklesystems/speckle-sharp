@@ -7,14 +7,15 @@ namespace Objects.Structural.Analysis
 {
     public class Model : Base
     {        
+        [DetachProperty]
         public ModelInfo specs { get; set; } //container for model and project specifications
 
         [DetachProperty]
-        [Chunkable(5000)]
+        [Chunkable(31250)]
         public List<Base> nodes { get; set; } //nodes list
 
         [DetachProperty]
-        [Chunkable(5000)]
+        [Chunkable(31250)]
         public List<Base> elements { get; set; } //element (or member) list
 
         [DetachProperty]

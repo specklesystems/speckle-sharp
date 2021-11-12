@@ -93,7 +93,7 @@ jobs:
     - name: Restore all the applications
       shell: cmd
       run: |
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorGSA) do (
+        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
         )
         
@@ -102,7 +102,7 @@ jobs:
       shell: cmd
       run: |
         SET _version=${{ github.event.inputs.version }}
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorGSA) do (
+        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )
 
@@ -177,6 +177,7 @@ jobs:
           - [Revit 2019/2020/2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRevit)
           - [Dynamo](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorDynamo)
           - [AutoCAD 2021/2022 and Civil3D 2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorAutocadCivil)
+          - [ETABS 18/19](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorETABS)
           - [Oasys GSA 10.1](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGSA)
           - [Excel](https://github.com/specklesystems/speckle-excel)
           

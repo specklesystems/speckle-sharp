@@ -253,7 +253,7 @@ namespace DesktopUI2
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
       pd["A2"] = 1;
-
+      progress.Max = 100;
       progress.Update(pd);
 
       for (int i = 1; i < 100; i += 10)
@@ -301,21 +301,23 @@ namespace DesktopUI2
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       // Let's fake some progress barsssss
-
+      progress.Report.Log("Starting fake sending");
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
       pd["A2"] = 1;
 
+      progress.Max = 100;
       progress.Update(pd);
 
       for (int i = 1; i < 100; i += 10)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
+          progress.Report.Log("Fake sending was cancelled");
           return;
         }
 
-
+        progress.Report.Log("Done fake task " + i);
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;
@@ -324,14 +326,15 @@ namespace DesktopUI2
       }
 
       // Mock "some" errors
-      for (int i = 0; i < 50; i++)
+      for (int i = 0; i < 10; i++)
       {
         try
         {
-          throw new Exception($"Number {i} fail");
+          throw new Exception($"Number {i} failed");
         }
         catch (Exception e)
         {
+          progress.Report.LogOperationError(e);
           //TODO
           //state.Errors.Add(e);
         }

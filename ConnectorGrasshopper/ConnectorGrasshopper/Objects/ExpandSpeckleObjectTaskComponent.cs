@@ -53,12 +53,12 @@ namespace ConnectorGrasshopper.Objects
       }
       if(Converter != null)
       {
-        foreach (var error in Converter.ConversionErrors)
+        foreach (var error in Converter.Report.ConversionErrors)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
             error.Message + ": " + error.InnerException?.Message);
         }
-        Converter.ConversionErrors.Clear();
+        Converter.Report.ConversionErrors.Clear();
       }
       
       if (!GetSolveResults(DA, out Dictionary<string, object> result))
@@ -119,13 +119,38 @@ namespace ConnectorGrasshopper.Objects
       outputList.Count != Params.Output.Count
       || outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
 
+    private bool HasSingleRename()
+    {
+      var equalLength = outputList.Count == Params.Output.Count;
+      if (!equalLength) return false;
+      var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName));
+      return diffParams.Count() == 1;
+    }
     private void AutoCreateOutputs()
     {
       var tokenCount = outputList?.Count ?? 0;
 
       if (tokenCount == 0 || !OutputMismatch()) return;
       RecordUndoEvent("Creating Outputs");
+      
+      // Check for single param rename, if so, just rename it and go on.
+      if (HasSingleRename())
+      {
+        var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName));
+        var diffOut = outputList
+          .Where(name => 
+            !Params.Output.Select(p => p.NickName)
+              .Contains(name));
+      
+        var newName = diffOut.First();
+        var renameParam = diffParams.First();
+      
+        renameParam.NickName = newName;
+        renameParam.Name = newName;
+        renameParam.Description = $"Data from property: {newName}";
 
+        return;
+      }
       // Check what params must be deleted, and do so when safe.
       var remove = Params.Output.Select((p, i) =>
       {

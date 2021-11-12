@@ -111,11 +111,11 @@ namespace Speckle.ConnectorRevit.UI
 
       }
 
-      if (converter.ConversionErrors.Count != 0)
+      if (converter.Report.ConversionErrorsCount != 0)
       {
         // TODO: Get rid of the custom Error class. It's not needed.
-        ConversionErrors.AddRange(converter.ConversionErrors);
-        state.Errors.AddRange(converter.ConversionErrors);
+        ConversionErrors.AddRange(converter.Report.ConversionErrors);
+        state.Errors.AddRange(converter.Report.ConversionErrors);
       }
 
       if (convertedCount == 0)

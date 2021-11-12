@@ -43,6 +43,9 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         // set up bindings and subscribe to doument events
         SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
         SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
+
+        // for DUI2
+        SpeckleAutocadCommand2.Bindings = new ConnectorBindingsAutocad2();
       }
       catch(System.Exception e)
       {
@@ -93,6 +96,9 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         return;
       RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
       RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
+
+      // DUI2
+      RibbonButton button2 = CreateButton("Connector " + Utils.AppName + "New UI (alpha)!", "SpeckleNewUi", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
@@ -227,14 +233,17 @@ namespace Speckle.ConnectorAutocadCivil.Entry
             case "Speckle":
               SpeckleAutocadCommand.SpeckleCommand();
               break;
+            case "SpeckleNewUi":
+              SpeckleAutocadCommand2.SpeckleCommand();
+              break;
             case "SpeckleCommunity":
-              SpeckleAutocadCommand.SpeckleCommunity();
+              SpeckleAutocadCommand2.SpeckleCommunity();
               break;
             case "SpeckleTutorials":
-              SpeckleAutocadCommand.SpeckleTutorials();
+              SpeckleAutocadCommand2.SpeckleTutorials();
               break;
             case "SpeckleDocs":
-              SpeckleAutocadCommand.SpeckleDocs();
+              SpeckleAutocadCommand2.SpeckleDocs();
               break;
           }
       }

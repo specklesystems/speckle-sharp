@@ -54,6 +54,7 @@ namespace Objects.Converter.Revit
 
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
+      bool isUpdate = false;
       if (docObj != null)
       {
         try
@@ -84,6 +85,7 @@ namespace Objects.Converter.Revit
               revitColumn.ChangeTypeId(familySymbol.Id);
             }
           }
+          isUpdate = true;
         }
         catch { }
       }
@@ -114,7 +116,7 @@ namespace Objects.Converter.Revit
 
       if (revitColumn == null)
       {
-        ConversionErrors.Add(new Exception($"Failed to create column for {speckleColumn.applicationId}."));
+        Report.LogConversionError(new Exception($"Failed to create column for {speckleColumn.applicationId}."));
         return null;
       }
 
@@ -144,7 +146,7 @@ namespace Objects.Converter.Revit
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleColumn.applicationId, ApplicationGeneratedId = revitColumn.UniqueId, NativeObject = revitColumn } };
 
       // TODO: nested elements.
-
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} Column {revitColumn.Id}");
       return placeholders;
     }
 

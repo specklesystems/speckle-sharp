@@ -459,7 +459,7 @@ namespace Objects.Converter.RhinoGh
     public ICurve CurveToSpeckle(RH.Curve curve, string units = null)
     {
       var u = units ?? ModelUnits;
-      var tolerance = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      var tolerance = Doc.ModelAbsoluteTolerance;
       Rhino.Geometry.Plane pln = Rhino.Geometry.Plane.Unset;
       curve.TryGetPlane(out pln, tolerance);
       
@@ -754,7 +754,7 @@ namespace Objects.Converter.RhinoGh
     /// <returns></returns>
     public Brep BrepToSpeckle(RH.Brep brep, string units = null)
     {
-      var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      var tol = Doc.ModelAbsoluteTolerance;
       //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
@@ -892,7 +892,7 @@ namespace Objects.Converter.RhinoGh
     /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
     public RH.Brep BrepToNative(Brep brep)
     {
-      var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
+      var tol = Doc.ModelAbsoluteTolerance;
       try
       {
         // TODO: Provenance exception is meaningless now, must change for provenance build checks.
@@ -946,7 +946,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception e)
       {
-        ConversionErrors.Add(new Exception("Failed to convert brep.", e));
+        Report.LogConversionError(new Exception("Failed to convert brep.", e));
         return null;
       }
     }

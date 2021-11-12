@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
           }
           else
           {
-            ConversionErrors.Add(new Exception("Cannot create Opening, opening type not supported"));
+            Report.LogConversionError(new Exception("Cannot create Opening, opening type not supported"));
             throw new Speckle.Core.Logging.SpeckleException("Opening type not supported");
           }
           break;
@@ -72,7 +72,7 @@ namespace Objects.Converter.Revit
       {
         SetInstanceParameters(revitOpening, ro);
       }
-
+      Report.Log($"Created Opening {revitOpening.Id}");
       return new ApplicationPlaceholderObject { NativeObject = revitOpening, applicationId = speckleOpening.applicationId, ApplicationGeneratedId = revitOpening.UniqueId };
     }
 
@@ -134,7 +134,7 @@ namespace Objects.Converter.Revit
       speckleOpening["type"] = revitOpening.Name;
 
       GetAllRevitParamsAndIds(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
-
+      Report.Log($"Converted Opening {revitOpening.Id}");
       return speckleOpening;
     }
   }

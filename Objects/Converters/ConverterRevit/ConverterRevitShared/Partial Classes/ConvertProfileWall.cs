@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
       // Level level = null;
       var structural = speckleRevitWall.structural;
       var profile = new List<DB.Curve>();
-      for(var i = 0; i <  CurveToNative(speckleRevitWall.profile).Size; i++)
+      for (var i = 0; i < CurveToNative(speckleRevitWall.profile).Size; i++)
       {
         profile.Add(CurveToNative(speckleRevitWall.profile).get_Item(i));
       }
@@ -35,11 +35,11 @@ namespace Objects.Converter.Revit
         Doc.Delete(revitWall.Id);
 
       revitWall = DB.Wall.Create(Doc, profile, structural);
-    
+
 
       if (revitWall == null)
       {
-        ConversionErrors.Add(new Exception($"Failed to create wall ${speckleRevitWall.applicationId}."));
+        Report.LogConversionError(new Exception($"Failed to create wall ${speckleRevitWall.applicationId}."));
         return null;
       }
 
@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleRevitWall, revitWall);
       placeholders.AddRange(hostedElements);
-
+      Report.Log($"Created ProfileWall {revitWall.Id}");
       return placeholders;
     }
 

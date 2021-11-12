@@ -10,6 +10,17 @@
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="Button.Outline">
+      <Setter Property="assists:ButtonAssist.CornerRadius" Value="16" />
+      <Setter Property="Padding" Value="3" />
+      <Setter Property="Width" Value="200" />
+    </Style>
+    <Style Selector="TextBlock.ButtonText">
+      <Setter Property="Margin" Value="8,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
   <StackPanel Margin="0,4" Spacing="10">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
 
@@ -22,31 +33,21 @@
       ToolTip.Tip="Clears any existing objects,&#x0a;and sets the current selected ones.">
       <StackPanel Orientation="Horizontal">
         <icons:MaterialIcon Kind="AddCircle" />
-        <TextBlock
-          Margin="8,0"
-          VerticalAlignment="Center"
-          Classes="ButtonText"
-          Text="SET SELECTION" />
+        <TextBlock Classes="ButtonText" Text="SET SELECTION" />
       </StackPanel>
     </Button>
 
     <Button
-      assists:ButtonAssist.CornerRadius="16"
       Classes="Outline"
       Command="{Binding AddObjectSelection}"
       ToolTip.Tip="Adds the currently selected objects to the&#x0a;existing list.&#x0a;Does not clear old ones.">
       <StackPanel Orientation="Horizontal">
         <icons:MaterialIcon Kind="AddCircle" />
-        <TextBlock
-          Margin="8,0"
-          VerticalAlignment="Center"
-          Classes="ButtonText"
-          Text="ADD SELECTION" />
+        <TextBlock Classes="ButtonText" Text="ADD SELECTION" />
       </StackPanel>
     </Button>
 
     <Button
-      assists:ButtonAssist.CornerRadius="16"
       BorderBrush="IndianRed"
       Classes="Outline"
       Command="{Binding RemoveObjectSelection}"
@@ -54,16 +55,11 @@
       ToolTip.Tip="Removes the selected objects.">
       <StackPanel Orientation="Horizontal">
         <icons:MaterialIcon Kind="MinusCircle" />
-        <TextBlock
-          Margin="8,0"
-          VerticalAlignment="Center"
-          Classes="ButtonText"
-          Text="REMOVE SELECTION" />
+        <TextBlock Classes="ButtonText" Text="REMOVE SELECTION" />
       </StackPanel>
     </Button>
 
     <Button
-      assists:ButtonAssist.CornerRadius="16"
       BorderBrush="OrangeRed"
       Classes="Outline"
       Command="{Binding ClearObjectSelection}"
@@ -71,11 +67,7 @@
       ToolTip.Tip="Removes all selected objects.">
       <StackPanel Orientation="Horizontal">
         <icons:MaterialIcon Kind="RemoveCircleMultiple" />
-        <TextBlock
-          Margin="8,0"
-          VerticalAlignment="Center"
-          Classes="ButtonText"
-          Text="CLEAR SELECTION" />
+        <TextBlock Classes="ButtonText" Text="CLEAR SELECTION" />
       </StackPanel>
     </Button>
 

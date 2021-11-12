@@ -15,16 +15,16 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
-      string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
+      string familyName = speckleAc["type"] as string != null ? speckleAc["type"] as string : "";
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       if (familySymbol.FamilyName != familyName)
       {
-        ConversionErrors.Add(new Exception($"Could not find adaptive component {familyName}"));
+        Report.LogConversionError(new Exception($"Could not find adaptive component {familyName}"));
         return null;
       }
 
       DB.FamilyInstance revitAc = null;
-
+      var isUpdate = false;
       //try update existing 
       if (docObj != null)
       {
@@ -45,6 +45,8 @@ namespace Objects.Converter.Revit
             if (speckleAc.type != null && speckleAc.type != revitType.Name)
               revitAc.ChangeTypeId(familySymbol.Id);
           }
+
+          isUpdate = true;
         }
         catch
         {
@@ -63,6 +65,8 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitAc, speckleAc);
 
+      Report.Log($"Successfully {(isUpdate ? "updated" : "created")} AdaptiveComponent {revitAc.Id}");
+
       return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = revitAc.UniqueId, NativeObject = revitAc };
     }
 
@@ -75,7 +79,7 @@ namespace Objects.Converter.Revit
       speckleAc.displayMesh = GetElementMesh(revitAc);
 
       GetAllRevitParamsAndIds(speckleAc, revitAc);
-
+      Report.Log($"Converted AdaptiveComponent {revitAc.Id}");
       return speckleAc;
     }
 
@@ -85,7 +89,7 @@ namespace Objects.Converter.Revit
 
       if (pointIds.Count != points.Count)
       {
-        ConversionErrors.Add(new Exception("Adaptive family error\nWrong number of points supplied to adaptive family"));
+        Report.LogConversionError(new Exception("Adaptive family error\nWrong number of points supplied to adaptive family"));
         return;
       }
 
