@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
               Transform.CreateTranslation(new XYZ(0, 0, start.Z)));
             // add display value
             var curve = (Curve)CurveToSpeckle(revitCurve);
-            var polyCoords = revitCurve.Tessellate().SelectMany(pt => PointToSpeckle(pt).ToList());
+            var polyCoords = revitCurve.Tessellate().SelectMany(pt => PointToSpeckle(pt).ToList()).ToList();
             curve.displayValue = new Polyline(polyCoords, ModelUnits);
             speckleWire.segments.Add(curve);
             break;
