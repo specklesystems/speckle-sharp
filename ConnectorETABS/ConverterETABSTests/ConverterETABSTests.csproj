@@ -19,6 +19,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\ConverterETABS\ConverterETABSv18\ConverterETABSv18.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj" />
+    <ProjectReference Include="..\ConnectorETABSv18\ConnectorETABSv18.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
   </ItemGroup>
 
 </Project>

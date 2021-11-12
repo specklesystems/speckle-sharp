@@ -600,7 +600,7 @@ namespace Speckle.ConnectorETABS.Util
             //BraceResults,
             //PierResults,
             //SpandrelResults,
-            AnalysisResults
+            //AnalysisResults
         }
 
         /// <summary>

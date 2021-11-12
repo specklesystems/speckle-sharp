@@ -33,7 +33,16 @@ namespace Objects.Converter.ETABS
             double[] y = Y.ToArray();
             double[] z = Z.ToArray();
 
-            Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name,area.property.name);
+            if(area.property != null)
+            {
+                Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+
+            }
+            else
+            {
+                Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
+
+            }
             Model.AreaObj.ChangeName(name, area.name);
             return name;
 
