@@ -89,6 +89,9 @@ Name: updater; Description: Speckle Updater; Types: full custom; Flags: fixed
 Name: "full"; Description: "Full installation"
 Name: "custom"; Description: "Custom installation"; Flags: iscustom
 
+[Tasks]
+Name: updates; Description: "Auto update, make sure I always have the best Speckle!";
+
 [Dirs]
 Name: "{app}"; Permissions: everyone-full
 
@@ -302,9 +305,10 @@ Root: HKCU; Subkey: "Software\Classes\speckle\shell\open\command"; ValueType: "s
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
-Name: "{group}\Check for Updates"; Filename: "{#SpeckleFolder}\{#UpdaterFilename}"; Parameters: "-showprogress"
-Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Oasys\SpeckleGSAV2"; Filename: "{userappdata}\Oasys\SpeckleGSA\ConnectorGSA.exe";
 Name: "{group}\Speckle@Arup AccountManager"; Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe";
+Name: "{group}\Check for Speckle Updates"; Filename: "{#SpeckleFolder}\{#UpdaterFilename}"; Parameters: "-showprogress"
+Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Startup\Speckle@Arup"; Filename: "{#SpeckleFolder}\{#UpdaterFilename}"; Tasks: updates
+Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Oasys\SpeckleGSAV2"; Filename: "{userappdata}\Oasys\SpeckleGSA\ConnectorGSA.exe";
 
 [Run]
 Filename: "{userappdata}\speckle-connection-manager-ui\SpeckleConnectionManagerUI.exe"; Description: "Authenticate with the Speckle Server"; Flags: nowait postinstall skipifsilent
