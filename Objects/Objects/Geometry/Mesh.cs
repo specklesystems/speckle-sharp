@@ -51,9 +51,10 @@ namespace Objects.Geometry
       this.units = units;
     }
     
+    [Obsolete("Use lists constructor")]
     public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
     : this(
-    vertices.ToList(),
+      vertices.ToList(),
       faces.ToList(),
       colors?.ToList(),
       texture_coords?.ToList(),

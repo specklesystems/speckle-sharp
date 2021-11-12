@@ -24,18 +24,21 @@ namespace Objects.Geometry
     public Box bbox { get; set; }
     public double area { get; set; }
     public double length { get; set; }
-
     public string units { get; set; }
 
     public Polyline()
-    {
-
-    }
+    { }
+    
+    [Obsolete("Use list constructor instead")]
     public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
+    : this(coordinatesArray.ToList(), units, applicationId)
+    { }
+    
+    public Polyline(List<double> coordinates, string units = Units.Meters, string applicationId = null)
     {
-      this.value = coordinatesArray.ToList();
-      this.applicationId = applicationId;
+      this.value = coordinates;
       this.units = units;
+      this.applicationId = applicationId;
     }
 
     [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]

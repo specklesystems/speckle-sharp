@@ -1390,17 +1390,20 @@ namespace Objects.Converter.AutocadCivil
         int j = 0;
         while (j < mesh.faces.Count)
         {
+          int n = mesh.faces[j];
+          if (n < 3) n += 3; //0 -> 3, 1 -> 4
+          
           FaceRecord face = null;
-          if (mesh.faces[j] == 0) // triangle
+          if (n == 3) // triangle
           {
             face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), 0);
-            j += 4;
           }
-          else // quad
+          else if(n == 4) // quad
           {
             face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), (short)(mesh.faces[j + 4] + 1));
-            j += 5;
           }
+
+          j += n + 1;
           if (face != null)
           {
             if (face.IsNewObject)

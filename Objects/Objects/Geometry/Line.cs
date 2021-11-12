@@ -62,16 +62,20 @@ namespace Objects.Geometry
       this.units = units;
     }
 
-    public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
+    public Line(IList<double> coordinates, string units = Units.Meters, string applicationId = null)
     {
-      var enumerable = coordinatesArray.ToList();
-      if (enumerable.Count < 6)
+      if (coordinates.Count < 6)
         throw new SpeckleException("Line from coordinate array requires 6 coordinates.");
-      this.start = new Point(enumerable[0], enumerable[1], enumerable[2], units, applicationId);
-      this.end = new Point(enumerable[3], enumerable[4], enumerable[5], units, applicationId);
+      this.start = new Point(coordinates[0], coordinates[1], coordinates[2], units, applicationId);
+      this.end = new Point(coordinates[3], coordinates[4], coordinates[5], units, applicationId);
       this.applicationId = applicationId;
       this.units = units;
     }
+    
+    [Obsolete("Use IList constructor")]
+    public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
+    : this(coordinatesArray.ToList(), units, applicationId)
+    { }
 
     public List<double> ToList()
     {
