@@ -275,6 +275,15 @@ namespace SpeckleRhino
       // give converter a way to access the base commit layer name
       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
 
+      // purge commit layer from doc if it already exists
+      var existingLayer = Doc.Layers.FindName(commitLayerName);
+      var existingBlocks = Doc.InstanceDefinitions.Where(o => o.Name.StartsWith(commitLayerName))?.Select(o => o.Index)?.ToList();
+      if (existingBlocks != null)
+        foreach (var blockIndex in existingBlocks)
+          Doc.InstanceDefinitions.Purge(blockIndex);
+      if (existingLayer != null)
+        Doc.Layers.Purge(existingLayer.Id, false);
+
       // flatten the commit object to retrieve children objs
       int count = 0;
       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);

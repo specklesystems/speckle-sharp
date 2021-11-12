@@ -275,7 +275,6 @@ namespace DesktopUI2.ViewModels
       if (IsReceiver)
         Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
       else Tracker.TrackPageview(Tracker.SEND_ADDED);
-
     }
 
     private async void SendCommand()

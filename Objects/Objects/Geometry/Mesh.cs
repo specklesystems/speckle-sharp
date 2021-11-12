@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
@@ -50,9 +51,10 @@ namespace Objects.Geometry
       this.units = units;
     }
     
+    [Obsolete("Use lists constructor")]
     public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
     : this(
-    vertices.ToList(),
+      vertices.ToList(),
       faces.ToList(),
       colors?.ToList(),
       texture_coords?.ToList(),
@@ -71,7 +73,7 @@ namespace Objects.Geometry
     /// </summary>
     /// <param name="index">The index of the vertex</param>
     /// <returns>Vertex as a <see cref="Point"/></returns>
-    public Point GetPointAtIndex(int index)
+    public Point GetPoint(int index)
     {
       index *= 3;
       return new Point(
@@ -82,13 +84,27 @@ namespace Objects.Geometry
         applicationId
         );
     }
+
+    /// <returns><see cref="vertices"/> as list of <see cref="Point"/>s</returns>
+    /// <exception cref="SpeckleException">when list is malformed</exception>
+    public List<Point> GetPoints()
+    {
+      if (vertices.Count % 3 != 0) throw new SpeckleException($"{nameof(Mesh)}.{nameof(vertices)} list is malformed: expected length to be multiple of 3");
+      
+      var pts = new List<Point>(vertices.Count / 3);
+      for (int i = 2; i < vertices.Count; i += 3)
+      {
+        pts.Add(new Point(vertices[i - 2], vertices[i - 1], vertices[i], units));
+      }
+      return pts;
+    }
     
     /// <summary>
     /// Gets a texture coordinate as a <see cref="ValueTuple{T1,T2}"/> by <paramref name="index"/>
     /// </summary>
     /// <param name="index">The index of the texture coordinate</param>
     /// <returns>Texture coordinate as a <see cref="ValueTuple{T1,T2}"/></returns>
-    public (double,double) GetTextureCoordinateAtIndex(int index)
+    public (double,double) GetTextureCoordinate(int index)
     {
       index *= 2;
       return (textureCoordinates[index], textureCoordinates[index + 1]);
@@ -103,7 +119,7 @@ namespace Objects.Geometry
     /// If the calling application expects 
     /// <code>vertices.count == textureCoordinates.count</code>
     /// Then this method should be called by the <c>MeshToNative</c> method before parsing <see cref="Mesh.vertices"/> and <see cref="Mesh.faces"/>
-    /// to ensure compatibility with geometry originating from applications that map vertices to texture-coordinates using vertex instance index (rather than vertex index)
+    /// to ensure compatibility with geometry originating from applications that map <see cref="Mesh.vertices"/> to <see cref="Mesh.textureCoordinates"/> using vertex instance index (rather than vertex index)
     /// <br/>
     /// <see cref="Mesh.vertices"/>, <see cref="Mesh.colors"/>, and <see cref="faces"/> lists will be modified to contain no shared vertices (vertices shared between polygons)
     /// </remarks>
@@ -132,7 +148,7 @@ namespace Objects.Geometry
           int vertIndex = faces[nIndex + i];
           int newVertIndex = verticesUnique.Count / 3;
           
-          var (x, y, z) = GetPointAtIndex(vertIndex);
+          var (x, y, z) = GetPoint(vertIndex);
           verticesUnique.Add(x);
           verticesUnique.Add(y);
           verticesUnique.Add(z);

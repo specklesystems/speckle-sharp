@@ -41,15 +41,15 @@ namespace Objects.Geometry
         length = polyline.length
       };
 
-
-      for (var i = 0; i < polyline.points.Count - 1; i++)
+      var points = polyline.GetPoints();
+      for (var i = 0; i < points.Count - 1; i++)
       {
-        var line = new Line(polyline.points[i], polyline.points[i + 1], polyline.units);
+        var line = new Line(points[i], points[i + 1], polyline.units);
           polycurve.segments.Add(line);
       }
       if (polyline.closed)
       {
-        var line = new Line(polyline.points[polyline.points.Count - 1], polyline.points[0], polyline.units);
+        var line = new Line(points[points.Count - 1], points[0], polyline.units);
         polycurve.segments.Add(line);
       }
 
