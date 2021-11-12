@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using Grasshopper.Kernel.Types;
@@ -65,10 +66,10 @@ namespace Objects.Converter.RhinoGh
 
       return points;
     }
-
-    public double[] PointsToFlatArray(IEnumerable<Point3d> points)
+    
+    public List<double> PointsToFlatList(IEnumerable<Point3d> points)
     {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+      return points.SelectMany(PointToArray).ToList();
     }
 
     // Points
@@ -192,7 +193,7 @@ namespace Objects.Converter.RhinoGh
       var u = units ?? ModelUnits;
       var length = rect.Height * 2 + rect.Width * 2;
       var sPoly = new Polyline(
-        PointsToFlatArray(new Point3d[] { rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3) }), u)
+        PointsToFlatList(new Point3d[] { rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3) }), u)
       {
         closed = true,
         area = rect.Area,
@@ -322,7 +323,7 @@ namespace Objects.Converter.RhinoGh
         return l;
       }
 
-      var myPoly = new Polyline(PointsToFlatArray(poly), u);
+      var myPoly = new Polyline(PointsToFlatList(poly), u);
       myPoly.closed = poly.IsClosed;
 
       if (myPoly.closed)
@@ -347,7 +348,7 @@ namespace Objects.Converter.RhinoGh
         var intervalToSpeckle = IntervalToSpeckle(poly.Domain);
         if (polyline.Count == 2)
         {
-          var polylineToSpeckle = new Line(PointsToFlatArray(polyline), u)
+          var polylineToSpeckle = new Line(PointsToFlatList(polyline), u)
           {
             domain = intervalToSpeckle
           };
@@ -357,7 +358,7 @@ namespace Objects.Converter.RhinoGh
           return polylineToSpeckle;
         }
 
-        var myPoly = new Polyline(PointsToFlatArray(polyline), u);
+        var myPoly = new Polyline(PointsToFlatList(polyline), u);
         myPoly.closed = polyline.IsClosed;
 
         if (myPoly.closed)
@@ -375,7 +376,7 @@ namespace Objects.Converter.RhinoGh
     // Deserialise
     public PolylineCurve PolylineToNative(Polyline poly)
     {
-      List<Point3d> points = poly.points.Select(o => PointToNative(o).Location).ToList();
+      List<Point3d> points = poly.GetPoints().Select(o => PointToNative(o).Location).ToList();
       if (poly.closed) points.Add(points[0]);
 
       var myPoly = new PolylineCurve(points);
@@ -536,7 +537,7 @@ namespace Objects.Converter.RhinoGh
       //nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count, max, true);
 
       myCurve.weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList();
-      myCurve.points = PointsToFlatArray(nurbsCurve.Points.Select(ctp => ctp.Location)).ToList();
+      myCurve.points = PointsToFlatList(nurbsCurve.Points.Select(ctp => ctp.Location));
       myCurve.knots = knots;
       myCurve.degree = nurbsCurve.Degree;
       myCurve.periodic = nurbsCurve.IsPeriodic;
@@ -595,19 +596,32 @@ namespace Objects.Converter.RhinoGh
     public Mesh MeshToSpeckle(RH.Mesh mesh, string units = null)
     {
       var u = units ?? ModelUnits;
-      var verts = PointsToFlatArray(mesh.Vertices.ToPoint3dArray());
+      var verts = PointsToFlatList(mesh.Vertices.ToPoint3dArray());
 
-      var Faces = mesh.Faces.SelectMany(face =>
+      var faces = new List<int>();
+      foreach (MeshNgon polygon in mesh.GetNgonAndFacesEnumerable())
       {
-        if (face.IsQuad) return new int[] { 1, face.A, face.B, face.C, face.D };
-        return new int[] { 0, face.A, face.B, face.C };
-      }).ToArray();
+        var vertIndices = polygon.BoundaryVertexIndexList();
+        int n = vertIndices.Length;
+        if (n <= 4) n -= 3;
+        faces.Add(n);
+        faces.AddRange(vertIndices.Select(vertIndex => (int) vertIndex));
+      }
+      
+      var textureCoordinates = new List<double>(mesh.TextureCoordinates.Count * 2);
+      foreach (var texCoord in mesh.TextureCoordinates)
+      {
+        textureCoordinates.Add(texCoord.X);
+        textureCoordinates.Add(texCoord.Y);
+      }
+      
+      var colors = mesh.VertexColors.Select(cl => cl.ToArgb()).ToList();
 
-      var Colors = mesh.VertexColors.Select(cl => cl.ToArgb()).ToArray();
-
-      var speckleMesh = new Mesh(verts, Faces, Colors, null, u);
-      speckleMesh.volume = mesh.Volume();
-      speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
+      var speckleMesh = new Mesh(verts, faces, colors, textureCoordinates, u)
+      {
+        volume = mesh.Volume(),
+        bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u)
+      };
 
       return speckleMesh;
     }
@@ -624,13 +638,13 @@ namespace Objects.Converter.RhinoGh
         vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
         subDVertices.Add(mesh.Vertices.Find(i));
       }
-      var verts = PointsToFlatArray(vertices);
+      var verts = PointsToFlatList(vertices);
 
       var Faces = mesh.Faces.SelectMany(face =>
       {
         if (face.VertexCount == 4) return new int[] { 1, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
         return new int[] { 0, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
-      }).ToArray();
+      }).ToList();
 
       var speckleMesh = new Mesh(verts, Faces, null, null, u);
       speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
@@ -641,39 +655,86 @@ namespace Objects.Converter.RhinoGh
 
     public RH.Mesh MeshToNative(Mesh mesh)
     {
+      mesh.AlignVerticesWithTexCoordsByIndex();
+
       RH.Mesh m = new RH.Mesh();
       m.Vertices.AddVertices(PointListToNative(mesh.vertices, mesh.units));
+      m.VertexColors.SetColors(mesh.colors.Select(Color.FromArgb).ToArray());
+      
+      var textureCoordinates = new Point2f[mesh.TextureCoordinatesCount];
+      for(int ti = 0; ti < mesh.TextureCoordinatesCount; ti++)
+      {
+        var (u, v) = mesh.GetTextureCoordinate(ti); 
+        textureCoordinates[ti] = new Point2f(u,v);
+      }
+      m.TextureCoordinates.SetTextureCoordinates(textureCoordinates);
+     
 
+      bool requiresCompacting = false;
       int i = 0;
-
       while (i < mesh.faces.Count)
       {
-        if (mesh.faces[i] == 0)
+        int n = mesh.faces[i];
+        if (n < 3) n += 3; // 0 -> 3, 1 -> 4
+        
+        if (n == 3)
         {
           // triangle
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3]));
-          i += 4;
         }
-        else
+        else if(n == 4)
         {
           // quad
           m.Faces.AddFace(new MeshFace(mesh.faces[i + 1], mesh.faces[i + 2], mesh.faces[i + 3], mesh.faces[i + 4]));
-          i += 5;
         }
+        else
+        {      
+          // n-gon
+
+          var points = new List<Point3d>(n);
+          var indexMap = new Dictionary<Point3f, int>(n);
+          for (int j = 1; j <= n; j++)
+          {
+            int vertIndex = mesh.faces[i + j];
+            var (x, y, z) = mesh.GetPoint(vertIndex);
+            var key = (Point3f)new Point3d(x, y, z);
+        
+            points.Add(key);
+            if (!indexMap.ContainsKey(key))
+            {
+              indexMap.Add(key, vertIndex);
+            }
+          }
+          
+          points.Add(points[0]);
+          
+          var subMesh = RH.Mesh.CreateFromClosedPolyline(new RH.Polyline(points));
+
+          var faceIndices = new List<int>(n);
+          if (subMesh != null)
+          {
+            foreach (var face in subMesh.Faces)
+            {
+              faceIndices.Add(m.Faces.Count);
+              m.Faces.AddFace(
+                indexMap[subMesh.Vertices[face.A]],
+                indexMap[subMesh.Vertices[face.B]],
+                indexMap[subMesh.Vertices[face.C]],
+                indexMap[subMesh.Vertices[face.D]]
+              );
+            }
+
+            MeshNgon ngon = MeshNgon.Create(mesh.faces.GetRange(i + 1, n), faceIndices);
+            m.Ngons.AddNgon(ngon);
+          
+            requiresCompacting = true;
+          }
+        }
+
+        i += n + 1;
       }
 
-      try
-      {
-        m.VertexColors.AppendColors(mesh.colors.Select(c => System.Drawing.Color.FromArgb((int)c)).ToArray());
-      }
-      catch
-      { }
-
-      if (mesh.textureCoordinates != null)
-        for (int j = 0; j < mesh.textureCoordinates.Count; j += 2)
-        {
-          m.TextureCoordinates.Add(mesh.textureCoordinates[j], mesh.textureCoordinates[j + 1]);
-        }
+      if (requiresCompacting) m.Compact();
 
       return m;
     }
@@ -700,7 +761,7 @@ namespace Objects.Converter.RhinoGh
 
       var _pointcloud = new Pointcloud()
       {
-        points = PointsToFlatArray(pointcloud.GetPoints().ToList()).ToList(),
+        points = PointsToFlatList(pointcloud.GetPoints()),
         colors = pointcloud.GetColors().Select(o => o.ToArgb()).ToList(),
         bbox = BoxToSpeckle(new RH.Box(pointcloud.GetBoundingBox(true)), u),
         units = u
