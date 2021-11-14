@@ -486,7 +486,7 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
     }
 
     delegate void SetContextDelegate(object session);
-    delegate Base SpeckleConversionDelegate(Element commitObject);
+    delegate Base SpeckleConversionDelegate(object commitObject);
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
@@ -563,7 +563,12 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
           if (null == drawingGrid)
             return null;
 
-          Base converted = converter.ConvertToSpeckle(drawingGrid);
+          Base converted;
+          if (Control.InvokeRequired)
+            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
+          else
+            converted = converter.ConvertToSpeckle(drawingGrid);
+
           if (converted != null)
           {
             var containerName = "Grid Systems";
