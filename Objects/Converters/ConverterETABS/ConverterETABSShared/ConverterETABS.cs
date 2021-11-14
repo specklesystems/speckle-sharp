@@ -152,6 +152,9 @@ namespace Objects.Converter.ETABS
                     returnObject = BraceToSpeckle(name);
                     Report.Log($"Created Brace");
                     break;
+                case "ElementsCount":
+                    returnObject = ModelElementsCountToSpeckle();
+                    break;
 
                 //case "Link":
                 //    returnObject = LinkToSpeckle(name);

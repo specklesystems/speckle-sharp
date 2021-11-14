@@ -130,6 +130,14 @@ namespace Objects.Converter.ETABS
 
             return "Finished";
         }
+        Base ModelElementsCountToSpeckle()
+        {
+            var ElementsCount = new Base();
+            int count = SpeckleModel.elements.Count();
+            count += SpeckleModel.nodes.Count();
+            ElementsCount.applicationId = count.ToString();
+            return ElementsCount;
+        }
         Model ModelToSpeckle()
         {
             var model = new Model();

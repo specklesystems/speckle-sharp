@@ -184,6 +184,7 @@ namespace Objects.Converter.ETABS
                     setProperties(speckleProperty2D, matProp, thickness,property);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
                     speckleProperty2D.shellType = speckleShellType;
+                    speckleProperty2D.applicationId = GUID;
                     return speckleProperty2D;
                 }
                 else if (deckType == eDeckType.Unfilled)
@@ -206,6 +207,7 @@ namespace Objects.Converter.ETABS
                     setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
                     speckleProperty2D.shellType = speckleShellType;
+                    speckleProperty2D.applicationId = GUID;
                     return speckleProperty2D;
 
                 }
@@ -221,6 +223,7 @@ namespace Objects.Converter.ETABS
                     setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Deck;
                     speckleProperty2D.shellType = speckleShellType;
+                    speckleProperty2D.applicationId = GUID;
                     return speckleProperty2D;
                 }
             }
@@ -252,6 +255,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Null;
                     setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.shellType = speckleShellType;
+                    speckleProperty2D.applicationId = GUID;
                     return speckleProperty2D;
                 }
                 else if (slabType == eSlabType.Ribbed)
@@ -267,6 +271,7 @@ namespace Objects.Converter.ETABS
                     speckleProperty2D.deckType = Structural.ETABS.Analysis.DeckType.Null;
                     setProperties(speckleProperty2D, matProp, thickness, property);
                     speckleProperty2D.shellType = speckleShellType;
+                    speckleProperty2D.applicationId = GUID;
                     return speckleProperty2D;
 
                 }
@@ -292,6 +297,7 @@ namespace Objects.Converter.ETABS
                     }
                     specklePropery2DSlab.deckType = Structural.ETABS.Analysis.DeckType.Null;
                     specklePropery2DSlab.shellType = speckleShellType;
+                    specklePropery2DSlab.applicationId = GUID;
                     return specklePropery2DSlab;
                 }
             }

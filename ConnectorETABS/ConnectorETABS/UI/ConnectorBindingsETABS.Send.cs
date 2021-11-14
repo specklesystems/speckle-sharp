@@ -14,6 +14,7 @@ using Speckle.ConnectorETABS.Util;
 using System.Linq;
 using DesktopUI2.ViewModels;
 
+
 namespace Speckle.ConnectorETABS.UI
 {
     public partial class ConnectorBindingsETABS : ConnectorBindings
@@ -101,12 +102,15 @@ namespace Speckle.ConnectorETABS.UI
                 //    }
                 //             ((List<Base>)commitObj[selectedObjectType]).Add(converted);
                 //}
-                converted.applicationId = applicationId;
 
-                objCount++;
+                //objCount++;
                 conversionProgressDict["Conversion"]++;
                 progress.Update(conversionProgressDict);
             }
+
+            Base ElementCount = converter.ConvertToSpeckle(("ElementsCount", "ETABS"));
+            objCount = Convert.ToInt32(ElementCount.applicationId);
+
             if (commitObj["@Model"] == null)
             {
                 commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "ETABS"));

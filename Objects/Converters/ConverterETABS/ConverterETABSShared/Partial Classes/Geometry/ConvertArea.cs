@@ -5,6 +5,7 @@ using ETABSv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
 using Objects.Structural.ETABS.Properties;
+using Speckle.Core.Models;
 using StructuralUtilities.PolygonMesher;
 using System.Linq;
 
@@ -51,7 +52,14 @@ namespace Objects.Converter.ETABS
         {
             string units = ModelUnits();
             var speckleStructArea = new Element2D();
-            speckleStructArea.name = name;
+            var GUID = "";
+            Model.AreaObj.GetGUID(name, ref GUID);
+            speckleStructArea.applicationId = GUID;
+            List<Base> elements = SpeckleModel.elements;
+            List<string> application_Id = elements.Select(o => o.applicationId).ToList();
+            if (!application_Id.Contains(speckleStructArea.applicationId))
+            {
+                speckleStructArea.name = name;
             int numPoints = 0;
             string[] points = null;
             Model.AreaObj.GetPoints(name, ref numPoints, ref points);
@@ -79,8 +87,11 @@ namespace Objects.Converter.ETABS
             var faces = polygonMesher.Faces();
             var vertices = polygonMesher.Coordinates;
             speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
+            
 
-            SpeckleModel.elements.Add(speckleStructArea);
+                SpeckleModel.elements.Add(speckleStructArea);
+            }
+
 
             return speckleStructArea;
         }

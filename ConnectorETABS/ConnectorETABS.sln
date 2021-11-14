@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv19", "ConnectorETABSv19\ConnectorETABSv19.csproj", "{5EB09853-934A-43E1-8E29-AB5EDCBC2B88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterETABSTests", "ConverterETABSTests\ConverterETABSTests.csproj", "{C3159E96-9B5F-4FAD-AE1A-92B3D90C88D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterETABSTests", "ConverterETABSTests\ConverterETABSTests.csproj", "{C3159E96-9B5F-4FAD-AE1A-92B3D90C88D6}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
