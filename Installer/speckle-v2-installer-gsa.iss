@@ -6,7 +6,7 @@
 #define SpeckleFolder "{localappdata}\Speckle"
 
 [Setup]
-AppId={{BA3A01AA-F70D-4747-AA0E-E93F38C793C8}
+AppId="f9556ce4-23c7-45e7-9af6-32aeec5073ad"
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
