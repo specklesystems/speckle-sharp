@@ -27,6 +27,10 @@ namespace Speckle.Core.Kits
     public const string Autocad2021 = "AutoCAD2021";
     public const string Autocad2022 = "AutoCAD2022";
     public const string Autocad2023 = "AutoCAD2023";
+    public const string MicroStation = "MicroStation";
+    public const string OpenRoads = "OpenRoads";
+    public const string OpenRail = "OpenRail";
+    public const string OpenBuildings = "OpenBuildings";
     public const string ETABSv18 = "ETABSv18";
     public const string ETABSv19 = "ETABSv19";
     public const string ETABS = "ETABS";
