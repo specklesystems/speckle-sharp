@@ -280,7 +280,7 @@ namespace Objects.Converter.Revit
       speckleCurve.units = units ?? ModelUnits;
       speckleCurve.domain = new Interval(revitCurve.GetEndParameter(0), revitCurve.GetEndParameter(1));
       speckleCurve.length = ScaleToSpeckle(revitCurve.Length);
-      var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToArray();
+      var coords = revitCurve.Tessellate().SelectMany(xyz => PointToSpeckle(xyz, units).ToList()).ToList();
       speckleCurve.displayValue = new Polyline(coords, units);
 
       return speckleCurve;
@@ -465,7 +465,7 @@ namespace Objects.Converter.Revit
 
     public Polyline PolylineToSpeckle(PolyLine polyline, string units = null)
     {
-      var coords = polyline.GetCoordinates().SelectMany(coord => PointToSpeckle(coord).ToList());
+      var coords = polyline.GetCoordinates().SelectMany(coord => PointToSpeckle(coord).ToList()).ToList();
 
       return new Polyline(coords, units ?? ModelUnits);
 

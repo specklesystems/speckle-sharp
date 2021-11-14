@@ -2,6 +2,7 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
@@ -27,16 +28,20 @@ namespace Objects.Geometry
     public Pointcloud()
     {
     }
-
-    public IEnumerable<Point> GetPoints()
+    
+    /// <returns><see cref="points"/> as list of <see cref="Point"/>s</returns>
+    /// <exception cref="SpeckleException">when list is malformed</exception>
+    public List<Point> GetPoints()
     {
-      if (points.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
-
-      Point[] pts = new Point[points.Count / 3];
-      var asArray = points.ToArray();
-      for (int i = 2, k = 0; i < points.Count; i += 3)
-        pts[k++] = new Point(asArray[i - 2], asArray[i - 1], asArray[i], units);
+      if (points.Count % 3 != 0) throw new SpeckleException($"{nameof(Pointcloud)}.{nameof(points)} list is malformed: expected length to be multiple of 3");
+      
+      var pts = new List<Point>(points.Count / 3);
+      for (int i = 2; i < points.Count; i += 3)
+      {
+        pts.Add(new Point(points[i - 2], points[i - 1], points[i], units));
+      }
       return pts;
     }
+    
   }
 }
