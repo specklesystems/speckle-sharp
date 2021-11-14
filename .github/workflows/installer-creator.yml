@@ -48,6 +48,10 @@ on:
 jobs:
   build:
     runs-on: windows-latest # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    env:
+      GH_PKG_USER: ${{ secrets.GH_PKG_USER }} 
+      GH_PKG_TOKEN: ${{ secrets.GH_PKG_TOKEN }} 
+      
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -65,9 +69,6 @@ jobs:
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: 'latest'
-
-    - name: Update NuGet source credentials
-      run: nuget source Update -Name "github" -Source "https://nuget.pkg.github.com/arup-group/index.json" -UserName arup-group -Password "${{ secrets.GITHUB_TOKEN }}"    
 
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
