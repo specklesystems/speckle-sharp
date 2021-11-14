@@ -122,13 +122,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
         tag_name: ${{ steps.calculateTagVersion.outputs.tag }}
-        release_name: Speckle@Arup Installer ${{ steps.calculateTagVersion.outputs.tag }}
+        release_name: rhinogh/${{ steps.calculateTagVersion.outputs.tag }}
         body: |
-          The Speckle@Arup installer includes the default [Objects Kit](https://github.com/arup-group/speckle-sharp/tree/master/Objects), an account manager, and SpeckleV2 connectors for:
-
-          - [Rhino 6/7](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRhino)
-          
-          Check out the Speckle@Arup docs [here](https://speckle.arup.com/)!
+          Automated release of Speckle v2 Connector for Rhino/Gh      
         draft: false
         prerelease: true
 

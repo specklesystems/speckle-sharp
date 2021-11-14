@@ -36,9 +36,11 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: Create Installer
+name: Create Installer for Bentley Connectors
 
 on:
+  push:
+    tags: 'v*.*.*-cx'
   workflow_dispatch:
     inputs:
       version:
@@ -53,31 +55,24 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 2
-
-    - name: Calculate tag version
-      id: calculateTagVersion
-      shell: powershell
-      run: |
-        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
-        echo "::set-output name=tag::$tag"
-
+        
     - name: Install the latest version of nuget
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: 'latest'
 
     - name: Update NuGet source credentials
-      run: nuget source Update -Name "github" -Source "https://nuget.pkg.github.com/arup-group/index.json" -UserName arup-group -Password "${{ secrets.GITHUB_TOKEN }}"    
+      run: nuget source Update -Name "github" -Source "https://nuget.pkg.github.com/arup-group/index.json" -UserName arup-group -Password "${{ secrets.GITHUB_TOKEN }}"             
 
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
-      
+
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore all the applications
       shell: cmd
       run: |
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA, ConnectorMicroStation) do (
+        for %%x in (Objects, ConnectorMicroStation) do (
           cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
         )
         
@@ -86,70 +81,25 @@ jobs:
       shell: cmd
       run: |
         SET _version=${{ github.event.inputs.version }}
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA, ConnectorMicroStation) do (
+        for %%x in (Objects, ConnectorMicroStation) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
-        )
+        )                
 
-    - name: Speckle Updater - Restore NuGets
-      run: dotnet restore
-      working-directory: Installer/Updater
-
-    - name: Speckle Updater - Compile
-      run: msbuild SpeckleUpdater.sln /property:Configuration=Release
-      working-directory: Installer/Updater
-
-    - name: Analytics CLI - Restore NuGets
-      run: dotnet restore
-      working-directory: Installer/Analytics
-
-    - name: Analytics CLI - Compile CLI
-      run: dotnet build --configuration Release --runtime win-x64
-      working-directory: Installer/Analytics     
-
-    - name: Excel Addin Request CLI - Restore NuGets
-      run: dotnet restore
-      working-directory: Installer/ExcelAddin/ExcelAddinRequest
-
-    - name: Excel Addin Request - Compile CLI
-      run: dotnet build ExcelAddinRequest.csproj --configuration Release --runtime win-x64
-      working-directory: Installer/ExcelAddin/ExcelAddinRequest   
-
-    - name: Restore SpeckleConnectionManager
-      run: dotnet restore
-      working-directory: Installer/ConnectionManager/SpeckleConnectionManager
-
-    - name: Build SpeckleConnectionManager
-      run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: Installer/ConnectionManager/SpeckleConnectionManager
-
-    - name: Restore SpeckleConnectionManagerUI
-      run: dotnet restore
-      working-directory: Installer/ConnectionManager/SpeckleConnectionManagerUI
-
-    - name: Build SpeckleConnectionManagerUI
-      run: dotnet publish -c Release -r win10-x64 --self-contained true
-      working-directory: Installer/ConnectionManager/SpeckleConnectionManagerUI
-
-    - name: Create Installer
+    - name: create Installer
       id: installer
       run: | 
-        iscc /dAppVersion="${{ steps.calculateTagVersion.outputs.tag }}" speckle-v2-installer-all.iss
+        iscc /dAppVersion="${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)" speckle-v2-installer-bentley.iss
         $filename = (ls *.exe).Name
         echo "::set-output name=filename::$filename"
-      env:
-        ENABLE_TELEMETRY_DOMAIN: arup      
-        EXCEL_ADDIN_APP_TENANT: ${{ secrets.EXCEL_ADDIN_APP_TENANT }}  
-        EXCEL_ADDIN_APP_CLIENT_ID: ${{ secrets.EXCEL_ADDIN_APP_CLIENT_ID }}  
-        EXCEL_ADDIN_APP_CLIENT_SECRET: ${{ secrets.EXCEL_ADDIN_APP_CLIENT_SECRET }}  
-        EXCEL_ADDIN_APP_GROUP_ID: ${{ secrets.EXCEL_ADDIN_APP_GROUP_ID }}     
-      working-directory: Installer       
-
+      working-directory: Installer            
+          
     - name: Install Azure Key Vault signtool
       run: dotnet tool install --global AzureSignTool --version 2.0.17
         
     # https://github.com/vcsjones/AzureSignTool
     - name: Sign Installer
       shell: powershell
+      continue-on-error: true
       run: |
         AzureSignTool sign `
           --description-url "https://speckle.arup.com" `
@@ -160,7 +110,7 @@ jobs:
           --timestamp-rfc3161 "http://timestamp.digicert.com" `
           --verbose `
           ${{ github.workspace }}\Installer\${{ steps.installer.outputs.filename }}
-
+          
     - name: Upload a Build Artifact      
       uses: actions/upload-artifact@v2
       with:
@@ -168,34 +118,28 @@ jobs:
         path: ./Installer/${{ steps.installer.outputs.filename }}
         retention-days: 1
 
+    - name: Calculate tag version
+      id: calculate-tag-version
+      run: |
+        $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
+        echo "::set-output name=tag::$tag"
+
     - name: Create Release
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       id: create-release
       uses: actions/create-release@latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
-        tag_name: ${{ steps.calculateTagVersion.outputs.tag }}
-        release_name: Speckle@Arup Installer ${{ steps.calculateTagVersion.outputs.tag }}
+        tag_name: ${{ steps.calculate-tag-version.outputs.tag }}
+        release_name: bentley/${{ steps.calculate-tag-version.outputs.tag }}
         body: |
-          The Speckle@Arup installer includes the default [Objects Kit](https://github.com/arup-group/speckle-sharp/tree/master/Objects), an account manager, and SpeckleV2 connectors for:
-
-          - [Grasshopper](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGrasshopper)
-          - [Rhino 6/7](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRhino)
-          - [Revit 2019/2020/2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorRevit)
-          - [Dynamo](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorDynamo)
-          - [AutoCAD 2021/2022 and Civil3D 2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorAutocadCivil)
-          - [ETABS 18/19](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorETABS)
-          - [Oasys GSA 10.1](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGSA)
-          - [MicroStation, OpenRoads, OpenRail and OpenBuildings (CONNECT Edition)](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorMicrostation)
-          - [Excel](https://github.com/specklesystems/speckle-excel)
-          
-          Check out the Speckle@Arup docs [here](https://speckle.arup.com/)!
+          Automated release of Speckle v2 Connectors for MicroStation, OpenRoads Designer, OpenRail Designer and OpenBuildings Designer
         draft: false
         prerelease: true
 
     - name: Upload Release Asset
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
       env:
