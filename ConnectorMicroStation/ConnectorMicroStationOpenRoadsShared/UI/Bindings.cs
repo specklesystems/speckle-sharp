@@ -209,6 +209,7 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
         else
         {
           schema = StreamStateManager.StreamStateListSchema.GetSchema();
+          if (schema == null) schema = StreamStateManager.StreamStateListSchema.AddSchema(); 
           DocumentStreams = StreamStateManager.ReadState(schema);
         }
       }
@@ -572,7 +573,12 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
           if (null == proj)
             return null;
 
-          proj.GetDrawingGrid(false, 0, out ITFDrawingGrid drawingGrid);
+          ITFDrawingGrid drawingGrid = null;
+          if (Control.InvokeRequired)
+            Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
+          else
+            proj.GetDrawingGrid(false, 0, out drawingGrid);
+
           if (null == drawingGrid)
             return null;
 
