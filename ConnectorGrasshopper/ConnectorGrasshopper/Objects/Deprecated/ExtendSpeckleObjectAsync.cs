@@ -278,12 +278,12 @@ namespace ConnectorGrasshopper.Objects
               }
             }
 
-            if (values.Any(p => p == null))
-            {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
-                $"List access parameter {param.NickName} cannot contain null values. Please clean your data tree."));
-              hasErrors = true;
-            }
+            // if (values.Any(p => p == null))
+            // {
+            //   RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,
+            //     $"List access parameter {param.NickName} cannot contain null values. Please clean your data tree."));
+            //   hasErrors = true;
+            // }
 
             inputData[key] = values;
             break;
