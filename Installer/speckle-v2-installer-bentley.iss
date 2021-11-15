@@ -35,10 +35,10 @@ VersionInfoVersion={#AppVersion}
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Components]
-Name: microstation; Description: Speckle for MicroStation CONNECT Edition - Update 14 - v{#MicroStationVersion};  Types: full
-Name: openroads; Description: Speckle for OpenRoads Designer CONNECT Edition - 2020 R3 - v{#OpenRoadsVersion};  Types: full
-Name: openrail; Description: Speckle for OpenRail Designer CONNECT Edition - 2020 R3 - v{#OpenRailVersion};  Types: full
-Name: openbuildings; Description: Speckle for OpenBuildingsDesigner CONNECT Edition - Update 6 - v{#OpenBuildingsVersion};  Types: full
+Name: microstation; Description: Speckle for MicroStation CONNECT Edition Update 14 - v{#MicroStationVersion};  Types: full
+Name: openroads; Description: Speckle for OpenRoads Designer CONNECT Edition 2020 R3 - v{#OpenRoadsVersion};  Types: full
+Name: openrail; Description: Speckle for OpenRail Designer CONNECT Edition 2020 R3 - v{#OpenRailVersion};  Types: full
+Name: openbuildings; Description: Speckle for OpenBuildings Designer CONNECT Edition Update 6 - v{#OpenBuildingsVersion};  Types: full
 Name: kits; Description: Speckle Kits (for MicroStation, OpenRoads, OpenRail and OpenBuildings) - v{#AppVersion};  Types: full custom; Flags: fixed
 
 [Types]
