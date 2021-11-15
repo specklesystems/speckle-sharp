@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopperUtils;
@@ -34,6 +35,20 @@ namespace ConnectorGrasshopper
       : base(name, nickname, description, category, subCategory)
     {
       Seed = GenerateSeed();
+    }
+
+    private bool UseSchemaTag = true;
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendSeparator(menu);
+      var item = Menu_AppendItem(menu, "Convert using 'Schema Tag'", (sender, args) =>
+      {
+        UseSchemaTag = !UseSchemaTag;
+        ExpireSolution(true);
+      }, null, true, UseSchemaTag);
+      item.ToolTipText =
+        "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will be stored in a '@SpeckleSchema' property.";
     }
 
     public string GenerateSeed()
@@ -317,18 +332,25 @@ namespace ConnectorGrasshopper
       }
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
-      Base commitObj = ((Base) schemaObject).ShallowCopy();
-      try
+      Base commitObj = (Base) schemaObject;
+      if (UseSchemaTag)
       {
-        if (mainSchemaObj != null)
+        commitObj = commitObj.ShallowCopy();
+        try
         {
-          commitObj = ((Base) mainSchemaObj).ShallowCopy();
+          if (mainSchemaObj == null)
+          {
+            UseSchemaTag = false;
+            throw new Exception("Schema tag is not supported for this object type, will return Schema object instead.");
+          }
+          commitObj = ((Base)mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
           commitObj["units"] = units;
         }
-      }
-      catch
-      {
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, e.Message);
+        }
       }
 
       // Finally, add any custom props created by the user.
