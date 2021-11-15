@@ -81,7 +81,7 @@ namespace ConnectorGrasshopper.Objects
         var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
         Menu_AppendSeparator(menu);
-        Menu_AppendItem(menu, "Select the converter you want to use:");
+        Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
         if(CanDisableConversion)
           Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
           {

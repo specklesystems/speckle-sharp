@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Objects
         var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
         Menu_AppendSeparator(menu);
-        Menu_AppendItem(menu, "Select the converter you want to use:");
+        Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
         foreach (var kit in kits)
         {
           Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
