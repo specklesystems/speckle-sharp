@@ -58,14 +58,14 @@ namespace Objects.Converter.MicroStationOpenRoads
       return points;
     }
 
-    public double[] PointsToFlatArray(IEnumerable<DPoint2d> points)
+    public List<double> PointsToFlatList(IEnumerable<DPoint2d> points)
     {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+      return points.SelectMany(pt => PointToArray(pt)).ToList();
     }
 
-    public double[] PointsToFlatArray(IEnumerable<DPoint3d> points)
+    public List<double> PointsToFlatList(IEnumerable<DPoint3d> points)
     {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+      return points.SelectMany(pt => PointToArray(pt)).ToList();
     }
 
     // Point (2d and 3d)
@@ -363,10 +363,10 @@ namespace Objects.Converter.MicroStationOpenRoads
           _arc.endPoint = Point3dToSpeckle(endPoint);
           _arc.units = u;
 
-          //if (sweep < 0)
-          //{
-          //plane.NegateNormalInPlace();
-          //}
+          if (sweep < 0)
+          {
+            plane.NegateNormalInPlace();
+          }
 
           _arc.startAngle = startAngle;
           _arc.endAngle = endAngle;
@@ -383,15 +383,15 @@ namespace Objects.Converter.MicroStationOpenRoads
           bool worldXY = startPoint.Z == 0 && endPoint.Z == 0 ? true : false;
           _arc.bbox = BoxToSpeckle(range, worldXY);
 
-          if (sweep < 0)
-          {
-            Point start = _arc.endPoint;
-            _arc.endPoint = _arc.startPoint;
-            _arc.startPoint = start;
+          //if (sweep < 0)
+          //{
+          //  Point start = _arc.endPoint;
+          //  _arc.endPoint = _arc.startPoint;
+          //  _arc.startPoint = start;
 
-            _arc.startAngle = endAngle;
-            _arc.endAngle = startAngle;
-          }
+          //  _arc.startAngle = endAngle;
+          //  _arc.endAngle = startAngle;
+          //}
 
           return _arc;
         }
@@ -403,14 +403,15 @@ namespace Objects.Converter.MicroStationOpenRoads
     public Arc CircularArcToSpeckle(DEllipse3d ellipse, string units = null)
     {
       ellipse.IsCircular(out double radius, out DVector3d normal);
-      ellipse.GetMajorMinorData(out DPoint3d center, out DMatrix3d matrix, out double majorAxis, out double minorAxis, out Angle _startAngle, out Angle _endAngle);
-      var sweep = ellipse.SweepAngle.Radians;
-      var startAngle = _startAngle.Radians;
-      var endAngle = _endAngle.Radians;
 
-      var startPoint = ellipse.PointAtAngle(_startAngle);
-      var endPoint = ellipse.PointAtAngle(_endAngle);
-      var midPoint = ellipse.PointAtAngle(Angle.Multiply(ellipse.SweepAngle, 0.5));
+      var sweep = ellipse.SweepAngle.Radians;
+      var startAngle = ellipse.StartAngle.Radians;
+      var endAngle = ellipse.EndAngle.Radians;
+      var center = ellipse.Center;
+
+      var startPoint = ellipse.PointAtAngle(ellipse.StartAngle);
+      var endPoint = ellipse.PointAtAngle(ellipse.EndAngle);
+      var midPoint = ellipse.PointAtAngle(ellipse.StartAngle + Angle.Multiply(ellipse.SweepAngle, 0.5));
 
       var length = ellipse.ArcLength();
 
@@ -418,7 +419,7 @@ namespace Objects.Converter.MicroStationOpenRoads
       DPlane3d plane = new DPlane3d(center, normal);
 
       var _arc = new Arc();
-      _arc.radius = radius;
+      _arc.radius = radius / UoR;
       _arc.angleRadians = Math.Abs(sweep);
       _arc.startPoint = Point3dToSpeckle(startPoint);
       _arc.endPoint = Point3dToSpeckle(endPoint);
@@ -674,7 +675,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         }
       }
 
-      var _polyline = new Polyline(PointsToFlatArray(vertices));
+      var _polyline = new Polyline(PointsToFlatList(vertices));
       _polyline.closed = closed;
       _polyline.length = totalLength / UoR;
 
@@ -704,7 +705,7 @@ namespace Objects.Converter.MicroStationOpenRoads
       var end = pointList[count];
       var closed = start.Equals(end);
 
-      var _polyline = new Polyline(PointsToFlatArray(pointList), ModelUnits);
+      var _polyline = new Polyline(PointsToFlatList(pointList), ModelUnits);
 
       _polyline.closed = closed;
       _polyline.length = length / UoR;
@@ -970,7 +971,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         }
 
         // set nurbs curve info
-        _curve.points = PointsToFlatArray(_points).ToList();
+        _curve.points = PointsToFlatList(_points).ToList();
         _curve.knots = knots;
         _curve.weights = weights;
         _curve.degree = degree;
@@ -988,7 +989,7 @@ namespace Objects.Converter.MicroStationOpenRoads
           foreach (var pt in polyPoints)
             _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
 
-          var poly = new Polyline(PointsToFlatArray(polyPoints), ModelUnits);
+          var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
           _curve.displayValue = poly;
         }
         catch { }
@@ -1021,14 +1022,14 @@ namespace Objects.Converter.MicroStationOpenRoads
       var polyPoints = new List<DPoint3d>();
       for (int i = 0; i <= 100; i++)
       {
-        curve.FractionToPoint(out DPoint3d point, i / 100);
+        curve.FractionToPoint(out DPoint3d point, (double)i / 100);
         polyPoints.Add(point);
       }
 
       var _curve = new Curve();
 
       // set nurbs curve info
-      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.points = PointsToFlatList(points).ToList();
       _curve.knots = knots;
       _curve.weights = weights;
       _curve.degree = degree;
@@ -1046,7 +1047,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         foreach (var pt in polyPoints)
           _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
 
-        var poly = new Polyline(PointsToFlatArray(polyPoints), ModelUnits);
+        var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
         _curve.displayValue = poly;
       }
       catch { }
@@ -1081,7 +1082,7 @@ namespace Objects.Converter.MicroStationOpenRoads
       var _curve = new Curve();
 
       // set nurbs curve info
-      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.points = PointsToFlatList(points).ToList();
       _curve.knots = knots;
       _curve.weights = weights;
       _curve.degree = degree;
@@ -1098,7 +1099,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         foreach (var pt in polyPoints)
           _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
 
-        var poly = new Polyline(PointsToFlatArray(polyPoints), ModelUnits);
+        var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
         _curve.displayValue = poly;
       }
       catch { }
@@ -1131,7 +1132,7 @@ namespace Objects.Converter.MicroStationOpenRoads
       var _curve = new Curve();
 
       // set nurbs curve info
-      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.points = PointsToFlatList(points).ToList();
       _curve.knots = knots;
       _curve.weights = weights;
       _curve.degree = degree;
@@ -1148,7 +1149,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         foreach (var pt in polyPoints)
           _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
 
-        var poly = new Polyline(PointsToFlatArray(polyPoints), ModelUnits);
+        var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
         _curve.displayValue = poly;
       }
       catch { }
@@ -1328,7 +1329,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         vertices.AddRange(pPoints.Distinct());
       }
 
-      var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = true };
+      var _polyline = new Polyline(PointsToFlatList(vertices), ModelUnits) { closed = true };
 
       _polyline.length = length / UoR;
       _polyline.area = area / Math.Pow(UoR, 2);
@@ -1449,12 +1450,12 @@ namespace Objects.Converter.MicroStationOpenRoads
       _faces.ToArray();
 
       // create speckle mesh
-      var vertices = PointsToFlatArray(_vertices);
-      var faces = _faces.SelectMany(o => o).ToArray();
+      var vertices = PointsToFlatList(_vertices);
+      var faces = _faces.SelectMany(o => o).ToList();
 
       //var _colours = meshData.ColorIndex;
       var defaultColour = System.Drawing.Color.FromArgb(255, 100, 100, 100);
-      var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToArray();
+      var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToList();
 
       var _mesh = new Mesh(vertices, faces, colors);
       _mesh.units = u;

@@ -486,7 +486,13 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
     }
 
     delegate void SetContextDelegate(object session);
+    delegate List<string> GetObjectsFromFilterDelegate(ISelectionFilter filter, ISpeckleConverter converter);
     delegate Base SpeckleConversionDelegate(object commitObject);
+
+#if (OPENROADS || OPENRAIL)
+    delegate List<NamedModelEntity> GetCivilObjectsDelegate(StreamState state);
+    delegate string GetCivilObjectNameDelegate(object commitObject);
+#endif
 
     public override async Task<StreamState> SendStream(StreamState state)
     {
@@ -508,7 +514,10 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
 
       if (state.Filter != null)
       {
-        state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
+        if (Control.InvokeRequired)
+          state.SelectedObjectIds  = (List<string>)Control.Invoke(new GetObjectsFromFilterDelegate(GetObjectsFromFilter), new object[] { state.Filter, converter });
+        else
+          state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
       }
 
       if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
@@ -535,7 +544,11 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
 
       if (civilElementKeys.Count(x => state.SelectedObjectIds.Contains(x)) > 0)
       {
-        civObjs = GetCivilObjects(state);
+        if (Control.InvokeRequired)
+          civObjs = (List<NamedModelEntity>)Control.Invoke(new GetCivilObjectsDelegate(GetCivilObjects), new object[] { state });
+        else
+          civObjs = GetCivilObjects(state);
+
         objs = civObjs.Select(x => x.Element).ToList();
         convertCivilObject = true;
       }
@@ -630,11 +643,15 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
           {
             var civilObj = civObjs[objs.IndexOf(obj)];
             if (Control.InvokeRequired)
+            {
               converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { civilObj });
+              Control.Invoke((Action)(() => { containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name; }));
+            }
             else
+            {
               converted = converter.ConvertToSpeckle(civilObj);
-
-            containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name;
+              containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name;
+            }
           }
           else
           {
@@ -669,7 +686,7 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
         {
           converted[key] = obj.ExtensionDictionary.GetUserString(key);
         }
-        */
+        */      
 
         if (commitObj[$"@{containerName}"] == null)
           commitObj[$"@{containerName}"] = new List<Base>();
