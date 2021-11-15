@@ -239,16 +239,14 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         if (_transports == null)
           throw new SpeckleException("The stream provided is invalid");
-        if (_data == null)
-          throw new SpeckleException("The data provided is invalid");
-
+        
         long totalCount = 0;
         Base @base = null;
         var converter = new BatchConverter();
         try
         {
           @base = converter.ConvertRecursivelyToSpeckle(_data);
-          totalCount = @base.GetTotalChildrenCount();
+          totalCount = @base?.GetTotalChildrenCount() ?? 0;
         }
         catch (Exception e)
         {
