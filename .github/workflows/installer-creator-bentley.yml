@@ -40,7 +40,7 @@ name: Create Installer for Bentley Connectors
 
 on:
   push:
-    tags: 'v*.*.*-cx'
+    tags: 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:
@@ -50,6 +50,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    env:
+      GH_PKG_USER: ${{ secrets.GH_PKG_USER }} 
+      GH_PKG_TOKEN: ${{ secrets.GH_PKG_TOKEN }} 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
