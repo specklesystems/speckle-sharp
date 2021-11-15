@@ -193,8 +193,11 @@ namespace ConnectorGrasshopper.Extras
         // TODO: Handle dicts!!
         var value = keyval.Value;
         if (value == null)
+        {
           // TODO: Handle null values in properties here. For now, we just ignore that prop in the object
+          copy[keyval.Key] = null;
           return;
+        }
         if (value is IList list)
         {
           var converted = new List<object>();
