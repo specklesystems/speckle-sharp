@@ -114,6 +114,11 @@ namespace Speckle.ConnectorMicroStationOpenRoads.Storage
         if (schema != null)
           return RetrieveSchema();
 
+        return AddSchema();
+      }
+
+      public static ECSchema AddSchema()
+      {
         DgnFile File = Session.Instance.GetActiveDgnFile();
         DgnECManager Manager = DgnECManager.Manager;
 
