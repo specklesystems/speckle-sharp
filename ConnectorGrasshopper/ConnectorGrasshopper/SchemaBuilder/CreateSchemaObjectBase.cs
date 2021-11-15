@@ -37,7 +37,8 @@ namespace ConnectorGrasshopper
       Seed = GenerateSeed();
     }
 
-    private bool UseSchemaTag = true;
+    private bool UseSchemaTag;
+    private bool UserSetSchemaTag;
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
@@ -45,6 +46,7 @@ namespace ConnectorGrasshopper
       var item = Menu_AppendItem(menu, "Convert using 'Schema Tag'", (sender, args) =>
       {
         UseSchemaTag = !UseSchemaTag;
+        UserSetSchemaTag = true;
         ExpireSolution(true);
       }, null, true, UseSchemaTag);
       item.ToolTipText =
@@ -62,7 +64,13 @@ namespace ConnectorGrasshopper
       {
         var constructorName = reader.GetString("SelectedConstructorName");
         var typeName = reader.GetString("SelectedTypeName");
-
+        try
+        {
+          UseSchemaTag = reader.GetBoolean("UseSchemaTag");
+          UserSetSchemaTag = reader.GetBoolean("UserSetSchemaTag");
+        }
+        catch { }
+        
         SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
         if (SelectedConstructor == null)
           readFailed = true;
@@ -90,7 +98,8 @@ namespace ConnectorGrasshopper
         writer.SetString("SelectedConstructorName", CSOUtils.MethodFullName(SelectedConstructor));
         writer.SetString("SelectedTypeName", SelectedConstructor.DeclaringType.FullName);
       }
-
+      writer.SetBoolean("UseSchemaTag", UseSchemaTag);
+      writer.SetBoolean("UserSetSchemaTag", UserSetSchemaTag);
       writer.SetString("seed", Seed);
       return base.Write(writer);
     }
@@ -110,7 +119,10 @@ namespace ConnectorGrasshopper
     {
       if (readFailed)
         return;
-
+      
+      if(!UserSetSchemaTag)
+        UseSchemaTag = Grasshopper.Instances.Settings.GetValue("Speckle2:conversion.schema.tag", false);
+      
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
