@@ -24,6 +24,11 @@
 
 #define GSAVersion  GetFileVersion("..\ConnectorGSA\ConnectorGSA\bin\Release\ConnectorGSA.exe")
 
+#define MicroStationVersion  GetFileVersion("..\ConnectorMicroStation\ConnectorMicroStation\bin\Release\SpeckleConnectorMicroStation.dll")
+#define OpenRoadsVersion  GetFileVersion("..\ConnectorMicroStation\ConnectorOpenRoads\bin\Release\SpeckleConnectorOpenRoads.dll")
+#define OpenRailVersion  GetFileVersion("..\ConnectorMicroStation\ConnectorOpenRail\bin\Release\SpeckleConnectorOpenRail.dll")
+#define OpenBuildingsVersion  GetFileVersion("..\ConnectorMicroStation\ConnectorOpenBuildings\bin\Release\SpeckleConnectorOpenBuildings.dll")
+
 #define AppPublisher "Speckle@Arup"
 #define AppURL       "https://speckle.arup.com"
 #define SpeckleFolder "{localappdata}\Speckle"
@@ -80,6 +85,10 @@ Name: civil22; Description: Speckle for Civil 3D 2022 - v{#Civil2022Version};  T
 Name: etabs18; Description: Speckle for ETABS 18 - v{#ETABS18Version};  Types: full
 Name: etabs19; Description: Speckle for ETABS 19 - v{#ETABS19Version};  Types: full
 Name: gsa; Description: Speckle for Oasys GSA - v{#GSAVersion};  Types: full
+Name: microstation; Description: Speckle for MicroStation CONNECT Edition Update 14 - v{#MicroStationVersion};  Types: full
+Name: openroads; Description: Speckle for OpenRoads Designer CONNECT Edition 2020 R3 - v{#OpenRoadsVersion};  Types: full
+Name: openrail; Description: Speckle for OpenRail Designer CONNECT Edition 2020 R3 - v{#OpenRailVersion};  Types: full
+Name: openbuildings; Description: Speckle for OpenBuildings Designer CONNECT Edition Update 6 - v{#OpenBuildingsVersion};  Types: full
 Name: excel; Description: Speckle for Excel;  Types: full
 Name: kits; Description: Speckle Default Object Kit;  Types: full custom; Flags: fixed
 Name: connectionmanager; Description: Speckle@Arup ConnectionManager - v{#AppVersion};  Types: full custom; Flags: fixed
@@ -195,6 +204,26 @@ Source: "..\Objects\Converters\ConverterETABS\ConverterETABSv19\bin\Release\nets
 Source: "..\ConnectorGSA\ConnectorGSA\bin\Release\*"; DestDir: "{userappdata}\Oasys\SpeckleGSA\"; Flags: ignoreversion recursesubdirs; Components: gsa
 Source: "..\Objects\Converters\ConverterGSA\ConverterGSA\bin\Release\Objects.Converter.GSA.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: gsa
 
+;microstation
+Source: "..\ConnectorMicroStation\ConnectorMicroStation\bin\Release\*"; DestDir: "{userappdata}\Bentley\MicroStation\Addins\SpeckleMicroStation2\"; Flags: ignoreversion recursesubdirs; Components: microstation
+Source: "..\Objects\Converters\ConverterMicroStation\ConverterMicroStation\bin\Release\netstandard2.0\Objects.Converter.MicroStation.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: microstation
+Source: "..\ConnectorMicroStation\ConnectorMicroStation\bin\Release\SpeckleMicrostation2.cfg"; DestDir: "{commonappdata}\Bentley\Microstation CONNECT Edition\Configuration\Organization"; Flags: ignoreversion recursesubdirs; Components: microstation
+
+;openroads
+Source: "..\ConnectorMicroStation\ConnectorOpenRoads\bin\Release\*"; DestDir: "{userappdata}\Bentley\OpenRoadsDesigner\Addins\SpeckleOpenRoads2\"; Flags: ignoreversion recursesubdirs; Components: openroads
+Source: "..\Objects\Converters\ConverterMicroStation\ConverterOpenRoads\bin\Release\netstandard2.0\Objects.Converter.OpenRoads.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: openroads
+Source: "..\ConnectorMicroStation\ConnectorOpenRoads\bin\Release\SpeckleOpenRoads2.cfg"; DestDir: "{commonappdata}\Bentley\OpenRoads Designer CE\Configuration\Organization"; Flags: ignoreversion recursesubdirs; Components: openroads
+
+;openrail
+Source: "..\ConnectorMicroStation\ConnectorOpenRail\bin\Release\*"; DestDir: "{userappdata}\Bentley\OpenRailDesigner\Addins\SpeckleOpenRail2\"; Flags: ignoreversion recursesubdirs; Components: openrail
+Source: "..\Objects\Converters\ConverterMicroStation\ConverterOpenRail\bin\Release\netstandard2.0\Objects.Converter.OpenRail.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: openrail
+Source: "..\ConnectorMicroStation\ConnectorOpenRail\bin\Release\SpeckleOpenRail2.cfg"; DestDir: "{commonappdata}\Bentley\OpenRail Designer CE\Configuration\Organization"; Flags: ignoreversion recursesubdirs; Components: openrail
+
+;openbuildings
+Source: "..\ConnectorMicroStation\ConnectorOpenBuildings\bin\Release\*"; DestDir: "{userappdata}\Bentley\OpenBuildingsDesigner\Addins\SpeckleOpenBuildings2\"; Flags: ignoreversion recursesubdirs; Components: openbuildings
+Source: "..\Objects\Converters\ConverterMicroStation\ConverterOpenBuildings\bin\Release\netstandard2.0\Objects.Converter.OpenBuildings.dll"; DestDir: "{userappdata}\Speckle\Kits\Objects"; Flags: ignoreversion recursesubdirs; Components: openbuildings
+Source: "..\ConnectorMicroStation\ConnectorOpenBuildings\bin\Release\SpeckleOpenBuildings2.cfg"; DestDir: "{commonappdata}\Bentley\OpenBuildings CONNECT Edition\Configuration\Organization"; Flags: ignoreversion recursesubdirs; Components: openbuildings
+
 ;excel
 Source: "ExcelAddin\ExcelAddinRequest\bin\Release\net5.0\win-x64\*"; DestDir: "{#ExcelAddinRequestFolder}"; Flags: ignoreversion recursesubdirs; Components: excel
 
@@ -232,6 +261,10 @@ Type: filesandordirs; Name: "{userappdata}\Dynamo\*"; Components: dynamo
 Type: filesandordirs; Name: "{localappdata}\Computers and Structures\ETABS 18\Speckle2ETABS\*"; Components: etabs18
 Type: filesandordirs; Name: "{localappdata}\Computers and Structures\ETABS 19\Speckle2ETABS\*"; Components: etabs19
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA\*"; Components: gsa
+Type: filesandordirs; Name: "{userappdata}\Bentley\MicroStation\Addins\SpeckleMicroStation2\*";  Components: microstation
+Type: filesandordirs; Name: "{userappdata}\Bentley\OpenRoadsDesigner\Addins\SpeckleOpenRoads2\*";  Components: openroads
+Type: filesandordirs; Name: "{userappdata}\Bentley\OpenRailDesigner\Addins\SpeckleOpenRail2\*";  Components: openrail
+Type: filesandordirs; Name: "{userappdata}\Bentley\OpenBuildingsDesigner\Addins\SpeckleOpenBuildings2\*";  Components: openbuildings
 Type: filesandordirs; Name: "{localappdata}\SpeckleExcelAddinRequest\*"; Components: excel
 Type: filesandordirs; Name: "{#AnalyticsFolder}\*";
 Type: filesandordirs; Name: "{#SpeckleFolder}\*";
@@ -259,6 +292,10 @@ Type: filesandordirs; Name: "{userappdata}\Dynamo";
 Type: filesandordirs; Name: "{localappdata}\Computers and Structures\ETABS 18\Speckle2ETABS";
 Type: filesandordirs; Name: "{localappdata}\Computers and Structures\ETABS 19\Speckle2ETABS";
 Type: filesandordirs; Name: "{userappdata}\Oasys\SpeckleGSA";
+Type: filesandordirs; Name: "{userappdata}\Bentley\MicroStation\Addins\SpeckleMicroStation2"; 
+Type: filesandordirs; Name: "{userappdata}\Bentley\OpenRoadsDesigner\Addins\SpeckleOpenRoads2";
+Type: filesandordirs; Name: "{userappdata}\Bentley\OpenRailDesigner\Addins\SpeckleOpenRail2"; 
+Type: filesandordirs; Name: "{userappdata}\Bentley\OpenBuildingsDesigner\Addins\SpeckleOpenBuildings2";  
 Type: filesandordirs; Name: "{userappdata}\Speckle\Kits\Objects\*"
 Type: filesandordirs; Name: "{localappdata}\SpeckleExcelAddinRequest";
 Type: filesandordirs; Name: "{#AnalyticsFolder}";

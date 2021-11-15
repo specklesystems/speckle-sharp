@@ -48,6 +48,10 @@ on:
 jobs:
   build:
     runs-on: windows-latest # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    env:
+      GH_PKG_USER: ${{ secrets.GH_PKG_USER }} 
+      GH_PKG_TOKEN: ${{ secrets.GH_PKG_TOKEN }} 
+      
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -61,9 +65,31 @@ jobs:
         $tag = "${{ github.event.inputs.version }}.$($env:GITHUB_RUN_ID%65536)"
         echo "::set-output name=tag::$tag"
 
+    - name: Install the latest version of nuget
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: 'latest'
+
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
+      
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Restore all the applications
+      shell: cmd
+      run: |
+        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA, ConnectorMicroStation) do (
+          cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
+        )
+        
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Build all Solutions
+      shell: cmd
+      run: |
+        SET _version=${{ github.event.inputs.version }}
+        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA, ConnectorMicroStation) do (
+          cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
+        )
 
     - name: Speckle Updater - Restore NuGets
       run: dotnet restore
@@ -88,23 +114,6 @@ jobs:
     - name: Excel Addin Request - Compile CLI
       run: dotnet build ExcelAddinRequest.csproj --configuration Release --runtime win-x64
       working-directory: Installer/ExcelAddin/ExcelAddinRequest   
-      
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Restore all the applications
-      shell: cmd
-      run: |
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA) do (
-          cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
-        )
-        
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Build all Solutions
-      shell: cmd
-      run: |
-        SET _version=${{ github.event.inputs.version }}
-        for %%x in (Objects, ConnectorAutocadCivil, ConnectorDynamo, ConnectorGrasshopper, ConnectorRevit, ConnectorRhino, ConnectorETABS, ConnectorGSA) do (
-          cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
-        )
 
     - name: Restore SpeckleConnectionManager
       run: dotnet restore
@@ -179,6 +188,7 @@ jobs:
           - [AutoCAD 2021/2022 and Civil3D 2021/2022](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorAutocadCivil)
           - [ETABS 18/19](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorETABS)
           - [Oasys GSA 10.1](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorGSA)
+          - [MicroStation, OpenRoads, OpenRail and OpenBuildings (CONNECT Edition)](https://github.com/arup-group/speckle-sharp/tree/master/ConnectorMicrostation)
           - [Excel](https://github.com/specklesystems/speckle-excel)
           
           Check out the Speckle@Arup docs [here](https://speckle.arup.com/)!
