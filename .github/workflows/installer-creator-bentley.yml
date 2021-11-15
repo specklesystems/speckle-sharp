@@ -40,7 +40,7 @@ name: Create Installer for Bentley Connectors
 
 on:
   push:
-    tags: 'v*.*.*-cx'
+    tags: 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:
@@ -50,6 +50,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -60,9 +61,6 @@ jobs:
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: 'latest'
-
-    - name: Update NuGet source credentials
-      run: nuget source Update -Name "github" -Source "https://nuget.pkg.github.com/arup-group/index.json" -UserName arup-group -Password "${{ secrets.GITHUB_TOKEN }}"             
 
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -75,6 +73,9 @@ jobs:
         for %%x in (Objects, ConnectorMicroStation) do (
           cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
         )
+      env:
+        GH_PKG_USER: ${{ secrets.GH_PKG_USER }} 
+        GH_PKG_TOKEN: ${{ secrets.GH_PKG_TOKEN }}         
         
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Build all Solutions
@@ -84,7 +85,10 @@ jobs:
         for %%x in (Objects, ConnectorMicroStation) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )                
-
+      env:
+        GH_PKG_USER: ${{ secrets.GH_PKG_USER }} 
+        GH_PKG_TOKEN: ${{ secrets.GH_PKG_TOKEN }} 
+      
     - name: create Installer
       id: installer
       run: | 
