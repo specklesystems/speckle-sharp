@@ -19,7 +19,8 @@ namespace ConnectorGrasshopper
     public ISpeckleKit selectedKit;
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
-
+    private bool UseSchemaTag;
+    
     public override GH_LoadingInstruction PriorityLoad()
     {
       Setup.Init(Applications.Grasshopper);
@@ -87,6 +88,19 @@ namespace ConnectorGrasshopper
         var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits");
         errItem.Enabled = false;
       }
+      
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      
+      var schemaConversionHeader = speckleMenu.DropDown.Items.Add("Select a Schema conversion strategy:");
+      schemaConversionHeader.Enabled = false;
+
+      var schemaItem = speckleMenu.DropDown.Items.Add("Use Schema tag");
+      schemaItem.Click += (o, args) =>
+      {
+        UseSchemaTag = !UseSchemaTag;
+        Grasshopper.Instances.Settings.SetValue("Speckle2:conversion.schema.tag", UseSchemaTag);
+        Grasshopper.Instances.Settings.WritePersistentSettings();
+      };
       
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
