@@ -70,9 +70,9 @@ namespace ConnectorGrasshopper
 
       // To ensure conversion strategy does not change, we record if the user has modified this schema tag and will keep it as is.
       // If not, schemaTag will be synchronised with the default value every time the document opens.
-      
-      if(!UserSetSchemaTag) 
-        UseSchemaTag = Grasshopper.Instances.Settings.GetValue("Speckle2:conversion.schema.tag", false);
+
+      if (!UserSetSchemaTag)
+        UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
 
       if (SelectedConstructor != null)
       {

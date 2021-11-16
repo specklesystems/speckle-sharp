@@ -119,9 +119,9 @@ namespace ConnectorGrasshopper
     {
       if (readFailed)
         return;
-      
-      if(!UserSetSchemaTag)
-        UseSchemaTag = Grasshopper.Instances.Settings.GetValue("Speckle2:conversion.schema.tag", false);
+
+      if (!UserSetSchemaTag)
+        UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
       
       if (SelectedConstructor != null)
       {

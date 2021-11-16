@@ -44,10 +44,8 @@ namespace ConnectorGrasshopper
 
       // Update the selected kit
       selectedKit = loadedKits.First(kit => clickedItem.Text.Trim() == kit.Name);
-
-      var key = "Speckle2:kit.default.name";
-      Grasshopper.Instances.Settings.SetValue(key, selectedKit.Name);
-      Grasshopper.Instances.Settings.WritePersistentSettings();
+      SpeckleGHSettings.SelectedKitName = selectedKit.Name;
+      
       // Update the check status of all
       foreach (var item in kitMenuItems)
       {
@@ -98,8 +96,7 @@ namespace ConnectorGrasshopper
       schemaItem.Click += (o, args) =>
       {
         UseSchemaTag = !UseSchemaTag;
-        Grasshopper.Instances.Settings.SetValue("Speckle2:conversion.schema.tag", UseSchemaTag);
-        Grasshopper.Instances.Settings.WritePersistentSettings();
+        SpeckleGHSettings.UseSchemaTag = UseSchemaTag;
       };
       
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());

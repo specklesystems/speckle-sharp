@@ -36,8 +36,7 @@ namespace ConnectorGrasshopper.Objects
       base.AddedToDocument(document);
       if (SelectedKitName == null)
       {
-        var key = "Speckle2:kit.default.name";
-        SelectedKitName = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+        SelectedKitName = SpeckleGHSettings.SelectedKitName;
       }
 
       SetConverter();
