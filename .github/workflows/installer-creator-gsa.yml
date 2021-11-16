@@ -40,7 +40,7 @@ name: Create Installer for GSA Connector
 
 on:
   push:
-    tags: 'v*.*.*-cx'
+    tags: 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:
@@ -60,11 +60,6 @@ jobs:
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: 'latest'       
-
-    - name: NuGet restore
-      run: |
-        nuget restore ConnectorGSA/ConnectorGSA.sln
-        nuget restore Objects/Converters/ConverterGSA/ConverterGSA/ConverterGSA.csproj
         
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -77,6 +72,9 @@ jobs:
         for %%x in (Objects, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /t:Restore /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false && cd ../ 
         )
+      env:
+        GH_PKG_USER: ${{ secrets.GH_PKG_USER }} 
+        GH_PKG_TOKEN: ${{ secrets.GH_PKG_TOKEN }}          
         
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Build all Solutions
@@ -86,6 +84,7 @@ jobs:
         for %%x in (Objects, ConnectorGSA) do (
           cd %%x && msbuild %%x.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=%_version% /p:AssemblyInformationalVersion=%_version% /p:Version=%_version% && cd ../ 
         )               
+        
     - name: create Installer
       id: installer
       run: | 
