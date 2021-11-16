@@ -21,19 +21,16 @@ namespace Objects.Converter.ETABS
             var point = speckleStructNode.basePoint;
             string name = "";
             Model.PointObj.AddCartesian(point.x, point.y, point.z, ref name);
-            Model.PointObj.ChangeName(name, speckleStructNode.name);
+            if(speckleStructNode.name != null)
+            {
+                Model.PointObj.ChangeName(name, speckleStructNode.name);
+            }
+
             return speckleStructNode.name;
         }
         public Node PointToSpeckle(string name)
-        {           
+        {
             var speckleStructNode = new Node();
-            var GUID = "";
-            Model.PointObj.GetGUID(name, ref GUID);
-            speckleStructNode.applicationId = GUID;
-            List<Base> nodes = SpeckleModel.nodes;
-            List<string> application_Id = nodes.Select(o => o.applicationId).ToList();
-            if (!application_Id.Contains(speckleStructNode.applicationId))
-            {
             double x,y,z;
             x = y = z = 0;
             int v = Model.PointObj.GetCoordCartesian(name,ref x,ref y,ref z);
@@ -49,7 +46,15 @@ namespace Objects.Converter.ETABS
             speckleStructNode.restraint = RestraintToSpeckle(restraints);
 
             SpeckleModel.restraints.Add(speckleStructNode.restraint);
-            SpeckleModel.nodes.Add(speckleStructNode);
+
+            var GUID = "";
+            Model.PointObj.GetGUID(name, ref GUID);
+            speckleStructNode.applicationId = GUID;
+            List<Base> nodes = SpeckleModel.nodes;
+            List<string> application_Id = nodes.Select(o => o.applicationId).ToList();
+            if (!application_Id.Contains(speckleStructNode.applicationId))
+            {
+                SpeckleModel.nodes.Add(speckleStructNode);
             }
             //SpeckleModel.nodes.Add(speckleStructNode);
             

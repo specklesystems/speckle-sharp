@@ -92,7 +92,10 @@ namespace Objects.Converter.ETABS
 
 
             Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
-            Model.FrameObj.ChangeName(newFrame, element1D.name);
+            if(element1D.name != null)
+            {
+                Model.FrameObj.ChangeName(newFrame, element1D.name);
+            }
             return element1D.name;
         }
         
@@ -101,14 +104,8 @@ namespace Objects.Converter.ETABS
             string units = ModelUnits();
 
             var speckleStructFrame = new Element1D();
-            var GUID = "";
-            Model.FrameObj.GetGUID(name, ref GUID);
-            speckleStructFrame.applicationId = GUID;
-            List<Base> elements = SpeckleModel.elements;
-            List<string> application_Id = elements.Select(o => o.applicationId).ToList();
-            if (!application_Id.Contains(speckleStructFrame.applicationId))
-            {
-                speckleStructFrame.name = name;
+
+            speckleStructFrame.name = name;
             string pointI, pointJ;
             pointI = pointJ = null;
             _ = Model.FrameObj.GetPoints(name, ref pointI, ref pointJ);
@@ -190,6 +187,13 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.end1Offset = end1Offset;
             speckleStructFrame.end2Offset = end2Offset;
 
+            var GUID = "";
+            Model.FrameObj.GetGUID(name, ref GUID);
+            speckleStructFrame.applicationId = GUID;
+            List<Base> elements = SpeckleModel.elements;
+            List<string> application_Id = elements.Select(o => o.applicationId).ToList();
+            if (!application_Id.Contains(speckleStructFrame.applicationId))
+            {
 
                 SpeckleModel.elements.Add(speckleStructFrame);
             }

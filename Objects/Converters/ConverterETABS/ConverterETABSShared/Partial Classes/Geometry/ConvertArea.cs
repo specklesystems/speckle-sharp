@@ -44,7 +44,10 @@ namespace Objects.Converter.ETABS
                 Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
 
             }
-            Model.AreaObj.ChangeName(name, area.name);
+            if(area.name != null)
+            {
+                Model.AreaObj.ChangeName(name, area.name);
+            }
             return name;
 
         }
@@ -52,14 +55,8 @@ namespace Objects.Converter.ETABS
         {
             string units = ModelUnits();
             var speckleStructArea = new Element2D();
-            var GUID = "";
-            Model.AreaObj.GetGUID(name, ref GUID);
-            speckleStructArea.applicationId = GUID;
-            List<Base> elements = SpeckleModel.elements;
-            List<string> application_Id = elements.Select(o => o.applicationId).ToList();
-            if (!application_Id.Contains(speckleStructArea.applicationId))
-            {
-                speckleStructArea.name = name;
+
+            speckleStructArea.name = name;
             int numPoints = 0;
             string[] points = null;
             Model.AreaObj.GetPoints(name, ref numPoints, ref points);
@@ -87,8 +84,14 @@ namespace Objects.Converter.ETABS
             var faces = polygonMesher.Faces();
             var vertices = polygonMesher.Coordinates;
             speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
-            
 
+            var GUID = "";
+            Model.AreaObj.GetGUID(name, ref GUID);
+            speckleStructArea.applicationId = GUID;
+            List<Base> elements = SpeckleModel.elements;
+            List<string> application_Id = elements.Select(o => o.applicationId).ToList();
+            if (!application_Id.Contains(speckleStructArea.applicationId))
+            {
                 SpeckleModel.elements.Add(speckleStructArea);
             }
 
