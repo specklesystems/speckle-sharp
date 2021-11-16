@@ -19,8 +19,7 @@ namespace ConnectorGrasshopper.Extras
   {
     public static ISpeckleConverter GetDefaultConverter()
     {
-      var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      var n = SpeckleGHSettings.SelectedKitName;
       try
       {
         var defKit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit != null && kit.Name == n);
