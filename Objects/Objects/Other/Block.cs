@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 
 namespace Objects.Other
 {
@@ -29,6 +30,7 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Base
   {
+    [Obsolete("Use GetInsertionPoint method")]
     public Point insertionPoint { get; set; }
 
     /// <summary>
@@ -46,5 +48,28 @@ namespace Objects.Other
     public BlockDefinition blockDefinition { get; set; }
 
     public BlockInstance() { }
+
+    /// <summary>
+    /// Retrieves Instance insertion point by applying <paramref name="transform"/> to <paramref name="blockDefinition"/> base point
+    /// </summary>
+    /// <returns>Insertion point as a <see cref="Point"/></returns>
+    public Point GetInsertionPoint()
+    {
+      blockDefinition.basePoint.Deconstruct(out double x, out double y, out double z, out string units);
+      var insertion = new double[] { x, y, z, 1 };
+
+      if (transform.Length != 16)
+        throw new SpeckleException($"{nameof(BlockInstance)}.{nameof(transform)} is malformed: expected length to be 4x4 = 16");
+
+      for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 16; j+= 4)
+          insertion[i] = insertion[i] * (transform[j] + transform[j + 1] + transform[j + 2] + transform[j + 3]);
+      
+      return new Point(
+        insertion[0] / insertion[3], 
+        insertion[1] / insertion[3], 
+        insertion[2] / insertion[3], 
+        units);
+    }
   }
 }
