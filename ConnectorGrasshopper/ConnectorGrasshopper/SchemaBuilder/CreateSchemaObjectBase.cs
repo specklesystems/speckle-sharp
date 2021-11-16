@@ -39,18 +39,45 @@ namespace ConnectorGrasshopper
 
     private bool UseSchemaTag;
     private bool UserSetSchemaTag;
+
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
       Menu_AppendSeparator(menu);
-      var item = Menu_AppendItem(menu, "Convert using 'Schema Tag'", (sender, args) =>
+      var schemaConversionHeader = Menu_AppendItem(menu, "Select a Schema conversion option:");
+
+      var mainParam = SelectedConstructor.GetParameters().First(cParam => CustomAttributeData.GetCustomAttributes(cParam)
+        ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0);
+
+      var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
+      objectItem.Checked = !UseSchemaTag;
+      objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
+      
+      var tagItem = schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam.Name} with {Name} attached") as ToolStripMenuItem;
+      tagItem.Checked = UseSchemaTag;
+      tagItem.ToolTipText =
+        "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
+
+      var speckleBaseParam = (Params.Output[0] as SpeckleBaseParam);
+      tagItem.Click += (sender, args) =>
       {
-        UseSchemaTag = !UseSchemaTag;
+        UseSchemaTag = true;
+        speckleBaseParam.UseSchemaTag = UseSchemaTag;
+        speckleBaseParam.ExpirePreview(true);
         UserSetSchemaTag = true;
         ExpireSolution(true);
-      }, null, true, UseSchemaTag);
-      item.ToolTipText =
-        "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will be stored in a '@SpeckleSchema' property.";
+      };
+
+      objectItem.Click += (sender, args) =>
+      {
+        UseSchemaTag = false;
+        speckleBaseParam.UseSchemaTag = UseSchemaTag;
+        speckleBaseParam.ExpirePreview(true);
+
+        UserSetSchemaTag = true;
+        ExpireSolution(true);
+      };
+
     }
 
     public string GenerateSeed()
@@ -69,8 +96,10 @@ namespace ConnectorGrasshopper
           UseSchemaTag = reader.GetBoolean("UseSchemaTag");
           UserSetSchemaTag = reader.GetBoolean("UserSetSchemaTag");
         }
-        catch { }
-        
+        catch
+        {
+        }
+
         SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
         if (SelectedConstructor == null)
           readFailed = true;
@@ -98,6 +127,7 @@ namespace ConnectorGrasshopper
         writer.SetString("SelectedConstructorName", CSOUtils.MethodFullName(SelectedConstructor));
         writer.SetString("SelectedTypeName", SelectedConstructor.DeclaringType.FullName);
       }
+
       writer.SetBoolean("UseSchemaTag", UseSchemaTag);
       writer.SetBoolean("UserSetSchemaTag", UserSetSchemaTag);
       writer.SetString("seed", Seed);
@@ -112,7 +142,8 @@ namespace ConnectorGrasshopper
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       //pManager.AddGenericParameter("Debug", "d", "debug output, please ignore", GH_ParamAccess.list);
-      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
+      pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item,
+        true));
     }
 
     public override void AddedToDocument(GH_Document document)
@@ -129,7 +160,7 @@ namespace ConnectorGrasshopper
         if (Grasshopper.Instances.ActiveCanvas.Document != null)
         {
           var otherSchemaBuilders =
-            Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() {Name}, 10000);
+            Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() { Name }, 10000);
           foreach (var comp in otherSchemaBuilders)
           {
             if (comp is CreateSchemaObject scb)
@@ -144,8 +175,9 @@ namespace ConnectorGrasshopper
         }
       }
 
-      if(Params.Input.Count == 0) SetupComponent(SelectedConstructor);
-      
+      if (Params.Input.Count == 0) SetupComponent(SelectedConstructor);
+      ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
+
       Params.ParameterChanged += (sender, args) =>
       {
         if (args.ParameterSide != GH_ParameterSide.Input) return;
@@ -344,7 +376,7 @@ namespace ConnectorGrasshopper
       }
 
       // create commit obj from main geometry param and try to attach schema obj. use schema obj if no main geom param was found.
-      Base commitObj = (Base) schemaObject;
+      Base commitObj = (Base)schemaObject;
       if (UseSchemaTag)
       {
         commitObj = commitObj.ShallowCopy();
@@ -353,8 +385,10 @@ namespace ConnectorGrasshopper
           if (mainSchemaObj == null)
           {
             UseSchemaTag = false;
+            ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
             throw new Exception("Schema tag is not supported for this object type, will return Schema object instead.");
           }
+
           commitObj = ((Base)mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
           commitObj["units"] = units;
@@ -385,7 +419,7 @@ namespace ConnectorGrasshopper
         }
       }
 
-      DA.SetData(0, new GH_SpeckleBase() {Value = commitObj});
+      DA.SetData(0, new GH_SpeckleBase() { Value = commitObj });
     }
 
     private object ExtractRealInputValue(object inputValue)
@@ -409,7 +443,7 @@ namespace ConnectorGrasshopper
     {
       if (!values.Any()) return null;
 
-      var list = (IList) Activator.CreateInstance(t);
+      var list = (IList)Activator.CreateInstance(t);
       var listElementType = list.GetType().GetGenericArguments().Single();
       foreach (var value in values)
       {
@@ -492,7 +526,7 @@ namespace ConnectorGrasshopper
       try
       {
         MethodInfo castIntoMethod = this.GetType().GetMethod("CastObject").MakeGenericMethod(type);
-        return castIntoMethod.Invoke(null, new[] {value});
+        return castIntoMethod.Invoke(null, new[] { value });
       }
       catch
       {
@@ -505,7 +539,7 @@ namespace ConnectorGrasshopper
     //keep public so it can be picked by reflection
     public static T CastObject<T>(object input)
     {
-      return (T) input;
+      return (T)input;
     }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index)
