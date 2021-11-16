@@ -31,7 +31,7 @@ namespace Objects.Other
   public class BlockInstance : Base
   {
     [Obsolete("Use GetInsertionPoint method")]
-    public Point insertionPoint { get; set; }
+    public Point insertionPoint { get => GetInsertionPoint(); set { } }
 
     /// <summary>
     /// The 4x4 transform matrix.
@@ -50,12 +50,12 @@ namespace Objects.Other
     public BlockInstance() { }
 
     /// <summary>
-    /// Retrieves Instance insertion point by applying <paramref name="transform"/> to <paramref name="blockDefinition"/> base point
+    /// Retrieves Instance insertion point by applying <see cref="transform"/> to <see cref="BlockDefinition.basePoint"/>
     /// </summary>
     /// <returns>Insertion point as a <see cref="Point"/></returns>
     public Point GetInsertionPoint()
     {
-      blockDefinition.basePoint.Deconstruct(out double x, out double y, out double z, out string units);
+      var (x, y, z, u) = blockDefinition.basePoint;
       var insertion = new double[] { x, y, z, 1 };
 
       if (transform.Length != 16)
@@ -69,7 +69,7 @@ namespace Objects.Other
         insertion[0] / insertion[3], 
         insertion[1] / insertion[3], 
         insertion[2] / insertion[3], 
-        units);
+        u);
     }
   }
 }
