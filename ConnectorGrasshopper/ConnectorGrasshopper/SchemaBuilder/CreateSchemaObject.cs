@@ -72,19 +72,22 @@ namespace ConnectorGrasshopper
       tagItem.ToolTipText =
         "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
 
+      var speckleBaseParam = (Params.Output[0] as SpeckleBaseParam);
       tagItem.Click += (sender, args) =>
       {
         UseSchemaTag = true;
-        (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
         UserSetSchemaTag = true;
+        speckleBaseParam.UseSchemaTag = UseSchemaTag;
+        speckleBaseParam.ExpirePreview(true);
         ExpireSolution(true);
       };
 
       objectItem.Click += (sender, args) =>
       {
         UseSchemaTag = false;
-        (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
         UserSetSchemaTag = true;
+        speckleBaseParam.UseSchemaTag = UseSchemaTag;
+        speckleBaseParam.ExpirePreview(true);
         ExpireSolution(true);
       };
     }
