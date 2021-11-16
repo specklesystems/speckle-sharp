@@ -36,7 +36,7 @@ namespace Objects.Converter.RhinoGh
       else
         index = pattern.Index;
       var hatches = Rhino.Geometry.Hatch.Create(curves, index, hatch.rotation, hatch.scale, 0.001);
-      return hatches.First();
+      return hatches.FirstOrDefault();
     }
     public Hatch HatchToSpeckle(Rhino.Geometry.Hatch hatch)
     {

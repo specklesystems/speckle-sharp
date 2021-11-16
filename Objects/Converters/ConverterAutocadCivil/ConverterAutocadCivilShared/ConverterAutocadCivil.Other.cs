@@ -32,10 +32,11 @@ namespace Objects.Converter.AutocadCivil
       for (int i = 0; i < hatch.NumberOfLoops; i++)
       {
         var loop = hatch.GetLoopAt(i);
+        loop.LoopType == HatchLoopTypes.
         if (loop.IsPolyline)
         {
           var poly = GetPolylineFromBulgeVertexCollection(loop.Polyline);
-          var converted = (poly.IsOnlyLines) ? PolylineToSpeckle(poly) : PolycurveToSpeckle(poly);
+          var converted = poly.IsOnlyLines ? PolylineToSpeckle(poly) : PolycurveToSpeckle(poly);
           curves.Add(converted);
         }
         else
@@ -47,6 +48,7 @@ namespace Objects.Converter.AutocadCivil
         }
       }
       _hatch.curves = curves;
+      _hatch["style"] = hatch.HatchStyle.ToString();
 
       return _hatch;
     }
@@ -98,6 +100,9 @@ namespace Objects.Converter.AutocadCivil
       _hatch.PatternScale = hatch.scale;
       _hatch.AppendLoop(HatchLoopTypes.Default, curveIds);
       _hatch.EvaluateHatch(true);
+      var style = hatch["style"] as string;
+      if (style != null)
+        _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
 
       // delete created hatch curves
       foreach (DBObject curve in curves)
@@ -115,6 +120,7 @@ namespace Objects.Converter.AutocadCivil
         polyline.AddVertexAt(i, bulgeVertex.Vertex, bulgeVertex.Bulge, 1.0, 1.0);
         totalBulge += bulgeVertex.Bulge;
       }
+      polyline.Closed = bulges[0].Vertex.IsEqualTo(bulges[bulges.Count - 1].Vertex) ? true : false;
       return polyline;
     }
 
