@@ -46,15 +46,24 @@ namespace ConnectorGrasshopper
       Menu_AppendSeparator(menu);
       var schemaConversionHeader = Menu_AppendItem(menu, "Select a Schema conversion option:");
 
-      var mainParam = SelectedConstructor.GetParameters().First(cParam => CustomAttributeData.GetCustomAttributes(cParam)
-        ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0);
+      ParameterInfo mainParam = null;
 
+      try
+      {
+        mainParam = SelectedConstructor.GetParameters().FirstOrDefault(cParam => CustomAttributeData.GetCustomAttributes(cParam)
+          ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))?.Count() > 0);
+      }
+      catch (Exception e)
+      {
+      }
+      
       var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
       objectItem.Checked = !UseSchemaTag;
       objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
       
-      var tagItem = schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam.Name} with {Name} attached") as ToolStripMenuItem;
+      var tagItem = schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam?.Name ?? "geometry"} with {Name} attached") as ToolStripMenuItem;
       tagItem.Checked = UseSchemaTag;
+      tagItem.Enabled = mainParam != null;
       tagItem.ToolTipText =
         "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
 
@@ -177,6 +186,7 @@ namespace ConnectorGrasshopper
 
       if (Params.Input.Count == 0) SetupComponent(SelectedConstructor);
       ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
+      (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
 
       Params.ParameterChanged += (sender, args) =>
       {

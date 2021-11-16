@@ -48,27 +48,34 @@ namespace ConnectorGrasshopper
     {
       return new string(Speckle.Core.Models.Utilities.hashString(Guid.NewGuid().ToString()).Take(20).ToArray());
     }
-    
+
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
       Menu_AppendSeparator(menu);
       var schemaConversionHeader = Menu_AppendItem(menu, "Select a Schema conversion option:");
-
-      var mainParam = SelectedConstructor
-        .GetParameters()
-        .First(cParam => CustomAttributeData
-          .GetCustomAttributes(cParam)
-          .Any(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam))));
+      ParameterInfo mainParam = null;
+      try
+      {
+        mainParam = SelectedConstructor
+          .GetParameters()
+          .First(cParam => CustomAttributeData
+            .GetCustomAttributes(cParam)
+            .Any(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam))));
+      }
+      catch (Exception e)
+      {
+      }
 
       var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
       objectItem.Checked = !UseSchemaTag;
       objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
 
       var tagItem =
-        schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam.Name} with {Name} attached") as
+        schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam.Name ?? "geometry"} with {Name} attached") as
           ToolStripMenuItem;
       tagItem.Checked = UseSchemaTag;
+      tagItem.Enabled = mainParam != null;
       tagItem.ToolTipText =
         "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
 
@@ -101,7 +108,6 @@ namespace ConnectorGrasshopper
       // If not, schemaTag will be synchronised with the default value every time the document opens.
       if (!UserSetSchemaTag)
         UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
-      (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
 
       if (SelectedConstructor != null)
       {
@@ -116,6 +122,8 @@ namespace ConnectorGrasshopper
           Seed = GenerateSeed();
           break;
         }
+        (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
+        (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
 
         return;
       }
