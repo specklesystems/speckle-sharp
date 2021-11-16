@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
+using Speckle.Core.Models;
 using System.Linq;
 using ETABSv1;
 
@@ -91,7 +92,10 @@ namespace Objects.Converter.ETABS
 
 
             Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
-            Model.FrameObj.ChangeName(newFrame, element1D.name);
+            if(element1D.name != null)
+            {
+                Model.FrameObj.ChangeName(newFrame, element1D.name);
+            }
             return element1D.name;
         }
         
@@ -100,6 +104,7 @@ namespace Objects.Converter.ETABS
             string units = ModelUnits();
 
             var speckleStructFrame = new Element1D();
+
             speckleStructFrame.name = name;
             string pointI, pointJ;
             pointI = pointJ = null;
@@ -182,7 +187,17 @@ namespace Objects.Converter.ETABS
             speckleStructFrame.end1Offset = end1Offset;
             speckleStructFrame.end2Offset = end2Offset;
 
-            SpeckleModel.elements.Add(speckleStructFrame);
+            var GUID = "";
+            Model.FrameObj.GetGUID(name, ref GUID);
+            speckleStructFrame.applicationId = GUID;
+            List<Base> elements = SpeckleModel.elements;
+            List<string> application_Id = elements.Select(o => o.applicationId).ToList();
+            if (!application_Id.Contains(speckleStructFrame.applicationId))
+            {
+
+                SpeckleModel.elements.Add(speckleStructFrame);
+            }
+
 
             return speckleStructFrame;
         }

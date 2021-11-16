@@ -11,6 +11,7 @@ using OSEA = Objects.Structural.ETABS.Analysis;
 using Objects.Converter.ETABS;
 using Speckle.Core.Logging;
 using Objects.Structural.Analysis;
+using Objects.Structural.Results;
 
 namespace Objects.Converter.ETABS
 {
@@ -35,10 +36,13 @@ namespace Objects.Converter.ETABS
 
         public Model SpeckleModel { get; set; }
 
+        public ResultSetAll AnalysisResults { get; set; }
+
         public void SetContextDocument(object doc)
         {
             Model = (cSapModel)doc;
             SpeckleModel = ModelToSpeckle();
+            AnalysisResults = ResultsToSpeckle();
         }
 
         public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -118,6 +122,9 @@ namespace Objects.Converter.ETABS
                 case "Model":
                     returnObject = SpeckleModel;
                     break;
+                case "AnalysisResults":
+                    returnObject = AnalysisResults;
+                    break;
                 case "Stories":
                     returnObject = StoriesToSpeckle();
                     break;
@@ -144,6 +151,9 @@ namespace Objects.Converter.ETABS
                 case "Brace":
                     returnObject = BraceToSpeckle(name);
                     Report.Log($"Created Brace");
+                    break;
+                case "ElementsCount":
+                    returnObject = ModelElementsCountToSpeckle();
                     break;
 
                 //case "Link":
@@ -188,22 +198,21 @@ namespace Objects.Converter.ETABS
                     returnObject = LoadPatternToSpeckle(name);
                     Report.Log($"Created Loading Pattern");
                     break;
-                    //case "ColumnResults":
-
-                    //    returnObject = FrameResultSet1dToSpeckle(name);
-                    //    break;
-                    //case "BeamResults":
-                    //    returnObject = FrameResultSet1dToSpeckle(name);
-                    //    break;
-                    //case "BraceResults":
-                    //    returnObject = FrameResultSet1dToSpeckle(name);
-                    //    break;
-                    //case "PierResults":
-                    //    returnObject = PierResultSet1dToSpeckle(name);
-                    //    break;
-                    //case "SpandrelResults":
-                    //    returnObject = SpandrelResultSet1dToSpeckle(name);
-                    //    break;
+                //case "ColumnResults":
+                //    returnObject = FrameResultSet1dToSpeckle(name);
+                //    break;
+                //case "BeamResults":
+                //    returnObject = FrameResultSet1dToSpeckle(name);
+                //    break;
+                //case "BraceResults":
+                //    returnObject = FrameResultSet1dToSpeckle(name);
+                //    break;
+                //case "PierResults":
+                //    returnObject = PierResultSet1dToSpeckle(name);
+                //    break;
+                //case "SpandrelResults":
+                //    returnObject = SpandrelResultSet1dToSpeckle(name);
+                //    break;
                     //case "GridSys":
                     //    returnObject = GridSysToSpeckle(name);
                     //    break;

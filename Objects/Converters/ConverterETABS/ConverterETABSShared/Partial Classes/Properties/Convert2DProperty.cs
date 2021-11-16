@@ -17,7 +17,6 @@ namespace Objects.Converter.ETABS
             property2D.name = name;
             property2D.thickness = thickeness;
             property2D.material = MaterialToSpeckle(matProp);
-            
             return;
         }
         object Property2DToNative(ETABSProperty2D property2D)
