@@ -57,6 +57,7 @@
     <Compile Include="Extras\DebounceDispatcher.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
+    <Compile Include="Extras\QueryDownloadedStream.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Extras\SpeckleBaseParam.cs" />
     <Compile Include="Extras\SpeckleStateTag.cs" />
