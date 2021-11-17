@@ -23,6 +23,8 @@ namespace Objects.Converter.Revit
         category = revitType.Category.Name
       };
 
+      GetAllRevitParamsAndIds(speckleType, revitType);
+
 
       return speckleType;
     }
