@@ -181,7 +181,6 @@ namespace Objects.Converter.AutocadCivil
 
       var instance = new BlockInstance()
       {
-        insertionPoint = PointToSpeckle(reference.Position),
         transform = reference.BlockTransform.ToArray(),
         blockDefinition = definition,
         units = ModelUnits
@@ -204,7 +203,7 @@ namespace Objects.Converter.AutocadCivil
         return result;
 
       // insertion pt
-      Point3d insertionPoint = PointToNative(instance.insertionPoint);
+      Point3d insertionPoint = PointToNative(instance.GetInsertionPoint());
 
       // transform
       double[] transform = instance.transform;
