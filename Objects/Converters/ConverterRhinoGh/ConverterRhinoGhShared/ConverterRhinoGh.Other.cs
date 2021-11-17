@@ -162,7 +162,6 @@ namespace Objects.Converter.RhinoGh
 
       var _instance = new BlockInstance()
       {
-        insertionPoint = PointToSpeckle(instance.InsertionPoint),
         transform = transformArray,
         blockDefinition = def,
         units = ModelUnits
