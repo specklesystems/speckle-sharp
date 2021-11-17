@@ -9,6 +9,8 @@ using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using Hatch = Objects.Other.Hatch;
+using HatchLoop = Objects.Other.HatchLoop;
+using HatchLoopType = Objects.Other.HatchLoopType;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Speckle.Core.Models;
@@ -20,6 +22,23 @@ namespace Objects.Converter.AutocadCivil
   public partial class ConverterAutocadCivil
   {
     // Hatches
+    private HatchLoopType HatchLoopTypeToSpeckle(HatchLoopTypes type)
+    {
+      if (type.HasFlag(HatchLoopTypes.Outermost) | type.HasFlag(HatchLoopTypes.External))
+        return HatchLoopType.Outer;
+
+      return HatchLoopType.Unknown;
+    }
+    private HatchLoopTypes HatchLoopTypeToNative(HatchLoopType type)
+    {
+      switch (type)
+      {
+        case HatchLoopType.Outer:
+          return HatchLoopTypes.External;
+        default:
+          return HatchLoopTypes.Default;
+      }
+    }
     public Hatch HatchToSpeckle(AcadDB.Hatch hatch)
     {
       var _hatch = new Hatch();
@@ -28,52 +47,58 @@ namespace Objects.Converter.AutocadCivil
       _hatch.rotation = hatch.PatternAngle;
 
       // handle curves
-      var curves = new List<ICurve>();
+      var curves = new List<HatchLoop>();
       for (int i = 0; i < hatch.NumberOfLoops; i++)
       {
         var loop = hatch.GetLoopAt(i);
-        loop.LoopType == HatchLoopTypes.
         if (loop.IsPolyline)
         {
           var poly = GetPolylineFromBulgeVertexCollection(loop.Polyline);
-          var converted = poly.IsOnlyLines ? PolylineToSpeckle(poly) : PolycurveToSpeckle(poly);
-          curves.Add(converted);
+          var convertedPoly = poly.IsOnlyLines ? PolylineToSpeckle(poly) : PolycurveToSpeckle(poly);
+          var speckleLoop = new HatchLoop(convertedPoly, HatchLoopTypeToSpeckle(loop.LoopType));
+          curves.Add(speckleLoop);
         }
         else
         {
-          var loopcurves = hatch.GetLoopAt(i).Curves;
-          if (loopcurves != null)
-            foreach (AcadDB.Curve loopcurve in loopcurves)
-              curves.Add(CurveToSpeckle(loopcurve));
+          foreach (AcadDB.Curve loopcurve in loop.Curves)
+          {
+            var convertedCurve = CurveToSpeckle(loopcurve);
+            var speckleLoop = new HatchLoop(convertedCurve, HatchLoopTypeToSpeckle(loop.LoopType));
+            curves.Add(speckleLoop);
+          }
         }
       }
-      _hatch.curves = curves;
+      _hatch.loops = curves;
       _hatch["style"] = hatch.HatchStyle.ToString();
 
       return _hatch;
     }
+
     public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
     {
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
 
       // convert curves
-      var curveIds = new ObjectIdCollection();
-      var curves = new List<DBObject>();
-      foreach (var curve in hatch.curves)
+      var loops = new Dictionary<HatchLoopTypes, List<ObjectId>>();
+      var curves = new List<AcadDB.Curve>();
+      foreach (var loop in hatch.loops)
       {
-        var converted = CurveToNativeDB(curve);
+        var converted = CurveToNativeDB(loop.Curve);
         if (converted == null || !converted.Closed)
-          return null;
-        if (converted.IsNewObject)
+          continue;
+
+        var curveId = modelSpaceRecord.Append(converted);
+        if (curveId.IsValid)
         {
-          var curveId = modelSpaceRecord.Append(converted);
-          if (curveId.IsValid)
-          {
-            curveIds.Add(curveId);
-            curves.Add(converted);
-          }
+          HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
+          curves.Add(converted);
+          if (loops.ContainsKey(type))
+            loops[type].Add(curveId);
+          else
+            loops.Add(type, new List<ObjectId>() { curveId });
         }
       }
+      if (loops.Count == 0) return null;
 
       // add hatch to modelspace
       var _hatch = new AcadDB.Hatch();
@@ -98,15 +123,19 @@ namespace Objects.Converter.AutocadCivil
       }
       _hatch.PatternAngle = hatch.rotation;
       _hatch.PatternScale = hatch.scale;
-      _hatch.AppendLoop(HatchLoopTypes.Default, curveIds);
-      _hatch.EvaluateHatch(true);
       var style = hatch["style"] as string;
       if (style != null)
         _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
 
-      // delete created hatch curves
-      foreach (DBObject curve in curves)
-        curve.Erase();
+      // create loops
+      foreach (var entry in loops)
+      {
+        var loopCollection = new ObjectIdCollection();
+        entry.Value.ForEach(o => loopCollection.Add(o));
+        _hatch.AppendLoop(entry.Key, loopCollection); // try with default loop type or with individual loops
+      }
+      _hatch.EvaluateHatch(true);
+      curves.ForEach(o => o.Erase()); // delete created hatch curves
 
       return _hatch;
     }
