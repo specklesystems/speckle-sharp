@@ -25,7 +25,9 @@ namespace Objects.Converter.ETABS
 
             Model.Story.GetStories_2(ref baseElevation, ref numberOfStories,ref names, ref storyElevations, ref storyHeights, ref isMasterStory, ref SimilarToStory, ref spliceAbove, ref spliceHeight, ref colors);
 
-            var speckleStories = new ETABSStories(baseElevation,numberOfStories,names,storyElevations,storyHeights,isMasterStory,SimilarToStory,spliceAbove,spliceHeight,colors);
+            var speckleStories = new ETABSStories();
+
+
             return speckleStories; 
         }
     }

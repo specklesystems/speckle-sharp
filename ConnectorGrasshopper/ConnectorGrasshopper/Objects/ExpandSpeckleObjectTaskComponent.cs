@@ -215,9 +215,9 @@ namespace ConnectorGrasshopper.Objects
         var b = (ghGoo as GH_SpeckleBase).Value;
         b?.GetMemberNames().ToList().ForEach(prop =>
         {
-          if (!fullProps.Contains(prop) && b[prop] != null)
+          if (!fullProps.Contains(prop))
             fullProps.Add(prop);
-          else if (fullProps.Contains(prop) && b[prop] == null)
+          else if (fullProps.Contains(prop))
             fullProps.Remove(prop);
         });
       }

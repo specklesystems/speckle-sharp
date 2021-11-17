@@ -200,7 +200,7 @@ namespace ConnectorGrasshopper.Ops
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:",null,null,false,false);
+      Menu_AppendItem(menu, "Select the converter you want to use:",null,false);
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)

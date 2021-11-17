@@ -80,7 +80,7 @@ namespace ConnectorGrasshopper.Ops
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:");
+      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:",null, false);
       menuItem.Enabled = false;
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 

@@ -102,6 +102,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
     </Compile>
+    <Compile Include="SpeckleGHSettings.cs" />
     <Compile Include="Streams\StreamCreateComponent.cs" />
     <Compile Include="Streams\StreamDetailsComponent.cs" />
     <Compile Include="Streams\StreamGetComponent.cs" />

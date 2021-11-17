@@ -91,16 +91,18 @@ namespace Speckle.ConnectorETABS.Util
                     var names = new string[] { };
                     names.Append(model.GetModelFilename());
                     return names.ToList();
-                //case "ColumnResults":
-                //    return GetColumnNames(model);
-                //case "BeamResults":
-                //    return GetBeamNames(model);
-                //case "BraceResults":
-                //    return GetBraceNames(model);
-                //case "PierResults":
-                //    return GetAllPierLabelNames(model);
-                //case "SpandrelResults":
-                //    return GetAllSpandrelLabelNames(model);
+                case "ColumnResults":
+                    return GetColumnNames(model);
+                case "BeamResults":
+                    return GetBeamNames(model);
+                case "BraceResults":
+                    return GetBraceNames(model);
+                case "PierResults":
+                    return GetAllPierLabelNames(model);
+                case "SpandrelResults":
+                    return GetAllSpandrelLabelNames(model);
+                case "AnalysisResults":
+                    return GetAllElementNames(model);
                 default:
                     return null;
             }
@@ -194,6 +196,19 @@ namespace Speckle.ConnectorETABS.Util
             }
 
             return braceNames;
+        }
+
+        public static List<string> GetAllElementNames(cSapModel model)
+        {
+            var elementNames = new List<string>();
+            
+            elementNames.AddRange(GetColumnNames(model));
+            elementNames.AddRange(GetBeamNames(model));
+            elementNames.AddRange(GetBraceNames(model));
+            elementNames.AddRange(GetAllPierLabelNames(model));
+            elementNames.AddRange(GetAllSpandrelLabelNames(model));
+
+            return elementNames;
         }
 
         public static List<string> GetAllTendonNames(cSapModel model)
@@ -584,7 +599,8 @@ namespace Speckle.ConnectorETABS.Util
             //BeamResults,
             //BraceResults,
             //PierResults,
-            //SpandrelResults
+            //SpandrelResults,
+            //AnalysisResults
         }
 
         /// <summary>

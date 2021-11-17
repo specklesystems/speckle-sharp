@@ -262,6 +262,7 @@ namespace Objects.Converter.ETABS
             //BraceResults,
             //PierResults,
             //SpandrelResults
+            //AnalysisResults
         }
     }
 }

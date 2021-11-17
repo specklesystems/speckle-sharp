@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Objects
         var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
         Menu_AppendSeparator(menu);
-        Menu_AppendItem(menu, "Select the converter you want to use:");
+        Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
         foreach (var kit in kits)
         {
           Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
@@ -91,12 +91,9 @@ namespace ConnectorGrasshopper.Objects
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
-      var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
-      
       try
       {
-        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit.Name == n);
+        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit.Name == SpeckleGHSettings.SelectedKitName);
         Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         Message = $"{Kit.Name} Kit";

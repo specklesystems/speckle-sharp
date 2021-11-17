@@ -19,8 +19,7 @@ namespace ConnectorGrasshopper.Extras
   {
     public static ISpeckleConverter GetDefaultConverter()
     {
-      var key = "Speckle2:kit.default.name";
-      var n = Grasshopper.Instances.Settings.GetValue(key, "Objects");
+      var n = SpeckleGHSettings.SelectedKitName;
       try
       {
         var defKit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit != null && kit.Name == n);
@@ -193,8 +192,11 @@ namespace ConnectorGrasshopper.Extras
         // TODO: Handle dicts!!
         var value = keyval.Value;
         if (value == null)
+        {
           // TODO: Handle null values in properties here. For now, we just ignore that prop in the object
+          copy[keyval.Key] = null;
           return;
+        }
         if (value is IList list)
         {
           var converted = new List<object>();
@@ -291,8 +293,7 @@ namespace ConnectorGrasshopper.Extras
     /// <returns>An <see cref="IGH_Goo"/> instance holding the converted object. </returns>
     public static object TryConvertItemToSpeckle(object value, ISpeckleConverter converter, bool recursive = false,  Action OnConversionProgress = null)
     {
-      if (value is null) throw new Exception("Null values are not allowed, please clean your data tree.");
-      
+      if (value is null) return value;
       if (value is IGH_Goo)
       {
         value = value.GetType().GetProperty("Value").GetValue(value);

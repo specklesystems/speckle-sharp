@@ -14,6 +14,14 @@ namespace ConnectorGrasshopper.Extras
     public override bool Crossed => false;
     public override string Letter => "?";
   }
+  public class SchemaTagStateTag : SpeckleStateTag
+  {
+    public override string Description => "Will output the main geometry with the schema attached as a 'SpeckleSchema' property";
+    public override string Name => "Schema Tag";
+    public override Bitmap Icon => Properties.Resources.StateTag_Optional;
+    public override bool Crossed => false;
+    public override string Letter => "#";
+  }
 
   public class DetachedStateTag : SpeckleStateTag
   {
