@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Kits
@@ -9,11 +10,16 @@ namespace Speckle.Core.Kits
     public const string Centimeters = "cm";
     public const string Meters = "m";
     public const string Kilometers = "km";
-    public const string Inches = "in"; // smelly ones
+    public const string Inches = "in";
     public const string Feet = "ft"; // smelly ones
-    public const string Yards = "yd"; // smelly ones
-    public const string Miles = "mi"; // smelly ones
+    public const string Yards = "yd";
+    public const string Miles = "mi";
     public const string None = "none";
+
+    private static List<string> SupportedUnits = new List<string>() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, Yards, Miles, None };
+
+    public static bool IsUnitSupported(string unit) => SupportedUnits.Contains(unit);
+
     // public const string USInches = "us_in"; the smelliest ones, can add later if people scream "USA #1"
     // public const string USFeet = "us_ft"; the smelliest ones, can add later if people scream "USA #1"
     // public const string USYards = "us_yd"; the smelliest ones, can add later if people scream "USA #1"
@@ -104,7 +110,7 @@ namespace Speckle.Core.Kits
           }
           break;
 
-          // IMPERIAL
+        // IMPERIAL
         case Units.Inches:
           switch (to)
           {
@@ -170,7 +176,7 @@ namespace Speckle.Core.Kits
 
     public static string GetUnitsFromString(string unit)
     {
-      if (unit == null)return null;
+      if (unit == null) return null;
       switch (unit.ToLower())
       {
         case "mm":
