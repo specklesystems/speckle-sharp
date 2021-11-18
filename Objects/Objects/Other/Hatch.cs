@@ -9,13 +9,10 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.Other
 {
-  /// <summary>
-  /// Hatch class for Rhino and AutoCAD
-  /// </summary>
   public class Hatch : Base
   {
     [Obsolete ("Use Loops instead")]
-    public List<ICurve> curves { get => loops.Select(o => o.Curve).ToList(); set { } }
+    public List<ICurve> curves { get; set; }
     public List<HatchLoop> loops { get; set; }
     public string pattern { get; set; }
     public double scale { get; set; } = 1;

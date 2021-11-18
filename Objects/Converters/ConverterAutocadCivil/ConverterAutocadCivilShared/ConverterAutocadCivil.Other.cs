@@ -24,9 +24,10 @@ namespace Objects.Converter.AutocadCivil
     // Hatches
     private HatchLoopType HatchLoopTypeToSpeckle(HatchLoopTypes type)
     {
-      if (type.HasFlag(HatchLoopTypes.Outermost) | type.HasFlag(HatchLoopTypes.External))
+      if (type.HasFlag(HatchLoopTypes.Outermost) || type.HasFlag(HatchLoopTypes.External))
         return HatchLoopType.Outer;
-
+      if (type.HasFlag(HatchLoopTypes.Default))
+        return HatchLoopType.Unknown;
       return HatchLoopType.Unknown;
     }
     private HatchLoopTypes HatchLoopTypeToNative(HatchLoopType type)
@@ -34,7 +35,7 @@ namespace Objects.Converter.AutocadCivil
       switch (type)
       {
         case HatchLoopType.Outer:
-          return HatchLoopTypes.External;
+            return HatchLoopTypes.External;
         default:
           return HatchLoopTypes.Default;
       }
@@ -60,9 +61,9 @@ namespace Objects.Converter.AutocadCivil
         }
         else
         {
-          foreach (AcadDB.Curve loopcurve in loop.Curves)
+          for (int j = 0; j < loop.Curves.Count; j++)
           {
-            var convertedCurve = CurveToSpeckle(loopcurve);
+            var convertedCurve = CurveToSpeckle(loop.Curves[j]);
             var speckleLoop = new HatchLoop(convertedCurve, HatchLoopTypeToSpeckle(loop.LoopType));
             curves.Add(speckleLoop);
           }
@@ -74,28 +75,40 @@ namespace Objects.Converter.AutocadCivil
       return _hatch;
     }
 
+    // TODO: this needs to be improved, hatch curves not being created with HatchLoopTypes.Polyline flag
     public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
     {
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
 
       // convert curves
-      var loops = new Dictionary<HatchLoopTypes, List<ObjectId>>();
-      var curves = new List<AcadDB.Curve>();
-      foreach (var loop in hatch.loops)
+      var loops = new Dictionary<AcadDB.Curve, HatchLoopTypes>();
+      if (hatch.loops != null)
       {
-        var converted = CurveToNativeDB(loop.Curve);
-        if (converted == null || !converted.Closed)
-          continue;
-
-        var curveId = modelSpaceRecord.Append(converted);
-        if (curveId.IsValid)
+        foreach (var loop in hatch.loops)
         {
-          HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
-          curves.Add(converted);
-          if (loops.ContainsKey(type))
-            loops[type].Add(curveId);
-          else
-            loops.Add(type, new List<ObjectId>() { curveId });
+          var converted = CurveToNativeDB(loop.Curve);
+          if (converted == null)
+            continue;
+
+          var curveId = modelSpaceRecord.Append(converted);
+          if (curveId.IsValid)
+          {
+            HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
+            loops.Add(converted, type);
+          }
+        }
+      }
+      else // this is just here for backwards compatibility, before loops were introduced. Deprecate a few releases after 2.2.6
+      {
+        foreach (var loop in hatch.curves)
+        {
+          var converted = CurveToNativeDB(loop);
+          if (converted == null)
+            continue;
+
+          var curveId = modelSpaceRecord.Append(converted);
+          if (curveId.IsValid)
+            loops.Add(converted, HatchLoopTypes.Default);
         }
       }
       if (loops.Count == 0) return null;
@@ -106,12 +119,14 @@ namespace Objects.Converter.AutocadCivil
 
       _hatch.SetDatabaseDefaults();
       // try get hatch pattern
-      switch (HatchPatterns.ValidPatternName(hatch.pattern))
+      var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
+      switch (patternCategory)
       {
         case PatPatternCategory.kCustomdef:
           _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
           break;
         case PatPatternCategory.kPredef:
+        case PatPatternCategory.kISOdef:
           _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
           break;
         case PatPatternCategory.kUserdef:
@@ -129,13 +144,10 @@ namespace Objects.Converter.AutocadCivil
 
       // create loops
       foreach (var entry in loops)
-      {
-        var loopCollection = new ObjectIdCollection();
-        entry.Value.ForEach(o => loopCollection.Add(o));
-        _hatch.AppendLoop(entry.Key, loopCollection); // try with default loop type or with individual loops
-      }
+        _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
       _hatch.EvaluateHatch(true);
-      curves.ForEach(o => o.Erase()); // delete created hatch curves
+      foreach (var entry in loops) // delete created hatch curves
+        entry.Key.Erase();
 
       return _hatch;
     }
@@ -163,19 +175,15 @@ namespace Objects.Converter.AutocadCivil
       // get record
       BlockDefinition definition = null;
       var attributes = new Dictionary<string, string>();
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
-      {
-        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
-        definition = BlockRecordToSpeckle(btr);
-        foreach (ObjectId id in reference.AttributeCollection)
-        {
-          AttributeReference attRef = (AttributeReference)tr.GetObject(id, OpenMode.ForRead);
-          attributes.Add(attRef.Tag, attRef.TextString);
-        }
 
-        tr.Commit();
+      BlockTableRecord btr = (BlockTableRecord)Trans.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
+      definition = BlockRecordToSpeckle(btr);
+      foreach (ObjectId id in reference.AttributeCollection)
+      {
+        AttributeReference attRef = (AttributeReference)Trans.GetObject(id, OpenMode.ForRead);
+        attributes.Add(attRef.Tag, attRef.TextString);
       }
-      
+
       if (definition == null)
         return null;
 
@@ -234,24 +242,19 @@ namespace Objects.Converter.AutocadCivil
 
       // get geometry
       var geometry = new List<Base>();
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      foreach (ObjectId id in record)
       {
-        foreach (ObjectId id in record)
+        DBObject obj = Trans.GetObject(id, OpenMode.ForRead);
+        Entity objEntity = obj as Entity;
+        if (CanConvertToSpeckle(obj))
         {
-          DBObject obj = tr.GetObject(id, OpenMode.ForRead);
-          Entity objEntity = obj as Entity;
-          if (CanConvertToSpeckle(obj))
+          Base converted = ConvertToSpeckle(obj);
+          if (converted != null)
           {
-            Base converted = ConvertToSpeckle(obj);
-            if (converted != null)
-            {
-              converted["Layer"] = objEntity.Layer;
-              geometry.Add(converted);
-            }
+            converted["Layer"] = objEntity.Layer;
+            geometry.Add(converted);
           }
         }
-
-        tr.Commit();
       }
 
       var definition = new BlockDefinition()
@@ -271,59 +274,52 @@ namespace Objects.Converter.AutocadCivil
 
       ObjectId blockId = ObjectId.Null;
 
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      // see if block record already exists and return if so
+      BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+      if (blckTbl.Has(blockName))
+        return blckTbl[blockName];
+
+      // create btr
+      using (BlockTableRecord btr = new BlockTableRecord())
       {
-        // see if block record already exists and return if so
-        BlockTable blckTbl = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        if (blckTbl.Has(blockName))
+        btr.Name = blockName;
+
+        // base point
+        btr.Origin = PointToNative(definition.basePoint);
+
+        // add geometry
+        blckTbl.UpgradeOpen();
+        var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
+        foreach (var geo in definition.geometry)
         {
-          tr.Commit();
-          return blckTbl[blockName];
-        }
-
-        // create btr
-        using (BlockTableRecord btr = new BlockTableRecord())
-        {
-          btr.Name = blockName;
-
-          // base point
-          btr.Origin = PointToNative(definition.basePoint);
-
-          // add geometry
-          blckTbl.UpgradeOpen();
-          var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
-          foreach (var geo in definition.geometry)
+          if (CanConvertToNative(geo))
           {
-            if (CanConvertToNative(geo))
+            Entity converted = null;
+            switch (geo)
             {
-              Entity converted = null;
-              switch (geo)
-              {
-                case BlockInstance o:
-                  BlockInstanceToNativeDB(o, out BlockReference reference, false);
-                  converted = reference;
-                  break;
-                default:
-                  converted = ConvertToNative(geo) as Entity;
-                  break;
-              }
-
-              if (converted == null)
-                continue;
-              else if (!converted.IsNewObject && !(converted is BlockReference))
-                bakedGeometry.Add(converted.Id);
-              else
-                btr.AppendEntity(converted);
+              case BlockInstance o:
+                BlockInstanceToNativeDB(o, out BlockReference reference, false);
+                converted = reference;
+                break;
+              default:
+                converted = ConvertToNative(geo) as Entity;
+                break;
             }
-          }
-          blockId = blckTbl.Add(btr);
-          btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
-          tr.AddNewlyCreatedDBObject(btr, true);
-          blckTbl.Dispose();
-        }
 
-        tr.Commit();
+            if (converted == null)
+              continue;
+            else if (!converted.IsNewObject && !(converted is BlockReference))
+              bakedGeometry.Add(converted.Id);
+            else
+              btr.AppendEntity(converted);
+          }
+        }
+        blockId = blckTbl.Add(btr);
+        btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
+        Trans.AddNewlyCreatedDBObject(btr, true);
+        blckTbl.Dispose();
       }
+
 
       return blockId;
     }

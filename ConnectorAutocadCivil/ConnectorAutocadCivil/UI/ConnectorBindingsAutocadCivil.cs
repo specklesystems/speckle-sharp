@@ -521,8 +521,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.AutocadAppName);
-      converter.SetContextDocument(Doc);
-
+      
       var streamId = state.Stream.id;
       var client = state.Client;
 
@@ -558,76 +557,83 @@ namespace Speckle.ConnectorAutocadCivil.UI
       int convertedCount = 0;
       bool renamedlayers = false;
 
-      foreach (var autocadObjectHandle in state.SelectedObjectIds)
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        if (state.CancellationTokenSource.Token.IsCancellationRequested)
-        {
-          return null;
-        }
+        converter.SetContextDocument(Doc); // set context doc here to capture transaction prop
 
-        // get the db object from id
-        AcadDb.Handle hn = Utils.GetHandle(autocadObjectHandle);
-        AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
-
-        if (obj == null)
+        foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
-          state.Errors.Add(new Exception($"Failed to find local object ${autocadObjectHandle}."));
-          continue;
-        }
-
-        if (!converter.CanConvertToSpeckle(obj))
-        {
-          state.Errors.Add(new Exception($"Objects of type ${type} are not supported"));
-          continue;
-        }
-
-        // convert obj
-        // try catch to prevent memory access violation crash in case a conversion goes wrong
-        Base converted = null;
-        string containerName = string.Empty;
-        try
-        {
-          converted = converter.ConvertToSpeckle(obj);
-          if (converted == null)
+          if (state.CancellationTokenSource.Token.IsCancellationRequested)
           {
-            state.Errors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
+            return null;
+          }
+
+          // get the db object from id
+          AcadDb.Handle hn = Utils.GetHandle(autocadObjectHandle);
+          AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
+
+          if (obj == null)
+          {
+            state.Errors.Add(new Exception($"Failed to find local object ${autocadObjectHandle}."));
             continue;
           }
+
+          if (!converter.CanConvertToSpeckle(obj))
+          {
+            state.Errors.Add(new Exception($"Objects of type ${type} are not supported"));
+            continue;
+          }
+
+          // convert obj
+          // try catch to prevent memory access violation crash in case a conversion goes wrong
+          Base converted = null;
+          string containerName = string.Empty;
+          try
+          {
+            converted = converter.ConvertToSpeckle(obj);
+            if (converted == null)
+            {
+              state.Errors.Add(new Exception($"Failed to convert object ${autocadObjectHandle} of type ${type}."));
+              continue;
+            }
+          }
+          catch
+          {
+            state.Errors.Add(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+            continue;
+          }
+
+          /* TODO: adding the extension dictionary / xdata per object 
+          foreach (var key in obj.ExtensionDictionary)
+          {
+            converted[key] = obj.ExtensionDictionary.GetUserString(key);
+          }
+          */
+
+          if (obj is BlockReference)
+            containerName = "Blocks";
+          else
+          {
+            // remove invalid chars from layer name
+            string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+            containerName = cleanLayerName;
+            if (!cleanLayerName.Equals(layer))
+              renamedlayers = true;
+          }
+
+          if (commitObj[$"@{containerName}"] == null)
+            commitObj[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+          conversionProgressDict["Conversion"]++;
+          UpdateProgress(conversionProgressDict, state.Progress);
+
+          converted.applicationId = autocadObjectHandle;
+
+          convertedCount++;
         }
-        catch
-        {
-          state.Errors.Add(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
-          continue;
-        }
 
-        /* TODO: adding the extension dictionary / xdata per object 
-        foreach (var key in obj.ExtensionDictionary)
-        {
-          converted[key] = obj.ExtensionDictionary.GetUserString(key);
-        }
-        */
-
-        if (obj is BlockReference)
-          containerName = "Blocks";
-        else
-        {
-          // remove invalid chars from layer name
-          string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-          containerName = cleanLayerName;
-          if (!cleanLayerName.Equals(layer))
-            renamedlayers = true;
-        }
-
-        if (commitObj[$"@{containerName}"] == null)
-          commitObj[$"@{containerName}"] = new List<Base>();
-        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
-
-        conversionProgressDict["Conversion"]++;
-        UpdateProgress(conversionProgressDict, state.Progress);
-
-        converted.applicationId = autocadObjectHandle;
-
-        convertedCount++;
+        tr.Commit();
       }
 
       if (renamedlayers)
