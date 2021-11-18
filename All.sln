@@ -109,13 +109,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConnectorETABS", "Connector
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv18", "ConnectorETABS\ConnectorETABSv18\ConnectorETABSv18.csproj", "{CC1F6133-9DD5-437C-AB23-380AD00267A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolygonMesher", "Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolygonMesher", "Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{6185B1A1-0A12-44B1-8AC5-0ED48147FB21}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StructuralUtilities", "StructuralUtilities", "{85C30B55-E486-49AE-B3F5-6A196D14CCB8}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorETABSShared", "ConnectorETABS\ConnectorETABS\ConnectorETABSShared.shproj", "{1C661822-4524-4FAA-97F2-B5AAB9F9ECC4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "DesktopUI2\DesktopUI2\DesktopUI2.csproj", "{AC0613B5-BD0E-4DA3-B704-7BE70D17AFFE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2022", "Objects\Converters\ConverterRevit\ConverterRevit2022\ConverterRevit2022.csproj", "{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2022", "ConnectorRevit\ConnectorRevit2022\ConnectorRevit2022.csproj", "{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -147,6 +151,8 @@ Global
 		ConnectorETABS\ConnectorETABS\ConnectorETABSShared.projitems*{cc1f6133-9dd5-437c-ab23-380ad00267a2}*SharedItemsImports = 4
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 4
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d9f443b5-c55b-4ad8-9c70-bc3d2be781be}*SharedItemsImports = 5
+		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 4
+		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{e08ec798-d1b9-4f72-a7cf-8611b5b9ff4c}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{ef418256-8118-47b4-8386-a945946fb92d}*SharedItemsImports = 4
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{ff1793e1-77f5-4a92-b3f2-6d8b104e479b}*SharedItemsImports = 4
 	EndGlobalSection
@@ -413,6 +419,22 @@ Global
 		{AC0613B5-BD0E-4DA3-B704-7BE70D17AFFE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AC0613B5-BD0E-4DA3-B704-7BE70D17AFFE}.Release|x64.ActiveCfg = Release|Any CPU
 		{AC0613B5-BD0E-4DA3-B704-7BE70D17AFFE}.Release|x64.Build.0 = Release|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Debug|x64.Build.0 = Debug|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Release|x64.ActiveCfg = Release|Any CPU
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C}.Release|x64.Build.0 = Release|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Debug|x64.Build.0 = Debug|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|x64.ActiveCfg = Release|Any CPU
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -471,6 +493,8 @@ Global
 		{85C30B55-E486-49AE-B3F5-6A196D14CCB8} = {4DE5ED81-2A55-4C23-A05F-3C9B9B06F85D}
 		{1C661822-4524-4FAA-97F2-B5AAB9F9ECC4} = {1894FD43-340C-4226-821D-9D4C9BF0435F}
 		{AC0613B5-BD0E-4DA3-B704-7BE70D17AFFE} = {DD7DA7E3-FBB7-4216-852B-A4A5BF3AB9AB}
+		{E08EC798-D1B9-4F72-A7CF-8611B5B9FF4C} = {925C0BF6-A0B1-4699-9C4B-078E01D652CC}
+		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
