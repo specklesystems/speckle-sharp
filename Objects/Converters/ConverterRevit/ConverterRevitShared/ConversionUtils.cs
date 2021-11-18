@@ -822,9 +822,12 @@ namespace Objects.Converter.Revit
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       RenderMaterial material = null;
-      var matId = element.GetMaterialIds(false).FirstOrDefault();
+            var matIds = element.GetMaterialIds(false);
 
-      if (matId == null)
+
+            ElementId matId = matIds?.OrderByDescending(x => element.GetMaterialArea(x, false))?.FirstOrDefault();
+
+            if (matId == null)
       {
         // TODO: Fallback to display color or something? 
         return material;

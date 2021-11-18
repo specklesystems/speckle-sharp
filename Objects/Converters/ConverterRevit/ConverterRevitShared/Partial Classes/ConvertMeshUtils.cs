@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 using DB = Autodesk.Revit.DB;
@@ -31,10 +32,10 @@ namespace Objects.Converter.Revit
           }
         }
 
-        (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(allSolids);
-      }
+            (mesh.faces, mesh.vertices, mesh.colors) = GetFaceVertexArrFromSolids(allSolids);
+        }
 
-      mesh.units = ModelUnits;
+            mesh.units = ModelUnits;
       return mesh;
     }
 
@@ -65,8 +66,8 @@ namespace Objects.Converter.Revit
         solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
 
 
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solids);
-      return mesh;
+            (mesh.faces, mesh.vertices, mesh.colors) = GetFaceVertexArrFromSolids(solids);
+            return mesh;
     }
 
     /// <summary>
@@ -131,24 +132,44 @@ namespace Objects.Converter.Revit
       {
         if (element is DB.Mesh)
         {
-          var mesh = (DB.Mesh)element;
+                    var mesh = (DB.Mesh)element;
 
-          foreach (var vert in mesh.Vertices)
-          {
-            var vertex = PointToSpeckle(vert);
-            speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
-          }
 
-          for (int i = 0; i < mesh.NumTriangles; i++)
-          {
-            var triangle = mesh.get_Triangle(i);
-            var A = triangle.get_Index(0);
-            var B = triangle.get_Index(1);
-            var C = triangle.get_Index(2);
-            speckleMesh.faces.Add(0);
-            speckleMesh.faces.AddRange(new int[] { (int)A, (int)B, (int)C });
-          }
-        }
+                    var meshMaterial = Doc.GetElement(mesh.MaterialElementId) as Material;
+
+                    int meshColor = -16777216;
+                    try
+                    {
+                        if (meshMaterial != null)
+                        {
+                            var opacity = (double)(100 - meshMaterial.Transparency) / 100;
+                            meshColor = System.Drawing.Color.FromArgb(Convert.ToInt32(255 * opacity), meshMaterial.Color.Red, meshMaterial.Color.Green, meshMaterial.Color.Blue).ToArgb();
+                        }
+
+                    }
+                    catch
+                    {
+                        Debug.Print($"Face color could not be generated!");
+                    }
+                    foreach (var vert in mesh.Vertices)
+                    {
+                        var vertex = PointToSpeckle(vert);
+                        speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
+
+                        speckleMesh.colors.Add(meshColor);
+                    }
+
+                    for (int i = 0; i < mesh.NumTriangles; i++)
+                    {
+                        var triangle = mesh.get_Triangle(i);
+
+                        var A = triangle.get_Index(0);
+                        var B = triangle.get_Index(1);
+                        var C = triangle.get_Index(2);
+                        speckleMesh.faces.Add(0);
+                        speckleMesh.faces.AddRange(new int[] { (int)A, (int)B, (int)C });
+                    }
+                }
       }
       speckleMesh.units = ModelUnits;
       return speckleMesh;
@@ -189,46 +210,75 @@ namespace Objects.Converter.Revit
       return solids;
     }
 
-    /// <summary>
-    /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh.
-    /// </summary>
-    /// <param name="solids"></param>
-    /// <returns></returns>
-    public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids)
-    {
-      var faceArr = new List<int>();
-      var vertexArr = new List<double>();
-      var prevVertCount = 0;
-
-      if (solids == null) return (faceArr, vertexArr);
-
-      foreach (var solid in solids)
-      {
-        foreach (Face face in solid.Faces)
+        /// <summary>
+        /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh.
+        /// </summary>
+        /// <param name="solids"></param>
+        /// <returns></returns>
+        public (List<int>, List<double>, List<int>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids)
         {
-          var m = face.Triangulate();
-          var points = m.Vertices;
+            var faceArr = new List<int>();
+            var vertexArr = new List<double>();
+            var colorArr = new List<int>();
+            var prevVertCount = 0;
 
-          foreach (var vert in m.Vertices)
-          {
-            var vertex = PointToSpeckle(vert);
-            vertexArr.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
-          }
+            if (solids == null) return (faceArr, vertexArr, colorArr);
 
-          for (int i = 0; i < m.NumTriangles; i++)
-          {
-            var triangle = m.get_Triangle(i);
+            foreach (var solid in solids)
+            {
+                foreach (Face face in solid.Faces)
+                {
 
-            faceArr.Add(0); // TRIANGLE flag
-            faceArr.Add((int)triangle.get_Index(0) + prevVertCount);
-            faceArr.Add((int)triangle.get_Index(1) + prevVertCount);
-            faceArr.Add((int)triangle.get_Index(2) + prevVertCount);
-          }
-          prevVertCount += m.Vertices.Count;
+                    var m = face.Triangulate();
+                    var points = m.Vertices;
+
+
+                    var faceMaterial = Doc.GetElement(face.MaterialElementId) as Material;
+
+                    int faceColor = -16777216;
+                    try
+                    {
+                        if (faceMaterial != null)
+                        {
+                            var opacity = (double)(100 - faceMaterial.Transparency) / 100;
+                            faceColor = System.Drawing.Color.FromArgb(Convert.ToInt32(255 * opacity), faceMaterial.Color.Red, faceMaterial.Color.Green, faceMaterial.Color.Blue).ToArgb();
+                        }
+
+                    }
+                    catch
+                    {
+                        Debug.Print($"Face color could not be generated!");
+                    }
+
+
+                    foreach (var vert in m.Vertices)
+                    {
+                        var vertex = PointToSpeckle(vert);
+                        vertexArr.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
+                        colorArr.Add(faceColor);
+                    }
+
+
+                    for (int i = 0; i < m.NumTriangles; i++)
+                    {
+                        var triangle = m.get_Triangle(i);
+
+                        var v1 = (int)triangle.get_Index(0);
+                        var v2 = (int)triangle.get_Index(1);
+                        var v3 = (int)triangle.get_Index(2);
+                        faceArr.Add(0); // TRIANGLE flag
+                        faceArr.Add(v1 + prevVertCount);
+                        faceArr.Add(v2 + prevVertCount);
+                        faceArr.Add(v3 + prevVertCount);
+
+
+
+                    }
+                    prevVertCount += m.Vertices.Count;
+                }
+            }
+
+            return (faceArr, vertexArr, colorArr);
         }
-      }
-
-      return (faceArr, vertexArr);
     }
-  }
 }

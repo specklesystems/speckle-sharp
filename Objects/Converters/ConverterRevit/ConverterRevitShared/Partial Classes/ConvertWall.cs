@@ -210,9 +210,9 @@ namespace Objects.Converter.Revit
       {
         solidMullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
       }
-      (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(solidPanels);
-      (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(solidMullions);
-      meshPanels.units = ModelUnits;
+            (meshPanels.faces, meshPanels.vertices,meshPanels.colors) = GetFaceVertexArrFromSolids(solidPanels);
+            (meshMullions.faces, meshMullions.vertices, meshMullions.colors) = GetFaceVertexArrFromSolids(solidMullions);
+            meshPanels.units = ModelUnits;
       meshMullions.units = ModelUnits;
 
 
