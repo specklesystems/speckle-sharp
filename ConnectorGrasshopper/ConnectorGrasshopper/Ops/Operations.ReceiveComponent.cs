@@ -197,17 +197,9 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
     }
 
-    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:",null,false);
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
-          kit.Name == Kit.Name);
-      }
+      base.AppendAdditionalMenuItems(menu);
 
       Menu_AppendSeparator(menu);
 
@@ -239,8 +231,6 @@ namespace ConnectorGrasshopper.Ops
           RequestCancellation();
         });
       }
-
-      base.AppendAdditionalComponentMenuItems(menu);
     }
 
     public void SetConverterFromKit(string kitName)
