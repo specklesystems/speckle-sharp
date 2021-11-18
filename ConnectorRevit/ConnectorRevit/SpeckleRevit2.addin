@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Speckle 2 for Revit</Name>
+    <Description>Speckle Connector for Revit</Description>
+    <Assembly>SpeckleRevit2\SpeckleConnectorRevit.dll</Assembly>
+    <FullClassName>Speckle.ConnectorRevit.Entry.App</FullClassName>
+    <ClientId>5AE0BD71-CDE6-40DC-8A9B-AB227DE75A52</ClientId>
+    <VendorId>speckle</VendorId>
+    <VendorDescription>Speckle: Empowering your design and construction data. For any problems, visit our community forum https://speckle.community</VendorDescription>
+  </AddIn>
+</RevitAddIns>

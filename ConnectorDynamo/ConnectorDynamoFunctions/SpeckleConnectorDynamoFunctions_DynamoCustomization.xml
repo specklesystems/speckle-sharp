@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<doc>
+  <assembly>
+    <name>SpeckleConnectorDynamoFunctions</name>
+  </assembly>
+  <namespaces>
+    <namespace name="Speckle.ConnectorDynamo.Functions">
+      <category>Speckle 2</category>
+    </namespace>
+    <namespace name="Speckle.ConnectorDynamo.Functions.Developer">
+      <!--important! extra space so it's indexed at the top and icon shows correctly-->
+      <category>Speckle 2. Developer</category>
+    </namespace>
+    <namespace name="Speckle.ConnectorDynamo.Functions.AAA">
+      <!--important! extra space so it's indexed at the top and icon shows correctly-->
+      <category>Speckle 2. Developer</category>
+    </namespace>
+  </namespaces>
+</doc>

@@ -1,0 +1,80 @@
+﻿<UserControl
+  x:Class="Speckle.ConnectorDynamo.ReceiveNode.ReceiveUi"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:src="clr-namespace:Speckle.ConnectorDynamo.ValueConverters"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleConnectorDynamo;component/Themes/Generic.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <src:BoolVisibConverter x:Key="BoolVisibConverter" />
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Button
+      x:Name="ReceiveStreamButton"
+      Margin="10,22,10,0"
+      HorizontalAlignment="Center"
+      HorizontalContentAlignment="Center"
+      md:ShadowAssist.ShadowDepth="Depth0"
+      IsEnabled="{Binding ReceiveEnabled}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      ToolTip="Receive objects from Speckle"
+      Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}, ConverterParameter='opposite'}">
+      <Image
+        Width="32"
+        Height="32"
+        Source="/SpeckleConnectorDynamo;Component/Assets/Receiver@32.png" />
+    </Button>
+    <Button
+      x:Name="CancelReceiveStreamButton"
+      Margin="10,22,10,0"
+      HorizontalAlignment="Center"
+      HorizontalContentAlignment="Center"
+      md:ButtonProgressAssist.IsIndeterminate="True"
+      md:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
+      md:ButtonProgressAssist.Value="{Binding Progress}"
+      md:ShadowAssist.ShadowDepth="Depth0"
+      Content="{md:PackIcon Kind=Stop,
+                            Size=20}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      ToolTip="Cancel"
+      Visibility="{Binding Transmitting, Converter={StaticResource BoolVisibConverter}}" />
+    <md:Badged
+      Margin="87,22,10,0"
+      Badge="{Binding ExpiredCount}"
+      BadgeColorZoneMode="SecondaryMid"
+      ToolTip="Has new data to send" />
+    <ToggleButton
+      Grid.Row="1"
+      Margin="0,5"
+      HorizontalAlignment="Center"
+      IsChecked="{Binding AutoUpdate}"
+      IsEnabled="{Binding AutoUpdateEnabled}"
+      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+      ToolTip="Toggle auto receiving" />
+    <TextBlock
+      Grid.Row="2"
+      Width="130"
+      Margin="10"
+      HorizontalAlignment="Center"
+      FontSize="10"
+      Foreground="OrangeRed"
+      Text="{Binding Message}"
+      TextAlignment="Center"
+      TextWrapping="Wrap" />
+  </Grid>
+</UserControl>

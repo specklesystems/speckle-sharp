@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.Civil2021</AssemblyName>
+    <RootNamespace>Objects.Converter.Civil</RootNamespace>
+    <DefineConstants>$(DefineConstants);CIVIL2021</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.Civil2021</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>Objects.Converter.Civil2021</Product>
+    <Version>2.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Converter for Civil3D 2021</Description>
+    <PackageTags>speckle objects converter civil3d</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.0.3" />
+    <PackageReference Include="Speckle.Civil3D.API" Version="2021.0.0.3" />
+  </ItemGroup>
+
+  <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
+
+</Project>

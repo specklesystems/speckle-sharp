@@ -1,0 +1,61 @@
+﻿<UserControl
+  x:Class="Speckle.ConnectorDynamo.CreateStreamNode.CreateStreamUi"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:src="clr-namespace:Speckle.ConnectorDynamo.ValueConverters"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleConnectorDynamo;component/Themes/Generic.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <src:BoolVisibConverter x:Key="BoolVisibConverter" />
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Button
+      x:Name="CreateStreamButton"
+      Margin="10,10,10,0"
+      HorizontalAlignment="Center"
+      HorizontalContentAlignment="Center"
+      md:ShadowAssist.ShadowDepth="Depth0"
+      IsEnabled="{Binding CreateEnabled}"
+      Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
+      ToolTip="Create a new stream (this is a one time operation)">
+      <Image
+        Width="32"
+        Height="32"
+        Source="/SpeckleConnectorDynamo;Component/Assets/CreateStream@32.png" />
+    </Button>
+
+    <ComboBox
+      Name="AccountsComboBox"
+      Grid.Row="1"
+      MinWidth="200"
+      Margin="10"
+      md:HintAssist.Hint="Account"
+      Background="#CBC6BE"
+      IsEnabled="{Binding CreateEnabled}"
+      ItemsSource="{Binding AccountList}"
+      SelectedItem="{Binding SelectedAccount}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel Orientation="Vertical">
+            <TextBlock Text="{Binding userInfo.name}" />
+            <TextBlock FontSize="9" Text="{Binding userInfo.email}" />
+            <TextBlock FontSize="9" Text="{Binding serverInfo.url}" />
+          </StackPanel>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+  </Grid>
+</UserControl>
