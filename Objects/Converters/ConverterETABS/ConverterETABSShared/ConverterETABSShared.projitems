@@ -48,6 +48,5 @@
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Materials\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\" />
   </ItemGroup>
 </Project>

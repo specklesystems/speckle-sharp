@@ -9,44 +9,44 @@ using System.Text;
 
 namespace Objects.Converter.ETABS
 {
-    public partial class ConverterETABS
+  public partial class ConverterETABS
+  {
+    public ResultSetAll ResultsToSpeckle()
     {
-        public ResultSetAll ResultsToSpeckle()
-        {
-            #region Retrieve frame names
-            int numberOfFrameNames = 0;
-            var frameNames = new string[] { };
-            
-            Model.FrameObj.GetNameList(ref numberOfFrameNames, ref frameNames);
-            frameNames.ToList();
-            List<string> convertedFrameNames = frameNames.ToList();
-            #endregion
+      #region Retrieve frame names
+      int numberOfFrameNames = 0;
+      var frameNames = new string[] { };
 
-            #region Retrieve pier names
+      Model.FrameObj.GetNameList(ref numberOfFrameNames, ref frameNames);
+      frameNames.ToList();
+      List<string> convertedFrameNames = frameNames.ToList();
+      #endregion
 
-            int numberOfPierNames = 0;
-            var pierNames = new string[] { };
-            
-            Model.PierLabel.GetNameList(ref numberOfPierNames, ref pierNames);
-            List<string> convertedPierNames = pierNames.ToList();
+      #region Retrieve pier names
 
-            #endregion
+      int numberOfPierNames = 0;
+      var pierNames = new string[] { };
 
-            #region Retrieve spandrel names
+      Model.PierLabel.GetNameList(ref numberOfPierNames, ref pierNames);
+      List<string> convertedPierNames = pierNames.ToList();
 
-            int numberOfSpandrelNames = 0;
-            var spandrelNames = new string[] { };
-            var isMultiStory = new bool[] { };
-            
-            Model.SpandrelLabel.GetNameList(ref numberOfSpandrelNames, ref spandrelNames, ref isMultiStory);
-            List<string> convertedSpandrelNames = spandrelNames.ToList();
-            
+      #endregion
 
-            #endregion
+      #region Retrieve spandrel names
 
-            ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), new ResultSet2D(), new ResultSet3D(), new ResultGlobal(), AllResultSetNodesToSpeckle());
+      int numberOfSpandrelNames = 0;
+      var spandrelNames = new string[] { };
+      var isMultiStory = new bool[] { };
 
-            return results;
-        }
+      Model.SpandrelLabel.GetNameList(ref numberOfSpandrelNames, ref spandrelNames, ref isMultiStory);
+      List<string> convertedSpandrelNames = spandrelNames.ToList();
+
+
+      #endregion
+
+      ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), new ResultSet2D(), new ResultSet3D(), new ResultGlobal(), AllResultSetNodesToSpeckle());
+
+      return results;
     }
+  }
 }

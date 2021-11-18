@@ -7,46 +7,46 @@ using ETABSv1;
 
 namespace Objects.Converter.ETABS
 {
-    public partial class ConverterETABS
+  public partial class ConverterETABS
+  {
+    public ModelInfo ModelInfoToSpeckle()
     {
-        public ModelInfo ModelInfoToSpeckle()
+      var modelInfo = new ModelInfo();
+      modelInfo.name = Model.GetModelFilename(false);
+      string programName, programVersion, programLevel;
+      programVersion = programName = programLevel = null;
+      Model.GetProgramInfo(ref programName, ref programVersion, ref programLevel);
+      modelInfo.application = programName;
+      modelInfo.settings = modelSettingsToSpeckle();
+      int numberItems = 0;
+      string[] items, data;
+      items = data = null;
+      Model.GetProjectInfo(ref numberItems, ref items, ref data);
+      if (numberItems != 0)
+      {
+        for (int index = 0; index < numberItems; index++)
         {
-            var modelInfo = new ModelInfo();
-            modelInfo.name = Model.GetModelFilename(false);
-            string programName, programVersion, programLevel;
-            programVersion = programName = programLevel = null;
-            Model.GetProgramInfo(ref programName, ref programVersion, ref programLevel);
-            modelInfo.application = programName;
-            modelInfo.settings = modelSettingsToSpeckle();
-            int numberItems = 0;
-            string[] items, data;
-            items = data = null;
-            Model.GetProjectInfo(ref numberItems, ref items, ref data);
-            if(numberItems != 0)
-            {
-                for(int index = 0; index <numberItems;index ++)
-                {
-                    switch (items[index])
-                    {
-                        default:
-                            break;
-                        case "Engineer":
-                            modelInfo.initials = data[index];
-                            break;
-                        case "Model Description":
-                            modelInfo.description = data[index];
-                            break;
-                        case "Project Name":
-                            modelInfo.projectName = data[index];
-                            break;
-                        case "Project Number":
-                            modelInfo.projectNumber = data[index];
-                            break;
-                    }
-                }
-            }
-            return modelInfo;
-
+          switch (items[index])
+          {
+            default:
+              break;
+            case "Engineer":
+              modelInfo.initials = data[index];
+              break;
+            case "Model Description":
+              modelInfo.description = data[index];
+              break;
+            case "Project Name":
+              modelInfo.projectName = data[index];
+              break;
+            case "Project Number":
+              modelInfo.projectNumber = data[index];
+              break;
+          }
         }
+      }
+      return modelInfo;
+
     }
+  }
 }

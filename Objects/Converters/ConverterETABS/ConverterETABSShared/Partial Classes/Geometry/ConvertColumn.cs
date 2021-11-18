@@ -7,11 +7,11 @@ using ETABSv1;
 
 namespace Objects.Converter.ETABS
 {
-    public partial class ConverterETABS
+  public partial class ConverterETABS
+  {
+    public Element1D ColumnToSpeckle(string name)
     {
-        public Element1D ColumnToSpeckle(string name)
-        {
-            return FrameToSpeckle(name);
-        } 
+      return FrameToSpeckle(name);
     }
+  }
 }
