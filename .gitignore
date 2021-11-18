@@ -363,3 +363,4 @@ ConnectorDynamo/ConnectorDynamo/dist/
 *.rhl
 
 speckle-sharp-ci-tools
+AddOn/.vscode
