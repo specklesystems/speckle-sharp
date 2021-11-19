@@ -6,5 +6,6 @@
 
 const char* const CommandNamespace 							= "Speckle";
 const char* const GetModelForElementsCommandName 			= "GetModelForElements";
+const char* const GetSelectedElementIdsCommandName 			= "GetSelectedElementIds";
 
 #endif
