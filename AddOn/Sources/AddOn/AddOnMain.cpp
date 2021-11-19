@@ -5,7 +5,8 @@
 #include "Process.hpp"
 #include "ResourceIds.hpp"
 
-#include "GetModelForElements.hpp"
+#include "Commands/GetModelForElements.hpp"
+#include "Commands/GetSelectedElementIds.hpp"
 
 
 #define CHECKERROR(f) { GSErrCode err = (f); if (err != NoError) { return err; } }
@@ -87,6 +88,7 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 static GSErrCode RegisterAddOnCommands ()
 {
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetModelForElements> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSelectedElementIds> ()));
 
 	return NoError;
 }
