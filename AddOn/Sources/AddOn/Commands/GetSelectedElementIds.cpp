@@ -1,6 +1,7 @@
 #include "GetSelectedElementIds.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
+#include "Utility.hpp"
 
 
 namespace AddOnCommands {
@@ -54,8 +55,12 @@ GS::Array<API_Guid> GetSelectedElementGuids ()
 	err = ACAPI_Selection_Get (&selectionInfo, &selNeigs, true);
 	if (err == NoError) {
 		if (selectionInfo.typeID != API_SelEmpty) {
-			for (const API_Neig& neig : selNeigs)
-				elementGuids.Push (neig.guid);
+			for (const API_Neig& neig : selNeigs) {
+				const API_Guid& elemGuid = neig.guid;
+				if (Utility::IsElement3D (elemGuid)) {
+					elementGuids.Push (elemGuid);
+				}
+			}
 		}
 	}
 
