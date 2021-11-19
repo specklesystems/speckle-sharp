@@ -13,6 +13,7 @@ using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Hatch = Objects.Other.Hatch;
+using HatchLoop = Objects.Other.HatchLoop;
 using Polyline = Objects.Geometry.Polyline;
 using Text = Objects.Other.Text;
 using RH = Rhino.DocObjects;
@@ -22,9 +23,11 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
-    public Rhino.Geometry.Hatch HatchToNative(Hatch hatch)
+    public Rhino.Geometry.Hatch[] HatchToNative(Hatch hatch)
     {
-      var curves = hatch.curves.Select(o => CurveToNative(o));
+
+      var curves = new List<Rhino.Geometry.Curve>();
+      curves = (hatch.loops != null) ? hatch.loops.Select(o => CurveToNative(o.Curve)).ToList() : hatch.curves.Select(o => CurveToNative(o)).ToList();
       var pattern = Doc.HatchPatterns.FindName(hatch.pattern);
       int index;
       if (pattern == null)
@@ -36,15 +39,21 @@ namespace Objects.Converter.RhinoGh
       else
         index = pattern.Index;
       var hatches = Rhino.Geometry.Hatch.Create(curves, index, hatch.rotation, hatch.scale, 0.001);
-      return hatches.First();
+
+      return hatches;
     }
     public Hatch HatchToSpeckle(Rhino.Geometry.Hatch hatch)
     {
       var _hatch = new Hatch();
 
-      var curves = hatch.Get3dCurves(true).ToList();
-      curves.AddRange(hatch.Get3dCurves(false));
-      _hatch.curves = curves.Select(o => CurveToSpeckle(o)).ToList();
+      // retrieve hatch loops
+      var loops = new List<HatchLoop>();
+      foreach (var outer in hatch.Get3dCurves(true).ToList())
+        loops.Add(new HatchLoop(CurveToSpeckle(outer), Other.HatchLoopType.Outer));
+      foreach (var inner in hatch.Get3dCurves(false).ToList())
+        loops.Add(new HatchLoop(CurveToSpeckle(inner), Other.HatchLoopType.Inner));
+
+      _hatch.loops = loops;
       _hatch.scale = hatch.PatternScale;
       _hatch.pattern = Doc.HatchPatterns.ElementAt(hatch.PatternIndex).Name;
       _hatch.rotation = hatch.PatternRotation;
@@ -107,22 +116,27 @@ namespace Objects.Converter.RhinoGh
       {
         if (CanConvertToNative(geo))
         {
-          GeometryBase converted = null;
+          List<GeometryBase> converted = new List<GeometryBase>();
           switch (geo)
           {
             case BlockInstance o:
               var instance = BlockInstanceToNative(o);
               if (instance != null)
               {
-                converted = instance.DuplicateGeometry();
+                converted.Add(instance.DuplicateGeometry());
                 Doc.Objects.Delete(instance);
               }
               break;
             default:
-              converted = (GeometryBase)ConvertToNative(geo);
+              var convertedObj = ConvertToNative(geo);
+              if (convertedObj.GetType().IsArray)
+                foreach (object o in (Array)convertedObj)
+                  converted.Add((GeometryBase)o);
+              else
+                converted.Add((GeometryBase)convertedObj);
               break;
           }
-          if (converted == null)
+          if (converted.Count == 0)
             continue;
           var layerName = (geo["Layer"] != null) ? $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}" : $"{commitInfo}";
           int index = 1;
@@ -132,7 +146,7 @@ namespace Objects.Converter.RhinoGh
           {
             LayerIndex = index
           };
-          geometry.Add(converted);
+          geometry.AddRange(converted);
           attributes.Add(attribute);
         }
       }
@@ -162,7 +176,6 @@ namespace Objects.Converter.RhinoGh
 
       var _instance = new BlockInstance()
       {
-        insertionPoint = PointToSpeckle(instance.InsertionPoint),
         transform = transformArray,
         blockDefinition = def,
         units = ModelUnits

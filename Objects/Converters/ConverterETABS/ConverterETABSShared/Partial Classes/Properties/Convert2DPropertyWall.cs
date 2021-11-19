@@ -31,6 +31,7 @@ namespace Objects.Converter.ETABS
             specklePropery2DWall.shellType = speckleShellType;
             setProperties(specklePropery2DWall, matProp, thickness, property);
             specklePropery2DWall.type2D = Structural.ETABS.Analysis.ETABSPropertyType2D.Wall;
+            specklePropery2DWall.applicationId = GUID;
             return specklePropery2DWall;
 
         }

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
+using Eto.Forms;
 using Grasshopper.Kernel;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -20,6 +21,7 @@ namespace ConnectorGrasshopper
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
 
+    
     public override GH_LoadingInstruction PriorityLoad()
     {
       Setup.Init(Applications.Grasshopper);
@@ -43,10 +45,8 @@ namespace ConnectorGrasshopper
 
       // Update the selected kit
       selectedKit = loadedKits.First(kit => clickedItem.Text.Trim() == kit.Name);
-
-      var key = "Speckle2:kit.default.name";
-      Grasshopper.Instances.Settings.SetValue(key, selectedKit.Name);
-      Grasshopper.Instances.Settings.WritePersistentSettings();
+      SpeckleGHSettings.SelectedKitName = selectedKit.Name;
+      
       // Update the check status of all
       foreach (var item in kitMenuItems)
       {
@@ -89,7 +89,35 @@ namespace ConnectorGrasshopper
       }
       
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      var useSchemaTag = SpeckleGHSettings.UseSchemaTag;
+      var schemaConversionHeader = speckleMenu.DropDown.Items.Add("Select the default Schema conversion option:") as ToolStripMenuItem;
 
+      var objectItem = schemaConversionHeader.DropDown.Items.Add("Convert as Schema object.") as ToolStripMenuItem;
+      objectItem.Checked = !useSchemaTag;
+      
+      var tagItem = schemaConversionHeader.DropDown.Items.Add($"Convert as geometry with 'Speckle Schema' attached") as ToolStripMenuItem;
+      tagItem.Checked = useSchemaTag;
+      tagItem.ToolTipText =
+        "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
+    
+      tagItem.Click += (s, args) =>
+      {
+        useSchemaTag = true;
+        tagItem.Checked = useSchemaTag;
+        objectItem.Checked = !useSchemaTag;
+        SpeckleGHSettings.UseSchemaTag = useSchemaTag;
+      };
+      
+      objectItem.Click += (s, args) =>
+      {
+        useSchemaTag = false;
+        tagItem.Checked = useSchemaTag;
+        objectItem.Checked = !useSchemaTag;
+        SpeckleGHSettings.UseSchemaTag = useSchemaTag;
+      };
+      
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;

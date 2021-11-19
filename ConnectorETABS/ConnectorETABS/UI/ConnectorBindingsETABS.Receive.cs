@@ -20,9 +20,6 @@ namespace Speckle.ConnectorETABS.UI
     public partial class ConnectorBindingsETABS : ConnectorBindings
 
     {
-
-
-
         #region receiving
         public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
         {

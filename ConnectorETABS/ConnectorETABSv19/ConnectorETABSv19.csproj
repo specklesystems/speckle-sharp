@@ -68,6 +68,10 @@
       <Project>{6185b1a1-0a12-44b1-8ac5-0ed48147fb21}</Project>
       <Name>PolygonMesher</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+      <Project>{58bee488-6b32-4b54-93bb-a9fcb04c5a48}</Project>
+      <Name>Objects</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
