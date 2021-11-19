@@ -5,6 +5,8 @@
 
 namespace AddOnCommands {
 
+constexpr const char* SelectedElementIdsField = "selectedElementIds";
+
 
 GS::String GetSelectedElementIds::GetNamespace () const
 {
@@ -42,9 +44,40 @@ API_AddOnCommandExecutionPolicy GetSelectedElementIds::GetExecutionPolicy () con
 }
 
 
+GS::Array<API_Guid> GetSelectedElementGuids ()
+{
+	GSErrCode				err;
+	GS::Array<API_Guid>		elementGuids;
+	API_SelectionInfo		selectionInfo;
+	GS::Array<API_Neig>		selNeigs;
+
+	err = ACAPI_Selection_Get (&selectionInfo, &selNeigs, true);
+	if (err == NoError) {
+		if (selectionInfo.typeID != API_SelEmpty) {
+			for (const API_Neig& neig : selNeigs)
+				elementGuids.Push (neig.guid);
+		}
+	}
+
+	BMKillHandle ((GSHandle *) &selectionInfo.marquee.coords);
+
+	return elementGuids;
+}
+
+
 GS::ObjectState GetSelectedElementIds::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-	return GS::ObjectState ();
+
+	GS::Array<API_Guid>	elementGuids = GetSelectedElementGuids ();
+
+	GS::ObjectState retVal;
+
+	const auto& listAdder = retVal.AddList<GS::UniString> (SelectedElementIdsField);
+	for (const API_Guid& guid : elementGuids) {
+		listAdder (APIGuidToString (guid));
+	}
+
+	return retVal;
 }
 
 
