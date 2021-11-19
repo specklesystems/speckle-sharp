@@ -412,6 +412,10 @@ namespace Speckle.ConnectorMicroStationOpenRoads.UI
               state.Errors.Add(new Exception($"Failed to bake object {@base.id} of type {@base.speckle_type}."));
             }
           }
+          else
+          {
+            state.Errors.Add(new Exception($"Failed to convert object {@base.id} of type {@base.speckle_type}."));
+          }
         }
         catch (Exception e)
         {

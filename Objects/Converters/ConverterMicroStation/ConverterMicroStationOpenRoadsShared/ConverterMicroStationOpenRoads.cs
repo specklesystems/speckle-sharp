@@ -218,10 +218,10 @@ namespace Objects.Converter.MicroStationOpenRoads
       switch (@object)
       {
         case Point o:
-          return Point3dToNative(o);
+          return PointToNative(o);
 
         case Vector o:
-          return Vector3dToNative(o);
+          return VectorToNative(o);
 
         case Interval o:
           return IntervalToNative(o);

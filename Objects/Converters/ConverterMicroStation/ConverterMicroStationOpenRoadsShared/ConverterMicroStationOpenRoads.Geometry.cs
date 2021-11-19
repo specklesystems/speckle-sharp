@@ -1,14 +1,16 @@
-﻿using Objects.Geometry;
+﻿using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.GeometryNET;
+using Objects.Geometry;
 using Objects.Primitive;
-using Objects.Other;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Arc = Objects.Geometry.Arc;
+using BIM = Bentley.Interop.MicroStationDGN;
+using BMIU = Bentley.MstnPlatformNET.InteropServices.Utilities;
 using Box = Objects.Geometry.Box;
-using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
@@ -20,12 +22,6 @@ using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-
-using Bentley.DgnPlatformNET;
-using Bentley.DgnPlatformNET.Elements;
-using Bentley.GeometryNET;
-using BMIU = Bentley.MstnPlatformNET.InteropServices.Utilities;
-using BIM = Bentley.Interop.MicroStationDGN;
 
 namespace Objects.Converter.MicroStationOpenRoads
 {
@@ -112,6 +108,13 @@ namespace Objects.Converter.MicroStationOpenRoads
       return myPoint;
     }
 
+    public LineElement PointToNative(Point pt)
+    {
+      DSegment3d dSegment = new DSegment3d(Point3dToNative(pt), Point3dToNative(pt));
+      var _line = new LineElement(Model, null, dSegment);
+      return _line;
+    }
+
     // Vector (2d and 3d)
     public Vector Vector2dToSpeckle(DVector2d pt, string units = null)
     {
@@ -130,7 +133,7 @@ namespace Objects.Converter.MicroStationOpenRoads
       return new Vector(pt.X, pt.Y, pt.Z, units ?? ModelUnits);
     }
 
-    public DVector3d Vector3dToNative(Vector pt)
+    public DVector3d VectorToNative(Vector pt)
     {
       return new DVector3d(
         ScaleToNative(pt.x, pt.units, UoR),
@@ -202,20 +205,23 @@ namespace Objects.Converter.MicroStationOpenRoads
 
     public DPlane3d PlaneToNative(Plane plane)
     {
-      return new DPlane3d(Point3dToNative(plane.origin), Vector3dToNative(plane.normal));
+      return new DPlane3d(Point3dToNative(plane.origin), VectorToNative(plane.normal));
     }
 
-    // Line 
-    public Line LineToSpeckle(LineElement line, string units = null)
+    // Line (when the start and end point are the same, return line as point)
+    public Base LineToSpeckle(LineElement line, string units = null)
     {
       CurvePathQuery q = CurvePathQuery.GetAsCurvePathQuery(line);
       if (q != null)
       {
         CurveVector vec = q.GetCurveVector();
         if (vec != null)
-        {
-          double length = vec.SumOfLengths() / UoR;
+        {          
           vec.GetStartEnd(out DPoint3d startPoint, out DPoint3d endPoint);
+          if (startPoint == endPoint) 
+            return Point3dToSpeckle(startPoint, units);
+
+          double length = vec.SumOfLengths() / UoR;
 
           var u = units ?? ModelUnits;
           var _line = new Line(Point3dToSpeckle(startPoint), Point3dToSpeckle(endPoint), u);
@@ -473,12 +479,9 @@ namespace Objects.Converter.MicroStationOpenRoads
       var endAngle = (double)arc.endAngle;
       var center = Point3dToNative(arc.plane.origin);
 
-      //DEllipse3d.TryCircularArcFromStartEndArcLength(Point3dToNative(arc.startPoint), Point3dToNative(arc.endPoint), ScaleToNative((double)arc.length, arc.units, UoR), Vector3dToNative(arc.plane.normal), out DEllipse3d ellipse);
       DEllipse3d.TryCircularArcFromStartMiddleEnd(Point3dToNative(arc.startPoint), Point3dToNative(arc.midPoint), Point3dToNative(arc.endPoint), out DEllipse3d ellipse);
-      //DEllipse3d.TryCircularArcFromCenterStartEnd(center, Point3dToNative(arc.startPoint), Point3dToNative(arc.startPoint), out DEllipse3d ellipse);
 
       var _arc = new ArcElement(Model, null, ellipse);
-      //var _arc = new ArcElement(Model, null, center, ScaleToNative(radius, arc.units, UoR), ScaleToNative(radius, arc.units, UoR), 0, startAngle, Math.Abs(endAngle - startAngle));
       return _arc;
     }
 
@@ -609,7 +612,7 @@ namespace Objects.Converter.MicroStationOpenRoads
       var radius = (double)ellipse.radius;
       var plane = ellipse.plane;
       var center = Point3dToNative(plane.origin);
-      var normal = Vector3dToNative(plane.normal);
+      var normal = VectorToNative(plane.normal);
 
       var e = DEllipse3d.FromCenterRadiusNormal(center, ScaleToNative(radius, ellipse.units, UoR), normal);
       var _ellipse = new EllipseElement(Model, null, e);
@@ -803,42 +806,6 @@ namespace Objects.Converter.MicroStationOpenRoads
 
 
     //// Complex string element (complex chain)
-    //public Polycurve PolycurveToSpeckle(ComplexStringElement complexString, string units = null)
-    //{
-    //    //terrible, need to figure out how to avoid using COM interface!! 
-    //    BIM.ComplexStringElement complexStringElement = BMIU.ComApp.ActiveModelReference.GetElementByID(complexString.ElementId) as BIM.ComplexStringElement;
-
-    //    var closed = complexStringElement.IsClosedElement();
-    //    var length = complexStringElement.Length;
-
-    //    var subElements = complexStringElement.GetSubElements().BuildArrayFromContents();
-
-    //    var segments = ProcessComplexElementSegments(subElements);
-
-    //    DRange3d range = new DRange3d();
-    //    CurvePathQuery q = CurvePathQuery.GetAsCurvePathQuery(complexString);
-    //    if (q != null)
-    //    {
-    //        CurveVector vec = q.GetCurveVector();
-    //        if (vec != null)
-    //        {
-    //            vec.GetRange(out range);
-    //        }
-    //    }
-
-    //    var _polycurve = new Polycurve();
-
-    //    _polycurve.units = units ?? ModelUnits;
-    //    _polycurve.closed = closed;
-    //    _polycurve.length = length;
-    //    _polycurve.segments = segments;
-
-    //    bool worldXY = range.Low.Z == 0 && range.High.Z == 0 ? true : false;
-    //    _polycurve.bbox = BoxToSpeckle(range, worldXY);
-
-    //    return _polycurve;
-    //}
-
     public ComplexStringElement PolycurveToNative(Polycurve polycurve)
     {
       var _polycurve = new ComplexStringElement(Model, null);
@@ -866,7 +833,7 @@ namespace Objects.Converter.MicroStationOpenRoads
         switch (subElementType)
         {
           case MSElementType.Line:
-            var _line = LineToSpeckle(subElement as LineElement);
+            var _line = (Line)LineToSpeckle(subElement as LineElement);
             segments.Add(_line);
             break;
           case MSElementType.LineString:
@@ -1243,7 +1210,7 @@ namespace Objects.Converter.MicroStationOpenRoads
           return BSplineCurveToSpeckle(crv, units);
 
         case LineElement line:
-          return LineToSpeckle(line, units);
+          return (Line)LineToSpeckle(line, units);
 
         case LineStringElement polyLine:
           return PolylineToSpeckle(polyLine, units);
