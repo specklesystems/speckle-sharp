@@ -34,7 +34,7 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-#CMake Visual Studio 2019 build folder - by okezdi
+#CMake Visual Studio 2019 build folder
 [Bb]uild/
 
 # Visual Studio 2015/2017 cache/options directory
