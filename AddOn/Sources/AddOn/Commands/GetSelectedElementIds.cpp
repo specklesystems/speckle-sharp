@@ -5,7 +5,7 @@
 
 namespace AddOnCommands {
 
-constexpr const char* SelectedElementIdsField = "selectedElementIds";
+static const char* SelectedElementIdsField = "selectedElementIds";
 
 
 GS::String GetSelectedElementIds::GetNamespace () const
