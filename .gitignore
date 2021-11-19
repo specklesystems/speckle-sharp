@@ -36,6 +36,7 @@ bld/
 
 #CMake Visual Studio 2019 build folder
 [Bb]uild/
+AddOn/out
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
