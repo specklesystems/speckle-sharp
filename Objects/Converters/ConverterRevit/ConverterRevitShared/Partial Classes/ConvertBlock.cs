@@ -18,13 +18,14 @@ namespace Objects.Converter.Revit
     // Creates a generic model instance in a project or family doc
     public Group BlockInstanceToNative(BlockInstance instance)
     {
-
-      string result = null;
-
       // Base point
-      var basePoint = PointToNative(instance.GetInsertionPoint());
+      var basePoint = PointToNative(Point.FromList(new [] {
+        instance.transform[ 3 ]/ instance.transform[ 15 ],
+        instance.transform[ 7 ] / instance.transform[ 15 ],
+        instance.transform[ 11 ] / instance.transform[ 15 ]
+      }, instance.units));
 
-      // Get or make family from block definition
+      // Get or make group from block definition
       GroupType block_def = new FilteredElementCollector(Doc)
         .OfClass(typeof(GroupType))
         .OfType<GroupType>()
