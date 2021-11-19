@@ -7,5 +7,6 @@
 #define CommandNamespace 						"Speckle";
 #define GetModelForElementsCommandName 			"GetModelForElements";
 #define GetSelectedElementIdsCommandName 		"GetSelectedElementIds";
+#define GetElementTypesCommandName				"GetElementTypes";
 
 #endif
