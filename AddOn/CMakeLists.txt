@@ -113,11 +113,11 @@ endif ()
 
 # AddOn
 
-file (GLOB AddOnHeaderFiles
+file (GLOB_RECURSE AddOnHeaderFiles
 	${AddOnSourcesFolder}/*.h
 	${AddOnSourcesFolder}/*.hpp
 )
-file (GLOB AddOnSourceFiles
+file (GLOB_RECURSE AddOnSourceFiles
 	${AddOnSourcesFolder}/*.c
 	${AddOnSourcesFolder}/*.cpp
 )
