@@ -5,6 +5,12 @@
 #include "Process.hpp"
 #include "ResourceIds.hpp"
 
+#include "GetModelForElements.hpp"
+
+
+#define CHECKERROR(f) { GSErrCode err = (f); if (err != NoError) { return err; } }
+
+
 static const GSResID AddOnInfoID 			= ID_ADDON_INFO;
 static const Int32 AddOnNameID 				= 1;
 static const Int32 AddOnDescriptionID 		= 2;
@@ -78,6 +84,13 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 	return NoError;
 }
 
+static GSErrCode RegisterAddOnCommands ()
+{
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetModelForElements> ()));
+
+	return NoError;
+}
+
 API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 {
 	RSGetIndString (&envir->addOnInfo.name, AddOnInfoID, AddOnNameID, ACAPI_GetOwnResModule ());
@@ -93,6 +106,8 @@ GSErrCode __ACDLL_CALL RegisterInterface (void)
 
 GSErrCode __ACENV_CALL Initialize (void)
 {
+	CHECKERROR (RegisterAddOnCommands ());
+
 	return ACAPI_Install_MenuHandler (AddOnMenuID, MenuCommandHandler);
 }
 
