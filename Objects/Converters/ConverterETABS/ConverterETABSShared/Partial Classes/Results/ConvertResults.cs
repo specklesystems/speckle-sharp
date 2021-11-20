@@ -40,11 +40,22 @@ namespace Objects.Converter.ETABS
             
             Model.SpandrelLabel.GetNameList(ref numberOfSpandrelNames, ref spandrelNames, ref isMultiStory);
             List<string> convertedSpandrelNames = spandrelNames.ToList();
-            
+
 
             #endregion
 
-            ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), new ResultSet2D(), new ResultSet3D(), new ResultGlobal(), AllResultSetNodesToSpeckle());
+            #region Retrieve area names
+
+            int numberOfAreaNames = 0;
+            var areaNames = new string[] { };
+
+            Model.AreaObj.GetNameList(ref numberOfAreaNames, ref areaNames);
+
+            List<string> convertedAreaNames = areaNames.ToList();
+
+            #endregion
+
+            ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), AreaResultSet2dToSpeckle(convertedAreaNames), new ResultSet3D(), new ResultGlobal(), AllResultSetNodesToSpeckle());
 
             return results;
         }

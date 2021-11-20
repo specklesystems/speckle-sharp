@@ -82,15 +82,28 @@ namespace Objects.Converter.ETABS
                 coordinates.Add(node.basePoint.z);
             }
 
-            PolygonMesher polygonMesher = new PolygonMesher();
+                #region Get orientation angle
+                double angle = 0;
+                bool advanced = true;
+
+                Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
+
+                speckleStructArea.orientationAngle = angle;
+
+                #endregion
+
+                PolygonMesher polygonMesher = new PolygonMesher();
             polygonMesher.Init(coordinates);
             var faces = polygonMesher.Faces();
             var vertices = polygonMesher.Coordinates;
             speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
+
+
             
 
                 SpeckleModel.elements.Add(speckleStructArea);
             }
+
 
 
             return speckleStructArea;
