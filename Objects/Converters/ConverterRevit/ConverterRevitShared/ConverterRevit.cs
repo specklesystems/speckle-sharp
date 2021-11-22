@@ -8,6 +8,7 @@ using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
+using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit
 {
@@ -382,6 +383,18 @@ namespace Objects.Converter.Revit
 
         case BE.Space o:
           return SpaceToNative(o);
+        //Structural 
+        case STR.Geometry.Element1D o:
+            return AnalyticalStickToNative(o);
+
+        case STR.Geometry.Element2D o:
+            return AnalyticalSurfaceToNative(o);
+
+        case STR.Geometry.Node o:
+            return AnalyticalNodeToNative(o);
+
+        case STR.Analysis.Model o:
+            return StructuralModelToNative(o);
 
         // other
         case Other.BlockInstance o:
@@ -502,6 +515,11 @@ namespace Objects.Converter.Revit
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
+        //Structural
+        STR.Geometry.Element1D _ => true,
+        STR.Geometry.Element2D _ => true,
+        STR.Geometry.Node _ => true,
+        STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
         _ => false
 

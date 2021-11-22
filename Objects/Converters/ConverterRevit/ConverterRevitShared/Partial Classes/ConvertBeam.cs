@@ -28,7 +28,10 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitBeam != null)
       {
-        level = GetLevelByName(speckleRevitBeam.level.name);
+        if(level  != null)
+        {
+          level = GetLevelByName(speckleRevitBeam.level.name);
+        }
       }
 
       if (level == null)

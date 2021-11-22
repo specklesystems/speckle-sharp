@@ -9,6 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv18", "Connec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{8E8370E0-3112-4B42-AB96-A487BA00A87A}"
+	ProjectSection(SolutionItems) = preProject
+		..\Objects\Converters\ConverterETABS\ConverterETABSShared\Partial Classes\Properties\.editorconfig = ..\Objects\Converters\ConverterETABS\ConverterETABSShared\Partial Classes\Properties\.editorconfig
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{C1D58C0E-702F-45F7-8B04-7ACA00966809}"
 EndProject
@@ -31,6 +34,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABSv19", "ConnectorETABSv19\ConnectorETABSv19.csproj", "{5EB09853-934A-43E1-8E29-AB5EDCBC2B88}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterETABSTests", "ConverterETABSTests\ConverterETABSTests.csproj", "{C3159E96-9B5F-4FAD-AE1A-92B3D90C88D6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{38BDF76A-DE08-4B2F-A677-6F4A93BEDDB2}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
