@@ -272,6 +272,20 @@ namespace Tests
 
       Assert.AreEqual(color, test.TestField);
     }
-    
+
+    private class StringDateTimeRegressionMock : Base
+    {
+      public String TestField { get; set; }
+    }
+    [Test]
+    public void StringDateTimeRegression()
+    {
+      var mockBase = new StringDateTimeRegressionMock { TestField = "2021-11-12T11:32:01" };
+
+      var result = Operations.Serialize(mockBase);
+      var test = (StringDateTimeRegressionMock)Operations.Deserialize(result);
+
+      Assert.AreEqual(mockBase.TestField, test.TestField);
+    }
   }
 }
