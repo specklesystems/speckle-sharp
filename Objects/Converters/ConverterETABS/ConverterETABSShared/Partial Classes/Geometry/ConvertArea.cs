@@ -8,12 +8,13 @@ using Objects.Structural.ETABS.Properties;
 using Speckle.Core.Models;
 using StructuralUtilities.PolygonMesher;
 using System.Linq;
+using Objects.Structural.ETABS.Geometry;
 
 namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object AreaToNative(Element2D area)
+    public object AreaToNative(ETABSElement2D area)
     {
       if (GetAllAreaNames(Model).Contains(area.name))
       {
@@ -35,6 +36,8 @@ namespace Objects.Converter.ETABS
       double[] y = Y.ToArray();
       double[] z = Z.ToArray();
 
+      
+
       if (area.property != null)
       {
         Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
@@ -49,13 +52,15 @@ namespace Objects.Converter.ETABS
       {
         Model.AreaObj.ChangeName(name, area.name);
       }
+      double[] values = area.modifiers;
+      Model.AreaObj.SetModifiers(area.name, ref values);
       return name;
 
     }
     public Element2D AreaToSpeckle(string name)
     {
       string units = ModelUnits();
-      var speckleStructArea = new Element2D();
+      var speckleStructArea = new ETABSElement2D();
 
       speckleStructArea.name = name;
       int numPoints = 0;
@@ -85,6 +90,15 @@ namespace Objects.Converter.ETABS
       var faces = polygonMesher.Faces();
       var vertices = polygonMesher.Coordinates;
       speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
+
+      //Model.AreaObj.GetModifiers(area, ref value);
+      //speckleProperty2D.modifierInPlane = value[2];
+      //speckleProperty2D.modifierBending = value[5];
+      //speckleProperty2D.modifierShear = value[6];
+
+      double[] values = null;
+      Model.AreaObj.GetModifiers(name, ref values);
+      speckleStructArea.modifiers = values;
 
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);

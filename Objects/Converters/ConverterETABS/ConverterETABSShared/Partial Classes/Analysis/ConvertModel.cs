@@ -11,6 +11,7 @@ using Objects.Structural.GSA.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.ETABS.Loading;
 using Speckle.Core.Models;
+using Objects.Structural.ETABS.Geometry;
 using System.Linq;
 using ETABSv1;
 
@@ -71,7 +72,7 @@ namespace Objects.Converter.ETABS
           }
           else
           {
-            AreaToNative((Element2D)element);
+            AreaToNative((ETABSElement2D)element);
           }
         }
       }

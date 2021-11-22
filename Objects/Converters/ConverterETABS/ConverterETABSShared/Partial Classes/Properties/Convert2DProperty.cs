@@ -54,10 +54,7 @@ namespace Objects.Converter.ETABS
       }
 
       double[] value = null;
-      //Model.AreaObj.GetModifiers(area, ref value);
-      //speckleProperty2D.modifierInPlane = value[2];
-      //speckleProperty2D.modifierBending = value[5];
-      //speckleProperty2D.modifierShear = value[6];
+
       return null;
     }
 
