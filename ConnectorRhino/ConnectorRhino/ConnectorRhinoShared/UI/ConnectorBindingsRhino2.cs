@@ -310,88 +310,99 @@ namespace SpeckleRhino
     // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
-      var converted = converter.ConvertToNative(obj);
-      var convertedRH = converted as Rhino.Geometry.GeometryBase;
-
-      if (convertedRH != null)
+      var converted = converter.ConvertToNative(obj); // this may be an array, eg hatches
+      if (converted == null)
       {
-        if (convertedRH.IsValidWithLog(out string log))
+        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}.");
+        converter.Report.LogConversionError(exception);
+        return;
+      }
+
+      var convertedList = new List<object>();
+      if (converted.GetType().IsArray)
+        foreach (object o in (Array)converted)
+          convertedList.Add(o);
+      else
+        convertedList.Add(converted);
+
+      foreach (var convertedItem in convertedList)
+      {
+        var convertedRH = convertedItem as Rhino.Geometry.GeometryBase;
+        if (convertedRH != null)
         {
-          Layer bakeLayer = Doc.GetLayer(layerPath, true);
-          if (bakeLayer != null)
+          if (convertedRH.IsValidWithLog(out string log))
           {
-            var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
-
-            // handle display
-            Base display = obj[@"displayStyle"] as Base;
-            if (display != null)
+            Layer bakeLayer = Doc.GetLayer(layerPath, true);
+            if (bakeLayer != null)
             {
-              var color = display["color"] as int?;
-              var lineStyle = display["linetype"] as string;
-              var lineWidth = display["lineweight"] as double?;
+              var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
 
-              if (color != null)
+              // handle display
+              Base display = obj[@"displayStyle"] as Base;
+              if (display != null)
               {
-                attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
-              }
-              if (lineWidth != null)
-                attributes.PlotWeight = (double)lineWidth;
-              if (lineStyle != null)
-              {
-                var ls = Doc.Linetypes.FindName(lineStyle);
-                if (ls != null)
-                {
-                  attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
-                  attributes.LinetypeIndex = ls.Index;
-                }
-              }
-            }
-            /* Not implemented since revit displaymesh objs do not have render materials attached
-            else
-            {
-              Base render = obj[@"renderMaterial"] as Base;
-              if (render != null)
-              {
-                var color = render["diffuse"] as int?;
+                var color = display["color"] as int?;
+                var lineStyle = display["linetype"] as string;
+                var lineWidth = display["lineweight"] as double?;
 
                 if (color != null)
                 {
                   attributes.ColorSource = ObjectColorSource.ColorFromObject;
                   attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
                 }
+                if (lineWidth != null)
+                  attributes.PlotWeight = (double)lineWidth;
+                if (lineStyle != null)
+                {
+                  var ls = Doc.Linetypes.FindName(lineStyle);
+                  if (ls != null)
+                  {
+                    attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+                    attributes.LinetypeIndex = ls.Index;
+                  }
+                }
+              }
+              /* Not implemented since revit displaymesh objs do not have render materials attached
+              else
+              {
+                Base render = obj[@"renderMaterial"] as Base;
+                if (render != null)
+                {
+                  var color = render["diffuse"] as int?;
+
+                  if (color != null)
+                  {
+                    attributes.ColorSource = ObjectColorSource.ColorFromObject;
+                    attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
+                  }
+                }
+              }
+              */
+
+              // handle schema
+              string schema = obj["SpeckleSchema"] as string;
+              if (schema != null)
+                attributes.SetUserString("SpeckleSchema", schema);
+
+              if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
+              {
+                var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
+                converter.Report.LogConversionError(exception);
               }
             }
-            */
-
-            // handle schema
-            string schema = obj["SpeckleSchema"] as string;
-            if (schema != null)
-              attributes.SetUserString("SpeckleSchema", schema);
-
-            if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
+            else
             {
-              var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
+              var exception = new Exception($"Could not create layer {layerPath} to bake objects into.");
               converter.Report.LogConversionError(exception);
             }
           }
           else
           {
-            var exception = new Exception($"Could not create layer {layerPath} to bake objects into.");
+            var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}");
             converter.Report.LogConversionError(exception);
           }
         }
-        else
-        {
-          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}");
-          converter.Report.LogConversionError(exception);
-        }
-      }
-      else if (converted == null)
-      {
-        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}.");
-        converter.Report.LogConversionError(exception);
-      }
+      }   
     }
 
     #endregion

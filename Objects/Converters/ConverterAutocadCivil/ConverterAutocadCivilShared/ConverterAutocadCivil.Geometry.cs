@@ -695,6 +695,21 @@ namespace Objects.Converter.AutocadCivil
           return NurbsToSpeckle(curve as NurbCurve3d);
       }
     }
+    public ICurve CurveToSpeckle(Curve2d curve, string units = null)
+    {
+      var u = units ?? ModelUnits;
+
+      // note: some curve2ds may not have endpoints!
+      switch (curve)
+      {
+        case LineSegment2d line:
+          return LineToSpeckle(line);
+        case CircularArc2d arc:
+          return ArcToSpeckle(arc);
+        default:
+          return NurbsToSpeckle(curve as NurbCurve2d);
+      }
+    }
     public Curve NurbsToSpeckle(NurbCurve2d curve)
     {
       var _curve = new Curve();

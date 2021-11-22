@@ -493,8 +493,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.AutocadAppName);
-      converter.SetContextDocument(Doc);
-
       var streamId = state.StreamId;
       var client = state.Client;
 
@@ -531,6 +529,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
+        // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
+        converter.SetContextDocument(Doc);
+
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
