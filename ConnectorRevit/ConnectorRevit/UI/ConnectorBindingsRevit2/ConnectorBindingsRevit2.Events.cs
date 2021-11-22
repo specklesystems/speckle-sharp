@@ -19,8 +19,6 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
-
-
     public override async void WriteStreamsToFile(List<StreamState> streams)
     {
       await RevitTask.RunAsync(
