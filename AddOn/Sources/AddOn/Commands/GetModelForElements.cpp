@@ -1,94 +1,186 @@
 #include "GetModelForElements.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
+#include "Sight.hpp"
 
 
 namespace AddOnCommands {
 
 
-static const char* VerteciesFieldName = "vertecies";
-static const char* VertexXFieldName = "x";
-static const char* VertexYFieldName = "y";
-static const char* VertexZFieldName = "z";
-static const char* ModelFieldName = "model";
-static const char* ModelsFieldName = "models";
-static const char* ElementIdFieldName = "elementId";
-static const char* ElementIdsFieldName = "elementIds";
+static UInt32			MaximumSupportedPolygonPoints	= 4;
+static const char*		VerteciesFieldName				= "vertecies";
+static const char*		VertexXFieldName				= "x";
+static const char*		VertexYFieldName				= "y";
+static const char*		VertexZFieldName				= "z";
+static const char*		PolygonsFieldName				= "polygons";
+static const char*		PointIdsFieldName				= "pointIds";
+static const char*		ModelFieldName					= "model";
+static const char*		ModelsFieldName					= "models";
+static const char*		BodiesFieldName					= "bodies";
+static const char*		ElementIdFieldName				= "elementId";
+static const char*		ElementIdsFieldName				= "elementIds";
 
 
-static GS::Array<API_Coord3D> GetVerticiesOfBody (Int32 bodyIdx, const API_Coord& dbOffset)
+class Model3DInfo {
+public:
+	void AddVertex (double x, double y, double z)
+	{
+		vertecis.PushNew (x, y, z);
+	}
+
+	void AddPolygon (const GS::Array<Int32>& pointIds)
+	{
+		polygons.PushNew (pointIds);
+	}
+
+	GSErrCode Store (GS::ObjectState& os) const
+	{
+		os.Add (VerteciesFieldName, vertecis);
+		os.Add (PolygonsFieldName, polygons);
+
+		return NoError;
+	}
+
+private:
+	class Vertex {
+	public:
+		Vertex (double x, double y, double z) : x (x), y (y), z (z)
+		{
+		}
+
+		GSErrCode Store (GS::ObjectState& os) const
+		{
+			os.Add (VertexXFieldName, x);
+			os.Add (VertexYFieldName, y);
+			os.Add (VertexZFieldName, z);
+
+			return NoError;
+		}
+
+	private:
+		double x;
+		double y;
+		double z;
+	};
+
+	class Polygon {
+	public:
+		Polygon (const GS::Array<Int32>& pointIds) : pointIds (pointIds)
+		{
+		}
+
+		GSErrCode Store (GS::ObjectState& os) const
+		{
+			os.Add (PointIdsFieldName, pointIds);
+
+			return NoError;
+		}
+
+	private:
+		GS::Array<Int32> pointIds;
+	};
+
+	GS::Array<Vertex> vertecis;
+	GS::Array<Polygon> polygons;
+};
+
+
+static GS::Array<Int32> GetModel3DInfoPolygon (const Modeler::MeshBody& body, Int32 polygonIdx, Int32 convexPolygonIdx)
 {
-	GS::Array<API_Coord3D> result;
+	GS::Array<Int32> polygonPoints;
+	for (Int32 convexPolygonVertexIdx = 0; convexPolygonVertexIdx < body.GetConvexPolygonVertexCount (polygonIdx, convexPolygonIdx); ++convexPolygonVertexIdx) {
+		polygonPoints.Push (body.GetConvexPolygonVertexIndex (polygonIdx, convexPolygonIdx, convexPolygonVertexIdx));
+	}
 
-	API_Component3D component = {};
-	component.header.typeID = API_BodyID;
-	component.header.index = bodyIdx;
+	return polygonPoints;
+}
 
-	const auto err = ACAPI_3D_GetComponent (&component);
+
+static Model3DInfo GetModel3DInfoBody (const Modeler::MeshBody& body, const TRANMAT& transformation)
+{
+	Model3DInfo modelInfo;
+
+	for (UInt32 vertexIdx = 0; vertexIdx < body.GetVertexCount (); ++vertexIdx) {
+		const auto coord = body.GetVertexPoint (vertexIdx, transformation);
+		modelInfo.AddVertex (coord.x, coord.y, coord.z);
+	}
+
+	for (UInt32 polygonIdx = 0; polygonIdx < body.GetPolygonCount (); ++polygonIdx) {
+		for (Int32 convexPolygonIdx = 0; convexPolygonIdx < body.GetConvexPolygonCount (polygonIdx); ++convexPolygonIdx) {
+			GS::Array<Int32> polygonPointIds = GetModel3DInfoPolygon (body, polygonIdx, convexPolygonIdx);
+			if (polygonPointIds.IsEmpty ()) {
+				continue;
+			}
+
+			if (polygonPointIds.GetSize () > MaximumSupportedPolygonPoints) {
+				for (UInt32 i = 1; i < polygonPointIds.GetSize () - 1; ++i) {
+					modelInfo.AddPolygon (GS::Array<Int32> { polygonPointIds[0], polygonPointIds[i], polygonPointIds[i+1] });
+				}
+
+				continue;
+			}
+
+			modelInfo.AddPolygon (polygonPointIds);
+		}
+	}
+
+	return modelInfo;
+}
+
+
+static GS::Array<Model3DInfo> GetModel3DInfoForElement (const Modeler::Elem& elem)
+{
+	const auto& trafo = elem.GetConstTrafo ();
+
+	GS::Array<Model3DInfo> bodies;
+	for (const auto& body : elem.TessellatedBodies ()) {
+		bodies.Push (GetModel3DInfoBody (body, trafo));
+	}
+
+	return bodies;
+}
+
+
+static GS::Optional<GS::ObjectState> StoreModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+{
+	const auto modelElement = modelViewer.GetConstElemPtr (APIGuid2GSGuid (elementId));
+	if (modelElement == nullptr) {
+		return GS::NoValue;
+	}
+
+	const auto elementModelInfos = GetModel3DInfoForElement (*modelElement);
+	if (elementModelInfos.IsEmpty ()) {
+		return GS::NoValue;
+	}
+
+	return GS::ObjectState { BodiesFieldName, elementModelInfos };
+}
+
+
+static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>& elementIds)
+{
+	GSErrCode err = ACAPI_Automate (APIDo_ShowAllIn3DID);
 	if (err != NoError) {
 		return {};
 	}
 
-	Int32 nVert = component.body.nVert;
-	API_Tranmat tm = component.body.tranmat;
-
-	for (Int32 j = 1; j <= nVert; j++) {
-		component.header.typeID = API_VertID;
-		component.header.index = j;
-		const auto error = ACAPI_3D_GetComponent (&component);
-		if (error != NoError) {
-			return {};
-		}
-
-		API_Coord3D	trCoord {};
-		trCoord.x = tm.tmx[0] * component.vert.x + tm.tmx[1] * component.vert.y + tm.tmx[2] * component.vert.z + tm.tmx[3];
-		trCoord.y = tm.tmx[4] * component.vert.x + tm.tmx[5] * component.vert.y + tm.tmx[6] * component.vert.z + tm.tmx[7];
-		trCoord.z = tm.tmx[8] * component.vert.x + tm.tmx[9] * component.vert.y + tm.tmx[10] * component.vert.z + tm.tmx[11];
-		trCoord.x += dbOffset.x;
-		trCoord.y += dbOffset.y;
-
-		result.Push (trCoord);
+	Modeler::Sight* sight = nullptr;
+	err = ACAPI_3D_GetCurrentWindowSight ((void**) &sight);
+	if (err != NoError || sight == nullptr) {
+		return {};
 	}
 
-	return result;
-}
-
-
-static GS::Optional<GS::ObjectState> CreateElementModel (const API_Guid& elementId, const API_Coord& dbOffset)
-{
-	API_ElemInfo3D info3D {};
-	API_Elem_Head element {};
-	element.guid = elementId;
-
-	const auto err = ACAPI_Element_Get3DInfo (element, &info3D);
-	if (err != NoError) {
-		return GS::NoValue;
+	const Modeler::Model3DPtr model = sight->GetMainModelPtr ();;
+	if (model == nullptr) {
+		return {};
 	}
 
-	GS::Array<API_Coord3D> vertecies;
-	for (Int32 ibody = info3D.fbody; ibody <= info3D.lbody; ibody++) {
-		vertecies.Append (GetVerticiesOfBody (ibody, dbOffset));
-	}
-
-	GS::ObjectState result;
-	auto vertexInserter = result.AddList<GS::ObjectState> (VerteciesFieldName);
-	for (const auto& vertex : vertecies) {
-		vertexInserter (GS::ObjectState { VertexXFieldName, vertex.x, VertexYFieldName, vertex.y, VertexZFieldName, vertex.z });
-	}
-
-	return result;
-}
-
-
-static GS::ObjectState CreateElementsFromModel (const GS::Array<API_Guid>& elementIds)
-{
-	API_Coord dbOffset {};
-	ACAPI_Database (APIDb_GetOffsetID, &dbOffset, nullptr);
+	const Modeler::Model3DViewer modelViewer (model);
 
 	GS::ObjectState result;
 	const auto modelInserter = result.AddList<GS::ObjectState> (ModelsFieldName);
 	for (const auto& elementId : elementIds) {
-		const auto model = CreateElementModel (elementId, dbOffset);
+		const auto model = StoreModelOfElement (modelViewer, elementId);
 		if (model.IsEmpty ()) {
 			continue;
 		}
@@ -141,7 +233,7 @@ GS::ObjectState GetModelForElements::Execute (const GS::ObjectState& parameters,
 	GS::Array<GS::UniString> ids;
 	parameters.Get (ElementIdsFieldName, ids);
 
-	return CreateElementsFromModel (ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }));
+	return StoreModelOfElements (ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }));
 }
 
 
