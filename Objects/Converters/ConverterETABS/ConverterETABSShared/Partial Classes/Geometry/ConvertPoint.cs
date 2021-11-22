@@ -39,6 +39,8 @@ namespace Objects.Converter.ETABS
       speckleStructNode.basePoint.y = y;
       speckleStructNode.basePoint.z = z;
       speckleStructNode.name = name;
+      speckleStructNode.units = ModelUnits();
+      speckleStructNode.basePoint.units = ModelUnits();
 
       bool[] restraints = null;
       v = Model.PointObj.GetRestraint(name, ref restraints);

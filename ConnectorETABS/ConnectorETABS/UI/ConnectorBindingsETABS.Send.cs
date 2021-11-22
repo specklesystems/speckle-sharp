@@ -109,7 +109,14 @@ namespace Speckle.ConnectorETABS.UI
       }
 
       Base ElementCount = converter.ConvertToSpeckle(("ElementsCount", "ETABS"));
-      objCount = Convert.ToInt32(ElementCount.applicationId);
+      if (ElementCount.applicationId != null)
+      {
+        objCount = Convert.ToInt32(ElementCount.applicationId);
+      }
+      else{
+        objCount = 0;
+      }
+
 
       if (commitObj["@Model"] == null)
       {
