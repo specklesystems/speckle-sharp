@@ -25,11 +25,7 @@ namespace Objects.Converter.ETABS
       List<double> X = new List<double> { };
       List<double> Y = new List<double> { };
       List<double> Z = new List<double> { };
-      //Get orientation angle
-      double angle = 0;
-      bool advanced = true;
-      Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
-      speckleStructArea.orientationAngle = angle;
+
 
       foreach (Node point in area.topology)
       {
@@ -41,8 +37,7 @@ namespace Objects.Converter.ETABS
       double[] y = Y.ToArray();
       double[] z = Z.ToArray();
 
-      
-
+ 
       if (area.property != null)
       {
         Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
@@ -57,8 +52,14 @@ namespace Objects.Converter.ETABS
       {
         Model.AreaObj.ChangeName(name, area.name);
       }
-      double[] values = area.modifiers;
+      double[] values = null;
+      if(area.modifiers != null){
+        values = area.modifiers;
+      }
+
       Model.AreaObj.SetModifiers(area.name, ref values);
+      Model.AreaObj.SetLocalAxes(area.name, area.orientationAngle);
+
       return name;
 
     }
@@ -89,6 +90,12 @@ namespace Objects.Converter.ETABS
         coordinates.Add(node.basePoint.y);
         coordinates.Add(node.basePoint.z);
       }
+
+      //Get orientation angle
+      double angle = 0;
+      bool advanced = true;
+      Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
+      speckleStructArea.orientationAngle = angle;
 
       PolygonMesher polygonMesher = new PolygonMesher();
       polygonMesher.Init(coordinates);

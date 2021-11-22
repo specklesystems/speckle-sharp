@@ -1,7 +1,8 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Objects.Converter.ETABS;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
+using Objects.Structural.ETABS.Geometry;
 using Speckle.Core.Kits;
 using ETABSv1;
 using Microsoft.VisualBasic;
@@ -84,7 +85,7 @@ namespace ConverterETABSTests
       listTop.Add(pt2);
       listTop.Add(pt3);
       listTop.Add(pt4);
-      Element2D element2D = new Element2D(listTop);
+      ETABSElement2D element2D = new ETABSElement2D(listTop);
       converter.AreaToNative(element2D);
       int numberArea = 0;
       string[] AreasName = null;
