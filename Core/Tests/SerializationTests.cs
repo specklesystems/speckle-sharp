@@ -232,7 +232,6 @@ namespace Tests
     [Test]
     public void DateSerilisation()
     {
-      // TODO
       var date = new DateTime(2020, 1, 14);
       var mockBase = new DateMock{ TestField = date};
 
@@ -249,7 +248,6 @@ namespace Tests
     [Test]
     public void GuidSerilisation()
     {
-      // TODO
       var guid = Guid.NewGuid();
       var mockBase = new GUIDMock{ TestField = guid};
 
@@ -266,7 +264,6 @@ namespace Tests
     [Test]
     public void ColorSerilisation()
     {
-      // TODO
       var color = Color.FromArgb(255, 4, 126, 251);
       var mockBase = new ColorMock{ TestField = color};
 
