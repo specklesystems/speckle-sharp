@@ -25,6 +25,11 @@ namespace Objects.Converter.ETABS
       List<double> X = new List<double> { };
       List<double> Y = new List<double> { };
       List<double> Z = new List<double> { };
+      //Get orientation angle
+      double angle = 0;
+      bool advanced = true;
+      Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
+      speckleStructArea.orientationAngle = angle;
 
       foreach (Node point in area.topology)
       {
