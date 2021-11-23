@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Sight.hpp"
+#include "SchemaDefinitionBuilder.hpp"
 
 
 namespace AddOnCommands {
@@ -206,13 +207,23 @@ GS::String GetModelForElements::GetName () const
 		
 GS::Optional<GS::UniString> GetModelForElements::GetSchemaDefinitions () const
 {
-	return GS::NoValue; 
+	Json::SchemaDefinitionBuilder builder { GS::Array<GS::UniString> { Json::SchemaDefintionProvider::ElementIdsSchema () } };
+	return builder.Build ();
 }
 
 
 GS::Optional<GS::UniString>	GetModelForElements::GetInputParametersSchema () const
 {
-	return GS::NoValue; 
+	return R"(
+		{
+			"type": "object",
+			"properties" : {
+				"elementIds": { "$ref": "#/definitions/ElementIds" }
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementIds" ]
+		}
+	)";
 }
 
 
