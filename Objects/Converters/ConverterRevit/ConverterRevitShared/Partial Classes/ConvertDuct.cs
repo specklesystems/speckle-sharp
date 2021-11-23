@@ -54,7 +54,7 @@ namespace Objects.Converter.Revit
         TrySetParam(duct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM, speckleRevitDuct.diameter, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitDuct.length, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_VELOCITY, speckleRevitDuct.velocity, speckleRevitDuct.units);
-        Report.Log($"Created Duct {duct.Id}");
+        //Report.Log($"Created Duct {duct.Id}");
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
@@ -100,7 +100,7 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
-      Report.Log($"Converted Duct {revitDuct.Id}");
+      //Report.Log($"Converted Duct {revitDuct.Id}");
       return speckleDuct;
     }
   }

@@ -189,7 +189,7 @@ namespace Objects.Converter.Revit
       });
 
       GetHostedElements(speckleWall, revitWall);
-      Report.Log($"Converted Wall {revitWall.Id}");
+     //Report.Log($"Converted Wall {revitWall.Id}");
       return speckleWall;
     }
 

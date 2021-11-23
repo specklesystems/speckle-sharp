@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
       speckleAc.displayMesh = GetElementMesh(revitAc);
 
       GetAllRevitParamsAndIds(speckleAc, revitAc);
-      Report.Log($"Converted AdaptiveComponent {revitAc.Id}");
+     //Report.Log($"Converted AdaptiveComponent {revitAc.Id}");
       return speckleAc;
     }
 

@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
-      Report.Log($"Converted ModelCurve {revitCurve.Id}");
+      //Report.Log($"Converted ModelCurve {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
           revitCurve.LineStyle = Doc.GetElement(lineStyleId);
         }
         placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
-        Report.Log($"Created ModelCurve {revitCurve.Id}");
+        //Report.Log($"Created ModelCurve {revitCurve.Id}");
       }
 
       return placeholders;

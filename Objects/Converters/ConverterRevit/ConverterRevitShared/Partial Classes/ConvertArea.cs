@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleArea, revitArea);
       speckleArea.displayMesh = GetElementDisplayMesh(revitArea);
-      Report.Log($"Converted Area {revitArea.Id}");
+      //Report.Log($"Converted Area {revitArea.Id}");
       return speckleArea;
     }
 
