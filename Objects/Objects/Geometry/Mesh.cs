@@ -3,9 +3,8 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
 using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
@@ -65,7 +64,9 @@ namespace Objects.Geometry
 
     #region Convenience Methods
     
+    [JsonIgnore]
     public int VerticesCount => vertices.Count / 3;
+    [JsonIgnore]
     public int TextureCoordinatesCount => textureCoordinates.Count / 2;
 
     /// <summary>
