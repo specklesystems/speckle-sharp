@@ -214,7 +214,7 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& elementId)
 		return GS::Array<API_Guid> ();
 	}
 
-	switch (header.type.typeID) {
+	switch (header.typeID) {
 		case API_CurtainWallID:					return GetCurtainWallSubElements (elementId);
 		case API_BeamID:						return GetBeamSubElements (elementId);
 		case API_ColumnID:						return GetColumnSubElements (elementId);
