@@ -9,10 +9,15 @@
 namespace Json {
 
 
-class SchemaDefintionProvider {
+class SchemaDefinitionProvider {
 public:
+	static GS::UniString ElementIdSchema ();
 	static GS::UniString ElementIdsSchema ();
 	static GS::UniString ElementTypeSchema ();
+	
+	static GS::UniString Point3DSchema ();
+	static GS::UniString PolygonSchema ();
+	static GS::UniString ElementModelSchema ();	
 };
 
 

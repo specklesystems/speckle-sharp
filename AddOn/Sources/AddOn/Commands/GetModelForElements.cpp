@@ -17,7 +17,6 @@ static const char*		PolygonsFieldName				= "polygons";
 static const char*		PointIdsFieldName				= "pointIds";
 static const char*		ModelFieldName					= "model";
 static const char*		ModelsFieldName					= "models";
-static const char*		BodiesFieldName					= "bodies";
 static const char*		ElementIdFieldName				= "elementId";
 static const char*		ElementIdsFieldName				= "elementIds";
 
@@ -26,7 +25,7 @@ class Model3DInfo {
 public:
 	void AddVertex (double x, double y, double z)
 	{
-		vertecis.PushNew (x, y, z);
+		vertices.PushNew (x, y, z);
 	}
 
 	void AddPolygon (const GS::Array<Int32>& pointIds)
@@ -36,7 +35,7 @@ public:
 
 	GSErrCode Store (GS::ObjectState& os) const
 	{
-		os.Add (VerteciesFieldName, vertecis);
+		os.Add (VerteciesFieldName, vertices);
 		os.Add (PolygonsFieldName, polygons);
 
 		return NoError;
@@ -81,7 +80,7 @@ private:
 		GS::Array<Int32> pointIds;
 	};
 
-	GS::Array<Vertex> vertecis;
+	GS::Array<Vertex> vertices;
 	GS::Array<Polygon> polygons;
 };
 
@@ -142,19 +141,102 @@ static GS::Array<Model3DInfo> GetModel3DInfoForElement (const Modeler::Elem& ele
 }
 
 
-static GS::Optional<GS::ObjectState> StoreModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+static GS::Array<API_Guid> GetCurtainWallSubElements (const API_Guid& elementId)
 {
-	const auto modelElement = modelViewer.GetConstElemPtr (APIGuid2GSGuid (elementId));
-	if (modelElement == nullptr) {
-		return GS::NoValue;
+	GS::Array<API_Guid> elementIds;
+
+	API_ElementMemo memo{};
+	ACAPI_Element_GetMemo (elementId, &memo, APIMemoMask_CWallFrames | APIMemoMask_CWallPanels | APIMemoMask_CWallJunctions | APIMemoMask_CWallAccessories);
+
+	GSSize nFrames = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallFrames)) / sizeof (API_CWFrameType);
+	for (Int32 idx = 0; idx < nFrames; ++idx) {
+		elementIds.Push (memo.cWallFrames[idx].head.guid);
 	}
 
-	const auto elementModelInfos = GetModel3DInfoForElement (*modelElement);
-	if (elementModelInfos.IsEmpty ()) {
-		return GS::NoValue;
+	GSSize nPanels = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallPanels)) / sizeof (API_CWPanelType);
+	for (Int32 idx = 0; idx < nPanels; ++idx) {
+		elementIds.Push (memo.cWallPanels[idx].head.guid);
 	}
 
-	return GS::ObjectState { BodiesFieldName, elementModelInfos };
+	GSSize nJunctions = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallJunctions)) / sizeof (API_CWJunctionType);
+	for (Int32 idx = 0; idx < nJunctions; ++idx) {
+		elementIds.Push (memo.cWallJunctions[idx].head.guid);
+	}
+
+	GSSize nAccessories = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallAccessories)) / sizeof (API_CWAccessoryType);
+	for (Int32 idx = 0; idx < nAccessories; ++idx) {
+		elementIds.Push (memo.cWallAccessories[idx].head.guid);
+	}
+
+	return elementIds;
+}
+
+
+static GS::Array<API_Guid> GetBeamSubElements (const API_Guid& elementId)
+{
+	GS::Array<API_Guid> elementIds;
+
+	API_ElementMemo memo {};
+	ACAPI_Element_GetMemo (elementId, &memo, APIMemoMask_BeamSegment);
+
+	GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
+	for (Int32 idx = 0; idx < nSegments; ++idx) {
+		elementIds.Push (memo.beamSegments[idx].head.guid);
+	}
+
+	return elementIds;
+}
+
+
+static GS::Array<API_Guid> GetColumnSubElements (const API_Guid& elementId)
+{
+	GS::Array<API_Guid> elementIds;
+
+	API_ElementMemo memo{};
+	ACAPI_Element_GetMemo (elementId, &memo, APIMemoMask_ColumnSegment);
+
+	GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+	for (Int32 idx = 0; idx < nSegments; ++idx) {
+		elementIds.Push (memo.columnSegments[idx].head.guid);
+	}
+
+	return elementIds;
+}
+
+
+static GS::Array<API_Guid> CheckForSubelements (const API_Guid& elementId)
+{
+	API_Elem_Head header {};
+	header.guid = elementId;
+
+	const GSErrCode err = ACAPI_Element_GetHeader (&header);
+	if (err != NoError) {
+		return GS::Array<API_Guid> ();
+	}
+
+	switch (header.type.typeID) {
+		case API_CurtainWallID:					return GetCurtainWallSubElements (elementId);
+		case API_BeamID:						return GetBeamSubElements (elementId);
+		case API_ColumnID:						return GetColumnSubElements (elementId);
+		default:								return GS::Array<API_Guid> { elementId };
+	}
+}
+
+
+static GS::Array<Model3DInfo> CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+{
+	GS::Array<Model3DInfo> modelInfos;
+	GS::Array<API_Guid> elementIds = CheckForSubelements (elementId);
+	for (const auto& id : elementIds) {
+		const auto modelElement = modelViewer.GetConstElemPtr (APIGuid2GSGuid (id));
+		if (modelElement == nullptr) {
+			continue;
+		}
+
+		modelInfos.Append (GetModel3DInfoForElement (*modelElement));
+	}
+
+	return modelInfos;
 }
 
 
@@ -181,12 +263,12 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>& elementI
 	GS::ObjectState result;
 	const auto modelInserter = result.AddList<GS::ObjectState> (ModelsFieldName);
 	for (const auto& elementId : elementIds) {
-		const auto model = StoreModelOfElement (modelViewer, elementId);
+		const auto model = CalculateModelOfElement (modelViewer, elementId);
 		if (model.IsEmpty ()) {
 			continue;
 		}
 
-		modelInserter (GS::ObjectState { ElementIdFieldName, APIGuidToString (elementId), ModelFieldName, model.Get () });
+		modelInserter (GS::ObjectState { ElementIdFieldName, APIGuidToString (elementId), ModelFieldName, model });
 	}
 
 	return result;
@@ -203,11 +285,16 @@ GS::String GetModelForElements::GetName () const
 {
 	return GetModelForElementsCommandName;
 }
-	
-		
+
+
 GS::Optional<GS::UniString> GetModelForElements::GetSchemaDefinitions () const
 {
-	Json::SchemaDefinitionBuilder builder { GS::Array<GS::UniString> { Json::SchemaDefintionProvider::ElementIdsSchema () } };
+	Json::SchemaDefinitionBuilder builder;
+	builder.Add (Json::SchemaDefinitionProvider::ElementIdsSchema ());
+	builder.Add (Json::SchemaDefinitionProvider::Point3DSchema ());
+	builder.Add (Json::SchemaDefinitionProvider::PolygonSchema ());
+	builder.Add (Json::SchemaDefinitionProvider::ElementModelSchema ());
+
 	return builder.Build ();
 }
 
@@ -229,7 +316,19 @@ GS::Optional<GS::UniString>	GetModelForElements::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> GetModelForElements::GetResponseSchema () const
 {
-	return GS::NoValue; 
+	return R"(
+		{
+			"type": "object",
+			"properties" : {
+				"models": {
+					"type": "array",
+					"items": { "$ref": "#/definitions/ElementModel" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "models" ]
+		}
+	)";
 }
 
 

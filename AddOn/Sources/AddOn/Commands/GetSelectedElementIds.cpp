@@ -24,7 +24,7 @@ GS::String GetSelectedElementIds::GetName () const
 		
 GS::Optional<GS::UniString> GetSelectedElementIds::GetSchemaDefinitions () const
 {
-	Json::SchemaDefinitionBuilder builder { GS::Array<GS::UniString> { Json::SchemaDefintionProvider::ElementIdsSchema () } };
+	Json::SchemaDefinitionBuilder builder { GS::Array<GS::UniString> { Json::SchemaDefinitionProvider::ElementIdsSchema () } };
 	return builder.Build ();
 }
 

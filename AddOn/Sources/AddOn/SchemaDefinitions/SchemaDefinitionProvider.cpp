@@ -4,26 +4,33 @@
 namespace Json {
 
 
-GS::UniString SchemaDefintionProvider::ElementIdsSchema ()
+GS::UniString SchemaDefinitionProvider::ElementIdSchema ()
+{
+	return R"(
+		"ElementId": {
+			"type": "string",
+			"format": "uuid",
+			"pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::ElementIdsSchema ()
 {
 	return R"(
 		"ElementIds": {
 			"type": "array",
-			"description": "Container for element Ids.",
-	  		"items": { 
-				"type": "string",
-				"description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
-				"format": "uuid",
-				"pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-			}
+	  		"items": { "$ref": "#/definitions/ElementId" }
 		}
 	)";
 }
-GS::UniString SchemaDefintionProvider::ElementTypeSchema ()
+
+
+GS::UniString SchemaDefinitionProvider::ElementTypeSchema ()
 {
 	return R"(
 		"ElementType": {
-            "description": "The type of an element.",
             "enum": [
                 "InvalidType",
                 "Wall",
@@ -45,6 +52,74 @@ GS::UniString SchemaDefintionProvider::ElementTypeSchema ()
                 "Railing",
                 "Opening"
             ]
+        }
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::Point3DSchema ()
+{
+	return R"(
+		"Point3D": {
+            "type": "object",
+            "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "z": { "type": "number" }
+             },
+            "additionalProperties": false,
+            "required": [ "x", "y", "z" ]
+        }
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::PolygonSchema ()
+{
+    return R"(
+		"Polygon": {
+			"type": "object",
+			"properties": {
+				"pointIds": {
+					"type": "array",
+					"items": { "type": "integer" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "pointIds" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::ElementModelSchema ()
+{
+	return R"(
+		"ElementModel": {
+            "type": "object",
+			"properties" : {
+				"elementId": { "$ref": "#/definitions/ElementId" },
+				"model": {
+					"type": "array",
+					"items" : {
+						"type": "object",
+						"properties": {
+							"vertecies": {
+								"type": "array",
+								"items": { "$ref": "#/definitions/Point3D" }
+							},
+							"polygons": {
+								"type": "array",
+								"items": { "$ref": "#/definitions/Polygon" }
+							}
+						},
+						"additionalProperties" : false,
+						"required" : [ "vertecies", "polygons" ]
+					}
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementId", "model" ]
         }
 	)";
 }

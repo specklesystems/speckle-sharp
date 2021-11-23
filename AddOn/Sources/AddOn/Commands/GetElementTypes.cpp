@@ -25,8 +25,8 @@ GS::String GetElementTypes::GetName () const
 GS::Optional<GS::UniString> GetElementTypes::GetSchemaDefinitions () const
 {
 	Json::SchemaDefinitionBuilder builder;
-	builder.Add (Json::SchemaDefintionProvider::ElementIdsSchema());
-	builder.Add (Json::SchemaDefintionProvider::ElementTypeSchema());
+	builder.Add (Json::SchemaDefinitionProvider::ElementIdsSchema());
+	builder.Add (Json::SchemaDefinitionProvider::ElementTypeSchema());
 	return builder.Build();
 }
 
