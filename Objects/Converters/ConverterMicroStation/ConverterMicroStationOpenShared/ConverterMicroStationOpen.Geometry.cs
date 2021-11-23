@@ -1,15 +1,18 @@
-﻿using Bentley.DgnPlatformNET;
-using Bentley.DgnPlatformNET.Elements;
-using Bentley.GeometryNET;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using Objects.Geometry;
 using Objects.Primitive;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Arc = Objects.Geometry.Arc;
+
+using Bentley.GeometryNET;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.DgnPlatformNET;
 using BIM = Bentley.Interop.MicroStationDGN;
 using BMIU = Bentley.MstnPlatformNET.InteropServices.Utilities;
+
+using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
@@ -23,11 +26,11 @@ using Polyline = Objects.Geometry.Polyline;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 
-namespace Objects.Converter.MicroStationOpenRoads
+namespace Objects.Converter.MicroStationOpen
 {
-  public partial class ConverterMicroStationOpenRoads
+  public partial class ConverterMicroStationOpen
   {
-    public double tolerance = 0.000;    // tolerance for geometry      
+    public double tolerance = 0.000;  // tolerance for geometry      
 
     public double[] PointToArray(DPoint2d pt)
     {

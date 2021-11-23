@@ -13,9 +13,9 @@ using Bentley.GeometryNET;
 using Bentley.Building.Api;
 #endif
 
-namespace Objects.Converter.MicroStationOpenRoads
+namespace Objects.Converter.MicroStationOpen
 {
-  public partial class ConverterMicroStationOpenRoads
+  public partial class ConverterMicroStationOpen
   {
 #if (OPENBUILDINGS)
 

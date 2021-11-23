@@ -47,9 +47,9 @@ using Bentley.CifNET.LinearGeometry;
 using Bentley.CifNET.SDK;
 #endif
 
-namespace Objects.Converter.MicroStationOpenRoads
+namespace Objects.Converter.MicroStationOpen
 {
-  public partial class ConverterMicroStationOpenRoads : ISpeckleConverter
+  public partial class ConverterMicroStationOpen : ISpeckleConverter
   {
 #if MICROSTATION
     public static string BentleyAppName = Applications.MicroStation;
@@ -61,7 +61,7 @@ namespace Objects.Converter.MicroStationOpenRoads
     public static string BentleyAppName = Applications.OpenBuildings;
 #endif
     public string Description => "Default Speckle Kit for MicroStation, OpenRoads, OpenRail and OpenBuildings";
-    public string Name => nameof(ConverterMicroStationOpenRoads);
+    public string Name => nameof(ConverterMicroStationOpen);
     public string Author => "Arup";
     public string WebsiteOrEmail => "https://www.arup.com";
     public IEnumerable<string> GetServicedApplications() => new string[] { BentleyAppName };

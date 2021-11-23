@@ -23,9 +23,9 @@ using Bentley.CifNET.SDK;
 using Bentley.CifNET.LinearGeometry;
 using Bentley.CifNET.Formatting;
 
-namespace Objects.Converter.MicroStationOpenRoads
+namespace Objects.Converter.MicroStationOpen
 {
-  public partial class ConverterMicroStationOpenRoads
+  public partial class ConverterMicroStationOpen
   {
     // stations
     public Station StationToSpeckle(CifGM.StationEquation station)

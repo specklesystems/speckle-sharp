@@ -19,9 +19,9 @@ using Bentley.DgnPlatformNET.Elements;
 
 using System.Diagnostics;
 
-namespace Objects.Converter.MicroStationOpenRoads
+namespace Objects.Converter.MicroStationOpen
 {
-  public partial class ConverterMicroStationOpenRoads
+  public partial class ConverterMicroStationOpen
   {
     /// <summary>
     /// Computes the Speckle Units of the current model. The active MicroStation model is passed as a reference, so it will always be up to date.
