@@ -21,7 +21,7 @@ We encourage everyone interested to debug / hack /contribute / give feedback to 
 
 ### Requirements
 
-- ETABS v18 or above (we're currently testing with 6.30)
+- ETABS v18 or above (we're currently testing with v18)
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
 
