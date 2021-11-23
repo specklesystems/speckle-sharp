@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "SchemaDefinitions\SchemaDefinitionBuilder.hpp"
 
 
 namespace AddOnCommands {
@@ -23,7 +24,8 @@ GS::String GetSelectedElementIds::GetName () const
 		
 GS::Optional<GS::UniString> GetSelectedElementIds::GetSchemaDefinitions () const
 {
-	return GS::NoValue; 
+	Json::SchemaDefinitionBuilder builder { GS::Array<GS::UniString> { Json::SchemaDefintionProvider::ElementIdsSchema () } };
+	return builder.Build ();
 }
 
 
@@ -35,7 +37,16 @@ GS::Optional<GS::UniString>	GetSelectedElementIds::GetInputParametersSchema () c
 
 GS::Optional<GS::UniString> GetSelectedElementIds::GetResponseSchema () const
 {
-	return GS::NoValue; 
+	return R"(
+		{
+			"type": "object",
+			"properties" : {
+				"selectedElementIds": { "$ref": "#/definitions/ElementIds" }
+			},
+			"additionalProperties" : false,
+			"required" : [ "selectedElementIds" ]
+		}
+	)";
 }
 
 
