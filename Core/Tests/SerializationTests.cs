@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
@@ -221,5 +224,68 @@ namespace Tests
       Assert.AreEqual(isCorrect, true);
     }
 
+
+    private class DateMock : Base
+    {
+      public DateTime TestField { get; set; }
+    }
+    [Test]
+    public void DateSerialisation()
+    {
+      var date = new DateTime(2020, 1, 14);
+      var mockBase = new DateMock{ TestField = date};
+
+      var result = Operations.Serialize(mockBase);
+      var test = (DateMock)Operations.Deserialize(result);
+
+      Assert.AreEqual(date, test.TestField);
+    }
+    
+    private class GUIDMock : Base
+    {
+      public Guid TestField { get; set; }
+    }
+    [Test]
+    public void GuidSerialisation()
+    {
+      var guid = Guid.NewGuid();
+      var mockBase = new GUIDMock{ TestField = guid};
+
+      var result = Operations.Serialize(mockBase);
+      var test = (GUIDMock)Operations.Deserialize(result);
+
+      Assert.AreEqual(guid, test.TestField);
+    }
+    
+    private class ColorMock : Base
+    {
+      public Color TestField { get; set; }
+    }
+    [Test]
+    public void ColorSerialisation()
+    {
+      var color = Color.FromArgb(255, 4, 126, 251);
+      var mockBase = new ColorMock{ TestField = color};
+
+      var result = Operations.Serialize(mockBase);
+      var test = (ColorMock)Operations.Deserialize(result);
+
+      Assert.AreEqual(color, test.TestField);
+    }
+
+    private class StringDateTimeRegressionMock : Base
+    {
+      public String TestField { get; set; }
+    }
+    [Test]
+    public void StringDateTimeRegression()
+    {
+      var mockBase = new StringDateTimeRegressionMock { TestField = "2021-11-12T11:32:01" };
+
+      var result = Operations.Serialize(mockBase);
+      var test = (StringDateTimeRegressionMock)Operations.Deserialize(result);
+
+      Assert.AreEqual(mockBase.TestField, test.TestField);
+    }
   }
 }

@@ -136,6 +136,25 @@ namespace Speckle.Core.Serialisation
         return true;
       }
 
+      // Handle simple classes/structs
+      if (type == typeof(Guid) && valueType == typeof(string))
+      {
+        convertedValue = Guid.Parse(value as string);
+        return true;
+      }
+
+      if (type == typeof(System.Drawing.Color) && valueType == typeof(long))
+      {
+        convertedValue = System.Drawing.Color.FromArgb((int)(long)value);
+        return true;
+      }
+
+      if (type == typeof(DateTime) && valueType == typeof(string))
+      {
+        convertedValue = DateTime.ParseExact((string)value, "o", System.Globalization.CultureInfo.InvariantCulture);
+        return true;
+      }
+
       return false;
     }
   }

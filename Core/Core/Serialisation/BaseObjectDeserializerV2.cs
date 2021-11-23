@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Serialisation
@@ -88,6 +89,9 @@ namespace Speckle.Core.Serialisation
       {
         List<(string, int)> closureList = new List<(string, int)>();
         JObject doc1 = JObject.Parse(rootObjectJson);
+
+        if (!doc1.ContainsKey("__closure"))
+          return new List<(string, int)>();
         foreach(JToken prop in doc1["__closure"])
         {
           string childId = ((JProperty)prop).Name;
@@ -115,7 +119,18 @@ namespace Speckle.Core.Serialisation
 
     public object DeserializeTransportObject(String objectJson)
     {
-      JObject doc1 = JObject.Parse(objectJson);
+      // Apparently this automatically parses DateTimes in strings if it matches the format:
+      // JObject doc1 = JObject.Parse(objectJson); 
+      
+      // This is equivalent code that doesn't parse datetimes:
+      JObject doc1;
+      using (JsonReader reader = new JsonTextReader(new System.IO.StringReader(objectJson)))
+      {
+        reader.DateParseHandling = DateParseHandling.None;
+        doc1 = JObject.Load(reader);
+      }
+
+
       object converted = ConvertJsonElement(doc1);
       lock (CallbackLock)
       {
@@ -145,6 +160,8 @@ namespace Speckle.Core.Serialisation
           return (double)doc;
         case JTokenType.String:
           return (string)doc;
+        case JTokenType.Date:
+          return (DateTime)doc;
         case JTokenType.Array:
           JArray docAsArray = (JArray)doc;
           List<object> jsonList = new List<object>(docAsArray.Count);

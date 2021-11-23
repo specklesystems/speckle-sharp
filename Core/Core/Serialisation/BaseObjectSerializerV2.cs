@@ -137,6 +137,20 @@ namespace Speckle.Core.Serialisation
         return (int)obj;
       }
 
+      // Support for simple types
+      if (obj is Guid)
+      {
+        return ((Guid)obj).ToString();
+      }
+      if (obj is System.Drawing.Color)
+      {
+        return ((System.Drawing.Color)obj).ToArgb();
+      }
+      if (obj is DateTime)
+      {
+        return ((DateTime)obj).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+      }
+
       throw new Exception("Unsupported value in serialization: " + type.ToString());
     }
 
