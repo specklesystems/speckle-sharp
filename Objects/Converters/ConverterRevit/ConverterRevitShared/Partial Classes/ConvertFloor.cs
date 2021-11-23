@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleFloor, revitFloor);
       placeholders.AddRange(hostedElements);
-      Report.Log($"Created Floor {revitFloor.Id}");
+      //Report.Log($"Created Floor {revitFloor.Id}");
       return placeholders;
     }
 
@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
       speckleFloor.displayMesh = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleFloor, revitFloor);
-      Report.Log($"Converted Floor {revitFloor.Id}");
+      //Report.Log($"Converted Floor {revitFloor.Id}");
       return speckleFloor;
     }
 

@@ -24,6 +24,11 @@ namespace Objects.Converter.Revit
       }
     }
 
+    /// <summary>
+    /// Converts to internal units by using the speckle parameter applicationUnit
+    /// </summary>
+    /// <param name="parameter">Speckle parameter</param>
+    /// <returns></returns>
     public static double ConvertToInternalUnits(Objects.BuiltElements.Revit.Parameter parameter)
     {
 #if !(REVIT2022)
@@ -32,6 +37,21 @@ namespace Objects.Converter.Revit
 #else
       var sourceUnit = new ForgeTypeId(parameter.applicationUnit);
       return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
+#endif
+    }
+
+    /// <summary>
+    /// Converts to internal units by using the destination parameter Display Units
+    /// </summary>
+    /// <param name="value">Value to set</param>
+    /// <param name="parameter">Destination parameter</param>
+    /// <returns></returns>
+    public static double ConvertToInternalUnits(double value, Parameter parameter)
+    {
+#if !(REVIT2022)
+      return UnitUtils.ConvertToInternalUnits(value, parameter.DisplayUnitType);
+#else
+      return UnitUtils.ConvertToInternalUnits(value, parameter.GetUnitTypeId());
 #endif
     }
 

@@ -113,7 +113,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
       speckleSpace.displayMesh = GetElementDisplayMesh(revitSpace);
-      Report.Log($"Converted Space {revitSpace.Id}");
+      //Report.Log($"Converted Space {revitSpace.Id}");
       return speckleSpace;
     }
   }

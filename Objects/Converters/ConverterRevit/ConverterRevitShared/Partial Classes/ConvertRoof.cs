@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleRoof, revitRoof);
       placeholders.AddRange(hostedElements);
-      Report.Log($"Created Roof {revitRoof.Id}");
+      //Report.Log($"Created Roof {revitRoof.Id}");
       return placeholders;
     }
 
@@ -197,7 +197,7 @@ namespace Objects.Converter.Revit
       speckleRoof.displayMesh = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleRoof, revitRoof);
-      Report.Log($"Converted Roof {revitRoof.Id}");
+      //Report.Log($"Converted Roof {revitRoof.Id}");
       return speckleRoof;
     }
 

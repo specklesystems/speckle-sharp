@@ -90,7 +90,7 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(_instance, instance);
         result = "success";
       }
-      Report.Log($"Created Block {_instance.Id}");
+      //Report.Log($"Created Block {_instance.Id}");
       return result;
     }
 

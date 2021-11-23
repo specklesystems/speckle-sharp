@@ -105,7 +105,7 @@ namespace ConnectorGrasshopper.Streams
         var client = new Client(account);
         try
         {
-          var streamId = await client.StreamCreate(new StreamCreateInput());
+          var streamId = await client.StreamCreate(new StreamCreateInput { isPublic = false });
           stream = new StreamWrapper(
             streamId,
             account.userInfo.id,

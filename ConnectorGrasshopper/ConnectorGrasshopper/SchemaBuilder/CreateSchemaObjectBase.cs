@@ -377,10 +377,12 @@ namespace ConnectorGrasshopper
       {
         schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
         ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-        ((Base)schemaObject)["units"] = units;
-      }
+        if(((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
+          ((Base)schemaObject)["units"] = units;
+      } 
       catch (Exception e)
       {
+
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
         return;
       }
@@ -401,6 +403,7 @@ namespace ConnectorGrasshopper
 
           commitObj = ((Base)mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
+          if(commitObj["units"]==null || commitObj["units"] == "")
           commitObj["units"] = units;
         }
         catch (Exception e)

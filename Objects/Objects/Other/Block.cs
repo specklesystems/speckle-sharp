@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Objects.Geometry;
 using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Other
 {
@@ -30,7 +31,7 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Base
   {
-    [Obsolete("Use GetInsertionPoint method")]
+    [JsonIgnore, Obsolete("Use GetInsertionPoint method")]
     public Point insertionPoint { get => GetInsertionPoint(); set { } }
 
     /// <summary>

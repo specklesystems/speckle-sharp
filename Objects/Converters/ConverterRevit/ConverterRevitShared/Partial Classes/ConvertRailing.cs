@@ -88,7 +88,7 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
       speckleRailing.displayMesh = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      Report.Log($"Converted Railing {revitRailing.Id}");
+      //Report.Log($"Converted Railing {revitRailing.Id}");
       return speckleRailing;
     }
 
