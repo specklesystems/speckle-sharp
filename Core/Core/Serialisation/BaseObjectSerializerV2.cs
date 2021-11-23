@@ -201,8 +201,7 @@ namespace Speckle.Core.Serialisation
       foreach (var prop in allProperties)
       {
         object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
-        if (convertedValue != null)
-          convertedBase[prop.Key] = convertedValue;
+        convertedBase[prop.Key] = convertedValue;
       }
 
       convertedBase["id"] = ComputeId(convertedBase);
