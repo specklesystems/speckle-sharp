@@ -12,6 +12,7 @@ namespace Json {
 class SchemaDefintionProvider {
 public:
 	static GS::UniString ElementIdsSchema ();
+	static GS::UniString ElementTypeSchema ();
 };
 
 

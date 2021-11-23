@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "SchemaDefinitions\SchemaDefinitionBuilder.hpp"
 
 
 namespace AddOnCommands {
@@ -23,19 +24,44 @@ GS::String GetElementTypes::GetName () const
 		
 GS::Optional<GS::UniString> GetElementTypes::GetSchemaDefinitions () const
 {
-	return GS::NoValue; 
+	Json::SchemaDefinitionBuilder builder;
+	builder.Add (Json::SchemaDefintionProvider::ElementIdsSchema());
+	builder.Add (Json::SchemaDefintionProvider::ElementTypeSchema());
+	return builder.Build();
 }
 
 
 GS::Optional<GS::UniString>	GetElementTypes::GetInputParametersSchema () const
 {
-	return GS::NoValue; 
+	return R"(
+		{
+			"type": "object",
+			"properties" : {
+				"elementIds": { "$ref": "#/definitions/ElementIds" }
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementIds" ]
+		}
+	)";
 }
 
 
 GS::Optional<GS::UniString> GetElementTypes::GetResponseSchema () const
 {
-	return GS::NoValue; 
+	return R"(
+		{
+			"type": "object",
+			"properties" : {
+				"elementTypes": {
+					"type": "array",
+					"description": "Container for element types.",
+	  				"items": { "$ref": "#/definitions/ElementType" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementTypes" ]
+		}
+	)";
 }
 
 
@@ -46,7 +72,7 @@ API_AddOnCommandExecutionPolicy GetElementTypes::GetExecutionPolicy () const
 
 static const GS::HashTable<API_ElemTypeID, GS::UniString> supportedElementTypes
 {
-	{ API_ZombieElemID,					"ZombieElem"},
+	{ API_ZombieElemID,					"InvalidType"},
 	{ API_WallID,						"Wall"},
 	{ API_ColumnID,						"Column"},
 	{ API_BeamID,						"Beam"},

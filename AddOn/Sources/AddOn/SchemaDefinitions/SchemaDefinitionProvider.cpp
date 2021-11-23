@@ -19,6 +19,35 @@ GS::UniString SchemaDefintionProvider::ElementIdsSchema ()
 		}
 	)";
 }
+GS::UniString SchemaDefintionProvider::ElementTypeSchema ()
+{
+	return R"(
+		"ElementType": {
+            "description": "The type of an element.",
+            "enum": [
+                "InvalidType",
+                "Wall",
+                "Column",
+                "Beam",
+                "Window",
+                "Door",
+                "Object",
+                "Lamp",
+                "Slab",
+                "Roof",
+                "Mesh",
+                "Zone",
+                "CurtainWall",
+                "Shell",
+                "Skylight",
+                "Morph",
+                "Stair",
+                "Railing",
+                "Opening"
+            ]
+        }
+	)";
+}
 
 
 }
