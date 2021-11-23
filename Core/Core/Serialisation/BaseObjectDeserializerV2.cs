@@ -252,6 +252,14 @@ namespace Speckle.Core.Serialisation
         if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
         {
           PropertyInfo property = staticProperties[lowerPropertyName];
+          if (entry.Value == null)
+          {
+            // Check for JsonProperty(NullValueHandling = NullValueHandling.Ignore) attribute
+            JsonPropertyAttribute attr = property.GetCustomAttribute<JsonPropertyAttribute>(true);
+            if (attr != null && attr.NullValueHandling == NullValueHandling.Ignore)
+              continue;
+          }
+
           Type targetValueType = property.PropertyType;
           object convertedValue;
           bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
