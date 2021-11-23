@@ -1,4 +1,5 @@
 #include "SchemaDefinitionProvider.hpp"
+#include "Utility.hpp"
 
 
 namespace Json {
@@ -29,31 +30,21 @@ GS::UniString SchemaDefinitionProvider::ElementIdsSchema ()
 
 GS::UniString SchemaDefinitionProvider::ElementTypeSchema ()
 {
-	return R"(
-		"ElementType": {
-            "enum": [
-                "InvalidType",
-                "Wall",
-                "Column",
-                "Beam",
-                "Window",
-                "Door",
-                "Object",
-                "Lamp",
-                "Slab",
-                "Roof",
-                "Mesh",
-                "Zone",
-                "CurtainWall",
-                "Shell",
-                "Skylight",
-                "Morph",
-                "Stair",
-                "Railing",
-                "Opening"
-            ]
-        }
-	)";
+	GS::Array<GS::UniString> allElementNames;
+
+	for (const auto& element : Utility::elementNames) {
+		allElementNames.Push('"' + *element.value + '"');
+	}
+
+	GS::UniString buildedEnum;
+
+	for (const auto& typeName : allElementNames) {
+		buildedEnum.Append(typeName);
+		buildedEnum.Append(",");
+	}
+	buildedEnum.DeleteLast();
+
+	return "\"ElementType\":{\"enum\" : [" + buildedEnum + "]}";
 }
 
 

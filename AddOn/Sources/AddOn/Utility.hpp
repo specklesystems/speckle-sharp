@@ -7,6 +7,8 @@
 
 namespace Utility {
 
+static const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames;
+
 API_ElemTypeID GetElementType (const API_Guid& guid);
 
 bool IsElement3D (const API_Guid& guid);
