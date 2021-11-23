@@ -30,6 +30,10 @@ namespace Speckle.Core.Kits
     public const string ETABSv18 = "ETABSv18";
     public const string ETABSv19 = "ETABSv19";
     public const string ETABS = "ETABS";
+    public const string MicroStation = "MicroStation";
+    public const string OpenBuildings = "OpenBuildings";
+    public const string OpenRail = "OpenRail";
+    public const string OpenRoads = "OpenRoads";
 
     public const string Script = "Script";
     public const string Other = "Other";
