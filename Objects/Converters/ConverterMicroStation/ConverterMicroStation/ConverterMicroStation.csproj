@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -32,10 +32,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' OR '$(IsDesktopBuild)' == false">
-	<PackageReference Include="Speckle.Bentley.API" Version="1.0.0" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="..\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems" Label="Shared" />
