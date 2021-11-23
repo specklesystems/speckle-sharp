@@ -47,7 +47,8 @@ namespace Speckle.ConnectorETABS.UI
 
       return new List<ISelectionFilter>()
             {
-            new ListSelectionFilter {Slug="type", Name = "Cat",
+            new ManualSelectionFilter(),
+            new ListSelectionFilter {Slug="type", Name = "Categories",
                 Icon = "Category", Values = objectTypes,
                 Description="Adds all objects belonging to the selected types"},
         //new PropertySelectionFilter{
@@ -77,6 +78,8 @@ namespace Speckle.ConnectorETABS.UI
 
       switch (filter.Slug)
       {
+        case "manual":
+          return GetSelectedObjects();
         case "all":
           if (ConnectorETABSUtils.ObjectIDsTypesAndNames == null)
           {
