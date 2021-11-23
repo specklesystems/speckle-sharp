@@ -3,7 +3,7 @@
 
 namespace Utility {
 
-static const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames
+const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames
 {
 	{ API_ZombieElemID,					"InvalidType"},
 	{ API_WallID,						"Wall"},

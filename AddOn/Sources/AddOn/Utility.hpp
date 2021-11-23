@@ -7,7 +7,7 @@
 
 namespace Utility {
 
-static const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames;
+extern const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames;
 
 API_ElemTypeID GetElementType (const API_Guid& guid);
 

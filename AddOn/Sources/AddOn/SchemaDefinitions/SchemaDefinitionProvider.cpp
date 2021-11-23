@@ -30,18 +30,13 @@ GS::UniString SchemaDefinitionProvider::ElementIdsSchema ()
 
 GS::UniString SchemaDefinitionProvider::ElementTypeSchema ()
 {
-	GS::Array<GS::UniString> allElementNames;
-
-	for (const auto& element : Utility::elementNames) {
-		allElementNames.Push('"' + *element.value + '"');
-	}
-
 	GS::UniString buildedEnum;
 
-	for (const auto& typeName : allElementNames) {
-		buildedEnum.Append(typeName);
+	for (const auto& element : Utility::elementNames) {
+		buildedEnum.Append('"' + *element.value + '"');
 		buildedEnum.Append(",");
 	}
+
 	buildedEnum.DeleteLast();
 
 	return "\"ElementType\":{\"enum\" : [" + buildedEnum + "]}";
