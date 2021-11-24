@@ -69,7 +69,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorOpenRailRibbon.xml" />
+    <Content Include="ConnectorOpenRailRibbon.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Speckle.MicroStation.API">
@@ -100,6 +102,7 @@
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Bentley\OpenRailDesigner\Addins\Speckle2OpenRail\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Bentley\OpenRailDesigner\Addins\Speckle2OpenRail" SourceFiles="$(TargetDir)\ConnectorOpenRailRibbon.xml" />
     <Copy DestinationFolder="$(ProgramData)\Bentley\OpenRail Designer CE\Configuration\Organization" SourceFiles="$(TargetDir)\Speckle2OpenRail.cfg" />
   </Target>
 </Project>

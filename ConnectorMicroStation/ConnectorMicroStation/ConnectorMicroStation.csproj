@@ -78,7 +78,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorMicroStationRibbon.xml" />
+    <Content Include="ConnectorMicroStationRibbon.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Speckle.MicroStation.API">
@@ -106,6 +108,7 @@
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Bentley\MicroStation\Addins\Speckle2MicroStation\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Bentley\MicroStation\Addins\Speckle2MicroStation" SourceFiles="$(TargetDir)\ConnectorMicroStationRibbon.xml" />
     <Copy DestinationFolder="$(ProgramData)\Bentley\Microstation CONNECT Edition\Configuration\Organization" SourceFiles="$(TargetDir)\Speckle2MicroStation.cfg" />
   </Target>
 </Project>

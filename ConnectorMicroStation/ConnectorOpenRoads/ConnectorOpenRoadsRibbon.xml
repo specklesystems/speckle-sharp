@@ -69,7 +69,7 @@
       <ButtonData>
         <CommandData Type="UserKeyinCommand">
           <UserKeyinCommand>
-            <Keyin>speckle start</Keyin>
+            <Keyin>speckle speckle</Keyin>
             <Icon Type="NamedIcon">
               <NamedIcon>s2block</NamedIcon>
             </Icon>
