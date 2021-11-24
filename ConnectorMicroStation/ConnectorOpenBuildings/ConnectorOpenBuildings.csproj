@@ -113,9 +113,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorOpenBuildingsRibbon.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ConnectorOpenBuildingsRibbon.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Speckle2OpenBuildings.cfg">

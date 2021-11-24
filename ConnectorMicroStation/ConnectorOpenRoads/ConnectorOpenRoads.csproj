@@ -147,9 +147,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorOpenRoadsRibbon.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ConnectorOpenRoadsRibbon.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">

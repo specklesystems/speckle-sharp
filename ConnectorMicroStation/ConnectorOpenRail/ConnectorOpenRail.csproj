@@ -162,9 +162,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorOpenRailRibbon.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ConnectorOpenRailRibbon.xml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Speckle.Newtonsoft.Json">
