@@ -62,7 +62,7 @@
   </Groups>
   <Buttons>
     <Button Name="Speckle.ShowUI" Priority="100">
-      <Label>Connector</Label>
+      <Label>Connector OpenRoads</Label>
       <Description>Launches the Speckle OpenRoads Connector</Description>
       <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
       </ButtonParams>

@@ -62,7 +62,7 @@
   </Groups>
   <Buttons>
     <Button Name="Speckle.ShowUI" Priority="100">
-      <Label>Connector</Label>
+      <Label>Connector OpenRail</Label>
       <Description>Launches the Speckle OpenRail Connector</Description>
       <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
       </ButtonParams>

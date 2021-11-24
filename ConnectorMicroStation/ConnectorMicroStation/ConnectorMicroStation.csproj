@@ -78,9 +78,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorMicroStationRibbon.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ConnectorMicroStationRibbon.xml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Speckle.MicroStation.API">
