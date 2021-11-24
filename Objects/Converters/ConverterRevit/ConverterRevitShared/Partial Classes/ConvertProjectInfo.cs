@@ -23,6 +23,8 @@ namespace Objects.Converter.Revit
         category = revitType.Category.Name
       };
 
+      GetAllRevitParamsAndIds(speckleType, revitType);
+
 
       return speckleType;
     }
@@ -42,7 +44,7 @@ namespace Objects.Converter.Revit
         organizationName = revitInfo.OrganizationName,
         status = revitInfo.Status
       };
-      Report.Log($"Converted ProjectInfo");
+      //Report.Log($"Converted ProjectInfo");
       return speckleInfo;
     }
   }

@@ -9,11 +9,11 @@ using System.Linq;
 
 namespace Objects.Converter.ETABS
 {
-    public partial class ConverterETABS
+  public partial class ConverterETABS
+  {
+    public Element2D WallToSpeckle(string name)
     {
-        public Element2D WallToSpeckle(string name)
-        {
-            return AreaToSpeckle(name);
-        }
+      return AreaToSpeckle(name);
     }
+  }
 }

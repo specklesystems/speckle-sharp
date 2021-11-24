@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Objects.Geometry;
 using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Other
 {
@@ -30,7 +31,7 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Base
   {
-    [Obsolete("Use GetInsertionPoint method")]
+    [JsonIgnore, Obsolete("Use GetInsertionPoint method")]
     public Point insertionPoint { get => GetInsertionPoint(); set { } }
 
     /// <summary>
@@ -61,10 +62,10 @@ namespace Objects.Other
       if (transform.Length != 16)
         throw new SpeckleException($"{nameof(BlockInstance)}.{nameof(transform)} is malformed: expected length to be 4x4 = 16");
 
-      for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 16; j+= 4)
-          insertion[i] = insertion[i] * (transform[j] + transform[j + 1] + transform[j + 2] + transform[j + 3]);
-      
+      for (int i = 0; i < 16; i += 4)
+        insertion[i / 4] = insertion[0] * transform[i] + insertion[1] * transform[i + 1] +
+                         insertion[2] * transform[i + 2] + insertion[3] * transform[i + 3];
+
       return new Point(
         insertion[0] / insertion[3], 
         insertion[1] / insertion[3], 

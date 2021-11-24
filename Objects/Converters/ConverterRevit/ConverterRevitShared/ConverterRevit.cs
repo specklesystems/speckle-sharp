@@ -8,6 +8,7 @@ using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
+using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit
 {
@@ -87,21 +88,27 @@ namespace Objects.Converter.Revit
       {
         case DB.DetailCurve o:
           returnObject = DetailCurveToSpeckle(o);
+          Report.Log($"Converted DetailCurve {o.Id}");
           break;
         case DB.DirectShape o:
           returnObject = DirectShapeToSpeckle(o);
+          Report.Log($"Converted DirectShape {o.Id}");
           break;
         case DB.FamilyInstance o:
           returnObject = FamilyInstanceToSpeckle(o);
+          Report.Log($"Converted FamilyInstance {o.Id}");
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o);
+          Report.Log($"Converted Floor {o.Id}");
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
+          Report.Log($"Converted Level {o.Id}");
           break;
         case DB.View o:
           returnObject = ViewToSpeckle(o);
+          Report.Log($"Converted View {o.ViewType} {o.Id}");
           break;
         case DB.ModelCurve o:
 
@@ -117,37 +124,47 @@ namespace Objects.Converter.Revit
           {
             returnObject = ModelCurveToSpeckle(o);
           }
-
+          Report.Log($"Converted ModelCurve {o.Id}");
           break;
         case DB.Opening o:
           returnObject = OpeningToSpeckle(o);
+          Report.Log($"Converted Opening {o.Id}");
           break;
         case DB.RoofBase o:
           returnObject = RoofToSpeckle(o);
+          Report.Log($"Converted RoofBase {o.Id}");
           break;
         case DB.Area o:
           returnObject = AreaToSpeckle(o);
+          Report.Log($"Converted Area {o.Id}");
           break;
         case DB.Architecture.Room o:
           returnObject = RoomToSpeckle(o);
+          Report.Log($"Converted Room {o.Id}");
           break;
         case DB.Architecture.TopographySurface o:
           returnObject = TopographyToSpeckle(o);
+          Report.Log($"Converted Topography {o.Id}");
           break;
         case DB.Wall o:
           returnObject = WallToSpeckle(o);
+          Report.Log($"Converted Wall {o.Id}");
           break;
         case DB.Mechanical.Duct o:
           returnObject = DuctToSpeckle(o);
+          Report.Log($"Converted Duct {o.Id}");
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
+          Report.Log($"Converted Space {o.Id}");
           break;
         case DB.Plumbing.Pipe o:
           returnObject = PipeToSpeckle(o);
+          Report.Log($"Converted Pipe {o.Id}");
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
+          Report.Log($"Converted Wire {o.Id}");
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -155,9 +172,11 @@ namespace Objects.Converter.Revit
           break;
         case DB.Architecture.BuildingPad o:
           returnObject = BuildingPadToSpeckle(o);
+          Report.Log($"Converted BuildingPad {o.Id}");
           break;
         case DB.Architecture.Stairs o:
           returnObject = StairToSpeckle(o);
+          Report.Log($"Converted Stairs {o.Id}");
           break;
         //these are handled by Stairs
         case DB.Architecture.StairsRun _:
@@ -168,42 +187,53 @@ namespace Objects.Converter.Revit
           break;
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
+          Report.Log($"Converted Railing {o.Id}");
           break;
         case DB.Architecture.TopRail _:
           returnObject = null;
           break;
         case DB.Structure.Rebar o:
           returnObject = RebarToSpeckle(o);
+          Report.Log($"Converted Rebar {o.Id}");
           break;
         case DB.Ceiling o:
           returnObject = CeilingToSpeckle(o);
+          Report.Log($"Converted Ceiling {o.Id}");
           break;
         case DB.PointCloudInstance o:
           returnObject = PointcloudToSpeckle(o);
+          Report.Log($"Converted PointCloudInstance {o.Id}");
           break;
         case DB.ProjectInfo o:
           returnObject = ProjectInfoToSpeckle(o);
+          Report.Log($"Converted ProjectInfo");
           break;
         case DB.ElementType o:
           returnObject = ElementTypeToSpeckle(o);
+          Report.Log($"Converted ElementType {o.Id}");
           break;
         case DB.Grid o:
           returnObject = GridLineToSpeckle(o);
+          Report.Log($"Converted Grid {o.Id}");
           break;
         case DB.ReferencePoint o:
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
           {
             returnObject = AnalyticalNodeToSpeckle(o);
+            Report.Log($"Converted AnalyticalNode {o.Id}");
           }        
           break;
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
+          Report.Log($"Converted BoundaryConditions {o.Id}");
           break;
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
+          Report.Log($"Converted AnalyticalStick {o.Id}");
           break;
         case DB.Structure.AnalyticalModelSurface o:
           returnObject = AnalyticalSurfaceToSpeckle(o);
+          Report.Log($"Converted AnalyticalSurface {o.Id}");
           break;
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
@@ -277,32 +307,41 @@ namespace Objects.Converter.Revit
       {
         //geometry
         case ICurve o:
+          Report.Log($"Created ModelCurve");
           return ModelCurveToNative(o);
 
         case Geometry.Brep o:
+          Report.Log($"Created Brep {o.applicationId}");
           return DirectShapeToNative(o);
 
         case Geometry.Mesh o:
+          Report.Log($"Created Mesh {o.applicationId}");
           return DirectShapeToNative(o);
 
         // non revit built elems
         case BE.Alignment o:
+          Report.Log($"Created Alignment {o.applicationId}");
           return ModelCurveToNative(o.baseCurve);
 
         case BE.Structure o:
+          Report.Log($"Created Structure {o.applicationId}");
           return DirectShapeToNative(o.displayMesh);
 
         //built elems
         case BER.AdaptiveComponent o:
+          Report.Log($"Created AdaptiveComponent {o.applicationId}");
           return AdaptiveComponentToNative(o);
 
         case BE.Beam o:
+          Report.Log($"Created Beam {o.applicationId}");
           return BeamToNative(o);
 
         case BE.Brace o:
+          Report.Log($"Created Brace {o.applicationId}");
           return BraceToNative(o);
 
         case BE.Column o:
+          Report.Log($"Created Column {o.applicationId}");
           return ColumnToNative(o);
 
 #if REVIT2022
@@ -311,60 +350,79 @@ namespace Objects.Converter.Revit
 #endif
 
         case BERC.DetailCurve o:
+          Report.Log($"Created DetailCurve {o.applicationId}");
           return DetailCurveToNative(o);
 
         case BER.DirectShape o:
+          Report.Log($"Created DirectShape {o.applicationId}");
           return DirectShapeToNative(o);
 
         case BER.FreeformElement o:
+          Report.Log($"Created FreeFormElement {o.applicationId}");
           return FreeformElementToNative(o);
 
         case BER.FamilyInstance o:
+          Report.Log($"Created FamilyInstance {o.applicationId}");
           return FamilyInstanceToNative(o);
 
         case BE.Floor o:
+          Report.Log($"Created Floor {o.applicationId}");
           return FloorToNative(o);
 
         case BE.Level o:
+          Report.Log($"Created Level {o.applicationId}");
           return LevelToNative(o);
 
         case BERC.ModelCurve o:
+          Report.Log($"Created ModelCurve {o.applicationId}");
           return ModelCurveToNative(o);
 
         case BE.Opening o:
+          Report.Log($"Created Opening {o.applicationId}");
           return OpeningToNative(o);
 
         case BERC.RoomBoundaryLine o:
+          Report.Log($"Created RoomBoundaryLine {o.applicationId}");
           return RoomBoundaryLineToNative(o);
 
         case BERC.SpaceSeparationLine o:
+          Report.Log($"Created Brep {o.applicationId}");
           return SpaceSeparationLineToNative(o);
 
         case BE.Roof o:
+          Report.Log($"Created Roof {o.applicationId}");
           return RoofToNative(o);
 
         case BE.Topography o:
+          Report.Log($"Created Topography {o.applicationId}");
           return TopographyToNative(o);
 
         case BER.RevitProfileWall o:
+          Report.Log($"Created RevitProfileWall {o.applicationId}");
           return ProfileWallToNative(o);
 
         case BER.RevitFaceWall o:
+          Report.Log($"Created RevitFaceWall {o.applicationId}");
           return FaceWallToNative(o);
 
         case BE.Wall o:
+          Report.Log($"Created Wall {o.applicationId}");
           return WallToNative(o);
 
         case BE.Duct o:
+          Report.Log($"Created Duct {o.applicationId}");
           return DuctToNative(o);
 
         case BE.Pipe o:
+          Report.Log($"Created Pipe {o.applicationId}");
           return PipeToNative(o);
 
         case BE.Wire o:
+          Report.Log($"Created Wire {o.applicationId}");
           return WireToNative(o);
 
         case BE.Revit.RevitRailing o:
+          Report.Log($"Created RevitRailing {o.applicationId}");
           return RailingToNative(o);
 
         case BER.ParameterUpdater o:
@@ -372,19 +430,41 @@ namespace Objects.Converter.Revit
           return null;
 
         case BE.View3D o:
+          Report.Log($"Created View3D {o.applicationId}");
           return ViewToNative(o);
 
         case BE.Room o:
+          Report.Log($"Created Room {o.applicationId}");
           return RoomToNative(o);
 
         case BE.GridLine o:
+          Report.Log($"Created Gridline {o.applicationId}");
           return GridLineToNative(o);
 
         case BE.Space o:
+          Report.Log($"Created Space {o.applicationId}");
           return SpaceToNative(o);
+        //Structural 
+        case STR.Geometry.Element1D o:
+          Report.Log($"Created Element1D {o.applicationId}");
+          return AnalyticalStickToNative(o);
+
+        case STR.Geometry.Element2D o:
+          Report.Log($"Created Element2D {o.applicationId}");
+          return AnalyticalSurfaceToNative(o);
+
+        case STR.Geometry.Node o:
+          Report.Log($"Created Node {o.applicationId}");
+          return AnalyticalNodeToNative(o);
+
+
+        case STR.Analysis.Model o:
+          Report.Log($"Created StructuralModel");
+          return StructuralModelToNative(o);
 
         // other
         case Other.BlockInstance o:
+                  Report.Log($"Created BlockInstance {o.applicationId}");
           return BlockInstanceToNative(o);
 
         default:
@@ -502,6 +582,11 @@ namespace Objects.Converter.Revit
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
+        //Structural
+        STR.Geometry.Element1D _ => true,
+        STR.Geometry.Element2D _ => true,
+        STR.Geometry.Node _ => true,
+        STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
         _ => false
 

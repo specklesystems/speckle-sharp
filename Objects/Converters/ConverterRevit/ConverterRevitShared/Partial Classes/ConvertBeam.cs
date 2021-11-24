@@ -28,7 +28,10 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitBeam != null)
       {
-        level = GetLevelByName(speckleRevitBeam.level.name);
+        if(level  != null)
+        {
+          level = GetLevelByName(speckleRevitBeam.level.name);
+        }
       }
 
       if (level == null)
@@ -113,7 +116,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
-      Report.Log($"Converted Beam {revitBeam.Id}");
+      //Report.Log($"Converted Beam {revitBeam.Id}");
       return speckleBeam;
     }
   }

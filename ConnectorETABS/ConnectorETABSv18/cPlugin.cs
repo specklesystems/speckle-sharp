@@ -43,6 +43,7 @@ namespace SpeckleConnectorETABS
     .UseReactiveUI();
 
 
+
     public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
@@ -53,6 +54,7 @@ namespace SpeckleConnectorETABS
 
       MainWindow.Show();
       MainWindow.Activate();
+
 
     }
 

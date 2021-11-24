@@ -43,11 +43,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertSectionProfile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertStories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertWall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultSet2D.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Materials\" />
     <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\" />
   </ItemGroup>
 </Project>

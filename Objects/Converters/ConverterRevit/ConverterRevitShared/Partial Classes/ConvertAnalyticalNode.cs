@@ -17,7 +17,10 @@ namespace Objects.Converter.Revit
   {
     public List<ApplicationPlaceholderObject> AnalyticalNodeToNative(Node speckleNode)
     {
-      throw new NotImplementedException();
+            List<ApplicationPlaceholderObject> placeholderObjects = new List<ApplicationPlaceholderObject> { };
+
+            return placeholderObjects;
+      
     }
 
     private Node AnalyticalNodeToSpeckle(ReferencePoint revitNode)

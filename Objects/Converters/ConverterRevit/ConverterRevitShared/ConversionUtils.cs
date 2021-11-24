@@ -342,9 +342,17 @@ namespace Objects.Converter.Revit
                 var val = RevitVersionHelper.ConvertToInternalUnits(sp);
                 rp.Set(val);
               }
-              // Parameter comes form schema builder,
-              // doesn't have an applicationUnit but just units
-              else if (!string.IsNullOrEmpty(sp.units))
+              // the following two cases are for parameters comimg form schema builder
+              // they do not have applicationUnit but just units
+              // units are automatically set but the user can override them 
+              // users might set them to "none" so that we convert them by using the Revit destination parameter display units
+              // this is needed to correctly receive non lenght based parameters (eg air flow)
+              else if (sp.units == Speckle.Core.Kits.Units.None)
+              {
+                var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(sp.value), rp);
+                rp.Set(val);
+              }
+              else if (Speckle.Core.Kits.Units.IsUnitSupported(sp.units))
               {
                 var val = ScaleToNative(Convert.ToDouble(sp.value), sp.units);
                 rp.Set(val);
