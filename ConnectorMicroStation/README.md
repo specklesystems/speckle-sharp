@@ -1,9 +1,10 @@
 # Connector Microstation
 
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Community forum users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square&logo=discourse&logoColor=white)](https://discourse.speckle.works) [![website](https://img.shields.io/badge/https://-speckle.systems-royalblue?style=flat-square)](https://speckle.systems) [![docs](https://img.shields.io/badge/docs-speckle.guide-orange?style=flat-square&logo=read-the-docs&logoColor=white)](https://speckle.guide/dev/)
 
 ## Introduction
 
-This repo holds Speckle's MicroStation, OpenRail, OpenRoads and OpenBuildings Connectors as built and managed by Arup, and it is currently released as ⚠ **ALPHA** ⚠, please use at your own risk!
+This is the ⚠ALPHA⚠ version of the Speckle 2.0 Bentley MicroStation, OpenBuildings, OpenRail, and OpenRoads Connectors, as built and managed by Arup. 
 
 ## Documentation
 
@@ -25,7 +26,13 @@ To be added!
 
 ## Getting Started
 
-The following instructions are for getting started debugging and contributing to this connector.
+#### Server
+
+In order to test Speckle in all its glory, you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server).
+
+#### Accounts
+
+The connector itself doesn't have features to manage your Speckle account - this functionality has been delegated to the Speckle Manager desktop app. After installing the [alpha version](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe), use the manager to add or create an account on the Server.
 
 ### Debugging
 
@@ -38,10 +45,7 @@ You can now start a Visual Studio's debug session for MicroStation, OpenRoad, Op
 
 ### Features
 
-Geometry conversions supported:
-
-- Points, Lines, Arcs, Circles, Ellipses, Polylines, Polycurves, Splines and Meshes (send and receive)
-- Alignments (send)
+Supported elements will be added!
 
 ## Contributing
 
