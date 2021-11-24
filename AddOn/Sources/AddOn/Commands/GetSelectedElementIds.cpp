@@ -31,7 +31,7 @@ GS::Optional<GS::UniString> GetSelectedElementIds::GetSchemaDefinitions () const
 
 GS::Optional<GS::UniString>	GetSelectedElementIds::GetInputParametersSchema () const
 {
-	return GS::NoValue; 
+	return R"({"type": "object","additionalProperties" : false})";
 }
 
 
