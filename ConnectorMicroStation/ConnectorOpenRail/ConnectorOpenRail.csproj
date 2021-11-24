@@ -157,7 +157,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SpeckleOpenRail2.cfg">
+    <None Include="Speckle2OpenRail.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -178,7 +178,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- POST BUILD EVENTS START -->
   <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(AppData)\Bentley\OpenRailDesigner\Addins\SpeckleOpenRail2" />
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Bentley\OpenRailDesigner\Addins\Speckle2OpenRail" />
   </Target>
   <Target Name="AfterBuild">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
@@ -188,7 +188,7 @@
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy DestinationFolder="$(AppData)\Bentley\OpenRailDesigner\Addins\SpeckleOpenRail2\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-    <Copy DestinationFolder="$(ProgramData)\Bentley\OpenRail Designer CE\Configuration\Organization" SourceFiles="$(TargetDir)\SpeckleOpenRail2.cfg" />
+    <Copy DestinationFolder="$(AppData)\Bentley\OpenRailDesigner\Addins\Speckle2OpenRail\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(ProgramData)\Bentley\OpenRail Designer CE\Configuration\Organization" SourceFiles="$(TargetDir)\Speckle2OpenRail.cfg" />
   </Target>
 </Project>

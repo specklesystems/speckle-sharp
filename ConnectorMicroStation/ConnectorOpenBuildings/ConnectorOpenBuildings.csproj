@@ -118,7 +118,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SpeckleOpenBuildings2.cfg">
+    <None Include="Speckle2OpenBuildings.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -144,7 +144,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- POST BUILD EVENTS START -->
   <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(AppData)\Bentley\OpenBuildingsDesigner\Addins\SpeckleOpenBuildings2" />
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Bentley\OpenBuildingsDesigner\Addins\Speckle2OpenBuildings" />
   </Target>
   <Target Name="AfterBuild">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
@@ -154,7 +154,7 @@
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy DestinationFolder="$(AppData)\Bentley\OpenBuildingsDesigner\Addins\SpeckleOpenBuildings2\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-    <Copy DestinationFolder="$(ProgramData)\Bentley\OpenBuildings CONNECT Edition\Configuration\Organization" SourceFiles="$(TargetDir)\SpeckleOpenBuildings2.cfg" />
+    <Copy DestinationFolder="$(AppData)\Bentley\OpenBuildingsDesigner\Addins\Speckle2OpenBuildings\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(ProgramData)\Bentley\OpenBuildings CONNECT Edition\Configuration\Organization" SourceFiles="$(TargetDir)\Speckle2OpenBuildings.cfg" />
   </Target>
 </Project>
