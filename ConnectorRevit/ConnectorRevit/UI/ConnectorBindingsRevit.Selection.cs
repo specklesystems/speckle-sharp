@@ -86,7 +86,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    private List<Element> GetSelectionFilterObjects(ISelectionFilter filter)
+    private List<Element> GetSelectionFilterObjects(ISelectionFilter filter, ISpeckleConverter converter)
     {
       var doc = CurrentDoc.Document;
 
