@@ -2,6 +2,7 @@
 #include "ACAPinc.h"
 
 #include "DGModule.hpp"
+#include "FileSystem.hpp"
 #include "Process.hpp"
 #include "ResourceIds.hpp"
 
@@ -30,7 +31,13 @@ public:
 		}
 
 		try {
-			const GS::UniString command = GetPlatformSpecificExecutable ();
+			const GS::UniString command = GetPlatformSpecificExecutablePath ();
+			const IO::Location commandLocation (command);
+			bool contains = false;
+			GS::ErrCode err = IO::fileSystem.Contains (commandLocation, &contains);
+			if (err != NoError || !contains) {
+				throw GS::Exception ();
+			}
 			const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
 
 			avaloniaProcess = GS::Process::Create (command, arguments);
@@ -55,15 +62,15 @@ public:
 	}
 
 private:
-	GS::UniString GetPlatformSpecificExecutable ()
+	GS::UniString GetPlatformSpecificExecutablePath ()
 	{
-#if defined (macintosh)
-		return "";
-#endif
-#if defined (WINDOWS)
-
-		static const char* FolderName = "ConnectorArchicad";
+	#if defined (macintosh)
+		static const char* FileName = "ConnectorArchicad";
+	#elif
 		static const char* FileName = "ConnectorArchicad.exe";
+	#endif
+		static const char* FolderName = "ConnectorArchicad";
+
 
 		IO::Location ownFileLoc;
 		const auto err = ACAPI_GetOwnLocation (&ownFileLoc);
@@ -79,7 +86,6 @@ private:
 		ownFileLoc.ToPath (&executableStr);
 
 		return executableStr;
-#endif
 	}
 
 	GS::Array<GS::UniString> GetExecutableArguments ()

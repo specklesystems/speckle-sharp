@@ -18,9 +18,29 @@ function (SetCompilerOptions target)
 			-Wno-reorder
 			-Wno-overloaded-virtual
 			-Wno-unused-parameter
-			-Wno-deprecated-copy)
+			-Wno-deprecated-copy
+			-Wno-unknown-pragmas
+			-Wno-missing-braces
+			-Wno-unused-private-field)
 	endif ()
 endfunction ()
+
+macro (header_include_directories return_list)
+	file (GLOB_RECURSE new_list
+		*.h
+		*.hpp
+	)
+	set (dir_list "")
+
+	foreach (file_path ${new_list})
+		get_filename_component (dir_path ${file_path} PATH)
+		set (dir_list ${dir_list} ${dir_path})
+	endforeach ()
+
+	list (REMOVE_DUPLICATES dir_list)
+	set (${return_list} ${dir_list})
+
+endmacro ()
 
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -148,9 +168,11 @@ if (WIN32)
 	target_link_options (AddOn PUBLIC /export:GetExportedFuncAddrs,@1 /export:SetImportedFuncAddrs,@2)
 endif ()
 
+header_include_directories (include_list)
+
 target_include_directories (AddOn PUBLIC
-	${AddOnSourcesFolder}
 	${AC_API_DEVKIT_DIR}/Support/Inc
+	${include_list}
 )
 
 if (WIN32)
