@@ -147,7 +147,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConnectorOpenRoadsRibbon.xml" />
+    <Content Include="ConnectorOpenRoadsRibbon.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
@@ -187,6 +189,7 @@
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Bentley\OpenRoadsDesigner\Addins\Speckle2OpenRoads\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Bentley\OpenRoadsDesigner\Addins\Speckle2OpenRoads" SourceFiles="$(TargetDir)\ConnectorOpenRoadsRibbon.xml" />
     <Copy DestinationFolder="$(ProgramData)\Bentley\OpenRoads Designer CE\Configuration\Organization" SourceFiles="$(TargetDir)\Speckle2OpenRoads.cfg" />
   </Target>
 </Project>

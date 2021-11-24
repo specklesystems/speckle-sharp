@@ -8,11 +8,11 @@
 
   <SubKeyinTables>
     <KeyinTable ID="Commands">
-      <Keyword CommandWord="Start" />
+      <Keyword CommandWord="Speckle" />
     </KeyinTable>
   </SubKeyinTables>
 
   <KeyinHandlers>
-    <KeyinHandler Keyin="Speckle Start" Function="Speckle.ConnectorMicroStationOpenRoads.Keyins.Start" />
+    <KeyinHandler Keyin="Speckle Speckle" Function="Speckle.ConnectorMicroStationOpen.Keyins.Start" />
   </KeyinHandlers>
 </KeyinTree>
