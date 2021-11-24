@@ -21,45 +21,85 @@ static const short AddOnMenuID 				= ID_ADDON_MENU;
 static const Int32 AddOnCommandID 			= 1;
 
 
-static GS::UniString GetPlatformSpecificExecutable ()
-{
+class AvaloniaProcessManager {
+public:
+	void Start ()
+	{
+		if (IsRunning ()) {
+			return;
+		}
+
+		try {
+			const GS::UniString command = GetPlatformSpecificExecutable ();
+			const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
+
+			avaloniaProcess = GS::Process::Create (command, arguments);
+		}
+		catch (GS::Exception&) {
+			DG::ErrorAlert ("Error", "Can't start Speckle UI", "OK");
+		}
+	}
+
+	void Stop ()
+	{
+		if (!IsRunning ()) {
+			return;
+		}
+
+		avaloniaProcess->Kill ();
+	}
+
+	bool IsRunning ()
+	{
+		return avaloniaProcess.HasValue () && !avaloniaProcess->IsTerminated ();
+	}
+
+private:
+	GS::UniString GetPlatformSpecificExecutable ()
+	{
 #if defined (macintosh)
-	return "";
+		return "";
 #endif
 #if defined (WINDOWS)
 
-	static const char* FolderName = "ConnectorArchicad";
-	static const char* FileName = "ConnectorArchicad.exe";
+		static const char* FolderName = "ConnectorArchicad";
+		static const char* FileName = "ConnectorArchicad.exe";
 
-	IO::Location ownFileLoc;
-	const auto err = ACAPI_GetOwnLocation (&ownFileLoc);
-	if (err != NoError) {
-		return "";
-	}
+		IO::Location ownFileLoc;
+		const auto err = ACAPI_GetOwnLocation (&ownFileLoc);
+		if (err != NoError) {
+			return "";
+		}
 
-	ownFileLoc.DeleteLastLocalName ();
-	ownFileLoc.AppendToLocal (IO::Name (FolderName));
-	ownFileLoc.AppendToLocal (IO::Name (FileName));
+		ownFileLoc.DeleteLastLocalName ();
+		ownFileLoc.AppendToLocal (IO::Name (FolderName));
+		ownFileLoc.AppendToLocal (IO::Name (FileName));
 
-	GS::UniString executableStr;
-	ownFileLoc.ToPath (&executableStr);
+		GS::UniString executableStr;
+		ownFileLoc.ToPath (&executableStr);
 
-	return executableStr;
-
+		return executableStr;
 #endif
-}
-
-static GS::Array<GS::UniString> GetExecutableArguments ()
-{
-	UShort portNumber;
-	const auto err = ACAPI_Goodies (APIAny_GetHttpConnectionPortID, &portNumber);
-
-	if (err != NoError) {
-		throw GS::IllegalArgumentException ();
 	}
 
-	return GS::Array<GS::UniString> { GS::ValueToUniString (portNumber) };
-}
+	GS::Array<GS::UniString> GetExecutableArguments ()
+	{
+		UShort portNumber;
+		const auto err = ACAPI_Goodies (APIAny_GetHttpConnectionPortID, &portNumber);
+
+		if (err != NoError) {
+			throw GS::IllegalArgumentException ();
+		}
+
+		return GS::Array<GS::UniString> { GS::ValueToUniString (portNumber) };
+	}
+
+	GS::Optional<GS::Process> avaloniaProcess;
+
+};
+
+static AvaloniaProcessManager avaloniaProcess;
+
 
 static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 {
@@ -68,15 +108,7 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 		switch (menuParams->menuItemRef.itemIndex) {
 		case AddOnCommandID:
 		{
-			try {
-				const GS::UniString command = GetPlatformSpecificExecutable ();
-				const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
-
-				GS::Process process = GS::Process::Create (command, arguments);
-			}
-			catch (GS::Exception&) {
-				DG::ErrorAlert ("Error", "Can't start Speckle UI", "OK");
-			}
+			avaloniaProcess.Start ();
 		}
 		break;
 	}
@@ -117,5 +149,7 @@ GSErrCode __ACENV_CALL Initialize (void)
 
 GSErrCode __ACENV_CALL FreeData (void)
 {
+	avaloniaProcess.Stop ();
+	
 	return NoError;
 }
