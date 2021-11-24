@@ -73,7 +73,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SpeckleOpenRoads2.cfg">
+    <None Include="Speckle2OpenRoads.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -95,7 +95,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- POST BUILD EVENTS START -->
   <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(AppData)\Bentley\OpenRoadsDesigner\Addins\SpeckleOpenRoads2" />
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Bentley\OpenRoadsDesigner\Addins\Speckle2OpenRoads" />
   </Target>
   <Target Name="AfterBuild">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
@@ -105,7 +105,7 @@
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy DestinationFolder="$(AppData)\Bentley\OpenRoadsDesigner\Addins\SpeckleOpenRoads2\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-    <Copy DestinationFolder="$(ProgramData)\Bentley\OpenRoads Designer CE\Configuration\Organization" SourceFiles="$(TargetDir)\SpeckleOpenRoads2.cfg" />
+    <Copy DestinationFolder="$(AppData)\Bentley\OpenRoadsDesigner\Addins\Speckle2OpenRoads\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(ProgramData)\Bentley\OpenRoads Designer CE\Configuration\Organization" SourceFiles="$(TargetDir)\Speckle2OpenRoads.cfg" />
   </Target>
 </Project>

@@ -63,7 +63,7 @@
   <Buttons>
     <Button Name="Speckle.ShowUI" Priority="100">
       <Label>Connector</Label>
-      <Description>Launches the SpeckleMicroStation Connector</Description>
+      <Description>Launches the Speckle MicroStation Connector</Description>
       <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
       </ButtonParams>
       <ButtonData>
