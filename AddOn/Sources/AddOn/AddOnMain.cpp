@@ -2,6 +2,7 @@
 #include "ACAPinc.h"
 
 #include "DGModule.hpp"
+#include "FileSystem.hpp"
 #include "Process.hpp"
 #include "ResourceIds.hpp"
 
@@ -21,15 +22,14 @@ static const short AddOnMenuID 				= ID_ADDON_MENU;
 static const Int32 AddOnCommandID 			= 1;
 
 
-static GS::UniString GetPlatformSpecificExecutable ()
+static GS::UniString GetPlatformSpecificExecutablePath ()
 {
 #if defined (macintosh)
-	return "";
-#endif
-#if defined (WINDOWS)
-
-	static const char* FolderName = "ConnectorArchicad";
+	static const char* FileName = "ConnectorArchicad";
+#elif
 	static const char* FileName = "ConnectorArchicad.exe";
+#endif
+	static const char* FolderName = "ConnectorArchicad";
 
 	IO::Location ownFileLoc;
 	const auto err = ACAPI_GetOwnLocation (&ownFileLoc);
@@ -45,8 +45,6 @@ static GS::UniString GetPlatformSpecificExecutable ()
 	ownFileLoc.ToPath (&executableStr);
 
 	return executableStr;
-
-#endif
 }
 
 static GS::Array<GS::UniString> GetExecutableArguments ()
@@ -69,9 +67,15 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 		case AddOnCommandID:
 		{
 			try {
-				const GS::UniString command = GetPlatformSpecificExecutable ();
-				const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
+				const GS::UniString command = GetPlatformSpecificExecutablePath ();
+				const IO::Location commandLocation (command);
+				bool contains = false;
+				GS::ErrCode err = IO::fileSystem.Contains (commandLocation, &contains);
+				if (err != NoError || !contains) {
+					throw GS::Exception ();
+				}
 
+				const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
 				GS::Process process = GS::Process::Create (command, arguments);
 			}
 			catch (GS::Exception&) {
