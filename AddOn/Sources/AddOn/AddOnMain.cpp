@@ -66,7 +66,7 @@ private:
 	{
 	#if defined (macintosh)
 		static const char* FileName = "ConnectorArchicad";
-	#elif
+	#else
 		static const char* FileName = "ConnectorArchicad.exe";
 	#endif
 		static const char* FolderName = "ConnectorArchicad";
