@@ -44,8 +44,8 @@ namespace ConnectorGrasshopper.Objects
       if (InPreSolve)
       {
         GH_SpeckleBase ghSpeckleBase = null;
-        if(!DA.GetData(0, ref ghSpeckleBase)) return;
-        var @base = ghSpeckleBase.Value;
+        DA.GetData(0, ref ghSpeckleBase);
+        var @base = ghSpeckleBase?.Value;
 
         var task = Task.Run(() => DoWork(@base));
         TaskList.Add(task);
@@ -212,7 +212,7 @@ namespace ConnectorGrasshopper.Objects
       
       foreach (var ghGoo in speckleObjects.AllData(true))
       {
-        var b = (ghGoo as GH_SpeckleBase).Value;
+        var b = (ghGoo as GH_SpeckleBase)?.Value;
         b?.GetMemberNames().ToList().ForEach(prop =>
         {
           if (!fullProps.Contains(prop))
@@ -248,6 +248,7 @@ namespace ConnectorGrasshopper.Objects
 
       // Assign all values to it's corresponding dictionary entry and branch path.
       var obj = @base;
+      if (obj == null) return new Dictionary<string, object>();
       foreach (var prop in obj.GetMembers())
       {
         // Convert and add to corresponding output structure
@@ -256,7 +257,8 @@ namespace ConnectorGrasshopper.Objects
         switch (value)
         {
           case null:
-            continue;
+            outputDict[prop.Key] = null;
+            break;
           case System.Collections.IList list:
             var result = new List<IGH_Goo>();
             foreach (var x in list)

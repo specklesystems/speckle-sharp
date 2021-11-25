@@ -75,11 +75,12 @@
             Text="{Binding StreamState.CommitId}"
             TextTrimming="CharacterEllipsis" />
         </Grid>
-        <!--  DETAILS  -->
+        <!--  DETAILS - visible when not progressing  -->
         <Grid
           Grid.Row="2"
           Margin="0,5,0,0"
-          ColumnDefinitions="auto,auto,*">
+          ColumnDefinitions="auto,auto,*"
+          IsVisible="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}">
           <TextBlock
             Classes="Overline"
             Text="{Binding LastUpdated}"
@@ -92,6 +93,18 @@
             Grid.Column="2"
             Classes="Overline"
             Text="{Binding LastUsed}"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+
+        <!--  DETAILS - visible when progressing  -->
+        <Grid
+          Grid.Row="2"
+          Margin="0,5,0,0"
+          ColumnDefinitions="auto"
+          IsVisible="{Binding Progress.IsProgressing}">
+          <TextBlock
+            Classes="Overline"
+            Text="{Binding Progress.ProgressSummary}"
             TextTrimming="CharacterEllipsis" />
         </Grid>
 

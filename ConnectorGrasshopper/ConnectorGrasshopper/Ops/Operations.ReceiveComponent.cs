@@ -706,7 +706,7 @@ namespace ConnectorGrasshopper.Ops
 
       converter?.SetContextDocument(RhinoDoc.ActiveDoc);
 
-      var tree = Utilities.ConvertToTree(converter, ReceivedObject);
+      var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
       DA.SetDataTree(0, tree);
     }
   }

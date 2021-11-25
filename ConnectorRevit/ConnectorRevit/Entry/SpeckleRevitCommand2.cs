@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -43,6 +44,7 @@ namespace Speckle.ConnectorRevit.Entry
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       uiapp = commandData.Application;
+
       //UIDocument uidoc = uiapp.ActiveUIDocument;
       //Application app = uiapp.Application;
       //Document doc = uidoc.Document;
@@ -50,6 +52,11 @@ namespace Speckle.ConnectorRevit.Entry
       CreateOrFocusSpeckle();
 
       return Result.Succeeded;
+    }
+
+    private void MainWindow_StateChanged(object sender, EventArgs e)
+    {
+
     }
 
     public static void CreateOrFocusSpeckle()
@@ -67,6 +74,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
 
       MainWindow.Show();
+      MainWindow.Activate();
     }
 
     private static void AppMain(Avalonia.Application app, string[] args)
