@@ -326,6 +326,8 @@ namespace ConnectorGrasshopper
         return;
       }
 
+      Tracker.TrackPageview("objects", "create", "variableinput");
+
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       List<object> cParamsValues = new List<object>();
@@ -595,7 +597,6 @@ namespace ConnectorGrasshopper
     protected override void BeforeSolveInstance()
     {
       Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      Tracker.TrackPageview("objects", "create", "variableinput");
       base.BeforeSolveInstance();
     }
   }

@@ -37,7 +37,6 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.SERIALIZE);
       base.BeforeSolveInstance();
     }
   }
@@ -58,7 +57,9 @@ namespace ConnectorGrasshopper.Conversion
       try
       {
         if (CancellationToken.IsCancellationRequested)return;
-
+        
+        Tracker.TrackPageview(Tracker.SERIALIZE);
+        
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {

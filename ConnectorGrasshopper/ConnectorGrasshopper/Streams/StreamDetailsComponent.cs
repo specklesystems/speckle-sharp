@@ -68,7 +68,10 @@ namespace ConnectorGrasshopper.Streams
           Message = null;
           return;
         }
+        
+        Tracker.TrackPageview(Tracker.STREAM_DETAILS);
         Message = "Fetching";
+        
         if (ghStreamTree.DataCount == 0)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input S failed to collect data.");

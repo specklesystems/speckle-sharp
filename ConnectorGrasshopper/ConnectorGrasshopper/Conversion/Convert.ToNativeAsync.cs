@@ -45,7 +45,6 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
       base.BeforeSolveInstance();
     }
 
@@ -77,10 +76,10 @@ namespace ConnectorGrasshopper.Conversion
       try
       {
         if (CancellationToken.IsCancellationRequested)
-        {
           return;
-        }
-
+        
+        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
+        
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {

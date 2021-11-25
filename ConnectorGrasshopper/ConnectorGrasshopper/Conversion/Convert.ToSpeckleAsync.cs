@@ -45,7 +45,6 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
       base.BeforeSolveInstance();
     }
 
@@ -77,6 +76,7 @@ namespace ConnectorGrasshopper.Conversion
       try
       {
         if (CancellationToken.IsCancellationRequested)return;
+        Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
 
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
