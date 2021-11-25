@@ -32,6 +32,11 @@ namespace Objects
     Interval domain { get; set; }
   }
 
+  public interface ITransformable<T> where T : ITransformable<T>
+  {
+    T Transform(Transform transform);
+  }
+
   #endregion
 
   #region Built elements

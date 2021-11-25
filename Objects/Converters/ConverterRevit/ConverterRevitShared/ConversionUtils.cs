@@ -634,7 +634,7 @@ namespace Objects.Converter.Revit
     #region Project Base Point
     private class BetterBasePoint
     {
-      public Transform TotalTransform { get; set; } = Transform.Identity;
+      public DB.Transform TotalTransform { get; set; } = DB.Transform.Identity;
     }
 
     ////////////////////////////////////////////////
@@ -663,7 +663,7 @@ namespace Objects.Converter.Revit
 #else
             var point = bp.Position;
 #endif
-            _basePoint = new BetterBasePoint { TotalTransform = Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
+            _basePoint = new BetterBasePoint { TotalTransform = DB.Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
           }
         }
         return _basePoint;
@@ -743,14 +743,14 @@ namespace Objects.Converter.Revit
         //move curves to Z = 0, needed for shafts!
         curveA.MakeBound(0, 1);
         var z = curveA.GetEndPoint(0).Z;
-        var cA = curveA.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+        var cA = curveA.CreateTransformed(DB.Transform.CreateTranslation(new XYZ(0, 0, -z)));
 
         foreach (var curveB in curveArrayB)
         {
           //move curves to Z = 0, needed for shafts!
           curveB.MakeBound(0, 1);
           z = curveB.GetEndPoint(0).Z;
-          var cB = curveB.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+          var cB = curveB.CreateTransformed(DB.Transform.CreateTranslation(new XYZ(0, 0, -z)));
 
           var result = cA.Intersect(cB);
           if (result != SetComparisonResult.BothEmpty && result != SetComparisonResult.Disjoint)
