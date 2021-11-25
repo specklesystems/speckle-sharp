@@ -14,7 +14,7 @@ namespace Archicad.Launcher
 
         public static AppBuilder BuildAvaloniaApp ()
         {
-            return AppBuilder.Configure<DesktopUI2.App> ()
+            return AppBuilder.Configure (() => new DesktopUI2.App { ConnectorBindings = new ArchicadBinding () })
                 .UsePlatformDetect ()
                 .With (new X11PlatformOptions { UseGpu = false })
                 .With (new MacOSPlatformOptions { ShowInDock = false })
@@ -35,5 +35,5 @@ namespace Archicad.Launcher
 
             return Path.Combine (path, "Native", "libAvalonia.Native.OSX.dylib");
         }
-  }
+    }
 }
