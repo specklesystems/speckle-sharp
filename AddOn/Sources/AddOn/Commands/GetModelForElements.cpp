@@ -2,7 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Sight.hpp"
-#include "SchemaDefinitions\SchemaDefinitionBuilder.hpp"
+#include "SchemaDefinitionBuilder.hpp"
 
 
 namespace AddOnCommands {

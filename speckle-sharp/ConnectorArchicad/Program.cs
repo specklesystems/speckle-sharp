@@ -17,7 +17,7 @@ namespace Archicad.Launcher
             return AppBuilder.Configure (() => new DesktopUI2.App { ConnectorBindings = new ArchicadBinding () })
                 .UsePlatformDetect ()
                 .With (new X11PlatformOptions { UseGpu = false })
-                .With (new MacOSPlatformOptions { ShowInDock = false })
+                .With (new MacOSPlatformOptions { ShowInDock = true })
                 .With (new AvaloniaNativePlatformOptions { AvaloniaNativeLibraryPath = GetAvaloniaNativeLibraryPath () })
                 .With (new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
                 .With (new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
@@ -25,7 +25,7 @@ namespace Archicad.Launcher
                 .UseReactiveUI ();
         }
 
-        private static string GetAvaloniaNativeLibraryPath ()
+        private static string? GetAvaloniaNativeLibraryPath ()
 		{
 			string path = Path.GetDirectoryName (typeof (DesktopUI2.App).Assembly.Location);
             if (path is null)
