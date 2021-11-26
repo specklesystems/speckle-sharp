@@ -350,7 +350,7 @@ namespace ConnectorGrasshopper
         return;
       }
       
-      // 
+      
       if(DA.Iteration == 0)
         Tracker.TrackPageview("objects", "create", "variableinput");
 

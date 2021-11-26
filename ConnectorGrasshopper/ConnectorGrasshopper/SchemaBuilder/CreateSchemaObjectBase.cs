@@ -326,8 +326,9 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      Tracker.TrackPageview("objects", "create", "variableinput");
-
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview("objects", "create", "schema");
+      
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       List<object> cParamsValues = new List<object>();

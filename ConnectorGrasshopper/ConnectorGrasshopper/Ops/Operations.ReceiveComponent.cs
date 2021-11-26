@@ -509,6 +509,8 @@ namespace ConnectorGrasshopper.Ops
           }
         };
 
+        var sw = new StreamWrapper("");
+
         ErrorAction = (transportName, exception) =>
         {
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.

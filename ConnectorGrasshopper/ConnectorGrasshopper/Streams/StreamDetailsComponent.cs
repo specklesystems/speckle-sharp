@@ -69,7 +69,9 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
         
-        Tracker.TrackPageview(Tracker.STREAM_DETAILS);
+        if(DA.Iteration == 0) 
+          Tracker.TrackPageview(Tracker.STREAM_DETAILS);
+        
         Message = "Fetching";
         
         if (ghStreamTree.DataCount == 0)
@@ -187,7 +189,6 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       base.BeforeSolveInstance();
     }
   }

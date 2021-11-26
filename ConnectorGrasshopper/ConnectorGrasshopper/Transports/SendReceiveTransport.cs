@@ -40,6 +40,8 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
+      Tracker.TrackPageview("transports", "send_to_transport");
+
       List<ITransport> transports = new List<ITransport>();
       DA.GetDataList(0, transports);
 
@@ -66,7 +68,6 @@ namespace ConnectorGrasshopper.Transports
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("transports", "send_to_transport");
       base.BeforeSolveInstance();
     }
 
@@ -100,6 +101,8 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you've inputed only one transport and a flat list of object ids.");
         return;
       }
+      
+      Tracker.TrackPageview("transports", "receive_from_transport");
 
       List<string> ids = new List<string>();
       DA.GetDataList(1, ids);
@@ -131,7 +134,6 @@ namespace ConnectorGrasshopper.Transports
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("transports", "receive_from_transport");
       base.BeforeSolveInstance();
     }
 

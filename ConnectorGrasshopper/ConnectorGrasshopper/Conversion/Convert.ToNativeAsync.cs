@@ -78,8 +78,6 @@ namespace ConnectorGrasshopper.Conversion
         if (CancellationToken.IsCancellationRequested)
           return;
         
-        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
-        
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
@@ -135,6 +133,9 @@ namespace ConnectorGrasshopper.Conversion
       {
         return;
       }
+      
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
 
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
