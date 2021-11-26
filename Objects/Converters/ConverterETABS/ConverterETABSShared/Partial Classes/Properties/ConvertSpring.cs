@@ -14,20 +14,22 @@ namespace Objects.Converter.ETABS
       double[] stiffness = null;
       int springOption = 0;
       string Cys = null;
-      string SoilProfile = null;
-      string Footing = null;
+      string soilProfile = null;
+      string footing = null;
       double period = 0;
       int color = 0;
       string notes = null;
       string GUID = null;
-      Model.PropPointSpring.GetPointSpringProp(name, ref springOption, ref stiffness, ref Cys, ref SoilProfile, ref Footing, ref period, ref color, ref notes, ref GUID);
+      Model.PropPointSpring.GetPointSpringProp(name, ref springOption, ref stiffness, ref Cys, ref soilProfile, ref footing, ref period, ref color, ref notes, ref GUID);
       switch (springOption)
       {
         case 1:
           ETABSSpringProperty speckleSpringProperty = new ETABSSpringProperty(name, Cys, stiffness[0], stiffness[1], stiffness[2], stiffness[3], stiffness[4], stiffness[5]);
+          speckleSpringProperty.applicationId = GUID;
           return speckleSpringProperty;
         case 2:
-          speckleSpringProperty = new ETABSSpringProperty(name, SoilProfile, Footing, period);
+          speckleSpringProperty = new ETABSSpringProperty(name, soilProfile, footing, period);
+          speckleSpringProperty.applicationId = GUID;
           return speckleSpringProperty;
         default:
           speckleSpringProperty = new ETABSSpringProperty();
@@ -36,8 +38,48 @@ namespace Objects.Converter.ETABS
     }
     public ETABSLinearSpring LinearSpringToSpeckle(string name)
     {
-      ETABSLinearSpring speckleLinearSpring = new ETABSLinearSpring();
-      return speckleLinearSpring;
+      double stiffnessX = 0;
+      double stiffnessY = 0;
+      double stiffnessZ = 0;
+      double stiffnessXX = 0;
+      int nonLinearOpt1 = 0;
+      int nonLinearOpt2 = 0;
+      int color = 0;
+      string notes = null;
+      string GUID = null;
+      NonLinearOptions nonLinearOptions1 = NonLinearOptions.Linear;
+      NonLinearOptions nonLinearOptions2 = NonLinearOptions.Linear;
+
+      var s = Model.PropLineSpring.GetLineSpringProp(name, ref stiffnessX, ref stiffnessY, ref stiffnessZ, ref stiffnessXX, ref nonLinearOpt1, ref nonLinearOpt2, ref color, ref notes, ref GUID);
+      switch(nonLinearOpt1){
+        case 0:
+          nonLinearOptions1 = NonLinearOptions.Linear;
+          break;
+        case 1:
+          nonLinearOptions1 = NonLinearOptions.CompressionOnly;
+          break;
+        case 2:
+          nonLinearOptions1 = NonLinearOptions.TensionOnly;
+          break;
+      }
+      switch(nonLinearOpt2){
+        case 0:
+          nonLinearOptions2 = NonLinearOptions.Linear;
+          break;
+        case 1:
+          nonLinearOptions2 = NonLinearOptions.CompressionOnly;
+          break;
+        case 2:
+          nonLinearOptions2 = NonLinearOptions.TensionOnly;
+          break;
+      }
+
+      if(s == 0)
+      {
+        ETABSLinearSpring speckleLinearSpring = new ETABSLinearSpring(name, stiffnessX, stiffnessY, stiffnessZ, stiffnessXX, nonLinearOptions1, nonLinearOptions2, GUID);
+        return speckleLinearSpring;
+        }
+      return null;
 
     }
     public ETABSAreaSpring AreaSpringToSpeckle(string name)

@@ -4,6 +4,8 @@ using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
 using Speckle.Core.Models;
+using Objects.Structural.ETABS.Geometry;
+using Objects.Structural.ETABS.Properties;
 using System.Linq;
 using ETABSv1;
 
@@ -100,11 +102,11 @@ namespace Objects.Converter.ETABS
       return element1D.name;
     }
 
-    public Element1D FrameToSpeckle(string name)
+    public ETABSElement1D FrameToSpeckle(string name)
     {
       string units = ModelUnits();
 
-      var speckleStructFrame = new Element1D();
+      var speckleStructFrame = new ETABSElement1D();
 
       speckleStructFrame.name = name;
       string pointI, pointJ;
@@ -189,6 +191,14 @@ namespace Objects.Converter.ETABS
       speckleStructFrame.end1Offset = end1Offset;
       speckleStructFrame.end2Offset = end2Offset;
 
+      string springLineName = null;
+      Model.FrameObj.GetSpringAssignment(name, ref springLineName);
+      if(springLineName!= null){
+        speckleStructFrame.ETABSLinearSpring = LinearSpringToSpeckle(springLineName);
+      }
+
+
+      //
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
       speckleStructFrame.applicationId = GUID;
