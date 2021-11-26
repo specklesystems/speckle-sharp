@@ -34,6 +34,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Polyline = Objects.Geometry.Polyline;
+using Spiral = Objects.Geometry.Spiral;
 
 using RH = Rhino.Geometry;
 
@@ -271,7 +272,6 @@ namespace Objects.Converter.RhinoGh
 
     public ArcCurve ArcToNative(Arc arc)
     {
-      // RH.Arc arc = new RH.Arc(PlaneToNative(a.plane), ScaleToNative((double)a.radius, a.units), (double)a.angleRadians); Not using this constructor due to angle tolerance rounding issues
       var _arc = new RH.Arc(PointToNative(arc.startPoint).Location, PointToNative(arc.midPoint).Location, PointToNative(arc.endPoint).Location);
 
       var arcCurve = new ArcCurve(_arc);
@@ -307,6 +307,28 @@ namespace Objects.Converter.RhinoGh
 
       return myEllp;
     }
+
+    // Spiral
+    public RH.Curve SpiralToNative(Spiral s)
+    {
+      /* Using display value polyline for now
+      var axisStart = PointToNative(s.plane.origin).Location;
+      var axisDir = VectorToNative(s.plane.normal);
+      var radiusPoint = PointToNative(s.startPoint).Location;
+      var pitch = ScaleToNative(s.pitch, s.units);
+      var endPoint = PointToNative(s.endPoint).Location;
+      var r1 = axisStart.DistanceTo(radiusPoint);
+      double r2 = 0;
+      if (pitch == 0)
+        r2 = axisStart.DistanceTo(endPoint);
+      var nurbs = NurbsCurve.CreateSpiral(axisStart, axisDir, radiusPoint, pitch, s.turns, r1, r2);
+      if (nurbs != null && nurbs.IsValid)
+        if (nurbs.SetEndPoint(endPoint)) // try to adjust endpoint to match exactly the spiral endpoint
+          return nurbs;
+      */
+      return PolylineToNative(s.displayValue);
+    }
+
 
     // Polyline
     // Gh Capture
@@ -439,6 +461,9 @@ namespace Objects.Converter.RhinoGh
 
         case Ellipse ellipse:
           return EllipseToNative(ellipse);
+
+        case Spiral spiral:
+          return SpiralToNative(spiral);
 
         case Curve crv:
           return NurbsToNative(crv);

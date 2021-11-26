@@ -17,6 +17,7 @@ using Ellipse = Objects.Geometry.Ellipse;
 using Curve = Objects.Geometry.Curve;
 using Mesh = Objects.Geometry.Mesh;
 using Objects;
+using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -490,6 +491,9 @@ namespace Objects.Converter.Dynamo
           case Ellipse curve:
             curves[i] = EllipseToNative(curve);
             break;
+          case Spiral curve:
+            curves[i] = PolylineToNative(curve.displayValue);
+            break;
           case Polycurve curve:
             curves[i] = PolycurveToNative(curve);
             break;
@@ -631,6 +635,7 @@ namespace Objects.Converter.Dynamo
       return speckleCurve;
     }
 
+    // TODO: send this as a spiral class
     public Base HelixToSpeckle(Helix helix, string units = null)
     {
       using (NurbsCurve nurbsCurve = helix.ToNurbsCurve())
