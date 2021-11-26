@@ -501,29 +501,41 @@ namespace Objects.Converter.AutocadCivil
       var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
 
       // add all vertices
-      for (int i = 0; i < polycurve.segments.Count; i++)
+      int count = 0;
+      foreach(var segment in polycurve.segments)
       {
-        var segment = polycurve.segments[i];
         switch (segment)
         {
           case Line o:
-            polyline.AddVertexAt(i, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
-            if (!polycurve.closed && i == polycurve.segments.Count - 1)
-              polyline.AddVertexAt(i + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
+            polyline.AddVertexAt(count, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
+            if (!polycurve.closed && count == polycurve.segments.Count - 1)
+              polyline.AddVertexAt(count + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
+            count++;
             break;
           case Arc o:
-            var bulge = Math.Tan((double)(o.endAngle - o.startAngle) / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
-            polyline.AddVertexAt(i, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
-            if (!polycurve.closed && i == polycurve.segments.Count - 1)
-              polyline.AddVertexAt(i + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+            var angle = o.endAngle - o.startAngle;
+            angle = angle < 0 ? angle + 2 * Math.PI : angle;
+            var bulge = Math.Tan((double)angle / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
+            polyline.AddVertexAt(count, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
+            if (!polycurve.closed && count == polycurve.segments.Count - 1)
+              polyline.AddVertexAt(count + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+            count++;
             break;
           case Spiral o:
-            var poly = o.displayValue;
-            // TODO: add polyline conversion here, need to rethink logic
+            var vertices = o.displayValue.GetPoints().Select(p => PointToNative(p)).ToList();
+            foreach(var vertex in vertices)
+            {
+              polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
+              count++;
+            }
             break;
           default:
             return null;
         }
+      }
+      for (int i = 0; i < polycurve.segments.Count; i++)
+      {
+        
       }
 
       return polyline;
