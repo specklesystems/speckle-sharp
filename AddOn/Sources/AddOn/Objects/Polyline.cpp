@@ -22,12 +22,8 @@ PolylineSegment::PolylineSegment (const Point3D& start, const Point3D& end, doub
 
 GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 {
-	const GS::ObjectState& startPointOS = *os.Get (StartPointFieldName);
-	StartPoint.Restore (startPointOS);
-
-	const GS::ObjectState& endPointOS = *os.Get (EndPointFieldName);
-	EndPoint.Restore (endPointOS);
-	
+	os.Get (StartPointFieldName, StartPoint);
+	os.Get (EndPointFieldName, EndPoint);
 	os.Get (ArcAngleFieldName, ArcAngle);
 
 	return NoError;
@@ -36,12 +32,8 @@ GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 
 GSErrCode PolylineSegment::Store (GS::ObjectState& os) const
 {
-	auto& startPointOs = os.AddObject (StartPointFieldName);
-	StartPoint.Store (startPointOs);
-	
-	auto& endPointOs = os.AddObject (EndPointFieldName);
-	EndPoint.Store (endPointOs);
-
+	os.Add (StartPointFieldName, StartPoint);
+	os.Add (EndPointFieldName, EndPoint);
 	os.Add (ArcAngleFieldName, ArcAngle);
 
 	return NoError;
@@ -133,13 +125,7 @@ bool Polyline::IsClosed () const
 		
 GSErrCode Polyline::Restore (const GS::ObjectState& os)
 {
-	GS::Array<GS::ObjectState> curvesOS;
-	os.Get (PolylineSegmentsFieldName, curvesOS);
-	for (GS::ObjectState curveOS : curvesOS) {
-		PolylineSegment segment;
-		segment.Restore (curveOS);
-		mPolylineSegments.Push (segment);
-	}
+	os.Get (PolylineSegmentsFieldName, mPolylineSegments);
 
 	FillVertices ();
 
@@ -149,12 +135,7 @@ GSErrCode Polyline::Restore (const GS::ObjectState& os)
 
 GSErrCode Polyline::Store (GS::ObjectState& os) const
 {
-	const auto& listAdder = os.AddList<GS::ObjectState> (PolylineSegmentsFieldName);
-	for (const PolylineSegment& segment : mPolylineSegments) {
-		GS::ObjectState segmentOs;
-		segment.Store (segmentOs);
-		listAdder (segmentOs);
-	}
+	os.Add (PolylineSegmentsFieldName, mPolylineSegments);
 
 	return NoError;
 }
@@ -292,17 +273,8 @@ void ElementShape::SetToMemo (API_ElementMemo& memo)
 
 GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 {
-	const GS::ObjectState& contPolyOS = *os.Get (ContourPolyFieldName);
-	mContourPoly.Restore (contPolyOS);
-
-	GS::Array<GS::ObjectState> holesOS;
-	os.Get (HolePolylinesFieldName, holesOS);
-
-	for (GS::ObjectState holeOS : holesOS) {
-		Polyline hole;
-		hole.Restore (holeOS);
-		mHoles.Push (hole);
-	}
+	os.Get (ContourPolyFieldName, mContourPoly);
+	os.Get (HolePolylinesFieldName, mHoles);
 
 	return NoError;
 }
@@ -310,15 +282,8 @@ GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 
 GSErrCode ElementShape::Store (GS::ObjectState& os) const
 {
-	auto& contPolyOS = os.AddObject (ContourPolyFieldName);
-	mContourPoly.Store (contPolyOS);
-
-	const auto& listAdder = os.AddList<GS::ObjectState> (HolePolylinesFieldName);
-	for (const Polyline& hole : mHoles) {
-		GS::ObjectState holeOs;
-		hole.Store (holeOs);
-		listAdder (holeOs);
-	}
+	os.Add (ContourPolyFieldName, mContourPoly);
+	os.Add (HolePolylinesFieldName, mHoles);
 
 	return NoError;
 }
