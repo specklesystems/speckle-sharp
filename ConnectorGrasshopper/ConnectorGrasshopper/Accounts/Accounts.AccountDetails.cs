@@ -48,7 +48,10 @@ namespace ConnectorGrasshopper.Streams
     {
       string userId = null;
       if (!DA.GetData(0, ref userId)) return;
-    
+      
+      if(DA.Iteration == 0) // Only report on first iteration of the component.
+        Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
+
       if (string.IsNullOrEmpty(userId))
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account provided. Trying with default account.");
@@ -76,7 +79,6 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
       base.BeforeSolveInstance();
     }
   }
