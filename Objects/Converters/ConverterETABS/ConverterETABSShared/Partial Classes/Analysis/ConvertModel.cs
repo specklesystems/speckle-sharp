@@ -42,7 +42,7 @@ namespace Objects.Converter.ETABS
       {
         foreach (var property in model.properties)
         {
-          if (property.GetType().ToString() == Property1D.GetType().ToString())
+          if (property is Property1D)
           {
             Property1DToNative((Property1D)property);
           }
