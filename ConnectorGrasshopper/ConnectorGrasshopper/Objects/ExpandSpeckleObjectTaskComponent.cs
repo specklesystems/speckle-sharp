@@ -46,6 +46,9 @@ namespace ConnectorGrasshopper.Objects
         GH_SpeckleBase ghSpeckleBase = null;
         DA.GetData(0, ref ghSpeckleBase);
         var @base = ghSpeckleBase?.Value;
+        
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "expand");
 
         var task = Task.Run(() => DoWork(@base));
         TaskList.Add(task);
