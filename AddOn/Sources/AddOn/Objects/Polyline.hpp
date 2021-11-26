@@ -1,10 +1,9 @@
-#ifndef SPEC_CURVE_HPP
-#define SPEC_CURVE_HPP
+#ifndef OBJECTS_POLYLINE_HPP
+#define OBJECTS_POLYLINE_HPP
 
-#if !defined (ACExtension)
-#define ACExtension
-#endif
 
+#include "APIEnvir.h"
+#include "ACAPinc.h"
 #include "Point.hpp"
 
 
