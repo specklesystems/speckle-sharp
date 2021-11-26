@@ -22,6 +22,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 
@@ -298,6 +299,11 @@ public static string AutocadAppName = Applications.Autocad2022;
           Report.Log($"Created Ellipse {o.id}");
           break;
 
+        case Spiral o:
+          acadObj = PolylineToNativeDB(o.displayValue);
+          Report.Log($"Created Spiral {o.id} as Polyline");
+          break;
+
         case Hatch o:
           acadObj = HatchToNativeDB(o);
           Report.Log($"Created Hatch {o.id}");
@@ -459,6 +465,7 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Arc _:
         case Circle _:  
         case Ellipse _:
+        case Spiral _:
         case Hatch _:
         case Polyline _:
         case Polycurve _:
