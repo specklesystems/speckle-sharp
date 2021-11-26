@@ -143,8 +143,7 @@ namespace Objects.Converter.Revit
         }
         catch (Exception)
         {
-          Report.LogConversionError(new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
-          throw;
+          throw (new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
         }
 
         var lineStyles = revitCurve.GetLineStyleIds();
@@ -192,8 +191,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception)
       {
-        Report.LogConversionError(new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
-        throw;
+        throw (new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
       }
 
 
@@ -247,8 +245,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception)
       {
-        Report.LogConversionError(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
-        throw;
+        throw (new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
       }
     }
 

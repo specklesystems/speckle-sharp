@@ -116,8 +116,8 @@ namespace Objects.Converter.Revit
 
       if (revitColumn == null)
       {
-        Report.LogConversionError(new Exception($"Failed to create column for {speckleColumn.applicationId}."));
-        return null;
+        throw (new Exception($"Failed to create column for {speckleColumn.applicationId}."));
+
       }
 
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);

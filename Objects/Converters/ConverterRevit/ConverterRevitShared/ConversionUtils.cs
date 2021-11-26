@@ -123,7 +123,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception e)
           {
-            Report.LogConversionError(new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
+            throw (new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
           }
         }
 
