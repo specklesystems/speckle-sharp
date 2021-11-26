@@ -8,27 +8,13 @@ static const char*		StartPointFieldName				= "startPoint";
 static const char*		EndPointFieldName				= "endPoint";
 static const char*		ArcAngleFieldName				= "arcAngle";
 static const char*		PolylineSegmentsFieldName		= "polylineSegments";
+static const char*		ContourPolyFieldName			= "contourPolyline";
+static const char*		HolePolylinesFieldName			= "holePolylines";
 
 
-PolylineSegment::PolylineSegment (const API_Coord& start, const API_Coord& end, double angle)
-	: Start (start)
-	, End (end)
-	, ArcAngle (angle)
-{
-}
-
-
-PolylineSegment::PolylineSegment (const API_Coord3D& start, const API_Coord3D& end, double angle)
-	: Start (start)
-	, End (end)
-	, ArcAngle (angle)
-{
-}
-
-
-PolylineSegment::PolylineSegment (double x1, double y1, double z1, double x2, double y2, double z2, double angle)
-	: Start (x1, y1, z1)
-	, End (x2, y2, z2)
+PolylineSegment::PolylineSegment (const Point3D& start, const Point3D& end, double angle)
+	: StartPoint (start)
+	, EndPoint (end)
 	, ArcAngle (angle)
 {
 }
@@ -37,10 +23,10 @@ PolylineSegment::PolylineSegment (double x1, double y1, double z1, double x2, do
 GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 {
 	const GS::ObjectState& startPointOS = *os.Get (StartPointFieldName);
-	Start.Restore (startPointOS);
+	StartPoint.Restore (startPointOS);
 
 	const GS::ObjectState& endPointOS = *os.Get (EndPointFieldName);
-	End.Restore (endPointOS);
+	EndPoint.Restore (endPointOS);
 	
 	os.Get (ArcAngleFieldName, ArcAngle);
 
@@ -51,10 +37,10 @@ GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 GSErrCode PolylineSegment::Store (GS::ObjectState& os) const
 {
 	auto& startPointOs = os.AddObject (StartPointFieldName);
-	Start.Store (startPointOs);
+	StartPoint.Store (startPointOs);
 	
 	auto& endPointOs = os.AddObject (EndPointFieldName);
-	End.Store (endPointOs);
+	EndPoint.Store (endPointOs);
 
 	os.Add (ArcAngleFieldName, ArcAngle);
 
@@ -73,8 +59,8 @@ void Polyline::FillVertices ()
 {
 	mVertices.Clear ();
 	for (const PolylineSegment& segment : mPolylineSegments) {
-		Point3D sPoint = segment.Start;
-		Point3D ePoint = segment.End;
+		Point3D sPoint = segment.StartPoint;
+		Point3D ePoint = segment.EndPoint;
 		bool sFound = false;
 		bool eFound = false;
 		for (const Point3D& point : mVertices) {
@@ -141,7 +127,7 @@ bool Polyline::IsClosed () const
 	PolylineSegment first = mPolylineSegments.GetFirst ();
 	PolylineSegment last = mPolylineSegments.GetLast ();
 
-	return first.Start == last.End;
+	return first.StartPoint == last.EndPoint;
 }
 
 		
@@ -167,7 +153,171 @@ GSErrCode Polyline::Store (GS::ObjectState& os) const
 	for (const PolylineSegment& segment : mPolylineSegments) {
 		GS::ObjectState segmentOs;
 		segment.Store (segmentOs);
-		listAdder(segmentOs);
+		listAdder (segmentOs);
+	}
+
+	return NoError;
+}
+
+
+ElementShape::ElementShape (const API_Polygon& outlinePoly, const API_ElementMemo& memo, double level)
+{
+	int nPolyArcs = outlinePoly.nArcs;
+	int nSubPolys = outlinePoly.nSubPolys;
+
+	API_Coord** coords = memo.coords;
+	Int32** pends = memo.pends;
+	API_PolyArc** parcs = memo.parcs;
+
+	Int32 sIndex = 1;
+	for (int i = 1; i <= nSubPolys; i++) {
+
+		GS::Array<PolylineSegment> segments;
+
+		for (int j = sIndex; j < (*(pends)) [i]; j++) {
+
+			API_Coord sPoint = (*(coords)) [j];
+			API_Coord ePoint = (*(coords)) [j + 1];
+
+			Point3D startPoint = Point3D (sPoint.x, sPoint.y, level);
+			Point3D endPoint = Point3D (ePoint.x, ePoint.y, level);
+			double arcAngle = 0;
+
+			for (int k = 0; k < nPolyArcs; k++) {
+				if ((*(parcs)) [k].begIndex == j) {
+					arcAngle = (*(parcs))[k].arcAngle;
+					break;
+				}
+			}
+
+			segments.Push (PolylineSegment (startPoint, endPoint, arcAngle));
+		}
+
+		if (i == 1) {
+			mContourPoly = Polyline (segments);
+		} else {
+			mHoles.Push (Polyline (segments));
+		}
+
+		sIndex = (*(pends)) [i] + 1;
+	}
+}
+
+
+void ElementShape::SetToMemo (API_ElementMemo& memo)
+{
+	BMhKill ((GSHandle*)&memo.coords);
+	BMhKill ((GSHandle*)&memo.pends);
+	BMhKill ((GSHandle*)&memo.parcs);
+	BMhKill ((GSHandle*)&memo.edgeIDs);
+	BMhKill ((GSHandle*)&memo.vertexIDs);
+	BMhKill ((GSHandle*)&memo.contourIDs);
+
+	GS::Array<Polyline> polylines;
+
+	polylines.Push (mContourPoly);
+	polylines.Append (mHoles);
+
+	GS::Int32 nSubPolys = GS::Int32 (polylines.GetSize ());
+	GS::Int32 nCoords;
+	GS::Int32 nArcs;
+
+	memo.pends = (Int32 **) BMAllocateHandle ((nSubPolys + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0);
+	(*(memo.pends)) [0] = 0;
+	int count = 0;
+	for (UInt32 j = 0; j < polylines.GetSize (); j++) {
+		(*(memo.pends)) [j + 1] = (*(memo.pends)) [j] + polylines [j].VertexCount ();
+		count += polylines [j].ArcCount ();
+	}
+
+	nCoords = GS::Int32 ((*(memo.pends)) [polylines.GetSize ()]);
+	nArcs = GS::Int32 (count);
+
+	memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+	memo.vertexIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((nCoords + 1) * sizeof (Int32), ALLOCATE_CLEAR, 0));
+	memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+	((UInt32*)*memo.vertexIDs) [0] = nCoords;
+	UInt32 coIndex = 1;
+	UInt32 vId = 1;
+	for (UInt32 j = 0; j < polylines.GetSize (); j++) {
+		for (UInt32 k = 0; k < (UInt32) polylines [j].VertexCount (); ++k) {
+			const Point3D* point = polylines [j].PointAt (k);
+			if (point != nullptr) {
+				(*(memo.coords))[coIndex].x = point->X;
+				(*(memo.coords))[coIndex].y = point->Y;
+				bool fId = false;
+				for (UInt32 m = 1; m < coIndex; m++) {
+					if ((*(memo.coords))[m].x == point->X && (*(memo.coords))[m].y == point->Y) {
+						(*(memo.vertexIDs))[coIndex] = (*(memo.vertexIDs))[m];
+						fId = true;
+						break;
+					}
+				}
+				if (!fId) {
+					(*(memo.vertexIDs))[coIndex] = vId;
+					vId++;
+				}
+			}
+			coIndex++;
+		}
+	}
+	(*(memo.vertexIDs)) [0] = vId - 1;
+	UInt32 iArc = 0;
+	UInt32 offset = 0;
+	for (UInt32 l = 0; l < polylines.GetSize (); l++) {
+		for (UInt32 n = 0; n < (UInt32) polylines [l].ArcCount (); n++) {
+			const PolylineSegment* arc = polylines [l].ArcAt (n);
+			if (arc != nullptr) {
+				UInt32 beg = 0, end = 0;
+				for (UInt32 k = 0; k < (UInt32) polylines [l].VertexCount () - 1; ++k) {
+					const Point3D* point = polylines [l].PointAt (k);
+					if (beg == 0 && point != nullptr && *(point) == arc->StartPoint)
+						beg = k + 1;
+					point = polylines [l].PointAt (k + 1);
+					if (end == 0 && point != nullptr && *(point) == arc->EndPoint)
+						end = k + 2;
+				}
+				if (beg != 0 && end != 0) {
+					(*memo.parcs) [iArc].begIndex = beg + offset;
+					(*memo.parcs) [iArc].endIndex = end + offset;
+					(*memo.parcs) [iArc].arcAngle = arc->ArcAngle;
+					++iArc;
+				}
+			}
+		}
+		offset += GS::Int32 (polylines [l].VertexCount ());
+	}
+}
+
+
+GSErrCode ElementShape::Restore (const GS::ObjectState& os)
+{
+	const GS::ObjectState& contPolyOS = *os.Get (ContourPolyFieldName);
+	mContourPoly.Restore (contPolyOS);
+
+	GS::Array<GS::ObjectState> holesOS;
+	os.Get (HolePolylinesFieldName, holesOS);
+
+	for (GS::ObjectState holeOS : holesOS) {
+		Polyline hole;
+		hole.Restore (holeOS);
+		mHoles.Push (hole);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ElementShape::Store (GS::ObjectState& os) const
+{
+	auto& contPolyOS = os.AddObject (ContourPolyFieldName);
+	mContourPoly.Store (contPolyOS);
+
+	const auto& listAdder = os.AddList<GS::ObjectState> (HolePolylinesFieldName);
+	for (const Polyline& hole : mHoles) {
+		GS::ObjectState holeOs;
+		hole.Store (holeOs);
+		listAdder (holeOs);
 	}
 
 	return NoError;
