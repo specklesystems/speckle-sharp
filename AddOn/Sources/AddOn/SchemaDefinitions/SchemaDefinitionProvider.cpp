@@ -110,5 +110,17 @@ GS::UniString SchemaDefinitionProvider::ElementModelSchema ()
 	)";
 }
 
+GS::UniString SchemaDefinitionProvider::WallDataSchema ()
+{
+	// TODO
+	return R"(
+		"WallData": {
+            "type": "object",
+			"properties" : {
+				
+			}
+        }
+	)";
+}
 
 }

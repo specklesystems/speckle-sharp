@@ -9,6 +9,7 @@
 #include "Commands/GetModelForElements.hpp"
 #include "Commands/GetSelectedElementIds.hpp"
 #include "Commands/GetElementTypes.hpp"
+#include "Commands/GetWallData.hpp"
 
 
 #define CHECKERROR(f) { GSErrCode err = (f); if (err != NoError) { return err; } }
@@ -129,6 +130,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetModelForElements> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSelectedElementIds> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementTypes> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
 
 	return NoError;
 }
