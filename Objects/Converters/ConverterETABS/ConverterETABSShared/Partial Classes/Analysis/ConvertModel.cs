@@ -159,6 +159,14 @@ namespace Objects.Converter.ETABS
         model.properties.Add(speckleProperty1D);
       }
 
+      string[] springPointProperties = { };
+      Model.PropPointSpring.GetNameList(ref number, ref springPointProperties);
+      springPointProperties.ToList();
+      foreach(string propertySpring in springPointProperties){
+        var specklePropertyPointSpring = SpringPropertyToSpeckle(propertySpring);
+        model.properties.Add(specklePropertyPointSpring);
+      }
+
       string[] properties2D = { };
       Model.PropArea.GetNameList(ref number, ref properties2D);
       properties2D.ToList();

@@ -28,5 +28,9 @@ namespace Objects.Structural.ETABS.Geometry
       this.massProperty = massProperty;
       this.damperProperty = damperProperty;
     }
+
+    public ETABSNode()
+    {
+    }
   }
 }
