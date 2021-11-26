@@ -143,6 +143,11 @@ namespace Objects.Converter.ETABS
       Model.AreaObj.GetModifiers(name, ref values);
       speckleStructArea.modifiers = values;
 
+      string springArea = null;
+      Model.AreaObj.GetSpringAssignment(name, ref springArea);
+      if(springArea != null) { speckleStructArea.ETABSAreaSpring = AreaSpringToSpeckle(name); }
+
+
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);
       speckleStructArea.applicationId = GUID;

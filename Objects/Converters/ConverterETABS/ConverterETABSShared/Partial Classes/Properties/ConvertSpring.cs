@@ -84,8 +84,42 @@ namespace Objects.Converter.ETABS
     }
     public ETABSAreaSpring AreaSpringToSpeckle(string name)
     {
-      ETABSAreaSpring speckleLinearSpring = new ETABSAreaSpring();
-      return speckleLinearSpring;
+
+      double stiffnessX = 0;
+      double stiffnessY = 0;
+      double stiffnessZ = 0;
+
+      int nonLinearOpt1 = 0;
+      int springOption = 0;
+      string soilProfile = null;
+      double endLengthRatio = 0;
+      double period = 0;
+
+      int color = 0;
+      string notes = null;
+      string GUID = null;
+      NonLinearOptions nonLinearOptions1 = NonLinearOptions.Linear;
+
+      var s = Model.PropAreaSpring.GetAreaSpringProp(name, ref stiffnessX, ref stiffnessY, ref stiffnessZ, ref nonLinearOpt1,ref springOption,ref soilProfile, ref endLengthRatio, ref period, ref color, ref notes, ref GUID);
+      switch (nonLinearOpt1)
+      {
+        case 0:
+          nonLinearOptions1 = NonLinearOptions.Linear;
+          break;
+        case 1:
+          nonLinearOptions1 = NonLinearOptions.CompressionOnly;
+          break;
+        case 2:
+          nonLinearOptions1 = NonLinearOptions.TensionOnly;
+          break;
+      }
+
+      if (s == 0)
+      {
+        ETABSAreaSpring speckleAreaSpring = new ETABSAreaSpring(name, stiffnessX, stiffnessY, stiffnessZ,  nonLinearOptions1, GUID);
+        return speckleAreaSpring;
+      }
+      return null;
 
     }
   }
