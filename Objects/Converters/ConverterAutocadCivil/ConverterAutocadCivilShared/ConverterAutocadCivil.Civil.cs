@@ -127,7 +127,7 @@ namespace Objects.Converter.AutocadCivil
 
       // output vars
       var _vertices = new List<Acad.Point3d>();
-      var _faces = new List<int[]>();
+      var faces = new List<int>();
 
       foreach (var triangle in surface.GetTriangles(false))
       {
@@ -148,13 +148,12 @@ namespace Objects.Converter.AutocadCivil
         }
 
         // get face
-        _faces.Add(new int[] { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+        faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
 
         triangle.Dispose();
       }
 
-      var vertices = PointsToFlatArray(_vertices);
-      var faces = _faces.SelectMany(o => o).ToArray();
+      var vertices = PointsToFlatList(_vertices);
       mesh = new Mesh(vertices, faces);
       mesh.units = ModelUnits;
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
@@ -175,7 +174,7 @@ namespace Objects.Converter.AutocadCivil
 
       // output vars
       var _vertices = new List<Acad.Point3d>();
-      var _faces = new List<int[]>();
+      var faces = new List<int>();
 
       foreach (var cell in surface.GetCells(false))
       {
@@ -196,13 +195,12 @@ namespace Objects.Converter.AutocadCivil
         }
 
         // get face
-        _faces.Add(new int[] { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+        faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
 
         cell.Dispose();
       }
 
-      var vertices = PointsToFlatArray(_vertices);
-      var faces = _faces.SelectMany(o => o).ToArray();
+      var vertices = PointsToFlatList(_vertices);
       mesh = new Mesh(vertices, faces);
       mesh.units = ModelUnits;
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);

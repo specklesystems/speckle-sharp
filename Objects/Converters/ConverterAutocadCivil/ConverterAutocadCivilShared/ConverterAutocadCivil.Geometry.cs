@@ -28,6 +28,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 
@@ -39,37 +40,13 @@ namespace Objects.Converter.AutocadCivil
     public double tolerance = 0.000;
 
     #region Convenience methods
-    // TODO: Deprecate once these have been added to Objects.sln
-    public double[ ] PointToArray(Point3d pt)
+    public List<double> PointsToFlatList(IEnumerable<Point3d> points)
     {
-      return new double[ ] { pt.X, pt.Y, pt.Z };
+      return points.SelectMany(p => new double[] { p.X, p.Y, p.Z }).ToList();
     }
-    public double[] PointToArray(Point2d pt)
+    public List<double> PointsToFlatList(IEnumerable<Point2d> points)
     {
-      return new double[] { pt.X, pt.Y, 0 };
-    }
-    public Point3d[ ] PointListToNative(IEnumerable<double> arr, string units)
-    {
-      var enumerable = arr.ToList();
-      if (enumerable.Count % 3 != 0)throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
-
-      Point3d[ ] points = new Point3d[enumerable.Count / 3];
-      var asArray = enumerable.ToArray();
-      for (int i = 2, k = 0; i < enumerable.Count; i += 3)
-        points[k++] = new Point3d(
-          ScaleToNative(asArray[i - 2], units),
-          ScaleToNative(asArray[i - 1], units),
-          ScaleToNative(asArray[i], units));
-
-      return points;
-    }
-    public double[ ] PointsToFlatArray(IEnumerable<Point3d> points)
-    {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
-    }
-    public double[] PointsToFlatArray(IEnumerable<Point2d> points)
-    {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+      return points.SelectMany(p => new double[] { p.X, p.Y, 0 }).ToList();
     }
     #endregion
 
@@ -179,18 +156,6 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Line
-    public Line LineToSpeckle(Line2d line, string units = null)
-    {
-      var u = units ?? ModelUnits;
-
-      var startParam = line.GetParameterOf(line.StartPoint);
-      var endParam = line.GetParameterOf(line.EndPoint);
-      var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), u);
-      _line.length = line.GetLength(startParam, endParam);
-      _line.domain = IntervalToSpeckle(line.GetInterval());
-
-      return _line;
-    }
     public Line LineToSpeckle(LineSegment2d line)
     {
       var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
@@ -245,7 +210,7 @@ namespace Objects.Converter.AutocadCivil
     public Polyline RectangleToSpeckle(Rectangle3d rectangle)
     {
       var vertices = new List<Point3d>() { rectangle.LowerLeft, rectangle.LowerRight, rectangle.UpperLeft, rectangle.UpperRight };
-      return new Polyline(PointsToFlatArray(vertices), ModelUnits) { closed = true };
+      return new Polyline(PointsToFlatList(vertices), ModelUnits) { closed = true };
     }
 
     // Arc
@@ -256,8 +221,9 @@ namespace Objects.Converter.AutocadCivil
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
-      _arc.domain = IntervalToSpeckle(arc.GetInterval());
+      _arc.domain = IntervalToSpeckle(interval);
       _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint));
+      _arc.bbox = BoxToSpeckle(arc.BoundBlock);
       return _arc;
     }
     public Arc ArcToSpeckle(CircularArc3d arc)
@@ -353,7 +319,7 @@ namespace Objects.Converter.AutocadCivil
       for (int i = 0; i < polyline.NumberOfVertices; i++)
         vertices.Add(polyline.GetPoint3dAt(i));
 
-      var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
+      var _polyline = new Polyline(PointsToFlatList(vertices), ModelUnits);
       _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false; // hatch boundary polylines are not closed, cannot rely on .Closed prop
       _polyline.length = polyline.Length;
       _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
@@ -373,18 +339,14 @@ namespace Objects.Converter.AutocadCivil
       // otherwise retrieve actual vertices from transaction
       else
       {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+        foreach (ObjectId id in polyline)
         {
-          foreach (ObjectId id in polyline)
-          {
-            var vertex = (PolylineVertex3d)tr.GetObject(id, OpenMode.ForRead);
-            vertices.Add(vertex.Position);
-          }
-          tr.Commit();
+          var vertex = (PolylineVertex3d)Trans.GetObject(id, OpenMode.ForRead);
+          vertices.Add(vertex.Position);
         }
       }
 
-      var _polyline = new Polyline(PointsToFlatArray(vertices), ModelUnits);
+      var _polyline = new Polyline(PointsToFlatList(vertices), ModelUnits);
       _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false;
       _polyline.length = polyline.Length;
       _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents, true);
@@ -539,25 +501,41 @@ namespace Objects.Converter.AutocadCivil
       var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
 
       // add all vertices
-      for (int i = 0; i < polycurve.segments.Count; i++)
+      int count = 0;
+      foreach(var segment in polycurve.segments)
       {
-        var segment = polycurve.segments[i];
         switch (segment)
         {
           case Line o:
-            polyline.AddVertexAt(i, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
-            if (!polycurve.closed && i == polycurve.segments.Count - 1)
-              polyline.AddVertexAt(i + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
+            polyline.AddVertexAt(count, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
+            if (!polycurve.closed && count == polycurve.segments.Count - 1)
+              polyline.AddVertexAt(count + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
+            count++;
             break;
           case Arc o:
-            var bulge = Math.Tan((double)(o.endAngle - o.startAngle) / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
-            polyline.AddVertexAt(i, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
-            if (!polycurve.closed && i == polycurve.segments.Count - 1)
-              polyline.AddVertexAt(i + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+            var angle = o.endAngle - o.startAngle;
+            angle = angle < 0 ? angle + 2 * Math.PI : angle;
+            var bulge = Math.Tan((double)angle / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
+            polyline.AddVertexAt(count, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
+            if (!polycurve.closed && count == polycurve.segments.Count - 1)
+              polyline.AddVertexAt(count + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+            count++;
+            break;
+          case Spiral o:
+            var vertices = o.displayValue.GetPoints().Select(p => PointToNative(p)).ToList();
+            foreach(var vertex in vertices)
+            {
+              polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
+              count++;
+            }
             break;
           default:
             return null;
         }
+      }
+      for (int i = 0; i < polycurve.segments.Count; i++)
+      {
+        
       }
 
       return polyline;
@@ -596,7 +574,7 @@ namespace Objects.Converter.AutocadCivil
       try
       {
         var poly = spline.ToPolyline(false, true);
-        Polyline displayValue = ConvertToSpeckle(poly) as Polyline;
+        Polyline displayValue = CurveToSpeckle(poly) as Polyline;
         curve.displayValue = displayValue;
       }
       catch { }
@@ -645,7 +623,7 @@ namespace Objects.Converter.AutocadCivil
         weights.AddRange(weights.GetRange(0, spline.Degree));
 
       // set nurbs curve info
-      curve.points = PointsToFlatArray(points).ToList();
+      curve.points = PointsToFlatList(points).ToList();
       curve.knots = knots;
       curve.weights = weights;
       curve.degree = spline.Degree;
@@ -685,8 +663,6 @@ namespace Objects.Converter.AutocadCivil
       // note: some curve3ds may not have endpoints! Not sure what contexts this may occur in, might cause issues later.
       switch (curve)
       {
-        case Line3d line:
-          return LineToSpeckle(line);
         case LineSegment3d line:
           return LineToSpeckle(line);
         case CircularArc3d arc:
@@ -730,7 +706,7 @@ namespace Objects.Converter.AutocadCivil
         weights.Add(curve.GetWeightAt(i));
 
       // set nurbs curve info
-      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.points = PointsToFlatList(points);
       _curve.knots = knots;
       _curve.weights = weights;
       _curve.degree = curve.Degree;
@@ -763,7 +739,7 @@ namespace Objects.Converter.AutocadCivil
         weights.Add(curve.GetWeightAt(i));
 
       // set nurbs curve info
-      _curve.points = PointsToFlatArray(points).ToList();
+      _curve.points = PointsToFlatList(points);
       _curve.knots = knots;
       _curve.weights = weights;
       _curve.degree = curve.Degree;
@@ -782,7 +758,7 @@ namespace Objects.Converter.AutocadCivil
     {
       // process control points
       // NOTE: for **closed periodic** curves that have "n" control pts, curves sent from rhino will have n+degree points. Remove extra pts for autocad.
-      var _points = PointListToNative(curve.points, curve.units).ToList();
+      var _points = curve.GetPoints().Select(o => PointToNative(o)).ToList();
       if (curve.closed && curve.periodic)
         _points = _points.GetRange(0, _points.Count - curve.degree);
       var points = new Point3dCollection(_points.ToArray());
@@ -880,6 +856,8 @@ namespace Objects.Converter.AutocadCivil
           return EllipseToNativeDB(ellipse);
 
         case Polycurve polycurve:
+          if (polycurve.segments.Where(o => o is Curve).Count() > 0)
+            return PolycurveSplineToNativeDB(polycurve);
           return PolycurveToNativeDB(polycurve);
 
         case Curve curve:
@@ -1049,6 +1027,39 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Box
+    public Box BoxToSpeckle(BoundBlock2d bound, bool OrientToWorldXY = false)
+    {
+      Box box = null;
+
+      var min3d = new Point3d(bound.GetMinimumPoint().X, bound.GetMinimumPoint().Y, 0);
+      var max3d = new Point3d(bound.GetMaximumPoint().X, bound.GetMaximumPoint().Y, 0);
+
+      // get dimension intervals
+      var xSize = new Interval(min3d.X, max3d.X);
+      var ySize = new Interval(min3d.Y, max3d.Y);
+      var zSize = new Interval(min3d.Z, max3d.Z);
+
+      // get box size info
+      double area = 2 * ((xSize.Length * ySize.Length) + (xSize.Length * zSize.Length) + (ySize.Length * zSize.Length));
+      double volume = xSize.Length * ySize.Length * zSize.Length;
+
+      if (OrientToWorldXY)
+      {
+        var origin = new Point3d(0, 0, 0);
+        var normal = new Vector3d(0, 0, 1);
+        var plane = PlaneToSpeckle(new AcadGeo.Plane(origin, normal));
+        box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+      }
+      else
+      {
+        // get base plane
+        var corner = new Point3d(max3d.X, max3d.Y, min3d.Z);
+        var origin = new Point3d((corner.X + min3d.X) / 2, (corner.Y + min3d.Y) / 2, (corner.Z + min3d.Z) / 2);
+        var plane = PlaneToSpeckle(new AcadGeo.Plane(min3d, origin, corner));
+        box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
+      }
+      return box;
+    }
     public Box BoxToSpeckle(BoundBlock3d bound, bool OrientToWorldXY = false)
     {
       try
@@ -1071,7 +1082,7 @@ namespace Objects.Converter.AutocadCivil
         {
           var origin = new Point3d(0, 0, 0);
           var normal = new Vector3d(0, 0, 1);
-          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(origin, normal));
+          var plane = PlaneToSpeckle(new AcadGeo.Plane(origin, normal));
           box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
         }
         else
@@ -1079,7 +1090,7 @@ namespace Objects.Converter.AutocadCivil
           // get base plane
           var corner = new Point3d(max.X, max.Y, min.Z);
           var origin = new Point3d((corner.X + min.X) / 2, (corner.Y + min.Y) / 2, (corner.Z + min.Z) / 2);
-          var plane = PlaneToSpeckle(new Autodesk.AutoCAD.Geometry.Plane(min, origin, corner));
+          var plane = PlaneToSpeckle(new AcadGeo.Plane(min, origin, corner));
           box = new Box(plane, xSize, ySize, zSize, ModelUnits) { area = area, volume = volume };
         }
 
@@ -1289,7 +1300,7 @@ namespace Objects.Converter.AutocadCivil
       var u = units ?? ModelUnits;
 
       var _vertices = new List<Point3d>();
-      var _faces = new List<int[]>();
+      var faces = new List<int>();
       var colors = new List<int>();
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
@@ -1311,18 +1322,17 @@ namespace Objects.Converter.AutocadCivil
                   indices.Add(index);
               }
               if (indices.Count == 4) // vertex index starts at 1 sigh
-                _faces.Add(new int[] { 1, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
+                faces.AddRange(new List<int> { 1, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
               else
-                _faces.Add(new int[] { 0, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
+                faces.AddRange(new List<int> { 0, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
               break;
           }
         }
         tr.Commit();
       }
-      var vertices = PointsToFlatArray(_vertices);
-      var faces = _faces.SelectMany(o => o).ToArray();
+      var vertices = PointsToFlatList(_vertices);
 
-      var speckleMesh = new Mesh(vertices, faces, colors.ToArray(), null, u);
+      var speckleMesh = new Mesh(vertices, faces, colors, null, u);
       speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
 
       return speckleMesh;
@@ -1333,10 +1343,10 @@ namespace Objects.Converter.AutocadCivil
       var _vertices = new List<Point3d>();
       foreach (Point3d point in mesh.Vertices)
         _vertices.Add(point);
-      var vertices = PointsToFlatArray(_vertices);
+      var vertices = PointsToFlatList(_vertices);
 
       // faces
-      var _faces = new List<int[]>();
+      var faces = new List<int>();
       int[] faceArr = mesh.FaceArray.ToArray(); // contains vertex indices
       int edgeCount = 0;
       for (int i = 0; i < faceArr.Length; i = i + edgeCount + 1)
@@ -1346,14 +1356,13 @@ namespace Objects.Converter.AutocadCivil
         for (int j = i + 1; j <= i + edgeCount; j++)
           faceVertices.Add(faceArr[j]);
         if (edgeCount == 4) // quad face
-          _faces.Add(new int[] { 1, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
+          faces.AddRange(new List<int> { 1, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
         else // triangle face
-          _faces.Add(new int[] { 0, faceVertices[0], faceVertices[1], faceVertices[2] });
+          faces.AddRange(new List<int> { 0, faceVertices[0], faceVertices[1], faceVertices[2] });
       }
-      var faces = _faces.SelectMany(o => o).ToArray();
 
       // colors
-      var colors = mesh.VertexColorArray.Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb()).ToArray();
+      var colors = mesh.VertexColorArray.Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb()).ToList();
 
       var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits);
       speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
@@ -1365,7 +1374,7 @@ namespace Objects.Converter.AutocadCivil
     {
       // get vertex points
       var vertices = new Point3dCollection();
-      Point3d[] points = PointListToNative(mesh.vertices, mesh.units);
+      var points = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
       foreach (var point in points)
         vertices.Add(point);
 
@@ -1453,7 +1462,7 @@ namespace Objects.Converter.AutocadCivil
 
           // output mesh vars
           var _vertices = new List<Point3d>();
-          var _faces = new List<int[]>();
+          var faces = new List<int>();
 
           // create mesh filterS
           using (var filter = new AcadBRep.Mesh2dFilter())
@@ -1481,9 +1490,9 @@ namespace Objects.Converter.AutocadCivil
 
                 // get faces
                 if (e.Nodes.Count() == 3)
-                  _faces.Add(new int[] { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+                  faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
                 else if (e.Nodes.Count() == 4)
-                  _faces.Add(new int[] { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+                  faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
                 e.Dispose();
               }
             }
@@ -1491,8 +1500,7 @@ namespace Objects.Converter.AutocadCivil
           brep.Dispose();
 
           // create speckle mesh
-          var vertices = PointsToFlatArray(_vertices);
-          var faces = _faces.SelectMany(o => o).ToArray();
+          var vertices = PointsToFlatList(_vertices);
           mesh = new Mesh(vertices, faces);
           mesh.units = ModelUnits;
           if (solid != null)
