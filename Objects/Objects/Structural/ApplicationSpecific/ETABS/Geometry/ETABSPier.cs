@@ -5,11 +5,12 @@ using Speckle.Core.Models;
 
 namespace Objects.Structural.ETABS.Geometry
 {
-  public class ETABSPier: Base
+  public class ETABSPier : Base
   {
     public string name { get; set; }
     public int numberStories { get; set; }
     public string[] storyName { get; set; }
+    public double[] axisAngle {get;set;} 
     public int[] numAreaObjs { get; set; }
     public int[] numLineObjs { get; set; }
     public double[] widthBot { get; set; }
@@ -24,5 +25,25 @@ namespace Objects.Structural.ETABS.Geometry
     public double[] centerofGravityTopY { get; set; }
     public double[] centerofGravityTopZ { get; set; }
 
+    public ETABSPier(string name, int numberStories, string[] storyName,double[] axisAngle, int[] numAreaObjs, int[] numLineObjs, double[] widthBot, double[] thicknessBot, double[] widthTop, double[] thicknessTop, string[] matProp, double[] centerofGravityBotX, double[] centerofGravityBotY, double[] centerofGravityBotZ, double[] centerofGravityTopX, double[] centerofGravityTopY, double[] centerofGravityTopZ)
+    {
+      this.name = name;
+      this.numberStories = numberStories;
+      this.storyName = storyName;
+      this.axisAngle = axisAngle;
+      this.numAreaObjs = numAreaObjs;
+      this.numLineObjs = numLineObjs;
+      this.widthBot = widthBot;
+      this.thicknessBot = thicknessBot;
+      this.widthTop = widthTop;
+      this.thicknessTop = thicknessTop;
+      this.matProp = matProp;
+      this.centerofGravityBotX = centerofGravityBotX;
+      this.centerofGravityBotY = centerofGravityBotY;
+      this.centerofGravityBotZ = centerofGravityBotZ;
+      this.centerofGravityTopX = centerofGravityTopX;
+      this.centerofGravityTopY = centerofGravityTopY;
+      this.centerofGravityTopZ = centerofGravityTopZ;
+    }
   }
 }

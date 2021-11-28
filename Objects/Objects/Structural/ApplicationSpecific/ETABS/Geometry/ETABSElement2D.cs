@@ -28,5 +28,9 @@ namespace Objects.Structural.ETABS.Geometry
       this.orientationAngle = orientationAngle;
       this.ETABSAreaSpring = ETABSAreaSpring;
     }
+
+    public ETABSElement2D()
+    {
+    }
   }
 }

@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBraces.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertColumn.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertLine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertSpandrel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading1DElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading2DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\LoadingNode.cs" />
