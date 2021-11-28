@@ -13,6 +13,8 @@ namespace Objects.Structural.ETABS.Geometry
   {
     public ETABSSpringProperty ETABSSpringProperty { get; set; }
 
+
+
     [SchemaInfo("Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "Structural", "Geometry")]
     public ETABSNode(Point basePoint,
     string name = null,

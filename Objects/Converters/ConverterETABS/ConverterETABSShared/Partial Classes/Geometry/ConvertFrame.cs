@@ -196,8 +196,6 @@ namespace Objects.Converter.ETABS
       if(springLineName!= null){
         speckleStructFrame.ETABSLinearSpring = LinearSpringToSpeckle(springLineName);
       }
-
-
       //
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
@@ -206,7 +204,6 @@ namespace Objects.Converter.ETABS
       List<string> application_Id = elements.Select(o => o.applicationId).ToList();
       if (!application_Id.Contains(speckleStructFrame.applicationId))
       {
-
         SpeckleModel.elements.Add(speckleStructFrame);
       }
 

@@ -15,6 +15,8 @@ namespace Objects.Structural.ETABS.Geometry
   public class ETABSElement2D : Element2D
   {
     public  ETABSAreaSpring ETABSAreaSpring { get; set; }
+    public string PierAssignment { get; set; }
+    public string SpandrelAssignment { get; set; }
     public double[] modifiers { get; set; }
 
     [SchemaInfo("Element2D", "Creates a Speckle structural 2D element (based on a list of edge ie. external, geometry defining nodes)", "Structural", "Geometry")]

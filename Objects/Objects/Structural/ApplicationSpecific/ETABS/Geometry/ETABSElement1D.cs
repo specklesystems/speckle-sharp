@@ -12,6 +12,8 @@ namespace Objects.Structural.ETABS.Geometry
   public class ETABSElement1D: Element1D
   {
    public ETABSLinearSpring ETABSLinearSpring { get; set; }
+   public string PierAssignment { get; set; }
+   public string SpandrelAssignment { get; set; }
 
     /// <summary>
     /// SchemaBuilder constructor for structural 1D element (based on local axis)
@@ -80,6 +82,10 @@ namespace Objects.Structural.ETABS.Geometry
       this.orientationNode = orientationNode;
       this.orientationAngle = orientationAngle;
       this.ETABSLinearSpring = ETABSLinearSpring;
+    }
+
+    public ETABSElement1D()
+    {
     }
   }
 }
