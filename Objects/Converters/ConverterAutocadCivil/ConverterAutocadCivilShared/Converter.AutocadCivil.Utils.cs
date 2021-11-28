@@ -26,7 +26,7 @@ namespace Objects.Converter.AutocadCivil
 
   public partial class ConverterAutocadCivil
   {
-    public static string invalidChars = @"<>/\:;""?*|=,‘";
+    public static string invalidAutocadChars = @"<>/\:;""?*|=,‘";
 
     #region units
     private string _modelUnits;
@@ -86,14 +86,14 @@ namespace Objects.Converter.AutocadCivil
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public static string RemoveInvalidChars(string str)
+    public static string RemoveInvalidAutocadChars(string str)
     {
       // using this to handle rhino nested layer syntax
       // replace "::" layer delimiter with "$" (acad standard)
       string cleanDelimiter = str.Replace("::", "$");
 
       // remove all other invalid chars
-      return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
+      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
     }
 
     public DisplayStyle GetStyle(DBObject obj)

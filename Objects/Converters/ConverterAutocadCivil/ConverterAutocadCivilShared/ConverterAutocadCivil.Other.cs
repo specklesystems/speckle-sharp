@@ -168,9 +168,11 @@ namespace Objects.Converter.AutocadCivil
     // Blocks
     public BlockInstance BlockReferenceToSpeckle(BlockReference reference)
     {
+      /*
       // skip if dynamic block
       if (reference.IsDynamicBlock)
         return null;
+      */
 
       // get record
       BlockDefinition definition = null;
@@ -193,10 +195,9 @@ namespace Objects.Converter.AutocadCivil
         blockDefinition = definition,
         units = ModelUnits
       };
-      
+
       // add attributes
-      foreach (var attribute in attributes)
-        instance[attribute.Key] = attribute.Value;
+      instance["attributes"] = attributes;
 
       return instance;
     }
@@ -223,6 +224,12 @@ namespace Objects.Converter.AutocadCivil
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       BlockReference br = new BlockReference(insertionPoint, definitionId);
       br.BlockTransform = convertedTransform;
+      // add attributes if there are any
+      var attributes = instance["attributes"] as Dictionary<string, string>;
+      if (attributes != null)
+      {
+        // TODO: figure out how to add attributes
+      }
       ObjectId id = ObjectId.Null;
       if (AppendToModelSpace)
         id = modelSpaceRecord.Append(br);
@@ -270,7 +277,7 @@ namespace Objects.Converter.AutocadCivil
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
-      var blockName = $"{Doc.UserData["commit"]} - {RemoveInvalidChars(definition.name)}";
+      var blockName = $"{Doc.UserData["commit"]} - {RemoveInvalidAutocadChars(definition.name)}";
 
       ObjectId blockId = ObjectId.Null;
 
