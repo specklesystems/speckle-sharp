@@ -1,0 +1,3 @@
+﻿namespace Archicad.Communication.Commands
+{
+}

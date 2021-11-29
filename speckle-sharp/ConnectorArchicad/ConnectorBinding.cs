@@ -2,6 +2,8 @@
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,7 +19,8 @@ namespace Archicad.Launcher
 
 		public override List<MenuItem> GetCustomStreamMenuItems ()
 		{
-			throw new System.NotImplementedException ();
+			// TODO KSZ
+			return null;
 		}
 
 		public override string GetDocumentId ()
@@ -48,14 +51,14 @@ namespace Archicad.Launcher
 
 		public override List<string> GetSelectedObjects ()
 		{
-			// TODO KSZ
-			return new List<string> ();
+			IEnumerable<Guid> elementIds = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetSelectedElements ()).Result;
+
+			return elementIds.Select (id => id.ToString ()).ToList ();
 		}
 
 		public override List<ISelectionFilter> GetSelectionFilters ()
 		{
-			// TODO KSZ
-			return new List<ISelectionFilter> ();
+			return new List<ISelectionFilter> { new ManualSelectionFilter () };
 		}
 
 		public override List<StreamState> GetStreamsInFile ()
@@ -74,13 +77,11 @@ namespace Archicad.Launcher
 			// TODO KSZ
 		}
 
-		public override Task SendStream (StreamState state, ProgressViewModel progress)
-		{
-			// TODO KSZ
-			return Task.FromResult (0);
-		}
-
-		public override void WriteStreamsToFile (List<StreamState> streams)
+        public override Task SendStream (StreamState state, ProgressViewModel progress)
+        {
+            return null;
+        }
+        public override void WriteStreamsToFile (List<StreamState> streams)
 		{
 			// TODO KSZ
 		}

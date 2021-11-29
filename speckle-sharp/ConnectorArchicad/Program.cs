@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
+using System;
 using System.IO;
 
 
@@ -9,6 +10,7 @@ namespace Archicad.Launcher
     {
         public static void Main (string[] args)
         {
+            Communication.ConnectionManager.Instance.Start (19723);
             BuildAvaloniaApp ().StartWithClassicDesktopLifetime (args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
         }
 
