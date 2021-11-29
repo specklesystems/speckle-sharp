@@ -37,8 +37,9 @@ namespace Objects.Converter.ETABS
       var s = Model.PierLabel.GetSectionProperties(name, ref numberStories, ref storyName, ref axisAngle, ref numAreaObjs, ref numLineObjs, ref widthBot, ref thicknessBot, ref widthTop, ref thicknessTop, ref matProp
       , ref centerofGravityBotX, ref centerofGravityBotY, ref centerofGravityBotZ, ref centerofGravityTopX, ref centerofGravityTopY, ref centerofGravityTopZ);
 
-      return new ETABSPier(name,numberStories,storyName,axisAngle,numAreaObjs,numLineObjs,widthBot,thicknessBot,widthTop,thicknessTop,matProp,centerofGravityBotX,centerofGravityTopY,centerofGravityTopZ,centerofGravityTopX,centerofGravityBotY,centerofGravityBotZ);
-
+      var speckleETABSPier =  new ETABSPier(name,numberStories,storyName,axisAngle,numAreaObjs,numLineObjs,widthBot,thicknessBot,widthTop,thicknessTop,matProp,centerofGravityBotX,centerofGravityTopY,centerofGravityTopZ,centerofGravityTopX,centerofGravityBotY,centerofGravityBotZ);
+      SpeckleModel.elements.Add(speckleETABSPier);
+      return speckleETABSPier;
     }
   }
 }

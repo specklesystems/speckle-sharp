@@ -147,6 +147,19 @@ namespace Objects.Converter.ETABS
       Model.AreaObj.GetSpringAssignment(name, ref springArea);
       if(springArea != null) { speckleStructArea.ETABSAreaSpring = AreaSpringToSpeckle(name); }
 
+      string pierAssignment = null;
+      Model.AreaObj.GetPier(name, ref pierAssignment);
+      if (pierAssignment != null)
+      {
+        speckleStructArea.PierAssignment = pierAssignment;
+      }
+
+      string spandrelAssignment = null;
+      Model.AreaObj.GetSpandrel(name, ref spandrelAssignment);
+      if (spandrelAssignment != null)
+      {
+        speckleStructArea.SpandrelAssignment = spandrelAssignment;
+      }
 
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);

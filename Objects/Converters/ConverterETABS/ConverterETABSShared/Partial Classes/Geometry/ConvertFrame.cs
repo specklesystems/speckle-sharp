@@ -196,7 +196,20 @@ namespace Objects.Converter.ETABS
       if(springLineName!= null){
         speckleStructFrame.ETABSLinearSpring = LinearSpringToSpeckle(springLineName);
       }
-      //
+
+      string pierAssignment = null;
+      Model.FrameObj.GetPier(name, ref pierAssignment);
+      if(pierAssignment != null){
+        speckleStructFrame.PierAssignment = pierAssignment;
+      }
+
+      string spandrelAssignment = null;
+      Model.FrameObj.GetSpandrel(name, ref spandrelAssignment);
+      if (spandrelAssignment != null)
+      {
+        speckleStructFrame.SpandrelAssignment = spandrelAssignment;
+      }
+
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
       speckleStructFrame.applicationId = GUID;

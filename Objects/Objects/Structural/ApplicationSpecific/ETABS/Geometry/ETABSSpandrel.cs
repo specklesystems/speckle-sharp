@@ -25,5 +25,25 @@ namespace Objects.Structural.ETABS.Geometry
     public double[] centerofGravityRightY { get; set; }
     public double[] centerofGravityRightZ { get; set; }
 
+    public ETABSSpandrel(string name, int numberStories, string[] storyName, int[] numAreaObjs, int[] numLineObjs, double[] length, double[] depthLeft, double[] thickLeft, double[] depthRight, double[] thickRight, string[] matProp, double[] centerofGravityLeftX, double[] centerofGravityLeftY, double[] centerofGravityLeftZ, double[] centerofGravityRightX, double[] centerofGravityRightY, double[] centerofGravityRightZ)
+    {
+      this.name = name;
+      this.numberStories = numberStories;
+      this.storyName = storyName;
+      this.numAreaObjs = numAreaObjs;
+      this.numLineObjs = numLineObjs;
+      this.length = length;
+      this.depthLeft = depthLeft;
+      this.thickLeft = thickLeft;
+      this.depthRight = depthRight;
+      this.thickRight = thickRight;
+      this.matProp = matProp;
+      this.centerofGravityLeftX = centerofGravityLeftX;
+      this.centerofGravityLeftY = centerofGravityLeftY;
+      this.centerofGravityLeftZ = centerofGravityLeftZ;
+      this.centerofGravityRightX = centerofGravityRightX;
+      this.centerofGravityRightY = centerofGravityRightY;
+      this.centerofGravityRightZ = centerofGravityRightZ;
+    }
   }
 }
