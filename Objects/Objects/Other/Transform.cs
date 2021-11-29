@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -16,15 +17,22 @@ namespace Objects.Other
   /// </remarks>
   public class Transform : Base
   {
-    public double[ ] value { get; set; } = {1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0};
+    public double[ ] value { get; set; } = {1d, 0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 1d};
+
+    public string units { get; set; }
 
     [JsonIgnore] public double[ ] translation => value.Subset(3, 7, 11, 15);
 
     [JsonIgnore] public double[ ] scaling => value.Subset(0, 1, 2, 4, 5, 6, 8, 9, 10);
 
-    [JsonIgnore] public bool isIdentity => value == new[ ] {1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0};
+    [JsonIgnore]
+    public bool isIdentity => value[ 0 ] ==  1d  && value[ 5 ] ==  1d  && value[ 10 ] ==  1d  && value[ 15 ] == 1d &&
+                              value[ 1 ] == 0d && value[ 2 ] == 0d && value[ 3 ] == 0d &&
+                              value[ 4 ] == 0d && value[ 6 ] == 0d && value[ 7 ] == 0d &&
+                              value[ 8 ] == 0d && value[ 9 ] == 0d && value[ 11 ] == 0d &&
+                              value[ 12 ] == 0d && value[ 13 ] == 0d && value[ 14 ] == 0d;
 
-    [JsonIgnore] public bool isScaled => scaling != new[ ] {1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0};
+    [JsonIgnore] public bool isScaled => !( value[ 0 ] == 1d  && value[ 5 ] ==  1d  && value[ 10 ] ==  1d );
 
     public Transform()
     {
@@ -34,6 +42,20 @@ namespace Objects.Other
     {
       this.value = value;
     }
+
+    /// <summary>
+    /// Get the translation, scaling, and units out of the
+    /// </summary>
+    /// <param name="scaling">The 3x3 sub-matrix</param>
+    /// <param name="translation">The last column of the matrix (the last element being the divisor which is almost always 1)</param>
+    /// <param name="units"></param>
+    public void Deconstruct(out double[ ] scaling, out double[ ] translation, out string units)
+    {
+      scaling = this.scaling;
+      translation = this.translation;
+      units = this.units;
+    }
+
 
     // TODO! Apply to vector
 
@@ -85,6 +107,30 @@ namespace Objects.Other
 
       return new List<double>(3)
         {newPoint[ 0 ] / newPoint[ 3 ], newPoint[ 1 ] / newPoint[ 3 ], newPoint[ 2 ] / newPoint[ 3 ]};
+    }
+
+    /// <summary>
+    /// Multiplies two transform matrices together
+    /// </summary>
+    /// <param name="t1">The first source transform</param>
+    /// <param name="t2">The second source transform</param>
+    /// <returns></returns>
+    public static Transform operator *(Transform t1, Transform t2)
+    {
+      var result = new double[ 16 ];
+      var row = 0;
+      for ( var i = 0; i < 16; i += 4 )
+      {
+        for ( var j = 0; j < 4; j++ )
+        {
+          result[ i + j ] = t1.value[ i ] * t2.value[ j ] +
+                            t1.value[ i + 1 ] * t2.value[ j + 4 ] +
+                            t1.value[ i + 2 ] * t2.value[ j + 8 ] +
+                            t1.value[ i + 3 ] * t2.value[ j + 12 ];
+        }
+      }
+
+      return new Transform(result);
     }
   }
 
