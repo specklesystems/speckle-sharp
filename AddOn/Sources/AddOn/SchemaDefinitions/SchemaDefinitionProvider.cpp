@@ -60,6 +60,22 @@ GS::UniString SchemaDefinitionProvider::Point3DSchema ()
 }
 
 
+GS::UniString SchemaDefinitionProvider::Point2DSchema ()
+{
+	return R"(
+		"Point2D": {
+            "type": "object",
+            "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" }
+             },
+            "additionalProperties": false,
+            "required": [ "x", "y" ]
+        }
+	)";
+}
+
+
 GS::UniString SchemaDefinitionProvider::PolygonSchema ()
 {
     return R"(
@@ -73,6 +89,60 @@ GS::UniString SchemaDefinitionProvider::PolygonSchema ()
 			},
 			"additionalProperties" : false,
 			"required" : [ "pointIds" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::PolylineSegmentSchema ()
+{
+	return R"(
+		"PolylineSegment": {
+            "type": "object",
+            "properties": {
+                "startPoint": { "$ref": "#/definitions/Point3D" },
+                "endPoint": { "$ref": "#/definitions/Point3D" },
+                "arcAngle": { "type": "number" }
+             },
+            "additionalProperties": false,
+            "required": [ "startPoint", "endPoint", "arcAngle" ]
+        }
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::PolylineSchema ()
+{
+	return R"(
+		"Polyline": {
+			"type": "object",
+			"properties": {
+				"polylineSegments": {
+					"type": "array",
+					"items": { "$ref": "#/definitions/PolylineSegment" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "polylineSegments" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::ElementShapeSchema ()
+{
+	return R"(
+		"Polygon": {
+			"type": "object",
+			"properties": {
+				"contourPolyline": { "$ref": "#/definitions/Polyline" },
+				"holePolylines": {
+					"type": "array",
+					"items": { "$ref": "#/definitions/Polyline" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "contourPolyline" ]
 		}
 	)";
 }

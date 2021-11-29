@@ -274,7 +274,10 @@ void ElementShape::SetToMemo (API_ElementMemo& memo)
 GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 {
 	os.Get (ContourPolyFieldName, mContourPoly);
-	os.Get (HolePolylinesFieldName, mHoles);
+
+	if (os.Contains (HolePolylinesFieldName)) {
+		os.Get (HolePolylinesFieldName, mHoles);
+	}
 
 	return NoError;
 }
@@ -283,7 +286,9 @@ GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 GSErrCode ElementShape::Store (GS::ObjectState& os) const
 {
 	os.Add (ContourPolyFieldName, mContourPoly);
-	os.Add (HolePolylinesFieldName, mHoles);
+
+	if (!mHoles.IsEmpty ())
+		os.Add (HolePolylinesFieldName, mHoles);
 
 	return NoError;
 }
