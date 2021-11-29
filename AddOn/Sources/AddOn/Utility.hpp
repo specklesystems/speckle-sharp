@@ -8,6 +8,7 @@
 namespace Utility {
 
 extern const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames;
+extern const GS::HashTable<API_ModelElemStructureType, GS::UniString> structureTypeNames;
 
 API_ElemTypeID GetElementType (const API_Guid& guid);
 

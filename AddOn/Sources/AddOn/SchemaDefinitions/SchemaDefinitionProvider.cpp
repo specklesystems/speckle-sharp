@@ -112,14 +112,28 @@ GS::UniString SchemaDefinitionProvider::ElementModelSchema ()
 
 GS::UniString SchemaDefinitionProvider::WallDataSchema ()
 {
-	// TODO
 	return R"(
 		"WallData": {
-            "type": "object",
+			"type": "object",
 			"properties" : {
-				
-			}
-        }
+				"elementId" : { "$ref": "#/definitions/ElementId" },
+				"floorIndex" : { "type": "integer" },
+				"startPoint" : { "$ref": "#/definitions/Point3D" },
+				"endPoint" : { "$ref": "#/definitions/Point3D" },
+				"arcAngle" : { "type": "number" },
+				"height" : { "type": "number" },
+				"structure" : { "enum" : [ "Basic", "Composite", "Complex Profile" ] },
+				"geometryMethod" : { "enum" : [ "Straight", "Trapezoid", "Polygonal" ] },
+				"wallComplexity" : { "enum" : [ "Straight", "Profiled", "Slanted", "Double Slanted" ] },
+				"thickness" : { "type": "number" },
+				"firstThickness" : { "type": "number" },
+				"secondThickness" : { "type": "number" },
+				"outsideSlantAngle" : { "type": "number" },
+				"insideSlantAngle" : { "type": "number" }
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementId", "startPoint", "endPoint" ]
+		}
 	)";
 }
 
