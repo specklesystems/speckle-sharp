@@ -121,7 +121,6 @@ namespace Objects.Converter.AutocadCivil
             length += subEntity.Length;
             segments.Add(segment);
           }
-
         }
         if (segments.Count == 1)
         {
@@ -139,7 +138,7 @@ namespace Objects.Converter.AutocadCivil
       }
 
       // get display poly
-      var poly = alignment.Spline.ToPolyline(false, true);
+      var poly = alignment.BaseCurve;
       _alignment.displayValue = CurveToSpeckle(poly) as Polyline;
 
       _alignment.curves = curves;
@@ -243,40 +242,41 @@ namespace Objects.Converter.AutocadCivil
       var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
       var entities = _alignment.Entities;
       foreach (var curve in alignment.curves)
-      {
-        CivilDB.AlignmentEntity entity = null;
-        switch (curve)
-        {
-          case Line o:
-            entities.AddFixedLine(PointToNative(o.start), PointToNative(o.end));
-            break;
-
-          case Arc o:
-            entities.AddFixedCurve(entities.LastEntity, PointToNative(o.startPoint), PointToNative(o.midPoint), PointToNative(o.endPoint));
-            break;
-
-          case Spiral o:
-            var origin = PointToNative(o.plane.origin);
-            var start = PointToNative(o.startPoint);
-            var end = PointToNative(o.endPoint);
-            bool clockwise = (o.turns > 0) ? false : true;
-            entities.AddFixedSpiral(entities.LastEntity, start, end, origin.DistanceTo(start), origin.DistanceTo(end), o.length, clockwise, SpiralTypeToNative(o.spiralType));
-            break;
-
-          case Polycurve o:
-            // recursive stuff, move this to separate method
-            break;
-
-          default:
-            continue;
-            break;
-        }
-      }
+        AddAlignmentEntity(curve, ref entities);
 
       return _alignment;
     }
 
     #region helper methods
+    private void AddAlignmentEntity(ICurve curve, ref CivilDB.AlignmentEntityCollection entities)
+    {
+      switch (curve)
+      {
+        case Line o:
+          entities.AddFixedLine(PointToNative(o.start), PointToNative(o.end));
+          break;
+
+        case Arc o:
+          entities.AddFixedCurve(entities.LastEntity, PointToNative(o.startPoint), PointToNative(o.midPoint), PointToNative(o.endPoint));
+          break;
+
+        case Spiral o:
+          var origin = PointToNative(o.plane.origin);
+          var start = PointToNative(o.startPoint);
+          var end = PointToNative(o.endPoint);
+          bool clockwise = (o.turns > 0) ? false : true;
+          entities.AddFixedSpiral(entities.LastEntity, start, end, origin.DistanceTo(start), origin.DistanceTo(end), o.length, clockwise, SpiralTypeToNative(o.spiralType));
+          break;
+
+        case Polycurve o:
+          foreach (var segment in o.segments)
+            AddAlignmentEntity(segment, ref entities);
+          break;
+
+        default:
+          break;
+      }
+    }
     private Line AlignmentLineToSpeckle(CivilDB.AlignmentSubEntityLine line)
     {
       var _line = LineToSpeckle(new LineSegment2d(line.StartPoint, line.EndPoint));

@@ -560,8 +560,8 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case Alignment o:
-          rhinoObj = CurveToNative(o.baseCurve);
-          Report.Log($"Created Alignment {o.id}");
+          rhinoObj = AlignmentToNative(o);
+          Report.Log($"Created Alignment {o.id} as Curve");
           break;
 
         case ModelCurve o:
