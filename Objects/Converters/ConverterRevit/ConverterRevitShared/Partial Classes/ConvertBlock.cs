@@ -19,9 +19,9 @@ namespace Objects.Converter.Revit
     {
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
       if ( transform != null )
-        transform *= new Transform(instance.transform);
+        transform *= instance.transformMatrix;
       else
-        transform = new Transform(instance.transform);
+        transform = instance.transformMatrix;
       var applyTransform = transform.isScaled;
 
       // convert definition geometry to native
@@ -48,7 +48,7 @@ namespace Objects.Converter.Revit
             break;
           case Mesh mesh:
             if ( applyTransform )
-              mesh = mesh.Transform(transform);
+              mesh = mesh.TransformTo(transform);
             meshes.Add(mesh);
             break;
           case ICurve curve:
