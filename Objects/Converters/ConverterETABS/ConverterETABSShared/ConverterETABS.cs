@@ -156,6 +156,18 @@ namespace Objects.Converter.ETABS
         case "ElementsCount":
           returnObject = ModelElementsCountToSpeckle();
           break;
+        case "Spandrel":
+          returnObject = SpandrelToSpeckle(name);
+          Report.Log($"Created Spandrel");
+          break;
+        case "Pier":
+          returnObject = PierToSpeckle(name);
+          Report.Log($"Created Pier");
+          break;
+        case "Grids":
+          returnObject = gridLinesToSpeckle(name);
+          Report.Log($"Created Grids");
+          break;
 
         //case "Link":
         //    returnObject = LinkToSpeckle(name);

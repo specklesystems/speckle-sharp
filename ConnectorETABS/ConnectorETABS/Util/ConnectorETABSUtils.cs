@@ -69,6 +69,12 @@ namespace Speckle.ConnectorETABS.Util
           return GetAllFloorNames(model);
         case "Wall":
           return GetAllWallNames(model);
+        case "Spandrel":
+          return GetAllSpandrelLabelNames(model);
+        case "Pier":
+          return GetAllPierLabelNames(model);
+        case "Grids":
+          return GetAllGridNames(model);
         case "LoadPattern":
           return GetAllLoadPatternNames(model);
         case "BeamLoading":
@@ -583,7 +589,10 @@ namespace Speckle.ConnectorETABS.Util
       Brace,
       Area,
       Wall,
+      Spandrel,
+      Pier,
       Floor,
+      Grids,
       LoadPattern,
       Model,
       BeamLoading,
@@ -594,6 +603,7 @@ namespace Speckle.ConnectorETABS.Util
       AreaLoading,
       WallLoading,
       NodeLoading,
+      
 
       //ColumnResults,
       //BeamResults,

@@ -23,10 +23,18 @@ namespace Objects.Converter.ETABS
       double[] spliceHeight = null;
       int numberOfStories = 0;
 
-      Model.Story.GetStories_2(ref baseElevation, ref numberOfStories, ref names, ref storyElevations, ref storyHeights, ref isMasterStory, ref SimilarToStory, ref spliceAbove, ref spliceHeight, ref colors);
+      var s =  Model.Story.GetStories_2(ref baseElevation, ref numberOfStories, ref names, ref storyElevations, ref storyHeights, ref isMasterStory, ref SimilarToStory, ref spliceAbove, ref spliceHeight, ref colors);
 
       var speckleStories = new ETABSStories();
+      speckleStories.BaseElevation = baseElevation;
+      speckleStories.NumberStories = numberOfStories;
+      speckleStories.etabsStories = new List<ETABSStorey> { };
+      for(int index = 0; index<numberOfStories;index ++){
+        var speckleStory = new ETABSStorey(storyHeights[index], isMasterStory[index], SimilarToStory[index], spliceAbove[index], spliceHeight[index]);
+        speckleStories.etabsStories.Add(speckleStory);
+      }
 
+      //SpeckleModel.elements.Add(speckleStories);
 
       return speckleStories;
     }

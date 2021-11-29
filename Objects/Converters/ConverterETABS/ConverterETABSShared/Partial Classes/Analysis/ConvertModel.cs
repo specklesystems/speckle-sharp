@@ -151,6 +151,11 @@ namespace Objects.Converter.ETABS
       model.loads = new List<Base> { };
       int number = 0;
       string[] properties1D = { };
+
+      var stories = StoriesToSpeckle();
+      //Should stories belong here ? not sure 
+      model.elements.Add(stories);
+
       Model.PropFrame.GetNameList(ref number, ref properties1D);
       properties1D.ToList();
       foreach (string property1D in properties1D)
