@@ -4,16 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Autodesk.Revit.DB;
-using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
-using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
-using Parameter = Objects.BuiltElements.Revit.Parameter;
 using BlockInstance = Objects.Other.BlockInstance;
-using BlockDefinition = Objects.Other.BlockDefinition;
 using Transform = Objects.Other.Transform;
 
 namespace Objects.Converter.Revit
@@ -23,7 +18,10 @@ namespace Objects.Converter.Revit
     public Group BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
-      transform = new Transform(instance.transform);
+      if ( transform != null )
+        transform *= new Transform(instance.transform);
+      else
+        transform = new Transform(instance.transform);
       var applyTransform = transform.isScaled;
 
       // convert definition geometry to native
@@ -76,7 +74,7 @@ namespace Objects.Converter.Revit
       breps.ForEach(o => { ids.Add(( DirectShapeToNative(o).NativeObject as DB.DirectShape )?.Id); });
       meshes.ForEach(o => { ids.Add(( DirectShapeToNative(o).NativeObject as DB.DirectShape )?.Id); });
       curves.ForEach(o => { ids.Add(Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc)).Id); });
-      blocks.ForEach(o => { ids.Add(BlockInstanceToNative(o).Id); });
+      blocks.ForEach(o => { ids.Add(BlockInstanceToNative(o, transform).Id); });
 
       var group = Doc.Create.NewGroup(ids);
       group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
