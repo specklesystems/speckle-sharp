@@ -13,7 +13,9 @@ API_ElemTypeID GetElementType (const API_Guid& guid);
 
 bool IsElement3D (const API_Guid& guid);
 
+GS::Array<API_StoryType> GetStoryItems ();
 
+double GetStoryLevel (short floorNumber);
 
 }
 
