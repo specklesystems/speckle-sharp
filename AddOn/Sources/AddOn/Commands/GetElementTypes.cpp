@@ -78,15 +78,15 @@ GS::ObjectState GetElementTypes::Execute (const GS::ObjectState& parameters, GS:
 	
 	GS::Array<API_Guid>	elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
 
-	GS::ObjectState retVal;
+	GS::ObjectState result;
 
-	const auto& listAdder = retVal.AddList<GS::UniString> (ElementTypesFieldName);
+	const auto& listAdder = result.AddList<GS::UniString> (ElementTypesFieldName);
 	for (const API_Guid& guid : elementGuids) {
 		API_ElemTypeID elementTypeId = Utility::GetElementType(guid);
 		listAdder(Utility::elementNames.Get(elementTypeId));
 	}
 
-	return retVal;
+	return result;
 }
 
 

@@ -17,7 +17,8 @@ public:
 	
 	static GS::UniString Point3DSchema ();
 	static GS::UniString PolygonSchema ();
-	static GS::UniString ElementModelSchema ();	
+	static GS::UniString ElementModelSchema ();
+	static GS::UniString WallDataSchema ();
 };
 
 
