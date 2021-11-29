@@ -34,7 +34,7 @@ namespace Objects
 
   public interface ITransformable<T> where T : ITransformable<T>
   {
-    T Transform(Transform transform);
+    T TransformTo(Transform transform);
   }
 
   #endregion

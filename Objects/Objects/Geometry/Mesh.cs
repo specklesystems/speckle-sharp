@@ -169,7 +169,7 @@ namespace Objects.Geometry
     
     #endregion
 
-    public Mesh Transform(Transform transform)
+    public Mesh TransformTo(Transform transform)
     {
       // this should be more thorough, but just doing as simply as poss for testing rn
       var _vertices = transform.ApplyToPoints(vertices);
