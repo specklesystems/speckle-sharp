@@ -9,5 +9,6 @@
 #define GetSelectedElementIdsCommandName 		"GetSelectedElementIds";
 #define GetElementTypesCommandName				"GetElementTypes";
 #define GetWallDataCommandName					"GetWallData";
+#define GetProjectInfoCommandName				"GetProjectInfo";
 
 #endif

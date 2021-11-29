@@ -2,7 +2,6 @@
 #include "ACAPinc.h"
 
 #include "DGModule.hpp"
-#include "FileSystem.hpp"
 #include "Process.hpp"
 #include "ResourceIds.hpp"
 
@@ -10,6 +9,7 @@
 #include "Commands/GetSelectedElementIds.hpp"
 #include "Commands/GetElementTypes.hpp"
 #include "Commands/GetWallData.hpp"
+#include "Commands/GetProjectInfo.hpp"
 
 
 #define CHECKERROR(f) { GSErrCode err = (f); if (err != NoError) { return err; } }
@@ -33,12 +33,6 @@ public:
 
 		try {
 			const GS::UniString command = GetPlatformSpecificExecutablePath ();
-			const IO::Location commandLocation (command);
-			bool contains = false;
-			GS::ErrCode err = IO::fileSystem.Contains (commandLocation, &contains);
-			if (err != NoError || !contains) {
-				throw GS::Exception ();
-			}
 			const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
 
 			avaloniaProcess = GS::Process::Create (command, arguments);
@@ -131,6 +125,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSelectedElementIds> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementTypes> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
 
 	return NoError;
 }

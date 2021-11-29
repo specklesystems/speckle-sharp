@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
 
 
 namespace Archicad.Launcher
@@ -14,39 +15,39 @@ namespace Archicad.Launcher
 	{
 		public override string GetActiveViewName ()
 		{
-			return "TODO KSZ - GetActiveViewName ()";
+			throw new NotImplementedException ();
 		}
 
 		public override List<MenuItem> GetCustomStreamMenuItems ()
 		{
-			// TODO KSZ
-			return null;
+			return new List<MenuItem> ();
 		}
 
 		public override string GetDocumentId ()
 		{
-			return "TODO KSZ - GetDocumentId ()";
+			Model.ProjectInfo projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
+			return projectInfo.Name;
 		}
 
 		public override string GetDocumentLocation ()
 		{
-			return "TODO KSZ - GetDocumentLocation ()";
+			Model.ProjectInfo projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
+			return projectInfo.Location;
 		}
 
 		public override string GetFileName ()
 		{
-			return "TODO KSZ - GetFileName ()";
+			return Path.GetFileName (GetDocumentLocation ());
 		}
 
 		public override string GetHostAppName ()
 		{
-			return "TODO KSZ - GetHostAppName ()";
+			return "Archicad";
 		}
 
 		public override List<string> GetObjectsInView ()
 		{
-			// TODO KSZ
-			return new List<string> ();
+			throw new NotImplementedException ();
 		}
 
 		public override List<string> GetSelectedObjects ()
