@@ -32,6 +32,8 @@ namespace SpeckleRhino
     public Timer SelectionTimer;
 
     private static string SpeckleKey = "speckle";
+    private static string UserStrings = "userStrings";
+    private static string UserDictionary = "userDictionary";
 
     public ConnectorBindingsRhino2()
     {
@@ -362,6 +364,7 @@ namespace SpeckleRhino
                   }
                 }
               }
+
               /* Not implemented since revit displaymesh objs do not have render materials attached
               else
               {
@@ -379,28 +382,21 @@ namespace SpeckleRhino
               }
               */
 
-              // handle schema
+              // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
               string schema = obj["SpeckleSchema"] as string;
               if (schema != null)
                 attributes.SetUserString("SpeckleSchema", schema);
 
-              // TODO: handle user dictionaries
-              var dict = obj["userDictionary"] as Dictionary<string, object>;
+              // handle user strings
+              var userStrings = obj[UserStrings] as Dictionary<string, string>;
+              if (userStrings != null)
+                foreach (var key in userStrings.Keys)
+                  attributes.SetUserString(key, userStrings[key]);
+
+              // handle user dictionaries
+              var dict = obj[UserDictionary] as Dictionary<string, object>;
               if (dict != null)
-              {
-                foreach(var key in dict.Keys)
-                {
-                  var val = dict[key];
-                  if(val is Dictionary<string, object> nestedDict)
-                  {
-                    // TODO: dictionary to archivable dictionary
-                    continue;
-                  }
-                  //attributes.UserDictionary.Set(key, val)
-                  //attributes.UserDictionary[key] = val;
-                }
-                // TODO: recursively generate archivable dicts from the dict, and set them on the object
-              }
+                CreateUserDictionary(attributes.UserDictionary, dict);
 
               if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
               {
@@ -490,12 +486,14 @@ namespace SpeckleRhino
             continue;
           }
 
-          foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
-            converted[key] = obj.Attributes.GetUserString(key);
+          // attach user strings and dictionaries
+          var userStrings = obj.Attributes.GetUserStrings();
+          var userStringDict = userStrings.AllKeys.ToDictionary(k => k, k => userStrings[k]);
+          converted[UserStrings] = userStringDict;
 
           var userDict = new Dictionary<string, object>();
-          ParseAndAttachUserDictionary(userDict, obj.Attributes.UserDictionary);
-          converted["userDictionary"] = userDict;
+          ParseUserDictionary(userDict, obj.Attributes.UserDictionary);
+          converted[UserDictionary] = userDict;
 
           if (obj is InstanceObject)
             containerName = "Blocks";
@@ -619,23 +617,92 @@ namespace SpeckleRhino
     }
 
     /// <summary>
-    /// Sets the keys from a user dictionary as props on the converted object.
+    /// Creates a Dictionary from an ArchivableDictionary
     /// </summary>
     /// <param name="target"></param>
     /// <param name="dict"></param>
-    private void ParseAndAttachUserDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
+    private void ParseUserDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
     {
       foreach(var key in dict.Keys)
       {
         var obj = dict[key];
-        if(obj is Rhino.Collections.ArchivableDictionary ad)
+        switch (obj)
         {
-          var nested = new Dictionary<string, object>();
-          ParseAndAttachUserDictionary(nested, ad);
-          target[key] = nested;
-          continue;
+          case Rhino.Collections.ArchivableDictionary o:
+            var nested = new Dictionary<string, object>();
+            ParseUserDictionary(nested, o);
+            target[key] = nested;
+            continue;
+
+          case double _:
+          case bool _:
+          case int _:
+          case string _:
+          case IEnumerable<double> _:
+          case IEnumerable<bool> _:
+          case IEnumerable<int> _:
+          case IEnumerable<string> _:
+            target[key] = obj;
+            continue;
+
+          default:
+            continue;
         }
-        target[key] = obj;
+      }
+    }
+
+    /// <summary>
+    /// Sets the keys from a user dictionary as props on the converted object.
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="dict"></param>
+    private void CreateUserDictionary(Rhino.Collections.ArchivableDictionary target, Dictionary<string, object> dict)
+    {
+      foreach (var key in dict.Keys)
+      {
+        var obj = dict[key];
+        switch (obj)
+        {
+          case Dictionary<string, object> o:
+            var nested = new Rhino.Collections.ArchivableDictionary();
+            CreateUserDictionary(nested, o);
+            target.Set(key, nested);
+            continue;
+
+          case double o:
+            target.Set(key, o);
+            continue;
+
+          case bool o:
+            target.Set(key, o);
+            continue;
+          case int o:
+            target.Set(key, o);
+            continue;
+
+          case string o:
+            target.Set(key, o);
+            continue;
+
+          case IEnumerable<double> o:
+            target.Set(key, o);
+            continue;
+
+          case IEnumerable<bool> o:
+            target.Set(key, o);
+            continue;
+
+          case IEnumerable<int> o:
+            target.Set(key, o);
+            continue;
+
+          case IEnumerable<string> o:
+            target.Set(key, o);
+            continue;
+
+          default:
+            continue;
+        }
       }
     }
 
