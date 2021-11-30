@@ -138,8 +138,11 @@ namespace Objects.Converter.AutocadCivil
       }
 
       // get display poly
-      var poly = alignment.BaseCurve;
-      _alignment.displayValue = CurveToSpeckle(poly) as Polyline;
+      var poly = alignment.BaseCurve as Autodesk.AutoCAD.DatabaseServices.Polyline;
+      using (Polyline2d poly2d = poly.ConvertTo(false))
+      {
+        _alignment.displayValue = CurveToSpeckle(poly2d.Spline.ToPolyline()) as Polyline;
+      }
 
       _alignment.curves = curves;
       if (alignment.DisplayName != null)
@@ -181,7 +184,7 @@ namespace Objects.Converter.AutocadCivil
       if (civilDoc == null)
         return null;
 
-      #region properties
+#region properties
       var site = ObjectId.Null;
       var style = civilDoc.Styles.AlignmentStyles.First();
       var label = civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
@@ -233,7 +236,7 @@ namespace Objects.Converter.AutocadCivil
           }
         }
       }
-      #endregion
+#endregion
 
       // create alignment entity curves
       var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
@@ -247,7 +250,7 @@ namespace Objects.Converter.AutocadCivil
       return _alignment;
     }
 
-    #region helper methods
+#region helper methods
     private void AddAlignmentEntity(ICurve curve, ref CivilDB.AlignmentEntityCollection entities)
     {
       switch (curve)
@@ -261,11 +264,13 @@ namespace Objects.Converter.AutocadCivil
           break;
 
         case Spiral o:
-          var origin = PointToNative(o.plane.origin);
           var start = PointToNative(o.startPoint);
           var end = PointToNative(o.endPoint);
-          bool clockwise = (o.turns > 0) ? false : true;
-          entities.AddFixedSpiral(entities.LastEntity, start, end, origin.DistanceTo(start), origin.DistanceTo(end), o.length, clockwise, SpiralTypeToNative(o.spiralType));
+          var intersectionPoints = o.displayValue.GetPoints(); // display poly points should be points of intersection for the spiral
+          if (intersectionPoints.Count == 0 )
+            break;
+          var intersectionPoint = PointToNative(intersectionPoints[intersectionPoints.Count / 2]); 
+          entities.AddFixedSpiral(entities.LastEntity, start, intersectionPoint , end, SpiralTypeToNative(o.spiralType));
           break;
 
         case Polycurve o:
@@ -373,7 +378,7 @@ namespace Objects.Converter.AutocadCivil
       return _spiral;
     }
                         
-    #endregion
+#endregion
      
     // profiles
     public Base ProfileToSpeckle(CivilDB.Profile profile)
