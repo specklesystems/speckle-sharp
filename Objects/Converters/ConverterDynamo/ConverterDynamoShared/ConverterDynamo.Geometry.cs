@@ -638,9 +638,41 @@ namespace Objects.Converter.Dynamo
     // TODO: send this as a spiral class
     public Base HelixToSpeckle(Helix helix, string units = null)
     {
+      var u = units ?? ModelUnits;
+
+      /* untested code to send as spiral
+      using (DS.Plane basePlane = DS.Plane.ByOriginNormal(helix.AxisPoint, helix.Normal))
+      {
+        var spiral = new Spiral();
+
+        spiral.startPoint = PointToSpeckle(helix.StartPoint, u);
+        spiral.endPoint = PointToSpeckle(helix.EndPoint, u);
+        spiral.plane = PlaneToSpeckle(basePlane, u);
+        spiral.pitchAxis = VectorToSpeckle(helix.AxisDirection, u);
+        spiral.pitch = helix.Pitch;
+        spiral.turns = helix.Angle / (2 * Math.PI);
+
+        // display value
+        DS.Curve[] curves = helix.ApproximateWithArcAndLineSegments();
+        List<double> polylineCoordinates =
+          curves.SelectMany(c => PointListToFlatArray(new DS.Point[2] { c.StartPoint, c.EndPoint })).ToList();
+        polylineCoordinates.AddRange(PointToArray(curves.Last().EndPoint));
+        curves.ForEach(c => c.Dispose());
+        Polyline displayValue = new Polyline(polylineCoordinates, u);
+        spiral.displayValue = displayValue;
+
+        CopyProperties(spiral, helix);
+
+        spiral.length = helix.Length;
+        spiral.bbox = BoxToSpeckle(helix.BoundingBox.ToCuboid(), u);
+
+        return spiral;
+      }
+      */
+
       using (NurbsCurve nurbsCurve = helix.ToNurbsCurve())
       {
-        var curve = CurveToSpeckle(nurbsCurve, units ?? ModelUnits);
+        var curve = CurveToSpeckle(nurbsCurve, u);
         CopyProperties(curve, helix);
         return curve;
       }

@@ -10,6 +10,7 @@ using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Alignment = Objects.BuiltElements.Alignment; 
 using Column = Objects.BuiltElements.Column;
 using Beam = Objects.BuiltElements.Beam;
 using Wall = Objects.BuiltElements.Wall;
@@ -267,5 +268,26 @@ namespace Objects.Converter.RhinoGh
         outCurves = (brpCurves.Count() == 1) ? new List<ICurve>() { (ICurve)ConvertToSpeckle(brpCurves[0]) } : RH.Curve.JoinCurves(brpCurves, tol).Select(o => (ICurve)ConvertToSpeckle(o)).ToList();
       return outCurves;
     }
+
+    #region CIVIL
+
+    // alignment
+    public RH.Curve AlignmentToNative(Alignment alignment)
+    {
+      var curves = new List<RH.Curve>();
+      foreach (var entity in alignment.curves)
+      {
+        var converted = CurveToNative(entity);
+        if (converted != null)
+          curves.Add(converted);
+      }
+      if (curves.Count == 0) return null;
+
+      // try to join entity curves
+      var joined = RH.Curve.JoinCurves(curves);
+      return joined.First();
+    }
+
+    #endregion
   }
 }
