@@ -132,7 +132,7 @@ GS::UniString SchemaDefinitionProvider::PolylineSchema ()
 GS::UniString SchemaDefinitionProvider::ElementShapeSchema ()
 {
 	return R"(
-		"Polygon": {
+		"ElementShape": {
 			"type": "object",
 			"properties": {
 				"contourPolyline": { "$ref": "#/definitions/Polyline" },
@@ -203,6 +203,28 @@ GS::UniString SchemaDefinitionProvider::WallDataSchema ()
 			},
 			"additionalProperties" : false,
 			"required" : [ "elementId", "startPoint", "endPoint" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::SlabDataSchema ()
+{
+	return R"(
+		"SlabData": {
+			"type": "object",
+			"properties" : {
+				"elementId" : { "$ref": "#/definitions/ElementId" },
+				"floorIndex" : { "type": "integer" },
+				"shape" : { "$ref": "#/definitions/ElementShape" },
+				"structure" : { "enum" : [ "Basic", "Composite", "Complex Profile" ] },
+				"thickness" : { "type": "number" },
+				"edgeAngleType" : { "enum" : [ "Custom Angle", "Perpendicular" ] },
+				"edgeAngle" : { "type": "number" },
+				"referencePlaneLocation" : { "enum" : [ "Bottom", "Core Bottom", "Core Top", "Top" ] }
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementId", "shape" ]
 		}
 	)";
 }

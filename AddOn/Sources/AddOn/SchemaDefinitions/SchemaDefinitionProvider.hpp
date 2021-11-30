@@ -24,6 +24,7 @@ public:
 	static GS::UniString ElementModelSchema ();
 
 	static GS::UniString WallDataSchema ();
+	static GS::UniString SlabDataSchema ();
 };
 
 
