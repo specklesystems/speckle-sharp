@@ -8,6 +8,7 @@ namespace Objects.Structural.ETABS.Geometry
   public class ETABSSpandrel:Base
   {
     public string name { get; set; }
+    public bool multistory { get; set; }
     public int numberStories { get; set; }
     public string[] storyName { get; set; }
     public int[] numAreaObjs { get; set; }
@@ -25,9 +26,10 @@ namespace Objects.Structural.ETABS.Geometry
     public double[] centerofGravityRightY { get; set; }
     public double[] centerofGravityRightZ { get; set; }
 
-    public ETABSSpandrel(string name, int numberStories, string[] storyName, int[] numAreaObjs, int[] numLineObjs, double[] length, double[] depthLeft, double[] thickLeft, double[] depthRight, double[] thickRight, string[] matProp, double[] centerofGravityLeftX, double[] centerofGravityLeftY, double[] centerofGravityLeftZ, double[] centerofGravityRightX, double[] centerofGravityRightY, double[] centerofGravityRightZ)
+    public ETABSSpandrel(string name, bool multistory,int numberStories, string[] storyName, int[] numAreaObjs, int[] numLineObjs, double[] length, double[] depthLeft, double[] thickLeft, double[] depthRight, double[] thickRight, string[] matProp, double[] centerofGravityLeftX, double[] centerofGravityLeftY, double[] centerofGravityLeftZ, double[] centerofGravityRightX, double[] centerofGravityRightY, double[] centerofGravityRightZ)
     {
       this.name = name;
+      this.multistory = multistory;
       this.numberStories = numberStories;
       this.storyName = storyName;
       this.numAreaObjs = numAreaObjs;

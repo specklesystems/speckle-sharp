@@ -13,7 +13,7 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object FrameToNative(Element1D element1D)
+    public object FrameToNative(ETABSElement1D element1D)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
       {
@@ -99,6 +99,8 @@ namespace Objects.Converter.ETABS
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
+      Model.FrameObj.SetSpandrel(element1D.name, element1D.SpandrelAssignment);
+      Model.FrameObj.SetPier(element1D.name, element1D.PierAssignment);
       return element1D.name;
     }
 

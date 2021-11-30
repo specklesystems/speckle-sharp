@@ -60,6 +60,8 @@ namespace Objects.Converter.ETABS
 
       Model.AreaObj.SetModifiers(area.name, ref values);
       Model.AreaObj.SetLocalAxes(area.name, area.orientationAngle);
+      Model.AreaObj.SetPier(area.name, area.PierAssignment);
+      Model.AreaObj.SetSpandrel(area.name, area.SpandrelAssignment);
 
       return name;
 

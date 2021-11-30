@@ -14,6 +14,9 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+  public void PierToNative(ETABSPier eTABSPier){
+      Model.PierLabel.SetPier(eTABSPier.name);
+  }
     public ETABSPier PierToSpeckle(string name)
     {
       int numberStories = 0;

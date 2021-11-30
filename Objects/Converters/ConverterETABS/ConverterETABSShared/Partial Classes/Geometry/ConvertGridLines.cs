@@ -55,10 +55,12 @@ namespace Objects.Converter.ETABS
           gridline.label = GridLineIDY[j];
           speckleGridLines.gridLines.Add(gridline);
         }
+        speckleGridLines.GridSystemType = GridSysType;
+        speckleGridLines.Xo = Xo;
+        speckleGridLines.Yo = Yo;
+        speckleGridLines.Rz = RZ;
       }
-     
-
-
+      
 
       SpeckleModel.elements.Add(speckleGridLines);
       return speckleGridLines;

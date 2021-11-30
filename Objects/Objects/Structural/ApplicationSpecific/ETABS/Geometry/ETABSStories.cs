@@ -26,10 +26,12 @@ namespace Objects.Structural.ETABS.Analysis
     public bool SpliceAbove { get; set; }
 
     public double SpliceHeight { get; set; }
-    public double Color { get; set; }
+    public int Color { get; set; }
 
-    public ETABSStorey(double storeyHeight, bool isMasterStory, string similarToStory, bool spliceAbove, double spliceHeight)
+    public ETABSStorey(string name,double elevation,double storeyHeight, bool isMasterStory, string similarToStory, bool spliceAbove, double spliceHeight)
     {
+      this.name = name;
+      this.elevation = elevation;
       this.storeyHeight = storeyHeight;
       IsMasterStory = isMasterStory;
       SimilarToStory = similarToStory;

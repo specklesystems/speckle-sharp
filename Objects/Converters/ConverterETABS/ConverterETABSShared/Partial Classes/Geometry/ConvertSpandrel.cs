@@ -14,6 +14,9 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+    public void SpandrelToNative(ETABSSpandrel spandrel){
+      Model.SpandrelLabel.SetSpandrel(spandrel.name, spandrel.multistory);
+    }
     public ETABSSpandrel SpandrelToSpeckle(string name)
     {
       int numberStories = 0;
@@ -35,8 +38,11 @@ namespace Objects.Converter.ETABS
 
       Model.SpandrelLabel.GetSectionProperties(name, ref numberStories, ref storyName, ref numAreaObjs, ref numLineObjs, ref length, ref depthLeft,
       ref thickLeft, ref depthRight, ref thickRight, ref matProp, ref centerofGravityLeftX, ref centerofGravityLeftY, ref centerofGravityLeftZ, ref centerofGravityRightX, ref centerofGravityRightY, ref centerofGravityRightZ);
+      bool multistory = false;
+      Model.SpandrelLabel.GetSpandrel(name, ref multistory);
 
-      var speckleETABSSpandrel = new ETABSSpandrel(name,numberStories,storyName,numAreaObjs,numLineObjs,length,depthLeft,thickLeft,depthRight,thickRight,matProp,centerofGravityLeftX,centerofGravityLeftY,centerofGravityLeftZ,centerofGravityRightX,centerofGravityRightY,centerofGravityRightZ);
+
+      var speckleETABSSpandrel = new ETABSSpandrel(name,multistory,numberStories,storyName,numAreaObjs,numLineObjs,length,depthLeft,thickLeft,depthRight,thickRight,matProp,centerofGravityLeftX,centerofGravityLeftY,centerofGravityLeftZ,centerofGravityRightX,centerofGravityRightY,centerofGravityRightZ);
       SpeckleModel.elements.Add(speckleETABSSpandrel);
       return speckleETABSSpandrel;
       }
