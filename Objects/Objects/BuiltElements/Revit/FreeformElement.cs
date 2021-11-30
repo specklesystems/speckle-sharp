@@ -28,7 +28,7 @@ namespace Objects.BuiltElements.Revit
         if (baseGeometries == null) baseGeometries = new List<Base> { value };
         else if (baseGeometries.Count == 0) baseGeometries.Add(value);
         else baseGeometries[0] = value;
-      } 
+      }
     }
 
     [DetachProperty]
@@ -42,6 +42,8 @@ namespace Objects.BuiltElements.Revit
 
     public FreeformElement() { }
 
+    
+    [SchemaDeprecated, SchemaInfo("Freeform element", "Creates a Revit Freeform element using a list of Brep or Meshes.", "Revit", "Families")]
     public FreeformElement(Base baseGeometry, List<Parameter> parameters = null)
     {
       if (!IsValidObject(baseGeometry))

@@ -22,7 +22,8 @@ namespace Objects.BuiltElements
     public string units { get; set; }
 
     public Roof() { }
-
+    
+    [SchemaDeprecated]
     [SchemaInfo("Roof", "Creates a Speckle roof", "BIM", "Architecture")]
     public Roof([SchemaMainParam] ICurve outline, List<ICurve> voids = null, List<Base> elements = null)
     {
@@ -70,7 +71,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
     public RevitExtrusionRoof(string family, string type,
       [SchemaParamInfo("Extrusion start")] double start,
       [SchemaParamInfo("Extrusion end")] double end,
-      [SchemaParamInfo("Profile along which to extrude the roof")][SchemaMainParam] Line referenceLine,
+      [SchemaParamInfo("Profile along which to extrude the roof"), SchemaMainParam] Line referenceLine,
       Level level,
       List<Base> elements = null,
       List<Parameter> parameters = null)
