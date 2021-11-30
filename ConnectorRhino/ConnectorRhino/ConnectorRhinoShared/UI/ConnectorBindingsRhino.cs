@@ -448,10 +448,10 @@ namespace SpeckleRhino
                 attributes.SetUserString("SpeckleSchema", schema);
 
               // handle user strings
-              var userStrings = obj[UserStrings] as Dictionary<string, string>;
+              var userStrings = obj[UserStrings] as Dictionary<string, object>;
               if (userStrings != null)
                 foreach (var key in userStrings.Keys)
-                  attributes.SetUserString(key, userStrings[key]);
+                  attributes.SetUserString(key, userStrings[key].ToString());
 
               // handle user dictionaries
               var dict = obj[UserDictionary] as Dictionary<string, object>;
@@ -727,6 +727,10 @@ namespace SpeckleRhino
             target.Set(key, o);
             continue;
 
+          case Int64 o:
+            target.Set(key, (int)o);
+            continue;
+
           case string o:
             target.Set(key, o);
             continue;
@@ -741,6 +745,10 @@ namespace SpeckleRhino
 
           case IEnumerable<int> o:
             target.Set(key, o);
+            continue;
+
+          case IEnumerable<Int64> o:
+            target.Set(key, o.Select(i => (int)i));
             continue;
 
           case IEnumerable<string> o:
