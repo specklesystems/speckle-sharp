@@ -384,6 +384,24 @@ namespace SpeckleRhino
               if (schema != null)
                 attributes.SetUserString("SpeckleSchema", schema);
 
+              // TODO: handle user dictionaries
+              var dict = obj["userDictionary"] as Dictionary<string, object>;
+              if (dict != null)
+              {
+                foreach(var key in dict.Keys)
+                {
+                  var val = dict[key];
+                  if(val is Dictionary<string, object> nestedDict)
+                  {
+                    // TODO: dictionary to archivable dictionary
+                    continue;
+                  }
+                  //attributes.UserDictionary.Set(key, val)
+                  //attributes.UserDictionary[key] = val;
+                }
+                // TODO: recursively generate archivable dicts from the dict, and set them on the object
+              }
+
               if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
               {
                 var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
@@ -475,6 +493,10 @@ namespace SpeckleRhino
           foreach (var key in obj.Attributes.GetUserStrings().AllKeys)
             converted[key] = obj.Attributes.GetUserString(key);
 
+          var userDict = new Dictionary<string, object>();
+          ParseAndAttachUserDictionary(userDict, obj.Attributes.UserDictionary);
+          converted["userDictionary"] = userDict;
+
           if (obj is InstanceObject)
             containerName = "Blocks";
           else
@@ -542,8 +564,6 @@ namespace SpeckleRhino
 
       progress.Max = objCount;
 
-
-
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
       var objectId = await Operations.Send(
@@ -596,6 +616,27 @@ namespace SpeckleRhino
       }
 
       //return state;
+    }
+
+    /// <summary>
+    /// Sets the keys from a user dictionary as props on the converted object.
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="dict"></param>
+    private void ParseAndAttachUserDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
+    {
+      foreach(var key in dict.Keys)
+      {
+        var obj = dict[key];
+        if(obj is Rhino.Collections.ArchivableDictionary ad)
+        {
+          var nested = new Dictionary<string, object>();
+          ParseAndAttachUserDictionary(nested, ad);
+          target[key] = nested;
+          continue;
+        }
+        target[key] = obj;
+      }
     }
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
