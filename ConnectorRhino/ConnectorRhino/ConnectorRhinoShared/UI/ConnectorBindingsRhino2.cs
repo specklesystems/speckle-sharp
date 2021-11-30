@@ -396,7 +396,7 @@ namespace SpeckleRhino
               // handle user dictionaries
               var dict = obj[UserDictionary] as Dictionary<string, object>;
               if (dict != null)
-                CreateUserDictionary(attributes.UserDictionary, dict);
+                ParseDictionaryToArchivable(attributes.UserDictionary, dict);
 
               if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
               {
@@ -492,7 +492,7 @@ namespace SpeckleRhino
           converted[UserStrings] = userStringDict;
 
           var userDict = new Dictionary<string, object>();
-          ParseUserDictionary(userDict, obj.Attributes.UserDictionary);
+          ParseArchivableToDictionary(userDict, obj.Attributes.UserDictionary);
           converted[UserDictionary] = userDict;
 
           if (obj is InstanceObject)
@@ -617,11 +617,11 @@ namespace SpeckleRhino
     }
 
     /// <summary>
-    /// Creates a Dictionary from an ArchivableDictionary
+    /// Copies an ArchivableDictionary to a Dictionary
     /// </summary>
     /// <param name="target"></param>
     /// <param name="dict"></param>
-    private void ParseUserDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
+    private void ParseArchivableToDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
     {
       foreach(var key in dict.Keys)
       {
@@ -630,7 +630,7 @@ namespace SpeckleRhino
         {
           case Rhino.Collections.ArchivableDictionary o:
             var nested = new Dictionary<string, object>();
-            ParseUserDictionary(nested, o);
+            ParseArchivableToDictionary(nested, o);
             target[key] = nested;
             continue;
 
@@ -652,11 +652,11 @@ namespace SpeckleRhino
     }
 
     /// <summary>
-    /// Sets the keys from a user dictionary as props on the converted object.
+    /// Copies a Dictionary to an ArchivableDictionary
     /// </summary>
     /// <param name="target"></param>
     /// <param name="dict"></param>
-    private void CreateUserDictionary(Rhino.Collections.ArchivableDictionary target, Dictionary<string, object> dict)
+    private void ParseDictionaryToArchivable(Rhino.Collections.ArchivableDictionary target, Dictionary<string, object> dict)
     {
       foreach (var key in dict.Keys)
       {
@@ -665,7 +665,7 @@ namespace SpeckleRhino
         {
           case Dictionary<string, object> o:
             var nested = new Rhino.Collections.ArchivableDictionary();
-            CreateUserDictionary(nested, o);
+            ParseDictionaryToArchivable(nested, o);
             target.Set(key, nested);
             continue;
 
@@ -676,6 +676,7 @@ namespace SpeckleRhino
           case bool o:
             target.Set(key, o);
             continue;
+
           case int o:
             target.Set(key, o);
             continue;
