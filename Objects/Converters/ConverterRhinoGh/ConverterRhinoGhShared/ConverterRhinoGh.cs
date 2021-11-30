@@ -560,6 +560,12 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case Alignment o:
+          if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
+          {
+            rhinoObj = CurveToNative(o.baseCurve);
+            Report.Log($"Created Alignment {o.id}");
+            break;
+          }
           rhinoObj = AlignmentToNative(o);
           Report.Log($"Created Alignment {o.id} as Curve");
           break;
