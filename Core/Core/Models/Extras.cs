@@ -6,7 +6,7 @@ using System.Linq;
 namespace Speckle.Core.Models
 {
   /// <summary>
-  /// Wrapper around other, thrid party, classes that are not coming from a speckle kit.
+  /// Wrapper around other, third party, classes that are not coming from a speckle kit.
   /// <para>Serialization and deserialization of the base object happens through default Newtonsoft converters. If your object does not de/serialize correctly, this class will not prevent that from happening.</para>
   /// <para><b>Limitations:</b></para>
   /// <para>- Base object needs to be serializable.</para>
@@ -125,7 +125,8 @@ namespace Speckle.Core.Models
 
     public void Log(string text)
     {
-      ConversionLog.Add(text);
+      var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
+      ConversionLog.Add(time + " " + text);
     }
     /// <summary>
     /// Keeps track of errors in the conversions.

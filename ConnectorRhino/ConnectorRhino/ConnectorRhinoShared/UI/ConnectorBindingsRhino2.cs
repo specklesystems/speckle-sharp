@@ -599,17 +599,10 @@ namespace SpeckleRhino
       try
       {
         var commitId = await client.CommitCreate(actualCommit);
-
-        //await state.RefreshStream();
         state.PreviousCommitId = commitId;
-
-        //PersistAndUpdateStreamInFile(state);
-        //RaiseNotification($"{objCount} objects sent to {state.Stream.name}.");
       }
       catch (Exception e)
       {
-        //TODO
-        //Globals.Notify($"Failed to create commit.\n{e.Message}");
         progress.Report.LogOperationError(e);
       }
 
