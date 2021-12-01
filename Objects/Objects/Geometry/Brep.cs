@@ -331,7 +331,7 @@ namespace Objects.Geometry
         Faces = Faces,
         IsClosed = IsClosed,
         Orientation = Orientation,
-        applicationId = applicationId
+        applicationId = applicationId ?? id
       };
     }
   }

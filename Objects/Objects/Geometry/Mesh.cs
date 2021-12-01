@@ -175,7 +175,8 @@ namespace Objects.Geometry
       {
         vertices = transform.ApplyToPoints(vertices),
         textureCoordinates = textureCoordinates,
-        applicationId = applicationId,
+        applicationId = applicationId ?? id,
+        faces = faces,
         colors = colors,
         units = units
       };
