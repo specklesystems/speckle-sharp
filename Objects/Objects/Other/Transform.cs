@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -56,9 +55,6 @@ namespace Objects.Other
       units = this.units;
     }
 
-
-    // TODO! Apply to vector
-
     /// <summary>
     /// Transform a flat list of doubles representing points
     /// </summary>
@@ -91,8 +87,7 @@ namespace Objects.Other
     {
       var (x, y, z, units) = point;
       var newCoords = ApplyToPoint(new List<double> {x, y, z});
-      var newPoint = Point.FromList(newCoords, units);
-      return newPoint;
+      return new Point(newCoords[0], newCoords[1], newCoords[2], point.units, point.applicationId);
     }
 
     /// <summary>
@@ -107,6 +102,30 @@ namespace Objects.Other
 
       return new List<double>(3)
         {newPoint[ 0 ] / newPoint[ 3 ], newPoint[ 1 ] / newPoint[ 3 ], newPoint[ 2 ] / newPoint[ 3 ]};
+    }
+
+    /// <summary>
+    /// Transform a single speckle Vector
+    /// </summary>
+    public Vector ApplyToVector(Vector vector)
+    {
+      var newCoords = ApplyToVector(new List<double> {vector.x, vector.y, vector.z});
+
+      return new Geometry.Vector(newCoords[0], newCoords[1], newCoords[2], vector.units, vector.applicationId);
+    }
+
+    /// <summary>
+    /// Transform a list of three doubles representing a vector
+    /// </summary>
+    public List<double> ApplyToVector(List<double> vector)
+    {
+      var newPoint = new List<double>(4) {vector[ 0 ], vector[ 1 ], vector[ 2 ]};
+      for ( var i = 0; i < 16; i += 4 )
+        newPoint[ i / 4 ] = newPoint[ 0 ] * value[ i ] + newPoint[ 1 ] * value[ i + 1 ] +
+                            newPoint[ 2 ] * value[ i + 2 ];
+
+      return new List<double>(3)
+        {newPoint[ 0 ], newPoint[ 1 ], newPoint[ 2 ]};
     }
 
     /// <summary>
