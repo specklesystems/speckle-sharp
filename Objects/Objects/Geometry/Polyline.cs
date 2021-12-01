@@ -6,11 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Objects.Other;
 using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
-  public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible
+  public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, ITransformable
   {
     [DetachProperty]
     [Chunkable(31250)]
@@ -90,6 +91,13 @@ namespace Objects.Geometry
       if (conversionType == typeof(Polycurve))
         return (Polycurve)this;
       throw new InvalidCastException();
+    }
+
+    public ITransformable TransformTo(Transform transform)
+    {
+      var newValue = transform.ApplyToPoints(value);
+
+      return new Polyline(newValue, units, applicationId);
     }
 
     public TypeCode GetTypeCode()

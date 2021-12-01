@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using Objects.Other;
 using Objects.Primitive;
 
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, IDisplayMesh
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, IDisplayMesh, ITransformable<Brep>
   {
     public string provenance { get; set; }
     public Box bbox { get; set; }
@@ -305,6 +306,11 @@ namespace Objects.Geometry
           else
             f.Brep = this;
       }
+    }
+
+    public Brep TransformTo(Transform transform)
+    {
+      throw new System.NotImplementedException();
     }
   }
 
