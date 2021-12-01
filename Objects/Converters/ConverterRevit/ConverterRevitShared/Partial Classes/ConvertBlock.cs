@@ -19,9 +19,9 @@ namespace Objects.Converter.Revit
     {
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
       if ( transform != null )
-        transform *= instance.transformMatrix;
+        transform *= instance.transform;
       else
-        transform = instance.transformMatrix;
+        transform = instance.transform;
 
       // convert definition geometry to native
       var breps = new List<Brep>();
