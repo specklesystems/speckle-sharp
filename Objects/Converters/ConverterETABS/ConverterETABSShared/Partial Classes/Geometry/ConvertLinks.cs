@@ -35,6 +35,7 @@ public partial class ConverterETABS{
       {
         speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
       }
+      speckleStructFrame.baseLine = speckleLine;
 
       double localAxis = 0;
       bool advanced = false;

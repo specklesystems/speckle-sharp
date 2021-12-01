@@ -173,9 +173,9 @@ namespace Objects.Converter.ETABS
           Report.Log($"Created Grids");
           break;
 
-        //case "Link":
-        //    returnObject = LinkToSpeckle(name);
-        //    break;
+        case "Links":
+          returnObject = LinkToSpeckle(name);
+          break;
         //case "LoadCase":
         //    returnObject = LoadCaseToSpeckle(name);
         //    break;

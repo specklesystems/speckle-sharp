@@ -24,7 +24,6 @@ namespace Objects.Converter.ETABS
       Model.PropLink.GetWeightAndMass(name, ref W, ref M, ref R1, ref R2, ref R3);
       Model.PropLink.GetPDelta(name, ref Value);
       var speckleLinkProp = new ETABSLinkProperty(name, M, W, R1, R2, R3, Value[0], Value[1], Value[2], Value[3]);
-      SpeckleModel.properties.Add(speckleLinkProp);
       return speckleLinkProp;
     }
   }
