@@ -66,7 +66,7 @@ namespace Speckle.Core.Logging
 
     public static void TrackPageview(params string[] segments)
     {
-#if DEBUG
+#if !DEBUG
       Task.Run(() =>
       {
         try
