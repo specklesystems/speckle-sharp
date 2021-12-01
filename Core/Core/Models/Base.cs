@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -82,7 +83,7 @@ namespace Speckle.Core.Models
 
       long count = 0;
       var typedProps = @base.GetInstanceMembers();
-      foreach (var prop in typedProps)
+      foreach (var prop in typedProps.Where(p => p.CanRead))
       {
         var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);

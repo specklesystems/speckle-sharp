@@ -28,24 +28,16 @@ using Grasshopper.Kernel;
 using ConnectorGrasshopperUtils;
 
 namespace ConnectorGrasshopper {
-<#
-    static bool IsDeprecated(string type)
-    {
-        return type == "Objects.BuiltElements.Roof";
-    }
-#>
 <# foreach(Type sType in availableTypes) { #>
 <# 
-    var typeName = string.Join("", sType.Name.Split('.'));
-    var deprecated = IsDeprecated(sType.FullName);
     var constructorInfos = CSOUtils.GetValidConstr(sType);
-    int i = 0;
+    var i = 0;
     foreach (var constructor in constructorInfos)
     {
-        var fullname = CSOUtils.MethodFullName(constructor);
         var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
         i++;
         var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
+        var depr = constructor.CustomAttributes.FirstOrDefault(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaDeprecated");
         var name = attr.ConstructorArguments[0].Value;
         var description = attr.ConstructorArguments[1].Value;
         var cat = "Speckle 2 BIM";
@@ -64,9 +56,15 @@ public class <#= compName #>: CreateSchemaObjectBase {
     public <#= compName #>(): base("<#= name #>", "<#= name #>", "<#= description #>", "<#= cat #>", "<#= subcat #>") { }
     
     public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
+<#
+    if (depr != null){
+#>
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+<#
+        }
+#>
     
-    public override bool Obsolete => <#= deprecated.ToString().ToLower() #>;
-
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("<#= CSOUtils.MethodFullName(constructor) #>","<#= constructor.DeclaringType.FullName #>");
         base.AddedToDocument(document);
