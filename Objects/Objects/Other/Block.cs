@@ -41,14 +41,8 @@ namespace Objects.Other
     /// the 3x3 sub-matrix determines scaling
     /// the 4th column defines translation, where the last value could be a divisor
     /// </remarks>
-    [JsonIgnore, Obsolete("Use Transform object in `transformMatrix` instead")]
-    public double[] transform
-    {
-      get => transformMatrix.value;
-      set => transformMatrix = new Transform(value);
-    }
 
-    public Transform transformMatrix { get; set; } = new Transform();
+    public Transform transform { get; set; } = new Transform();
 
     public string units { get; set; }
 
@@ -63,7 +57,7 @@ namespace Objects.Other
     /// <returns>Insertion point as a <see cref="Point"/></returns>
     public Point GetInsertionPoint()
     {
-      return blockDefinition.basePoint.TransformTo(transformMatrix);
+      return blockDefinition.basePoint.TransformTo(transform);
     }
   }
 }
