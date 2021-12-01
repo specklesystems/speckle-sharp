@@ -95,13 +95,12 @@ namespace Objects.Other
     /// </summary>
     public List<double> ApplyToPoint(List<double> point)
     {
-      var newPoint = new List<double>(4) {point[ 0 ], point[ 1 ], point[ 2 ], 1};
+      var transformed = new List<double>();
       for ( var i = 0; i < 16; i += 4 )
-        newPoint[ i / 4 ] = newPoint[ 0 ] * value[ i ] + newPoint[ 1 ] * value[ i + 1 ] +
-                            newPoint[ 2 ] * value[ i + 2 ] + newPoint[ 3 ] * value[ i + 3 ];
+        transformed.Add(point[ 0 ] * value[ i ] + point[ 1 ] * value[ i + 1 ] + point[ 2 ] * value[ i + 2 ] + value[ i + 3 ]);
 
       return new List<double>(3)
-        {newPoint[ 0 ] / newPoint[ 3 ], newPoint[ 1 ] / newPoint[ 3 ], newPoint[ 2 ] / newPoint[ 3 ]};
+        {transformed[ 0 ] / transformed[ 3 ], transformed[ 1 ] / transformed[ 3 ], transformed[ 2 ] / transformed[ 3 ]};
     }
 
     /// <summary>
