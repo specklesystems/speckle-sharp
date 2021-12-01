@@ -46,11 +46,11 @@ namespace Objects.Converter.ETABS
           {
             Property1DToNative((Property1D)property);
           }
-          else if (property.GetType().Equals(GSAProperty.GetType()))
+          else if (property is GSAProperty1D)
           {
             break;
           }
-          else
+          else 
           {
             Property2DToNative((ETABSProperty2D)property);
           }
@@ -64,11 +64,11 @@ namespace Objects.Converter.ETABS
 
           if (element.GetType().ToString() == Element1D.GetType().ToString())
           {
-            FrameToNative((Element1D)element);
+            FrameToNative((ETABSElement1D)element);
           }
           else if (element.GetType().Equals(GSAElement1D.GetType()))
           {
-            FrameToNative((Element1D)element);
+            FrameToNative((ETABSElement1D)element);
           }
           else
           {
@@ -156,6 +156,8 @@ namespace Objects.Converter.ETABS
       //Should stories belong here ? not sure 
       model.elements.Add(stories);
 
+
+      //Properties are sent by default whether you want them to be sent or not. Easier this way to manage information about the model
       Model.PropFrame.GetNameList(ref number, ref properties1D);
       properties1D.ToList();
       foreach (string property1D in properties1D)
@@ -188,6 +190,13 @@ namespace Objects.Converter.ETABS
       {
         var specklePropertyAreaSpring = SpringPropertyToSpeckle(propertyArea);
         model.properties.Add(specklePropertyAreaSpring);
+      }
+      string[] LinkProperties = { };
+      Model.PropLink.GetNameList(ref number, ref LinkProperties);
+      LinkProperties.ToList();
+      foreach(string propertyLink in LinkProperties){
+        var specklePropertyLink = LinkPropertyToSpeckle(propertyLink);
+        model.properties.Add(specklePropertyLink);
       }
 
       string[] properties2D = { };
