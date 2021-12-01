@@ -22,7 +22,6 @@ namespace Objects.Converter.Revit
         transform *= instance.transformMatrix;
       else
         transform = instance.transformMatrix;
-      var applyTransform = transform.isScaled;
 
       // convert definition geometry to native
       var breps = new List<Brep>();
@@ -36,24 +35,25 @@ namespace Objects.Converter.Revit
           case Brep brep:
             try
             {
-              breps.Add(brep);
+              breps.Add(brep.TransformTo(transform));
             }
             catch ( Exception e )
             {
               Report.LogConversionError(new SpeckleException(
                 $"Could not convert block {instance.id} brep to native, falling back to mesh representation.", e));
-              meshes.Add(brep.displayMesh);
+              meshes.Add(brep.displayMesh.TransformTo(transform));
             }
 
             break;
           case Mesh mesh:
-            if ( applyTransform )
-              mesh = mesh.TransformTo(transform);
-            meshes.Add(mesh);
+            meshes.Add(mesh.TransformTo(transform));
             break;
           case ICurve curve:
             try
             {
+              if ( curve is ITransformable tCurve )
+                curve = tCurve.TransformTo(transform) as ICurve;
+
               var modelCurves = CurveToNative(curve);
               curves.AddRange(modelCurves.Cast<DB.Curve>());
             }
