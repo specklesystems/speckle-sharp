@@ -95,9 +95,13 @@ namespace Objects.Geometry
 
     public ITransformable TransformTo(Transform transform)
     {
-      var newValue = transform.ApplyToPoints(value);
-
-      return new Polyline(newValue, units, applicationId);
+      return new Polyline
+      {
+        value = transform.ApplyToPoints(value),
+        closed = closed,
+        applicationId = applicationId,
+        units = units
+      };
     }
 
     public TypeCode GetTypeCode()

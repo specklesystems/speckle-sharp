@@ -171,10 +171,14 @@ namespace Objects.Geometry
 
     public Mesh TransformTo(Transform transform)
     {
-      // this should be more thorough, but just doing as simply as poss for testing rn
-      var _vertices = transform.ApplyToPoints(vertices);
-      var mesh = new Mesh(_vertices, faces, colors, textureCoordinates, units, applicationId ?? id);
-      return mesh;
+      return new Mesh
+      {
+        vertices = transform.ApplyToPoints(vertices),
+        textureCoordinates = textureCoordinates,
+        applicationId = applicationId,
+        colors = colors,
+        units = units
+      };
     }
   }
 }

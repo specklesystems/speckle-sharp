@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -125,6 +126,15 @@ namespace Objects.Other
 
       return new List<double>(3)
         {newPoint[ 0 ], newPoint[ 1 ], newPoint[ 2 ]};
+    }
+
+    /// <summary>
+    /// Transform a flat list of ICurves. Note that if any of the ICurves does not implement `ITransformable`,
+    /// it will not be returned.
+    /// </summary>
+    public List<ICurve> ApplyToCurves(List<ICurve> curves)
+    {
+      return ( List<ICurve> ) curves.Select(c => ( ICurve ) ( ( ITransformable ) c )?.TransformTo(this));
     }
 
     /// <summary>

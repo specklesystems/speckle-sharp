@@ -308,9 +308,31 @@ namespace Objects.Geometry
       }
     }
 
+    /// <summary>
+    /// Returns a new transformed Brep. Note that `displayMesh` is *NOT* transformed. If you fall back on
+    /// the `displayMesh`, make sure to call `TransformTo` on the mesh object.
+    /// </summary>
+    /// <param name="transform"></param>
+    /// <returns></returns>
     public Brep TransformTo(Transform transform)
     {
-      throw new System.NotImplementedException();
+      return new Brep
+      {
+        provenance = provenance,
+        units = units,
+        displayMesh = displayMesh,
+        Surfaces = Surfaces,
+        Curve3D = transform.ApplyToCurves(Curve3D),
+        Curve2D = Curve2D,
+        Vertices = transform.ApplyToPoints(Vertices),
+        Edges = Edges,
+        Loops = Loops,
+        Trims = Trims,
+        Faces = Faces,
+        IsClosed = IsClosed,
+        Orientation = Orientation,
+        applicationId = applicationId
+      };
     }
   }
 

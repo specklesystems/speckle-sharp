@@ -103,10 +103,13 @@ namespace Objects.Geometry
 
     public ITransformable TransformTo(Transform transform)
     {
-      var startPt = transform.ApplyToPoint(start);
-      var endPt = transform.ApplyToPoint(end);
-
-      return new Line(startPt, endPt, units, applicationId);
+      return new Line
+      {
+        start = transform.ApplyToPoint(start),
+        end = transform.ApplyToPoint(end),
+        applicationId = applicationId,
+        units = units
+      };
     }
   }
 }

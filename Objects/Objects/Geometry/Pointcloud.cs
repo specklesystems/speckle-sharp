@@ -2,11 +2,12 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Objects.Other;
 using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
-  public class Pointcloud : Base, IHasBoundingBox
+  public class Pointcloud : Base, IHasBoundingBox, ITransformable<Pointcloud>
   {
 
     [DetachProperty]
@@ -42,6 +43,17 @@ namespace Objects.Geometry
       }
       return pts;
     }
-    
+
+    public Pointcloud TransformTo(Transform transform)
+    {
+      return new Pointcloud
+      {
+        units = units,
+        points = transform.ApplyToPoints(points),
+        colors = colors,
+        sizes = sizes,
+        applicationId = applicationId
+      };
+    }
   }
 }
