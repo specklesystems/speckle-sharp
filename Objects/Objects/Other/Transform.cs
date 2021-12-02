@@ -38,9 +38,10 @@ namespace Objects.Other
     {
     }
 
-    public Transform(double[ ] value)
+    public Transform(double[ ] value, string units = null)
     {
       this.value = value;
+      this.units = units;
     }
 
     /// <summary>
