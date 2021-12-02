@@ -48,6 +48,9 @@ namespace ConnectorGrasshopper.Objects
         DA.GetData(0, ref @base);
         DA.GetDataList(1, keys);
         DA.GetDataTree(2, out valueTree);
+        
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "extend", "keyValue");
 
         TaskList.Add(Task.Run(() => DoWork(@base.Value.ShallowCopy(), keys, valueTree)));
         return;

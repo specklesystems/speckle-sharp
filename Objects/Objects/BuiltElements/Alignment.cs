@@ -1,6 +1,7 @@
 ﻿using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,10 @@ namespace Objects.BuiltElements
 {
   public class Alignment : Base
   {
+    [JsonIgnore, Obsolete("Use curves property")]
     public ICurve baseCurve { get; set; }
+
+    public List<ICurve> curves { get; set; }
 
     public string name { get; set; }
 
@@ -26,6 +30,8 @@ namespace Objects.BuiltElements
     /// Station equation direction for the corresponding station equation should be true for increasing or false for decreasing
     /// </summary>
     public List<bool> stationEquationDirections { get; set; }
+
+    public Polyline displayValue { get; set; }
 
     public string units { get; set; }
 

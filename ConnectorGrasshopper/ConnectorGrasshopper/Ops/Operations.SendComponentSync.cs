@@ -15,6 +15,7 @@ using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -225,6 +226,7 @@ namespace ConnectorGrasshopper.Ops
         DA.GetData(2, ref messageInput);
         var transportsInput = new List<IGH_Goo> { transportInput };
         //var transportsInput = Params.Input[1].VolatileData.AllData(true).Select(x => x).ToList();
+        Tracker.TrackPageview("send", "sync");
 
         var task = Task.Run(async () =>
         {

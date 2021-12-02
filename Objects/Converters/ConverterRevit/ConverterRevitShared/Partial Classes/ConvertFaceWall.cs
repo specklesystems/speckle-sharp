@@ -87,8 +87,7 @@ namespace Objects.Converter.Revit
 
       if (revitWall == null)
       {
-        Report.LogConversionError(new Exception($"Failed to create face wall ${speckleWall.applicationId}."));
-        return null;
+        throw (new Exception($"Failed to create face wall ${speckleWall.applicationId}."));
       }
 
       Doc.Delete(mass.Id);

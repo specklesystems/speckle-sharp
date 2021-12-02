@@ -49,12 +49,15 @@ namespace ConnectorGrasshopper.Streams
       string name = null;
       string description = null;
       bool isPublic = false;
-
+      
+      if (DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.STREAM_UPDATE);
+      
       if (!DA.GetData(0, ref ghSpeckleStream)) return;
       DA.GetData(1, ref name);
       DA.GetData(2, ref description);
       DA.GetData(3, ref isPublic);
-
+      
       var streamWrapper = ghSpeckleStream.Value;
       if (error != null)
       {
@@ -116,7 +119,6 @@ namespace ConnectorGrasshopper.Streams
     }
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.STREAM_UPDATE);
       base.BeforeSolveInstance();
     }
 

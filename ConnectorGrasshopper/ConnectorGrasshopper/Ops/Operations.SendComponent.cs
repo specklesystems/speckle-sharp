@@ -297,7 +297,6 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("send", AutoSend ? "auto" : "manual");
       base.BeforeSolveInstance();
     }
     
@@ -369,7 +368,8 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        if (((SendComponent)Parent).JustPastedIn)
+        var sendComponent = (SendComponent)Parent;
+        if (sendComponent.JustPastedIn)
         {
           Done();
           return;
@@ -377,18 +377,20 @@ namespace ConnectorGrasshopper.Ops
 
         if (CancellationToken.IsCancellationRequested)
         {
-          ((SendComponent)Parent).CurrentComponentState = "expired";
+          sendComponent.CurrentComponentState = "expired";
           return;
         }
+        
+        Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
 
         //the active document may have changed
-        ((SendComponent)Parent).Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
 
         // Note: this method actually converts the objects to speckle too
         try
         {
           int convertedCount = 0;
-          var converted = Utilities.DataTreeToNestedLists(DataInput, ((SendComponent)Parent).Converter, CancellationToken, () =>
+          var converted = Utilities.DataTreeToNestedLists(DataInput, sendComponent.Converter, CancellationToken, () =>
           {
             ReportProgress("Conversion",Math.Round(convertedCount++ / (double) DataInput.DataCount, 2));
           });
@@ -413,7 +415,7 @@ namespace ConnectorGrasshopper.Ops
         
         if (CancellationToken.IsCancellationRequested)
         {
-          ((SendComponent)Parent).CurrentComponentState = "expired";
+          sendComponent.CurrentComponentState = "expired";
           return;
         }
 
@@ -524,7 +526,7 @@ namespace ConnectorGrasshopper.Ops
 
         if (CancellationToken.IsCancellationRequested)
         {
-          ((SendComponent)Parent).CurrentComponentState = "expired";
+          sendComponent.CurrentComponentState = "expired";
           return;
         }
 
@@ -534,7 +536,7 @@ namespace ConnectorGrasshopper.Ops
         {
           if (CancellationToken.IsCancellationRequested)
           {
-            ((SendComponent)Parent).CurrentComponentState = "expired";
+            sendComponent.CurrentComponentState = "expired";
             return;
           }
 
@@ -543,7 +545,7 @@ namespace ConnectorGrasshopper.Ops
             ObjectToSend,
             CancellationToken,
             Transports,
-            useDefaultCache: ((SendComponent)Parent).UseDefaultCache,
+            useDefaultCache: sendComponent.UseDefaultCache,
             onProgressAction: InternalProgressAction,
             onErrorAction: ErrorAction, disposeTransports: true);
 
@@ -555,13 +557,13 @@ namespace ConnectorGrasshopper.Ops
             message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
           }
 
-          var prevCommits = ((SendComponent)Parent).OutputWrappers;
+          var prevCommits = sendComponent.OutputWrappers;
 
           foreach (var transport in Transports)
           {
             if (CancellationToken.IsCancellationRequested)
             {
-              ((SendComponent)Parent).CurrentComponentState = "expired";
+              sendComponent.CurrentComponentState = "expired";
               return;
             }
 
@@ -605,7 +607,7 @@ namespace ConnectorGrasshopper.Ops
 
           if (CancellationToken.IsCancellationRequested)
           {
-            ((SendComponent)Parent).CurrentComponentState = "expired";
+            sendComponent.CurrentComponentState = "expired";
             Done();
           }
 

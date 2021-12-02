@@ -40,6 +40,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         BuildAvaloniaApp().Start(AppMain, null);
 
       MainWindow.Show();
+      MainWindow.Activate();
     }
     private static void AppMain(Avalonia.Application app, string[] args)
     {
@@ -83,36 +84,36 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     }
   }
 
-    /*
-    [CommandMethod("SpeckleSchema", CommandFlags.UsePickSet | CommandFlags.Transparent)]
-    public static void SetSchema()
+  /*
+  [CommandMethod("SpeckleSchema", CommandFlags.UsePickSet | CommandFlags.Transparent)]
+  public static void SetSchema()
+  {
+    var ids = new List<ObjectId>();
+    PromptSelectionResult selection = Doc.Editor.GetSelection();
+    if (selection.Status == PromptStatus.OK)
+      ids = selection.Value.GetObjectIds().ToList();
+    foreach (var id in ids)
     {
-      var ids = new List<ObjectId>();
-      PromptSelectionResult selection = Doc.Editor.GetSelection();
-      if (selection.Status == PromptStatus.OK)
-        ids = selection.Value.GetObjectIds().ToList();
-      foreach (var id in ids)
+      // decide schema here, assumption or user input.
+      string schema = "";
+      switch (id.ObjectClass.DxfName)
       {
-        // decide schema here, assumption or user input.
-        string schema = "";
-        switch (id.ObjectClass.DxfName)
-        {
-          case "LINE":
-            schema = "Column";
-            break;
-        }
+        case "LINE":
+          schema = "Column";
+          break;
+      }
 
-        // add schema to object XData
-        using (Transaction tr = Doc.TransactionManager.StartTransaction())
-        {
-          DBObject obj = tr.GetObject(id, OpenMode.ForWrite);
-          if (obj.XData == null)
-            obj.XData = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
-          else
-            obj.XData.Add(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
-        }
+      // add schema to object XData
+      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      {
+        DBObject obj = tr.GetObject(id, OpenMode.ForWrite);
+        if (obj.XData == null)
+          obj.XData = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
+        else
+          obj.XData.Add(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
       }
     }
-    */
+  }
+  */
 }
 

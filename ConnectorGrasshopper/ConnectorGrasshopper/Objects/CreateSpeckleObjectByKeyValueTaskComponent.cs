@@ -40,6 +40,8 @@ namespace ConnectorGrasshopper.Objects
       {
         var keys = new List<string>();
         var valueTree = new GH_Structure<IGH_Goo>();
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "create", "keyValue");
 
         DA.GetDataList(0, keys);
         DA.GetDataTree(1, out valueTree);

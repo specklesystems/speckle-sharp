@@ -101,7 +101,6 @@ namespace ConnectorGrasshopper.Ops
     }
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.SEND_LOCAL);
       base.BeforeSolveInstance();
     }
   }
@@ -118,9 +117,11 @@ namespace ConnectorGrasshopper.Ops
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      Parent.Message = "Sending...";
       try
       {
+        Parent.Message = "Sending...";
+        Tracker.TrackPageview(Tracker.SEND_LOCAL);
+
         var converter = (Parent as SendLocalComponent)?.Converter;
         converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         var converted = Utilities.DataTreeToNestedLists(data, converter);

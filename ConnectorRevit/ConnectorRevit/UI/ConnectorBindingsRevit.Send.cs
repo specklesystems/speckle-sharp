@@ -41,7 +41,7 @@ namespace Speckle.ConnectorRevit.UI
 
       if (state.Filter != null)
       {
-        selectedObjects = GetSelectionFilterObjects(state.Filter);
+        selectedObjects = GetSelectionFilterObjects(state.Filter, converter);
         state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
       }
       else //selection was by cursor

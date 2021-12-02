@@ -55,6 +55,7 @@ namespace SpeckleRhino
       }
 
       MainWindow.Show();
+      MainWindow.Activate();
     }
 
     private static void AppMain(Application app, string[] args)
