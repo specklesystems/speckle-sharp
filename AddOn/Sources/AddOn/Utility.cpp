@@ -3,6 +3,7 @@
 
 namespace Utility {
 
+
 const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames
 {
 	{ API_ZombieElemID,					"InvalidType"},
@@ -24,6 +25,13 @@ const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames
 	{ API_StairID,						"Stair"},
 	{ API_RailingID,					"Railing"},
 	{ API_OpeningID,					"Opening"}
+};
+
+const GS::HashTable<API_ModelElemStructureType, GS::UniString> structureTypeNames
+{
+	{ API_BasicStructure,				"Basic"},
+	{ API_CompositeStructure,			"Composite"},
+	{ API_ProfileStructure,				"Complex Profile"}
 };
 
 API_ElemTypeID GetElementType (const API_Guid& guid)
@@ -64,6 +72,40 @@ bool IsElement3D (const API_Guid& guid)
 			return true;
 		default: return false;
 	}
+}
+
+
+GS::Array<API_StoryType> GetStoryItems ()
+{
+	GS::Array<API_StoryType> stories;
+
+	API_StoryInfo storyInfo {};
+	GSErrCode err = ACAPI_Environment (APIEnv_GetStorySettingsID, &storyInfo, nullptr);
+	if (err != NoError) {
+		return stories;
+	}
+
+	short idx = 0;
+	for (short i = storyInfo.firstStory; i <= storyInfo.lastStory; i++)
+		stories.Push ((*storyInfo.data)[idx++]);
+
+	BMKillHandle ((GSHandle*)&storyInfo.data);
+
+	return stories;
+}
+
+
+double GetStoryLevel (short floorNumber)
+{
+	const GS::Array<API_StoryType> stories = GetStoryItems ();
+
+	for (const auto& story : stories) {
+		if (story.floorId == floorNumber) {
+			return story.level;
+		}
+	}
+
+	return 0.0;
 }
 
 

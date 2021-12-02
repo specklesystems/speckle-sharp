@@ -60,6 +60,22 @@ GS::UniString SchemaDefinitionProvider::Point3DSchema ()
 }
 
 
+GS::UniString SchemaDefinitionProvider::Point2DSchema ()
+{
+	return R"(
+		"Point2D": {
+            "type": "object",
+            "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" }
+             },
+            "additionalProperties": false,
+            "required": [ "x", "y" ]
+        }
+	)";
+}
+
+
 GS::UniString SchemaDefinitionProvider::PolygonSchema ()
 {
     return R"(
@@ -73,6 +89,60 @@ GS::UniString SchemaDefinitionProvider::PolygonSchema ()
 			},
 			"additionalProperties" : false,
 			"required" : [ "pointIds" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::PolylineSegmentSchema ()
+{
+	return R"(
+		"PolylineSegment": {
+            "type": "object",
+            "properties": {
+                "startPoint": { "$ref": "#/definitions/Point3D" },
+                "endPoint": { "$ref": "#/definitions/Point3D" },
+                "arcAngle": { "type": "number" }
+             },
+            "additionalProperties": false,
+            "required": [ "startPoint", "endPoint", "arcAngle" ]
+        }
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::PolylineSchema ()
+{
+	return R"(
+		"Polyline": {
+			"type": "object",
+			"properties": {
+				"polylineSegments": {
+					"type": "array",
+					"items": { "$ref": "#/definitions/PolylineSegment" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "polylineSegments" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::ElementShapeSchema ()
+{
+	return R"(
+		"ElementShape": {
+			"type": "object",
+			"properties": {
+				"contourPolyline": { "$ref": "#/definitions/Polyline" },
+				"holePolylines": {
+					"type": "array",
+					"items": { "$ref": "#/definitions/Polyline" }
+				}
+			},
+			"additionalProperties" : false,
+			"required" : [ "contourPolyline" ]
 		}
 	)";
 }
@@ -112,14 +182,50 @@ GS::UniString SchemaDefinitionProvider::ElementModelSchema ()
 
 GS::UniString SchemaDefinitionProvider::WallDataSchema ()
 {
-	// TODO
 	return R"(
 		"WallData": {
-            "type": "object",
+			"type": "object",
 			"properties" : {
-				
-			}
-        }
+				"elementId" : { "$ref": "#/definitions/ElementId" },
+				"floorIndex" : { "type": "integer" },
+				"startPoint" : { "$ref": "#/definitions/Point3D" },
+				"endPoint" : { "$ref": "#/definitions/Point3D" },
+				"arcAngle" : { "type": "number" },
+				"height" : { "type": "number" },
+				"structure" : { "enum" : [ "Basic", "Composite", "Complex Profile" ] },
+				"geometryMethod" : { "enum" : [ "Straight", "Trapezoid", "Polygonal" ] },
+				"wallComplexity" : { "enum" : [ "Straight", "Profiled", "Slanted", "Double Slanted" ] },
+				"thickness" : { "type": "number" },
+				"firstThickness" : { "type": "number" },
+				"secondThickness" : { "type": "number" },
+				"outsideSlantAngle" : { "type": "number" },
+				"insideSlantAngle" : { "type": "number" }
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementId", "startPoint", "endPoint" ]
+		}
+	)";
+}
+
+
+GS::UniString SchemaDefinitionProvider::SlabDataSchema ()
+{
+	return R"(
+		"SlabData": {
+			"type": "object",
+			"properties" : {
+				"elementId" : { "$ref": "#/definitions/ElementId" },
+				"floorIndex" : { "type": "integer" },
+				"shape" : { "$ref": "#/definitions/ElementShape" },
+				"structure" : { "enum" : [ "Basic", "Composite", "Complex Profile" ] },
+				"thickness" : { "type": "number" },
+				"edgeAngleType" : { "enum" : [ "Custom Angle", "Perpendicular" ] },
+				"edgeAngle" : { "type": "number" },
+				"referencePlaneLocation" : { "enum" : [ "Bottom", "Core Bottom", "Core Top", "Top" ] }
+			},
+			"additionalProperties" : false,
+			"required" : [ "elementId", "shape" ]
+		}
 	)";
 }
 
