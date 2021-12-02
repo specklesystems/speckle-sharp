@@ -273,7 +273,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.Branch.name, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", commitPrefix);
+          if (Doc.UserData.ContainsKey("commit"))
+            Doc.UserData["commit"] = commitPrefix;
+          else
+            Doc.UserData.Add("commit", commitPrefix);
 
           // delete existing commit layers and block instances
           try
