@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetSelectedElements : ICommand<IEnumerable<Guid>>
+	internal sealed class GetSelectedElements : ICommand<IEnumerable<string>>
 	{
 		#region --- Classes ---
 
@@ -22,7 +21,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty ("selectedElementIds")]
-			public IEnumerable<Guid> ElementIds { get; private set; }
+			public IEnumerable<string> ElementIds { get; private set; }
 
 			#endregion
 		}
@@ -32,7 +31,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Guid>> Execute ()
+		public async Task<IEnumerable<string>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetSelectedElementIds", null);
 			return result.ElementIds;
