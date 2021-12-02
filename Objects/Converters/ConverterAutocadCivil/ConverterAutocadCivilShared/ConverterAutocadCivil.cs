@@ -22,6 +22,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
+using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 
@@ -298,6 +299,11 @@ public static string AutocadAppName = Applications.Autocad2022;
           Report.Log($"Created Ellipse {o.id}");
           break;
 
+        case Spiral o:
+          acadObj = PolylineToNativeDB(o.displayValue);
+          Report.Log($"Created Spiral {o.id} as Polyline");
+          break;
+
         case Hatch o:
           acadObj = HatchToNativeDB(o);
           Report.Log($"Created Hatch {o.id}");
@@ -366,10 +372,22 @@ public static string AutocadAppName = Applications.Autocad2022;
           Report.Log($"Created Text {o.id}");
           break;
 
-        // TODO: add Civil3D directive to convert to alignment instead of curve
         case Alignment o:
-          acadObj = CurveToNativeDB(o.baseCurve);
-          Report.Log($"Created Alignment {o.id} as Curve");
+          string fallback = " as Polyline";
+          if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
+          {
+            acadObj = CurveToNativeDB(o.baseCurve);
+            Report.Log($"Created Alignment {o.id} as Curve");
+            break;
+          }
+#if (CIVIL2020 || CIVIL2021)
+          acadObj = AlignmentToNative(o);
+          if (acadObj != null)
+            fallback = string.Empty;
+#endif
+          if (acadObj == null)
+            acadObj = PolylineToNativeDB(o.displayValue);
+          Report.Log($"Created Alignment {o.id}{fallback}");
           break;
 
         case ModelCurve o:
@@ -459,6 +477,7 @@ public static string AutocadAppName = Applications.Autocad2022;
         case Arc _:
         case Circle _:  
         case Ellipse _:
+        case Spiral _:
         case Hatch _:
         case Polyline _:
         case Polycurve _:

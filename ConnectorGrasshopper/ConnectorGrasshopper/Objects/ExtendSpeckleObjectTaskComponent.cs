@@ -61,6 +61,9 @@ namespace ConnectorGrasshopper.Objects
           inputData = null;
           return;
         }
+        
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "extend", "variableinput");
 
         inputData = new Dictionary<string, object>();
         for (int i = 1; i < Params.Input.Count; i++)

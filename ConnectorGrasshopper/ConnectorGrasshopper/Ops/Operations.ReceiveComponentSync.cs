@@ -18,6 +18,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
 namespace ConnectorGrasshopper.Ops
@@ -255,6 +256,8 @@ namespace ConnectorGrasshopper.Ops
 
       if (InPreSolve)
       {
+        Tracker.TrackPageview("receive", "sync");
+
         var task = Task.Run(async () =>
         {
           var acc = await StreamWrapper?.GetAccount();

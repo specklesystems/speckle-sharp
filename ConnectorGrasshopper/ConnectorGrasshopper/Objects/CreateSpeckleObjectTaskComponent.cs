@@ -50,6 +50,9 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional");
           return;
         }
+        
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "create", "variableinput");
 
         Params.Input.ForEach(ighParam =>
         {

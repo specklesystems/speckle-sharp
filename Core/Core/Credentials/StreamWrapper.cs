@@ -273,6 +273,9 @@ namespace Speckle.Core.Credentials
 
     private async Task ValidateWithAccount(Account acc)
     {
+      if (ServerUrl != acc.serverInfo.url)
+        throw new SpeckleException($"Account is not from server ${ServerUrl}");
+      
       var client = new Client(acc);
       // First check if the stream exists
       try

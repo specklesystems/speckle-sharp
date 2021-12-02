@@ -43,6 +43,8 @@ namespace ConnectorGrasshopper.Objects
         var key = "";
         DA.GetData(0, ref speckleObj);
         DA.GetData(1, ref key);
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "valueByKey");
 
         var @base = speckleObj?.Value;
         var task = Task.Run(() => DoWork(@base,key, CancelToken));
