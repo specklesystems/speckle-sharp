@@ -316,12 +316,18 @@ namespace Objects.Geometry
     public bool TransformTo(Transform transform, out Brep brep)
     {
       displayMesh.TransformTo(transform, out var mesh);
+      var surfaces = new List<Surface>(Surfaces.Count);
+      foreach ( var srf in Surfaces )
+      {
+        srf.TransformTo(transform, out var surface);
+        surfaces.Add(surface);
+      }
       brep = new Brep
       {
         provenance = provenance,
         units = units,
         displayMesh = mesh,
-        Surfaces = Surfaces,
+        Surfaces = surfaces,
         Curve3D = transform.ApplyToCurves(Curve3D, out bool success),
         Curve2D = Curve2D,
         Vertices = transform.ApplyToPoints(Vertices),

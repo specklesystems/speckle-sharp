@@ -52,7 +52,7 @@ namespace Objects.Converter.Revit
             {
               if ( curve is ITransformable tCurve )
               {
-                tCurve.TransformTo(transform, out tCurve);
+                tCurve.TransformTo( transform, out tCurve );
                 curve = ( ICurve ) tCurve;
               }
 

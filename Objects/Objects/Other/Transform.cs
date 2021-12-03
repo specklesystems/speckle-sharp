@@ -63,6 +63,9 @@ namespace Objects.Other
     /// </summary>
     public List<double> ApplyToPoints(List<double> points)
     {
+      if ( points.Count % 3 != 0 )
+        throw new SpeckleException(
+          $"Cannot apply transform as the points list is malformed: expected length to be multiple of 3");
       var transformed = new List<double>(points.Count);
       for ( var i = 0; i < points.Count; i += 3 )
         transformed.AddRange(ApplyToPoint(new List<double>(3) {points[ i ], points[ i + 1 ], points[ i + 2 ]}));
@@ -75,10 +78,6 @@ namespace Objects.Other
     /// </summary>
     public List<Point> ApplyToPoints(List<Point> points)
     {
-      if ( points.Count % 3 != 0 )
-        throw new SpeckleException(
-          $"Cannot apply transform as the points list is malformed: expected length to be multiple of 3");
-
       var transformed = new List<Point>(points.Count);
       for ( var i = 0; i < points.Count; i++ )
         transformed.Add(ApplyToPoint(points[ i ]));
