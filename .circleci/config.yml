@@ -59,6 +59,9 @@ parameters:
   run_connector_etabs:
     type: boolean
     default: false
+  run_connector_microstation:
+    type: boolean
+    default: false
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   
@@ -78,7 +81,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
-            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"}
+            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"},
+            {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"}
           ]'
           base-branch: 'main'
   
@@ -311,7 +315,7 @@ workflows:
           slnname: ConnectorAutocadCivil
           dllname: SpeckleConnectorCivil.dll
   
-  # ETABS Connector -Build/Test
+  # ETABS Connector - Build/Test
   connector_etabs:
     when: << pipeline.parameters.run_connector_etabs>>
     jobs:
@@ -319,6 +323,15 @@ workflows:
           name: build-connector-etabs
           slnname: ConnectorETABS
           dllname: SpeckleConnectorETABS.dll
+
+  # MicroStation Connector - Build/Test
+  connector_microstation:
+    when: << pipeline.parameters.run_connector_microstation>>
+    jobs:
+      - build-connector: 
+          name: build-connector-microstation
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenRoads.dll
 
   nuget:
     jobs:
@@ -467,6 +480,66 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # MICROSTATION Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-microstation
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorMicroStation.dll
+          slug: microstation
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # OPENBUILDINGS Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-openbuildings
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenBuildings.dll
+          slug: openbuildings
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      
+      # OPENRAIL Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-openrail
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenRail.dll
+          slug: openrail
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # OPENROADS Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-openroads
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenRoads.dll
+          slug: openroads
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
      
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
@@ -479,6 +552,10 @@ workflows:
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
             - build-deploy-connector-etabs
+            - build-deploy-connector-microstation
+            - build-deploy-connector-openbuildings
+            - build-deploy-connector-openrail
+            - build-deploy-connector-openroads
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
