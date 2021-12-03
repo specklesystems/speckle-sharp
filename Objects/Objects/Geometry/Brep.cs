@@ -309,7 +309,7 @@ namespace Objects.Geometry
     }
 
     /// <summary>
-    /// Returns a new transformed Brep. Note that `displayMesh` is *NOT* transformed.
+    /// Returns a new transformed Brep.
     /// </summary>
     /// <param name="transform"></param>
     /// <returns></returns>
