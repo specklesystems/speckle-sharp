@@ -16,4 +16,8 @@ namespace Objects.Structural.ETABS.Properties
     Link,
     SoilProfileFooting
   }
+  public enum ModelingOption {
+  Loads,
+  Elements
+  }
 }
