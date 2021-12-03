@@ -60,9 +60,9 @@ namespace Objects.Geometry
       return plane;
     }
 
-    public Plane TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out Plane plane)
     {
-      return new Plane
+      plane = new Plane
       {
         origin = transform.ApplyToPoint(origin),
         normal = transform.ApplyToVector(normal),
@@ -71,6 +71,8 @@ namespace Objects.Geometry
         applicationId = applicationId,
         units = units
       };
+
+      return true;
     }
   }
 }

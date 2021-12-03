@@ -125,9 +125,10 @@ namespace Objects.Geometry
       return curve;
     }
 
-    public ITransformable TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out ITransformable curve)
     {
-      return new Curve
+      var result = displayValue.TransformTo(transform, out ITransformable polyline);
+      curve = new Curve
       {
         degree = degree,
         periodic = periodic,
@@ -135,11 +136,13 @@ namespace Objects.Geometry
         points = transform.ApplyToPoints(points),
         weights = weights,
         knots = knots,
-        displayValue = ( Polyline ) displayValue.TransformTo(transform),
+        displayValue = ( Polyline ) polyline,
         closed = closed,
         units =  units,
         applicationId = applicationId
       };
+
+      return result;
     }
   }
 }

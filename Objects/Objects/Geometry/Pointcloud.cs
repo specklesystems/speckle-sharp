@@ -44,9 +44,9 @@ namespace Objects.Geometry
       return pts;
     }
 
-    public Pointcloud TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out Pointcloud pointcloud)
     {
-      return new Pointcloud
+      pointcloud = new Pointcloud
       {
         units = units,
         points = transform.ApplyToPoints(points),
@@ -54,6 +54,8 @@ namespace Objects.Geometry
         sizes = sizes,
         applicationId = applicationId
       };
+      
+      return true;
     }
   }
 }

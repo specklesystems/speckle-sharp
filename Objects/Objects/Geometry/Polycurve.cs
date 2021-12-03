@@ -87,15 +87,17 @@ namespace Objects.Geometry
       return polycurve;
     }
 
-    public ITransformable TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out ITransformable polycurve)
     {
-      return new Polycurve
+      polycurve = new Polycurve
       {
-        segments = transform.ApplyToCurves(segments),
+        segments = transform.ApplyToCurves(segments, out var success),
         applicationId = applicationId,
         closed = closed,
         units = units
       };
+
+      return success;
     }
   }
 }

@@ -57,7 +57,7 @@ namespace Objects.Other
     /// <returns>Insertion point as a <see cref="Point"/></returns>
     public Point GetInsertionPoint()
     {
-      return blockDefinition.basePoint.TransformTo(transform);
+      return transform.ApplyToPoint(blockDefinition.basePoint);
     }
   }
 }

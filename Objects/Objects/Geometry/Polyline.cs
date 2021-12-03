@@ -93,15 +93,17 @@ namespace Objects.Geometry
       throw new InvalidCastException();
     }
 
-    public ITransformable TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out ITransformable polyline)
     {
-      return new Polyline
+      polyline = new Polyline
       {
         value = transform.ApplyToPoints(value),
         closed = closed,
         applicationId = applicationId,
         units = units
       };
+
+      return true;
     }
 
     public TypeCode GetTypeCode()

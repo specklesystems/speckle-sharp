@@ -75,9 +75,10 @@ namespace Objects.Geometry
       set;
     }
 
-    public Vector TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out Vector vector)
     {
-      return transform.ApplyToVector(this);
+      vector = transform.ApplyToVector(this);
+      return true;
     }
   }
 }

@@ -66,9 +66,10 @@ namespace Objects.Geometry
       z = this.z;
     }
 
-    public Point TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out Point point)
     {
-      return transform.ApplyToPoint(this);
+      point = transform.ApplyToPoint(this);
+      return true;
     }
   }
 }

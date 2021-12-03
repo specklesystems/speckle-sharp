@@ -35,24 +35,32 @@ namespace Objects.Converter.Revit
           case Brep brep:
             try
             {
-              breps.Add(brep.TransformTo(transform));
+              if ( !brep.TransformTo(transform, out var tbrep) )
+                throw new SpeckleException(
+                  $"Brep transform for brep {brep.id} from block instance {instance.id} was not successful");
+              breps.Add(tbrep);
             }
             catch ( Exception e )
             {
               Report.LogConversionError(new SpeckleException(
                 $"Could not convert block {instance.id} brep to native, falling back to mesh representation.", e));
-              meshes.Add(brep.displayMesh.TransformTo(transform));
+              brep.displayMesh.TransformTo(transform, out var bmesh);
+              meshes.Add(bmesh);
             }
 
             break;
           case Mesh mesh:
-            meshes.Add(mesh.TransformTo(transform));
+            mesh.TransformTo(transform, out var tmesh);
+            meshes.Add(tmesh);
             break;
           case ICurve curve:
             try
             {
               if ( curve is ITransformable tCurve )
-                curve = tCurve.TransformTo(transform) as ICurve;
+              {
+                tCurve.TransformTo(transform, out tCurve);
+                curve = ( ICurve ) tCurve;
+              }
 
               var modelCurves = CurveToNative(curve);
               curves.AddRange(modelCurves.Cast<DB.Curve>());

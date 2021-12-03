@@ -314,15 +314,15 @@ namespace Objects.Geometry
     /// </summary>
     /// <param name="transform"></param>
     /// <returns></returns>
-    public Brep TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out Brep brep)
     {
-      return new Brep
+      brep = new Brep
       {
         provenance = provenance,
         units = units,
         displayMesh = displayMesh,
         Surfaces = Surfaces,
-        Curve3D = transform.ApplyToCurves(Curve3D),
+        Curve3D = transform.ApplyToCurves(Curve3D, out bool success),
         Curve2D = Curve2D,
         Vertices = transform.ApplyToPoints(Vertices),
         Edges = Edges,
@@ -333,6 +333,8 @@ namespace Objects.Geometry
         Orientation = Orientation,
         applicationId = applicationId ?? id
       };
+
+      return success;
     }
   }
 

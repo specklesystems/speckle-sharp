@@ -101,15 +101,16 @@ namespace Objects.Geometry
       return line;
     }
 
-    public ITransformable TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out ITransformable line)
     {
-      return new Line
+      line = new Line
       {
         start = transform.ApplyToPoint(start),
         end = transform.ApplyToPoint(end),
         applicationId = applicationId,
         units = units
       };
+      return true;
     }
   }
 }

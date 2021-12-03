@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
@@ -74,6 +75,10 @@ namespace Objects.Other
     /// </summary>
     public List<Point> ApplyToPoints(List<Point> points)
     {
+      if ( points.Count % 3 != 0 )
+        throw new SpeckleException(
+          $"Cannot apply transform as the points list is malformed: expected length to be multiple of 3");
+
       var transformed = new List<Point>(points.Count);
       for ( var i = 0; i < points.Count; i++ )
         transformed.Add(ApplyToPoint(points[ i ]));
@@ -133,9 +138,21 @@ namespace Objects.Other
     /// Transform a flat list of ICurves. Note that if any of the ICurves does not implement `ITransformable`,
     /// it will not be returned.
     /// </summary>
-    public List<ICurve> ApplyToCurves(List<ICurve> curves)
+    public List<ICurve> ApplyToCurves(List<ICurve> curves, out bool success)
     {
-      return ( List<ICurve> ) curves.Select(c => ( ICurve ) ( ( ITransformable ) c )?.TransformTo(this));
+      success = true;
+      var transformed = new List<ICurve>();
+      foreach ( var curve in curves )
+      {
+        if ( curve is ITransformable c )
+        {
+          c.TransformTo(this, out ITransformable tc);
+          transformed.Add(( ICurve ) tc);
+        }
+        else
+          success = false;
+      }
+      return transformed;
     }
 
     /// <summary>

@@ -169,9 +169,9 @@ namespace Objects.Geometry
     
     #endregion
 
-    public Mesh TransformTo(Transform transform)
+    public bool TransformTo(Transform transform, out Mesh mesh)
     {
-      return new Mesh
+      mesh = new Mesh
       {
         vertices = transform.ApplyToPoints(vertices),
         textureCoordinates = textureCoordinates,
@@ -180,6 +180,8 @@ namespace Objects.Geometry
         colors = colors,
         units = units
       };
+
+      return true;
     }
   }
 }

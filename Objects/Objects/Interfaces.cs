@@ -38,7 +38,7 @@ namespace Objects
   /// <typeparam name="T"></typeparam>
   public interface ITransformable<T> where T : ITransformable<T>
   {
-    T TransformTo(Transform transform);
+    bool TransformTo(Transform transform, out T transformed);
   }
 
   /// <summary>
@@ -46,7 +46,7 @@ namespace Objects
   /// </summary>
   public interface ITransformable
   {
-    ITransformable TransformTo(Transform transform);
+    bool TransformTo(Transform transform, out ITransformable transformed);
   }
 
   #endregion
