@@ -112,7 +112,7 @@ namespace Archicad.Launcher
 				return;
 			}
 
-			await Helpers.Send (state.StreamId, commitObject);
+			await Helpers.Send (state.StreamId, commitObject, "TODO comment", Speckle.Core.Kits.Applications.Archicad);
 		}
 
 		public override void WriteStreamsToFile (List<StreamState> streams)
