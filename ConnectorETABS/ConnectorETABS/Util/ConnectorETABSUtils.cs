@@ -73,6 +73,8 @@ namespace Speckle.ConnectorETABS.Util
           return GetAllLinkNames(model);
         case "Spandrel":
           return GetAllSpandrelLabelNames(model);
+        case "Tendon":
+          return GetAllTendonNames(model);
         case "Pier":
           return GetAllPierLabelNames(model);
         case "Grids":
@@ -596,6 +598,7 @@ namespace Speckle.ConnectorETABS.Util
       Floor,
       Grids,
       Links,
+      Tendon,
       LoadPattern,
       Model,
       BeamLoading,

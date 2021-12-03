@@ -199,6 +199,15 @@ namespace Objects.Converter.ETABS
         model.properties.Add(specklePropertyLink);
       }
 
+      string[] TendonProperties = { };
+      Model.PropTendon.GetNameList(ref number, ref TendonProperties);
+      TendonProperties.ToList();
+      foreach (string propertyTendon in TendonProperties)
+      {
+        var specklePropertyTendon = TendonPropToSpeckle(propertyTendon);
+        model.properties.Add(specklePropertyTendon);
+      }
+
       string[] properties2D = { };
       Model.PropArea.GetNameList(ref number, ref properties2D);
       properties2D.ToList();

@@ -21,5 +21,9 @@ namespace Objects.Structural.ETABS.Geometry
       this.polycurve = polycurve;
       ETABSTendonProperty = eTABSTendonProperty;
     }
+
+    public ETABSTendon()
+    {
+    }
   }
 }

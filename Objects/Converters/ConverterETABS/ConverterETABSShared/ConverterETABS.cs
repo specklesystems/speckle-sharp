@@ -172,7 +172,10 @@ namespace Objects.Converter.ETABS
           returnObject = gridLinesToSpeckle(name);
           Report.Log($"Created Grids");
           break;
-
+        case "Tendon":
+          returnObject = ETABSTendonToSpeckle(name);
+          Report.Log($"Created Tendons");
+          break;
         case "Links":
           returnObject = LinkToSpeckle(name);
           break;

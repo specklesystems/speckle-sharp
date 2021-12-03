@@ -249,6 +249,7 @@ namespace Objects.Converter.ETABS
       Beam,
       Floor,
       Wall,
+      Tendon,
       Links,
       Spandrel,
       Pier,
