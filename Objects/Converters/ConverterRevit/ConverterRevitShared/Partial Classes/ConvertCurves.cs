@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using Alignment = Objects.BuiltElements.Alignment;
 using DetailCurve = Objects.BuiltElements.Revit.Curve.DetailCurve;
 using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 
@@ -22,6 +23,29 @@ namespace Objects.Converter.Revit
       speckleCurve.units = ModelUnits;
       //Report.Log($"Converted ModelCurve {revitCurve.Id}");
       return speckleCurve;
+    }
+
+    public List<ApplicationPlaceholderObject> AlignmentToNative(Alignment alignment)
+    {
+      var docObj = GetExistingElementByApplicationId(alignment.applicationId);
+      //delete and re-create line
+      //TODO: check if can be modified
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      var curves = CurveToNative(alignment.curves);
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      var curveEnumerator = curves.GetEnumerator();
+      while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
+      {
+        var baseCurve = curveEnumerator.Current as DB.Curve;
+        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
+        var lineStyles = revitCurve.GetLineStyleIds().First();
+        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = alignment.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
+      }
+      return placeholders;
     }
 
     public List<ApplicationPlaceholderObject> ModelCurveToNative(ModelCurve speckleCurve)
@@ -143,8 +167,7 @@ namespace Objects.Converter.Revit
         }
         catch (Exception)
         {
-          Report.LogConversionError(new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
-          throw;
+          throw (new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
         }
 
         var lineStyles = revitCurve.GetLineStyleIds();
@@ -192,8 +215,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception)
       {
-        Report.LogConversionError(new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
-        throw;
+        throw (new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
       }
 
 
@@ -247,8 +269,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception)
       {
-        Report.LogConversionError(new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
-        throw;
+        throw (new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
       }
     }
 

@@ -18,28 +18,29 @@ namespace Objects.Converter.Revit
     {
       // 1. Convert the freeformElement geometry to native
       var solids = new List<DB.Solid>();
-      switch (freeformElement.baseGeometry)
-      {
-        case Brep brep:
-          try
-          {
-            var solid = BrepToNative(freeformElement.baseGeometry as Brep);
-            solids.Add(solid);
-          }
-          catch (Exception e)
-          {
-            Report.LogConversionError(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.", e));
-            var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+      foreach (var geom in freeformElement.baseGeometries)
+        switch (geom)
+        {
+          case Brep brep:
+            try
+            {
+              var solid = BrepToNative(geom as Brep);
+              solids.Add(solid);
+            }
+            catch (Exception e)
+            {
+              Report.LogConversionError(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.", e));
+              var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+                  .Select(m => m as DB.Solid);
+              solids.AddRange(brepMeshSolids);
+            }
+            break;
+          case Objects.Geometry.Mesh mesh:
+            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
                 .Select(m => m as DB.Solid);
-            solids.AddRange(brepMeshSolids);
-          }
-          break;
-        case Objects.Geometry.Mesh mesh:
-          var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
-              .Select(m => m as DB.Solid);
-          solids.AddRange(meshSolids);
-          break;
-      }
+            solids.AddRange(meshSolids);
+            break;
+        }
 
 
       var tempPath = CreateFreeformElementFamily(solids, freeformElement.id);

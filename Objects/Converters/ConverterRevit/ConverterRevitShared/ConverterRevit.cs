@@ -221,7 +221,7 @@ namespace Objects.Converter.Revit
           {
             returnObject = AnalyticalNodeToSpeckle(o);
             Report.Log($"Converted AnalyticalNode {o.Id}");
-          }        
+          }
           break;
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
@@ -237,9 +237,11 @@ namespace Objects.Converter.Revit
           break;
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
-          if ((@object as Element).IsElementSupported())
+          var el = @object as Element;
+          if (el.IsElementSupported())
           {
-            returnObject = RevitElementToSpeckle(@object as Element);
+            returnObject = RevitElementToSpeckle(el);
+            Report.Log($"Converted {el.Category.Name} {el.Id}");
             break;
           }
 
@@ -320,8 +322,13 @@ namespace Objects.Converter.Revit
 
         // non revit built elems
         case BE.Alignment o:
-          Report.Log($"Created Alignment {o.applicationId}");
-          return ModelCurveToNative(o.baseCurve);
+          if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
+          {
+            Report.Log($"Created Alignment {o.applicationId}");
+            return ModelCurveToNative(o.baseCurve);
+          }
+          Report.Log($"Created Alignment {o.applicationId} as Curves");
+          return AlignmentToNative(o);
 
         case BE.Structure o:
           Report.Log($"Created Structure {o.applicationId}");
@@ -464,7 +471,7 @@ namespace Objects.Converter.Revit
 
         // other
         case Other.BlockInstance o:
-                  Report.Log($"Created BlockInstance {o.applicationId}");
+          Report.Log($"Created BlockInstance {o.applicationId}");
           return BlockInstanceToNative(o);
 
         default:

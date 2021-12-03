@@ -29,10 +29,10 @@ namespace Objects.Converter.Revit
 
       //Only send elements that have a mesh, if not we should probably support them properly via direct conversions
       if (speckleElement.displayMesh == null || !speckleElement.displayMesh.vertices.Any())
-        return null;
+        throw new Exception($"Skipped not supported type: {revitElement.GetType()}{GetElemInfo(revitElement)}");
 
       GetAllRevitParamsAndIds(speckleElement, revitElement);
-      Report.Log($"Converted Generic Element ({revitElement.Category.Name}) {revitElement.Id}");
+
       return speckleElement;
     }
   }
