@@ -138,7 +138,7 @@ namespace Speckle.ConnectorRevit.UI
             var viewElements = new FilteredElementCollector(doc, view.Id)
               .WhereElementIsNotElementType()
               .WhereElementIsViewIndependent()
-              .Where(x => x.IsPhysicalElement())
+              //.Where(x => x.IsPhysicalElement())
               .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
               .ToList();
 
