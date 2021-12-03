@@ -25,6 +25,11 @@ namespace Archicad.Objects
 			Meshes = elementModel.Model.Select (mesh => new GenericMesh (mesh));
 		}
 
+		public DirectShape(IEnumerable<Model.MeshData> meshes)
+		{
+			Meshes = meshes.Select(mesh => new GenericMesh(mesh));
+		}
+
 		#endregion
 	}
 }
