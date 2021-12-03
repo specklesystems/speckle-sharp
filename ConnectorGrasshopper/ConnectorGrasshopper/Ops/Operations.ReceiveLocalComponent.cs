@@ -103,7 +103,6 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
       base.BeforeSolveInstance();
     }
   }
@@ -119,6 +118,9 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
+        var acc = Speckle.Core.Credentials.AccountManager.GetDefaultAccount();
+        
+        Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
 

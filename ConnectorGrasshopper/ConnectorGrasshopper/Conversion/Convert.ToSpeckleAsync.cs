@@ -45,7 +45,6 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
       base.BeforeSolveInstance();
     }
 
@@ -134,6 +133,9 @@ namespace ConnectorGrasshopper.Conversion
     {
       if (CancellationToken.IsCancellationRequested)return;
       DA.DisableGapLogic();
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
+      
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 

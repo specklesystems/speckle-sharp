@@ -82,6 +82,9 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview(Tracker.STREAM_GET);
+
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
@@ -153,7 +156,6 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.STREAM_GET);
       base.BeforeSolveInstance();
     }
   }

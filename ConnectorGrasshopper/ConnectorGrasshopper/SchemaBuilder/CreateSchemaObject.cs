@@ -349,6 +349,10 @@ namespace ConnectorGrasshopper
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No schema has been selected.");
         return;
       }
+      
+      
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview("objects", "create", "variableinput");
 
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
@@ -615,7 +619,6 @@ namespace ConnectorGrasshopper
     protected override void BeforeSolveInstance()
     {
       Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      Tracker.TrackPageview("objects", "create", "variableinput");
       base.BeforeSolveInstance();
     }
   }

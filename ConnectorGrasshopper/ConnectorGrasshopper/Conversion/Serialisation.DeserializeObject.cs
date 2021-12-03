@@ -36,7 +36,6 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview(Tracker.DESERIALIZE);
       base.BeforeSolveInstance();
     }
   }
@@ -57,7 +56,7 @@ namespace ConnectorGrasshopper.Conversion
       try
       {
         if (CancellationToken.IsCancellationRequested)return;
-
+        
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
@@ -100,7 +99,9 @@ namespace ConnectorGrasshopper.Conversion
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       if (CancellationToken.IsCancellationRequested)return;
-
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.DESERIALIZE);
+      
       GH_Structure<GH_String> _objects;
       DA.GetDataTree(0, out _objects);
 

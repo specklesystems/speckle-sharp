@@ -59,7 +59,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception e)
           {
-            System.Diagnostics.Debug.WriteLine("Failed to set grid endpoints.");
+            Report.LogConversionError(new Exception($"Error setting grid endpoints {speckleGridline.id}."));
           }
           isUpdate = true;
         }
@@ -73,7 +73,7 @@ namespace Objects.Converter.Revit
         else if (curve is Line l)
           revitGrid = Grid.Create(Doc, l);
         else
-          throw new Speckle.Core.Logging.SpeckleException("Curve type not supported for Grid: " + curve.GetType().FullName);
+          throw new Speckle.Core.Logging.SpeckleException("Failed to create GridLine, curve type not supported for Grid: " + curve.GetType().FullName);
       }
 
       //name must be unique, too much faff

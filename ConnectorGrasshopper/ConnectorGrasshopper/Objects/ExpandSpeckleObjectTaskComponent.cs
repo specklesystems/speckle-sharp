@@ -46,6 +46,9 @@ namespace ConnectorGrasshopper.Objects
         GH_SpeckleBase ghSpeckleBase = null;
         DA.GetData(0, ref ghSpeckleBase);
         var @base = ghSpeckleBase?.Value;
+        
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview("objects", "expand");
 
         var task = Task.Run(() => DoWork(@base));
         TaskList.Add(task);
@@ -199,12 +202,7 @@ namespace ConnectorGrasshopper.Objects
       }
       base.BeforeSolveInstance();
     }
-
-    protected override void AfterSolveInstance()
-    {
-      base.AfterSolveInstance();
-    }
-
+    
     private List<string> GetOutputList(GH_Structure<GH_SpeckleBase> speckleObjects)
     {
       // Get the full list of output parameters
@@ -217,8 +215,6 @@ namespace ConnectorGrasshopper.Objects
         {
           if (!fullProps.Contains(prop))
             fullProps.Add(prop);
-          else if (fullProps.Contains(prop))
-            fullProps.Remove(prop);
         });
       }
 

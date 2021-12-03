@@ -37,8 +37,7 @@ namespace Objects.Converter.Revit
       }
       if (revitRailing == null)
       {
-        Report.LogConversionError(new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
-        return null;
+        throw (new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
       }
 
       if (revitRailing.GetTypeId() != railingType.Id)

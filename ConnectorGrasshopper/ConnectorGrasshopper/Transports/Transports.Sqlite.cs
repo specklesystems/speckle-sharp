@@ -35,6 +35,9 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another transport, please use a new component.");
         return;
       }
+      
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview("transports", "sqlite");
 
       string basePath = null, applicationName = null, scope = null;
 
@@ -49,7 +52,6 @@ namespace ConnectorGrasshopper.Transports
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("transports", "sqlite");
       base.BeforeSolveInstance();
     }
 

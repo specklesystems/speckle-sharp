@@ -456,7 +456,6 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void BeforeSolveInstance()
     {
-      Tracker.TrackPageview("receive", AutoReceive ? "auto" : "manual");
       base.BeforeSolveInstance();
     }
   }
@@ -498,6 +497,8 @@ namespace ConnectorGrasshopper.Ops
       var receiveComponent = ((ReceiveComponent)Parent);
       try
       {
+        Tracker.TrackPageview("receive", receiveComponent.AutoReceive ? "auto" : "manual");
+
         InternalProgressAction = dict =>
         {
           //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
@@ -507,6 +508,8 @@ namespace ConnectorGrasshopper.Ops
             ReportProgress(kvp.Key, kvp.Value);
           }
         };
+
+        var sw = new StreamWrapper("");
 
         ErrorAction = (transportName, exception) =>
         {
