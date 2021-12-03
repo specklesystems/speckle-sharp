@@ -4,186 +4,95 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Autodesk.Revit.DB;
-using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
-using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
-using Parameter = Objects.BuiltElements.Revit.Parameter;
 using BlockInstance = Objects.Other.BlockInstance;
-using BlockDefinition = Objects.Other.BlockDefinition;
+using Transform = Objects.Other.Transform;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    // Creates a generic model instance in a project or family doc
-    public string BlockInstanceToNative(BlockInstance instance, Document familyDoc = null)
+    public Group BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
-
-      string result = null;
-
-      // Base point
-      var basePoint = PointToNative(instance.insertionPoint);
-
-      // Get or make family from block definition
-      FamilySymbol familySymbol = new FilteredElementCollector(Doc)
-        .OfClass(typeof(Family))
-        .OfType<Family>()
-        .FirstOrDefault(f => f.Name.Equals("SpeckleBlock_" + instance.blockDefinition.name))
-        ?.GetFamilySymbolIds()
-        .Select(id => Doc.GetElement(id))
-        .OfType<FamilySymbol>()
-        .First();
-
-      if (familySymbol == null)
-      {
-        var familyPath = BlockDefinitionToNative(instance.blockDefinition);
-
-        if (familyDoc != null)
-        {
-          if (familyDoc.LoadFamily(familyPath, new FamilyLoadOption(), out var fam)) ;
-          familySymbol = familyDoc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
-        }
-        else
-        {
-          if (Doc.LoadFamily(familyPath, new FamilyLoadOption(), out var fam))
-            familySymbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
-        }
-
-        familySymbol.Activate();
-        //File.Delete(familyPath);
-      }
-
-      // see if this is a nested family instance or to be inserted in project
-      FamilyInstance _instance = null;
-      if (familyDoc != null)
-      {
-        _instance = familyDoc.FamilyCreate.NewFamilyInstance(basePoint, familySymbol, DB.Structure.StructuralType.NonStructural);
-        familyDoc.Regenerate();
-      }
+      // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
+      if ( transform != null )
+        transform *= instance.transform;
       else
-      {
-        _instance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, DB.Structure.StructuralType.NonStructural);
-        Doc.Regenerate();
-      }
-
-      // transform
-      if (_instance != null)
-      {
-        if (MatrixDecompose(instance.transform, out double rotation))
-        {
-          try
-          {
-            // some point based families don't have a rotation, so keep this in a try catch
-            if (rotation != (_instance.Location as LocationPoint).Rotation)
-            {
-              var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-              (_instance.Location as LocationPoint).Rotate(axis, rotation - (_instance.Location as LocationPoint).Rotation);
-            }
-          }
-          catch { }
-
-        }
-        SetInstanceParameters(_instance, instance);
-        result = "success";
-      }
-      //Report.Log($"Created Block {_instance.Id}");
-      return result;
-    }
-
-    // TODO: fix unit conversions since block geometry is being converted inside a new family document, which potentially has different unit settings from the main doc.
-    // This could be done by passing in an option Document argument for all conversions that defaults to the main doc (annoying)
-    // I suspect this also needs to be fixed for freeform elements
-    private string BlockDefinitionToNative(BlockDefinition definition)
-    {
-      // create a family to represent a block definition
-      // TODO: rename block with stream commit info prefix taken from UI - need to figure out cleanest way of storing this in the doc for retrieval by converter
-      var templatePath = GetTemplatePath("Generic Model");
-      if (!File.Exists(templatePath))
-      {
-        throw new Exception($"Could not find template file - {templatePath}");
-      }
-
-      var famDoc = Doc.Application.NewFamilyDocument(templatePath);
+        transform = instance.transform;
 
       // convert definition geometry to native
-      var solids = new List<DB.Solid>();
+      var breps = new List<Brep>();
+      var meshes = new List<Mesh>();
       var curves = new List<DB.Curve>();
       var blocks = new List<BlockInstance>();
-      foreach (var geometry in definition.geometry)
+      foreach ( var geometry in instance.blockDefinition.geometry )
       {
-        switch (geometry)
+        switch ( geometry )
         {
           case Brep brep:
-            try
+            var success = brep.TransformTo(transform, out var tbrep);
+            if ( success )
+              breps.Add(tbrep);
+            else
             {
-              var solid = BrepToNative(geometry as Brep);
-              solids.Add(solid);
-            }
-            catch (Exception e)
-            {
-              Report.LogConversionError(new SpeckleException($"Could not convert block {definition.id} brep to native, falling back to mesh representation.", e));
-              var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
-                  .Select(m => m as DB.Solid);
-              solids.AddRange(brepMeshSolids);
+              Report.LogConversionError(new SpeckleException(
+                $"Could not convert block {instance.id} brep to native, falling back to mesh representation."));
+              meshes.Add(tbrep.displayMesh);
             }
             break;
           case Mesh mesh:
-            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
-                .Select(m => m as DB.Solid);
-            solids.AddRange(meshSolids);
+            mesh.TransformTo(transform, out var tmesh);
+            meshes.Add(tmesh);
             break;
           case ICurve curve:
             try
             {
-              var modelCurves = CurveToNative(geometry as ICurve);
-              foreach (DB.Curve modelCurve in modelCurves)
-                curves.Add(modelCurve);
+              if ( curve is ITransformable tCurve )
+              {
+                tCurve.TransformTo( transform, out tCurve );
+                curve = ( ICurve ) tCurve;
+              }
+
+              var modelCurves = CurveToNative(curve);
+              curves.AddRange(modelCurves.Cast<DB.Curve>());
             }
-            catch (Exception e)
+            catch ( Exception e )
             {
-              Report.LogConversionError(new SpeckleException($"Could not convert block {definition.id} curve to native.", e));
+              Report.LogConversionError(
+                new SpeckleException($"Could not convert block {instance.id} curve to native.", e));
             }
+
             break;
-          case BlockInstance instance:
-            blocks.Add(instance);
+          case BlockInstance blk:
+            blocks.Add(blk);
             break;
         }
       }
 
-      using (DB.Transaction t = new DB.Transaction(famDoc, "Create Block Geometry Elements"))
-      {
-        t.Start();
+      var ids = new List<ElementId>();
+      breps.ForEach(o => { ids.Add(( DirectShapeToNative(o).NativeObject as DB.DirectShape )?.Id); });
+      meshes.ForEach(o => { ids.Add(( DirectShapeToNative(o).NativeObject as DB.DirectShape )?.Id); });
+      curves.ForEach(o => { ids.Add(Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc)).Id); });
+      blocks.ForEach(o => { ids.Add(BlockInstanceToNative(o, transform).Id); });
 
-        solids.ForEach(o => { DB.FreeFormElement.Create(famDoc, o); });
-        curves.ForEach(o => { famDoc.FamilyCreate.NewModelCurve(o, NewSketchPlaneFromCurve(o, famDoc)); });
-        blocks.ForEach(o => { BlockInstanceToNative(o, famDoc); });
-
-        t.Commit();
-      }
-
-      var famName = "SpeckleBlock_" + definition.name;
-      string familyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
-      var so = new DB.SaveAsOptions();
-      so.OverwriteExistingFile = true;
-      famDoc.SaveAs(familyPath, so);
-      famDoc.Close();
-      Report.Log($"Created temp family {familyPath}");
-      return familyPath;
+      var group = Doc.Create.NewGroup(ids);
+      group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
+      return group;
     }
 
-    private bool MatrixDecompose(double[] m, out double rotation)
+
+    private bool MatrixDecompose(double[ ] m, out double rotation)
     {
       var matrix = new Matrix4x4(
-        (float)m[0], (float)m[1], (float)m[2], (float)m[3],
-        (float)m[4], (float)m[5], (float)m[6], (float)m[7],
-        (float)m[8], (float)m[9], (float)m[10], (float)m[11],
-        (float)m[12], (float)m[13], (float)m[14], (float)m[15]);
+        ( float ) m[ 0 ], ( float ) m[ 1 ], ( float ) m[ 2 ], ( float ) m[ 3 ],
+        ( float ) m[ 4 ], ( float ) m[ 5 ], ( float ) m[ 6 ], ( float ) m[ 7 ],
+        ( float ) m[ 8 ], ( float ) m[ 9 ], ( float ) m[ 10 ], ( float ) m[ 11 ],
+        ( float ) m[ 12 ], ( float ) m[ 13 ], ( float ) m[ 14 ], ( float ) m[ 15 ]);
 
-      if (Matrix4x4.Decompose(matrix, out Vector3 _scale, out Quaternion _rotation, out Vector3 _translation))
+      if ( Matrix4x4.Decompose(matrix, out Vector3 _scale, out Quaternion _rotation, out Vector3 _translation) )
       {
         rotation = Math.Acos(_rotation.W) * 2;
         return true;

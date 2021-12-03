@@ -3,12 +3,13 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.Other;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
-  public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea
+  public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<Mesh>
   {
     [DetachProperty]
     [Chunkable(31250)]
@@ -167,5 +168,20 @@ namespace Objects.Geometry
     }
     
     #endregion
+
+    public bool TransformTo(Transform transform, out Mesh mesh)
+    {
+      mesh = new Mesh
+      {
+        vertices = transform.ApplyToPoints(vertices),
+        textureCoordinates = textureCoordinates,
+        applicationId = applicationId ?? id,
+        faces = faces,
+        colors = colors,
+        units = units
+      };
+
+      return true;
+    }
   }
 }

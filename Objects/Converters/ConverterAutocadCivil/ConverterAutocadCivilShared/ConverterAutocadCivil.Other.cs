@@ -16,6 +16,7 @@ using Text = Objects.Other.Text;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
+using Objects.Other;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -191,7 +192,7 @@ namespace Objects.Converter.AutocadCivil
 
       var instance = new BlockInstance()
       {
-        transform = reference.BlockTransform.ToArray(),
+        transform = new Transform( reference.BlockTransform.ToArray(), ModelUnits ),
         blockDefinition = definition,
         units = ModelUnits
       };
@@ -215,7 +216,7 @@ namespace Objects.Converter.AutocadCivil
       Point3d insertionPoint = PointToNative(instance.GetInsertionPoint());
 
       // transform
-      double[] transform = instance.transform;
+      double[] transform = instance.transform.value;
       for (int i = 3; i < 12; i += 4)
         transform[i] = ScaleToNative(transform[i], instance.units);
       Matrix3d convertedTransform = new Matrix3d(transform);

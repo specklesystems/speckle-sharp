@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Objects.Other;
 using Objects.Primitive;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -10,7 +11,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
-  public class Line : Base, ICurve, IHasBoundingBox
+  public class Line : Base, ICurve, IHasBoundingBox, ITransformable
   {
     /// <summary>
     /// OBSOLETE - This is just here for backwards compatibility.
@@ -98,6 +99,18 @@ namespace Objects.Geometry
       var line = new Line(startPt, endPt, units);
       line.domain = new Interval(list[8], list[9]);
       return line;
+    }
+
+    public bool TransformTo(Transform transform, out ITransformable line)
+    {
+      line = new Line
+      {
+        start = transform.ApplyToPoint(start),
+        end = transform.ApplyToPoint(end),
+        applicationId = applicationId,
+        units = units
+      };
+      return true;
     }
   }
 }
