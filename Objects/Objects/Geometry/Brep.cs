@@ -309,18 +309,18 @@ namespace Objects.Geometry
     }
 
     /// <summary>
-    /// Returns a new transformed Brep. Note that `displayMesh` is *NOT* transformed. If you fall back on
-    /// the `displayMesh`, make sure to call `TransformTo` on the mesh object.
+    /// Returns a new transformed Brep. Note that `displayMesh` is *NOT* transformed.
     /// </summary>
     /// <param name="transform"></param>
     /// <returns></returns>
     public bool TransformTo(Transform transform, out Brep brep)
     {
+      displayMesh.TransformTo(transform, out var mesh);
       brep = new Brep
       {
         provenance = provenance,
         units = units,
-        displayMesh = displayMesh,
+        displayMesh = mesh,
         Surfaces = Surfaces,
         Curve3D = transform.ApplyToCurves(Curve3D, out bool success),
         Curve2D = Curve2D,

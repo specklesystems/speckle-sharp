@@ -33,21 +33,15 @@ namespace Objects.Converter.Revit
         switch ( geometry )
         {
           case Brep brep:
-            try
-            {
-              if ( !brep.TransformTo(transform, out var tbrep) )
-                throw new SpeckleException(
-                  $"Brep transform for brep {brep.id} from block instance {instance.id} was not successful");
+            var success = brep.TransformTo(transform, out var tbrep);
+            if ( success )
               breps.Add(tbrep);
-            }
-            catch ( Exception e )
+            else
             {
               Report.LogConversionError(new SpeckleException(
-                $"Could not convert block {instance.id} brep to native, falling back to mesh representation.", e));
-              brep.displayMesh.TransformTo(transform, out var bmesh);
-              meshes.Add(bmesh);
+                $"Could not convert block {instance.id} brep to native, falling back to mesh representation."));
+              meshes.Add(tbrep.displayMesh);
             }
-
             break;
           case Mesh mesh:
             mesh.TransformTo(transform, out var tmesh);
