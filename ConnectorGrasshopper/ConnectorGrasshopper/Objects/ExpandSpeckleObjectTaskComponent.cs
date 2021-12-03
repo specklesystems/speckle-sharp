@@ -202,12 +202,7 @@ namespace ConnectorGrasshopper.Objects
       }
       base.BeforeSolveInstance();
     }
-
-    protected override void AfterSolveInstance()
-    {
-      base.AfterSolveInstance();
-    }
-
+    
     private List<string> GetOutputList(GH_Structure<GH_SpeckleBase> speckleObjects)
     {
       // Get the full list of output parameters
@@ -220,8 +215,6 @@ namespace ConnectorGrasshopper.Objects
         {
           if (!fullProps.Contains(prop))
             fullProps.Add(prop);
-          else if (fullProps.Contains(prop))
-            fullProps.Remove(prop);
         });
       }
 
