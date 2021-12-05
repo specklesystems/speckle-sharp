@@ -118,17 +118,6 @@ namespace Archicad.Launcher
 		public override void WriteStreamsToFile (List<StreamState> streams)
 		{
 		}
-		
-		private static Dictionary<K, V> ToDictionary<K, V> (List<K> keys, List<V> values) where K : notnull
-		{
-			if (keys.Count () != values.Count ()) return null;
-			
-			Dictionary<K, V> result = new Dictionary<K, V> ();
-			for (int i = 0; i < keys.Count (); i++)
-				result.Add (keys[i], values[i]);
-
-			return result;
-		}
 
 		private async Task<Base> CreateCommitObject (IEnumerable<string> elementIds, CancellationToken token)
 		{
@@ -140,7 +129,7 @@ namespace Archicad.Launcher
 
 			//get types -> build dictionary
 			IEnumerable<string> rawTypes = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetElementsType (elementIds), token);
-			Dictionary<string, string> types = ToDictionary(elementIds.ToList (), rawTypes.ToList ());
+			Dictionary<string, string> types = elementIds.Zip (rawTypes, (k, v) => new { Key = k, Value = v }).ToDictionary (x => x.Key, x => x.Value);
 			if (types is null) return null;
 
 			//"sorting" by supporting element (type)
@@ -163,6 +152,20 @@ namespace Archicad.Launcher
 						///if (rawWalls is null) i dont know... error 
 						foreach (var wall in walls) wall.Visualization = new Objects.DirectShape (models[wall.ElementId]);
 						commitObject["Walls"] = walls;
+						break;
+
+					case "Slab":
+						IEnumerable<Model.SlabData> slabData = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetSlabData (elem.Value), token);
+						if (slabData != null) 
+						{
+							var slabs = new List<Objects.BuildingElement<Model.SlabData>> ();
+
+							foreach (var slab in slabData) 
+							{
+								slabs.Add (new Objects.BuildingElement<Model.SlabData> (slab, new Objects.DirectShape (models [slab.ElementId])));
+							}
+							commitObject ["Slabs"] = slabs;
+						}
 						break;
 
 					default:	//unsuported type

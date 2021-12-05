@@ -6,15 +6,9 @@ using System.Collections.Generic;
 namespace Archicad.Model
 {
 	[JsonObject (MemberSerialization.OptIn)]
-	public sealed class SlabData : Base
+	public sealed class SlabData : ACElementBaseData
 	{
 		#region --- Fields ---
-
-		[JsonProperty ("elementId")]
-		public string ElementId { get; private set; }
-
-		[JsonProperty ("floorIndex")]
-		public int? FloorIndex { get; private set; }
 
 		[JsonProperty ("shape")]
 		public ElementShape Shape { get; private set; }
