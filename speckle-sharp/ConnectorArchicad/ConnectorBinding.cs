@@ -87,7 +87,7 @@ namespace Archicad.Launcher
 		public override async Task<StreamState> ReceiveStream (StreamState state, ProgressViewModel progress)
 		{
 			// TODO KSZ
-			var aa = await Helpers.Receive (state.StreamId);
+			_ = await Helpers.Receive (state.StreamId);
 
 			return state;
 		}
@@ -119,32 +119,22 @@ namespace Archicad.Launcher
 		{
 		}
 
-		private async Task<Base> CreateCommitObject (IEnumerable<string> elementIds, CancellationToken token)
+		private static async Task<Base> CreateCommitObject (IEnumerable<string> elementIds, CancellationToken token)
 		{
 			//get models -> build dictionary
 			IEnumerable<Model.ElementModel> rawModels = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetModerlForElements (elementIds), token);
 			if (rawModels is null) return null;
-			Dictionary<string, IEnumerable<Model.MeshData>> models = new Dictionary<string, IEnumerable<Model.MeshData>> ();
-			foreach (Model.ElementModel elem in rawModels) models.Add (elem.ElementId, elem.Model);
+			Dictionary<string, IEnumerable<Model.MeshData>> models = rawModels.ToDictionary(m => m.ElementId, m => m.Model);
 
-			//get types -> build dictionary
-			IEnumerable<string> rawTypes = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetElementsType (elementIds), token);
-			Dictionary<string, string> types = elementIds.Zip (rawTypes, (k, v) => new { Key = k, Value = v }).ToDictionary (x => x.Key, x => x.Value);
-			if (types is null) return null;
+			//get types -> dictionary group by type
+			Dictionary<string, IEnumerable<string>> Types = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetElementsType (elementIds), token);
+			if (Types is null) return null;
 
-			//"sorting" by supporting element (type)
-			Dictionary<string, List<string>> sortedByType = new Dictionary<string, List<string>> ();
-			foreach (var elem in types)
-			{
-				if (sortedByType.ContainsKey (elem.Value) == false)
-					sortedByType[elem.Value] = new List<string> ();
-				sortedByType[elem.Value].Add (elem.Key);
-			}
 
 			//build up commit object depending on elem types
-			Base commitObject = new Base ();
-			List<Objects.DirectShape> meshes = new List<Objects.DirectShape>();
-			foreach (var elem in sortedByType)
+			Base commitObject = new();
+			List<Objects.DirectShape> meshes = new();
+			foreach (var elem in Types)
 				switch (elem.Key)
 				{
 					case "Wall":
@@ -154,28 +144,31 @@ namespace Archicad.Launcher
 						commitObject["Walls"] = walls;
 						break;
 
+					/*
 					case "Slab":
 						IEnumerable<Model.SlabData> slabData = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetSlabData (elem.Value), token);
-						if (slabData != null) 
+						if (slabData != null)
 						{
 							var slabs = new List<Objects.BuildingElement<Model.SlabData>> ();
 
-							foreach (var slab in slabData) 
+							foreach (var slab in slabData)
 							{
-								slabs.Add (new Objects.BuildingElement<Model.SlabData> (slab, new Objects.DirectShape (models [slab.ElementId])));
+								slabs.Add (new Objects.BuildingElement<Model.SlabData> (slab, new Objects.DirectShape (models[slab.ElementId])));
 							}
-							commitObject ["Slabs"] = slabs;
+							commitObject["Slabs"] = slabs;
 						}
-						break;
+						break;*/
 
-					default:	//unsuported type
+					default:    //unsuported type
 						foreach (var guid in elem.Value) meshes.Add (new Objects.DirectShape (models[guid]));
 						break;
 				}
-			if (meshes.Count () > 0)
+			if (meshes.Count > 0)
 				commitObject["BuildingElements"] = meshes;
 
 			return commitObject;
 		}
 	}
+
+
 }

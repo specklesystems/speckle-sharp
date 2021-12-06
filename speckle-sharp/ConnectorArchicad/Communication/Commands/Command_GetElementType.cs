@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetElementsType : ICommand<IEnumerable<string>>
+	internal sealed class GetElementsType : ICommand<Dictionary<string, IEnumerable<string>>>
 	{
 		#region --- Classes ---
 
@@ -37,9 +39,21 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty ("elementTypes")]
-			public IEnumerable<string> ElementTypes { get; private set; }
+			public IEnumerable<TypeDescription> ElementTypes { get; private set; }
 
 			#endregion
+		}
+
+
+		[JsonObject(MemberSerialization.OptIn)]
+		private sealed class TypeDescription
+		{
+			[JsonProperty("elementId")]
+			public string ElementId { get; private set; }
+
+			[JsonProperty("elementType")]
+			public string ElementType { get; private set; }
+
 		}
 
 		#endregion
@@ -64,10 +78,11 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<string>> Execute ()
+		public async Task<Dictionary<string, IEnumerable<string>>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetElementTypes", new Parameters (ElementIds));
-			return result.ElementTypes;
+			return result.ElementTypes	.GroupBy(row => row.ElementType)
+										.ToDictionary(group => group.Key, group => group.Select(x => x.ElementId));
 		}
 
 		#endregion
