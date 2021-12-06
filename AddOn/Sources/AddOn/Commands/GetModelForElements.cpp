@@ -15,6 +15,10 @@ static const char*		VertexYFieldName				= "y";
 static const char*		VertexZFieldName				= "z";
 static const char*		PolygonsFieldName				= "polygons";
 static const char*		PointIdsFieldName				= "pointIds";
+static const char*		TransparencyieldName			= "transparency";
+static const char*		AmbientColorFieldName			= "ambientColor";
+static const char*		EmissionColorFieldName			= "emissionColor";
+static const char*		MaterialFieldName				= "material";
 static const char*		ModelFieldName					= "model";
 static const char*		ModelsFieldName					= "models";
 static const char*		ElementIdFieldName				= "elementId";
@@ -33,10 +37,23 @@ public:
 		polygons.PushNew (pointIds);
 	}
 
+	void SetMaterial (const UMAT& aumat)
+	{
+		if (material.HasValue ()) {
+			return;	// No composite structures. Only homogen materials are implemented
+		}
+
+		material.New (aumat);
+	}
+
 	GSErrCode Store (GS::ObjectState& os) const
 	{
 		os.Add (VerteciesFieldName, vertices);
 		os.Add (PolygonsFieldName, polygons);
+
+		if (material.HasValue ()) {
+			os.Add (MaterialFieldName, material.Get ());
+		}
 
 		return NoError;
 	}
@@ -80,8 +97,34 @@ private:
 		GS::Array<Int32> pointIds;
 	};
 
+	class Material {
+	public:
+		Material (const UMAT& aumat)
+		{
+			transparency = aumat.GetTransparency ();
+			ambientColor = aumat.GetSurfaceColor ();
+			emissionColor = aumat.GetEmissionColor ();
+		}
+
+		GSErrCode Store (GS::ObjectState& os) const
+		{
+			os.Add (AmbientColorFieldName, ambientColor);
+			os.Add (EmissionColorFieldName, emissionColor);
+			os.Add (TransparencyieldName, transparency);
+
+			return NoError;
+		}
+
+	private:
+		short			transparency;			// [0..100]
+		GS_RGBColor		ambientColor;
+		GS_RGBColor		emissionColor;
+
+	};
+
 	GS::Array<Vertex> vertices;
 	GS::Array<Polygon> polygons;
+	GS::Optional<Material> material;
 };
 
 
@@ -96,7 +139,7 @@ static GS::Array<Int32> GetModel3DInfoPolygon (const Modeler::MeshBody& body, In
 }
 
 
-static Model3DInfo GetModel3DInfoBody (const Modeler::MeshBody& body, const TRANMAT& transformation)
+static Model3DInfo GetModel3DInfoBody (const Modeler::MeshBody& body, const TRANMAT& transformation, const Modeler::Attributes::Viewer& attributes)
 {
 	Model3DInfo modelInfo;
 
@@ -122,19 +165,27 @@ static Model3DInfo GetModel3DInfoBody (const Modeler::MeshBody& body, const TRAN
 
 			modelInfo.AddPolygon (polygonPointIds);
 		}
+
+		const GSAttributeIndex matIdx = body.GetConstPolygonAttributes (polygonIdx).GetMaterialIndex ();
+		const UMAT* aumat = attributes.GetConstMaterialPtr (matIdx);
+		if (aumat == nullptr) {
+			continue;
+		}
+
+		modelInfo.SetMaterial (*aumat);
 	}
 
 	return modelInfo;
 }
 
 
-static GS::Array<Model3DInfo> GetModel3DInfoForElement (const Modeler::Elem& elem)
+static GS::Array<Model3DInfo> GetModel3DInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes)
 {
 	const auto& trafo = elem.GetConstTrafo ();
 
 	GS::Array<Model3DInfo> bodies;
 	for (const auto& body : elem.TessellatedBodies ()) {
-		bodies.Push (GetModel3DInfoBody (body, trafo));
+		bodies.Push (GetModel3DInfoBody (body, trafo, attributes));
 	}
 
 	return bodies;
@@ -225,6 +276,8 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& elementId)
 
 static GS::Array<Model3DInfo> CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
 {
+	const Modeler::Attributes::Viewer& attributes (modelViewer.GetConstAttributesPtr ());
+
 	GS::Array<Model3DInfo> modelInfos;
 	GS::Array<API_Guid> elementIds = CheckForSubelements (elementId);
 	for (const auto& id : elementIds) {
@@ -233,7 +286,7 @@ static GS::Array<Model3DInfo> CalculateModelOfElement (const Modeler::Model3DVie
 			continue;
 		}
 
-		modelInfos.Append (GetModel3DInfoForElement (*modelElement));
+		modelInfos.Append (GetModel3DInfoForElement (*modelElement, attributes));
 	}
 
 	return modelInfos;
@@ -290,10 +343,8 @@ GS::String GetModelForElements::GetName () const
 GS::Optional<GS::UniString> GetModelForElements::GetSchemaDefinitions () const
 {
 	Json::SchemaDefinitionBuilder builder;
+	builder.Add (Json::SchemaDefinitionProvider::ElementIdSchema ());
 	builder.Add (Json::SchemaDefinitionProvider::ElementIdsSchema ());
-	builder.Add (Json::SchemaDefinitionProvider::Point3DSchema ());
-	builder.Add (Json::SchemaDefinitionProvider::PolygonSchema ());
-	builder.Add (Json::SchemaDefinitionProvider::ElementModelSchema ());
 
 	return builder.Build ();
 }
@@ -316,19 +367,7 @@ GS::Optional<GS::UniString>	GetModelForElements::GetInputParametersSchema () con
 
 GS::Optional<GS::UniString> GetModelForElements::GetResponseSchema () const
 {
-	return R"(
-		{
-			"type": "object",
-			"properties" : {
-				"models": {
-					"type": "array",
-					"items": { "$ref": "#/definitions/ElementModel" }
-				}
-			},
-			"additionalProperties" : false,
-			"required" : [ "models" ]
-		}
-	)";
+	return GS::NoValue;
 }
 
 
