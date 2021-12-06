@@ -7,7 +7,9 @@
 
 namespace AddOnCommands {
 
+static const char* ElementIdFieldName = "elementId";
 static const char* ElementIdsFieldName = "elementIds";
+static const char* ElementTypeFieldName = "elementType";
 static const char* ElementTypesFieldName = "elementTypes";
 
 GS::String GetElementTypes::GetNamespace () const
@@ -54,8 +56,15 @@ GS::Optional<GS::UniString> GetElementTypes::GetResponseSchema () const
 			"properties" : {
 				"elementTypes": {
 					"type": "array",
-					"description": "Container for element types.",
-	  				"items": { "$ref": "#/definitions/ElementType" }
+	  				"items": {
+						"type": "object",
+						"properties": {
+							"elementId": { "$ref": "#/definitions/ElementId" },
+							"elementType": { "$ref": "#/definitions/ElementType" }
+						},
+						"additionalProperties" : false,
+						"required" : [ "elementId", "elementType" ]
+					}
 				}
 			},
 			"additionalProperties" : false,
@@ -76,14 +85,15 @@ GS::ObjectState GetElementTypes::Execute (const GS::ObjectState& parameters, GS:
 	GS::Array<GS::UniString> ids;
 	parameters.Get (ElementIdsFieldName, ids);
 	
-	GS::Array<API_Guid>	elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
-
 	GS::ObjectState result;
 
-	const auto& listAdder = result.AddList<GS::UniString> (ElementTypesFieldName);
-	for (const API_Guid& guid : elementGuids) {
-		API_ElemTypeID elementTypeId = Utility::GetElementType(guid);
-		listAdder(Utility::elementNames.Get(elementTypeId));
+	const auto& listAdder = result.AddList<GS::ObjectState> (ElementTypesFieldName);
+	for (const GS::UniString& id : ids) {
+		API_Guid guid = APIGuidFromString (id.ToCStr ());
+		API_ElemTypeID elementTypeId = Utility::GetElementType (guid);
+		GS::UniString elemType = Utility::elementNames.Get (elementTypeId);
+		GS::ObjectState listElem { ElementIdFieldName, id, ElementTypeFieldName, elemType };
+		listAdder (listElem);
 	}
 
 	return result;
