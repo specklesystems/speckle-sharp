@@ -31,7 +31,7 @@ GS::Optional<GS::UniString> GetProjectInfo::GetSchemaDefinitions () const
 
 GS::Optional<GS::UniString>	GetProjectInfo::GetInputParametersSchema () const
 {
-	return GS::NoValue;
+	return R"({"type": "object","additionalProperties" : false})";
 }
 
 

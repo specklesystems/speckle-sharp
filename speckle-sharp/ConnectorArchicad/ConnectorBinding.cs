@@ -97,8 +97,8 @@ namespace Archicad.Launcher
 			// TODO KSZ
 		}
 
-        public override async Task SendStream (StreamState state, ProgressViewModel progress)
-        {
+		public override async Task SendStream (StreamState state, ProgressViewModel progress)
+		{
 			if (state.Filter is null)
 			{
 				return;
@@ -112,23 +112,68 @@ namespace Archicad.Launcher
 				return;
 			}
 
-			await Helpers.Send (state.StreamId, commitObject);
+			await Helpers.Send (state.StreamId, commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
 		}
 
-        public override void WriteStreamsToFile (List<StreamState> streams)
+		public override void WriteStreamsToFile (List<StreamState> streams)
 		{
 		}
 
 		private async Task<Base> CreateCommitObject (IEnumerable<string> elementIds, CancellationToken token)
 		{
-			IEnumerable<Model.ElementModel> models = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetModerlForElements (elementIds), token);
-			if (models is null)
+			//get models -> build dictionary
+			IEnumerable<Model.ElementModel> rawModels = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetModerlForElements (elementIds), token);
+			if (rawModels is null) return null;
+			Dictionary<string, IEnumerable<Model.MeshData>> models = new Dictionary<string, IEnumerable<Model.MeshData>> ();
+			foreach (Model.ElementModel elem in rawModels) models.Add (elem.ElementId, elem.Model);
+
+			//get types -> build dictionary
+			IEnumerable<string> rawTypes = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetElementsType (elementIds), token);
+			Dictionary<string, string> types = elementIds.Zip (rawTypes, (k, v) => new { Key = k, Value = v }).ToDictionary (x => x.Key, x => x.Value);
+			if (types is null) return null;
+
+			//"sorting" by supporting element (type)
+			Dictionary<string, List<string>> sortedByType = new Dictionary<string, List<string>> ();
+			foreach (var elem in types)
 			{
-				return null;
+				if (sortedByType.ContainsKey (elem.Value) == false)
+					sortedByType[elem.Value] = new List<string> ();
+				sortedByType[elem.Value].Add (elem.Key);
 			}
 
+			//build up commit object depending on elem types
 			Base commitObject = new Base ();
-			commitObject["BuildingElements"] = models.Select (m => new Objects.DirectShape (m));
+			List<Objects.DirectShape> meshes = new List<Objects.DirectShape>();
+			foreach (var elem in sortedByType)
+				switch (elem.Key)
+				{
+					case "Wall":
+						IEnumerable<Model.Wall> walls = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetWallData (elem.Value), token);
+						///if (rawWalls is null) i dont know... error 
+						foreach (var wall in walls) wall.Visualization = new Objects.DirectShape (models[wall.ElementId]);
+						commitObject["Walls"] = walls;
+						break;
+
+					case "Slab":
+						IEnumerable<Model.SlabData> slabData = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetSlabData (elem.Value), token);
+						if (slabData != null) 
+						{
+							var slabs = new List<Objects.BuildingElement<Model.SlabData>> ();
+
+							foreach (var slab in slabData) 
+							{
+								slabs.Add (new Objects.BuildingElement<Model.SlabData> (slab, new Objects.DirectShape (models [slab.ElementId])));
+							}
+							commitObject ["Slabs"] = slabs;
+						}
+						break;
+
+					default:	//unsuported type
+						foreach (var guid in elem.Value) meshes.Add (new Objects.DirectShape (models[guid]));
+						break;
+				}
+			if (meshes.Count () > 0)
+				commitObject["BuildingElements"] = meshes;
 
 			return commitObject;
 		}
