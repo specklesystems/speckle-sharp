@@ -27,7 +27,7 @@ namespace Archicad.Model
 		public sealed class Polygon : Base
 		{
 			[JsonProperty ("pointIds")]
-			public IEnumerable<int> PointIds { get; private set; }
+			public IEnumerable<int> VertexIds { get; private set; }
 		}
 
 		[JsonObject (MemberSerialization.OptIn)]

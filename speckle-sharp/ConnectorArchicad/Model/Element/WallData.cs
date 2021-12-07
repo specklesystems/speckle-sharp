@@ -1,21 +1,14 @@
 ﻿using Newtonsoft.Json;
-using Speckle.Core.Models;
 
 
 namespace Archicad.Model
 {
 	[JsonObject(MemberSerialization.OptIn)]
-	public sealed class Wall : Base
+	public sealed class WallData : ElementBaseData
 	{
-		[JsonProperty("elementId")]
-		public string ElementId { get; private set; }
+		#region --- Fields ---
 
-		public Objects.DirectShape Visualization { get; set; }
-
-		[JsonProperty("floorIndex")]
-		public int FloorIndex { get; private set; }
-
-		[JsonProperty("startPoint")]
+		[JsonProperty ("startPoint")]
 		public Point3D StartPoint { get; private set; }
 
 		[JsonProperty("endPoint")]
@@ -42,5 +35,6 @@ namespace Archicad.Model
 		[JsonProperty("outsideSlantAngle")]
 		public double OutsideSlantAngle { get; private set; }
 
+		#endregion
 	}
 }

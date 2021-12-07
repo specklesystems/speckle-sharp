@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class GetWallData : ICommand<IEnumerable<Model.Wall>>
+	sealed internal class GetWallData : ICommand<IEnumerable<Model.WallData>>
 	{
 		#region --- Classes ---
 
@@ -37,7 +37,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty("walls")]
-			public IEnumerable<Model.Wall> Walls { get; private set; }
+			public IEnumerable<Model.WallData> Datas { get; private set; }
 
 			#endregion
 		}
@@ -64,10 +64,10 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Model.Wall>> Execute()
+		public async Task<IEnumerable<Model.WallData>> Execute()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetWallData", new Parameters (ElementIds));
-			return result.Walls;
+			return result.Datas;
 		}
 
 		#endregion

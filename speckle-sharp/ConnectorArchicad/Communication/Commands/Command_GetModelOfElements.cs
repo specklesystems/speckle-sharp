@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class GetModerlForElements : ICommand<IEnumerable<Model.ElementModel>>
+	sealed internal class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
 	{
 		#region --- Classes ---
 
@@ -37,7 +37,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty ("models")]
-			public IEnumerable<Model.ElementModel> Models { get; private set; }
+			public IEnumerable<Model.ElementModelData> Models { get; private set; }
 
 			#endregion
 		}
@@ -54,7 +54,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Ctor \ Dtor ---
 
-		public GetModerlForElements (IEnumerable<string> elementIds)
+		public GetModelForElements (IEnumerable<string> elementIds)
 		{
 			ElementIds = elementIds;
 		}
@@ -64,7 +64,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Model.ElementModel>> Execute ()
+		public async Task<IEnumerable<Model.ElementModelData>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetModelForElements", new Parameters (ElementIds));
 			return result.Models;

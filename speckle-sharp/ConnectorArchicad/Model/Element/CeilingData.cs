@@ -1,12 +1,10 @@
 using Newtonsoft.Json;
-using Speckle.Core.Models;
-using System.Collections.Generic;
 
 
 namespace Archicad.Model
 {
 	[JsonObject (MemberSerialization.OptIn)]
-	public sealed class SlabData : ACElementBaseData
+	public sealed class CeilingData : ElementBaseData
 	{
 		#region --- Fields ---
 

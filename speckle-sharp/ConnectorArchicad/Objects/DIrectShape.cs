@@ -1,3 +1,6 @@
+using Objects;
+using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,11 +8,15 @@ using System.Linq;
 
 namespace Archicad.Objects
 {
-	public class DirectShape : Base
+	public class DirectShape : Base, IDisplayMesh
 	{
 		#region --- Fields ---
 
-		public IEnumerable<GenericMesh> Meshes { get; private set; }
+		public Mesh displayMesh { get; set; }
+
+		public RenderMaterial renderMaterial { get; set; }
+
+		public string ElementId { get; set; }
 
 		#endregion
 
@@ -20,14 +27,11 @@ namespace Archicad.Objects
 		{
 		}
 
-		public DirectShape (Model.ElementModel elementModel)
+		public DirectShape (Model.ElementModelData elementModel)
 		{
-			Meshes = elementModel.Model.Select (mesh => new GenericMesh (mesh));
-		}
-
-		public DirectShape(IEnumerable<Model.MeshData> meshes)
-		{
-			Meshes = meshes.Select(mesh => new GenericMesh(mesh));
+			ElementId = elementModel.ElementId;
+			displayMesh = Operations.ModelConverter.Convert (elementModel.Model);
+			renderMaterial = Operations.MaterialConverter.Convert (elementModel.Material);
 		}
 
 		#endregion

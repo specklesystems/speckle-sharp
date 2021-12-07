@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetSlabData : ICommand<IEnumerable<Archicad.Model.SlabData>>
+	internal sealed class GetCeilingData : ICommand<IEnumerable<Model.CeilingData>>
 	{
 		#region --- Classes ---
 
@@ -37,7 +37,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty ("slabs")]
-			public IEnumerable<Archicad.Model.SlabData> Slabs { get; private set; }
+			public IEnumerable<Model.CeilingData> Datas { get; private set; }
 
 			#endregion
 		}
@@ -54,7 +54,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Ctor \ Dtor ---
 
-		public GetSlabData (IEnumerable<string> elementIds)
+		public GetCeilingData (IEnumerable<string> elementIds)
 		{
 			ElementIds = elementIds;
 		}
@@ -64,10 +64,10 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Archicad.Model.SlabData>> Execute ()
+		public async Task<IEnumerable<Model.CeilingData>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetSlabData", new Parameters (ElementIds));
-			return result.Slabs;
+			return result.Datas;
 		}
 
 		#endregion

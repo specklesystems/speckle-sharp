@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using Speckle.Core.Models;
-using System.Collections.Generic;
 
 
 namespace Archicad.Model
