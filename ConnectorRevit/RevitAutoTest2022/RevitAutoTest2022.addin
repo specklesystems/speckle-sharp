@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>RevitAutoTest2022</Name>
+    <Assembly>RevitAutoTest2022.dll</Assembly>
+    <FullClassName>RevitAutoTest2022.App</FullClassName>
+    <ClientId>ccd5da29-b486-4167-a422-f24d1e096268</ClientId>
+    <VendorId>com.speckle.systems</VendorId>
+    <VendorDescription>Speckle Systems</VendorDescription>
+  </AddIn>
+</RevitAddIns>
