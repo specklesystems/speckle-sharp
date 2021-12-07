@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>RevitAutoTest</Name>
+    <FullClassName>RevitAutoTest.Class1</FullClassName>
+    <Text> Hello World Text </Text>
+    <Description> Hello World Description</Description>
+    <Assembly>
+      Y:\Documents\Speckle\speckle-sharp\ConnectorRevit\RevitAutoTest\bin\Debug\RevitAutoTest.dll
+    </Assembly>
+    <ClientId>502fe383-2648-4e98-adf8-5e6047f9dc34</ClientId>
+    <VendorId>Speckle</VendorId>
+    <VendorDescription>Speckle</VendorDescription>
+  </AddIn>
+</RevitAddIns>
