@@ -854,7 +854,7 @@ namespace Objects.Converter.RhinoGh
       switch (SelectedMeshSettings)
       {
         case MeshSettings.Default:
-          mySettings = MeshingParameters.Default;
+          mySettings = new MeshingParameters(0.05, 0.05);
           break;
         case MeshSettings.CurrentDoc:
           mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
