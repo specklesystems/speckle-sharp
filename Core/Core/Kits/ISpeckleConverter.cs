@@ -72,7 +72,7 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <param name="doc">The current application document</param>
     public void SetContextDocument(object doc);
-
+    
     /// <summary>
     /// Some converters need to know which other objects are being converted, in order to sort relationships between them (ie, Revit). Use this method to set them.
     /// </summary>
@@ -84,6 +84,8 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <param name="objects"></param>
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects);
+    
+    public void SetConverterSettings(object settings);
 
   }
 }
