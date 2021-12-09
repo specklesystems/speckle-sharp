@@ -153,10 +153,5 @@ namespace ConnectorGrasshopper.Streams
       // TODO: Add validation!
       return true;
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
   }
 }

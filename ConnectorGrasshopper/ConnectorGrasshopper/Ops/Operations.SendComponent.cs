@@ -302,11 +302,6 @@ namespace ConnectorGrasshopper.Ops
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
 
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-    
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
       switch (context)

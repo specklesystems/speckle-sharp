@@ -459,11 +459,6 @@ namespace ConnectorGrasshopper.Ops
 
       HandleNewCommit();
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
   }
 
   public class ReceiveComponentWorker : WorkerInstance

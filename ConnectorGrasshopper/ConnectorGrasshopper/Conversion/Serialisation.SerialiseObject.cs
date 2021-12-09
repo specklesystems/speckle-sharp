@@ -34,11 +34,6 @@ namespace ConnectorGrasshopper.Conversion
     {
       pManager.AddTextParameter("Json", "J", "Serialized objects in JSON format.", GH_ParamAccess.tree);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
   }
 
   public class SerializeWorker : WorkerInstance

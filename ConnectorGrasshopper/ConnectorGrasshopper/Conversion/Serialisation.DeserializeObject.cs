@@ -33,11 +33,6 @@ namespace ConnectorGrasshopper.Conversion
     {
       pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Deserialized Speckle Base objects.", GH_ParamAccess.tree));
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
   }
 
   public class DeserializeWorker : WorkerInstance
