@@ -172,14 +172,21 @@ namespace DesktopUI2.ViewModels
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
-
     }
 
     public void CopyStreamURLCommand()
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
       Tracker.TrackPageview("stream", "copy-link");
+    }
 
+    // Allow users to set generated settings retrieved from application document
+    public void OpenSettingsCommand()
+    {
+      var settings = new Settings();
+      settings.Title = $"Settings for {Stream.name}";
+      settings.DataContext = Progress;
+      settings.ShowDialog(MainWindow.Instance);
     }
 
     public async void SendCommand()
@@ -193,8 +200,6 @@ namespace DesktopUI2.ViewModels
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
-
-
     }
 
     public async void ReceiveCommand()
@@ -215,11 +220,7 @@ namespace DesktopUI2.ViewModels
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
       report.ShowDialog(MainWindow.Instance);
-
-
     }
-
-
 
   }
 }

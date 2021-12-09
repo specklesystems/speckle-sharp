@@ -6,16 +6,14 @@ using System.Diagnostics;
 
 namespace DesktopUI2.Views.Windows
 {
-  public partial class Report : Window
+  // This is for storing custom application settings for sending and receiving
+  public partial class Settings : Window
   {
-    public Report()
+    public Settings()
     {
-      AvaloniaXamlLoader.Load(this);
-#if DEBUG
-      this.AttachDevTools();
-#endif
-    }
 
+      //AvaloniaXamlLoader.Load(this);
+    }
     private void Close_Click(object sender, RoutedEventArgs e)
     {
       this.Close();
