@@ -38,9 +38,9 @@ namespace DesktopUI2.Models.Settings
     string Description { get; set; }
 
     /// <summary>
-    /// Holds the values that the user selected from the setting.
+    /// Holds the value that the user selected from the setting.
     /// </summary>    
-    List<string> Selection { get; set; }
+    string Selection { get; set; }
 
     /// <summary>
     /// View associated to this setting type

@@ -1,5 +1,5 @@
 ﻿using Avalonia.Controls;
-using DesktopUI2.Views.Filters;
+using DesktopUI2.Views.Settings;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +18,7 @@ namespace DesktopUI2.Models.Settings
     public List<string> Values { get; set; }
     public string Selection { get; set; } = "Default";
 
-    public UserControl View { get; set; } = new ListFilterView();
+    public UserControl View { get; set; } = new DropdownSettingView();
 
     public string Summary
     {
@@ -27,7 +27,5 @@ namespace DesktopUI2.Models.Settings
         return Selection;
       }
     }
-
-
   }
 }

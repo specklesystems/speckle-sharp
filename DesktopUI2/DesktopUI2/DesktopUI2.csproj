@@ -41,6 +41,7 @@
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
+    <None Remove="Views\Settings\DropdownSettingView.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
     <AvaloniaResource Include="Styles\Playground.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -116,6 +117,9 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\DropdownSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -173,6 +177,9 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Settings\DropdownSettingView.xaml.cs">
+      <DependentUpon>DropdownSettingView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Report.xaml.cs">
       <DependentUpon>Report.xaml</DependentUpon>

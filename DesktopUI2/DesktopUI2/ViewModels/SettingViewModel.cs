@@ -52,9 +52,7 @@ namespace DesktopUI2.ViewModels
 
     void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
-      foreach (var a in e.SelectedItems)
-        if (!Setting.Selection.Contains(a))
-          Setting.Selection.Add(a as string);
+      Setting.Selection = e.SelectedItems.First().ToString();
 
       this.RaisePropertyChanged("Summary");
     }
