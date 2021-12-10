@@ -114,7 +114,7 @@ namespace DesktopUI2.ViewModels
         new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
-        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox),
+        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox)
       };
       var customMenues = Bindings.GetCustomStreamMenuItems();
       if (customMenues != null)
@@ -178,15 +178,6 @@ namespace DesktopUI2.ViewModels
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
       Tracker.TrackPageview("stream", "copy-link");
-    }
-
-    // Allow users to set generated settings retrieved from application document
-    public void OpenSettingsCommand()
-    {
-      var settings = new Settings();
-      settings.Title = $"Settings for {Stream.name}";
-      settings.DataContext = Progress;
-      settings.ShowDialog(MainWindow.Instance);
     }
 
     public async void SendCommand()

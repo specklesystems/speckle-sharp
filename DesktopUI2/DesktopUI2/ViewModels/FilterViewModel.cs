@@ -23,7 +23,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _filter, value);
         RestoreSelectedItems();
         this.RaisePropertyChanged("Summary");
-        
       } 
     }
 
@@ -32,9 +31,6 @@ namespace DesktopUI2.ViewModels
     public SelectionModel<string> SelectionModel { get; }
 
     public string Summary { get { return Filter.Summary; } }
-
-
-
 
     public FilterViewModel(ISelectionFilter filter)
     {

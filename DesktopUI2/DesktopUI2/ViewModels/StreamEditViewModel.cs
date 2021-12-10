@@ -5,6 +5,7 @@ using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Windows;
 using Material.Dialog;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -97,7 +98,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
     private FilterViewModel _selectedFilter;
     public FilterViewModel SelectedFilter
     {
@@ -114,12 +114,18 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
     private List<FilterViewModel> _filters;
     public List<FilterViewModel> Filters
     {
       get => _filters;
       private set => this.RaiseAndSetIfChanged(ref _filters, value);
+    }
+
+    private List<SettingViewModel> _settings;
+    public List<SettingViewModel> Settings
+    {
+      get => _settings;
+      private set => this.RaiseAndSetIfChanged(ref _settings, value);
     }
 
     public bool HasCommits => Commits != null && Commits.Any();
@@ -140,18 +146,12 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
-
-
     private Avalonia.Media.Imaging.Bitmap _previewImage = null;
     public Avalonia.Media.Imaging.Bitmap PreviewImage
     {
       get => _previewImage;
       set => this.RaiseAndSetIfChanged(ref _previewImage, value);
     }
-
-
-
 
     public StreamEditViewModel()
     {
@@ -164,18 +164,19 @@ namespace DesktopUI2.ViewModels
       Client = streamState.Client;
       _streamState = streamState; //cached, should not be accessed
 
-
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       //get available filters from our bindings
       Filters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = Filters[0];
-      IsReceiver = streamState.IsReceiver;
 
+      // get available settings from our bindings
+      Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
+
+      IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
     }
-
 
     private async void GetBranchesAndRestoreState(Client client, StreamState streamState)
     {
@@ -209,8 +210,6 @@ namespace DesktopUI2.ViewModels
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
       return _streamState;
-
-
     }
 
     private async void GetCommits()
@@ -232,8 +231,6 @@ namespace DesktopUI2.ViewModels
       //{
       //  Commits = new List<Commit>() { new Commit { id = "latest", message = "This branch has no commits." } };
       //}
-
-
     }
 
     public void DownloadImage(string url)
@@ -263,7 +260,6 @@ namespace DesktopUI2.ViewModels
         System.Diagnostics.Debug.WriteLine(ex);
         PreviewImageUrl = null; // Could not download...
       }
-
     }
 
     #region commands
@@ -302,7 +298,6 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = true;
       var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
-
       _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
       {
         if (x.Result.GetResult == "cancel")
@@ -314,6 +309,14 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = false;
       //TODO: display other dialog if operation failed etc
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+    }
+
+    private void OpenSettingsCommand()
+    {
+      // Allow users to set generated settings retrieved from application document
+      var settings = new Settings();
+      settings.Title = $"Settings for {Stream.name}";
+      settings.ShowDialog(MainWindow.Instance);
     }
 
     private void SaveSendCommand()

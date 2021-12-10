@@ -6,9 +6,9 @@ using System.Text;
 
 namespace DesktopUI2.Models.Settings
 {
-  public class DropdownSetting : ISetting
+  public class ListBoxSetting : ISetting
   {
-    public string Type => typeof(DropdownSetting).ToString();
+    public string Type => typeof(ListBoxSetting).ToString();
 
     public string Name { get; set; }
     public string Slug { get; set; }
@@ -18,7 +18,7 @@ namespace DesktopUI2.Models.Settings
     public List<string> Values { get; set; }
     public string Selection { get; set; } = "Default";
 
-    public UserControl View { get; set; } = new DropdownSettingView();
+    public UserControl View { get; set; } = new ListBoxSettingView();
 
     public string Summary
     {

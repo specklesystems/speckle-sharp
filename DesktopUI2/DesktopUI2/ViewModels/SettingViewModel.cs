@@ -31,7 +31,6 @@ namespace DesktopUI2.ViewModels
 
     public string Summary { get { return Setting.Summary; } }
 
-
     public SettingViewModel(ISetting setting)
     {
       SelectionModel = new SelectionModel<string>();
@@ -45,10 +44,9 @@ namespace DesktopUI2.ViewModels
       SettingView = setting.View;
 
       SettingView.DataContext = this;
-
     }
 
-    #region DROPDOWN SETTING
+    #region LISTBOX SETTING
 
     void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
@@ -62,7 +60,7 @@ namespace DesktopUI2.ViewModels
 
     public bool IsReady()
     {
-      if (Setting is DropdownSetting && !Setting.Selection.Any())
+      if (Setting is ListBoxSetting && !Setting.Selection.Any())
         return false;
 
       return true;

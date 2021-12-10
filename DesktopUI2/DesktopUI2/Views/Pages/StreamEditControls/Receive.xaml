@@ -121,7 +121,6 @@
       Orientation="Horizontal"
       Spacing="10">
       <m:FloatingButton
-      Grid.Column="1"
       VerticalAlignment="Center"
       Background="Transparent"
       Classes="Mini"

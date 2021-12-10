@@ -11,8 +11,7 @@ namespace DesktopUI2.Views.Windows
   {
     public Settings()
     {
-
-      //AvaloniaXamlLoader.Load(this);
+      AvaloniaXamlLoader.Load(this);
     }
     private void Close_Click(object sender, RoutedEventArgs e)
     {
