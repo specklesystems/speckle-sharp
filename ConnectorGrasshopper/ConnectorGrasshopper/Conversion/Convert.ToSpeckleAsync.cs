@@ -43,11 +43,6 @@ namespace ConnectorGrasshopper.Conversion
       //pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item));
     }
 
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);

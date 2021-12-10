@@ -45,7 +45,15 @@ namespace Objects.Converter.RhinoGh
     public static string RhinoAppName = Applications.Rhino7;
     public static string GrasshopperAppName = Applications.Grasshopper;
 #endif
+    
+    public enum MeshSettings
+    {
+      Default,
+      CurrentDoc
+    }
 
+    public MeshSettings SelectedMeshSettings = MeshSettings.Default;
+    
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
@@ -77,6 +85,11 @@ namespace Objects.Converter.RhinoGh
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetConverterSettings(object settings)
+    {
+      var s = (MeshSettings)settings;
+      SelectedMeshSettings = s;
+    }
 
     public void SetContextDocument(object doc)
     {

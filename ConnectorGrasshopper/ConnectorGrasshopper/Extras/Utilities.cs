@@ -24,6 +24,7 @@ namespace ConnectorGrasshopper.Extras
       {
         var defKit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit != null && kit.Name == n);
         var converter = defKit.LoadConverter(Applications.Rhino6);
+        converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         return converter;
       }

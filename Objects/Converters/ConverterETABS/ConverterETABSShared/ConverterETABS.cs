@@ -278,5 +278,10 @@ namespace Objects.Converter.ETABS
     {
       throw new NotImplementedException();
     }
+
+    public void SetConverterSettings(object settings)
+    {
+      throw new NotImplementedException("This converter does not have any settings.");
+    }
   }
 }

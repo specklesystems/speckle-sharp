@@ -43,11 +43,6 @@ namespace ConnectorGrasshopper.Conversion
       pManager.AddGenericParameter("Data", "D", "Converted data in GH native format.", GH_ParamAccess.tree);
     }
 
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);

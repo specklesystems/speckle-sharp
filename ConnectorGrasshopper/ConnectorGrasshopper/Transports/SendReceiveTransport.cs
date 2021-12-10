@@ -65,12 +65,6 @@ namespace ConnectorGrasshopper.Transports
       var res = Task.Run(async () => await Speckle.Core.Api.Operations.Send(obj.Value, transports, false, disposeTransports: true)).Result;
       DA.SetData(0, res);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 
   public class ReceiveFromTransport : GH_Component
@@ -131,11 +125,5 @@ namespace ConnectorGrasshopper.Transports
 
       DA.SetDataList(0, results);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 }
