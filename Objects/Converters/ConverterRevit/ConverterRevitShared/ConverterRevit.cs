@@ -80,6 +80,10 @@ namespace Objects.Converter.Revit
 
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
+    public void SetConverterSettings(object settings)
+    {
+      throw new NotImplementedException("This converter does not have any settings.");
+    }
 
     public Base ConvertToSpeckle(object @object)
     {

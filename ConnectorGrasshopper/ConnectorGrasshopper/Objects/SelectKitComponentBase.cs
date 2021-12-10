@@ -56,8 +56,10 @@ namespace ConnectorGrasshopper.Objects
       {
         Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-
         Message = $"Using the {Kit.Name} Converter";
         ExpireSolution(true);
       }
@@ -96,6 +98,9 @@ namespace ConnectorGrasshopper.Objects
         Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit.Name == SpeckleGHSettings.SelectedKitName);
         Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
         Message = $"{Kit.Name} Kit";
       }
       catch

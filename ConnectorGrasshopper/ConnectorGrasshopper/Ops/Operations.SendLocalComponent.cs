@@ -99,10 +99,6 @@ namespace ConnectorGrasshopper.Ops
       }
       base.SolveInstance(DA);
     }
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
   }
 
   public class SendLocalWorker : WorkerInstance

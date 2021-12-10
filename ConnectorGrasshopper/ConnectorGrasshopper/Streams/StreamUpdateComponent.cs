@@ -109,10 +109,5 @@ namespace ConnectorGrasshopper.Streams
         DA.SetData(0, streamWrapper.StreamId);
       }
     }
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 }

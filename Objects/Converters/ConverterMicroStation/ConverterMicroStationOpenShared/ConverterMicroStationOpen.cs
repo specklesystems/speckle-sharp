@@ -78,6 +78,10 @@ namespace Objects.Converter.MicroStationOpen
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetConverterSettings(object settings)
+    {
+      throw new NotImplementedException("This converter does not have any settings.");
+    }
 
     public void SetContextDocument(object session)
     {

@@ -129,11 +129,5 @@ namespace ConnectorGrasshopper.Streams
         }
       });
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 }

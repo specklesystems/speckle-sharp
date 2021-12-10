@@ -213,6 +213,9 @@ namespace ConnectorGrasshopper.Ops
       {
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
         foundKit = true;
       }

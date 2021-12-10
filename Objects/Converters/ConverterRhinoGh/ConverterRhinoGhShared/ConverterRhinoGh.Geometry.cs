@@ -850,11 +850,18 @@ namespace Objects.Converter.RhinoGh
       // }
       // Create complex
       var joinedMesh = new RH.Mesh();
-      var mySettings = MeshingParameters.Minimal;
+      var mySettings = MeshingParameters.Default;
+      switch (SelectedMeshSettings)
+      {
+        case MeshSettings.Default:
+          mySettings = new MeshingParameters(0.05, 0.05);
+          break;
+        case MeshSettings.CurrentDoc:
+          mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
+          break;
+      }
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
       joinedMesh.Weld(Math.PI);
-      joinedMesh.Vertices.CombineIdentical(true, true);
-      joinedMesh.Compact();
 
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
 

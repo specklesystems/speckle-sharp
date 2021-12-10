@@ -5,6 +5,7 @@ namespace ConnectorGrasshopper
   public static class SpeckleGHSettings
   {
     private const string SELECTED_KIT_NAME = "Speckle2:kit.default.name";
+    private const string MESH_SETTINGS = "Speckle2:kit.meshing.settings";
     private const string USE_SCHEMA_TAG_STRATEGY = "Speckle2:conversion.schema.tag";
 
     // For future disabling of structural tabs
@@ -23,7 +24,17 @@ namespace ConnectorGrasshopper
         Grasshopper.Instances.Settings.WritePersistentSettings();
       }
     }
-
+    public static event EventHandler OnMeshSettingsChanged;
+    public static SpeckleMeshSettings MeshSettings
+    {
+      get => (SpeckleMeshSettings)Grasshopper.Instances.Settings.GetValue(MESH_SETTINGS, (int)SpeckleMeshSettings.Default);
+      set
+      {
+        Grasshopper.Instances.Settings.SetValue(MESH_SETTINGS, (int)value);
+        Grasshopper.Instances.Settings.WritePersistentSettings();
+        OnMeshSettingsChanged?.Invoke(null, EventArgs.Empty);
+      }
+    }
     /// <summary>
     /// Gets or sets the output type of the Schema builder nodes:
     /// If true: Output will be the `main geometry` with the schema attached as a property.
@@ -39,5 +50,11 @@ namespace ConnectorGrasshopper
         Grasshopper.Instances.Settings.WritePersistentSettings();
       }
     }
+  }
+
+  public enum SpeckleMeshSettings
+  {
+    Default,
+    CurrentDoc
   }
 }

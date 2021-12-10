@@ -212,6 +212,9 @@ namespace ConnectorGrasshopper.Ops
       {
         Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
 
         Message = $"Using the {Kit.Name} Converter";
         foundKit = true;
@@ -231,6 +234,10 @@ namespace ConnectorGrasshopper.Ops
       {
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
+
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         foundKit = true;
       }
@@ -295,11 +302,6 @@ namespace ConnectorGrasshopper.Ops
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
 
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-    
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
       switch (context)
