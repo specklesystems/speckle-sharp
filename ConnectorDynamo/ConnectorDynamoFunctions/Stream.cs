@@ -94,7 +94,15 @@ namespace Speckle.ConnectorDynamo.Functions
       if (name == null && description == null && isPublic == null)
         return null;
 
-      var account = Task.Run(async () => await wrapper.GetAccount()).Result;
+      Core.Credentials.Account account = null;
+      try
+      {
+        account = Task.Run(async () => await wrapper.GetAccount()).Result;
+      }
+      catch (Exception e)
+      {
+        throw e.InnerException ?? e;
+      }
 
       var client = new Client(account);
 
@@ -156,7 +164,16 @@ namespace Speckle.ConnectorDynamo.Functions
 
       foreach (var streamWrapper in streams)
       {
-        var account = Task.Run(async () => await streamWrapper.GetAccount()).Result;
+        Core.Credentials.Account account;
+
+        try
+        {
+          account = Task.Run(async () => await streamWrapper.GetAccount()).Result;
+        }
+        catch (Exception e)
+        {
+          throw e.InnerException ?? e;
+        }
 
         var client = new Client(account);
 
