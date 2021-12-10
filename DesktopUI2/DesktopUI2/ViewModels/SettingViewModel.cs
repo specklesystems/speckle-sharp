@@ -17,7 +17,7 @@ namespace DesktopUI2.ViewModels
 
     private ISetting _setting;
     
-    public ISetting Setting { get=> _setting;
+    public ISetting Setting { get => _setting;
       set
       {
         this.RaiseAndSetIfChanged(ref _setting, value);

@@ -183,8 +183,6 @@ namespace DesktopUI2.ViewModels
           return false;
       }
 
-
-
       return true;
 
     }

@@ -121,6 +121,20 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _filters, value);
     }
 
+    private SettingViewModel _selectedSetting;
+    public SettingViewModel SelectedSetting
+    {
+      get => _selectedSetting;
+      set
+      {
+        value.PropertyChanged += (s, eo) =>
+        {
+          this.RaisePropertyChanged("SelectedSetting");
+        };
+        this.RaiseAndSetIfChanged(ref _selectedSetting, value);
+      }
+    }
+
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
     {
@@ -173,6 +187,7 @@ namespace DesktopUI2.ViewModels
 
       // get available settings from our bindings
       Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
+      SelectedSetting = Settings[0];
 
       IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
@@ -206,7 +221,10 @@ namespace DesktopUI2.ViewModels
       _streamState.BranchName = SelectedBranch.name;
       _streamState.IsReceiver = IsReceiver;
       if (IsReceiver)
+      {
         _streamState.CommitId = SelectedCommit.id;
+        _streamState.Settings = Settings.Select(o => o.Setting).ToList();
+      }
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
       return _streamState;
@@ -279,7 +297,6 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = true;
       var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
-
       _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
       {
         if (x.Result.GetResult == "cancel")
@@ -314,7 +331,7 @@ namespace DesktopUI2.ViewModels
     private void OpenSettingsCommand()
     {
       // Allow users to set generated settings retrieved from application document
-      var settings = new Settings();
+      var settings = new SettingsWindow();
       settings.Title = $"Settings for {Stream.name}";
       settings.ShowDialog(MainWindow.Instance);
     }

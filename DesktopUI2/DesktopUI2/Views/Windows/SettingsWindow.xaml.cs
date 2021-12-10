@@ -7,9 +7,9 @@ using System.Diagnostics;
 namespace DesktopUI2.Views.Windows
 {
   // This is for storing custom application settings for sending and receiving
-  public partial class Settings : Window
+  public partial class SettingsWindow : Window
   {
-    public Settings()
+    public SettingsWindow()
     {
       AvaloniaXamlLoader.Load(this);
     }

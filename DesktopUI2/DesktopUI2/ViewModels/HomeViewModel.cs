@@ -322,13 +322,6 @@ namespace DesktopUI2.ViewModels
       OpenStream(streamState);
     }
 
-    // Allow users to set generated settings retrieved from application document
-    public void OpenSettingsCommand()
-    {
-      var settings = new Settings();
-      settings.ShowDialog(MainWindow.Instance);
-    }
-
     public async void NewStreamCommand()
     {
       var dialog = DialogHelper.CreateTextFieldDialog(new TextFieldDialogBuilderParams()
