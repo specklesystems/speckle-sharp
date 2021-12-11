@@ -196,7 +196,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$version
             $channel = "latest"
             if($env:CIRCLE_TAG -like "*-beta") { $channel = "beta" }    
-            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $version" }
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
       - run: 
           name: Deploy?
           command: | # stop job if not triggered by deployment workflow (parameters.installer == false)
