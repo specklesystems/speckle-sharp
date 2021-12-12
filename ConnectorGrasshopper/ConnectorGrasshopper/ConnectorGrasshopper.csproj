@@ -53,7 +53,10 @@
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
+    <Compile Include="Conversion\ToNativeTaskCapableComponent.cs" />
+    <Compile Include="Conversion\ConvertUpgradeUtils.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
+    <Compile Include="Conversion\ToSpeckleTaskCapableComponent.cs" />
     <Compile Include="Extras\DebounceDispatcher.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
     <Compile Include="Conversion\Convert.ToNativeAsync.cs" />

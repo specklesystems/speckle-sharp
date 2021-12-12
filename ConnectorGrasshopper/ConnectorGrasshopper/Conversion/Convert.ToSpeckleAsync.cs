@@ -23,6 +23,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.ToSpeckle;
 
+    public override bool Obsolete => true;
     public override bool CanDisableConversion => false;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
