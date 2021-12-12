@@ -37,10 +37,13 @@ namespace ConnectorGrasshopper.Ops
       BaseWorker = new ReceiveComponentWorker(this);
       Attributes = new ReceiveComponentAttributes(this);
     }
-    
+
+    public GH_Structure<IGH_Goo> PrevReceivedData;
     public Client ApiClient { get; set; }
 
     public bool AutoReceive { get; set; }
+    
+    public bool ReceiveOnOpen { get; set; }
 
     public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
 
@@ -63,12 +66,6 @@ namespace ConnectorGrasshopper.Ops
     public string ReceivedCommitId { get; set; }
     
     public StreamWrapper StreamWrapper { get; set; }
-    
-    public override void AddedToDocument(GH_Document document)
-    {
-      SetDefaultKitAndConverter();
-      base.AddedToDocument(document);
-    }
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
@@ -111,12 +108,12 @@ namespace ConnectorGrasshopper.Ops
       base.DocumentContextChanged(document, context);
     }
 
+
     private void HandleNewCommit()
     {
       Message = "Expired";
       CurrentComponentState = "expired";
       AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"There is a newer commit available for this {InputType}");
-
       RhinoApp.InvokeOnUiThread((Action)delegate
      {
        if (AutoReceive)
@@ -135,18 +132,21 @@ namespace ConnectorGrasshopper.Ops
       writer.SetBoolean("AutoReceive", AutoReceive);
       writer.SetString("CurrentComponentState", CurrentComponentState);
       
-      writer.SetString("KitName", Kit?.Name);
       var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
       writer.SetString("StreamWrapper", streamUrl);
       writer.SetString("LastInfoMessage", LastInfoMessage);
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedCommitId", ReceivedCommitId);
+      writer.SetBoolean("ReceiveOnOpen", ReceiveOnOpen);
       return base.Write(writer);
     }
 
     public override bool Read(GH_IReader reader)
     {
       AutoReceive = reader.GetBoolean("AutoReceive");
+      var receiveOnOpen = false;
+      reader.TryGetBoolean("ReceiveOnOpen", ref receiveOnOpen);
+      ReceiveOnOpen = receiveOnOpen;
       CurrentComponentState = reader.GetString("CurrentComponentState");
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
@@ -157,30 +157,7 @@ namespace ConnectorGrasshopper.Ops
       {
         StreamWrapper = new StreamWrapper(swString);
       }
-
       JustPastedIn = true;
-
-      var kitName = "";
-      reader.TryGetString("KitName", ref kitName);
-
-      if (kitName != "")
-      {
-        try
-        {
-          SetConverterFromKit(kitName);
-        }
-        catch (Exception)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
-          SetDefaultKitAndConverter();
-        }
-      }
-      else
-      {
-        SetDefaultKitAndConverter();
-      }
-
       return base.Read(reader);
     }
 
@@ -221,6 +198,18 @@ namespace ConnectorGrasshopper.Ops
           "To enable automatic receiving, you need to input a stream rather than a specific commit.";
       }
 
+      var receivOnOpenMi = Menu_AppendItem(
+        menu,
+        "Receive when Document opened",
+        (sender, args) =>
+        {
+          ReceiveOnOpen = !ReceiveOnOpen;
+          RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
+        },
+        !AutoReceive,
+        AutoReceive || ReceiveOnOpen);
+      receivOnOpenMi.ToolTipText = "The node will automatically perform a receive operation as soon as the document is open, or the node is copy/pasted into a new document.";
+      
       Menu_AppendSeparator(menu);
 
       if (CurrentComponentState == "receiving")
@@ -231,67 +220,31 @@ namespace ConnectorGrasshopper.Ops
           RequestCancellation();
         });
       }
-    }
 
-    public void SetConverterFromKit(string kitName)
-    {
-      if (Kit == null)
-      {
-        return;
-      }
-
-      if (kitName == Kit.Name)
-      {
-        return;
-      }
-
-      Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino6);
-      Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-      SpeckleGHSettings.OnMeshSettingsChanged +=
-        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
-      Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-      Message = $"Using the {Kit.Name} Converter";
-      ExpireSolution(true);
-    }
-
-    private bool foundKit;
-    private void SetDefaultKitAndConverter()
-    {
-      try
-      {
-        Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino6);
-        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        SpeckleGHSettings.OnMeshSettingsChanged +=
-          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-        foundKit = true;
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-        foundKit = false;
-      }
+      Menu_AppendSeparator(menu);
+      
+      if(StreamWrapper != null && !string.IsNullOrEmpty(ReceivedCommitId))
+        Menu_AppendItem(
+          menu, 
+          $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
+          (s, e) => System.Diagnostics.Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}"));
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
-
-      if (!foundKit)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
-        return;
-      }
+      
       // We need to call this always in here to be able to react and set events :/
       ParseInput(DA);
 
       if ((AutoReceive || CurrentComponentState == "primed_to_receive" || CurrentComponentState == "receiving") &&
           !JustPastedIn)
       {
-        CurrentComponentState = "receiving";
+        // if (CurrentComponentState == "primed_to_receive")
+        //   Params.Output.ForEach(p => p.ExpireSolution(true));
 
+        CurrentComponentState = "receiving";
+        
         // Delegate control to parent async component.
         base.SolveInstance(DA);
         return;
@@ -313,8 +266,12 @@ namespace ConnectorGrasshopper.Ops
       {
         CurrentComponentState = "expired";
         Message = "Expired";
+        if (PrevReceivedData != null)
+        {
+          DA.SetDataTree(0, PrevReceivedData);
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Output is based on a prior receive operation. If you are seeing this message, you most likely recomputed the Grasshopper solution (F5). To ensure you have the latest data, press the Receive button again.");
+        }
         OnDisplayExpired(true);
-        Params.Output.ForEach(p => p.ExpireSolution(true));
       }
     }
 
@@ -509,9 +466,7 @@ namespace ConnectorGrasshopper.Ops
             ReportProgress(kvp.Key, kvp.Value);
           }
         };
-
-        var sw = new StreamWrapper("");
-
+        
         ErrorAction = (transportName, exception) =>
         {
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
@@ -544,11 +499,15 @@ namespace ConnectorGrasshopper.Ops
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
-        // Means it's a copy paste of an empty non-init component; set the record and exit fast.
+        // Means it's a copy paste of an empty non-init component; set the record and exit fast unless ReceiveOnOpen is true.
         if (receiveComponent.JustPastedIn && !receiveComponent.AutoReceive)
         {
           receiveComponent.JustPastedIn = false;
-          return;
+          if (!receiveComponent.ReceiveOnOpen)
+            return;
+          
+          receiveComponent.CurrentComponentState = "receiving";
+          RhinoApp.InvokeOnUiThread((Action)delegate { receiveComponent.OnDisplayExpired(true); });
         }
 
         var t = Task.Run(async () =>
@@ -580,7 +539,7 @@ namespace ConnectorGrasshopper.Ops
             InternalProgressAction,
             ErrorAction,
             count => TotalObjectCount = count,
-            disposeTransports: true
+            true
           );
           
           try
@@ -711,6 +670,8 @@ namespace ConnectorGrasshopper.Ops
       converter?.SetContextDocument(RhinoDoc.ActiveDoc);
 
       var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
+      var receiveComponent = (ReceiveComponent)this.Parent;
+      receiveComponent.PrevReceivedData = tree;
       DA.SetDataTree(0, tree);
     }
   }
