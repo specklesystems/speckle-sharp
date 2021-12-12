@@ -48,6 +48,8 @@ namespace ConnectorGrasshopper.Objects
         var @base = ghSpeckleBase?.Value;
         if (!x || @base == null)
         {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some input values are not Speckle objects or are null.");
+          OnDisplayExpired(true);
           return;
         }
         
