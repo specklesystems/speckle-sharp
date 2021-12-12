@@ -53,6 +53,8 @@
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
+    <Compile Include="Conversion\DeserialiseTaskCapableComponent.cs" />
+    <Compile Include="Conversion\SerialiseTaskCapableComponent.cs" />
     <Compile Include="Conversion\ToNativeTaskCapableComponent.cs" />
     <Compile Include="Conversion\ConvertUpgradeUtils.cs" />
     <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
