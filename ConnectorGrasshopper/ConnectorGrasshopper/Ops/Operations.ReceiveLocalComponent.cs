@@ -42,7 +42,7 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
     }
 
-    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:",null, null, false);
@@ -54,7 +54,7 @@ namespace ConnectorGrasshopper.Ops
           kit.Name == Kit.Name);
       }
 
-      base.AppendAdditionalComponentMenuItems(menu);
+      base.AppendAdditionalMenuItems(menu);
     }
     
     public override void AddedToDocument(GH_Document document)
