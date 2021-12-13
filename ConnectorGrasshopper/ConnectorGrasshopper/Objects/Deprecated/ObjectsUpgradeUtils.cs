@@ -4,8 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
+using ConnectorGrasshopper.UpgradeUtilities;
 
-namespace ConnectorGrasshopper.Objects
+namespace ConnectorGrasshopper.UpgradeUtilities
 {
   public static class UpgradeUtils
   {
@@ -19,7 +20,10 @@ namespace ConnectorGrasshopper.Objects
       groups.ForEach(g => g.AddObject(upgradedComponent.InstanceGuid));
     }
   }
+}
 
+namespace ConnectorGrasshopper.Objects
+{
   public class Upgrade_CreateKeyValueAsyncComponent : IGH_UpgradeObject
   {
     public IGH_DocumentObject Upgrade(IGH_DocumentObject target, GH_Document document)

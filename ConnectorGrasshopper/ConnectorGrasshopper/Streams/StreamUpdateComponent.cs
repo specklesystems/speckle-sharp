@@ -76,19 +76,11 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         Task.Run(async () =>
         {
-          var account = string.IsNullOrEmpty(streamWrapper.UserId) ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == streamWrapper.ServerUrl) :
-            AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == streamWrapper.UserId);
-
-          if (account == null)
-          {
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find the specified account in this machine. Use the Speckle Manager to add an account, or modify the input stream with your credentials.");
-            return;
-          }
-
-          var client = new Client(account);
-          var input = new StreamUpdateInput();
           try
           {
+            var account = streamWrapper.GetAccount().Result;
+            var client = new Client(account);
+            var input = new StreamUpdateInput();
             stream = await client.StreamGet(streamWrapper.StreamId);
             input.id = streamWrapper.StreamId;
 
@@ -101,7 +93,7 @@ namespace ConnectorGrasshopper.Streams
           }
           catch (Exception e)
           {
-            error = e;
+            error = e.InnerException ?? e;
           }
           finally
           {
@@ -117,10 +109,5 @@ namespace ConnectorGrasshopper.Streams
         DA.SetData(0, streamWrapper.StreamId);
       }
     }
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 }

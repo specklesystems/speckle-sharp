@@ -176,7 +176,7 @@ namespace Objects.Converter.RhinoGh
 
       var _instance = new BlockInstance()
       {
-        transform = transformArray,
+        transform = new Other.Transform(transformArray, ModelUnits),
         blockDefinition = def,
         units = ModelUnits
       };
@@ -192,7 +192,7 @@ namespace Objects.Converter.RhinoGh
       // get the transform
       // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
       Transform transform = Transform.Identity;
-      double[] t = instance.transform;
+      double[] t = instance.transform.value;
       if (t.Length == 16)
       {
         int count = 0;

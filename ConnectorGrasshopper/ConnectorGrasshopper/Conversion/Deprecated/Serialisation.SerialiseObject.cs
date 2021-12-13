@@ -17,8 +17,8 @@ namespace ConnectorGrasshopper.Conversion
     public override Guid ComponentGuid { get => new Guid("EDEBF1F4-3FC3-4E01-95DD-286FF8804EB0"); }
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Serialize;
-
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
@@ -33,11 +33,6 @@ namespace ConnectorGrasshopper.Conversion
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddTextParameter("Json", "J", "Serialized objects in JSON format.", GH_ParamAccess.tree);
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
     }
   }
 
@@ -81,7 +76,7 @@ namespace ConnectorGrasshopper.Conversion
             else
             {
               ConvertedObjects.Append(null, path);
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));            }
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {{{path}}}[{list.IndexOf(item)}] is not a Base object."));            }
 
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }

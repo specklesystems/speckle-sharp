@@ -3,10 +3,11 @@ using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Objects.Other;
 
 namespace Objects.Geometry
 {
-  public class Point : Base, IHasBoundingBox
+  public class Point : Base, IHasBoundingBox, ITransformable<Point>
   {
     /// <summary>
     /// OBSOLETE - This is just here for backwards compatibility.
@@ -63,6 +64,12 @@ namespace Objects.Geometry
       x = this.x;
       y = this.y;
       z = this.z;
+    }
+
+    public bool TransformTo(Transform transform, out Point point)
+    {
+      point = transform.ApplyToPoint(this);
+      return true;
     }
   }
 }

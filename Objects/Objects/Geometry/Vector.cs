@@ -3,11 +3,12 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Other;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
-  public class Vector : Base, IHasBoundingBox
+  public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   {
     /// <summary>
     /// OBSOLETE - This is just here for backwards compatibility.
@@ -72,6 +73,12 @@ namespace Objects.Geometry
     {
       get;
       set;
+    }
+
+    public bool TransformTo(Transform transform, out Vector vector)
+    {
+      vector = transform.ApplyToVector(this);
+      return true;
     }
   }
 }

@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using Objects.Other;
 using Objects.Primitive;
 
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, IDisplayMesh
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, IDisplayMesh, ITransformable<Brep>
   {
     public string provenance { get; set; }
     public Box bbox { get; set; }
@@ -263,7 +264,6 @@ namespace Objects.Geometry
           }
           else
             e.Brep = this;
-        
       }
       
       for(var i = 0; i < Loops.Count; i++)
@@ -305,6 +305,57 @@ namespace Objects.Geometry
           else
             f.Brep = this;
       }
+    }
+
+    /// <summary>
+    /// Returns a new transformed Brep.
+    /// </summary>
+    /// <param name="transform"></param>
+    /// <returns></returns>
+    public bool TransformTo(Transform transform, out Brep brep)
+    {
+      displayMesh.TransformTo(transform, out var mesh);
+      var surfaces = new List<Surface>(Surfaces.Count);
+      foreach ( var srf in Surfaces )
+      {
+        srf.TransformTo(transform, out var surface);
+        surfaces.Add(surface);
+      }
+
+      brep = new Brep
+      {
+        provenance = provenance,
+        units = units,
+        displayMesh = mesh,
+        Surfaces = surfaces,
+        Curve3D = transform.ApplyToCurves(Curve3D, out bool success3D),
+        Curve2D = transform.ApplyToCurves(Curve2D, out bool success2D),
+        Vertices = transform.ApplyToPoints(Vertices),
+        Edges = new List<BrepEdge>(Edges.Count),
+        Loops = new List<BrepLoop>(Loops.Count),
+        Trims = new List<BrepTrim>(Trims.Count),
+        Faces = new List<BrepFace>(Faces.Count),
+        IsClosed = IsClosed,
+        Orientation = Orientation,
+        applicationId = applicationId ?? id
+      };
+
+      foreach ( var e in Edges )
+        brep.Edges.Add(new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.Curve3dIndex,
+          e.ProxyCurveIsReversed,
+          e.Domain));
+
+      foreach ( var l in Loops )
+        brep.Loops.Add(new BrepLoop(brep, l.FaceIndex, l.TrimIndices, l.Type));
+
+      foreach ( var t in Trims )
+        brep.Trims.Add(new BrepTrim(brep, t.EdgeIndex, t.FaceIndex, t.LoopIndex, t.CurveIndex, t.IsoStatus, t.TrimType,
+          t.IsReversed, t.StartIndex, t.EndIndex));
+
+      foreach ( var f in Faces )
+        brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
+
+      return success2D && success3D;
     }
   }
 

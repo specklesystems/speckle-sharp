@@ -47,10 +47,5 @@ namespace ConnectorGrasshopper.Transports
 
       DA.SetData(0, myTransport);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
   }
 }

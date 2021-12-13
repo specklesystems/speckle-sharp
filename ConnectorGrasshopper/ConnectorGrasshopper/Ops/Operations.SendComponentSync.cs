@@ -73,6 +73,9 @@ namespace ConnectorGrasshopper.Ops
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino6);
+      Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+      SpeckleGHSettings.OnMeshSettingsChanged +=
+        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
@@ -170,6 +173,9 @@ namespace ConnectorGrasshopper.Ops
       {
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         foundKit = true;
       }

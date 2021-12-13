@@ -42,7 +42,7 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("Data", "D", "Data to send.", GH_ParamAccess.tree);
     }
 
-    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:",null, null, false);
@@ -54,7 +54,7 @@ namespace ConnectorGrasshopper.Ops
           kit.Name == Kit.Name);
       }
 
-      base.AppendAdditionalComponentMenuItems(menu);
+      base.AppendAdditionalMenuItems(menu);
     }
     
     public override void AddedToDocument(GH_Document document)
@@ -69,7 +69,10 @@ namespace ConnectorGrasshopper.Ops
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino6);
-
+      Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+      SpeckleGHSettings.OnMeshSettingsChanged +=
+        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+      
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
@@ -81,6 +84,9 @@ namespace ConnectorGrasshopper.Ops
       { 
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         foundKit = true;
       }
@@ -99,11 +105,6 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
       base.SolveInstance(DA);
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
     }
   }
   public class ReceiveLocalWorker : WorkerInstance

@@ -21,14 +21,16 @@ namespace ConnectorGrasshopper
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
 
-    
+
     public override GH_LoadingInstruction PriorityLoad()
     {
       Setup.Init(Applications.Grasshopper);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
-      Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON, Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
+        Properties.Resources.speckle_logo);
       Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.PRIMARY_RIBBON, 'S');
-      Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.SECONDARY_RIBBON, Properties.Resources.speckle_logo);
+      Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.SECONDARY_RIBBON,
+        Properties.Resources.speckle_logo);
       Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.SECONDARY_RIBBON, 'S');
 
       return GH_LoadingInstruction.Proceed;
@@ -36,9 +38,9 @@ namespace ConnectorGrasshopper
 
     private void CanvasCreatedEvent(GH_DocumentServer server, GH_Document doc)
     {
-        AddSpeckleMenu(null, null);
+      AddSpeckleMenu(null, null);
     }
-    
+
     private void HandleKitSelectedEvent(object sender, EventArgs args)
     {
       var clickedItem = (ToolStripMenuItem)sender;
@@ -46,7 +48,7 @@ namespace ConnectorGrasshopper
       // Update the selected kit
       selectedKit = loadedKits.First(kit => clickedItem.Text.Trim() == kit.Name);
       SpeckleGHSettings.SelectedKitName = selectedKit.Name;
-      
+
       // Update the check status of all
       foreach (var item in kitMenuItems)
       {
@@ -57,7 +59,7 @@ namespace ConnectorGrasshopper
               : CheckState.Unchecked;
       }
     }
-    
+
     private void AddSpeckleMenu(object sender, ElapsedEventArgs e)
     {
       if (Grasshopper.Instances.DocumentEditor == null || MenuHasBeenAdded) return;
@@ -87,49 +89,27 @@ namespace ConnectorGrasshopper
         var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits");
         errItem.Enabled = false;
       }
-      
-      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-      var useSchemaTag = SpeckleGHSettings.UseSchemaTag;
-      var schemaConversionHeader = speckleMenu.DropDown.Items.Add("Select the default Schema conversion option:") as ToolStripMenuItem;
 
-      var objectItem = schemaConversionHeader.DropDown.Items.Add("Convert as Schema object.") as ToolStripMenuItem;
-      objectItem.Checked = !useSchemaTag;
-      
-      var tagItem = schemaConversionHeader.DropDown.Items.Add($"Convert as geometry with 'Speckle Schema' attached") as ToolStripMenuItem;
-      tagItem.Checked = useSchemaTag;
-      tagItem.ToolTipText =
-        "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
-    
-      tagItem.Click += (s, args) =>
-      {
-        useSchemaTag = true;
-        tagItem.Checked = useSchemaTag;
-        objectItem.Checked = !useSchemaTag;
-        SpeckleGHSettings.UseSchemaTag = useSchemaTag;
-      };
-      
-      objectItem.Click += (s, args) =>
-      {
-        useSchemaTag = false;
-        tagItem.Checked = useSchemaTag;
-        objectItem.Checked = !useSchemaTag;
-        SpeckleGHSettings.UseSchemaTag = useSchemaTag;
-      };
-      
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-      
+      CreateSchemaConversionMenu();
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      CreateMeshingSettingsMenu();
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;
-      speckleMenu.DropDown.Items.Add("Community Forum",Properties.Resources.forum16,(o, args) => Process.Start("https://speckle.community"));
-      speckleMenu.DropDown.Items.Add("Tutorials", Properties.Resources.tutorials16, (o, args) => Process.Start("https://speckle.systems/tutorials"));
-      speckleMenu.DropDown.Items.Add("Docs",Properties.Resources.docs16,(o, args) => Process.Start("https://speckle.guide"));
-      
+      speckleMenu.DropDown.Items.Add("Community Forum", Properties.Resources.forum16,
+        (o, args) => Process.Start("https://speckle.community"));
+      speckleMenu.DropDown.Items.Add("Tutorials", Properties.Resources.tutorials16,
+        (o, args) => Process.Start("https://speckle.systems/tutorials"));
+      speckleMenu.DropDown.Items.Add("Docs", Properties.Resources.docs16,
+        (o, args) => Process.Start("https://speckle.guide"));
+
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-      
+
       // Manager button
-      speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo, (o, args) => Process.Start("speckle://"));
-      
+      speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo,
+        (o, args) => Process.Start("speckle://"));
+
 
       try
       {
@@ -151,8 +131,73 @@ namespace ConnectorGrasshopper
         var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits", null);
         errItem.Enabled = false;
       }
-      
+
       MenuHasBeenAdded = true;
+    }
+
+    private void CreateMeshingSettingsMenu()
+    {
+      var defaultSetting = new ToolStripMenuItem(
+        "Default")
+      {
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, 
+        CheckOnClick = true
+      };
+
+      var currentDocSetting = new ToolStripMenuItem(
+        "Current Rhino doc")
+      {
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc, 
+        CheckOnClick = true
+      };
+      currentDocSetting.Click += (sender, args) =>
+      {
+        SpeckleGHSettings.MeshSettings = SpeckleMeshSettings.CurrentDoc;
+        defaultSetting.Checked = false;
+      };
+      defaultSetting.Click += (sender, args) =>
+      {
+        SpeckleGHSettings.MeshSettings = SpeckleMeshSettings.Default;
+        currentDocSetting.Checked = false;
+      };
+      var meshMenu = new ToolStripMenuItem("Select the default meshing parameters:");
+      meshMenu.DropDown.Items.Add(defaultSetting);
+      meshMenu.DropDown.Items.Add(currentDocSetting);
+
+      speckleMenu.DropDown.Items.Add(meshMenu);
+    }
+
+    private void CreateSchemaConversionMenu()
+    {
+      var useSchemaTag = SpeckleGHSettings.UseSchemaTag;
+      var schemaConversionHeader =
+        speckleMenu.DropDown.Items.Add("Select the default Schema conversion option:") as ToolStripMenuItem;
+
+      var objectItem = schemaConversionHeader.DropDown.Items.Add("Convert as Schema object.") as ToolStripMenuItem;
+      objectItem.Checked = !useSchemaTag;
+
+      var tagItem =
+        schemaConversionHeader.DropDown.Items.Add($"Convert as geometry with 'Speckle Schema' attached") as
+          ToolStripMenuItem;
+      tagItem.Checked = useSchemaTag;
+      tagItem.ToolTipText =
+        "Enables Schema conversion while prioritizing the geometry over the schema.\n\nSchema information will e stored in a '@SpeckleSchema' property.";
+
+      tagItem.Click += (s, args) =>
+      {
+        useSchemaTag = true;
+        tagItem.Checked = useSchemaTag;
+        objectItem.Checked = !useSchemaTag;
+        SpeckleGHSettings.UseSchemaTag = useSchemaTag;
+      };
+
+      objectItem.Click += (s, args) =>
+      {
+        useSchemaTag = false;
+        tagItem.Checked = useSchemaTag;
+        objectItem.Checked = !useSchemaTag;
+        SpeckleGHSettings.UseSchemaTag = useSchemaTag;
+      };
     }
   }
 }

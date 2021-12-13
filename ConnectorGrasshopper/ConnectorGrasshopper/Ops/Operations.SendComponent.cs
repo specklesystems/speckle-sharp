@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
@@ -27,14 +28,14 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class SendComponent : GH_AsyncComponent
+  public class SendComponent : SelectKitAsyncComponentBase
   {
     public override Guid ComponentGuid => new Guid("{5E6A5A78-9E6F-4893-8DED-7EEAB63738A5}");
 
     protected override Bitmap Icon => Properties.Resources.Sender;
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
-
+    public override bool CanDisableConversion => false;
     public bool AutoSend { get; set; } = false;
 
     public string CurrentComponentState { get; set; } = "needs_input";
@@ -49,10 +50,6 @@ namespace ConnectorGrasshopper.Ops
 
     public string BaseId { get; set; }
 
-    public ISpeckleConverter Converter;
-
-    public ISpeckleKit Kit;
-
     public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
@@ -60,11 +57,6 @@ namespace ConnectorGrasshopper.Ops
       Attributes = new SendComponentAttributes(this);
     }
     
-    public override void AddedToDocument(GH_Document document)
-    {
-      SetDefaultKitAndConverter();
-      base.AddedToDocument(document);
-    }
     
     public override bool Write(GH_IWriter writer)
     {
@@ -103,27 +95,6 @@ namespace ConnectorGrasshopper.Ops
         }
       }
 
-      var kitName = "";
-      reader.TryGetString("KitName", ref kitName);
-
-      if (kitName != "")
-      {
-        try
-        {
-          SetConverterFromKit(kitName);
-        }
-        catch (Exception)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
-          SetDefaultKitAndConverter();
-        }
-      }
-      else
-      {
-        SetDefaultKitAndConverter();
-      }
-
       return base.Read(reader);
     }
 
@@ -144,20 +115,8 @@ namespace ConnectorGrasshopper.Ops
         "Stream or streams pointing to the created commit", GH_ParamAccess.list);
     }
 
-    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:",null, false);
-      menuItem.Enabled = false;
-      menuItem.Image = Properties.Resources.speckle_logo;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
-
-      foreach (var kit in kits)
-      {
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SetConverterFromKit(kit.Name); }, true,
-          kit.Name == Kit.Name);
-      }
-
       Menu_AppendSeparator(menu);
 
       var cacheMi = Menu_AppendItem(menu, "Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true,
@@ -193,62 +152,12 @@ namespace ConnectorGrasshopper.Ops
         });
       }
 
-      base.AppendAdditionalComponentMenuItems(menu);
+      base.AppendAdditionalMenuItems(menu);
     }
-
-    public void SetConverterFromKit(string kitName)
-    {
-      if (Kit == null)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
-        return;
-      }
-      if (kitName == Kit.Name)
-      {
-        return;
-      }
-
-      try
-      {
-        Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-        Converter = Kit.LoadConverter(Applications.Rhino6);
-
-        Message = $"Using the {Kit.Name} Converter";
-        foundKit = true;
-        ExpireSolution(true);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e);
-        foundKit = false;
-      }
-    }
-
-    private bool foundKit;
-    private void SetDefaultKitAndConverter()
-    {
-      try
-      {
-        Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino6);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-        foundKit = true;
-      }
-      catch
-      {
-        foundKit = false;
-      }
-    }
-
+    
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      // Fast exit if no default kit was found!
-      if (!foundKit)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
-        return;
-      }
-      
+
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {
@@ -295,11 +204,6 @@ namespace ConnectorGrasshopper.Ops
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
 
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-    
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
       switch (context)

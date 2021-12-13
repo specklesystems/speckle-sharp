@@ -1,12 +1,13 @@
 ﻿using Objects.Primitive;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Objects.Other;
 using Speckle.Core.Kits;
 
 namespace Objects.Geometry
 {
   //TODO: to finish
-  public class Surface : Base, IHasBoundingBox, IHasArea
+  public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   {
     public int degreeU { get; set; } //
     public int degreeV { get; set; } //
@@ -122,6 +123,37 @@ namespace Objects.Geometry
       var u = list[list.Count - 1];
       srf.units = Units.GetUnitFromEncoding(u);
       return srf;
+    }
+
+    public bool TransformTo(Transform transform, out Surface surface)
+    {
+      var ptMatrix = GetControlPoints();
+      foreach ( var ctrlPts in ptMatrix )
+      {
+        for ( int i = 0; i < ctrlPts.Count; i++ )
+        {
+          ctrlPts[ i ].TransformTo(transform, out var tPt);
+          ctrlPts[ i ] = tPt;
+        }
+      }
+      surface = new Surface()
+      {
+        degreeU = degreeU,
+        degreeV = degreeV,
+        countU = countU,
+        countV = countV,
+        rational = rational,
+        closedU = closedU,
+        closedV = closedV,
+        domainU = domainU,
+        domainV = domainV,
+        knotsU = knotsU,
+        knotsV = knotsV,
+        units = units
+      };
+      surface.SetControlPoints(ptMatrix);
+
+      return true;
     }
   }
 }
