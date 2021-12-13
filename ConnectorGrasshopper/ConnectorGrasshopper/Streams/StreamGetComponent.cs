@@ -82,6 +82,9 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
+        if(DA.Iteration == 0)
+          Tracker.TrackPageview(Tracker.STREAM_GET);
+
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
@@ -93,18 +96,13 @@ namespace ConnectorGrasshopper.Streams
         {
           try
           {
-            //Exists?
-            var client = new Client(account);
-            var result = await client.StreamGet(idWrapper.StreamId);
-            stream = new StreamWrapper(result.id, account.userInfo.id, account.serverInfo.url);
-            stream.BranchName = idWrapper.BranchName;
-            stream.ObjectId = idWrapper.ObjectId;
-            stream.CommitId = idWrapper.CommitId;
+            var acc = idWrapper.GetAccount().Result;
+            stream = idWrapper;
           }
           catch (Exception e)
           {
             stream = null;
-            error = e;
+            error = e.InnerException ?? e;
           }
           finally
           {
@@ -149,12 +147,6 @@ namespace ConnectorGrasshopper.Streams
     {
       // TODO: Add validation!
       return true;
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview(Tracker.STREAM_GET);
-      base.BeforeSolveInstance();
     }
   }
 }

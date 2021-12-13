@@ -24,8 +24,9 @@ namespace ConnectorGrasshopper.Conversion
     protected override Bitmap Icon => Properties.Resources.ToNative;
 
     public override bool CanDisableConversion => false;
-    
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override bool Obsolete => true;
+
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     public ToNativeConverterAsync() : base("To Native", "To Native",
       "Convert data from Speckle's Base object to its Rhino equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
@@ -41,12 +42,6 @@ namespace ConnectorGrasshopper.Conversion
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "Converted data in GH native format.", GH_ParamAccess.tree);
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
-      base.BeforeSolveInstance();
     }
 
     public override void AddedToDocument(GH_Document document)
@@ -77,10 +72,8 @@ namespace ConnectorGrasshopper.Conversion
       try
       {
         if (CancellationToken.IsCancellationRequested)
-        {
           return;
-        }
-
+        
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
@@ -136,6 +129,9 @@ namespace ConnectorGrasshopper.Conversion
       {
         return;
       }
+      
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
 
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);

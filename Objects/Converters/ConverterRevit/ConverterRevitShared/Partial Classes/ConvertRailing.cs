@@ -37,8 +37,7 @@ namespace Objects.Converter.Revit
       }
       if (revitRailing == null)
       {
-        Report.LogConversionError(new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
-        return null;
+        throw (new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
       }
 
       if (revitRailing.GetTypeId() != railingType.Id)
@@ -88,7 +87,7 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
       speckleRailing.displayMesh = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      Report.Log($"Converted Railing {revitRailing.Id}");
+      //Report.Log($"Converted Railing {revitRailing.Id}");
       return speckleRailing;
     }
 

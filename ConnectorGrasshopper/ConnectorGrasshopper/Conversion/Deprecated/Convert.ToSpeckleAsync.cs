@@ -23,9 +23,10 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.ToSpeckle;
 
+    public override bool Obsolete => true;
     public override bool CanDisableConversion => false;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
 
     public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
@@ -41,12 +42,6 @@ namespace ConnectorGrasshopper.Conversion
     {
       pManager.AddGenericParameter("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item);
       //pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Converted Base Speckle objects.", GH_ParamAccess.item));
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
-      base.BeforeSolveInstance();
     }
 
     public override void AddedToDocument(GH_Document document)
@@ -134,6 +129,9 @@ namespace ConnectorGrasshopper.Conversion
     {
       if (CancellationToken.IsCancellationRequested)return;
       DA.DisableGapLogic();
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
+      
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 

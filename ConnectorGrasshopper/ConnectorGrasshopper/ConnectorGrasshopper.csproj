@@ -52,11 +52,17 @@
     <Compile Include="Accounts\Accounts.AccountDetails.cs" />
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
-    <Compile Include="Conversion\Convert.ToSpeckleAsync.cs" />
-    <Compile Include="Conversion\Serialisation.SerialiseObject.cs" />
+    <Compile Include="Conversion\Deprecated\Convert.ToNativeAsync.cs" />
+    <Compile Include="Conversion\Deprecated\Convert.ToSpeckleAsync.cs" />
+    <Compile Include="Conversion\Deprecated\ConvertUpgradeUtils.cs" />
+    <Compile Include="Conversion\Deprecated\Serialisation.DeserializeObject.cs" />
+    <Compile Include="Conversion\Deprecated\Serialisation.SerialiseObject.cs" />
+    <Compile Include="Conversion\DeserialiseTaskCapableComponent.cs" />
+    <Compile Include="Conversion\SerialiseTaskCapableComponent.cs" />
+    <Compile Include="Conversion\ToNativeTaskCapableComponent.cs" />
+    <Compile Include="Conversion\ToSpeckleTaskCapableComponent.cs" />
     <Compile Include="Extras\DebounceDispatcher.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
-    <Compile Include="Conversion\Convert.ToNativeAsync.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Extras\SpeckleBaseParam.cs" />
     <Compile Include="Extras\SpeckleStateTag.cs" />
@@ -112,9 +118,6 @@
     <Compile Include="Transports\Transports.Disk.cs" />
     <Compile Include="Transports\Transports.Memory.cs" />
     <Compile Include="Transports\Transports.Sqlite.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Conversion\Serialisation.DeserializeObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">

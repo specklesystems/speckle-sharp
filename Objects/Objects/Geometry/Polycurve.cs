@@ -4,10 +4,11 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Other;
 
 namespace Objects.Geometry
 {
-  public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox
+  public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   {
     public List<ICurve> segments { get; set; } = new List<ICurve>();
     public Interval domain { get; set; }
@@ -84,6 +85,19 @@ namespace Objects.Geometry
       polycurve.segments = CurveArrayEncodingExtensions.FromArray(temp);
       polycurve.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
       return polycurve;
+    }
+
+    public bool TransformTo(Transform transform, out ITransformable polycurve)
+    {
+      polycurve = new Polycurve
+      {
+        segments = transform.ApplyToCurves(segments, out var success),
+        applicationId = applicationId,
+        closed = closed,
+        units = units
+      };
+
+      return success;
     }
   }
 }

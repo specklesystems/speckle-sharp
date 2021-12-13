@@ -76,7 +76,6 @@ namespace Speckle.Core.Credentials
       }
       catch (Exception e)
       {
-        Console.WriteLine(e);
         throw;
       }
     }
@@ -238,7 +237,7 @@ namespace Speckle.Core.Credentials
       var accs = AccountManager.GetAccounts(ServerUrl);
       if (accs.Count() == 0)
       {
-        throw new SpeckleException($"You don't have any accounts for ${ServerUrl}.");
+        throw new SpeckleException($"You don't have any accounts for {ServerUrl}.");
       }
 
       foreach (var acc in accs)
@@ -273,6 +272,9 @@ namespace Speckle.Core.Credentials
 
     private async Task ValidateWithAccount(Account acc)
     {
+      if (ServerUrl != acc.serverInfo.url)
+        throw new SpeckleException($"Account is not from server {ServerUrl}");
+      
       var client = new Client(acc);
       // First check if the stream exists
       try

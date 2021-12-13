@@ -38,7 +38,16 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public string ProgressSummary { get; set; } = "";
+
+    private string _progressSummary;
+    public string ProgressSummary
+    {
+      get => _progressSummary;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _progressSummary, value);
+      }
+    }
 
     private int _value = 0;
     public int Value

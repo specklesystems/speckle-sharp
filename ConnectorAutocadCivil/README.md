@@ -36,9 +36,10 @@ The connector itself doesn't have features to manage your Speckle account - this
 
 ### Debugging
 
-We are currently exploring ways of streamlining AutoCAD add-in loading: for now, follow the steps below on *every* debug session ಠ_ಠ :
-
 - Start a Visual Studio debug session with the target connector as your startup project, and wait for your AutoCAD, Civil3D, or Civil3D as AutoCAD application to open
+
+You should now see the Speckle Connector plugin in the `Add-ins` tab, and the command `SPECKLE` will also initialize the plugin. If this isn't the case, you can try:
+
 - Enter `NETLOAD` in the command prompt
 - Navigate to and select the SpeckleConnectorAutocad.dll or SpeckleConnectorCivil.dll in the corresponding local repo Debug bin (ex: `speckle-sharp\ConnectorAutocadCivil\ConnectorCivil2021\bin\Debug`)
 - The Speckle connector should now appear in the Add-ins ribbon! Click this to get started, or enter `SPECKLE` in the command prompt.
@@ -47,14 +48,7 @@ If you are experiencing a LoaderLock exception when firing up debug, select `Deb
 
 ### Features
 
-Geometry conversions supported:
-
-- Points, Lines, Arcs, Circles, Ellipses, Polylines, Polycurves (send and receive)
-- FeatureLines (send)
-
-NOT supported:
-
-- Block conversions
+For an updated table of supported elements, refer to our [documentation](https://speckle.guide/user/support-tables.html#autocad)
 
 ## Contributing
 

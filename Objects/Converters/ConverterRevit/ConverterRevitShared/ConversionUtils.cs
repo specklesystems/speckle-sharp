@@ -123,7 +123,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception e)
           {
-            Report.LogConversionError(new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
+            throw (new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
           }
         }
 
@@ -342,9 +342,17 @@ namespace Objects.Converter.Revit
                 var val = RevitVersionHelper.ConvertToInternalUnits(sp);
                 rp.Set(val);
               }
-              // Parameter comes form schema builder,
-              // doesn't have an applicationUnit but just units
-              else if (!string.IsNullOrEmpty(sp.units))
+              // the following two cases are for parameters comimg form schema builder
+              // they do not have applicationUnit but just units
+              // units are automatically set but the user can override them 
+              // users might set them to "none" so that we convert them by using the Revit destination parameter display units
+              // this is needed to correctly receive non lenght based parameters (eg air flow)
+              else if (sp.units == Speckle.Core.Kits.Units.None)
+              {
+                var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(sp.value), rp);
+                rp.Set(val);
+              }
+              else if (Speckle.Core.Kits.Units.IsUnitSupported(sp.units))
               {
                 var val = ScaleToNative(Convert.ToDouble(sp.value), sp.units);
                 rp.Set(val);
@@ -626,7 +634,7 @@ namespace Objects.Converter.Revit
     #region Project Base Point
     private class BetterBasePoint
     {
-      public Transform TotalTransform { get; set; } = Transform.Identity;
+      public DB.Transform TotalTransform { get; set; } = DB.Transform.Identity;
     }
 
     ////////////////////////////////////////////////
@@ -655,7 +663,7 @@ namespace Objects.Converter.Revit
 #else
             var point = bp.Position;
 #endif
-            _basePoint = new BetterBasePoint { TotalTransform = Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
+            _basePoint = new BetterBasePoint { TotalTransform = DB.Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
           }
         }
         return _basePoint;
@@ -735,14 +743,14 @@ namespace Objects.Converter.Revit
         //move curves to Z = 0, needed for shafts!
         curveA.MakeBound(0, 1);
         var z = curveA.GetEndPoint(0).Z;
-        var cA = curveA.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+        var cA = curveA.CreateTransformed(DB.Transform.CreateTranslation(new XYZ(0, 0, -z)));
 
         foreach (var curveB in curveArrayB)
         {
           //move curves to Z = 0, needed for shafts!
           curveB.MakeBound(0, 1);
           z = curveB.GetEndPoint(0).Z;
-          var cB = curveB.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, -z)));
+          var cB = curveB.CreateTransformed(DB.Transform.CreateTranslation(new XYZ(0, 0, -z)));
 
           var result = cA.Intersect(cB);
           if (result != SetComparisonResult.BothEmpty && result != SetComparisonResult.Disjoint)

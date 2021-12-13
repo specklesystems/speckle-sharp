@@ -67,17 +67,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2022", "Converters\ConverterRevit\ConverterRevit2022\ConverterRevit2022.csproj", "{90362309-466A-482B-814A-ADB1CE227607}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterMicroStation", "ConverterMicroStation", "{B539797D-13E9-4932-A2CF-05C5485F3AA4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterMicroStation", "Converters\ConverterMicroStation\ConverterMicroStation\ConverterMicroStation.csproj", "{45EA031D-56A5-4CB3-81DC-AF3EF26580E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterOpenBuildings", "Converters\ConverterMicroStation\ConverterOpenBuildings\ConverterOpenBuildings.csproj", "{4220C3DC-E198-4084-B74D-85C9B31607F7}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterMicroStationOpenShared", "Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.shproj", "{208B25E4-2D0E-4534-B197-4C5C96CC53CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterOpenRail", "Converters\ConverterMicroStation\ConverterOpenRail\ConverterOpenRail.csproj", "{D8CDF95E-F72D-4F3E-8026-B82863F97D64}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterOpenRoads", "Converters\ConverterMicroStation\ConverterOpenRoads\ConverterOpenRoads.csproj", "{5905F0F8-AE1D-473B-87F3-97E40E6CBE55}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{13f93c20-793c-4f2d-b836-68d7744063df}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{156ff86c-8531-46d0-aa23-97db326bc591}*SharedItemsImports = 5
 		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{19ab2b30-1af8-4648-8926-0798f3993a08}*SharedItemsImports = 5
+		Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{208b25e4-2d0e-4534-b197-4c5c96cc53ce}*SharedItemsImports = 13
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2c68e80f-38f4-41d0-9b38-473031d1b541}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{4220c3dc-e198-4084-b74d-85c9b31607f7}*SharedItemsImports = 5
+		Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{45ea031d-56a5-4cb3-81dc-af3ef26580e0}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4f16a993-7d11-4565-a2a5-910899919e00}*SharedItemsImports = 5
+		Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{5905f0f8-ae1d-473b-87f3-97e40e6cbe55}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{5f9d82df-ed00-426c-a8c9-a5537b4697a2}*SharedItemsImports = 5
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{63b3f901-7c14-4530-8a6f-ccad68586664}*SharedItemsImports = 5
@@ -87,6 +103,7 @@ Global
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b9649e07-f7b4-4fcc-9e44-076993621d0a}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{bc110327-3c61-4c15-ae4c-daae7ca82a7b}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{bf5515b4-c97c-4fb9-9f93-1740d2b615b3}*SharedItemsImports = 5
+		Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{d8cdf95e-f72d-4f3e-8026-b82863f97d64}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{dd4add16-65f9-46e0-a610-2b7908a966b3}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{e4006179-462f-4133-9481-219279138b93}*SharedItemsImports = 5
 	EndGlobalSection
@@ -170,6 +187,22 @@ Global
 		{90362309-466A-482B-814A-ADB1CE227607}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90362309-466A-482B-814A-ADB1CE227607}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90362309-466A-482B-814A-ADB1CE227607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45EA031D-56A5-4CB3-81DC-AF3EF26580E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45EA031D-56A5-4CB3-81DC-AF3EF26580E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45EA031D-56A5-4CB3-81DC-AF3EF26580E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45EA031D-56A5-4CB3-81DC-AF3EF26580E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4220C3DC-E198-4084-B74D-85C9B31607F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4220C3DC-E198-4084-B74D-85C9B31607F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4220C3DC-E198-4084-B74D-85C9B31607F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4220C3DC-E198-4084-B74D-85C9B31607F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8CDF95E-F72D-4F3E-8026-B82863F97D64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8CDF95E-F72D-4F3E-8026-B82863F97D64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8CDF95E-F72D-4F3E-8026-B82863F97D64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8CDF95E-F72D-4F3E-8026-B82863F97D64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5905F0F8-AE1D-473B-87F3-97E40E6CBE55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5905F0F8-AE1D-473B-87F3-97E40E6CBE55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5905F0F8-AE1D-473B-87F3-97E40E6CBE55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5905F0F8-AE1D-473B-87F3-97E40E6CBE55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -203,6 +236,12 @@ Global
 		{B1FE70B5-BF09-4A08-99CC-69A4DE3716F6} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{6185B1A1-0A12-44B1-8AC5-0ED48147FB21} = {B1FE70B5-BF09-4A08-99CC-69A4DE3716F6}
 		{90362309-466A-482B-814A-ADB1CE227607} = {1987848E-D753-4791-B89E-F74EDF136CB3}
+		{B539797D-13E9-4932-A2CF-05C5485F3AA4} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{45EA031D-56A5-4CB3-81DC-AF3EF26580E0} = {B539797D-13E9-4932-A2CF-05C5485F3AA4}
+		{4220C3DC-E198-4084-B74D-85C9B31607F7} = {B539797D-13E9-4932-A2CF-05C5485F3AA4}
+		{208B25E4-2D0E-4534-B197-4C5C96CC53CE} = {B539797D-13E9-4932-A2CF-05C5485F3AA4}
+		{D8CDF95E-F72D-4F3E-8026-B82863F97D64} = {B539797D-13E9-4932-A2CF-05C5485F3AA4}
+		{5905F0F8-AE1D-473B-87F3-97E40E6CBE55} = {B539797D-13E9-4932-A2CF-05C5485F3AA4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

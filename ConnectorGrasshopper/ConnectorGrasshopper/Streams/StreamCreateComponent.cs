@@ -68,6 +68,8 @@ namespace ConnectorGrasshopper.Streams
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another stream, please use a new component.");
         return;
       }
+      
+      Tracker.TrackPageview(Tracker.STREAM_CREATE);
 
       string userId = null;
       Account account = null;
@@ -105,7 +107,7 @@ namespace ConnectorGrasshopper.Streams
         var client = new Client(account);
         try
         {
-          var streamId = await client.StreamCreate(new StreamCreateInput());
+          var streamId = await client.StreamCreate(new StreamCreateInput { isPublic = false });
           stream = new StreamWrapper(
             streamId,
             account.userInfo.id,
@@ -127,12 +129,5 @@ namespace ConnectorGrasshopper.Streams
         }
       });
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview(Tracker.STREAM_CREATE);
-      base.BeforeSolveInstance();
-    }
-
   }
 }

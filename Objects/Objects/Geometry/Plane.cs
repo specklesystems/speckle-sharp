@@ -3,10 +3,11 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Other;
 
 namespace Objects.Geometry
 {
-  public class Plane : Base
+  public class Plane : Base, ITransformable<Plane>
   {
     public Point origin { get; set; }
 
@@ -57,6 +58,21 @@ namespace Objects.Geometry
       plane.ydir = new Vector(list[9], list[10], list[11], units);
 
       return plane;
+    }
+
+    public bool TransformTo(Transform transform, out Plane plane)
+    {
+      plane = new Plane
+      {
+        origin = transform.ApplyToPoint(origin),
+        normal = transform.ApplyToVector(normal),
+        xdir = transform.ApplyToVector(xdir),
+        ydir = transform.ApplyToVector(ydir),
+        applicationId = applicationId,
+        units = units
+      };
+
+      return true;
     }
   }
 }

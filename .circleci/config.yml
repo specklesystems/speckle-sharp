@@ -9,6 +9,7 @@ orbs:
   win: circleci/windows@2.4.0
   # Upload artifacts to s3
   aws-s3: circleci/aws-s3@2.0.0
+  codecov: codecov/codecov@3.2.2
 
 # adapted from https://circleci.com/developer/orbs/orb/storytel/nugetpublish#commands-packandpublish
 commands:
@@ -59,6 +60,9 @@ parameters:
   run_connector_etabs:
     type: boolean
     default: false
+  run_connector_microstation:
+    type: boolean
+    default: false
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   
@@ -78,7 +82,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
-            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"}
+            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"},
+            {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"}
           ]'
           base-branch: 'main'
   
@@ -120,14 +125,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - checkout 
       - run: 
           name: Unit Test
-          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
+          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - store_test_results:
           path: TestResults
       - store_artifacts:
           path: TestResults
+
+      - codecov/upload
 
   build-objects:
     executor:
@@ -189,7 +196,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$version
             $channel = "latest"
             if($env:CIRCLE_TAG -like "*-beta") { $channel = "beta" }    
-            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $version" }
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
       - run: 
           name: Deploy?
           command: | # stop job if not triggered by deployment workflow (parameters.installer == false)
@@ -311,7 +318,7 @@ workflows:
           slnname: ConnectorAutocadCivil
           dllname: SpeckleConnectorCivil.dll
   
-  # ETABS Connector -Build/Test
+  # ETABS Connector - Build/Test
   connector_etabs:
     when: << pipeline.parameters.run_connector_etabs>>
     jobs:
@@ -319,6 +326,15 @@ workflows:
           name: build-connector-etabs
           slnname: ConnectorETABS
           dllname: SpeckleConnectorETABS.dll
+
+  # MicroStation Connector - Build/Test
+  connector_microstation:
+    when: << pipeline.parameters.run_connector_microstation>>
+    jobs:
+      - build-connector: 
+          name: build-connector-microstation
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenRoads.dll
 
   nuget:
     jobs:
@@ -467,6 +483,66 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # MICROSTATION Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-microstation
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorMicroStation.dll
+          slug: microstation
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # OPENBUILDINGS Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-openbuildings
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenBuildings.dll
+          slug: openbuildings
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      
+      # OPENRAIL Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-openrail
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenRail.dll
+          slug: openrail
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # OPENROADS Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-openroads
+          slnname: ConnectorMicroStation
+          dllname: SpeckleConnectorOpenRoads.dll
+          slug: openroads
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(microstation|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
      
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
@@ -479,6 +555,10 @@ workflows:
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
             - build-deploy-connector-etabs
+            - build-deploy-connector-microstation
+            - build-deploy-connector-openbuildings
+            - build-deploy-connector-openrail
+            - build-deploy-connector-openroads
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta"
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/

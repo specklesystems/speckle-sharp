@@ -141,7 +141,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       var client = new Client(SelectedAccount);
       try
       {
-        var res = client.StreamCreate(new StreamCreateInput()).Result;
+        var res = client.StreamCreate(new StreamCreateInput { isPublic = false }).Result;
 
         Stream = new StreamWrapper(res, SelectedAccount.userInfo.id, SelectedAccount.serverInfo.url);
         CreateEnabled = false;

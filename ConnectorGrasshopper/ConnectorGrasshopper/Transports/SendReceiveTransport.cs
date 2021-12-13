@@ -40,6 +40,8 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
+      Tracker.TrackPageview("transports", "send_to_transport");
+
       List<ITransport> transports = new List<ITransport>();
       DA.GetDataList(0, transports);
 
@@ -63,13 +65,6 @@ namespace ConnectorGrasshopper.Transports
       var res = Task.Run(async () => await Speckle.Core.Api.Operations.Send(obj.Value, transports, false, disposeTransports: true)).Result;
       DA.SetData(0, res);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview("transports", "send_to_transport");
-      base.BeforeSolveInstance();
-    }
-
   }
 
   public class ReceiveFromTransport : GH_Component
@@ -100,6 +95,8 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you've inputed only one transport and a flat list of object ids.");
         return;
       }
+      
+      Tracker.TrackPageview("transports", "receive_from_transport");
 
       List<string> ids = new List<string>();
       DA.GetDataList(1, ids);
@@ -128,12 +125,5 @@ namespace ConnectorGrasshopper.Transports
 
       DA.SetDataList(0, results);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview("transports", "receive_from_transport");
-      base.BeforeSolveInstance();
-    }
-
   }
 }

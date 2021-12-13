@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Objects.BuiltElements.Revit
 {
-  
+
   public class Parameter : Base
   {
     public string name { get; set; }
@@ -27,15 +27,18 @@ namespace Objects.BuiltElements.Revit
     /// </summary>
     public bool isTypeParameter { get; set; } = false;
 
+
     public string units { get; set; }
 
     public Parameter() { }
 
     [SchemaInfo("Parameter", "A Revit instance parameter to set on an element", "Revit", "Families")]
-    public Parameter([SchemaParamInfo("The Revit display name, BuiltInParameter name or GUID (for shared parameters)")] string name, object value)
+    public Parameter([SchemaParamInfo("The Revit display name, BuiltInParameter name or GUID (for shared parameters)")] string name, object value,
+      [SchemaParamInfo("(Optional) Speckle units. If not set it's retrieved from the current document. For non lenght based parameters (eg. Air Flow) it should be set to 'none' so that the Revit display unit will be used instead.")] string units = "")
     {
       this.name = name;
       this.value = value;
+      this.units = units;
       this.applicationInternalName = name;
     }
   }

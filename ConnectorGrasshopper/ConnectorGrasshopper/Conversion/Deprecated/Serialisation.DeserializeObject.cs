@@ -8,49 +8,42 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Conversion
 {
-  public class SerializeObject : GH_AsyncComponent
+  public class DeserializeObject : GH_AsyncComponent
   {
-    public override Guid ComponentGuid { get => new Guid("EDEBF1F4-3FC3-4E01-95DD-286FF8804EB0"); }
+    public override Guid ComponentGuid { get => new Guid("CC6E8983-C6E9-47ED-8F63-8DB7D677B997"); }
 
-    protected override System.Drawing.Bitmap Icon => Properties.Resources.Serialize;
+    protected override System.Drawing.Bitmap Icon => Properties.Resources.Deserialize;
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
-
-    public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
+    public DeserializeObject() : base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
-      BaseWorker = new SerializeWorker(this);
+      BaseWorker = new DeserializeWorker(this);
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Speckle base objects to serialize.", GH_ParamAccess.tree));
+      pManager.AddTextParameter("Json", "J", "Serialized base objects in JSON format.", GH_ParamAccess.tree);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("Json", "J", "Serialized objects in JSON format.", GH_ParamAccess.tree);
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      Tracker.TrackPageview(Tracker.SERIALIZE);
-      base.BeforeSolveInstance();
+      pManager.AddParameter(new SpeckleBaseParam("Base", "B", "Deserialized Speckle Base objects.", GH_ParamAccess.tree));
     }
   }
 
-  public class SerializeWorker : WorkerInstance
+  public class DeserializeWorker : WorkerInstance
   {
-    GH_Structure<GH_SpeckleBase> Objects;
-    GH_Structure<GH_String> ConvertedObjects;
+    GH_Structure<GH_String> Objects;
+    GH_Structure<GH_SpeckleBase> ConvertedObjects;
 
-    public SerializeWorker(GH_Component parent) : base(parent)
+    public DeserializeWorker(GH_Component parent) : base(parent)
     {
-      Objects = new GH_Structure<GH_SpeckleBase>();
-      ConvertedObjects = new GH_Structure<GH_String>();
+      Objects = new GH_Structure<GH_String>();
+      ConvertedObjects = new GH_Structure<GH_SpeckleBase>();
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
@@ -58,7 +51,7 @@ namespace ConnectorGrasshopper.Conversion
       try
       {
         if (CancellationToken.IsCancellationRequested)return;
-
+        
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
@@ -67,22 +60,17 @@ namespace ConnectorGrasshopper.Conversion
           {
             if (CancellationToken.IsCancellationRequested)return;
 
-            if (item != null && item.Value != null)
+            try
             {
-              try
-              {
-                var serialised = Operations.Serialize(item.Value);
-                ConvertedObjects.Append(new GH_String { Value = serialised }, path);
-              }
-              catch (Exception e)
-              {
-                RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
-              }
+              var deserialized = Operations.Deserialize(item.Value);
+              ConvertedObjects.Append(new GH_SpeckleBase { Value = deserialized }, path);
             }
-            else
+            catch (Exception e)
             {
+              // Add null to objects to respect output paths.
               ConvertedObjects.Append(null, path);
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));            }
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Cannot deserialize object at path {path}[{list.IndexOf(item)}]: {e.Message}."));
+            }
 
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
@@ -90,6 +78,7 @@ namespace ConnectorGrasshopper.Conversion
           branchIndex++;
         }
 
+        Done();
       }
       catch (Exception e)
       {
@@ -98,19 +87,17 @@ namespace ConnectorGrasshopper.Conversion
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }
-      // Always call done
-      Done();
     }
 
-    public override WorkerInstance Duplicate() => new SerializeWorker(Parent);
-
-    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
+    public override WorkerInstance Duplicate() => new DeserializeWorker(Parent);
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
       if (CancellationToken.IsCancellationRequested)return;
-
-      GH_Structure<GH_SpeckleBase> _objects;
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview(Tracker.DESERIALIZE);
+      
+      GH_Structure<GH_String> _objects;
       DA.GetDataTree(0, out _objects);
 
       int branchIndex = 0;
@@ -119,11 +106,14 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          Objects.Append(item, path);
+          if(item.IsValid) Objects.Append(item, path);
+          else RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}][{list.IndexOf(item)}] is not valid."));
         }
         branchIndex++;
       }
     }
+    
+    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
     {

@@ -26,6 +26,7 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
+using Spiral = Objects.Geometry.Spiral;
 using View3D = Objects.BuiltElements.View3D;
 
 using RH = Rhino.Geometry;
@@ -44,7 +45,15 @@ namespace Objects.Converter.RhinoGh
     public static string RhinoAppName = Applications.Rhino7;
     public static string GrasshopperAppName = Applications.Grasshopper;
 #endif
+    
+    public enum MeshSettings
+    {
+      Default,
+      CurrentDoc
+    }
 
+    public MeshSettings SelectedMeshSettings = MeshSettings.Default;
+    
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
@@ -76,6 +85,11 @@ namespace Objects.Converter.RhinoGh
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetConverterSettings(object settings)
+    {
+      var s = (MeshSettings)settings;
+      SelectedMeshSettings = s;
+    }
 
     public void SetContextDocument(object doc)
     {
@@ -509,6 +523,11 @@ namespace Objects.Converter.RhinoGh
           Report.Log($"Created Ellipse {o.id}");
           break;
 
+        case Spiral o:
+          rhinoObj = SpiralToNative(o);
+          Report.Log($"Created Spiral {o.id} as Curve");
+          break;
+
         case Polyline o:
           rhinoObj = PolylineToNative(o);
           Report.Log($"Created Polyline {o.id}");
@@ -554,8 +573,14 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case Alignment o:
-          rhinoObj = CurveToNative(o.baseCurve);
-          Report.Log($"Created Alignment {o.id}");
+          if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
+          {
+            rhinoObj = CurveToNative(o.baseCurve);
+            Report.Log($"Created Alignment {o.id}");
+            break;
+          }
+          rhinoObj = AlignmentToNative(o);
+          Report.Log($"Created Alignment {o.id} as Curve");
           break;
 
         case ModelCurve o:
@@ -668,6 +693,7 @@ case RH.SubD _:
         case Circle _:
         case Arc _:
         case Ellipse _:
+        case Spiral _:
         case Polyline _:
         case Polycurve _:
         case Curve _:

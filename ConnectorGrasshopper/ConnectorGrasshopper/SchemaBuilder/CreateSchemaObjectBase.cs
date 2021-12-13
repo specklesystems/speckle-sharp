@@ -326,6 +326,9 @@ namespace ConnectorGrasshopper
         return;
       }
 
+      if(DA.Iteration == 0)
+        Tracker.TrackPageview("objects", "create", "schema");
+      
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       List<object> cParamsValues = new List<object>();
@@ -377,10 +380,12 @@ namespace ConnectorGrasshopper
       {
         schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
         ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-        ((Base)schemaObject)["units"] = units;
-      }
+        if(((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
+          ((Base)schemaObject)["units"] = units;
+      } 
       catch (Exception e)
       {
+
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
         return;
       }
@@ -401,6 +406,7 @@ namespace ConnectorGrasshopper
 
           commitObj = ((Base)mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
+          if(commitObj["units"]==null || commitObj["units"] == "")
           commitObj["units"] = units;
         }
         catch (Exception e)
@@ -592,7 +598,6 @@ namespace ConnectorGrasshopper
     protected override void BeforeSolveInstance()
     {
       Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
-      Tracker.TrackPageview("objects", "create", "variableinput");
       base.BeforeSolveInstance();
     }
   }

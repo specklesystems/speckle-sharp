@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
-      Report.Log($"Converted Beam {revitBeam.Id}");
+      //Report.Log($"Converted Beam {revitBeam.Id}");
       return speckleBeam;
     }
   }

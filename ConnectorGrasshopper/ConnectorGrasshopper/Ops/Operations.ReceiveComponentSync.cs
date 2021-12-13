@@ -18,6 +18,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
 namespace ConnectorGrasshopper.Ops
@@ -212,6 +213,9 @@ namespace ConnectorGrasshopper.Ops
       {
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
+        SpeckleGHSettings.OnMeshSettingsChanged +=
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
         foundKit = true;
       }
@@ -255,6 +259,8 @@ namespace ConnectorGrasshopper.Ops
 
       if (InPreSolve)
       {
+        Tracker.TrackPageview("receive", "sync");
+
         var task = Task.Run(async () =>
         {
           var acc = await StreamWrapper?.GetAccount();

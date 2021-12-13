@@ -32,6 +32,23 @@ namespace Objects
     Interval domain { get; set; }
   }
 
+  /// <summary>
+  /// Interface for transformable objects.
+  /// </summary>
+  /// <typeparam name="T"></typeparam>
+  public interface ITransformable<T> where T : ITransformable<T>
+  {
+    bool TransformTo(Transform transform, out T transformed);
+  }
+
+  /// <summary>
+  /// Interface for transformable objects where the type may not be known on convert (eg ICurve implementations)
+  /// </summary>
+  public interface ITransformable
+  {
+    bool TransformTo(Transform transform, out ITransformable transformed);
+  }
+
   #endregion
 
   #region Built elements

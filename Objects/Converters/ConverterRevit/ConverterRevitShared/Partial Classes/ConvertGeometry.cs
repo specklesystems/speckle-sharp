@@ -17,6 +17,7 @@ using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
+using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
@@ -331,6 +332,18 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public CurveArray CurveToNative(List<ICurve> crvs)
+    {
+      CurveArray crvsArray = new CurveArray();
+      foreach (var crv in crvs)
+      {
+        var crvEnumerator = CurveToNative(crv).GetEnumerator();
+        while (crvEnumerator.MoveNext() && crvEnumerator.Current != null)
+          crvsArray.Append(crvEnumerator.Current as DB.Curve);
+      }
+      return crvsArray;
+    }
+
     /// <summary>
     /// Recursively creates an ordered list of curves from a polycurve/polyline.
     /// Please note that a polyline is broken down into lines.
@@ -357,6 +370,9 @@ namespace Objects.Converter.Revit
         case Ellipse ellipse:
           curveArray.Append(EllipseToNative(ellipse));
           return curveArray;
+
+        case Spiral spiral:
+          return PolylineToNative(spiral.displayValue);
 
         case Curve nurbs:
           curveArray.Append(CurveToNative(nurbs));

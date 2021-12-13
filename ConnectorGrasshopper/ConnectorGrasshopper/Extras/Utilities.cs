@@ -24,6 +24,7 @@ namespace ConnectorGrasshopper.Extras
       {
         var defKit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit != null && kit.Name == n);
         var converter = defKit.LoadConverter(Applications.Rhino6);
+        converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         return converter;
       }
@@ -367,7 +368,7 @@ namespace ConnectorGrasshopper.Extras
     /// <param name="Converter"></param>
     /// <param name="base"></param>
     /// <returns></returns>
-    public static GH_Structure<IGH_Goo> ConvertToTree(ISpeckleConverter Converter, Base @base)
+    public static GH_Structure<IGH_Goo> ConvertToTree(ISpeckleConverter Converter, Base @base, Action<GH_RuntimeMessageLevel,string> onError = null)
     {
       var data = new GH_Structure<IGH_Goo>();
 
@@ -388,12 +389,9 @@ namespace ConnectorGrasshopper.Extras
         data = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
       }
       // Simple pass the SpeckleBase
-      // TODO: the base object has multiple members,
-      // therefore create a matching structure via the output ports, similar to 
-      // running the expando object
-      // then run the treebuilder for each port
       else
       {
+        onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
         data.Append(new GH_SpeckleBase(@base));
       }
       return data;

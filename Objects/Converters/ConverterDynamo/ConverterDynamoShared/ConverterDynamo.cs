@@ -19,6 +19,7 @@ using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
+using Spiral = Objects.Geometry.Spiral;
 using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Dynamo
@@ -58,6 +59,10 @@ namespace Objects.Converter.Dynamo
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetConverterSettings(object settings)
+    {
+      throw new NotImplementedException("This converter does not have any settings.");
+    }
 
     public Base ConvertToSpeckle(object @object)
     {
@@ -154,6 +159,9 @@ namespace Objects.Converter.Dynamo
 
         case Ellipse o:
           return EllipseToNative(o);
+
+        case Spiral o:
+          return PolylineToNative(o.displayValue);
 
         case Curve o:
           return CurveToNative(o);
@@ -252,41 +260,18 @@ namespace Objects.Converter.Dynamo
       switch (@object)
       {
         case Point _:
-          return true;
-
         case Vector _:
-          return true;
-
         case Plane _:
-          return true;
-
         case Line _:
-          return true;
-
         case Polyline _:
-          return true;
-
         case Polycurve _:
-          return true;
-
         case Circle _:
-          return true;
-
         case Arc _:
-          return true;
-
         case Ellipse _:
-          return true;
-
+        case Spiral _:
         case Curve _:
-          return true;
-
         case Brep _:
-          return true;
-
         case Mesh _:
-          return true;
-
         case Box _:
           return true;
 

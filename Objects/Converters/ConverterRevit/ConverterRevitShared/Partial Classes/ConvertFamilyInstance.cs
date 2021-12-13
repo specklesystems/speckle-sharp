@@ -218,7 +218,7 @@ namespace Objects.Converter.Revit
 
       // TODO:
       // revitFi.GetSubelements();
-      Report.Log($"Converted FamilyInstance {revitFi.Id}");
+      //Report.Log($"Converted FamilyInstance {revitFi.Id}");
       return speckleFi;
     }
 

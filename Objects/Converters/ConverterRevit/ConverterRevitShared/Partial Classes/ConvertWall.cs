@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleWall.baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Walls are currently supported.");
+        throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleWall.applicationId}. Only line based Walls are currently supported.");
       }
 
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
@@ -45,8 +45,7 @@ namespace Objects.Converter.Revit
       }
       if (revitWall == null)
       {
-        Report.LogConversionError(new Exception($"Failed to create wall ${speckleWall.applicationId}."));
-        return null;
+        throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleWall.applicationId}.");
       }
 
       //is structural update
@@ -189,7 +188,7 @@ namespace Objects.Converter.Revit
       });
 
       GetHostedElements(speckleWall, revitWall);
-      Report.Log($"Converted Wall {revitWall.Id}");
+      //Report.Log($"Converted Wall {revitWall.Id}");
       return speckleWall;
     }
 
