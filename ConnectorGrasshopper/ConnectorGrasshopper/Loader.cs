@@ -94,6 +94,10 @@ namespace ConnectorGrasshopper
       CreateSchemaConversionMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateMeshingSettingsMenu();
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      CreateTabsMenu();
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;
@@ -133,6 +137,23 @@ namespace ConnectorGrasshopper
       }
 
       MenuHasBeenAdded = true;
+    }
+
+    private void CreateTabsMenu()
+    {
+      var tabsMenu = speckleMenu.DropDown.Items.Add("Tabs") as ToolStripMenuItem;
+      new List<string>{"BIM", "Revit", "Structural", "ETABS", "GSA"}.ForEach(s =>
+      {
+        var category = $"Speckle 2 {s}";
+        var mi = tabsMenu.DropDown.Items.Add(category) as ToolStripMenuItem;
+        mi.CheckOnClick = true;
+        mi.Checked = SpeckleGHSettings.GetTabVisibility(category);
+        mi.Click += (sender, args) =>
+        {
+          var tmi = sender as ToolStripMenuItem;
+          SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
+        };
+      });
     }
 
     private void CreateMeshingSettingsMenu()
