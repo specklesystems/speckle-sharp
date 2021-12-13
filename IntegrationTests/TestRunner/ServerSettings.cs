@@ -1,14 +1,29 @@
 
-class ServerSettings {
-    public Speckle.Core.Api.Stream Stream;
+using System.Globalization;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 
-    public ServerSettings(Speckle.Core.Api.Stream stream)
+class ServerSettings
+{
+    public string StreamId;
+    private Client _client;
+    public string AccountId => _client.Account.id;
+
+    public ServerSettings(string streamId, Client client)
     {
-        Stream = stream;
+        StreamId = streamId;
+        _client = client;
     }
 
-    public static ServerSettings Initialize(){
-        return new ServerSettings(new Speckle.Core.Api.Stream());
+    public static async Task<ServerSettings> Initialize()
+    {
+
+        // set up a user for latest.speckle.dev
+        var latestAcc = AccountManager.GetAccounts().Where(a => a.serverInfo.url == "https://latest.speckle.dev").First();
+        var client = new Client(latestAcc);
+        var date = DateTime.Now.ToString("G", CultureInfo.GetCultureInfo("en-US"));
+        var streamId = await client.StreamCreate(new StreamCreateInput() { name = $"Integration {date}" });
+        return new ServerSettings(streamId, client);
     }
 }
 
