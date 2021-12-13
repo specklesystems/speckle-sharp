@@ -18,7 +18,7 @@ namespace ConnectorGrasshopper.Conversion
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Serialize;
     public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     public SerializeObject() : base("Serialize", "SRL", "Serializes a Speckle Base object to JSON", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
