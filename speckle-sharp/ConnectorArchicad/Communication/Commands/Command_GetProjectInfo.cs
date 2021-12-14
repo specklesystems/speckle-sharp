@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using Objects.BuiltElements.Archicad.Model;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetProjectInfo : ICommand<Model.ProjectInfoData>
+	internal sealed class GetProjectInfo : ICommand<ProjectInfoData>
 	{
 		#region --- Classes ---
 
@@ -18,9 +19,9 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<Model.ProjectInfoData> Execute ()
+		public async Task<ProjectInfoData> Execute ()
 		{
-			return await HttpCommandExecutor.Execute<Parameters, Model.ProjectInfoData> ("GetProjectInfo", null);
+			return await HttpCommandExecutor.Execute<Parameters, ProjectInfoData> ("GetProjectInfo", null);
 		}
 
 		#endregion

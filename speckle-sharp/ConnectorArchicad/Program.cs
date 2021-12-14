@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using System.IO;
+using System.Linq;
 
 
 namespace Archicad.Launcher
@@ -9,6 +10,20 @@ namespace Archicad.Launcher
     {
         public static void Main (string[] args)
         {
+   //         if (args.Length == 0)
+			//{
+   //             System.Diagnostics.Debug.Fail ("Communication port number is missing!");
+   //             return;
+			//}
+
+   //         if (!uint.TryParse (args.First (), out uint portNumber))
+			//{
+   //             System.Diagnostics.Debug.Fail ("Invalid communication port number!");
+   //             return;
+			//}
+
+            //Communication.ConnectionManager.Instance.Start (portNumber);
+
             Communication.ConnectionManager.Instance.Start (19723);
             BuildAvaloniaApp ().StartWithClassicDesktopLifetime (args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
         }

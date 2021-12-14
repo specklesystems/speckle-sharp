@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Objects.BuiltElements.Archicad.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class GetWallData : ICommand<IEnumerable<Model.WallData>>
+	sealed internal class GetWallData : ICommand<IEnumerable<WallData>>
 	{
 		#region --- Classes ---
 
@@ -37,7 +38,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty("walls")]
-			public IEnumerable<Model.WallData> Datas { get; private set; }
+			public IEnumerable<WallData> Datas { get; private set; }
 
 			#endregion
 		}
@@ -64,7 +65,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Model.WallData>> Execute()
+		public async Task<IEnumerable<WallData>> Execute()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetWallData", new Parameters (ElementIds));
 			return result.Datas;

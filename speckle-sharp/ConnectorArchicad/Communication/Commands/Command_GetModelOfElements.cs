@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Objects.BuiltElements.Archicad.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
+	sealed internal class GetModelForElements : ICommand<IEnumerable<ElementModelData>>
 	{
 		#region --- Classes ---
 
@@ -37,7 +38,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty ("models")]
-			public IEnumerable<Model.ElementModelData> Models { get; private set; }
+			public IEnumerable<ElementModelData> Models { get; private set; }
 
 			#endregion
 		}
@@ -64,7 +65,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Model.ElementModelData>> Execute ()
+		public async Task<IEnumerable<ElementModelData>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetModelForElements", new Parameters (ElementIds));
 			return result.Models;

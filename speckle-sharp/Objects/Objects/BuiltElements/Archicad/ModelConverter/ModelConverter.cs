@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace Archicad.Operations
+namespace Objects.BuiltElements.Archicad.Operations
 {
 	public static class ModelConverter
 	{
@@ -17,24 +17,24 @@ namespace Archicad.Operations
 			{
 				int vertexOffset = mesh.VerticesCount;
 
-				mesh.vertices.AddRange (meshData.Vertecies.SelectMany (v => FlattenPoint (v)));
-				mesh.faces.AddRange (meshData.Polygons.SelectMany (p => ConvertPolygon (p, vertexOffset)));
+				mesh.vertices.AddRange (meshData.vertecies.SelectMany (v => FlattenPoint (v)));
+				mesh.faces.AddRange (meshData.polygons.SelectMany (p => ConvertPolygon (p, vertexOffset)));
 			}
 
 			return mesh;
 		}
 
-		private static List<double> FlattenPoint (Model.MeshData.Vertex vertex)
+		private static List<double> FlattenPoint (Model.Point3D vertex)
 		{
-			return new List<double> { vertex.X, vertex.Y, vertex.Z };
+			return new List<double> { vertex.x, vertex.y, vertex.z };
 		}
 
 		private static List<int> ConvertPolygon (Model.MeshData.Polygon polygon, int vertexOffset)
 		{
 			List<int> vertexIds = new List<int> ();
-			vertexIds.Add (polygon.VertexIds.Count () == 3 ? 0 : 1);
+			vertexIds.Add (polygon.pointIds.Count () == 3 ? 0 : 1);
 			
-			foreach (int vertexId in polygon.VertexIds)
+			foreach (int vertexId in polygon.pointIds)
 			{
 				vertexIds.Add (vertexId + vertexOffset);
 			}

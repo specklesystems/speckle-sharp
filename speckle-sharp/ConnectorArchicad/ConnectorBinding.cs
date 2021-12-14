@@ -8,8 +8,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
 using Speckle.Core.Api;
-using System.Threading;
 using Speckle.Core.Models;
+using Objects.BuiltElements.Archicad.Model;
 
 
 namespace Archicad.Launcher
@@ -28,24 +28,24 @@ namespace Archicad.Launcher
 
 		public override string? GetDocumentId ()
 		{
-			Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
+			ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
 			if (projectInfo is null)
 			{
 				return string.Empty;
 			}
 
-			return projectInfo.Name;
+			return projectInfo.name;
 		}
 
 		public override string GetDocumentLocation ()
 		{
-			Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
+			ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
 			if (projectInfo is null)
 			{
 				return string.Empty;
 			}
 
-			return projectInfo.Location;
+			return projectInfo.location;
 		}
 
 		public override string GetFileName ()
