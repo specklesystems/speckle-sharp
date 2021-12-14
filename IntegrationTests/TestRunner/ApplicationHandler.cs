@@ -63,6 +63,10 @@ class RevitHandler: IHandler
   public async Task Teardown()
   {
     Directory.Delete(_workingFolder, recursive:true);
+    foreach (var (versionString, _) in _versions)
+    {
+      Directory.Delete(_revitPluginFolder(versionString), recursive: true);
+    }
     await Task.Delay(1);
   }
 
@@ -104,14 +108,30 @@ class RevitHandler: IHandler
     {
       var fileName = Path.GetFileName(testFile);
       var preparedFile =  Path.Combine(workingFolder, fileName);
-      File.Copy(testFile, preparedFile);
+      File.Copy(testFile, preparedFile, overwrite: true);
       yield return preparedFile;
     }
   }
   private static async Task _prepareTestApplication(string revitVersion)
   {
+    //simulate that we would be getting this from a remote location
     await Task.Delay(10);
+    var sourceFolder = Path.Combine("C:/spockle/plugin", revitVersion);
+    var pluginFolder = _revitPluginFolder(revitVersion);
+    Directory.CreateDirectory(pluginFolder);
+    foreach (var file in Directory.GetFiles(sourceFolder))
+    {
+      File.Copy(file, Path.Combine(pluginFolder, Path.GetFileName(file)), overwrite: true);
+    }
     //this method would be responsible for installing the tester plugin from ie object storage
     return;
+  }
+
+  private static string _revitPluginFolder(string revitVersion)
+  {
+    var appdataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+    var revitVersionNumber = revitVersion.Replace("Revit ", "");
+    var pluginFolder = Path.Combine(appdataFolder, "Autodesk/Revit/Addins", revitVersionNumber, "IntegrationTester");
+    return pluginFolder;
   }
 }
