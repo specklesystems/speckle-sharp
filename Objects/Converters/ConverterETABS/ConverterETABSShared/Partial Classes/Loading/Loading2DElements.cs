@@ -12,7 +12,6 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-
     Dictionary<string, LoadFace> LoadStoringArea = new Dictionary<string, LoadFace>();
     Dictionary<string, List<Base>> AreaStoring = new Dictionary<string, List<Base>>();
     int counterAreaLoadUniform = 0;
@@ -52,16 +51,12 @@ namespace Objects.Converter.ETABS
           case Structural.ETABS.Analysis.WindPressureType.other:
             Model.AreaObj.SetLoadWindPressure(element.name, windLoadingFace.loadCase.name, 2, windLoadingFace.Cp);
             break;
-
         }
-
       }
     }
 
     Base LoadFaceToSpeckle(string name, int areaNumber)
     {
-
-
       int numberItems = 0;
       string[] areaName = null;
       string[] loadPat = null;
@@ -193,7 +188,6 @@ namespace Objects.Converter.ETABS
           counterAreaLoadWind = 0;
         }
       }
-
       var speckleBase = new Base();
       return speckleBase;
     }

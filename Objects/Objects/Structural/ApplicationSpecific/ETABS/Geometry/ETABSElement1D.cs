@@ -1,48 +1,19 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using Objects.Structural.Geometry;
+using Objects.Structural.ETABS.Properties;
+using Speckle.Core.Kits;
 using Objects.Geometry;
 using Objects.Structural.Properties;
 
-namespace Objects.Structural.Geometry
+namespace Objects.Structural.ETABS.Geometry
 {
-  public class Element1D : Base, IDisplayMesh
+  public class ETABSElement1D: Element1D
   {
-    public string name { get; set; } //add unique id as base identifier, name can change too easily
-    public Line baseLine { get; set; }
-
-    [DetachProperty]
-    public Property1D property { get; set; }
-    public ElementType1D type { get; set; }
-    public Restraint end1Releases { get; set; }
-    public Restraint end2Releases { get; set; }
-    public Vector end1Offset { get; set; }
-    public Vector end2Offset { get; set; }
-    public Node orientationNode { get; set; }
-    public double orientationAngle { get; set; }
-    public Plane localAxis { get; set; }
-
-    [DetachProperty]
-    public Base parent { get; set; } //parent element
-
-    [DetachProperty]
-    public Node end1Node { get; set; } //startNode
-
-    [DetachProperty]
-    public Node end2Node { get; set; } //endNode
-
-    [DetachProperty]
-    public List<Node> topology { get; set; }
-
-    [DetachProperty]
-    public Mesh displayMesh { get; set; }
-    public string units { get; set; }
-    public Element1D() { }
-    public Element1D(Line baseLine)
-    {
-      this.baseLine = baseLine;
-    }
+   public ETABSLinearSpring ETABSLinearSpring { get; set; }
+   public string PierAssignment { get; set; }
+   public string SpandrelAssignment { get; set; }
 
     /// <summary>
     /// SchemaBuilder constructor for structural 1D element (based on local axis)
@@ -57,12 +28,13 @@ namespace Objects.Structural.Geometry
     /// <param name="end2Offset"></param>
     /// <param name="localAxis"></param>
     [SchemaInfo("Element1D (from local axis)", "Creates a Speckle structural 1D element (from local axis)", "Structural", "Geometry")]
-    public Element1D(Line baseLine, Property1D property, ElementType1D type,
+    public ETABSElement1D(Line baseLine, Property1D property, ElementType1D type,
         string name = null,
         [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
         [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,
         [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-        [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null, Plane localAxis = null)
+        [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null, Plane localAxis = null,
+        ETABSLinearSpring ETABSLinearSpring = null)
     {
       this.baseLine = baseLine;
       this.property = property;
@@ -73,6 +45,7 @@ namespace Objects.Structural.Geometry
       this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
       this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
       this.localAxis = localAxis;
+      this.ETABSLinearSpring = ETABSLinearSpring;
     }
 
     /// <summary>
@@ -89,13 +62,14 @@ namespace Objects.Structural.Geometry
     /// <param name="orientationNode"></param>
     /// <param name="orientationAngle"></param>
     [SchemaInfo("Element1D (from orientation node and angle)", "Creates a Speckle structural 1D element (from orientation node and angle)", "Structural", "Geometry")]
-    public Element1D(Line baseLine, Property1D property, ElementType1D type,
+    public ETABSElement1D(Line baseLine, Property1D property, ElementType1D type,
          string name = null,
          [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
          [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,
          [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
          [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-         Node orientationNode = null, double orientationAngle = 0)
+         Node orientationNode = null, double orientationAngle = 0,
+         ETABSLinearSpring ETABSLinearSpring = null)
     {
       this.baseLine = baseLine;
       this.property = property;
@@ -107,6 +81,11 @@ namespace Objects.Structural.Geometry
       this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
       this.orientationNode = orientationNode;
       this.orientationAngle = orientationAngle;
+      this.ETABSLinearSpring = ETABSLinearSpring;
+    }
+
+    public ETABSElement1D()
+    {
     }
   }
 }

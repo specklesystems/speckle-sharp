@@ -87,7 +87,7 @@ namespace Objects.Converter.ETABS
           return LineToNative(o);
           Report.Log($"Created Line {o.id}");
         case OSG.Element1D o:
-          return FrameToNative(o);
+          return FrameToNative((ETABSElement1D)o);
           Report.Log($"Created Element1D {o.id}");
         case OSG.Element2D o:
           return AreaToNative((ETABSElement2D)o);
@@ -153,13 +153,32 @@ namespace Objects.Converter.ETABS
           returnObject = BraceToSpeckle(name);
           Report.Log($"Created Brace");
           break;
+        case "Link":
+          returnObject = LinkToSpeckle(name);
+          Report.Log($"Created Link");
+          break;
         case "ElementsCount":
           returnObject = ModelElementsCountToSpeckle();
           break;
-
-        //case "Link":
-        //    returnObject = LinkToSpeckle(name);
-        //    break;
+        case "Spandrel":
+          returnObject = SpandrelToSpeckle(name);
+          Report.Log($"Created Spandrel");
+          break;
+        case "Pier":
+          returnObject = PierToSpeckle(name);
+          Report.Log($"Created Pier");
+          break;
+        case "Grids":
+          returnObject = gridLinesToSpeckle(name);
+          Report.Log($"Created Grids");
+          break;
+        case "Tendon":
+          returnObject = ETABSTendonToSpeckle(name);
+          Report.Log($"Created Tendons");
+          break;
+        case "Links":
+          returnObject = LinkToSpeckle(name);
+          break;
         //case "LoadCase":
         //    returnObject = LoadCaseToSpeckle(name);
         //    break;
