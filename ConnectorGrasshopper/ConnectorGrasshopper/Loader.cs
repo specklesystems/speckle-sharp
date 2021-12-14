@@ -142,6 +142,8 @@ namespace ConnectorGrasshopper
     private void CreateTabsMenu()
     {
       var tabsMenu = speckleMenu.DropDown.Items.Add("Tabs") as ToolStripMenuItem;
+      var warn = tabsMenu.DropDown.Items.Add("Changes require restarting Rhino to take effect.");
+      warn.Enabled = false;
       new List<string>{"BIM", "Revit", "Structural", "ETABS", "GSA"}.ForEach(s =>
       {
         var category = $"Speckle 2 {s}";
