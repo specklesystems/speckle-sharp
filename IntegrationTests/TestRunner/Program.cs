@@ -13,10 +13,10 @@ var settings = await ServerSettings.Initialize();
 
 //2. sync execution steps, we need to send all the data before we can receive
 Console.WriteLine("Configuring send operations");
-var senders = Senders.Initialize(settings);
+var executor = new TestExecutor(settings);
 
-await senders.Send();
-
+await executor.Setup();
+var sendResults = (await executor.Send()).ToList();
 
 Console.WriteLine("Send operations completed");
 

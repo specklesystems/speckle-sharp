@@ -6,13 +6,13 @@ using Speckle.Core.Credentials;
 class ServerSettings
 {
     public string StreamId;
-    private Client _client;
-    public string AccountId => _client.Account.id;
+    public Client Client;
+    public string AccountId => Client.Account.id;
 
     public ServerSettings(string streamId, Client client)
     {
         StreamId = streamId;
-        _client = client;
+        Client = client;
     }
 
     public static async Task<ServerSettings> Initialize()

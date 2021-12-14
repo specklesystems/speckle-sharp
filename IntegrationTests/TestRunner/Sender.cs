@@ -1,92 +1,132 @@
 using System.Diagnostics;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using System.Text.Json;
 
 namespace Sender
 {
 
   interface ISender
   {
-    Task SendTo(string streamId);
+    SendResult? SendResult {get;}
+    Task<SendResult> Send();
   }
 
+  record SendResult
+  {
+    public bool Success;
+    public string Log;
+
+    public SendResult(bool success, string log)
+    {
+      Success = success;
+      Log = log;
+    }
+  }
+
+  record RevitConfig
+  {
+    public string SourceFile;
+    public string WorkingFolder;
+    public string TargetStream;
+    public string TargetBranch;
+    public string SenderId;
+
+    public RevitConfig(string sourceFile, string workingFolder, string targetStream, string targetBranch, string senderId)
+    {
+      SourceFile = sourceFile;
+      WorkingFolder = workingFolder;
+      TargetStream = targetStream;
+      TargetBranch = targetBranch;
+      SenderId = senderId;
+    }
+  }
 
   class RevitSender : ISender
   {
     private string _applicationPath;
+    private string _revitVersion;
+    private RevitConfig _config;
+    public SendResult? SendResult {get; private set;}
 
-    public RevitSender(string applicationPath)
+    public RevitSender(
+      string applicationPath,
+      string revitVersion,
+      string workingFolder,
+      string sourceFile,
+      string targetStream,
+      string targetBranch,
+      string senderId
+)
     {
       _applicationPath = applicationPath;
+      _revitVersion = revitVersion;
+      _config = new (sourceFile, workingFolder, targetStream, targetBranch, senderId);
     }
 
-    public async Task SendTo(string streamId)
+    public async Task<SendResult> Send()
     {
       await _prepareConfig();
-      var process = Process.Start(_applicationPath);
-      await process.WaitForExitAsync();
+      var process = Process.Start(_applicationPath, _config.SourceFile);
+      return await _waitForResult();
     }
 
-    private static async Task _prepareConfig()
+    private async Task<SendResult> _waitForResult()
     {
-      var tempPath = Path.Join(Path.GetTempPath(), "revit.json");
-      var config = new Dictionary<string, object>(){
-        {"sourceFile", "null"},
-      };
-      await File.WriteAllTextAsync(tempPath, System.Text.Json.JsonSerializer.Serialize(config));
+      var resultFile = Path.Combine(
+        _config.WorkingFolder,
+        $"{Path.GetFileNameWithoutExtension(_config.SourceFile)}.result.json"
+      );
+      while (File.Exists(resultFile))
+      {
+        await Task.Delay(10000);
+      }
+      var result = JsonSerializer.Deserialize<SendResult>(File.ReadAllText(resultFile)) ?? throw new Exception("Result deserialization failed");
+      SendResult = result;
+      Console.WriteLine("Sent.");
+      return result;
+    }
+
+    private async Task _prepareConfig()
+    {
+      var tempPath = Path.Join(_config.WorkingFolder, $"${Path.GetFileNameWithoutExtension(_config.SourceFile)}.config.json");
+      await File.WriteAllTextAsync(tempPath, JsonSerializer.Serialize(_config));
     }
   }
 
-  class Senders
+  class TestExecutor: IHandler
   {
-    private IList<ISender> _items;
     private ServerSettings _settings;
+    private IEnumerable<IHandler> _handlers = new List<IHandler>();
 
-    public Senders(ServerSettings settings, IList<ISender> items)
+    public TestExecutor(ServerSettings settings)
     {
       _settings = settings;
-      _items = items;
     }
 
-    public async Task Send()
+    public async Task<IEnumerable<SendResult>> Send()
     {
-      foreach (var sender in _items)
-      {
-        // 1. create a new target branch
-
-        // 2. store the stream for later reuse
-
-        // 3. send with the sender to the stream
-        await sender.SendTo(_settings.StreamId);
-      }
+      var senders = (await Task.WhenAll(_handlers.Select(h => h.CreateSenders()))).SelectMany(x => x);
+      return await Task.WhenAll(senders.Select(s => s.Send()));
     }
 
-    public static Senders Initialize(ServerSettings settings)
+    public async Task Setup()
     {
-      // Func<ServerSettings, IEnumerable<ISender>> senderGenerators = new []{
-
-      // };
-      var revitSenders = _initializeRevitSenders().ToList();
-      //1. list of supported applications, with a list of supported versions, and a list of filetypes
-      return new Senders(settings, new[]{
-        new RevitSender(@"/home/gergojedlicska/Speckle/speckle-sharp/IntegrationTests/ConsoleSender/bin/Debug/net6.0/ConsoleSender")
-      });
+      var workingFolder = Path.Join(Path.GetTempPath(), "SpeckleTestFolder");
+      //1. list of supported applications, with a list of supported versions,
+      // and a list of filetypes
+      _handlers = new []{
+        new RevitHandler(workingFolder, _settings)
+      };
+      await Task.WhenAll(_handlers.Select(h => h.Setup()));
     }
 
-    // private static IEnumerable<ISender> _initializeSenders()
-    // {
+    public Task<IEnumerable<ISender>> CreateSenders()
+    {
+      throw new NotImplementedException();
+    }
 
-    // }
-    private static IEnumerable<ISender> _initializeRevitSenders() {
-      var matcher = new Matcher();
-      matcher.AddInclude("**/Revit*/**/Revit.exe");
-
-      string searchDirectory = "C:/";
-
-      var result = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(searchDirectory)));
-
-      yield break;
+    public Task Teardown()
+    {
+      throw new NotImplementedException();
     }
   }
-
 }
