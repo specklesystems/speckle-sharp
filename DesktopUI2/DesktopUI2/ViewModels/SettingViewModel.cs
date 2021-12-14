@@ -13,8 +13,6 @@ namespace DesktopUI2.ViewModels
 {
   public class SettingViewModel : ReactiveObject
   {
-    private ConnectorBindings Bindings;
-
     private ISetting _setting;
     
     public ISetting Setting { get => _setting;
@@ -34,11 +32,8 @@ namespace DesktopUI2.ViewModels
     public SettingViewModel(ISetting setting)
     {
       SelectionModel = new SelectionModel<string>();
-      SelectionModel.SingleSelect = false;
+      SelectionModel.SingleSelect = true;
       SelectionModel.SelectionChanged += SelectionChanged;
-
-      //use dependency injection to get bindings
-      Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       Setting = setting;
       SettingView = setting.View;
@@ -51,10 +46,8 @@ namespace DesktopUI2.ViewModels
     void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
       Setting.Selection = e.SelectedItems.First().ToString();
-
       this.RaisePropertyChanged("Summary");
     }
-    private List<string> _valuesList { get; }
 
     #endregion
 
@@ -62,9 +55,7 @@ namespace DesktopUI2.ViewModels
     {
       if (Setting is ListBoxSetting && !Setting.Selection.Any())
         return false;
-
       return true;
-
     }
 
   }

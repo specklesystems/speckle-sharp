@@ -8,25 +8,14 @@
   d:DesignHeight="450"
   d:DesignWidth="800"
   mc:Ignorable="d">
-    <Grid>
-        <StackPanel Spacing="10">
-            <TextBlock Text="{Binding Setting.Description}" TextWrapping="Wrap" />
-            <ComboBox
+  <Grid>
+    <StackPanel Spacing="10">
+      <TextBlock Text="{Binding Setting.Description}" TextWrapping="Wrap" />
+      <ComboBox
         HorizontalAlignment="Stretch"
         Items="{Binding Setting.Values}"
-        PlaceholderText="Parameter"
         SelectedItem="{Binding Setting.PropertyName}" />
-            <ComboBox
-        HorizontalAlignment="Stretch"
-        Items="{Binding Setting.Operators}"
-        PlaceholderText="Operator"
-        SelectedItem="{Binding Setting.PropertyOperator}" />
-            <TextBox
-        Margin="5,0"
-        HorizontalAlignment="Stretch"
-        assists:TextFieldAssist.Label="Value"
-        Text="{Binding Setting.PropertyValue}"
-        UseFloatingWatermark="True" />
-        </StackPanel>
-    </Grid>
+      <TextBlock Text="{Binding Setting.Summary}" />
+    </StackPanel>
+  </Grid>
 </UserControl>

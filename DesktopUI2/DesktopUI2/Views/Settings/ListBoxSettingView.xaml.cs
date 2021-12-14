@@ -6,7 +6,7 @@ using DesktopUI2.ViewModels;
 
 namespace DesktopUI2.Views.Settings
 {
-  public partial class ListBoxSettingView : ReactiveUserControl<FilterViewModel>
+  public partial class ListBoxSettingView : ReactiveUserControl<SettingViewModel>
   {
     public ListBoxSettingView()
     {

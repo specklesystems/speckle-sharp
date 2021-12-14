@@ -4,6 +4,7 @@ using Avalonia.Data;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
 using Material.Dialog;
@@ -82,8 +83,6 @@ namespace DesktopUI2.ViewModels
           else
             PreviewImageUrl = _streamState.Client.Account.serverInfo.url + $"/preview/{_streamState.StreamId}/commits/{_selectedCommit.id}";
         }
-
-
       }
     }
 
@@ -121,25 +120,12 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _filters, value);
     }
 
-    private SettingViewModel _selectedSetting;
-    public SettingViewModel SelectedSetting
-    {
-      get => _selectedSetting;
-      set
-      {
-        value.PropertyChanged += (s, eo) =>
-        {
-          this.RaisePropertyChanged("SelectedSetting");
-        };
-        this.RaiseAndSetIfChanged(ref _selectedSetting, value);
-      }
-    }
-
+    private SettingsPageViewModel _settingsPage;
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
     {
       get => _settings;
-      private set => this.RaiseAndSetIfChanged(ref _settings, value);
+      set => this.RaiseAndSetIfChanged(ref _settings, value);
     }
 
     public bool HasCommits => Commits != null && Commits.Any();
@@ -147,7 +133,6 @@ namespace DesktopUI2.ViewModels
     #endregion
 
     private StreamState _streamState { get; }
-
 
     public string _previewImageUrl = "";
     public string PreviewImageUrl
@@ -185,9 +170,9 @@ namespace DesktopUI2.ViewModels
       Filters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = Filters[0];
 
-      // get available settings from our bindings
+      //get available settings from our bindings
       Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
-      SelectedSetting = Settings[0];
+      _settingsPage = new SettingsPageViewModel(Settings);
 
       IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
@@ -211,6 +196,15 @@ namespace DesktopUI2.ViewModels
         if (SelectedFilter != null)
           SelectedFilter.Filter = streamState.Filter;
       }
+      if (streamState.Settings != null)
+      {
+        foreach (var setting in Settings)
+        {
+          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Setting.Slug).First();
+          if (savedSetting != null)
+            setting.Setting.Selection = savedSetting.Selection;
+        }
+      }
     }
 
     /// <summary>
@@ -223,7 +217,7 @@ namespace DesktopUI2.ViewModels
       if (IsReceiver)
       {
         _streamState.CommitId = SelectedCommit.id;
-        _streamState.Settings = Settings.Select(o => o.Setting).ToList();
+        _streamState.Settings = Settings.Select( o => o.Setting).ToList();
       }
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
@@ -330,10 +324,16 @@ namespace DesktopUI2.ViewModels
 
     private void OpenSettingsCommand()
     {
-      // Allow users to set generated settings retrieved from application document
-      var settings = new SettingsWindow();
+      var settings = new Settings();
+      settings.DataContext = _settingsPage;
       settings.Title = $"Settings for {Stream.name}";
-      settings.ShowDialog(MainWindow.Instance);
+      settings.Show();
+      //settings.ShowDialog(MainWindow.Instance);
+      this._settingsPage.SettingsSaved += SettingsPageViewModel_SettingsSaved;
+    }
+    void SettingsPageViewModel_SettingsSaved(Object sender, EventArgs e)
+    {
+      Settings = _settingsPage.Settings;
     }
 
     private void SaveSendCommand()

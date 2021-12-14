@@ -19,8 +19,6 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
-
-
     //TODO: store these string values in something more solid to avoid typos?
     public override List<ISelectionFilter> GetSelectionFilters()
     {

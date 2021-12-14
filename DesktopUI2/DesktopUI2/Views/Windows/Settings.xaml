@@ -1,5 +1,5 @@
 <Window
-  x:Class="DesktopUI2.Views.Windows.SettingsWindow"
+  x:Class="DesktopUI2.Views.Windows.Settings"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
@@ -20,10 +20,10 @@
   </Window.Resources>
   <Window.Styles>
   </Window.Styles>
-    
-  <Grid VerticalAlignment="Stretch" RowDefinitions="auto,auto,*,auto">
+
+    <Grid VerticalAlignment="Stretch" RowDefinitions="auto,auto,*,auto">
     <ComboBox
-      Name="SettingCombo"
+      x:Name="SettingCombo"
       Grid.Row="1"
       Grid.Column="1"
       Margin="10,10,0,10"
@@ -69,7 +69,6 @@
         Margin="0,0,10,0"
         Content="Save"
         ToolTip.Tip="Save these settings for receiving" />
-      <!--<Button Click="Close_Click" Content="Close" />-->
     </StackPanel>
   </Grid>
 </Window>

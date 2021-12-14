@@ -49,9 +49,7 @@ namespace DesktopUI2.ViewModels
       if (filter is ListSelectionFilter l)
         _valuesList = SearchResults = new List<string>(l.Values);
 
-
       FilterView.DataContext = this;
-
     }
 
     #region LIST FILTER
@@ -184,8 +182,6 @@ namespace DesktopUI2.ViewModels
       }
 
       return true;
-
     }
-
   }
 }

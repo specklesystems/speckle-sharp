@@ -43,7 +43,7 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
-    <None Remove="Views\Windows\SettingsWindow.xaml" />
+    <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Playground.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
@@ -124,7 +124,7 @@
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\SettingsWindow.xaml">
+    <AvaloniaXaml Include="Views\Windows\Settings.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
