@@ -9,7 +9,7 @@ using ETABSv1;
 
 namespace Speckle.ConnectorETABS.Util
 {
-  class ConnectorETABSUtils
+  public class ConnectorETABSUtils
   {
 #if ETABSV18
     public static string ETABSAppName = Applications.ETABSv18;
@@ -69,6 +69,16 @@ namespace Speckle.ConnectorETABS.Util
           return GetAllFloorNames(model);
         case "Wall":
           return GetAllWallNames(model);
+        case "Links":
+          return GetAllLinkNames(model);
+        case "Spandrel":
+          return GetAllSpandrelLabelNames(model);
+        case "Tendon":
+          return GetAllTendonNames(model);
+        case "Pier":
+          return GetAllPierLabelNames(model);
+        case "Grids":
+          return GetAllGridNames(model);
         case "LoadPattern":
           return GetAllLoadPatternNames(model);
         case "BeamLoading":
@@ -583,7 +593,12 @@ namespace Speckle.ConnectorETABS.Util
       Brace,
       Area,
       Wall,
+      Spandrel,
+      Pier,
       Floor,
+      Grids,
+      Links,
+      Tendon,
       LoadPattern,
       Model,
       BeamLoading,
@@ -594,6 +609,7 @@ namespace Speckle.ConnectorETABS.Util
       AreaLoading,
       WallLoading,
       NodeLoading,
+      
 
       //ColumnResults,
       //BeamResults,

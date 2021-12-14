@@ -36,18 +36,23 @@ namespace Speckle.ConnectorETABS.UI
     {
       var objectTypes = new List<string>();
       //var objectIds = new List<string>();
+      string[] groupNames = null;
+      var groups = new List<string>();
+      int numNames = 0;
       if (Model != null)
       {
         ConnectorETABSUtils.GetObjectIDsTypesAndNames(Model);
         objectTypes = ConnectorETABSUtils.ObjectIDsTypesAndNames
             .Select(pair => pair.Value.Item1).Distinct().ToList();
         //objectIds = ConnectorETABSUtils.ObjectIDsTypesAndNames.Select(pair => pair.Key).ToList();
-
+        Model.GroupDef.GetNameList(ref numNames, ref groupNames);
+        groups = groupNames.ToList();
       }
 
       return new List<ISelectionFilter>()
             {
-            new ListSelectionFilter {Slug="type", Name = "Cat",
+            new ManualSelectionFilter(),
+            new ListSelectionFilter {Slug="type", Name = "Categories",
                 Icon = "Category", Values = objectTypes,
                 Description="Adds all objects belonging to the selected types"},
         //new PropertySelectionFilter{
@@ -60,7 +65,11 @@ namespace Speckle.ConnectorETABS.UI
         //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         //},
             new AllSelectionFilter {Slug="all",  Name = "All",
-                Icon = "CubeScan", Description = "Selects all document objects." }
+                Icon = "CubeScan", Description = "Selects all document objects." },
+
+
+            new ListSelectionFilter { Slug = "group", Name = "Group",
+            Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to ETABS Group" }
             };
     }
 
@@ -77,6 +86,8 @@ namespace Speckle.ConnectorETABS.UI
 
       switch (filter.Slug)
       {
+        case "manual":
+          return GetSelectedObjects();
         case "all":
           if (ConnectorETABSUtils.ObjectIDsTypesAndNames == null)
           {
@@ -101,6 +112,16 @@ namespace Speckle.ConnectorETABS.UI
                 .ToList());
           }
           return selection;
+        case "group":
+          //Clear objects first
+          Model.SelectObj.ClearSelection();
+          var groupFilter = filter as ListSelectionFilter;
+          foreach (var group in groupFilter.Selection)
+          {
+            Model.SelectObj.Group(group);
+          }
+          return GetSelectedObjects();
+
 
 
           /// ETABS doesn't list fields of different objects. 

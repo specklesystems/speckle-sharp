@@ -22,6 +22,9 @@ using Speckle.ConnectorETABS.UI;
 using System.Reflection;
 using System.IO;
 
+using Speckle.ConnectorETABS.Util;
+
+
 namespace SpeckleConnectorETABS
 {
   public class cPlugin
@@ -74,6 +77,7 @@ namespace SpeckleConnectorETABS
     {
       Bindings = new ConnectorBindingsETABS(model);
       CreateOrFocusSpeckle();
+
 
       //try
       //{
@@ -159,6 +163,7 @@ namespace SpeckleConnectorETABS
       cSapModel model;
       pluginCallback = ISapPlugin;
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+      Setup.Init(ConnectorETABSUtils.ETABSAppName);
       try
       {
         cHelper helper = new Helper();

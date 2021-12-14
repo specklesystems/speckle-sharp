@@ -37,7 +37,7 @@ namespace Objects.Converter.ETABS
       double[] y = Y.ToArray();
       double[] z = Z.ToArray();
 
- 
+
       if (area.property != null)
       {
         Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
@@ -53,12 +53,15 @@ namespace Objects.Converter.ETABS
         Model.AreaObj.ChangeName(name, area.name);
       }
       double[] values = null;
-      if(area.modifiers != null){
+      if (area.modifiers != null)
+      {
         values = area.modifiers;
       }
 
       Model.AreaObj.SetModifiers(area.name, ref values);
       Model.AreaObj.SetLocalAxes(area.name, area.orientationAngle);
+      Model.AreaObj.SetPier(area.name, area.PierAssignment);
+      Model.AreaObj.SetSpandrel(area.name, area.SpandrelAssignment);
 
       return name;
 
@@ -86,9 +89,39 @@ namespace Objects.Converter.ETABS
       List<double> coordinates = new List<double> { };
       foreach (Node node in nodes)
       {
-        coordinates.Add(node.basePoint.x);
-        coordinates.Add(node.basePoint.y);
-        coordinates.Add(node.basePoint.z);
+        switch (ModelUnits())
+        {
+          case "mm":
+            coordinates.Add(node.basePoint.x / 1000);
+            coordinates.Add(node.basePoint.y / 1000);
+            coordinates.Add(node.basePoint.z / 1000);
+            break;
+          case "m":
+            coordinates.Add(node.basePoint.x);
+            coordinates.Add(node.basePoint.y);
+            coordinates.Add(node.basePoint.z);
+            break;
+          case "cm":
+            coordinates.Add(node.basePoint.x/100);
+            coordinates.Add(node.basePoint.y/100);
+            coordinates.Add(node.basePoint.z/100);
+            break;
+          case "inch":
+            coordinates.Add(node.basePoint.x/39.37);
+            coordinates.Add(node.basePoint.y/39.37);
+            coordinates.Add(node.basePoint.z/39.37);
+            break;
+          case "ft":
+            coordinates.Add(node.basePoint.x/3.281);
+            coordinates.Add(node.basePoint.y/3.281);
+            coordinates.Add(node.basePoint.z/3.281);
+            break;
+          case "micron":
+            coordinates.Add(node.basePoint.x/ 100000);
+            coordinates.Add(node.basePoint.y/ 100000);
+            coordinates.Add(node.basePoint.z/ 100000);
+            break;
+        }
       }
 
       //Get orientation angle
@@ -101,7 +134,7 @@ namespace Objects.Converter.ETABS
       polygonMesher.Init(coordinates);
       var faces = polygonMesher.Faces();
       var vertices = polygonMesher.Coordinates;
-      speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces);
+      speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces, units: ModelUnits());
 
       //Model.AreaObj.GetModifiers(area, ref value);
       //speckleProperty2D.modifierInPlane = value[2];
@@ -111,6 +144,24 @@ namespace Objects.Converter.ETABS
       double[] values = null;
       Model.AreaObj.GetModifiers(name, ref values);
       speckleStructArea.modifiers = values;
+
+      string springArea = null;
+      Model.AreaObj.GetSpringAssignment(name, ref springArea);
+      if(springArea != null) { speckleStructArea.ETABSAreaSpring = AreaSpringToSpeckle(name); }
+
+      string pierAssignment = null;
+      Model.AreaObj.GetPier(name, ref pierAssignment);
+      if (pierAssignment != null)
+      {
+        speckleStructArea.PierAssignment = pierAssignment;
+      }
+
+      string spandrelAssignment = null;
+      Model.AreaObj.GetSpandrel(name, ref spandrelAssignment);
+      if (spandrelAssignment != null)
+      {
+        speckleStructArea.SpandrelAssignment = spandrelAssignment;
+      }
 
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);

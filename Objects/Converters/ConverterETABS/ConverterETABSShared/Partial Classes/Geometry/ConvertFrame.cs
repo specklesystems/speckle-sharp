@@ -4,6 +4,8 @@ using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
 using Speckle.Core.Models;
+using Objects.Structural.ETABS.Geometry;
+using Objects.Structural.ETABS.Properties;
 using System.Linq;
 using ETABSv1;
 
@@ -11,7 +13,7 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object FrameToNative(Element1D element1D)
+    public object FrameToNative(ETABSElement1D element1D)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
       {
@@ -97,14 +99,16 @@ namespace Objects.Converter.ETABS
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
+      Model.FrameObj.SetSpandrel(element1D.name, element1D.SpandrelAssignment);
+      Model.FrameObj.SetPier(element1D.name, element1D.PierAssignment);
       return element1D.name;
     }
 
-    public Element1D FrameToSpeckle(string name)
+    public ETABSElement1D FrameToSpeckle(string name)
     {
       string units = ModelUnits();
 
-      var speckleStructFrame = new Element1D();
+      var speckleStructFrame = new ETABSElement1D();
 
       speckleStructFrame.name = name;
       string pointI, pointJ;
@@ -189,6 +193,25 @@ namespace Objects.Converter.ETABS
       speckleStructFrame.end1Offset = end1Offset;
       speckleStructFrame.end2Offset = end2Offset;
 
+      string springLineName = null;
+      Model.FrameObj.GetSpringAssignment(name, ref springLineName);
+      if(springLineName!= null){
+        speckleStructFrame.ETABSLinearSpring = LinearSpringToSpeckle(springLineName);
+      }
+
+      string pierAssignment = null;
+      Model.FrameObj.GetPier(name, ref pierAssignment);
+      if(pierAssignment != null){
+        speckleStructFrame.PierAssignment = pierAssignment;
+      }
+
+      string spandrelAssignment = null;
+      Model.FrameObj.GetSpandrel(name, ref spandrelAssignment);
+      if (spandrelAssignment != null)
+      {
+        speckleStructFrame.SpandrelAssignment = spandrelAssignment;
+      }
+
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
       speckleStructFrame.applicationId = GUID;
@@ -196,7 +219,6 @@ namespace Objects.Converter.ETABS
       List<string> application_Id = elements.Select(o => o.applicationId).ToList();
       if (!application_Id.Contains(speckleStructFrame.applicationId))
       {
-
         SpeckleModel.elements.Add(speckleStructFrame);
       }
 
