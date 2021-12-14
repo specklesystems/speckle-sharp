@@ -143,12 +143,15 @@ namespace SpeckleRhino
 
     public override List<ISetting> GetSettings()
     {
+      /*
       var referencePoints = new List<string>() { "Internal Origin (default)" };
       referencePoints.AddRange(Doc.NamedConstructionPlanes.Select(o => o.Name).ToList());
       return new List<ISetting>()
       {
         new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Receives stream objects in relation to this document point"}
       };
+      */
+      return new List<ISetting>();
     }
 
     public override void SelectClientObjects(string args)

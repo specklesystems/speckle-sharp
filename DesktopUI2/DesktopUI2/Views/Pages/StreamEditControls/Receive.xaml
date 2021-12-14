@@ -124,6 +124,7 @@
       VerticalAlignment="Center"
       Background="Transparent"
       Classes="Mini"
+      IsEnabled="{Binding HasSettings}"
       Command="{Binding OpenSettingsCommand}"
       ToolTip.Tip="Receive Settings">
         <Button.Content>

@@ -322,13 +322,19 @@ namespace DesktopUI2.ViewModels
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
 
+    private bool HasSettings()
+    {
+      if (Settings == null || Settings.Count == 0)
+        return false;
+      else
+        return true;
+    }
     private void OpenSettingsCommand()
     {
       var settings = new Settings();
       settings.DataContext = _settingsPage;
       settings.Title = $"Settings for {Stream.name}";
       settings.Show();
-      //settings.ShowDialog(MainWindow.Instance);
       this._settingsPage.SettingsSaved += SettingsPageViewModel_SettingsSaved;
     }
     void SettingsPageViewModel_SettingsSaved(Object sender, EventArgs e)

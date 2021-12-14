@@ -34,7 +34,7 @@ namespace DesktopUI2.ViewModels
     public SettingsPageViewModel(List<SettingViewModel> settings)
     {
       Settings = settings;
-      SelectedSetting = Settings[0];
+      SelectedSetting = settings.Count > 0 ? Settings[0] : null;
     }
 
     public void SaveCommand()
