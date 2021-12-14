@@ -1,9 +1,6 @@
-using SpeckleWall = Objects.BuiltElements.Wall;
-
-
-namespace Archicad.Objects
+namespace Objects.BuiltElements.Archicad
 {
-	public sealed class Wall : SpeckleWall
+	public sealed class Wall : BuiltElements.Wall
 	{
 		#region --- Fields ---
 
@@ -16,7 +13,7 @@ namespace Archicad.Objects
 
 		public Wall (Model.WallData wallData, Model.ElementModelData modelData)
 		{
-			displayMesh = Operations.ModelConverter.Convert (modelData.Model);
+			displayMesh = Operations.ModelConverter.Convert (modelData.model);
 			WallData = wallData;
 		}
 

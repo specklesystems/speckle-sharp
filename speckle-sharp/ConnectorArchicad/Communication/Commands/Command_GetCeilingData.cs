@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Objects.BuiltElements.Archicad.Model;
 
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetCeilingData : ICommand<IEnumerable<Model.CeilingData>>
+	internal sealed class GetCeilingData : ICommand<IEnumerable<CeilingData>>
 	{
 		#region --- Classes ---
 
@@ -37,7 +38,7 @@ namespace Archicad.Communication.Commands
 			#region --- Fields ---
 
 			[JsonProperty ("slabs")]
-			public IEnumerable<Model.CeilingData> Datas { get; private set; }
+			public IEnumerable<CeilingData> Datas { get; private set; }
 
 			#endregion
 		}
@@ -64,7 +65,7 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<IEnumerable<Model.CeilingData>> Execute ()
+		public async Task<IEnumerable<CeilingData>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetSlabData", new Parameters (ElementIds));
 			return result.Datas;

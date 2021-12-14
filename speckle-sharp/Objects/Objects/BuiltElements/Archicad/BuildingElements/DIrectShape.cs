@@ -1,20 +1,14 @@
-using Objects;
 using Objects.Geometry;
-using Objects.Other;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 
 
-namespace Archicad.Objects
+namespace Objects.BuiltElements.Archicad
 {
 	public class DirectShape : Base, IDisplayMesh
 	{
 		#region --- Fields ---
 
 		public Mesh displayMesh { get; set; }
-
-		public RenderMaterial renderMaterial { get; set; }
 
 		public string ElementId { get; set; }
 
@@ -29,9 +23,8 @@ namespace Archicad.Objects
 
 		public DirectShape (Model.ElementModelData elementModel)
 		{
-			ElementId = elementModel.ElementId;
-			displayMesh = Operations.ModelConverter.Convert (elementModel.Model);
-			renderMaterial = Operations.MaterialConverter.Convert (elementModel.Material);
+			ElementId = elementModel.elementId;
+			displayMesh = Operations.ModelConverter.Convert (elementModel.model);
 		}
 
 		#endregion

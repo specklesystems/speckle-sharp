@@ -1,9 +1,6 @@
-using SpeckleCeiling = Objects.BuiltElements.Ceiling;
-
-
-namespace Archicad.Objects
+namespace Objects.BuiltElements.Archicad
 {
-	public sealed class Ceiling : SpeckleCeiling
+	public sealed class Ceiling : BuiltElements.Ceiling
 	{
 		#region --- Fields ---
 
@@ -16,7 +13,7 @@ namespace Archicad.Objects
 
 		public Ceiling (Model.CeilingData ceilingData, Model.ElementModelData modelData)
 		{
-			displayMesh = Operations.ModelConverter.Convert (modelData.Model);
+			displayMesh = Operations.ModelConverter.Convert (modelData.model);
 			CeilingData = ceilingData;
 		}
 
