@@ -24,8 +24,9 @@ namespace ConnectorGrasshopper.Conversion
     protected override Bitmap Icon => Properties.Resources.ToNative;
 
     public override bool CanDisableConversion => false;
-    
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override bool Obsolete => true;
+
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     public ToNativeConverterAsync() : base("To Native", "To Native",
       "Convert data from Speckle's Base object to its Rhino equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)

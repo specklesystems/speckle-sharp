@@ -44,8 +44,14 @@ namespace ConnectorGrasshopper.Objects
       if (InPreSolve)
       {
         GH_SpeckleBase ghSpeckleBase = null;
-        DA.GetData(0, ref ghSpeckleBase);
+        var x = DA.GetData(0, ref ghSpeckleBase);
         var @base = ghSpeckleBase?.Value;
+        if (!x || @base == null)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some input values are not Speckle objects or are null.");
+          OnDisplayExpired(true);
+          return;
+        }
         
         if(DA.Iteration == 0)
           Tracker.TrackPageview("objects", "expand");
@@ -131,9 +137,9 @@ namespace ConnectorGrasshopper.Objects
     }
     private void AutoCreateOutputs()
     {
-      var tokenCount = outputList?.Count ?? 0;
-
-      if (tokenCount == 0 || !OutputMismatch()) return;
+      if (!OutputMismatch()) 
+        return;
+      
       RecordUndoEvent("Creating Outputs");
       
       // Check for single param rename, if so, just rename it and go on.
