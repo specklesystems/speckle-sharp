@@ -10,6 +10,7 @@ using System.IO;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Objects.BuiltElements.Archicad.Model;
+using Speckle.Core.Credentials;
 
 
 namespace Archicad.Launcher
@@ -87,7 +88,8 @@ namespace Archicad.Launcher
 		public override async Task<StreamState> ReceiveStream (StreamState state, ProgressViewModel progress)
 		{
 			// TODO KSZ
-			_ = await Helpers.Receive (state.StreamId);
+			_ = await Helpers.Receive (IdentifyStream (state)
+				);
 
 			return state;
 		}
@@ -112,12 +114,17 @@ namespace Archicad.Launcher
 				return;
 			}
 
-			string stream = state.ServerUrl + "/streams/" + state.StreamId + "/branches/" + state.BranchName;
-			await Helpers.Send (stream/*state.StreamId*/, commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
+			await Helpers.Send (IdentifyStream (state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
 		}
 
 		public override void WriteStreamsToFile (List<StreamState> streams)
 		{
+		}
+
+		private string IdentifyStream (StreamState state)
+		{
+			StreamWrapper stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName };
+			return stream.ToString ();
 		}
 	}
 }
