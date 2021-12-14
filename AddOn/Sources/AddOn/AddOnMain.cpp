@@ -11,6 +11,7 @@
 #include "Commands/GetWallData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetProjectInfo.hpp"
+#include "Commands/CreateWall.hpp"
 #include "Commands/CreateSlab.hpp"
 
 
@@ -129,6 +130,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSlabData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWall> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateSlab> ()));
 
 	return NoError;

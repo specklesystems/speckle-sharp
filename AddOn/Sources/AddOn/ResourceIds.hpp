@@ -11,6 +11,7 @@
 #define GetWallDataCommandName					"GetWallData";
 #define GetSlabDataCommandName					"GetSlabData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
+#define CreateWallCommandName					"CreateWall";
 #define CreateSlabCommandName					"CreateSlab";
 
 #endif
