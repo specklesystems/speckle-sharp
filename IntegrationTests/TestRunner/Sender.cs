@@ -127,9 +127,12 @@ namespace Sender
       throw new NotImplementedException();
     }
 
-    public Task Teardown()
+    public void Teardown() 
     {
-      throw new NotImplementedException();
+      foreach (var handler in _handlers)
+      {
+        handler.Teardown();
+      }
     }
   }
 }

@@ -20,4 +20,8 @@ var sendResults = (await executor.Send()).ToList();
 
 Console.WriteLine("Send operations completed");
 
+Console.WriteLine("Tests finished.");
+Console.WriteLine("Tear down test environment? [Y]/[n]");
+var res = Console.ReadLine();
+if (res != "n") executor.Teardown();
 

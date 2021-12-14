@@ -8,7 +8,7 @@ interface IHandler
   public Task Setup();
   public Task<IEnumerable<ISender>> CreateSenders();
 
-  public Task Teardown();
+  public void Teardown();
 }
 
 class RevitHandler: IHandler
@@ -26,7 +26,7 @@ class RevitHandler: IHandler
 
   public async Task Setup()
   {
-    await Teardown();
+    Teardown();
 
     var executables = _findInstalledRevitExecutables();
     _versions = executables.Select(exePath => (_getRevitVersion(exePath), exePath)).ToList();
@@ -60,14 +60,13 @@ class RevitHandler: IHandler
     return _senders;
   }
 
-  public async Task Teardown()
+  public void Teardown()
   {
     Directory.Delete(_workingFolder, recursive:true);
     foreach (var (versionString, _) in _versions)
     {
       Directory.Delete(_revitPluginFolder(versionString), recursive: true);
     }
-    await Task.Delay(1);
   }
 
   private static IEnumerable<string> _findInstalledRevitExecutables()
