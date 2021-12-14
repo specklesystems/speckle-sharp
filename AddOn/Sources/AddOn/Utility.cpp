@@ -4,36 +4,6 @@
 namespace Utility {
 
 
-const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames
-{
-	{ API_ZombieElemID,					"InvalidType"},
-	{ API_WallID,						"Wall"},
-	{ API_ColumnID,						"Column"},
-	{ API_BeamID,						"Beam"},
-	{ API_WindowID,						"Window"},
-	{ API_DoorID,						"Door"},
-	{ API_ObjectID,						"Object"},
-	{ API_LampID,						"Lamp"},
-	{ API_SlabID,						"Slab"},
-	{ API_RoofID,						"Roof"},
-	{ API_MeshID,						"Mesh"},
-	{ API_ZoneID,						"Zone"},
-	{ API_CurtainWallID,				"CurtainWall"},
-	{ API_ShellID,						"Shell"},
-	{ API_SkylightID,					"Skylight"},
-	{ API_MorphID,						"Morph"},
-	{ API_StairID,						"Stair"},
-	{ API_RailingID,					"Railing"},
-	{ API_OpeningID,					"Opening"}
-};
-
-const GS::HashTable<API_ModelElemStructureType, GS::UniString> structureTypeNames
-{
-	{ API_BasicStructure,				"Basic"},
-	{ API_CompositeStructure,			"Composite"},
-	{ API_ProfileStructure,				"Complex Profile"}
-};
-
 API_ElemTypeID GetElementType (const API_Guid& guid)
 {
 	API_Elem_Head elemHead = {};

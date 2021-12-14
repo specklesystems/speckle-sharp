@@ -3,26 +3,13 @@
 #include "ObjectState.hpp"
 #include "Sight.hpp"
 #include "SchemaDefinitionBuilder.hpp"
+#include "FieldNames.hpp"
 
 
 namespace AddOnCommands {
 
 
 static UInt32			MaximumSupportedPolygonPoints	= 4;
-static const char*		VerteciesFieldName				= "vertecies";
-static const char*		VertexXFieldName				= "x";
-static const char*		VertexYFieldName				= "y";
-static const char*		VertexZFieldName				= "z";
-static const char*		PolygonsFieldName				= "polygons";
-static const char*		PointIdsFieldName				= "pointIds";
-static const char*		TransparencyieldName			= "transparency";
-static const char*		AmbientColorFieldName			= "ambientColor";
-static const char*		EmissionColorFieldName			= "emissionColor";
-static const char*		MaterialFieldName				= "material";
-static const char*		ModelFieldName					= "model";
-static const char*		ModelsFieldName					= "models";
-static const char*		ElementIdFieldName				= "elementId";
-static const char*		ElementIdsFieldName				= "elementIds";
 
 
 class Model3DInfo {
@@ -48,11 +35,11 @@ public:
 
 	GSErrCode Store (GS::ObjectState& os) const
 	{
-		os.Add (VerteciesFieldName, vertices);
-		os.Add (PolygonsFieldName, polygons);
+		os.Add (Model::VerteciesFieldName, vertices);
+		os.Add (Model::PolygonsFieldName, polygons);
 
 		if (material.HasValue ()) {
-			os.Add (MaterialFieldName, material.Get ());
+			os.Add (Model::MaterialFieldName, material.Get ());
 		}
 
 		return NoError;
@@ -67,9 +54,9 @@ private:
 
 		GSErrCode Store (GS::ObjectState& os) const
 		{
-			os.Add (VertexXFieldName, x);
-			os.Add (VertexYFieldName, y);
-			os.Add (VertexZFieldName, z);
+			os.Add (Model::VertexXFieldName, x);
+			os.Add (Model::VertexYFieldName, y);
+			os.Add (Model::VertexZFieldName, z);
 
 			return NoError;
 		}
@@ -88,7 +75,7 @@ private:
 
 		GSErrCode Store (GS::ObjectState& os) const
 		{
-			os.Add (PointIdsFieldName, pointIds);
+			os.Add (Model::PointIdsFieldName, pointIds);
 
 			return NoError;
 		}
@@ -108,9 +95,9 @@ private:
 
 		GSErrCode Store (GS::ObjectState& os) const
 		{
-			os.Add (AmbientColorFieldName, ambientColor);
-			os.Add (EmissionColorFieldName, emissionColor);
-			os.Add (TransparencyieldName, transparency);
+			os.Add (Model::AmbientColorFieldName, ambientColor);
+			os.Add (Model::EmissionColorFieldName, emissionColor);
+			os.Add (Model::TransparencyieldName, transparency);
 
 			return NoError;
 		}
@@ -321,7 +308,7 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>& elementI
 			continue;
 		}
 
-		modelInserter (GS::ObjectState { ElementIdFieldName, APIGuidToString (elementId), ModelFieldName, model });
+		modelInserter (GS::ObjectState { ElementIdFieldName, APIGuidToString (elementId), Model::ModelFieldName, model });
 	}
 
 	return result;

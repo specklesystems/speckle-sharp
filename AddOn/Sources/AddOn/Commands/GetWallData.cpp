@@ -5,43 +5,12 @@
 #include "Utility.hpp"
 #include "Objects/Point.hpp"
 #include "RealNumber.h"
+#include "FieldNames.hpp"
+#include "TypeNameTables.hpp"
 
 
 namespace AddOnCommands {
 
-static const char* ElementIdsFieldName = "elementIds";
-static const char* WallsFieldName = "walls";
-static const char* ElementIdFieldName = "elementId";
-static const char* StartPointFieldName = "startPoint";
-static const char* EndPointFieldName = "endPoint";
-static const char* HeightFieldName = "height";
-static const char* ThicknessFieldName = "thickness";
-static const char* FirstThicknessFieldName = "firstThickness";
-static const char* SecondThicknessFieldName = "secondThickness";
-static const char* FloorIndexFieldName = "floorIndex";
-static const char* ArcAngleFieldName = "arcAngle";
-static const char* StructureFieldName = "structure";
-static const char* GeometryMethodFieldName = "geometryMethod";
-static const char* WallComplexityFieldName = "wallComplexity";
-static const char* OutsideSlantAngleFieldName = "outsideSlantAngle";
-static const char* InsideSlantAngleFieldName = "insideSlantAngle";
-
-
-const GS::HashTable<API_WallTypeID, GS::UniString> wallTypeNames
-{
-	{ APIWtyp_Normal,		"Straight"},
-	{ APIWtyp_Trapez,		"Trapezoid"},
-	{ APIWtyp_Poly,			"Polygonal"}
-};
-
-
-const GS::HashTable<short, GS::UniString> profileTypeNames
-{
-	{ APISect_Normal,		"Straight"},
-	{ APISect_Poly,			"Profiled"},
-	{ APISect_Slanted,		"Slanted"},
-	{ APISect_Trapez,		"Double Slanted"}
-};
 
 
 GS::ObjectState SerializeWallType (const API_WallType& wall)
@@ -56,37 +25,37 @@ GS::ObjectState SerializeWallType (const API_WallType& wall)
 
 	//Wall start and end points
 	double z = Utility::GetStoryLevel (wall.head.floorInd) + wall.bottomOffset;
-	os.Add (StartPointFieldName, Objects::Point3D (wall.begC.x, wall.begC.y, z));
-	os.Add (EndPointFieldName, Objects::Point3D (wall.endC.x, wall.endC.y, z));
+	os.Add (Wall::StartPointFieldName, Objects::Point3D (wall.begC.x, wall.begC.y, z));
+	os.Add (Wall::EndPointFieldName, Objects::Point3D (wall.endC.x, wall.endC.y, z));
 
 	//Arc angle of a curved wall
 	if (abs (wall.angle) > EPS)
-		os.Add (ArcAngleFieldName, wall.angle);
+		os.Add (Wall::ArcAngleFieldName, wall.angle);
 
 	//Height of the wall
-	os.Add (HeightFieldName, wall.height);
+	os.Add (Wall::HeightFieldName, wall.height);
 
 	//Structure type of the wall
-	os.Add (StructureFieldName, Utility::structureTypeNames.Get (wall.modelElemStructureType));
+	os.Add (Wall::StructureFieldName, structureTypeNames.Get (wall.modelElemStructureType));
 
 	//Geometry type of the wall
-	os.Add (GeometryMethodFieldName, wallTypeNames.Get (wall.type));
+	os.Add (Wall::GeometryMethodFieldName, wallTypeNames.Get (wall.type));
 
 	//Profile type of the wall
-	os.Add (WallComplexityFieldName, profileTypeNames.Get (wall.profileType));
+	os.Add (Wall::WallComplexityFieldName, profileTypeNames.Get (wall.profileType));
 
 	//Thicknesses of the wall
 	if (wall.type == APIWtyp_Trapez) {
-		os.Add (FirstThicknessFieldName, wall.thickness);
-		os.Add (SecondThicknessFieldName, wall.thickness1);
+		os.Add (Wall::FirstThicknessFieldName, wall.thickness);
+		os.Add (Wall::SecondThicknessFieldName, wall.thickness1);
 	} else {
-		os.Add (ThicknessFieldName, wall.thickness);
+		os.Add (Wall::ThicknessFieldName, wall.thickness);
 	}
 
 	//wall slanted angles
-	os.Add (OutsideSlantAngleFieldName, wall.slantAlpha);
+	os.Add (Wall::OutsideSlantAngleFieldName, wall.slantAlpha);
 	if (wall.profileType == APISect_Trapez)
-		os.Add (InsideSlantAngleFieldName, wall.slantBeta);
+		os.Add (Wall::InsideSlantAngleFieldName, wall.slantBeta);
 
 	return os;
 }

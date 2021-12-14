@@ -3,14 +3,11 @@
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "SchemaDefinitionBuilder.hpp"
-
+#include "FieldNames.hpp"
+#include "TypeNameTables.hpp"
 
 namespace AddOnCommands {
 
-static const char* ElementIdFieldName = "elementId";
-static const char* ElementIdsFieldName = "elementIds";
-static const char* ElementTypeFieldName = "elementType";
-static const char* ElementTypesFieldName = "elementTypes";
 
 GS::String GetElementTypes::GetNamespace () const
 {
@@ -91,7 +88,7 @@ GS::ObjectState GetElementTypes::Execute (const GS::ObjectState& parameters, GS:
 	for (const GS::UniString& id : ids) {
 		API_Guid guid = APIGuidFromString (id.ToCStr ());
 		API_ElemTypeID elementTypeId = Utility::GetElementType (guid);
-		GS::UniString elemType = Utility::elementNames.Get (elementTypeId);
+		GS::UniString elemType = elementNames.Get (elementTypeId);
 		GS::ObjectState listElem { ElementIdFieldName, id, ElementTypeFieldName, elemType };
 		listAdder (listElem);
 	}
