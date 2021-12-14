@@ -27,13 +27,51 @@ namespace Objects.Converter.ETABS
           throw new NotSupportedException();
           break;
       }
-
     }
-    public void LinearSpringPropertyToNative(ETABSLinearSpring linearSpringProperty){
-
+    public void LinearSpringPropertyToNative(ETABSLinearSpring linearSpringProperty)
+    {
+      var linearOption1 = 0;
+      var linearOption2 = 0;
+      switch (linearSpringProperty.LinearOption1) {
+        case NonLinearOptions.CompressionOnly:
+          linearOption1 = 0;
+          break;
+        case NonLinearOptions.Linear:
+          linearOption1 = 1;
+          break;
+        case NonLinearOptions.TensionOnly:
+          linearOption1 = 2;
+          break;
+      }
+      switch (linearSpringProperty.LinearOption2){
+        case NonLinearOptions.CompressionOnly:
+          linearOption2 = 0;
+          break;
+        case NonLinearOptions.Linear:
+          linearOption2 = 1;
+          break;
+        case NonLinearOptions.TensionOnly:
+          linearOption2 = 2;
+          break;
+      }
+      Model.PropLineSpring.SetLineSpringProp(linearSpringProperty.name, linearSpringProperty.stiffnessX, linearSpringProperty.stiffnessY, linearSpringProperty.stiffnessZ, linearSpringProperty.stiffnessXX, linearOption1, linearOption2, iGUID: linearSpringProperty.applicationId);
+      return;
     }
     public void AreaSpringPropertyToNative(ETABSAreaSpring areaSpring){
-
+      var linearOption1 = 0;
+    switch (areaSpring.LinearOption3)
+      {
+        case NonLinearOptions.CompressionOnly:
+          linearOption1 = 0;
+          break;
+        case NonLinearOptions.Linear:
+          linearOption1 = 1;
+          break;
+        case NonLinearOptions.TensionOnly:
+          linearOption1 = 2;
+          break;
+      }
+      Model.PropAreaSpring.SetAreaSpringProp(areaSpring.name, areaSpring.stiffnessX, areaSpring.stiffnessY, areaSpring.stiffnessZ, linearOption1, iGUID: areaSpring.applicationId);
     }
     public ETABSSpringProperty SpringPropertyToSpeckle(string name)
     {

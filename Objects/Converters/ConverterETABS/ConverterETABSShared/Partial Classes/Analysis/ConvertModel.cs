@@ -53,6 +53,9 @@ namespace Objects.Converter.ETABS
           else if (property is ETABSLinkProperty){
             LinkPropertyToNative((ETABSLinkProperty)property);
           }
+          else if(property is ETABSAreaSpring){
+            AreaSpringPropertyToNative((ETABSAreaSpring)property);
+          }
           else 
           {
             Property2DToNative((ETABSProperty2D)property);
