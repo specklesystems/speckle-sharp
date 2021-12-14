@@ -12,8 +12,8 @@ namespace Sender
 
   record SendResult
   {
-    public bool Success;
-    public string Log;
+    public bool Success {get; init;}
+    public string Log {get; init;}
 
     public SendResult(bool success, string log)
     {
@@ -24,11 +24,11 @@ namespace Sender
 
   record RevitConfig
   {
-    public string SourceFile;
-    public string WorkingFolder;
-    public string TargetStream;
-    public string TargetBranch;
-    public string SenderId;
+    public string SourceFile {get; init; }
+    public string WorkingFolder {get; init; }
+    public string TargetStream {get; init; }
+    public string TargetBranch {get; init; }
+    public string SenderId {get; init; }
 
     public RevitConfig(string sourceFile, string workingFolder, string targetStream, string targetBranch, string senderId)
     {
@@ -65,7 +65,9 @@ namespace Sender
     public async Task<SendResult> Send()
     {
       await _prepareConfig();
-      var process = Process.Start(_applicationPath, _config.SourceFile);
+      var process = Process.Start(_applicationPath);
+      // var process = Process.Start(_applicationPath, _config.SourceFile);
+
       return await _waitForResult();
     }
 
@@ -75,7 +77,8 @@ namespace Sender
         _config.WorkingFolder,
         $"{Path.GetFileNameWithoutExtension(_config.SourceFile)}.result.json"
       );
-      while (File.Exists(resultFile))
+      Console.WriteLine(resultFile);
+      while (!File.Exists(resultFile))
       {
         await Task.Delay(10000);
       }
@@ -87,7 +90,7 @@ namespace Sender
 
     private async Task _prepareConfig()
     {
-      var tempPath = Path.Join(_config.WorkingFolder, $"${Path.GetFileNameWithoutExtension(_config.SourceFile)}.config.json");
+      var tempPath = Path.Join(_config.WorkingFolder, $"{Path.GetFileNameWithoutExtension(_config.SourceFile)}.config.json");
       await File.WriteAllTextAsync(tempPath, JsonSerializer.Serialize(_config));
     }
   }

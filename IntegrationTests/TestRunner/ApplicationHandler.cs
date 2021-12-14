@@ -26,6 +26,8 @@ class RevitHandler: IHandler
 
   public async Task Setup()
   {
+    await Teardown();
+
     var executables = _findInstalledRevitExecutables();
     _versions = executables.Select(exePath => (_getRevitVersion(exePath), exePath)).ToList();
     foreach (var (versionString, executablePath) in _versions)
@@ -60,6 +62,7 @@ class RevitHandler: IHandler
 
   public async Task Teardown()
   {
+    Directory.Delete(_workingFolder, recursive:true);
     await Task.Delay(1);
   }
 
@@ -94,8 +97,8 @@ class RevitHandler: IHandler
   {
     var testFiles = new []{
       "C:/spockle/ErrorBrepTest.rvt",
-      "C:/spockle/PROIECT CASA DE MODA.rvt",
-      "C:/spockle/PROIECT LIBRARIE BIBLIOTECA.rvt",
+      // "C:/spockle/PROIECT CASA DE MODA.rvt",
+      // "C:/spockle/PROIECT LIBRARIE BIBLIOTECA.rvt",
     };
     foreach (var testFile in testFiles)
     {
