@@ -112,7 +112,8 @@ namespace Archicad.Launcher
 				return;
 			}
 
-			await Helpers.Send (state.StreamId, commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
+			string stream = state.ServerUrl + "/streams/" + state.StreamId + "/branches/" + state.BranchName;
+			await Helpers.Send (stream/*state.StreamId*/, commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
 		}
 
 		public override void WriteStreamsToFile (List<StreamState> streams)
