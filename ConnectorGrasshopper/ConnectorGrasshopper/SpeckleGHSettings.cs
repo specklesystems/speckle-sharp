@@ -8,10 +8,6 @@ namespace ConnectorGrasshopper
     private const string MESH_SETTINGS = "Speckle2:kit.meshing.settings";
     private const string USE_SCHEMA_TAG_STRATEGY = "Speckle2:conversion.schema.tag";
 
-    // For future disabling of structural tabs
-    private const string SHOW_STRUCTURAL_TABS = "Speckle2:tabs.structural.show";
-    private const string SHOW_BUILT_ELEMENT_TABS = "Speckle2:tabs.builtelements.show";
-
     /// <summary>
     /// Gets or sets the default selected kit name to be used in this Grasshopper instance.
     /// </summary>
@@ -49,6 +45,18 @@ namespace ConnectorGrasshopper
         Grasshopper.Instances.Settings.SetValue(USE_SCHEMA_TAG_STRATEGY, value);
         Grasshopper.Instances.Settings.WritePersistentSettings();
       }
+    }
+
+    public static bool GetTabVisibility(string name)
+    {
+      var tabVisibility = Grasshopper.Instances.Settings.GetValue($"Speckle2:tabs.{name}", true);
+      return tabVisibility;
+    }
+
+    public static void SetTabVisibility(string name, bool value)
+    {
+      Grasshopper.Instances.Settings.SetValue($"Speckle2:tabs.{name}", value);
+      Grasshopper.Instances.Settings.WritePersistentSettings();
     }
   }
 
