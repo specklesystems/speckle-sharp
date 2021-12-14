@@ -3,11 +3,10 @@
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "SchemaDefinitionBuilder.hpp"
+#include "FieldNames.hpp"
 
 
 namespace AddOnCommands {
-
-static const char* SelectedElementIdsField = "selectedElementIds";
 
 
 GS::String GetSelectedElementIds::GetNamespace () const
@@ -41,10 +40,10 @@ GS::Optional<GS::UniString> GetSelectedElementIds::GetResponseSchema () const
 		{
 			"type": "object",
 			"properties" : {
-				"selectedElementIds": { "$ref": "#/definitions/ElementIds" }
+				"elementIds": { "$ref": "#/definitions/ElementIds" }
 			},
 			"additionalProperties" : false,
-			"required" : [ "selectedElementIds" ]
+			"required" : [ "elementIds" ]
 		}
 	)";
 }
@@ -88,7 +87,7 @@ GS::ObjectState GetSelectedElementIds::Execute (const GS::ObjectState& /*paramet
 
 	GS::ObjectState retVal;
 
-	const auto& listAdder = retVal.AddList<GS::UniString> (SelectedElementIdsField);
+	const auto& listAdder = retVal.AddList<GS::UniString> (ElementIdsFieldName);
 	for (const API_Guid& guid : elementGuids) {
 		listAdder (APIGuidToString (guid));
 	}

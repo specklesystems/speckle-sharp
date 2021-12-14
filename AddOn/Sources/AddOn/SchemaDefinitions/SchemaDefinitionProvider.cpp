@@ -1,6 +1,6 @@
 #include "SchemaDefinitionProvider.hpp"
 #include "Utility.hpp"
-
+#include "TypeNameTables.hpp"
 
 namespace Json {
 
@@ -32,7 +32,7 @@ GS::UniString SchemaDefinitionProvider::ElementTypeSchema ()
 {
 	GS::UniString buildedEnum;
 
-	for (const auto& element : Utility::elementNames) {
+	for (const auto& element : elementNames) {
 		buildedEnum.Append('"' + *element.value + '"');
 		buildedEnum.Append(",");
 	}

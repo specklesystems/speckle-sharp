@@ -4,36 +4,11 @@
 #include "SchemaDefinitionBuilder.hpp"
 #include "Utility.hpp"
 #include "Objects/Polyline.hpp"
+#include "FieldNames.hpp"
+#include "TypeNameTables.hpp"
 
 
 namespace AddOnCommands {
-
-static const char* ElementIdsFieldName = "elementIds";
-static const char* SlabsFieldName = "slabs";
-static const char* ElementIdFieldName = "elementId";
-static const char* FloorIndexFieldName = "floorIndex";
-static const char* ShapeFieldName = "shape";
-static const char* StructureFieldName = "structure";
-static const char* ThicknessFieldName = "thickness";
-static const char* EdgeAngleTypeFieldName = "edgeAngleType";
-static const char* EdgeAngleFieldName = "edgeAngle";
-static const char* ReferencePlaneLocationFieldName = "referencePlaneLocation";
-
-
-const GS::HashTable<API_EdgeTrimID, GS::UniString> edgeAngleTypeNames
-{
-	{ APIEdgeTrim_CustomAngle,		"Custom Angle"},
-	{ APIEdgeTrim_Perpendicular,	"Perpendicular"}
-};
-
-
-const GS::HashTable<API_SlabReferencePlaneLocationID, GS::UniString> referencePlaneLocationNames
-{
-	{ APISlabRefPlane_Bottom,		"Bottom"},
-	{ APISlabRefPlane_CoreBottom,	"Core Bottom"},
-	{ APISlabRefPlane_CoreTop,		"Core Top"},
-	{ APISlabRefPlane_Top,			"Top"}
-};
 
 
 GS::ObjectState SerializeSlabType (const API_SlabType& slab, const API_ElementMemo& memo)
@@ -48,26 +23,26 @@ GS::ObjectState SerializeSlabType (const API_SlabType& slab, const API_ElementMe
 
 	// The slab's shape
 	double level = Utility::GetStoryLevel (slab.head.floorInd) + slab.level;
-	os.Add (ShapeFieldName, Objects::ElementShape (slab.poly, memo, level));
+	os.Add (Slab::ShapeFieldName, Objects::ElementShape (slab.poly, memo, level));
 
 	// The structure type of the slab
-	os.Add (StructureFieldName, Utility::structureTypeNames.Get (slab.modelElemStructureType));
+	os.Add (Slab::StructureFieldName, structureTypeNames.Get (slab.modelElemStructureType));
 
 	// The thickness of the slab
-	os.Add (ThicknessFieldName, slab.thickness);
+	os.Add (Slab::ThicknessFieldName, slab.thickness);
 
 	//The edge type and edge angle of the slab
 	if ((BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim) >= 1) &&
 		(*(memo.edgeTrims))[1].sideType == APIEdgeTrim_CustomAngle) {
 		double angle = (*(memo.edgeTrims))[1].sideAngle;
-		os.Add (EdgeAngleTypeFieldName, edgeAngleTypeNames.Get (APIEdgeTrim_CustomAngle));
-		os.Add (EdgeAngleFieldName, angle);
+		os.Add (Slab::EdgeAngleTypeFieldName, edgeAngleTypeNames.Get (APIEdgeTrim_CustomAngle));
+		os.Add (Slab::EdgeAngleFieldName, angle);
 	} else {
-		os.Add (EdgeAngleTypeFieldName, edgeAngleTypeNames.Get (APIEdgeTrim_Perpendicular));
+		os.Add (Slab::EdgeAngleTypeFieldName, edgeAngleTypeNames.Get (APIEdgeTrim_Perpendicular));
 	}
 
 	// The reference plane location of the slab
-	os.Add (ReferencePlaneLocationFieldName, referencePlaneLocationNames.Get (slab.referencePlaneLocation));
+	os.Add (Slab::ReferencePlaneLocationFieldName, referencePlaneLocationNames.Get (slab.referencePlaneLocation));
 
 	return os;
 }

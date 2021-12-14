@@ -20,7 +20,7 @@ namespace Archicad.Communication.Commands
 		{
 			#region --- Fields ---
 
-			[JsonProperty ("selectedElementIds")]
+			[JsonProperty ("elementIds")]
 			public IEnumerable<string> ElementIds { get; private set; }
 
 			#endregion
