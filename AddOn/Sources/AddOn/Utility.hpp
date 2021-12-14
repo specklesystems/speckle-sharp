@@ -15,6 +15,11 @@ GS::Array<API_StoryType> GetStoryItems ();
 
 double GetStoryLevel (short floorNumber);
 
+void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& level);
+
+void SetStoryLevel (const double& inLevel, const short& floorInd, double& level);
+
+
 }
 
 

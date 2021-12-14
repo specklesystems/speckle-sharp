@@ -1,4 +1,5 @@
 #include "Utility.hpp"
+#include "RealNumber.h"
 
 
 namespace Utility {
@@ -76,6 +77,62 @@ double GetStoryLevel (short floorNumber)
 	}
 
 	return 0.0;
+}
+
+
+void SetStoryLevel (const double& inLevel, const short& floorInd, double& level)
+{
+	const GS::Array<API_StoryType> stories = GetStoryItems ();
+	level = inLevel;
+	for (const auto& story : stories) {
+		if (story.index == floorInd) {
+			level = level - story.level;
+			break;
+		}
+	}
+}
+
+
+static API_StoryType GetActualStoryItem ()
+{
+	API_StoryInfo storyInfo {};
+	GSErrCode err = ACAPI_Environment (APIEnv_GetStorySettingsID, &storyInfo, nullptr);
+	if (err != NoError) {
+		return API_StoryType {};
+	}
+
+	for (Int32 i = storyInfo.lastStory - storyInfo.firstStory; i >= 0; i--) {
+		if ((*storyInfo.data)[i].index == storyInfo.actStory) {
+			return (*storyInfo.data)[i];
+		}
+	}
+
+	return API_StoryType {};
+}
+
+
+void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& level)
+{
+	const GS::Array<API_StoryType> stories = GetStoryItems ();
+
+	floorInd = 0;
+	level = inLevel;
+	for (const auto& story : stories) {
+		if (inLevel + EPS >= story.level) {
+			floorInd = story.index;
+			level = inLevel - story.level;
+		}
+	}
+
+	double bottomLevel = stories[0].level;
+	if (inLevel < bottomLevel)
+		level = inLevel - bottomLevel;
+
+	API_WindowInfo windowInfo;
+	BNZeroMemory (&windowInfo, sizeof (API_WindowInfo));
+	GSErrCode err = ACAPI_Database (APIDb_GetCurrentWindowID, &windowInfo, nullptr);
+	if (err == NoError && (windowInfo.typeID != APIWind_FloorPlanID && windowInfo.typeID != APIWind_3DModelID))
+		floorInd += GetActualStoryItem ().index;
 }
 
 
