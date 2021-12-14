@@ -13,6 +13,16 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+    public void LinkPropertyToNative(ETABSLinkProperty linkProperty){
+      double[] value = new double[4];
+      value[0] = linkProperty.M2PdeltaEnd1;
+      value[1] = linkProperty.MP2deltaEnd2;
+      value[2] = linkProperty.MP3deltaEnd1;
+      value[3] = linkProperty.MP3deltaEnd2;
+      Model.PropLink.SetPDelta(linkProperty.name, ref value);
+      Model.PropLink.SetWeightAndMass(linkProperty.name, linkProperty.weight, linkProperty.mass, linkProperty.rotationalInertia1, linkProperty.rotationalInertia2, linkProperty.rotationalInertia3);
+      return;
+    }
     public ETABSLinkProperty LinkPropertyToSpeckle(string name)
     {
       double W = 0;

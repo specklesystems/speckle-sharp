@@ -14,6 +14,9 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+    public void gridLinesToNative (ETABSGridLines gridlines){
+      throw new NotSupportedException();
+    }
     public ETABSGridLines gridLinesToSpeckle(string name)
     {
       double Xo = 0;

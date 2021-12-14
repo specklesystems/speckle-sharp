@@ -13,6 +13,10 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+  public void ETABSTendonToSpeckle(ETABSTendon tendon){
+
+      throw new NotSupportedException();
+  }
   public ETABSTendon ETABSTendonToSpeckle(string name){
       var speckleETABSTendon = new ETABSTendon();
       int numberPoints = 0;

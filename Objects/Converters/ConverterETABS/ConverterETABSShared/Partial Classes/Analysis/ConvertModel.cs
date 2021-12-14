@@ -50,6 +50,9 @@ namespace Objects.Converter.ETABS
           {
             break;
           }
+          else if (property is ETABSLinkProperty){
+            LinkPropertyToNative((ETABSLinkProperty)property);
+          }
           else 
           {
             Property2DToNative((ETABSProperty2D)property);

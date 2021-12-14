@@ -9,6 +9,32 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+    public void SpringPropertyToNative(ETABSSpringProperty springProperty){
+      double[] k = new double[6];
+      k[0] = springProperty.stiffnessX;
+      k[1] = springProperty.stiffnessY;
+      k[2] = springProperty.stiffnessZ;
+      k[3] = springProperty.stiffnessXX;
+      k[4] = springProperty.stiffnessYY;
+      k[5] = springProperty.stiffnessZZ;
+      switch(springProperty.springOption){
+        case SpringOption.Link:
+          var springOption = 1;
+          Model.PropPointSpring.SetPointSpringProp(springProperty.name, springOption, ref k, springProperty.CYs, iGUID: springProperty.applicationId);
+          break;
+        case SpringOption.SoilProfileFooting:
+          springOption = 2;
+          throw new NotSupportedException();
+          break;
+      }
+
+    }
+    public void LinearSpringPropertyToNative(ETABSLinearSpring linearSpringProperty){
+
+    }
+    public void AreaSpringPropertyToNative(ETABSAreaSpring areaSpring){
+
+    }
     public ETABSSpringProperty SpringPropertyToSpeckle(string name)
     {
       double[] stiffness = null;
