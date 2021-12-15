@@ -19,26 +19,22 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
-    //TODO: store these string values in something more solid to avoid typos?
     public override List<ISetting> GetSettings()
     {
-      var referencePoints = new List<string>();
+      List<string> referencePoints = new List<string>() { "Internal Origin (default)" };
+
+      // find project base point and survey point. these don't always have name props, so store them under custom strings
+      var basePoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
+      if (basePoint != null)
+        referencePoints.Add("Project Base Point");
+      var surveyPoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == true).FirstOrDefault();
+      if (surveyPoint != null)
+        referencePoints.Add("Survey Point");
 
       return new List<ISetting>
       {
-        new ListBoxSetting() {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information."}
+        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Receives stream objects in relation to this document point"}
       };
-    }
-
-    private List<string> GetReferencePoints()
-    {
-      if (CurrentDoc == null)
-      {
-        return new List<string>();
-      }
-
-      var selectedObjects = CurrentDoc.Selection.GetElementIds().Select(id => CurrentDoc.Document.GetElement(id).UniqueId).ToList();
-      return selectedObjects;
     }
   }
 }

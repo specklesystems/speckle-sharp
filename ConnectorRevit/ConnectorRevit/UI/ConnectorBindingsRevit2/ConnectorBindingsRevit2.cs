@@ -35,8 +35,6 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp = revitApp;
     }
 
-
-
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
       var selectedObjects = GetSelectedObjects();
@@ -64,7 +62,6 @@ namespace Speckle.ConnectorRevit.UI
       throw new NotImplementedException();
     }
 
-
     public override List<StreamState> GetStreamsInFile()
     {
       var streams = new List<StreamState>();
@@ -79,7 +76,5 @@ namespace Speckle.ConnectorRevit.UI
     {
       return new List<MenuItem>();
     }
-
-
   }
 }
