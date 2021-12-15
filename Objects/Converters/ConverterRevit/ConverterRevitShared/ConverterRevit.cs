@@ -63,6 +63,8 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
     public ConverterRevit()
@@ -82,7 +84,7 @@ namespace Objects.Converter.Revit
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
     public void SetConverterSettings(object settings)
     {
-      throw new NotImplementedException("This converter does not have any settings.");
+      Settings = settings as Dictionary<string, string>;
     }
 
     public Base ConvertToSpeckle(object @object)

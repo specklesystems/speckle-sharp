@@ -631,7 +631,7 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-    #region Project Base Point
+    #region Base Points
     private class BetterBasePoint
     {
       public DB.Transform TotalTransform { get; set; } = DB.Transform.Identity;
@@ -646,28 +646,47 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
 
     private BetterBasePoint _basePoint;
-    private BetterBasePoint BasePoint
+    private BetterBasePoint ReferencePoint
     {
       get
       {
         if (_basePoint == null)
         {
-          // try and get the project base point (is shared = false) and survey point (is shared = true)
-          BasePoint bp = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
-          if (bp == null)
-            _basePoint = new BetterBasePoint();
-          else
-          {
-#if REVIT2019
-            var point = bp.get_BoundingBox(null).Min;
-#else
-            var point = bp.Position;
-#endif
-            _basePoint = new BetterBasePoint { TotalTransform = DB.Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
-          }
+          // get from settings
+          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
+          _basePoint = GetReferencePoint(referencePointSetting);
         }
         return _basePoint;
       }
+    }
+    private BetterBasePoint GetReferencePoint(string type)
+    {
+      // get the correct base point from settings
+      BasePoint basePoint = null;
+      switch (type)
+      {
+        case "Project Base Point":
+          basePoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
+          break;
+        case "Survey Point":
+          basePoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == true).FirstOrDefault();
+          break;
+        default:
+          break;
+      }
+
+      var referencePoint = new BetterBasePoint();
+      if (basePoint != null)
+      {
+#if REVIT2019
+        var point = basePoint.get_BoundingBox(null).Min;
+#else
+            var point = basePoint.Position;
+#endif
+        referencePoint.TotalTransform = DB.Transform.CreateTranslation(point).Inverse; // rotation already accounted for
+      }
+
+      return referencePoint;
     }
 
     /// <summary>
@@ -677,7 +696,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? BasePoint.TotalTransform.OfPoint(p) : BasePoint.TotalTransform.OfVector(p);
+      return (isPoint) ? ReferencePoint.TotalTransform.OfPoint(p) : ReferencePoint.TotalTransform.OfVector(p);
     }
 
     /// <summary>
@@ -687,7 +706,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? BasePoint.TotalTransform.Inverse.OfPoint(p) : BasePoint.TotalTransform.Inverse.OfVector(p);
+      return (isPoint) ? ReferencePoint.TotalTransform.Inverse.OfPoint(p) : ReferencePoint.TotalTransform.Inverse.OfVector(p);
     }
     #endregion
 
