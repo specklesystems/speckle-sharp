@@ -11,5 +11,6 @@
 #define GetWallDataCommandName					"GetWallData";
 #define GetSlabDataCommandName					"GetSlabData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
+#define CreateDirectShapesCommandName 			"CreateDirectShapes";
 
 #endif
