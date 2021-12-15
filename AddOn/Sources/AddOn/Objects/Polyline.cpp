@@ -185,6 +185,44 @@ ElementShape::ElementShape (const API_Polygon& outlinePoly, const API_ElementMem
 }
 
 
+int ElementShape::SubpolyCount () const
+{
+	return (int) mHoles.GetSize () + 1;
+}
+
+
+int ElementShape::VertexCount () const
+{
+	int count = mContourPoly.VertexCount ();
+	for (UInt32 i = 0; i < mHoles.GetSize (); i++) {
+		count += mHoles [i].VertexCount ();
+	}
+	return count;
+}
+
+
+int ElementShape::ArcCount () const
+{
+	int count = mContourPoly.ArcCount ();
+	for (UInt32 i = 0; i < mHoles.GetSize (); i++) {
+		count += mHoles [i].ArcCount ();
+	}
+	return count;
+}
+
+
+double ElementShape::Level () const
+{
+	double z = 0;
+
+	const Objects::Point3D* firstPoint = mContourPoly.PointAt (0);
+	if (firstPoint != nullptr)
+		z = firstPoint->Z;
+
+	return z;
+}
+
+
 void ElementShape::SetToMemo (API_ElementMemo& memo)
 {
 	BMhKill ((GSHandle*)&memo.coords);

@@ -6,9 +6,134 @@
 #include "Objects/Polyline.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+#include "AngleData.h"
 
 
 namespace AddOnCommands {
+
+
+GSErrCode GetSlabFromObjectState (const GS::ObjectState&	os, 
+								  API_Element&				element, 
+								  API_Element&				mask, 
+								  API_ElementMemo&			slabMemo,
+								  GS::UInt64				memoMask)
+{
+	GSErrCode err;
+
+	// The guid of the slab
+	GS::UniString guidString;
+	os.Get (ElementIdFieldName, guidString);
+	element.header.guid = APIGuidFromString (guidString.ToCStr ());
+	element.header.typeID = API_SlabID;
+
+	bool slabExists = Utility::ElementExists (element.header.guid);
+
+	if (slabExists) {
+		err = ACAPI_Element_Get (&element);
+		if (err == NoError) {
+			err = ACAPI_Element_GetMemo (element.header.guid, &slabMemo);
+		}
+	} else {
+		err = ACAPI_Element_GetDefaults (&element, &slabMemo);
+	}
+
+	if (err != NoError)
+		return err;
+
+
+	memoMask = APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims;
+
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nSubPolys);
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nCoords);
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nArcs);
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
+	ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+
+	// The shape of the slab
+	Objects::ElementShape slabShape;
+
+	if (os.Contains (Slab::ShapeFieldName)) {
+		os.Get (Slab::ShapeFieldName, slabShape);
+		element.slab.poly.nSubPolys = slabShape.SubpolyCount ();
+		element.slab.poly.nCoords = slabShape.VertexCount ();
+		element.slab.poly.nArcs = slabShape.ArcCount ();
+
+		slabShape.SetToMemo (slabMemo);
+	}
+
+	// The floor index and level of the slab
+	if (os.Contains (FloorIndexFieldName)) {
+		os.Get (FloorIndexFieldName, element.header.floorInd);
+		Utility::SetStoryLevel (slabShape.Level (), element.header.floorInd, element.slab.level);
+	} else {
+		Utility::SetStoryLevelAndFloor (slabShape.Level (), element.header.floorInd, element.slab.level);
+	}
+
+	// The structure of the slab
+	if (os.Contains (Slab::StructureFieldName)) {
+		GS::UniString structureName;
+		os.Get (Slab::StructureFieldName, structureName);
+
+		GS::Optional<API_ModelElemStructureType> type = structureTypeNames.FindValue (structureName);
+		if (type.HasValue ())
+			element.slab.modelElemStructureType = type.Get ();
+
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, modelElemStructureType);
+	}
+
+	// The thickness of the slab
+	if (os.Contains (Slab::ThicknessFieldName)) {
+		os.Get (Slab::ThicknessFieldName, element.slab.thickness);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, thickness);
+	}
+
+	// The structure of the slab
+	if (os.Contains (Slab::ReferencePlaneLocationFieldName)) {
+		GS::UniString refPlaneLocationName;
+		os.Get (Slab::ReferencePlaneLocationFieldName, refPlaneLocationName);
+
+		GS::Optional<API_SlabReferencePlaneLocationID> id = referencePlaneLocationNames.FindValue (refPlaneLocationName);
+		if (id.HasValue ())
+			element.slab.referencePlaneLocation = id.Get ();
+
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, referencePlaneLocation);
+	}
+
+	// The edge type of the slab
+	API_EdgeTrimID edgeType = APIEdgeTrim_Perpendicular;
+	if (os.Contains (Slab::EdgeAngleTypeFieldName)) {
+		GS::UniString edgeTypeName;
+		os.Get (Slab::EdgeAngleTypeFieldName, edgeTypeName);
+
+		GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (edgeTypeName);
+		if (type.HasValue ())
+			edgeType = type.Get ();
+	}
+
+	// The edge angle of the slab
+	GS::Optional<double> edgeAngle;
+	if (os.Contains (Slab::EdgeAngleFieldName)) {
+		double angle = 0;
+		os.Get (Slab::EdgeAngleFieldName, angle);
+		edgeAngle = angle;
+	}
+
+	// Setting sidematerials and edge angles
+	BMhKill ((GSHandle*)&slabMemo.edgeTrims);
+	BMhKill ((GSHandle*)&slabMemo.edgeIDs);
+	BMpFree (reinterpret_cast<GSPtr> (slabMemo.sideMaterials));
+
+	slabMemo.edgeTrims = (API_EdgeTrim**)BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0);
+	slabMemo.sideMaterials = (API_OverriddenAttribute*)BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0);
+	for (Int32 k = 1; k <= element.slab.poly.nCoords; ++k) {
+		slabMemo.sideMaterials [k] = element.slab.sideMat;
+
+		(*(slabMemo.edgeTrims)) [k].sideType = edgeType;
+		(*(slabMemo.edgeTrims)) [k].sideAngle = (edgeAngle.HasValue ()) ? edgeAngle.Get () : PI / 2;
+	}
+
+	return NoError;
+}
 
 
 GS::String CreateSlab::GetNamespace () const
@@ -75,35 +200,40 @@ API_AddOnCommandExecutionPolicy CreateSlab::GetExecutionPolicy () const
 }
 
 
-GS::ObjectState CreateSlab::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-	//GS::Array<GS::UniString> ids;
-	//parameters.Get (ElementIdsFieldName, ids);
-	//GS::Array<API_Guid>	elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
-
 	GS::ObjectState result;
-	
-	//API_Element element;
-	//API_ElementMemo elementMemo;
-	//GSErrCode err;
+	GSErrCode		err;
 
-	//const auto& listAdder = result.AddList<GS::ObjectState> (SlabsFieldName);
-	//for (const API_Guid& guid : elementGuids) {
+	GS::Array<GS::ObjectState> slabs;
+	parameters.Get (SlabsFieldName, slabs);
 
-	//	BNZeroMemory (&element, sizeof (API_Element));
-	//	BNZeroMemory (&elementMemo, sizeof (API_ElementMemo));
+	const auto& listAdder = result.AddList<GS::UniString> (ElementIdsFieldName);
 
-	//	element.header.guid = guid;
-	//	err = ACAPI_Element_Get (&element);
-	//	if (err != NoError) continue;
+	for (const GS::ObjectState& slabOs : slabs) {
 
-	//	if (element.header.typeID != API_SlabID) continue;
+		API_Element slab {};
+		API_Element	slabMask {};
+		API_ElementMemo slabMemo {};
+		GS::UInt64 memoMask = 0;
 
-	//	err = ACAPI_Element_GetMemo (guid, &elementMemo);
-	//	if (err != NoError) continue;
+		err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
+		if (err != NoError)
+			continue;
 
-	//	listAdder (SerializeSlabType (element.slab, elementMemo));
-	//}
+		bool slabExists = Utility::ElementExists (slab.header.guid);
+		if (slabExists) {
+			err = ACAPI_Element_Change (&slab, &slabMask, &slabMemo, memoMask, true);
+		} else {
+			err = ACAPI_Element_Create (&slab, &slabMemo);
+		}
+		if (err != NoError)
+			continue;
+
+		GS::UniString elemId = APIGuidToString (slab.header.guid);
+		listAdder (elemId);
+
+	}
 
 	return result;
 }

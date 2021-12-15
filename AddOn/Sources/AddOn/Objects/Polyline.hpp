@@ -58,6 +58,12 @@ public:
 
 	void SetToMemo (API_ElementMemo& memo);
 
+	int SubpolyCount () const;
+	int VertexCount () const;
+	int ArcCount () const;
+
+	double Level () const;
+
 	GSErrCode		Restore (const GS::ObjectState& os);
 	GSErrCode		Store (GS::ObjectState& os) const;
 };
