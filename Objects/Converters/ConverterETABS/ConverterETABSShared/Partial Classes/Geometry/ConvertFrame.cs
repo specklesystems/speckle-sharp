@@ -99,8 +99,11 @@ namespace Objects.Converter.ETABS
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
-      Model.FrameObj.SetSpandrel(element1D.name, element1D.SpandrelAssignment);
-      Model.FrameObj.SetPier(element1D.name, element1D.PierAssignment);
+      if(element1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(element1D.name, element1D.SpandrelAssignment); }
+      if(element1D.PierAssignment != null) { Model.FrameObj.SetPier(element1D.name, element1D.PierAssignment); }
+      if(element1D.ETABSLinearSpring != null) { Model.FrameObj.SetSpringAssignment(element1D.name, element1D.ETABSLinearSpring.name); }
+
+
       return element1D.name;
     }
 
