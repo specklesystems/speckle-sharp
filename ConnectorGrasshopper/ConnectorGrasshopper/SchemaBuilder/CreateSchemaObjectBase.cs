@@ -22,7 +22,9 @@ namespace ConnectorGrasshopper
 {
   public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.GetTabVisibility(Category)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
 
     protected ConstructorInfo SelectedConstructor;
     private bool readFailed;
