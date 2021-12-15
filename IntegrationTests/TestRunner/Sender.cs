@@ -65,10 +65,20 @@ namespace Sender
     public async Task<SendResult> Send()
     {
       await _prepareConfig();
-      var process = Process.Start(_applicationPath);
+      // var process = Process.Start(_applicationPath);
       // var process = Process.Start(_applicationPath, _config.SourceFile);
 
-      return await _waitForResult();
+      var escapedFilePath = $"\"{_config.SourceFile}\"";
+
+      var process = Process.Start(new ProcessStartInfo(){
+          WorkingDirectory = Path.GetDirectoryName(_applicationPath),
+          FileName = _applicationPath,
+          Arguments = escapedFilePath
+      });
+
+      var result =  await _waitForResult();
+      if(process is not null) process.Kill();
+      return result;
     }
 
     private async Task<SendResult> _waitForResult()

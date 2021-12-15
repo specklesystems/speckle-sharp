@@ -81,15 +81,17 @@ class RevitHandler: IHandler
 
   private async Task<string> _prepareBranch(string versionString, string sourceFile)
   {
-    var fileName =Path.GetFileNameWithoutExtension(sourceFile); 
-    return await _serverSettings.Client.BranchCreate(
+    var fileName =Path.GetFileNameWithoutExtension(sourceFile);
+    var branchName =$"{versionString}/{fileName}";
+    var branchResult = await _serverSettings.Client.BranchCreate(
       new Speckle.Core.Api.BranchCreateInput()
       {
         streamId = _serverSettings.StreamId,
-        name = fileName,
+        name = branchName,
         description = $"Integration test data created from ${versionString} ${fileName}."
       }
     );
+    return branchName;
   }
 
   private static string _getRevitVersion(string executablePath) => new Regex(@"(Revit 20[0-9][0-9])").Match(executablePath).Value;

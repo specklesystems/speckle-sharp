@@ -19,43 +19,65 @@ namespace RevitAutoTest2022
 {
   class App : IExternalApplication
   {
+    private UIControlledApplication _app;
     public Result OnStartup(UIControlledApplication a)
     {
       a.ControlledApplication.DocumentOpened += (e, args) =>
       {
-        Console.WriteLine("Ready!");
+        var result = new SendResult(false, null);
         var doc = args.Document;
-        var kit = KitManager.GetDefaultKit();
-        var converter = kit.LoadConverter(Applications.Revit2022);
-        converter.SetContextDocument(doc);
-        var elements = GetAllModelElements(doc);
 
-        var toSpeckle =
-          elements.Select(el => converter.CanConvertToSpeckle(el) ? converter.ConvertToSpeckle(el) : null);
-
-        var accs = AccountManager.GetAccounts();
-        var acc = accs.First();
-        var client = new Client(acc);
-
-        var streamId = client.StreamCreate(new StreamCreateInput
+        try
         {
-          name = "Test stream vX.X.X", 
-          description = "The tests for yxsasdfa", 
-          isPublic = true
-        }).Result;
-        
-        var transport = new ServerTransport(acc, streamId);
-        
-        var refObj = new Base();
-        refObj[ "convertedObjects" ] = toSpeckle.ToList();
+          var config = RevitConfig.LoadConfig(doc.PathName);
 
-        var objectId = Operations.Send(
-          refObj, 
-          new List<ITransport> { transport }, 
-          false, 
-          null, 
-          null)
-          .Result;
+          var kit = KitManager.GetDefaultKit();
+          var converter = kit.LoadConverter(Applications.Revit2022);
+          converter.SetContextDocument(doc);
+          var elements = GetAllModelElements(doc);
+
+          var toSpeckle =
+            elements.Select(el => converter.CanConvertToSpeckle(el) ? converter.ConvertToSpeckle(el) : null);
+
+          var acc = AccountManager.GetAccounts().First(ac => ac.id == config.SenderId);
+          var client = new Client(acc);
+
+          var streamId = config.TargetStream;
+
+          var transport = new ServerTransport(acc, streamId);
+
+          var refObj = new Base();
+          refObj["convertedObjects"] = toSpeckle.ToList();
+
+          var objectId = Operations.Send(
+            refObj,
+            new List<ITransport> { transport },
+            false,
+            null,
+            null)
+            .Result;
+
+          var branches = client.StreamGetBranches(streamId, branchesLimit:100, commitsLimit:0).Result;
+          var branch = branches.First(b => b.id == config.TargetBranch);
+
+          var commitId = client.CommitCreate(new CommitCreateInput() {
+            branchName = config.TargetBranch,
+            objectId = objectId,
+            streamId = streamId,
+            sourceApplication=Applications.Revit2022
+          });
+
+          result.Success = true;
+          result.Log="DONE";
+        }
+        catch (Exception ex)
+        {
+          result.Log=ex.ToString();
+        }
+        finally
+        {
+          result.Save(doc.PathName);
+        }
       };
       return Result.Succeeded;
     }
@@ -66,7 +88,7 @@ namespace RevitAutoTest2022
     }
 
     IList<Element> GetAllModelElements(Document doc)
-    {
+     {
       List<Element> elements = new List<Element>();
 
       FilteredElementCollector collector
