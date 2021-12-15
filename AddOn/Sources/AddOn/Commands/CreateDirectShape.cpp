@@ -1,5 +1,6 @@
 #include "CreateDirectShape.hpp"
 #include "ResourceIds.hpp"
+#include "ObjectState.hpp"
 
 
 namespace AddOnCommands {
@@ -43,7 +44,8 @@ API_AddOnCommandExecutionPolicy CreateDirectShape::GetExecutionPolicy () const
 
 GS::ObjectState CreateDirectShape::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-	
+	GS::ObjectState result;
+	return result;
 }
 
 

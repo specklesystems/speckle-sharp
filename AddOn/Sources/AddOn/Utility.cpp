@@ -10,11 +10,17 @@ API_ElemTypeID GetElementType (const API_Guid& guid)
 	API_Elem_Head elemHead = {};
 	elemHead.guid = guid;
 
-	GSErrCode error = ACAPI_Element_GetHeader(&elemHead);
+	GSErrCode error = ACAPI_Element_GetHeader (&elemHead);
 	if (error == NoError)
 		return elemHead.typeID;
 	
 	return API_ZombieElemID;
+}
+
+
+bool ElementExists (const API_Guid& guid)
+{
+	return (GetElementType (guid) != API_ZombieElemID);
 }
 
 
