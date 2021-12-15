@@ -116,8 +116,8 @@ namespace Archicad.Operations
 		public static async Task<StreamState> ConvertBack (Base commitObject, StreamState state, CancellationToken token)
 		{
 			ImportWalls (Extract<Wall> (commitObject, WallExportName), token);
-			ImportSlabs (Extract<Ceiling> (commitObject, SlabExportName), token);
-			ImportMophs (Extract<DirectShape> (commitObject, UnsupportedElementExportName), token);
+			//ImportSlabs (Extract<Ceiling> (commitObject, SlabExportName), token);
+			//ImportMophs (Extract<DirectShape> (commitObject, UnsupportedElementExportName), token);
 
 			return state;
 		}
