@@ -33,7 +33,7 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISetting>
       {
-        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Receives stream objects in relation to this document point"}
+        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Sends or receives stream objects in relation to this document point"}
       };
     }
   }
