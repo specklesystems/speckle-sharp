@@ -9,6 +9,7 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   Title="Settings"
+  x:Name="SettingsWindow"
   Width="500"
   Height="500"
   d:DesignHeight="500"
@@ -23,7 +24,7 @@
 
     <Grid VerticalAlignment="Stretch" RowDefinitions="auto,auto,*,auto">
     <ComboBox
-      x:Name="SettingCombo"
+      Name="SettingCombo"
       Grid.Row="1"
       Grid.Column="1"
       Margin="10,10,0,10"
@@ -66,6 +67,7 @@
       Orientation="Horizontal">
       <Button
         Command="{Binding SaveCommand}"
+        CommandParameter="{Binding ElementName=SettingsWindow}"
         Margin="0,0,10,0"
         Content="Save"
         ToolTip.Tip="Save these settings for receiving" />

@@ -4,14 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Avalonia.Controls;
 
 namespace DesktopUI2.ViewModels
 {
-  interface ICloseWindow
-  {
-    Action Close { get; set; }
-  }
-
   public class SettingsPageViewModel : ReactiveObject
   {
     private SettingViewModel _selectedSetting;
@@ -37,9 +33,11 @@ namespace DesktopUI2.ViewModels
       SelectedSetting = settings.Count > 0 ? Settings[0] : null;
     }
 
-    public void SaveCommand()
+    public void SaveCommand(Window window)
     {
       SettingsSaved?.Invoke(this, EventArgs.Empty);
+      if (window != null)
+        window.Close();
     }
   }
 }

@@ -51,12 +51,5 @@ namespace DesktopUI2.ViewModels
 
     #endregion
 
-    public bool IsReady()
-    {
-      if (Setting is ListBoxSetting && !Setting.Selection.Any())
-        return false;
-      return true;
-    }
-
   }
 }

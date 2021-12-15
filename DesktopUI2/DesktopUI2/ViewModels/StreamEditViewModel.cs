@@ -120,14 +120,17 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _filters, value);
     }
 
-    private SettingsPageViewModel _settingsPage;
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
     {
       get => _settings;
-      set => this.RaiseAndSetIfChanged(ref _settings, value);
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _settings, value);
+        this.RaisePropertyChanged("HasSettings");
+      }
     }
-
+    public bool HasSettings => Settings != null && Settings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
     #endregion
@@ -172,7 +175,6 @@ namespace DesktopUI2.ViewModels
 
       //get available settings from our bindings
       Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
-      _settingsPage = new SettingsPageViewModel(Settings);
 
       IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
@@ -322,24 +324,23 @@ namespace DesktopUI2.ViewModels
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
 
-    private bool HasSettings()
-    {
-      if (Settings == null || Settings.Count == 0)
-        return false;
-      else
-        return true;
-    }
     private void OpenSettingsCommand()
     {
-      var settings = new Settings();
-      settings.DataContext = _settingsPage;
-      settings.Title = $"Settings for {Stream.name}";
-      settings.Show();
-      this._settingsPage.SettingsSaved += SettingsPageViewModel_SettingsSaved;
+      try
+      {
+        var settings = new Settings();
+        settings.DataContext = new SettingsPageViewModel(Settings);
+        settings.Title = $"Settings for {Stream.name}";
+        settings.ShowDialog(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
+        (settings.DataContext as SettingsPageViewModel).SettingsSaved += SettingsPageViewModel_SettingsSaved;
+      }
+      catch (Exception e) 
+      { 
+      }
     }
     void SettingsPageViewModel_SettingsSaved(Object sender, EventArgs e)
     {
-      Settings = _settingsPage.Settings;
+      Settings = (sender as SettingsPageViewModel).Settings;
     }
 
     private void SaveSendCommand()
