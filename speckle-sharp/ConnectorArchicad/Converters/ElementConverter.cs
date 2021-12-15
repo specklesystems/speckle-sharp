@@ -5,12 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DesktopUI2.Models;
 
 
 namespace Archicad.Operations
 {
 	public static class ElementConverter
 	{
+		private const string WallExportName = "walls";
+		private const string SlabExportName = "ceilings";
+		private const string UnsupportedElementExportName = "directShapes";
+
 		#region --- Functions ---
 
 		public static async Task<Base> Convert (IEnumerable<string> elementIds, CancellationToken token)
@@ -40,12 +45,12 @@ namespace Archicad.Operations
 				{
 					case "Wall":
 						IEnumerable<Base> walls = await CreateWallObjects (FilterObjectByType (models, elem.Value), token);
-						AddToObject (commitObject, "walls", walls);
+						AddToObject (commitObject, WallExportName, walls);
 						break;
 
 					case "Slab":
 						IEnumerable<Base> ceilings = await CreateCeilingObjects (FilterObjectByType (models, elem.Value), token);
-						AddToObject (commitObject, "ceilings", ceilings);
+						AddToObject (commitObject, SlabExportName, ceilings);
 						break;
 
 					default:    //unsuported type
@@ -54,10 +59,7 @@ namespace Archicad.Operations
 				}
 			}
 
-			if (unsupportedBuildingElements.Count > 0)
-			{
-				commitObject["directShapes"] = unsupportedBuildingElements;
-			}
+			AddToObject(commitObject, UnsupportedElementExportName, unsupportedBuildingElements);
 
 			return commitObject;
 		}
@@ -109,6 +111,53 @@ namespace Archicad.Operations
 			}
 
 			@object[key] = value;
+		}
+
+		public static async Task<StreamState> ConvertBack (Base commitObject, StreamState state, CancellationToken token)
+		{
+			ImportWalls (Extract<Wall> (commitObject, WallExportName), token);
+			ImportSlabs (Extract<Ceiling> (commitObject, SlabExportName), token);
+			//ImportMophs (szeddszet<Objects.Wall> (commitObject, UnsupportedElementExportName), token);
+
+			return state;
+		}
+
+		private static IEnumerable<TObject> Extract<TObject> (Base baseObject, string fieldName) where TObject : Base
+		{
+			if (!baseObject.GetDynamicMemberNames ().Contains (fieldName))
+				return Enumerable.Empty<TObject>();
+
+			if (baseObject[fieldName] is IEnumerable<object> objects)
+				return objects.OfType<TObject> ();
+
+			return Enumerable.Empty<TObject>();
+		}
+
+		private static async void ImportWalls(IEnumerable<Wall> walls, CancellationToken token)
+		{
+			if (!walls.Any())
+				return;   //there is nothing to import
+			IEnumerable<WallData> wallDatas = walls.Select (x => x.WallData);
+			IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.CreateWall (wallDatas), token);
+			if (successedIds.Count() != wallDatas.Count())
+				return;  //error? can we do something?
+			return;
+		}
+
+		private static async void ImportSlabs (IEnumerable<Ceiling> slabs, CancellationToken token)
+		{
+			if (!slabs.Any())
+				return;   //there is nothing to import
+			IEnumerable<CeilingData> slabDatas = slabs.Select(x => x.CeilingData);
+			//IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.Create (slabDatas), token);
+			//if (successedIds.Count() != slabDatas.Count())
+			//	return;  //error? can we do something?
+			return;
+		}
+
+		private static async void ImportMophs (IEnumerable<DirectShape> slabs, CancellationToken token)
+		{
+			//TODO KSZ
 		}
 
 		#endregion

@@ -11,6 +11,10 @@ namespace Objects.BuiltElements.Archicad
 
 		#region --- Ctor \ Dtor ---
 
+		public Ceiling ()
+        {
+        }
+
 		public Ceiling (Model.CeilingData ceilingData, Model.ElementModelData modelData)
 		{
 			displayMesh = Operations.ModelConverter.Convert (modelData.model);

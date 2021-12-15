@@ -88,10 +88,12 @@ namespace Archicad.Launcher
 		public override async Task<StreamState> ReceiveStream (StreamState state, ProgressViewModel progress)
 		{
 			// TODO KSZ
-			_ = await Helpers.Receive (IdentifyStream (state)
-				);
+			Base commitObject = await Helpers.Receive (IdentifyStream (state));
+			if (commitObject is null) return null;
 
-			return state;
+			StreamState newstate = await Operations.ElementConverter.ConvertBack(commitObject, state, progress.CancellationTokenSource.Token);
+
+			return newstate;
 		}
 
 		public override void SelectClientObjects (string args)
