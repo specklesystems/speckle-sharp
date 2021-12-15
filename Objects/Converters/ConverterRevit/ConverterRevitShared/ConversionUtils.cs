@@ -631,10 +631,21 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-    #region Base Points
-    private class BetterBasePoint
+    #region Reference Point
+
+    private DB.Transform _transform;
+    private DB.Transform ReferencePointTransform
     {
-      public DB.Transform TotalTransform { get; set; } = DB.Transform.Identity;
+      get
+      {
+        if (_transform == null)
+        {
+          // get from settings
+          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
+          _transform = GetReferencePointTransform(referencePointSetting);
+        }
+        return _transform;
+      }
     }
 
     ////////////////////////////////////////////////
@@ -644,49 +655,45 @@ namespace Objects.Converter.Revit
     /// The BasePoint non-shared properties are based off of the internal origin.
     /// Also, survey point does NOT have an rotation parameter.
     ////////////////////////////////////////////////
-
-    private BetterBasePoint _basePoint;
-    private BetterBasePoint ReferencePoint
-    {
-      get
-      {
-        if (_basePoint == null)
-        {
-          // get from settings
-          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
-          _basePoint = GetReferencePoint(referencePointSetting);
-        }
-        return _basePoint;
-      }
-    }
-    private BetterBasePoint GetReferencePoint(string type)
+    private DB.Transform GetReferencePointTransform(string type)
     {
       // get the correct base point from settings
-      BasePoint basePoint = null;
+      var referencePointTransform = DB.Transform.Identity;
+
+      var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
+      var projectPoint = points.Where(o => o.IsShared == false).FirstOrDefault();
+      var surveyPoint = points.Where(o => o.IsShared == true).FirstOrDefault();
+
       switch (type)
       {
         case "Project Base Point":
-          basePoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
+          if (projectPoint != null)
+          {
+#if REVIT2019
+            var point = projectPoint.get_BoundingBox(null).Min;
+#else
+            var point = projectPoint.Position;
+#endif
+            referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
+          }
           break;
         case "Survey Point":
-          basePoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == true).FirstOrDefault();
+          if (surveyPoint != null)
+          {
+#if REVIT2019
+            var point = surveyPoint.get_BoundingBox(null).Min;
+#else
+            var point = surveyPoint.Position;
+#endif
+            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
+            referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+          } 
           break;
         default:
           break;
       }
 
-      var referencePoint = new BetterBasePoint();
-      if (basePoint != null)
-      {
-#if REVIT2019
-        var point = basePoint.get_BoundingBox(null).Min;
-#else
-            var point = basePoint.Position;
-#endif
-        referencePoint.TotalTransform = DB.Transform.CreateTranslation(point).Inverse; // rotation already accounted for
-      }
-
-      return referencePoint;
+      return referencePointTransform;
     }
 
     /// <summary>
@@ -696,7 +703,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? ReferencePoint.TotalTransform.OfPoint(p) : ReferencePoint.TotalTransform.OfVector(p);
+      return (isPoint) ? ReferencePointTransform.Inverse.OfPoint(p) : ReferencePointTransform.Inverse.OfVector(p);
     }
 
     /// <summary>
@@ -706,7 +713,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? ReferencePoint.TotalTransform.Inverse.OfPoint(p) : ReferencePoint.TotalTransform.Inverse.OfVector(p);
+      return (isPoint) ? ReferencePointTransform.OfPoint(p) : ReferencePointTransform.OfVector(p);
     }
     #endregion
 
