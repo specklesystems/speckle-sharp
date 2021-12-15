@@ -217,12 +217,10 @@ namespace DesktopUI2.ViewModels
       _streamState.BranchName = SelectedBranch.name;
       _streamState.IsReceiver = IsReceiver;
       if (IsReceiver)
-      {
         _streamState.CommitId = SelectedCommit.id;
-        _streamState.Settings = Settings.Select( o => o.Setting).ToList();
-      }
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
+      _streamState.Settings = Settings.Select(o => o.Setting).ToList();
       return _streamState;
     }
 
