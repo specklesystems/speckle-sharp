@@ -35,6 +35,8 @@ GS::Optional<GS::UniString> CreateWall::GetSchemaDefinitions () const
 
 GS::Optional<GS::UniString>	CreateWall::GetInputParametersSchema () const
 {
+	return GS::NoValue;
+	/*	//TMP for DEV
 	return R"(
 		{
 			"type": "object",
@@ -47,7 +49,7 @@ GS::Optional<GS::UniString>	CreateWall::GetInputParametersSchema () const
 			"additionalProperties" : false,
 			"required" : [ "walls" ]
 		}
-	)";
+	)";*/
 }
 
 

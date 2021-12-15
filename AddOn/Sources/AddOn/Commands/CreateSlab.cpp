@@ -34,6 +34,8 @@ GS::Optional<GS::UniString> CreateSlab::GetSchemaDefinitions () const
 
 GS::Optional<GS::UniString>	CreateSlab::GetInputParametersSchema () const
 {
+	return GS::NoValue;
+	/*	//TMP for DEV
 	return R"(
 		{
 			"type": "object",
@@ -46,12 +48,14 @@ GS::Optional<GS::UniString>	CreateSlab::GetInputParametersSchema () const
 			"additionalProperties" : false,
 			"required" : [ "slabs" ]
 		}
-	)";
+	)"; */
 }
 
 
 GS::Optional<GS::UniString> CreateSlab::GetResponseSchema () const
 {
+	return GS::NoValue;
+	/*	//TMP for DEV
 	return R"(
 		{
 			"type": "object",
@@ -61,7 +65,7 @@ GS::Optional<GS::UniString> CreateSlab::GetResponseSchema () const
 			"additionalProperties" : false,
 			"required" : [ "elementIds" ]
 		}
-	)";
+	)";	*/
 }
 
 

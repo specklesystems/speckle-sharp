@@ -11,6 +11,10 @@ namespace Objects.BuiltElements.Archicad
 
 		#region --- Ctor \ Dtor ---
 
+		public Wall ()
+		{ 
+		}
+
 		public Wall (Model.WallData wallData, Model.ElementModelData modelData)
 		{
 			displayMesh = Operations.ModelConverter.Convert (modelData.model);

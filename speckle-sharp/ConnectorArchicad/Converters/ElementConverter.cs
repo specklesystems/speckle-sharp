@@ -127,30 +127,32 @@ namespace Archicad.Operations
 			if (!baseObject.GetDynamicMemberNames ().Contains (fieldName))
 				return Enumerable.Empty<TObject>();
 
-			if (baseObject[fieldName] is IEnumerable<TObject>)
-			{
-				var list = (IEnumerable<object>)baseObject[fieldName];
-				var res = list.OfType<TObject>();
-				return res;
-			}
+			if (baseObject[fieldName] is IEnumerable<object> objects)
+				return objects.OfType<TObject> ();
 
 			return Enumerable.Empty<TObject>();
 		}
 
 		private static async void ImportWalls(IEnumerable<Wall> walls, CancellationToken token)
 		{
-			if (!walls.Any()) return;   //there is nothing to import
+			if (!walls.Any())
+				return;   //there is nothing to import
 			IEnumerable<WallData> wallDatas = walls.Select (x => x.WallData);
 			IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.CreateWall (wallDatas), token);
-			if (successedIds.Count() != wallDatas.Count()) return;  //error? can we do something?
+			if (successedIds.Count() != wallDatas.Count())
+				return;  //error? can we do something?
 			return;
 		}
 
 		private static async void ImportSlabs (IEnumerable<Ceiling> slabs, CancellationToken token)
 		{
-			//TODO BE
-			IEnumerable<CeilingData> slabDatas = slabs.Select (x => x.CeilingData);
-			//_ = await Communication.AsyncCommandProcessor.Instance.Execute ();
+			if (!slabs.Any())
+				return;   //there is nothing to import
+			IEnumerable<CeilingData> slabDatas = slabs.Select(x => x.CeilingData);
+			//IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.Create (slabDatas), token);
+			//if (successedIds.Count() != slabDatas.Count())
+			//	return;  //error? can we do something?
+			return;
 		}
 
 		private static async void ImportMophs (IEnumerable<DirectShape> slabs, CancellationToken token)
