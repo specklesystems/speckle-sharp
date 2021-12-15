@@ -199,7 +199,7 @@ namespace Objects.Converter.ETABS
       springLineProperties.ToList();
       foreach (string propertyLine in springLineProperties)
       {
-        var specklePropertyLineSpring = SpringPropertyToSpeckle(propertyLine);
+        var specklePropertyLineSpring = LinearSpringToSpeckle(propertyLine);
         model.properties.Add(specklePropertyLineSpring);
       }
 
@@ -208,7 +208,7 @@ namespace Objects.Converter.ETABS
       springAreaProperties.ToList();
       foreach (string propertyArea in springAreaProperties)
       {
-        var specklePropertyAreaSpring = SpringPropertyToSpeckle(propertyArea);
+        var specklePropertyAreaSpring = AreaSpringToSpeckle(propertyArea);
         model.properties.Add(specklePropertyAreaSpring);
       }
       string[] LinkProperties = { };
