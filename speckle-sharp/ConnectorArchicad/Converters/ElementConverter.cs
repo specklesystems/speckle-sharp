@@ -117,7 +117,7 @@ namespace Archicad.Operations
 		{
 			ImportWalls (Extract<Wall> (commitObject, WallExportName), token);
 			ImportSlabs (Extract<Ceiling> (commitObject, SlabExportName), token);
-			//ImportMophs (szeddszet<Objects.Wall> (commitObject, UnsupportedElementExportName), token);
+			ImportMophs (Extract<DirectShape> (commitObject, UnsupportedElementExportName), token);
 
 			return state;
 		}
@@ -125,20 +125,20 @@ namespace Archicad.Operations
 		private static IEnumerable<TObject> Extract<TObject> (Base baseObject, string fieldName) where TObject : Base
 		{
 			if (!baseObject.GetDynamicMemberNames ().Contains (fieldName))
-				return Enumerable.Empty<TObject>();
+				return Enumerable.Empty<TObject> ();
 
 			if (baseObject[fieldName] is IEnumerable<object> objects)
 				return objects.OfType<TObject> ();
 
-			return Enumerable.Empty<TObject>();
+			return Enumerable.Empty<TObject> ();
 		}
 
 		private static async void ImportWalls(IEnumerable<Wall> walls, CancellationToken token)
 		{
-			if (!walls.Any())
+			if (!walls.Any ())
 				return;   //there is nothing to import
 			IEnumerable<WallData> wallDatas = walls.Select (x => x.WallData);
-			IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.CreateWall (wallDatas), token);
+			IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.CreateWall (wallDatas), token);
 			if (successedIds.Count() != wallDatas.Count())
 				return;  //error? can we do something?
 			return;
@@ -146,18 +146,20 @@ namespace Archicad.Operations
 
 		private static async void ImportSlabs (IEnumerable<Ceiling> slabs, CancellationToken token)
 		{
-			if (!slabs.Any())
+			if (!slabs.Any ())
 				return;   //there is nothing to import
-			IEnumerable<CeilingData> slabDatas = slabs.Select(x => x.CeilingData);
-			//IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.Create (slabDatas), token);
-			//if (successedIds.Count() != slabDatas.Count())
-			//	return;  //error? can we do something?
+			IEnumerable<CeilingData> slabDatas = slabs.Select (x => x.CeilingData);
+			IEnumerable<string> successedIds = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.CreateCeiling (slabDatas), token);
+			if (successedIds.Count () != slabDatas.Count ())
+				return;  //error? can we do something?
 			return;
 		}
 
-		private static async void ImportMophs (IEnumerable<DirectShape> slabs, CancellationToken token)
+		private static async void ImportMophs (IEnumerable<DirectShape> shapes, CancellationToken token)
 		{
 			//TODO KSZ
+			if (!shapes.Any ())
+				return;   //there is nothing to import
 		}
 
 		#endregion
