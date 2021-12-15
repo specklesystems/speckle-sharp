@@ -71,12 +71,17 @@ class RevitHandler: IHandler
 
   private static IEnumerable<string> _findInstalledRevitExecutables()
   {
+    var supportedVersions = new []{
+      "2022"
+    };
     var matcher = new Matcher();
     matcher.AddInclude("**/Revit*/**/Revit.exe");
 
     string searchDirectory = "C:/Program Files/Autodesk";
 
-    return matcher.GetResultsInFullPath(searchDirectory);
+    return matcher
+    .GetResultsInFullPath(searchDirectory)
+    .Where(p => supportedVersions.Any(v => p.Contains(v)));
   }
 
   private async Task<string> _prepareBranch(string versionString, string sourceFile)
