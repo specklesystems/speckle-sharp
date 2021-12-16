@@ -41,6 +41,7 @@ GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element& elemen
 		err = ACAPI_Element_Get (&element);
 	} else {
 		err = ACAPI_Element_GetDefaults (&element, nullptr);
+		element.header.guid = APIGuidFromString(guidString.ToCStr());	//re set the lost data
 	}
 
 	if (err != NoError)

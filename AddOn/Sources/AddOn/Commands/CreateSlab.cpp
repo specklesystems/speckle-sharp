@@ -47,6 +47,7 @@ GSErrCode GetSlabFromObjectState (const GS::ObjectState&	os,
 		}
 	} else {
 		err = ACAPI_Element_GetDefaults (&element, &slabMemo);
+		element.header.guid = APIGuidFromString(guidString.ToCStr());	//re set the lost data
 	}
 
 	if (err != NoError)
