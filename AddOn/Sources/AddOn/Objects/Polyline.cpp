@@ -55,10 +55,10 @@ void Polyline::FillVertices ()
 		Point3D ePoint = segment.EndPoint;
 		bool sFound = false;
 		bool eFound = false;
-		for (const Point3D& point : mVertices) {
-			if (point == sPoint)
+		for (UInt32 i = 1; i < mVertices.GetSize (); i++) {
+			if (mVertices [i] == sPoint)
 				sFound = true;
-			if (point == ePoint)
+			if (mVertices [i] == ePoint)
 				eFound = true;
 		}
 		if (!sFound)
