@@ -214,37 +214,43 @@ API_AddOnCommandExecutionPolicy CreateSlab::GetExecutionPolicy () const
 GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::ObjectState result;
-	GSErrCode		err;
+	GSErrCode		errCode;
 
 	GS::Array<GS::ObjectState> slabs;
 	parameters.Get (SlabsFieldName, slabs);
 
 	const auto& listAdder = result.AddList<GS::UniString> (ElementIdsFieldName);
 
-	for (const GS::ObjectState& slabOs : slabs) {
+	errCode = ACAPI_CallUndoableCommand ("CreateSpeckleSlab", [&] () -> GSErrCode {
+		GSErrCode err = NoError;
 
-		API_Element slab {};
-		API_Element	slabMask {};
-		API_ElementMemo slabMemo {};
-		GS::UInt64 memoMask = 0;
+		for (const GS::ObjectState& slabOs : slabs) {
 
-		err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
-		if (err != NoError)
-			continue;
+			API_Element slab {};
+			API_Element	slabMask {};
+			API_ElementMemo slabMemo {};
+			GS::UInt64 memoMask = 0;
 
-		bool slabExists = Utility::ElementExists (slab.header.guid);
-		if (slabExists) {
-			err = ModifyExistingSlab (slab, slabMask, slabMemo, memoMask);
-		} else {
-			err = CreateNewSlab (slab, slabMemo);
+			err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
+			if (err != NoError)
+				continue;
+
+			bool slabExists = Utility::ElementExists (slab.header.guid);
+			if (slabExists) {
+				err = ModifyExistingSlab (slab, slabMask, slabMemo, memoMask);
+			}
+			else {
+				err = CreateNewSlab (slab, slabMemo);
+			}
+			if (err != NoError)
+				continue;
+
+			GS::UniString elemId = APIGuidToString (slab.header.guid);
+			listAdder (elemId);
+
 		}
-		if (err != NoError)
-			continue;
-
-		GS::UniString elemId = APIGuidToString (slab.header.guid);
-		listAdder (elemId);
-
-	}
+		return err;
+	});
 
 	return result;
 }

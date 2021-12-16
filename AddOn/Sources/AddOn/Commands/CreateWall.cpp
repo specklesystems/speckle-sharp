@@ -242,35 +242,42 @@ API_AddOnCommandExecutionPolicy CreateWall::GetExecutionPolicy () const
 GS::ObjectState CreateWall::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::ObjectState result;
-	GSErrCode		err;
+	GSErrCode		errCode;
 
 	GS::Array<GS::ObjectState> walls;
 	parameters.Get (WallsFieldName, walls);
 
 	const auto& listAdder = result.AddList<GS::UniString> (ElementIdsFieldName);
 
-	for (const GS::ObjectState& wallOs : walls) {
+	errCode = ACAPI_CallUndoableCommand ("CreateSpeckleWall", [&] () -> GSErrCode {
+		GSErrCode err = NoError;
 
-		API_Element wall {};
-		API_Element	wallMask {};
+		for (const GS::ObjectState& wallOs : walls) {
 
-		err = GetWallFromObjectState (wallOs, wall, wallMask);
-		if (err != NoError)
-			continue;
+			API_Element wall {};
+			API_Element	wallMask {};
+			
+			err = GetWallFromObjectState (wallOs, wall, wallMask);
+			if (err != NoError)
+				continue;
 
-		bool wallExists = Utility::ElementExists (wall.header.guid);
-		if (wallExists) {
-			err = ModifyExistingWall (wall, wallMask);
-		} else {
-			err = CreateNewWall (wall);
+			bool wallExists = Utility::ElementExists (wall.header.guid);
+			if (wallExists) {
+				err = ModifyExistingWall (wall, wallMask);
+			}
+			else {
+				err = CreateNewWall (wall);
+			}
+			if (err != NoError)
+				continue;
+
+			GS::UniString elemId = APIGuidToString (wall.header.guid);
+			listAdder (elemId);
+
 		}
-		if (err != NoError)
-			continue;
 
-		GS::UniString elemId = APIGuidToString (wall.header.guid);
-		listAdder (elemId);
-
-	}
+		return err;
+	});
 
 	return result;
 }
