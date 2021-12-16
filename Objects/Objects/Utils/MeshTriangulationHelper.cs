@@ -22,35 +22,36 @@ namespace Objects.Utils
                 int n = mesh.faces[i];
                 if (n < 3) n += 3; // 0 -> 3, 1 -> 4
 
-                if (n == 3)
-                {
-                    triangles.Add(3);
-                    triangles.Add(mesh.faces[i + 1]);
-                    triangles.Add(mesh.faces[i + 2]);
-                    triangles.Add(mesh.faces[i + 3]);
-                }
-                // else if (n == 4)
-                // {
-                //     if (preserveQuads)
-                //     {
-                //         triangles.Add(4);
-                //         triangles.Add(mesh.faces[i + 1]);
-                //         triangles.Add(mesh.faces[i + 2]);
-                //         triangles.Add(mesh.faces[i + 3]);
-                //         triangles.Add(mesh.faces[i + 4]);
-                //     }
-                //     else
-                //     {
-                //         triangles.Add(3);
-                //         triangles.Add(mesh.faces[i + 1]);
-                //         triangles.Add(mesh.faces[i + 2]);
-                //         triangles.Add(mesh.faces[i + 4]);
-                //         triangles.Add(3);
-                //         triangles.Add(mesh.faces[i + 2]);
-                //         triangles.Add(mesh.faces[i + 3]);
-                //         triangles.Add(mesh.faces[i + 4]);
-                //     }
-                // }
+                 if (n == 3)
+                 {
+                     //We could use TriangluateFace method for tris and quads, but it's faster to do them manually
+                     triangles.Add(3);
+                     triangles.Add(mesh.faces[i + 1]);
+                     triangles.Add(mesh.faces[i + 2]);
+                     triangles.Add(mesh.faces[i + 3]);
+                 }
+                 else if (n == 4)
+                 {
+                     if (preserveQuads)
+                     {
+                         triangles.Add(4);
+                         triangles.Add(mesh.faces[i + 1]);
+                         triangles.Add(mesh.faces[i + 2]);
+                         triangles.Add(mesh.faces[i + 3]);
+                         triangles.Add(mesh.faces[i + 4]);
+                     }
+                     else
+                     {
+                         triangles.Add(3);
+                         triangles.Add(mesh.faces[i + 1]);
+                         triangles.Add(mesh.faces[i + 2]);
+                         triangles.Add(mesh.faces[i + 4]);
+                         triangles.Add(3);
+                         triangles.Add(mesh.faces[i + 2]);
+                         triangles.Add(mesh.faces[i + 3]);
+                         triangles.Add(mesh.faces[i + 4]);
+                     }
+                 }
                 else //ngon
                 {
                     var triangle = TriangulateFace(i, mesh);
@@ -62,14 +63,18 @@ namespace Objects.Utils
 
             mesh.faces = triangles;
         }
-
+        
         /// <summary>
-        /// Triangulates the CCW n-gon specified
+        /// Calculates the triangulation of the face at <paramref name="faceIndex"/> in <paramref name="mesh"/>.<br/>
+        /// Does not mutate <paramref name="mesh"/>.
         /// </summary>
         /// <remarks>
         /// This implementation is based the ear clipping method
         /// Proposed by "Christer Ericson (2005) <i>Real-Time Collision Detection</i>"
         /// </remarks>
+        /// <param name="faceIndex">The index of the face's cardinality indicator <c>n</c> in <paramref name="mesh"/>.<see cref="Mesh.faces"/></param>
+        /// <param name="mesh"></param>
+        /// <returns>List of triangle faces with cardinality indicators</returns>
         public static List<int> TriangulateFace(int faceIndex, Mesh mesh)
         {
             int n = mesh.faces[faceIndex];
@@ -150,8 +155,8 @@ namespace Objects.Utils
                 if (isEar)
                 {
                     int a = mesh.faces[AsIndex(i)];
-                    int b = mesh.faces[AsIndex(prev[i])];
-                    int c = mesh.faces[AsIndex(next[i])];
+                    int b = mesh.faces[AsIndex(next[i])];
+                    int c = mesh.faces[AsIndex(prev[i])];
                     triangleFaces.AddRange(new []{ 3, a, b, c });
                     
                     next[prev[i]] = next[i];
