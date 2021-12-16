@@ -12,6 +12,18 @@
 namespace AddOnCommands {
 
 
+GSErrCode CreateNewSlab (API_Element& slab, API_ElementMemo& slabMemo)
+{
+	return ACAPI_Element_Create (&slab, &slabMemo);
+}
+
+
+GSErrCode ModifyExistingSlab (API_Element& slab, API_Element& mask, API_ElementMemo& slabMemo, GS::UInt64 memoMask)
+{
+	return ACAPI_Element_Change (&slab, &mask, &slabMemo, memoMask, true);
+}
+
+
 GSErrCode GetSlabFromObjectState (const GS::ObjectState&	os, 
 								  API_Element&				element, 
 								  API_Element&				mask, 
@@ -39,7 +51,6 @@ GSErrCode GetSlabFromObjectState (const GS::ObjectState&	os,
 
 	if (err != NoError)
 		return err;
-
 
 	memoMask = APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims;
 
@@ -223,9 +234,9 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 
 		bool slabExists = Utility::ElementExists (slab.header.guid);
 		if (slabExists) {
-			err = ACAPI_Element_Change (&slab, &slabMask, &slabMemo, memoMask, true);
+			err = ModifyExistingSlab (slab, slabMask, slabMemo, memoMask);
 		} else {
-			err = ACAPI_Element_Create (&slab, &slabMemo);
+			err = CreateNewSlab (slab, slabMemo);
 		}
 		if (err != NoError)
 			continue;
