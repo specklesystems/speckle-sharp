@@ -20,7 +20,7 @@ namespace Objects.BuiltElements.Archicad.Model
 
 		public sealed class Polyline : Base
 		{
-			public IEnumerable<PolylineSegment> polylineSegments { get; set; }
+			public List<PolylineSegment> polylineSegments { get; set; }
 		}
 
 		#endregion
@@ -30,7 +30,7 @@ namespace Objects.BuiltElements.Archicad.Model
 
 		public Polyline contourPolyline { get; set; }
 
-		public IEnumerable<Polyline> holePolylines { get; set; }
+		public List<Polyline> holePolylines { get; set; }
 
 		#endregion
 	}
