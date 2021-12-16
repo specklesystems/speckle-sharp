@@ -28,7 +28,7 @@ GSErrCode GetSlabFromObjectState (const GS::ObjectState&	os,
 								  API_Element&				element, 
 								  API_Element&				mask, 
 								  API_ElementMemo&			slabMemo,
-								  GS::UInt64				memoMask)
+								  GS::UInt64&				memoMask)
 {
 	GSErrCode err;
 
@@ -232,8 +232,10 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 			GS::UInt64 memoMask = 0;
 
 			err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
-			if (err != NoError)
+			if (err != NoError) {
+				ACAPI_DisposeElemMemoHdls (&slabMemo);
 				continue;
+			}
 
 			bool slabExists = Utility::ElementExists (slab.header.guid);
 			if (slabExists) {
@@ -242,6 +244,9 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 			else {
 				err = CreateNewSlab (slab, slabMemo);
 			}
+
+			ACAPI_DisposeElemMemoHdls (&slabMemo);
+
 			if (err != NoError)
 				continue;
 
