@@ -12,6 +12,7 @@ using Objects.Structural.Loading;
 using Objects.Structural.ETABS.Loading;
 using Speckle.Core.Models;
 using Objects.Structural.ETABS.Geometry;
+using Objects.Structural.ETABS.Analysis;
 using System.Linq;
 using ETABSv1;
 
@@ -50,13 +51,20 @@ namespace Objects.Converter.ETABS
           {
             break;
           }
-          else if (property is ETABSLinkProperty){
-            LinkPropertyToNative((ETABSLinkProperty)property);
+          else if (property is ETABSSpringProperty){
+            SpringPropertyToNative((ETABSSpringProperty)property);
+          }
+          else if (property is ETABSLinearSpring){
+            LinearSpringPropertyToNative((ETABSLinearSpring)property);
           }
           else if(property is ETABSAreaSpring){
             AreaSpringPropertyToNative((ETABSAreaSpring)property);
           }
-          else 
+          else if (property is ETABSLinkProperty)
+          {
+            LinkPropertyToNative((ETABSLinkProperty)property);
+          }
+          else if (property is  ETABSProperty2D)
           {
             Property2DToNative((ETABSProperty2D)property);
           }
@@ -68,17 +76,23 @@ namespace Objects.Converter.ETABS
         foreach (var element in model.elements)
         {
 
-          if (element.GetType().ToString() == Element1D.GetType().ToString())
+          if (element is ETABSElement1D)
           {
-            FrameToNative((ETABSElement1D)element);
+            var ETABSelement = (ETABSElement1D)element;
+            if(ETABSelement.type == ElementType1D.Link){
+              LinkToNative((ETABSElement1D)(element));
+            }
+            else{
+              FrameToNative((ETABSElement1D)element);
+            }
           }
-          else if (element.GetType().Equals(GSAElement1D.GetType()))
-          {
-            FrameToNative((ETABSElement1D)element);
-          }
-          else
+
+          else if (element is ETABSElement2D)
           {
             AreaToNative((ETABSElement2D)element);
+          }
+          else if (element is ETABSStories){
+            StoriesToNative((ETABSStories)element);
           }
         }
       }
@@ -185,7 +199,7 @@ namespace Objects.Converter.ETABS
       springLineProperties.ToList();
       foreach (string propertyLine in springLineProperties)
       {
-        var specklePropertyLineSpring = SpringPropertyToSpeckle(propertyLine);
+        var specklePropertyLineSpring = LinearSpringToSpeckle(propertyLine);
         model.properties.Add(specklePropertyLineSpring);
       }
 
@@ -194,7 +208,7 @@ namespace Objects.Converter.ETABS
       springAreaProperties.ToList();
       foreach (string propertyArea in springAreaProperties)
       {
-        var specklePropertyAreaSpring = SpringPropertyToSpeckle(propertyArea);
+        var specklePropertyAreaSpring = AreaSpringToSpeckle(propertyArea);
         model.properties.Add(specklePropertyAreaSpring);
       }
       string[] LinkProperties = { };

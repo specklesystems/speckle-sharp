@@ -27,6 +27,9 @@ namespace Objects.Converter.ETABS
       {
         Model.PointObj.ChangeName(name, speckleStructNode.name);
       }
+      var restraint = RestraintToNative(speckleStructNode.restraint);
+      Model.PointObj.SetRestraint(speckleStructNode.name, ref restraint);
+      Model.PointObj.SetSpringAssignment(speckleStructNode.name, speckleStructNode.springProperty.name);
 
       return speckleStructNode.name;
     }

@@ -62,6 +62,7 @@ namespace Objects.Converter.ETABS
       Model.AreaObj.SetLocalAxes(area.name, area.orientationAngle);
       Model.AreaObj.SetPier(area.name, area.PierAssignment);
       Model.AreaObj.SetSpandrel(area.name, area.SpandrelAssignment);
+      Model.AreaObj.SetSpringAssignment(area.name, area.ETABSAreaSpring.name);
 
       return name;
 
@@ -147,7 +148,7 @@ namespace Objects.Converter.ETABS
 
       string springArea = null;
       Model.AreaObj.GetSpringAssignment(name, ref springArea);
-      if(springArea != null) { speckleStructArea.ETABSAreaSpring = AreaSpringToSpeckle(name); }
+      if(springArea != null) { speckleStructArea.ETABSAreaSpring = AreaSpringToSpeckle(springArea); }
 
       string pierAssignment = null;
       Model.AreaObj.GetPier(name, ref pierAssignment);
