@@ -6,11 +6,13 @@ using Objects.Structural.ETABS.Properties;
 using Speckle.Core.Kits;
 using Objects.Structural.Properties;
 using Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Objects.Structural.ETABS.Geometry
 {
   public class ETABSNode : Node
   {
+    [DetachProperty]
     public ETABSSpringProperty ETABSSpringProperty { get; set; }
 
 

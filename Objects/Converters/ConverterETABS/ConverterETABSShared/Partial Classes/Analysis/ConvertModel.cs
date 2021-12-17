@@ -20,17 +20,11 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    object ModelToNative(Model model)
+    public object ModelToNative(Model model)
     {
-      var Element1D = new Element1D();
-      var Property1D = new Property1D();
-      var Loading1D = new LoadBeam();
-      var Loading2D = new LoadFace();
-      var LoadingNode = new LoadNode();
-      var LoadGravity = new LoadGravity();
-      var Loading2DWind = new ETABSWindLoadingFace();
-      var GSAProperty = new GSAProperty1D();
-      var GSAElement1D = new GSAMember1D();
+      if(model.specs != null) { ModelInfoToNative(model.specs); }
+
+
       if (model.materials != null)
       {
         foreach (Material material in model.materials)
@@ -43,11 +37,7 @@ namespace Objects.Converter.ETABS
       {
         foreach (var property in model.properties)
         {
-          if (property is Property1D)
-          {
-            Property1DToNative((Property1D)property);
-          }
-          else if (property is GSAProperty1D)
+          if (property is GSAProperty1D)
           {
             break;
           }
@@ -64,9 +54,16 @@ namespace Objects.Converter.ETABS
           {
             LinkPropertyToNative((ETABSLinkProperty)property);
           }
+          else if (property is ETABSTendonProperty){
+            break;
+          }
           else if (property is  ETABSProperty2D)
           {
             Property2DToNative((ETABSProperty2D)property);
+          }
+          else if (property is Property1D)
+          {
+            Property1DToNative((Property1D)property);
           }
         }
       }
@@ -74,34 +71,26 @@ namespace Objects.Converter.ETABS
       if (model.elements != null)
       {
         foreach (var element in model.elements)
-        {
+        { 
 
-          if (element is ETABSElement1D)
+          if (element is Element1D && !(element is ETABSTendon))
           {
-            var ETABSelement = (ETABSElement1D)element;
+            var ETABSelement = (Element1D)element;
             if(ETABSelement.type == ElementType1D.Link){
               LinkToNative((ETABSElement1D)(element));
             }
             else{
-              FrameToNative((ETABSElement1D)element);
+              FrameToNative((Element1D)element);
             }
           }
 
-          else if (element is ETABSElement2D)
+          else if (element is Element2D)
           {
-            AreaToNative((ETABSElement2D)element);
+            AreaToNative((Element2D)element);
           }
           else if (element is ETABSStories){
             StoriesToNative((ETABSStories)element);
           }
-        }
-      }
-
-      if (model.nodes != null)
-      {
-        foreach (Node node in model.nodes)
-        {
-          PointToNative(node);
         }
       }
 
@@ -118,22 +107,22 @@ namespace Objects.Converter.ETABS
         foreach (var load in model.loads)
         {
           //import loadpatterns in first
-          if (load.GetType().Equals(LoadGravity.GetType()))
+          if (load is LoadGravity)
           {
             LoadPatternToNative((LoadGravity)load);
           }
         }
         foreach (var load in model.loads)
         {
-          if (load.GetType().Equals(Loading2D.GetType()))
+          if (load is LoadFace)
           {
             LoadFaceToNative((LoadFace)load);
           }
-          else if (load.GetType().Equals(Loading2DWind.GetType()))
+          else if (load is ETABSWindLoadingFace)
           {
             LoadFaceToNative((ETABSWindLoadingFace)load);
           }
-          else if (load.GetType().Equals(Loading1D.GetType()))
+          else if (load is LoadBeam)
           {
             var loading1D = (LoadBeam)load;
             if (loading1D.loadType == BeamLoadType.Uniform)
@@ -159,7 +148,7 @@ namespace Objects.Converter.ETABS
       ElementsCount.applicationId = count.ToString();
       return ElementsCount;
     }
-    Model ModelToSpeckle()
+    public Model ModelToSpeckle()
     {
       var model = new Model();
       model.specs = ModelInfoToSpeckle();
@@ -172,9 +161,9 @@ namespace Objects.Converter.ETABS
       int number = 0;
       string[] properties1D = { };
 
-      var stories = StoriesToSpeckle();
-      //Should stories belong here ? not sure 
-      model.elements.Add(stories);
+      //var stories = StoriesToSpeckle();
+      ////Should stories belong here ? not sure 
+      //model.elements.Add(stories);
 
 
       //Properties are sent by default whether you want them to be sent or not. Easier this way to manage information about the model

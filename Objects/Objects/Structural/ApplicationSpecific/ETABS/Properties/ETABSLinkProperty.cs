@@ -18,6 +18,7 @@ namespace Objects.Structural.ETABS.Properties
     public double MP3deltaEnd1 { get; set; }
     public double MP3deltaEnd2 { get; set; }
 
+
     public ETABSLinkProperty(string name, double mass, double weight, double rotationalInertia1, double rotationalInertia2, double rotationalInertia3, double m2PdeltaEnd1, double mP2deltaEnd2, double mP3deltaEnd1, double mP3deltaEnd2)
     {
       this.name = name;
@@ -30,6 +31,10 @@ namespace Objects.Structural.ETABS.Properties
       MP2deltaEnd2 = mP2deltaEnd2;
       MP3deltaEnd1 = mP3deltaEnd1;
       MP3deltaEnd2 = mP3deltaEnd2;
+    }
+
+    public ETABSLinkProperty()
+    {
     }
   }
 }

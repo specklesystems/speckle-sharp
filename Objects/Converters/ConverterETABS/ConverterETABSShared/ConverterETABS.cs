@@ -81,7 +81,7 @@ namespace Objects.Converter.ETABS
         //case osg.node o:
         //    return pointtonative(o);
         case OSG.Node o:
-          return PointToNative(o);
+          return PointToNative((ETABSNode)o);
           Report.Log($"Created Node {o.id}");
         case Geometry.Line o:
           return LineToNative(o);

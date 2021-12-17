@@ -4,6 +4,7 @@ using System.Text;
 using Objects.Structural.Geometry;
 using Objects.Structural.ETABS.Properties;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Objects.Geometry;
 using Objects.Structural.Properties;
 
@@ -11,6 +12,7 @@ namespace Objects.Structural.ETABS.Geometry
 {
   public class ETABSElement1D: Element1D
   {
+  [DetachProperty]
    public ETABSLinearSpring ETABSLinearSpring { get; set; }
    public string PierAssignment { get; set; }
    public string SpandrelAssignment { get; set; }

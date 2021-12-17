@@ -20,19 +20,26 @@ namespace Objects.Converter.ETABS
     {
       foreach (Element2D element in loadFace.elements)
       {
+        string elementName = null;
+        if (element.name != null) { elementName = element.name; }
+        else { elementName = element.id; }
         if (loadFace.loadType == FaceLoadType.Constant)
         {
+
+
           switch (loadFace.direction)
           {
-            case LoadDirection2D.X:
 
-              Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 4);
+
+            case LoadDirection2D.X:
+             
+              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 4);
               break;
             case LoadDirection2D.Y:
-              Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 5);
+              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 5);
               break;
             case LoadDirection2D.Z:
-              Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 6);
+              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 6);
               break;
           }
         }
