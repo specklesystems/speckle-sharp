@@ -31,6 +31,9 @@ namespace Objects.Converter.ETABS
       var Loading2DWind = new ETABSWindLoadingFace();
       var GSAProperty = new GSAProperty1D();
       var GSAElement1D = new GSAMember1D();
+      if(model.specs != null) { ModelInfoToNative(model.specs); }
+
+
       if (model.materials != null)
       {
         foreach (Material material in model.materials)
