@@ -13,7 +13,8 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object FrameToNative(ETABSElement1D element1D)
+  
+    public object FrameToNative(Element1D element1D)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
       {
@@ -99,9 +100,14 @@ namespace Objects.Converter.ETABS
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
-      if(element1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(element1D.name, element1D.SpandrelAssignment); }
-      if(element1D.PierAssignment != null) { Model.FrameObj.SetPier(element1D.name, element1D.PierAssignment); }
-      if(element1D.ETABSLinearSpring != null) { Model.FrameObj.SetSpringAssignment(element1D.name, element1D.ETABSLinearSpring.name); }
+      if(element1D is ETABSElement1D){ 
+      
+        var ETABSelement1D = (ETABSElement1D)element1D;
+        if (ETABSelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(ETABSelement1D.name, ETABSelement1D.SpandrelAssignment); }
+        if (ETABSelement1D.PierAssignment != null) { Model.FrameObj.SetPier(ETABSelement1D.name, ETABSelement1D.PierAssignment); }
+        if (ETABSelement1D.ETABSLinearSpring != null) { Model.FrameObj.SetSpringAssignment(ETABSelement1D.name, ETABSelement1D.ETABSLinearSpring.name); }
+      }
+
 
 
       return element1D.name;

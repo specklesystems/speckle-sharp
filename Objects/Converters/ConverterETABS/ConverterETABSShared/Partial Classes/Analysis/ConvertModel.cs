@@ -74,34 +74,26 @@ namespace Objects.Converter.ETABS
       if (model.elements != null)
       {
         foreach (var element in model.elements)
-        {
+        { 
 
-          if (element is ETABSElement1D)
+          if (element is Element1D)
           {
-            var ETABSelement = (ETABSElement1D)element;
+            var ETABSelement = (Element1D)element;
             if(ETABSelement.type == ElementType1D.Link){
               LinkToNative((ETABSElement1D)(element));
             }
             else{
-              FrameToNative((ETABSElement1D)element);
+              FrameToNative((Element1D)element);
             }
           }
 
-          else if (element is ETABSElement2D)
+          else if (element is Element2D)
           {
-            AreaToNative((ETABSElement2D)element);
+            AreaToNative((Element2D)element);
           }
           else if (element is ETABSStories){
             StoriesToNative((ETABSStories)element);
           }
-        }
-      }
-
-      if (model.nodes != null)
-      {
-        foreach (Node node in model.nodes)
-        {
-          PointToNative(node);
         }
       }
 
@@ -172,9 +164,9 @@ namespace Objects.Converter.ETABS
       int number = 0;
       string[] properties1D = { };
 
-      var stories = StoriesToSpeckle();
-      //Should stories belong here ? not sure 
-      model.elements.Add(stories);
+      //var stories = StoriesToSpeckle();
+      ////Should stories belong here ? not sure 
+      //model.elements.Add(stories);
 
 
       //Properties are sent by default whether you want them to be sent or not. Easier this way to manage information about the model
