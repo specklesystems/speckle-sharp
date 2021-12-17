@@ -40,5 +40,9 @@ namespace Objects.Structural.ETABS.Analysis
       SpliceHeight = spliceHeight;
       Color = 0;
     }
+
+    public ETABSStorey()
+    {
+    }
   }
 }

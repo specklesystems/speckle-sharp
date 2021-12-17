@@ -3,6 +3,8 @@ using Objects.Converter.ETABS;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.ETABS.Geometry;
+using Speckle.Core.Models;
+using System;
 using Speckle.Core.Kits;
 using ETABSv1;
 using Microsoft.VisualBasic;
@@ -85,20 +87,45 @@ namespace ConverterETABSTests
       listTop.Add(pt2);
       listTop.Add(pt3);
       listTop.Add(pt4);
-      ETABSElement2D element2D = new ETABSElement2D(listTop);
-      converter.AreaToNative(element2D);
-      int numberArea = 0;
-      string[] AreasName = null;
-      Model.AreaObj.GetNameList(ref numberArea, ref AreasName);
-      if (numberArea == 1)
-      {
-        Assert.Pass();
-      }
-      else
-      {
-        Assert.Fail();
+      //ETABSElement2D element2D = new ETABSElement2D(listTop);
+      //converter.AreaToNative(element2D);
+      //int numberArea = 0;
+      //string[] AreasName = null;
+      //Model.AreaObj.GetNameList(ref numberArea, ref AreasName);
+      //if (numberArea == 1)
+      //{
+      //  Assert.Pass();
+      //}
+      //else
+      //{
+      //  Assert.Fail();
+      //}
+
+    }
+
+    [Test]
+    public void serializiation() 
+    {
+      var serializer = new Speckle.Core.Serialisation.BaseObjectSerializerV2();
+      var deserializer = new Speckle.Core.Serialisation.BaseObjectDeserializerV2();
+      //string FilePath = "G:\\Shared drives\\All Company\\07 Sample Models\\ETABS\\6_Storey_Default_Building_ETABSv18.edb";
+      //var model = Model.File.OpenFile(FilePath);
+      int numberNames = 0;
+      string[] frameNames = null;
+      
+      Model.FrameObj.GetNameList(ref numberNames, ref frameNames);
+      foreach(string frameName in frameNames){
+        var element = converter.FrameToSpeckle(frameName);
       }
 
+      var B = converter.ModelToSpeckle();
+      var b = serializer.Serialize(B);
+      var d = deserializer.Deserialize(b);
+      var obj = converter.ModelToNative((Objects.Structural.Analysis.Model)d);
+   
+      Console.WriteLine(d);
+
+      Assert.Pass();
     }
   }
 }

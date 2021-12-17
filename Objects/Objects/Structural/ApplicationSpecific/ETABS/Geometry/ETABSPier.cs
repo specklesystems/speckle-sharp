@@ -45,5 +45,9 @@ namespace Objects.Structural.ETABS.Geometry
       this.centerofGravityTopY = centerofGravityTopY;
       this.centerofGravityTopZ = centerofGravityTopZ;
     }
+
+    public ETABSPier()
+    {
+    }
   }
 }

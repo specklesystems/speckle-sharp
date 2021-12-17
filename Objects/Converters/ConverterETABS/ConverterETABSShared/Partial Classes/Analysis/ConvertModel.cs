@@ -20,7 +20,7 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    object ModelToNative(Model model)
+    public object ModelToNative(Model model)
     {
       var Element1D = new Element1D();
       var Property1D = new Property1D();
@@ -154,7 +154,7 @@ namespace Objects.Converter.ETABS
       ElementsCount.applicationId = count.ToString();
       return ElementsCount;
     }
-    Model ModelToSpeckle()
+    public Model ModelToSpeckle()
     {
       var model = new Model();
       model.specs = ModelInfoToSpeckle();

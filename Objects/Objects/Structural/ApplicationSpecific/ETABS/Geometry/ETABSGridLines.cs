@@ -8,11 +8,16 @@ namespace Objects.Structural.ETABS.Geometry
 {
   public class ETABSGridLines:Base
   {
-  public double Xo { get; set; }
+    public ETABSGridLines()
+    {
+    }
+
+    public double Xo { get; set; }
   public double Yo { get; set; }
   public double Rz { get; set; }
   public string GridSystemType { get; set; }
   [DetachProperty]
   public List<GridLine> gridLines { get; set; }
+
   }
 }
