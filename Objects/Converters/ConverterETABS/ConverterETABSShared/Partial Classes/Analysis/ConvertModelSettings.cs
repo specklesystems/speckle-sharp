@@ -11,8 +11,6 @@ namespace Objects.Converter.ETABS
       Model.DesignConcrete.SetCode(modelSettings.concreteCode);
       Model.DesignSteel.SetCode(modelSettings.steelCode);
       if(modelSettings.modelUnits !=null){ UnitsToNative(modelSettings.modelUnits); }
-
-
     }
     public ModelSettings modelSettingsToSpeckle()
     {

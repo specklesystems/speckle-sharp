@@ -40,7 +40,18 @@ namespace Objects.Converter.ETABS
 
       if (area.property != null)
       {
-        Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+        int numberNames = 0;
+        string[] propNames = null;
+        Model.PropArea.GetNameList(ref numberNames,ref propNames);
+        if(propNames.Contains(area.property.name))
+        {
+          Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+        }
+        else
+        {
+          Property2DToNative((ETABSProperty2D)area.property);
+          Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+        }
 
       }
       else
@@ -51,6 +62,9 @@ namespace Objects.Converter.ETABS
       if (area.name != null)
       {
         Model.AreaObj.ChangeName(name, area.name);
+      }
+      else{
+        Model.AreaObj.ChangeName(name, area.id);
       }
       if(area is ETABSElement2D){
         var ETABSarea = (ETABSElement2D)area;
