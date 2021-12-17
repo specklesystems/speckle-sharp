@@ -24,6 +24,26 @@ bool ElementExists (const API_Guid& guid)
 }
 
 
+GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo)
+{
+	GSErrCode err;
+	API_Guid guid = element.header.guid;
+
+	bool elemExists = ElementExists (guid);
+	if (elemExists) {
+		err = ACAPI_Element_Get (&element);
+		if (err == NoError && memo != nullptr) {
+			err = ACAPI_Element_GetMemo (guid, memo);
+		}
+	} else {
+		err = ACAPI_Element_GetDefaults (&element, memo);
+		element.header.guid = guid;	// keep guid for creation
+	}
+
+	return err;
+}
+
+
 bool IsElement3D (const API_Guid& guid)
 {
 	switch (GetElementType (guid))

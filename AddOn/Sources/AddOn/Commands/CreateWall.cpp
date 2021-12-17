@@ -35,15 +35,7 @@ GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element& elemen
 	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 	element.header.typeID = API_WallID;
 
-	bool wallExists = Utility::ElementExists (element.header.guid);
-
-	if (wallExists) {
-		err = ACAPI_Element_Get (&element);
-	} else {
-		err = ACAPI_Element_GetDefaults (&element, nullptr);
-		element.header.guid = APIGuidFromString(guidString.ToCStr());	//re set the lost data
-	}
-
+	err = Utility::GetBaseElementData (element, nullptr);
 	if (err != NoError)
 		return err;
 

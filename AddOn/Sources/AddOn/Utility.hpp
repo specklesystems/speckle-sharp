@@ -13,6 +13,8 @@ bool ElementExists (const API_Guid& guid);
 
 bool IsElement3D (const API_Guid& guid);
 
+GSErrCode GetBaseElementData (API_Element& elem, API_ElementMemo* memo = nullptr);
+
 GS::Array<API_StoryType> GetStoryItems ();
 
 double GetStoryLevel (short floorNumber);
