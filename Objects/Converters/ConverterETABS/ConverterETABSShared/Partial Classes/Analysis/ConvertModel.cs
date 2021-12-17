@@ -22,15 +22,6 @@ namespace Objects.Converter.ETABS
   {
     public object ModelToNative(Model model)
     {
-      var Element1D = new Element1D();
-      var Property1D = new Property1D();
-      var Loading1D = new LoadBeam();
-      var Loading2D = new LoadFace();
-      var LoadingNode = new LoadNode();
-      var LoadGravity = new LoadGravity();
-      var Loading2DWind = new ETABSWindLoadingFace();
-      var GSAProperty = new GSAProperty1D();
-      var GSAElement1D = new GSAMember1D();
       if(model.specs != null) { ModelInfoToNative(model.specs); }
 
 
@@ -46,11 +37,7 @@ namespace Objects.Converter.ETABS
       {
         foreach (var property in model.properties)
         {
-          if (property is Property1D)
-          {
-            Property1DToNative((Property1D)property);
-          }
-          else if (property is GSAProperty1D)
+          if (property is GSAProperty1D)
           {
             break;
           }
@@ -67,9 +54,16 @@ namespace Objects.Converter.ETABS
           {
             LinkPropertyToNative((ETABSLinkProperty)property);
           }
+          else if (property is ETABSTendonProperty){
+            break;
+          }
           else if (property is  ETABSProperty2D)
           {
             Property2DToNative((ETABSProperty2D)property);
+          }
+          else if (property is Property1D)
+          {
+            Property1DToNative((Property1D)property);
           }
         }
       }
@@ -79,7 +73,7 @@ namespace Objects.Converter.ETABS
         foreach (var element in model.elements)
         { 
 
-          if (element is Element1D)
+          if (element is Element1D && !(element is ETABSTendon))
           {
             var ETABSelement = (Element1D)element;
             if(ETABSelement.type == ElementType1D.Link){
@@ -113,22 +107,22 @@ namespace Objects.Converter.ETABS
         foreach (var load in model.loads)
         {
           //import loadpatterns in first
-          if (load.GetType().Equals(LoadGravity.GetType()))
+          if (load is LoadGravity)
           {
             LoadPatternToNative((LoadGravity)load);
           }
         }
         foreach (var load in model.loads)
         {
-          if (load.GetType().Equals(Loading2D.GetType()))
+          if (load is LoadFace)
           {
             LoadFaceToNative((LoadFace)load);
           }
-          else if (load.GetType().Equals(Loading2DWind.GetType()))
+          else if (load is ETABSWindLoadingFace)
           {
             LoadFaceToNative((ETABSWindLoadingFace)load);
           }
-          else if (load.GetType().Equals(Loading1D.GetType()))
+          else if (load is LoadBeam)
           {
             var loading1D = (LoadBeam)load;
             if (loading1D.loadType == BeamLoadType.Uniform)

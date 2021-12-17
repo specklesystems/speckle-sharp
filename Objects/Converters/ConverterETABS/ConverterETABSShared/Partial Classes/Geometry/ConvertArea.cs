@@ -78,7 +78,8 @@ namespace Objects.Converter.ETABS
         Model.AreaObj.SetLocalAxes(ETABSarea.name, ETABSarea.orientationAngle);
         Model.AreaObj.SetPier(ETABSarea.name, ETABSarea.PierAssignment);
         Model.AreaObj.SetSpandrel(ETABSarea.name, ETABSarea.SpandrelAssignment);
-        Model.AreaObj.SetSpringAssignment(ETABSarea.name, ETABSarea.ETABSAreaSpring.name);
+        if(ETABSarea.ETABSAreaSpring != null) { Model.AreaObj.SetSpringAssignment(ETABSarea.name, ETABSarea.ETABSAreaSpring.name); }
+
       
         }
 
