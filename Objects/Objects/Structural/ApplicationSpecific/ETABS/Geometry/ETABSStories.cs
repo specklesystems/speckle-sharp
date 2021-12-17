@@ -12,6 +12,7 @@ namespace Objects.Structural.ETABS.Analysis
     public double BaseElevation { get; set; }
     public int NumberStories { get; set; }
 
+    [DetachProperty]
     public List<ETABSStorey> etabsStories { get; set; }
 
     public ETABSStories() { }

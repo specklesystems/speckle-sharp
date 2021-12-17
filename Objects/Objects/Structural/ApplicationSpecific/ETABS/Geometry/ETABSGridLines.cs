@@ -12,6 +12,7 @@ namespace Objects.Structural.ETABS.Geometry
   public double Yo { get; set; }
   public double Rz { get; set; }
   public string GridSystemType { get; set; }
-   public List<GridLine> gridLines { get; set; }
+  [DetachProperty]
+  public List<GridLine> gridLines { get; set; }
   }
 }

@@ -14,6 +14,7 @@ namespace Objects.Structural.ETABS.Geometry
 {
   public class ETABSElement2D : Element2D
   {
+    [DetachProperty]
     public  ETABSAreaSpring ETABSAreaSpring { get; set; }
     public string PierAssignment { get; set; }
     public string SpandrelAssignment { get; set; }
