@@ -320,7 +320,7 @@ public class ETABSAreaSpringSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSElement1DSchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSElement1DSchemaComponent(): base("Element1D (from local axis)", "Element1D (from local axis)", "Creates a Speckle structural 1D element (from local axis)", "Speckle 2 Structural", "Geometry") { }
+    public ETABSElement1DSchemaComponent(): base("Element1D (from local axis)", "Element1D (from local axis)", "Creates a Speckle ETABS 1D element (from local axis)", "Speckle 2 ETABS", "Geometry") { }
     
     public override Guid ComponentGuid => new Guid("103e195c-e51b-87f3-dd08-364924b2bfd5");
     
@@ -333,7 +333,7 @@ public class ETABSElement1DSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSElement1D1SchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSElement1D1SchemaComponent(): base("Element1D (from orientation node and angle)", "Element1D (from orientation node and angle)", "Creates a Speckle structural 1D element (from orientation node and angle)", "Speckle 2 Structural", "Geometry") { }
+    public ETABSElement1D1SchemaComponent(): base("Element1D (from orientation node and angle)", "Element1D (from orientation node and angle)", "Creates a Speckle ETABS 1D element (from orientation node and angle)", "Speckle 2 ETABS", "Geometry") { }
     
     public override Guid ComponentGuid => new Guid("839cc57e-7437-90b1-21f4-588f08cce534");
     
@@ -346,7 +346,7 @@ public class ETABSElement1D1SchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSElement2DSchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSElement2DSchemaComponent(): base("Element2D", "Element2D", "Creates a Speckle structural 2D element (based on a list of edge ie. external, geometry defining nodes)", "Speckle 2 Structural", "Geometry") { }
+    public ETABSElement2DSchemaComponent(): base("Element2D", "Element2D", "Creates a Speckle ETABS 2D element (based on a list of edge ie. external, geometry defining nodes)", "Speckle 2 ETABS", "Geometry") { }
     
     public override Guid ComponentGuid => new Guid("d151ee36-d250-814e-28ad-e9c9c125df42");
     
@@ -372,7 +372,7 @@ public class ETABSLinearSpringSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSNodeSchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSNodeSchemaComponent(): base("Node with properties", "Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "Speckle 2 Structural", "Geometry") { }
+    public ETABSNodeSchemaComponent(): base("Node with properties", "Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "Speckle 2 ETABS", "Geometry") { }
     
     public override Guid ComponentGuid => new Guid("c09c0e14-134a-0f11-20c0-6e3000eb0ec7");
     
@@ -959,7 +959,7 @@ public class GSASteelSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class GSAStoreySchemaComponent: CreateSchemaObjectBase {
      
-    public GSAStoreySchemaComponent(): base("GSAStorey", "GSAStorey", "Creates a Speckle structural storey (to describe floor levels/storeys in the structural model) for GSA", "Speckle 2 Structural", "Geometry") { }
+    public GSAStoreySchemaComponent(): base("GSAStorey", "GSAStorey", "Creates a Speckle structural storey (to describe floor levels/storeys in the structural model) for GSA", "Speckle 2 GSA", "Geometry") { }
     
     public override Guid ComponentGuid => new Guid("24bd70e1-024d-538c-8132-d02c4c101e5d");
     

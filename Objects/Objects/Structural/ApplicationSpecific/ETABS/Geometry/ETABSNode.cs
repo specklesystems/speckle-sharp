@@ -17,7 +17,7 @@ namespace Objects.Structural.ETABS.Geometry
 
 
 
-    [SchemaInfo("Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "Structural", "Geometry")]
+    [SchemaInfo("Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "ETABS", "Geometry")]
     public ETABSNode(Point basePoint,
     string name = null,
     [SchemaParamInfo("If null, restraint condition defaults to free/fully released")] Restraint restraint = null,

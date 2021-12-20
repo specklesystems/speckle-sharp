@@ -29,7 +29,7 @@ namespace Objects.Structural.ETABS.Geometry
     /// <param name="end1Offset"></param>
     /// <param name="end2Offset"></param>
     /// <param name="localAxis"></param>
-    [SchemaInfo("Element1D (from local axis)", "Creates a Speckle structural 1D element (from local axis)", "Structural", "Geometry")]
+    [SchemaInfo("Element1D (from local axis)", "Creates a Speckle ETABS 1D element (from local axis)", "ETABS", "Geometry")]
     public ETABSElement1D(Line baseLine, Property1D property, ElementType1D type,
         string name = null,
         [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
@@ -63,7 +63,7 @@ namespace Objects.Structural.ETABS.Geometry
     /// <param name="end2Offset"></param>
     /// <param name="orientationNode"></param>
     /// <param name="orientationAngle"></param>
-    [SchemaInfo("Element1D (from orientation node and angle)", "Creates a Speckle structural 1D element (from orientation node and angle)", "Structural", "Geometry")]
+    [SchemaInfo("Element1D (from orientation node and angle)", "Creates a Speckle ETABS 1D element (from orientation node and angle)", "ETABS", "Geometry")]
     public ETABSElement1D(Line baseLine, Property1D property, ElementType1D type,
          string name = null,
          [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end1Releases = null,
