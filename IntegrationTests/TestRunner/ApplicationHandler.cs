@@ -62,10 +62,27 @@ class RevitHandler: IHandler
 
   public void Teardown()
   {
-    Directory.Delete(_workingFolder, recursive:true);
+    try
+    {
+      Directory.Delete(_workingFolder, recursive:true);
+    }
+    catch (Exception e)
+    {
+      //Ignore this if it doesnt exist.
+    }
+    
     foreach (var (versionString, _) in _versions)
     {
-      Directory.Delete(_revitPluginFolder(versionString), recursive: true);
+      var revitPluginFolder = _revitPluginFolder(versionString);
+      Directory.Delete(revitPluginFolder, recursive: true);
+      try
+      {
+        File.Delete(Path.Combine(Directory.GetParent(revitPluginFolder).FullName, "RevitAutoTest2022.addin"));
+      }
+      catch (Exception e)
+      {
+        // Ignore
+      }
     }
   }
 
@@ -107,8 +124,8 @@ class RevitHandler: IHandler
   {
     var testFiles = new []{
       "C:/spockle/ErrorBrepTest.rvt",
-      // "C:/spockle/PROIECT CASA DE MODA.rvt",
-      // "C:/spockle/PROIECT LIBRARIE BIBLIOTECA.rvt",
+      "C:/spockle/PROIECT CASA DE MODA.rvt",
+      //"C:/spockle/PROIECT LIBRARIE BIBLIOTECA.rvt",
     };
     foreach (var testFile in testFiles)
     {
@@ -124,15 +141,27 @@ class RevitHandler: IHandler
     await Task.Delay(10);
     var sourceFolder = Path.Combine("C:/spockle/plugin", revitVersion);
     var pluginFolder = _revitPluginFolder(revitVersion);
-    Directory.CreateDirectory(pluginFolder);
-    foreach (var file in Directory.GetFiles(sourceFolder))
-    {
-      File.Copy(file, Path.Combine(pluginFolder, Path.GetFileName(file)), overwrite: true);
-    }
+    var addinsFolder = Directory.GetParent(pluginFolder).FullName;
     //this method would be responsible for installing the tester plugin from ie object storage
-    return;
+    Directory.CreateDirectory(pluginFolder);
+    CopyFilesRecursively(sourceFolder,pluginFolder);
+    var addinFile = "RevitAutoTest2022.addin"; 
+    File.Move(Path.Combine(pluginFolder,addinFile), Path.Combine(addinsFolder,addinFile));
   }
+  private static void CopyFilesRecursively(string sourcePath, string targetPath)
+  {
+    //Now Create all of the directories
+    foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+    {
+      Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+    }
 
+    //Copy all the files & Replaces any files with the same name
+    foreach (string newPath in Directory.GetFiles(sourcePath, "*.*",SearchOption.AllDirectories))
+    {
+      File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+    }
+  }
   private static string _revitPluginFolder(string revitVersion)
   {
     var appdataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

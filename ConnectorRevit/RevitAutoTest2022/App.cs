@@ -7,6 +7,7 @@ using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -24,6 +25,7 @@ namespace RevitAutoTest2022
     {
       a.ControlledApplication.DocumentOpened += (e, args) =>
       {
+        Task.Run(async delegate {
         var result = new SendResult(false, null);
         var doc = args.Document;
 
@@ -48,19 +50,15 @@ namespace RevitAutoTest2022
 
           var refObj = new Base();
           refObj["convertedObjects"] = toSpeckle.ToList();
-
-          var objectId = Operations.Send(
+          
+          var objectId = await Operations.Send(
             refObj,
             new List<ITransport> { transport },
             false,
             null,
-            null)
-            .Result;
-
-          var branches = client.StreamGetBranches(streamId, branchesLimit:100, commitsLimit:0).Result;
-          var branch = branches.First(b => b.id == config.TargetBranch);
-
-          var commitId = client.CommitCreate(new CommitCreateInput() {
+            ((s, exception) => throw exception));
+          
+          var commitId = await client.CommitCreate(new CommitCreateInput() {
             branchName = config.TargetBranch,
             objectId = objectId,
             streamId = streamId,
@@ -78,6 +76,7 @@ namespace RevitAutoTest2022
         {
           result.Save(doc.PathName);
         }
+      });
       };
       return Result.Succeeded;
     }
