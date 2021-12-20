@@ -20,7 +20,7 @@ namespace Objects.Structural.ETABS.Geometry
     public string SpandrelAssignment { get; set; }
     public double[] modifiers { get; set; }
 
-    [SchemaInfo("Element2D", "Creates a Speckle structural 2D element (based on a list of edge ie. external, geometry defining nodes)", "Structural", "Geometry")]
+    [SchemaInfo("Element2D", "Creates a Speckle ETABS 2D element (based on a list of edge ie. external, geometry defining nodes)", "ETABS", "Geometry")]
     public ETABSElement2D(List<Node> nodes, Property2D property, double offset = 0, double orientationAngle = 0, ETABSAreaSpring ETABSAreaSpring = null)
     {
       this.topology = nodes;
