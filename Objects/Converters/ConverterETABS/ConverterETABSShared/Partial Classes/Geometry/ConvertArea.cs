@@ -14,7 +14,7 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object AreaToNative(ETABSElement2D area)
+    public object AreaToNative(Element2D area)
     {
       if (GetAllAreaNames(Model).Contains(area.name))
       {
@@ -40,7 +40,18 @@ namespace Objects.Converter.ETABS
 
       if (area.property != null)
       {
-        Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+        int numberNames = 0;
+        string[] propNames = null;
+        Model.PropArea.GetNameList(ref numberNames,ref propNames);
+        if(propNames.Contains(area.property.name))
+        {
+          Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+        }
+        else
+        {
+          Property2DToNative((ETABSProperty2D)area.property);
+          Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+        }
 
       }
       else
@@ -52,17 +63,26 @@ namespace Objects.Converter.ETABS
       {
         Model.AreaObj.ChangeName(name, area.name);
       }
-      double[] values = null;
-      if (area.modifiers != null)
-      {
-        values = area.modifiers;
+      else{
+        Model.AreaObj.ChangeName(name, area.id);
       }
+      if(area is ETABSElement2D){
+        var ETABSarea = (ETABSElement2D)area;
+        double[] values = null;
+        if (ETABSarea.modifiers != null)
+        {
+          values = ETABSarea.modifiers;
+        }
 
-      Model.AreaObj.SetModifiers(area.name, ref values);
-      Model.AreaObj.SetLocalAxes(area.name, area.orientationAngle);
-      Model.AreaObj.SetPier(area.name, area.PierAssignment);
-      Model.AreaObj.SetSpandrel(area.name, area.SpandrelAssignment);
-      Model.AreaObj.SetSpringAssignment(area.name, area.ETABSAreaSpring.name);
+        Model.AreaObj.SetModifiers(ETABSarea.name, ref values);
+        Model.AreaObj.SetLocalAxes(ETABSarea.name, ETABSarea.orientationAngle);
+        Model.AreaObj.SetPier(ETABSarea.name, ETABSarea.PierAssignment);
+        Model.AreaObj.SetSpandrel(ETABSarea.name, ETABSarea.SpandrelAssignment);
+        if(ETABSarea.ETABSAreaSpring != null) { Model.AreaObj.SetSpringAssignment(ETABSarea.name, ETABSarea.ETABSAreaSpring.name); }
+
+      
+        }
+
 
       return name;
 

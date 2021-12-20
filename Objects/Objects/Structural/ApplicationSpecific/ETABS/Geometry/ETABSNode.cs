@@ -6,16 +6,18 @@ using Objects.Structural.ETABS.Properties;
 using Speckle.Core.Kits;
 using Objects.Structural.Properties;
 using Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Objects.Structural.ETABS.Geometry
 {
   public class ETABSNode : Node
   {
+    [DetachProperty]
     public ETABSSpringProperty ETABSSpringProperty { get; set; }
 
 
 
-    [SchemaInfo("Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "Structural", "Geometry")]
+    [SchemaInfo("Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "ETABS", "Geometry")]
     public ETABSNode(Point basePoint,
     string name = null,
     [SchemaParamInfo("If null, restraint condition defaults to free/fully released")] Restraint restraint = null,

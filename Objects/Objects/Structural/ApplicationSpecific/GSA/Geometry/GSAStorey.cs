@@ -14,7 +14,7 @@ namespace Objects.Structural.GSA.Geometry
         public double toleranceAbove { get; set; }
         public GSAStorey() { }
 
-        [SchemaInfo("GSAStorey", "Creates a Speckle structural storey (to describe floor levels/storeys in the structural model) for GSA", "Structural", "Geometry")]
+        [SchemaInfo("GSAStorey", "Creates a Speckle structural storey (to describe floor levels/storeys in the structural model) for GSA", "GSA", "Geometry")]
         public GSAStorey(int nativeId, string name, Axis axis, double elevation, double toleranceBelow, double toleranceAbove)
         {            
             this.nativeId = nativeId;

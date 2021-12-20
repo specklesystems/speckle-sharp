@@ -23,13 +23,25 @@ namespace Objects.Converter.ETABS
       var point = speckleStructNode.basePoint;
       string name = "";
       Model.PointObj.AddCartesian(point.x, point.y, point.z, ref name);
+      if (speckleStructNode.restraint != null)
+      {
+        var restraint = RestraintToNative(speckleStructNode.restraint);
+        Model.PointObj.SetRestraint(name, ref restraint);
+      }
+
+
       if (speckleStructNode.name != null)
       {
         Model.PointObj.ChangeName(name, speckleStructNode.name);
       }
-      var restraint = RestraintToNative(speckleStructNode.restraint);
-      Model.PointObj.SetRestraint(speckleStructNode.name, ref restraint);
-      Model.PointObj.SetSpringAssignment(speckleStructNode.name, speckleStructNode.springProperty.name);
+      else{ Model.PointObj.ChangeName(name, speckleStructNode.id); }
+
+      if(speckleStructNode is ETABSNode){
+        var ETABSnode = (ETABSNode)speckleStructNode;
+        if (ETABSnode.ETABSSpringProperty != null) { Model.PointObj.SetSpringAssignment(ETABSnode.name, ETABSnode.ETABSSpringProperty.name); }
+      }
+
+
 
       return speckleStructNode.name;
     }

@@ -6,6 +6,7 @@ using Objects.Structural.ETABS.Properties;
 using Speckle.Core.Kits;
 using Objects.Structural.Properties;
 using Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Objects.Structural.ETABS.Geometry
 {
@@ -13,7 +14,9 @@ namespace Objects.Structural.ETABS.Geometry
   {
     public Polycurve polycurve { get; set; }
 
+    [DetachProperty]
     public ETABSTendonProperty ETABSTendonProperty { get; set; }
+
 
     public ETABSTendon(string name,Polycurve polycurve, ETABSTendonProperty eTABSTendonProperty)
     {

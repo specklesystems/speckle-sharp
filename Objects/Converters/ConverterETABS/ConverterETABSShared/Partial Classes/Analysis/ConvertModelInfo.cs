@@ -9,6 +9,16 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+    public void ModelInfoToNative(ModelInfo modelInfo){
+      Model.SetProjectInfo("Engineer", modelInfo.initials);
+      Model.SetProjectInfo("Model Description", modelInfo.description);
+      Model.SetProjectInfo("Project Number", modelInfo.projectNumber);
+      Model.SetProjectInfo("Project Name", modelInfo.projectName);
+      if(modelInfo.settings !=null) { modelSettingsToNative(modelInfo.settings); }
+
+      return;
+
+    }
     public ModelInfo ModelInfoToSpeckle()
     {
       var modelInfo = new ModelInfo();
