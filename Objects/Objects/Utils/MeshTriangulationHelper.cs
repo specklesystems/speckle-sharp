@@ -5,14 +5,17 @@ using Objects.Geometry;
 
 namespace Objects.Utils
 {
+    /// <summary>
+    /// Set of functions to triangulate n-gon faces (i.e. polygon faces with an arbitrary (n) number of vertices) in <see cref="Mesh"/>es.
+    /// </summary>
     public static class MeshTriangulationHelper
     {
        
         /// <summary>
-        /// Triangulates all faces in <paramref name="Mesh"/>
+        /// Triangulates all faces in <paramref name="Mesh"/>.
         /// </summary>
-        /// <param name="mesh">The mesh to triangulate</param>
-        /// <param name="preserveQuads">If <see langword="true"/>, will not triangulate quad faces</param>
+        /// <param name="mesh">The mesh to triangulate.</param>
+        /// <param name="preserveQuads">If <see langword="true"/>, will not triangulate quad faces.</param>
         public static void TriangulateMesh(this Mesh mesh, bool preserveQuads = false)
         {
             List<int> triangles = new List<int>(mesh.faces.Count); //Our new list is going to be at least as big as our old one
