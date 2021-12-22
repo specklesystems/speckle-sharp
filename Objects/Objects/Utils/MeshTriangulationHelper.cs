@@ -245,7 +245,7 @@ namespace Objects.Utils
             
             public void Normalize()
             {
-                double scale = 1d / Math.Sqrt(SquareSum); // TODO This can be made faster using the Fast Inverse Sqrt algorithm
+                double scale = 1d / Math.Sqrt(SquareSum);
                 x *= scale;
                 y *= scale;
                 z *= scale;
