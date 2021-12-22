@@ -25,37 +25,22 @@ namespace Objects.Utils
                 int n = mesh.faces[i];
                 if (n < 3) n += 3; // 0 -> 3, 1 -> 4
 
-                 if (n == 3)
-                 {
-                     //We could use TriangluateFace method for tris and quads, but it's faster to do them manually
-                     triangles.Add(3);
-                     triangles.Add(mesh.faces[i + 1]);
-                     triangles.Add(mesh.faces[i + 2]);
-                     triangles.Add(mesh.faces[i + 3]);
-                 }
-                 else if (n == 4)
-                 {
-                     if (preserveQuads)
-                     {
-                         triangles.Add(4);
-                         triangles.Add(mesh.faces[i + 1]);
-                         triangles.Add(mesh.faces[i + 2]);
-                         triangles.Add(mesh.faces[i + 3]);
-                         triangles.Add(mesh.faces[i + 4]);
-                     }
-                     else
-                     {
-                         triangles.Add(3);
-                         triangles.Add(mesh.faces[i + 1]);
-                         triangles.Add(mesh.faces[i + 2]);
-                         triangles.Add(mesh.faces[i + 4]);
-                         triangles.Add(3);
-                         triangles.Add(mesh.faces[i + 2]);
-                         triangles.Add(mesh.faces[i + 3]);
-                         triangles.Add(mesh.faces[i + 4]);
-                     }
-                 }
-                else //ngon
+                if (n == 3)
+                {
+                    triangles.Add(3);
+                    triangles.Add(mesh.faces[i + 1]);
+                    triangles.Add(mesh.faces[i + 2]);
+                    triangles.Add(mesh.faces[i + 3]);
+                }
+                else if (preserveQuads && n == 4)
+                {
+                    triangles.Add(4);
+                    triangles.Add(mesh.faces[i + 1]);
+                    triangles.Add(mesh.faces[i + 2]);
+                    triangles.Add(mesh.faces[i + 3]);
+                    triangles.Add(mesh.faces[i + 4]);
+                }
+                else
                 {
                     var triangle = TriangulateFace(i, mesh);
                     triangles.AddRange(triangle);
@@ -66,21 +51,28 @@ namespace Objects.Utils
 
             mesh.faces = triangles;
         }
+
+        /// <overloads>Overload using a <see cref="Mesh"/>, does not mutate <paramref name="mesh"/></overloads>
+        /// <inheritdoc cref="TriangulateFace(int,IReadOnlyList{int},IReadOnlyList{double},bool)"/>
+        public static List<int> TriangulateFace(int faceIndex, Mesh mesh, bool includeIndicators = true) =>
+            TriangulateFace(faceIndex, mesh.faces, mesh.vertices, includeIndicators);
         
         /// <summary>
-        /// Calculates the triangulation of the face at <paramref name="faceIndex"/> in <paramref name="mesh"/>.<br/>
-        /// Does not mutate <paramref name="mesh"/>.
+        /// Calculates the triangulation of the face at <paramref name="faceIndex"/> in <paramref name="mesh"/>.
         /// </summary>
         /// <remarks>
         /// This implementation is based the ear clipping method
-        /// Proposed by "Christer Ericson (2005) <i>Real-Time Collision Detection</i>"
+        /// Proposed by "Christer Ericson (2005) <i>Real-Time Collision Detection</i>".
         /// </remarks>
-        /// <param name="faceIndex">The index of the face's cardinality indicator <c>n</c> in <paramref name="mesh"/>.<see cref="Mesh.faces"/></param>
-        /// <param name="mesh"></param>
-        /// <returns>List of triangle faces with cardinality indicators</returns>
-        public static List<int> TriangulateFace(int faceIndex, Mesh mesh)
+        /// <param name="faceIndex">The index of the face's cardinality indicator <c>n</c> in <paramref name="mesh"/>.<see cref="Mesh.faces"/></param>.
+        /// <param name="faces"></param>
+        /// <param name="vertices"></param>
+        /// <param name="includeIndicators">if <see langword="true"/>, the returned list will include cardinality indicators for each triangle
+        /// (i.e 4 ints for each tri), otherwise will simply be 3 ints for each tri.</param>
+        /// <returns>List of triangle faces in the specified format.</returns>
+        public static List<int> TriangulateFace(int faceIndex, IReadOnlyList<int> faces, IReadOnlyList<double> vertices,  bool includeIndicators = true)
         {
-            int n = mesh.faces[faceIndex];
+            int n = faces[faceIndex];
             if (n < 3) n += 3; // 0 -> 3, 1 -> 4
 
             #region Local Funcitions
@@ -90,13 +82,13 @@ namespace Objects.Utils
             //Gets vertex from a relative vert index
             Vector3 V(int v)
             {
-                int index = mesh.faces[AsIndex(v)] * 3;
-                return new Vector3(mesh.vertices[index], mesh.vertices[index + 1], mesh.vertices[index + 2]);
+                int index = faces[AsIndex(v)] * 3;
+                return new Vector3(vertices[index], vertices[index + 1], vertices[index + 2]);
             }
             #endregion
             
-            
-            List<int> triangleFaces = new List<int>(n - 2);
+            int intsPerTri = includeIndicators? 4 : 3;
+            List<int> triangleFaces = new List<int>((n - 2) * intsPerTri);
             
             //Calculate face normal using the Newell Method
             Vector3 faceNormal = Vector3.Zero;
@@ -157,10 +149,14 @@ namespace Objects.Utils
 
                 if (isEar)
                 {
-                    int a = mesh.faces[AsIndex(i)];
-                    int b = mesh.faces[AsIndex(next[i])];
-                    int c = mesh.faces[AsIndex(prev[i])];
-                    triangleFaces.AddRange(new []{ 3, a, b, c });
+                    int a = faces[AsIndex(i)];
+                    int b = faces[AsIndex(next[i])];
+                    int c = faces[AsIndex(prev[i])];
+                    
+                    if(includeIndicators) triangleFaces.Add(3);
+                    triangleFaces.Add(a);
+                    triangleFaces.Add(b);
+                    triangleFaces.Add(c);
                     
                     next[prev[i]] = next[i];
                     prev[next[i]] = prev[i];
@@ -209,7 +205,8 @@ namespace Objects.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TriangleIsCCW(Vector3 referenceNormal, Vector3 a, Vector3 b, Vector3 c)
         {
-            Vector3 triangleNormal = (c - a).Cross(b - a).Normal();
+            Vector3 triangleNormal = (c - a).Cross(b - a);
+            triangleNormal.Normalize();
             return (referenceNormal.Dot(triangleNormal) > 0.0f);
         }
         
@@ -230,25 +227,16 @@ namespace Objects.Utils
 
             public static readonly Vector3 Zero = new Vector3(0, 0, 0);
             
-            public Vector3 Normal()
-            {
-                double scale = 1d / Math.Sqrt(SquareSum); // TODO This can be made faster using the Fast Inverse Sqrt algorithm
-                return new Vector3(x * scale, y * scale, z * scale);
-            }
-            
             public static Vector3 operator+ (Vector3 a, Vector3 b) => new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
-            public static Vector3 operator- (Vector3 a) => new Vector3(-a.x, -a.y, -a.z);
             public static Vector3 operator- (Vector3 a, Vector3 b) => new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
 
-            public double Dot(Vector3 v) => Dot(this, v);
-            public static double Dot (Vector3 a, Vector3 b) => a.x * b.x + a.y * b.y + a.z * b.z;
-
-            public Vector3 Cross(Vector3 v) => Cross(this, v);
-            public static Vector3 Cross (Vector3 a, Vector3 b)
+            public double Dot (Vector3 v) => x * v.x + y * v.y + z * v.z;
+            
+            public Vector3 Cross (Vector3 v)
             {
-                var x = a.y * b.z - a.z * b.y;
-                var y = a.z * b.x - a.x * b.z;
-                var z = a.x * b.y - a.y * b.x;
+                var x = this.y * v.z - this.z * v.y;
+                var y = this.z * v.x - this.x * v.z;
+                var z = this.x * v.y - this.y * v.x;
             
                 return new Vector3(x, y, z);
             }
@@ -257,12 +245,12 @@ namespace Objects.Utils
             
             public void Normalize()
             {
-                double scale = 1d / Math.Sqrt(SquareSum);
+                double scale = 1d / Math.Sqrt(SquareSum); // TODO This can be made faster using the Fast Inverse Sqrt algorithm
                 x *= scale;
                 y *= scale;
                 z *= scale;
             }
-            
+
         }
         
     }
