@@ -217,6 +217,15 @@ namespace Objects.Converter.ETABS
         model.properties.Add(specklePropertyTendon);
       }
 
+      string[] DiaphragmProperties = { };
+      Model.Diaphragm.GetNameList(ref number, ref DiaphragmProperties);
+      DiaphragmProperties.ToList();
+      foreach (string propertyDiaphragm in DiaphragmProperties)
+      {
+        var specklePropertyDiaphragm =diaphragmToSpeckle(propertyDiaphragm);
+        model.properties.Add(specklePropertyDiaphragm);
+      }
+
       string[] properties2D = { };
       Model.PropArea.GetNameList(ref number, ref properties2D);
       properties2D.ToList();

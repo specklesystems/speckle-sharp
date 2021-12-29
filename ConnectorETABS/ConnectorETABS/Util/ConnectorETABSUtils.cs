@@ -601,6 +601,7 @@ namespace Speckle.ConnectorETABS.Util
       Tendon,
       LoadPattern,
       Model,
+      //Diaphragm,
       BeamLoading,
       ColumnLoading,
       BraceLoading,

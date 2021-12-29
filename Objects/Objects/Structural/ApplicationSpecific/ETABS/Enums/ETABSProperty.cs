@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Objects.Structural.ETABS.Properties
 {
+  public enum DiaphragmOption{
+  Disconnect,
+  FromShellObject,
+  DefinedDiaphragm
+  }
   public enum NonLinearOptions
   {
   Linear,

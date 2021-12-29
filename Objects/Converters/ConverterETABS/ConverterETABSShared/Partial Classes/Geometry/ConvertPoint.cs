@@ -70,6 +70,24 @@ namespace Objects.Converter.ETABS
       Model.PointObj.GetSpringAssignment(name, ref SpringProp);
       if(SpringProp != null) { speckleStructNode.ETABSSpringProperty = SpringPropertyToSpeckle(SpringProp); }
 
+      string diaphragmAssignment = null;
+      eDiaphragmOption eDiaphragmOption = eDiaphragmOption.Disconnect;
+      Model.PointObj.GetDiaphragm(name,ref eDiaphragmOption , ref diaphragmAssignment);
+      if (diaphragmAssignment != null)
+      {
+        speckleStructNode.DiaphragmAssignment = diaphragmAssignment;
+        switch(eDiaphragmOption){
+          case eDiaphragmOption.Disconnect:
+            speckleStructNode.DiaphragmOption = DiaphragmOption.Disconnect;
+            break;
+          case eDiaphragmOption.FromShellObject:
+            speckleStructNode.DiaphragmOption = DiaphragmOption.FromShellObject;
+            break;
+          case eDiaphragmOption.DefinedDiaphragm:
+            speckleStructNode.DiaphragmOption = DiaphragmOption.DefinedDiaphragm;
+            break;
+        }
+      }
 
       var GUID = "";
       Model.PointObj.GetGUID(name, ref GUID);

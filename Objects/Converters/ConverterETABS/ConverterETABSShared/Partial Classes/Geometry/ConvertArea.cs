@@ -184,6 +184,13 @@ namespace Objects.Converter.ETABS
         speckleStructArea.SpandrelAssignment = spandrelAssignment;
       }
 
+      string diaphragmAssignment = null;
+      Model.AreaObj.GetSpandrel(name, ref diaphragmAssignment);
+      if (diaphragmAssignment != null)
+      {
+        speckleStructArea.DiaphragmAssignment = diaphragmAssignment;
+      }
+
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);
       speckleStructArea.applicationId = GUID;
