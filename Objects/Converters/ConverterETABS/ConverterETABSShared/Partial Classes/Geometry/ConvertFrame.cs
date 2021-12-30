@@ -112,8 +112,35 @@ namespace Objects.Converter.ETABS
         if (ETABSelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(ETABSelement1D.name, ETABSelement1D.SpandrelAssignment); }
         if (ETABSelement1D.PierAssignment != null) { Model.FrameObj.SetPier(ETABSelement1D.name, ETABSelement1D.PierAssignment); }
         if (ETABSelement1D.ETABSLinearSpring != null) { Model.FrameObj.SetSpringAssignment(ETABSelement1D.name, ETABSelement1D.ETABSLinearSpring.name); }
+        if (ETABSelement1D.DesignProcedure != null){
+        switch(ETABSelement1D.DesignProcedure){
+            case DesignProcedure.ProgramDetermined:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 0);
+              break;
+            case DesignProcedure.CompositeBeamDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 3);
+              break;
+            case DesignProcedure.CompositeColumnDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 13);
+              break;
+            case DesignProcedure.SteelFrameDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 1);
+              break;
+            case DesignProcedure.ConcreteFrameDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 2);
+              break;
+            case DesignProcedure.SteelJoistDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 4);
+              break;
+            case DesignProcedure.NoDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 7);
+              break;
+
+          }
+        }
       }
 
+ 
 
 
       return element1D.name;
