@@ -25,4 +25,14 @@ namespace Objects.Structural.ETABS.Properties
   Loads,
   Elements
   }
+
+  public enum DesignProcedure{
+  ProgramDetermined,
+  SteelFrameDesign,
+  ConcreteFrameDesign,
+  CompositeBeamDesign,
+  SteelJoistDesign,
+  NoDesign,
+  CompositeColumnDesign
+  }
 }

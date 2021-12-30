@@ -227,6 +227,34 @@ namespace Objects.Converter.ETABS
         speckleStructFrame.SpandrelAssignment = spandrelAssignment;
       }
 
+      int designProcedure = 9;
+      Model.FrameObj.GetDesignProcedure(name, ref designProcedure);
+      if(designProcedure != 9){
+      switch(designProcedure){
+          case 0:
+            speckleStructFrame.DesignProcedure = DesignProcedure.ProgramDetermined;
+            break;
+          case 1:
+            speckleStructFrame.DesignProcedure = DesignProcedure.SteelFrameDesign;
+            break;
+          case 2:
+            speckleStructFrame.DesignProcedure = DesignProcedure.ConcreteFrameDesign;
+            break;
+          case 3:
+            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeBeamDesign;
+            break;
+          case 4:
+            speckleStructFrame.DesignProcedure = DesignProcedure.SteelJoistDesign;
+            break;  
+          case 7:
+            speckleStructFrame.DesignProcedure = DesignProcedure.NoDesign;
+            break;
+          case 13:
+            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeColumnDesign;
+            break;
+      }
+      }
+
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
       speckleStructFrame.applicationId = GUID;

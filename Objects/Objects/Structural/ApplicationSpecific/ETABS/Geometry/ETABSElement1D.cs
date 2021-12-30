@@ -17,6 +17,8 @@ namespace Objects.Structural.ETABS.Geometry
    public string PierAssignment { get; set; }
    public string SpandrelAssignment { get; set; }
 
+   public DesignProcedure DesignProcedure { get; set; }
+
     /// <summary>
     /// SchemaBuilder constructor for structural 1D element (based on local axis)
     /// </summary>
@@ -36,7 +38,7 @@ namespace Objects.Structural.ETABS.Geometry
         [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")] Restraint end2Releases = null,
         [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
         [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null, Plane localAxis = null,
-        ETABSLinearSpring ETABSLinearSpring = null)
+        ETABSLinearSpring ETABSLinearSpring = null, DesignProcedure DesignProcedure = DesignProcedure.NoDesign)
     {
       this.baseLine = baseLine;
       this.property = property;
@@ -48,6 +50,7 @@ namespace Objects.Structural.ETABS.Geometry
       this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
       this.localAxis = localAxis;
       this.ETABSLinearSpring = ETABSLinearSpring;
+      this.DesignProcedure = DesignProcedure;
     }
 
     /// <summary>
@@ -71,7 +74,7 @@ namespace Objects.Structural.ETABS.Geometry
          [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
          [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
          Node orientationNode = null, double orientationAngle = 0,
-         ETABSLinearSpring ETABSLinearSpring = null)
+         ETABSLinearSpring ETABSLinearSpring = null, DesignProcedure DesignProcedure = DesignProcedure.NoDesign)
     {
       this.baseLine = baseLine;
       this.property = property;
@@ -84,6 +87,7 @@ namespace Objects.Structural.ETABS.Geometry
       this.orientationNode = orientationNode;
       this.orientationAngle = orientationAngle;
       this.ETABSLinearSpring = ETABSLinearSpring;
+      this.DesignProcedure = DesignProcedure;
     }
 
     public ETABSElement1D()

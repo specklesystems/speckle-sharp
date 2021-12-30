@@ -185,7 +185,7 @@ namespace Objects.Converter.ETABS
       }
 
       string diaphragmAssignment = null;
-      Model.AreaObj.GetSpandrel(name, ref diaphragmAssignment);
+      Model.AreaObj.GetDiaphragm(name, ref diaphragmAssignment);
       if (diaphragmAssignment != null)
       {
         speckleStructArea.DiaphragmAssignment = diaphragmAssignment;
