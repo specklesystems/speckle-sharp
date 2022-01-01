@@ -1,7 +1,6 @@
 #include "CreateSlab.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
-#include "SchemaDefinitionBuilder.hpp"
 #include "Utility.hpp"
 #include "Objects/Polyline.hpp"
 #include "FieldNames.hpp"
@@ -12,33 +11,30 @@
 namespace AddOnCommands {
 
 
-GSErrCode CreateNewSlab (API_Element& slab, API_ElementMemo& slabMemo)
+static GSErrCode CreateNewSlab (API_Element& slab, API_ElementMemo& slabMemo)
 {
 	return ACAPI_Element_Create (&slab, &slabMemo);
 }
 
 
-GSErrCode ModifyExistingSlab (API_Element& slab, API_Element& mask, API_ElementMemo& slabMemo, GS::UInt64 memoMask)
+static GSErrCode ModifyExistingSlab (API_Element& slab, API_Element& mask, API_ElementMemo& slabMemo, GS::UInt64 memoMask)
 {
 	return ACAPI_Element_Change (&slab, &mask, &slabMemo, memoMask, true);
 }
 
 
-GSErrCode GetSlabFromObjectState (const GS::ObjectState&	os, 
-								  API_Element&				element, 
-								  API_Element&				mask, 
-								  API_ElementMemo&			slabMemo,
-								  GS::UInt64&				memoMask)
+static GSErrCode GetSlabFromObjectState (const GS::ObjectState&		os,
+										 API_Element&				element, 
+										 API_Element&				mask, 
+										 API_ElementMemo&			slabMemo,
+										 GS::UInt64&				memoMask)
 {
-	GSErrCode err;
-
-	// The guid of the slab
 	GS::UniString guidString;
 	os.Get (ElementIdFieldName, guidString);
 	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 	element.header.typeID = API_SlabID;
 
-	err = Utility::GetBaseElementData (element, &slabMemo);
+	GSErrCode err = Utility::GetBaseElementData (element, &slabMemo);
 	if (err != NoError)
 		return err;
 
@@ -149,69 +145,16 @@ GS::String CreateSlab::GetName () const
 }
 	
 		
-GS::Optional<GS::UniString> CreateSlab::GetSchemaDefinitions () const
-{
-	Json::SchemaDefinitionBuilder builder;
-	builder.Add (Json::SchemaDefinitionProvider::SlabDataSchema ());
-	builder.Add (Json::SchemaDefinitionProvider::ElementIdsSchema ());
-	return builder.Build();
-}
-
-
-GS::Optional<GS::UniString>	CreateSlab::GetInputParametersSchema () const
-{
-	return GS::NoValue;
-	/*	//TMP for DEV
-	return R"(
-		{
-			"type": "object",
-			"properties" : {
-				"slabs": {
-					"type": "array",
-					"items": { "$ref": "#/definitions/SlabData" }
-				}
-			},
-			"additionalProperties" : false,
-			"required" : [ "slabs" ]
-		}
-	)"; */
-}
-
-
-GS::Optional<GS::UniString> CreateSlab::GetResponseSchema () const
-{
-	return GS::NoValue;
-	/*	//TMP for DEV
-	return R"(
-		{
-			"type": "object",
-			"properties" : {
-				"elementIds": { "$ref": "#/definitions/ElementIds" }
-			},
-			"additionalProperties" : false,
-			"required" : [ "elementIds" ]
-		}
-	)";	*/
-}
-
-
-API_AddOnCommandExecutionPolicy CreateSlab::GetExecutionPolicy () const
-{
-	return API_AddOnCommandExecutionPolicy::ScheduleForExecutionOnMainThread; 
-}
-
-
 GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::ObjectState result;
-	GSErrCode		errCode;
 
 	GS::Array<GS::ObjectState> slabs;
 	parameters.Get (SlabsFieldName, slabs);
 
 	const auto& listAdder = result.AddList<GS::UniString> (ElementIdsFieldName);
 
-	errCode = ACAPI_CallUndoableCommand ("CreateSpeckleSlab", [&] () -> GSErrCode {
+	ACAPI_CallUndoableCommand ("CreateSpeckleSlab", [&] () -> GSErrCode {
 		GSErrCode err = NoError;
 
 		for (const GS::ObjectState& slabOs : slabs) {
@@ -248,11 +191,6 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 	});
 
 	return result;
-}
-
-
-void CreateSlab::OnResponseValidationFailed (const GS::ObjectState& /*response*/) const
-{
 }
 
 

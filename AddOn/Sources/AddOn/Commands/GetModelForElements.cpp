@@ -2,7 +2,6 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Sight.hpp"
-#include "SchemaDefinitionBuilder.hpp"
 #include "FieldNames.hpp"
 
 
@@ -14,38 +13,6 @@ static UInt32			MaximumSupportedPolygonPoints	= 4;
 
 class Model3DInfo {
 public:
-	void AddVertex (double x, double y, double z)
-	{
-		vertices.PushNew (x, y, z);
-	}
-
-	void AddPolygon (const GS::Array<Int32>& pointIds)
-	{
-		polygons.PushNew (pointIds);
-	}
-
-	void SetMaterial (const UMAT& aumat)
-	{
-		if (material.HasValue ()) {
-			return;	// No composite structures. Only homogen materials are implemented
-		}
-
-		material.New (aumat);
-	}
-
-	GSErrCode Store (GS::ObjectState& os) const
-	{
-		os.Add (Model::VerteciesFieldName, vertices);
-		os.Add (Model::PolygonsFieldName, polygons);
-
-		if (material.HasValue ()) {
-			os.Add (Model::MaterialFieldName, material.Get ());
-		}
-
-		return NoError;
-	}
-
-private:
 	class Vertex {
 	public:
 		Vertex (double x, double y, double z) : x (x), y (y), z (z)
@@ -65,23 +32,6 @@ private:
 		double x;
 		double y;
 		double z;
-	};
-
-	class Polygon {
-	public:
-		Polygon (const GS::Array<Int32>& pointIds) : pointIds (pointIds)
-		{
-		}
-
-		GSErrCode Store (GS::ObjectState& os) const
-		{
-			os.Add (Model::PointIdsFieldName, pointIds);
-
-			return NoError;
-		}
-
-	private:
-		GS::Array<Int32> pointIds;
 	};
 
 	class Material {
@@ -109,73 +59,124 @@ private:
 
 	};
 
+	class Polygon {
+	public:
+		Polygon (const GS::Array<Int32>& pointIds, const UMAT& aumat) : pointIds (pointIds), material (aumat)
+		{
+		}
+
+		GSErrCode Store (GS::ObjectState& os) const
+		{
+			os.Add (Model::PointIdsFieldName, pointIds);
+			os.Add (Model::MaterialFieldName, material);
+
+			return NoError;
+		}
+
+	private:
+		GS::Array<Int32> pointIds;
+		Material material;
+	};
+
+public:
+	void AddVertex (const Vertex& vertex)
+	{
+		vertices.Push (vertex);
+	}
+	void AddVertex (Vertex&& vertex)
+	{
+		vertices.Push (std::move (vertex));
+	}
+
+	void AddPolygon (const Polygon& polygon)
+	{
+		polygons.Push (polygon);
+	}
+	void AddPolygon (Polygon&& polygon)
+	{
+		polygons.Push (std::move (polygon));
+	}
+
+	inline const GS::Array<Vertex>& GetVertices () const
+	{
+		return vertices;
+	}
+
+	GSErrCode Store (GS::ObjectState& os) const
+	{
+		os.Add (Model::VerteciesFieldName, vertices);
+		os.Add (Model::PolygonsFieldName, polygons);
+
+		return NoError;
+	}
+
+private:
 	GS::Array<Vertex> vertices;
 	GS::Array<Polygon> polygons;
-	GS::Optional<Material> material;
 };
 
 
-static GS::Array<Int32> GetModel3DInfoPolygon (const Modeler::MeshBody& body, Int32 polygonIdx, Int32 convexPolygonIdx)
+static GS::Array<Int32> GetPolygonFromBody (const Modeler::MeshBody& body, Int32 polygonIdx, Int32 convexPolygonIdx, UInt32 offset)
 {
 	GS::Array<Int32> polygonPoints;
 	for (Int32 convexPolygonVertexIdx = 0; convexPolygonVertexIdx < body.GetConvexPolygonVertexCount (polygonIdx, convexPolygonIdx); ++convexPolygonVertexIdx) {
-		polygonPoints.Push (body.GetConvexPolygonVertexIndex (polygonIdx, convexPolygonIdx, convexPolygonVertexIdx));
+		polygonPoints.Push (body.GetConvexPolygonVertexIndex (polygonIdx, convexPolygonIdx, convexPolygonVertexIdx) + offset);
 	}
 
 	return polygonPoints;
 }
 
 
-static Model3DInfo GetModel3DInfoBody (const Modeler::MeshBody& body, const TRANMAT& transformation, const Modeler::Attributes::Viewer& attributes)
+static GS::Array<Model3DInfo::Polygon> GetPolygonsFromBody (const Modeler::MeshBody& body, const Modeler::Attributes::Viewer& attributes, UInt32 offset)
 {
-	Model3DInfo modelInfo;
-
-	for (UInt32 vertexIdx = 0; vertexIdx < body.GetVertexCount (); ++vertexIdx) {
-		const auto coord = body.GetVertexPoint (vertexIdx, transformation);
-		modelInfo.AddVertex (coord.x, coord.y, coord.z);
-	}
+	GS::Array<Model3DInfo::Polygon> result;
 
 	for (UInt32 polygonIdx = 0; polygonIdx < body.GetPolygonCount (); ++polygonIdx) {
+
+		const GSAttributeIndex matIdx = body.GetConstPolygonAttributes (polygonIdx).GetMaterialIndex ();
+		const UMAT* aumat = attributes.GetConstMaterialPtr (matIdx);
+		if (DBERROR (aumat == nullptr)) {
+			continue;
+		}
+
 		for (Int32 convexPolygonIdx = 0; convexPolygonIdx < body.GetConvexPolygonCount (polygonIdx); ++convexPolygonIdx) {
-			GS::Array<Int32> polygonPointIds = GetModel3DInfoPolygon (body, polygonIdx, convexPolygonIdx);
+			GS::Array<Int32> polygonPointIds = GetPolygonFromBody (body, polygonIdx, convexPolygonIdx, offset);
 			if (polygonPointIds.IsEmpty ()) {
 				continue;
 			}
 
 			if (polygonPointIds.GetSize () > MaximumSupportedPolygonPoints) {
 				for (UInt32 i = 1; i < polygonPointIds.GetSize () - 1; ++i) {
-					modelInfo.AddPolygon (GS::Array<Int32> { polygonPointIds[0], polygonPointIds[i], polygonPointIds[i+1] });
+					result.PushNew (GS::Array<Int32> { polygonPointIds[0], polygonPointIds[i], polygonPointIds[i + 1] }, *aumat);
 				}
 
 				continue;
 			}
 
-			modelInfo.AddPolygon (polygonPointIds);
+			result.PushNew (polygonPointIds, *aumat);
 		}
-
-		const GSAttributeIndex matIdx = body.GetConstPolygonAttributes (polygonIdx).GetMaterialIndex ();
-		const UMAT* aumat = attributes.GetConstMaterialPtr (matIdx);
-		if (aumat == nullptr) {
-			continue;
-		}
-
-		modelInfo.SetMaterial (*aumat);
 	}
 
-	return modelInfo;
+	return result;
 }
 
 
-static GS::Array<Model3DInfo> GetModel3DInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes)
+static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes, Model3DInfo& modelInfo)
 {
-	const auto& trafo = elem.GetConstTrafo ();
-
-	GS::Array<Model3DInfo> bodies;
+	const auto& transformation = elem.GetConstTrafo ();
 	for (const auto& body : elem.TessellatedBodies ()) {
-		bodies.Push (GetModel3DInfoBody (body, trafo, attributes));
-	}
+		UInt32 offset = modelInfo.GetVertices ().GetSize ();
 
-	return bodies;
+		for (UInt32 vertexIdx = 0; vertexIdx < body.GetVertexCount (); ++vertexIdx) {
+			const auto coord = body.GetVertexPoint (vertexIdx, transformation);
+			modelInfo.AddVertex (Model3DInfo::Vertex (coord.x, coord.y, coord.z));
+		}
+
+		const auto polygons = GetPolygonsFromBody (body, attributes, offset);
+		for (const auto& polygon : polygons) {
+			modelInfo.AddPolygon (polygon);
+		}
+	}
 }
 
 
@@ -261,11 +262,11 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& elementId)
 }
 
 
-static GS::Array<Model3DInfo> CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+static Model3DInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
 {
+	Model3DInfo modelInfo;
 	const Modeler::Attributes::Viewer& attributes (modelViewer.GetConstAttributesPtr ());
 
-	GS::Array<Model3DInfo> modelInfos;
 	GS::Array<API_Guid> elementIds = CheckForSubelements (elementId);
 	for (const auto& id : elementIds) {
 		const auto modelElement = modelViewer.GetConstElemPtr (APIGuid2GSGuid (id));
@@ -273,10 +274,10 @@ static GS::Array<Model3DInfo> CalculateModelOfElement (const Modeler::Model3DVie
 			continue;
 		}
 
-		modelInfos.Append (GetModel3DInfoForElement (*modelElement, attributes));
+		GetModelInfoForElement (*modelElement, attributes, modelInfo);
 	}
 
-	return modelInfos;
+	return modelInfo;
 }
 
 
@@ -303,12 +304,7 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>& elementI
 	GS::ObjectState result;
 	const auto modelInserter = result.AddList<GS::ObjectState> (ModelsFieldName);
 	for (const auto& elementId : elementIds) {
-		const auto model = CalculateModelOfElement (modelViewer, elementId);
-		if (model.IsEmpty ()) {
-			continue;
-		}
-
-		modelInserter (GS::ObjectState { ElementIdFieldName, APIGuidToString (elementId), Model::ModelFieldName, model });
+		modelInserter (GS::ObjectState { ElementIdFieldName, APIGuidToString (elementId), Model::ModelFieldName, CalculateModelOfElement (modelViewer, elementId) });
 	}
 
 	return result;
@@ -327,54 +323,12 @@ GS::String GetModelForElements::GetName () const
 }
 
 
-GS::Optional<GS::UniString> GetModelForElements::GetSchemaDefinitions () const
-{
-	Json::SchemaDefinitionBuilder builder;
-	builder.Add (Json::SchemaDefinitionProvider::ElementIdSchema ());
-	builder.Add (Json::SchemaDefinitionProvider::ElementIdsSchema ());
-
-	return builder.Build ();
-}
-
-
-GS::Optional<GS::UniString>	GetModelForElements::GetInputParametersSchema () const
-{
-	return R"(
-		{
-			"type": "object",
-			"properties" : {
-				"elementIds": { "$ref": "#/definitions/ElementIds" }
-			},
-			"additionalProperties" : false,
-			"required" : [ "elementIds" ]
-		}
-	)";
-}
-
-
-GS::Optional<GS::UniString> GetModelForElements::GetResponseSchema () const
-{
-	return GS::NoValue;
-}
-
-
-API_AddOnCommandExecutionPolicy GetModelForElements::GetExecutionPolicy () const 
-{
-	return API_AddOnCommandExecutionPolicy::ScheduleForExecutionOnMainThread; 
-}
-
-
 GS::ObjectState GetModelForElements::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
 	parameters.Get (ElementIdsFieldName, ids);
 
 	return StoreModelOfElements (ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }));
-}
-
-
-void GetModelForElements::OnResponseValidationFailed (const GS::ObjectState& /*response*/) const
-{
 }
 
 

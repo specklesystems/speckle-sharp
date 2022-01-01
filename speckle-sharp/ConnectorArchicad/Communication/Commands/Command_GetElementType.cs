@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetElementsType : ICommand<Dictionary<string, IEnumerable<string>>>
+	internal sealed class GetElementsType : ICommand<Dictionary<Type, IEnumerable<string>>>
 	{
 		#region --- Classes ---
 
@@ -78,11 +78,10 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<Dictionary<string, IEnumerable<string>>> Execute ()
+		public async Task<Dictionary<Type, IEnumerable<string>>> Execute ()
 		{
 			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetElementTypes", new Parameters (ElementIds));
-			return result.ElementTypes	.GroupBy(row => row.ElementType)
-										.ToDictionary(group => group.Key, group => group.Select(x => x.ElementId));
+			return result.ElementTypes.GroupBy (row => ElementTypeProvider.GetTypeByName (row.ElementType)).ToDictionary (group => group.Key, group => group.Select (x => x.ElementId));
 		}
 
 		#endregion

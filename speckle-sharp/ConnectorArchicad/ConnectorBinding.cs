@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.IO;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
-using Objects.BuiltElements.Archicad.Model;
 using Speckle.Core.Credentials;
 
 
@@ -29,7 +28,7 @@ namespace Archicad.Launcher
 
 		public override string? GetDocumentId ()
 		{
-			ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
+			Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
 			if (projectInfo is null)
 			{
 				return string.Empty;
@@ -40,7 +39,7 @@ namespace Archicad.Launcher
 
 		public override string GetDocumentLocation ()
 		{
-			ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
+			Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
 			if (projectInfo is null)
 			{
 				return string.Empty;
@@ -87,18 +86,19 @@ namespace Archicad.Launcher
 
 		public override async Task<StreamState> ReceiveStream (StreamState state, ProgressViewModel progress)
 		{
-			// TODO KSZ
 			Base commitObject = await Helpers.Receive (IdentifyStream (state));
-			if (commitObject is null) return null;
+			if (commitObject is null)
+			{
+				return null;
+			}
 
-			StreamState newstate = await Operations.ElementConverter.ConvertBack(commitObject, state, progress.CancellationTokenSource.Token);
+			state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative (commitObject, progress.CancellationTokenSource.Token);
 
-			return newstate;
+			return state;
 		}
 
 		public override void SelectClientObjects (string args)
 		{
-			// TODO KSZ
 		}
 
 		public override async Task SendStream (StreamState state, ProgressViewModel progress)
@@ -110,7 +110,7 @@ namespace Archicad.Launcher
 
 			state.SelectedObjectIds = state.Filter.Selection;
 
-			Base commitObject = await Operations.ElementConverter.Convert (state.SelectedObjectIds, progress.CancellationTokenSource.Token);
+			Base commitObject = await ElementConverterManager.Instance.ConvertToSpeckle (state.SelectedObjectIds, progress.CancellationTokenSource.Token);
 			if (commitObject is null)
 			{
 				return;

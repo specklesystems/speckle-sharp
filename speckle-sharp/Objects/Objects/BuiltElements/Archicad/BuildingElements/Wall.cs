@@ -1,3 +1,6 @@
+using Speckle.Core.Models;
+
+
 namespace Objects.BuiltElements.Archicad
 {
 	public sealed class Wall : BuiltElements.Wall
@@ -15,10 +18,10 @@ namespace Objects.BuiltElements.Archicad
 		{ 
 		}
 
-		public Wall (Model.WallData wallData, Model.ElementModelData modelData)
+		public Wall (Model.WallData wallData, Base meshModel)
 		{
-			displayMesh = Operations.ModelConverter.Convert (modelData.model);
 			WallData = wallData;
+			Operations.ModelProvider.Attach (this, meshModel);
 		}
 
 		#endregion

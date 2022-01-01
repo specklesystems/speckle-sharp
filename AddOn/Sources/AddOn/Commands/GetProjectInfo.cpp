@@ -23,40 +23,6 @@ GS::String GetProjectInfo::GetName () const
 }
 
 
-GS::Optional<GS::UniString> GetProjectInfo::GetSchemaDefinitions () const
-{
-	return GS::NoValue;
-}
-
-
-GS::Optional<GS::UniString>	GetProjectInfo::GetInputParametersSchema () const
-{
-	return R"({"type": "object","additionalProperties" : false})";
-}
-
-
-GS::Optional<GS::UniString> GetProjectInfo::GetResponseSchema () const
-{
-	return R"(
-		{
-			"type": "object",
-			"properties" : {
-				"name": { "type": "string" },
-				"location": { "type": "string" }
-			},
-			"additionalProperties" : false,
-			"required" : [ "name" ]
-		}
-	)";
-}
-
-
-API_AddOnCommandExecutionPolicy GetProjectInfo::GetExecutionPolicy () const
-{
-	return API_AddOnCommandExecutionPolicy::ScheduleForExecutionOnMainThread;
-}
-
-
 GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 	API_ProjectInfo projectInfo {};
@@ -75,11 +41,6 @@ GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, 
 	os.Add (ProjectLocationFieldName, *projectInfo.projectPath);
 
 	return os;
-}
-
-
-void GetProjectInfo::OnResponseValidationFailed (const GS::ObjectState& /*response*/) const
-{
 }
 
 

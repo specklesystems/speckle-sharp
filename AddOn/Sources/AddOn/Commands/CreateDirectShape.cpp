@@ -18,39 +18,10 @@ GS::String CreateDirectShape::GetName () const
 }
 	
 		
-GS::Optional<GS::UniString> CreateDirectShape::GetSchemaDefinitions () const
-{
-	return GS::NoValue;
-}
-
-
-GS::Optional<GS::UniString>	CreateDirectShape::GetInputParametersSchema () const
-{
-	return GS::NoValue;
-}
-
-
-GS::Optional<GS::UniString> CreateDirectShape::GetResponseSchema () const
-{
-	return GS::NoValue;
-}
-
-
-API_AddOnCommandExecutionPolicy CreateDirectShape::GetExecutionPolicy () const
-{
-	return API_AddOnCommandExecutionPolicy::ScheduleForExecutionOnMainThread; 
-}
-
-
 GS::ObjectState CreateDirectShape::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 	GS::ObjectState result;
 	return result;
-}
-
-
-void CreateDirectShape::OnResponseValidationFailed (const GS::ObjectState& /*response*/) const
-{
 }
 
 

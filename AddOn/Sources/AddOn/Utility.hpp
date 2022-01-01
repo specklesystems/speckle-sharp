@@ -7,6 +7,7 @@
 
 namespace Utility {
 
+
 API_ElemTypeID GetElementType (const API_Guid& guid);
 
 bool ElementExists (const API_Guid& guid);

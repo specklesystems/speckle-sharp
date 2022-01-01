@@ -1,3 +1,4 @@
+using Objects.Geometry;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 
@@ -10,9 +11,9 @@ namespace Objects.BuiltElements.Archicad.Model
 
 		public sealed class PolylineSegment : Base
 		{
-			public Point3D startPoint { get; set; }
+			public Point startPoint { get; set; }
 
-			public Point3D endPoint { get; set; }
+			public Point endPoint { get; set; }
 
 			public double arcAngle { get; set; }
 		}

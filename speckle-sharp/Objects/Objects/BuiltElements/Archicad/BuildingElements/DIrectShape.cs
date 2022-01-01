@@ -1,14 +1,11 @@
-using Objects.Geometry;
 using Speckle.Core.Models;
 
 
 namespace Objects.BuiltElements.Archicad
 {
-	public class DirectShape : Base, IDisplayMesh
+	public class DirectShape : Base
 	{
 		#region --- Fields ---
-
-		public Mesh displayMesh { get; set; }
 
 		public string ElementId { get; set; }
 
@@ -21,10 +18,10 @@ namespace Objects.BuiltElements.Archicad
 		{
 		}
 
-		public DirectShape (Model.ElementModelData elementModel)
+		public DirectShape (string elementId, Base meshModel)
 		{
-			ElementId = elementModel.elementId;
-			displayMesh = Operations.ModelConverter.Convert (elementModel.model);
+			ElementId = elementId;
+			Operations.ModelProvider.Attach (this, meshModel);
 		}
 
 		#endregion

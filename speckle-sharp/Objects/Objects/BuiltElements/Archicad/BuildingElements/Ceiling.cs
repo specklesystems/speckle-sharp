@@ -1,3 +1,6 @@
+using Speckle.Core.Models;
+
+
 namespace Objects.BuiltElements.Archicad
 {
 	public sealed class Ceiling : BuiltElements.Ceiling
@@ -15,10 +18,10 @@ namespace Objects.BuiltElements.Archicad
         {
         }
 
-		public Ceiling (Model.CeilingData ceilingData, Model.ElementModelData modelData)
+		public Ceiling (Model.CeilingData ceilingData, Base meshModel)
 		{
-			displayMesh = Operations.ModelConverter.Convert (modelData.model);
 			CeilingData = ceilingData;
+			Operations.ModelProvider.Attach (this, meshModel);
 		}
 
 		#endregion

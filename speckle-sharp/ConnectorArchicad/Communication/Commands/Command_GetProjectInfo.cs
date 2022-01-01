@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetProjectInfo : ICommand<ProjectInfoData>
+	internal sealed class GetProjectInfo : ICommand<Model.ProjectInfoData>
 	{
 		#region --- Classes ---
 
@@ -19,9 +19,9 @@ namespace Archicad.Communication.Commands
 
 		#region --- Functions ---
 
-		public async Task<ProjectInfoData> Execute ()
+		public async Task<Model.ProjectInfoData> Execute ()
 		{
-			return await HttpCommandExecutor.Execute<Parameters, ProjectInfoData> ("GetProjectInfo", null);
+			return await HttpCommandExecutor.Execute<Parameters, Model.ProjectInfoData> ("GetProjectInfo", null);
 		}
 
 		#endregion
