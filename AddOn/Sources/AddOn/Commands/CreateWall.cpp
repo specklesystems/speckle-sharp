@@ -153,12 +153,6 @@ static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element&
 }
 
 
-GS::String CreateWall::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
-
 GS::String CreateWall::GetName () const
 {
 	return CreateWallCommandName;

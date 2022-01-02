@@ -13,6 +13,7 @@
 #include "Commands/GetProjectInfo.hpp"
 #include "Commands/CreateWall.hpp"
 #include "Commands/CreateSlab.hpp"
+#include "Commands/CreateDirectShape.hpp"
 
 
 #define CHECKERROR(f) { GSErrCode err = (f); if (err != NoError) { return err; } }
@@ -132,7 +133,8 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWall> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateSlab> ()));
-
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDirectShape> ()));
+	
 	return NoError;
 }
 

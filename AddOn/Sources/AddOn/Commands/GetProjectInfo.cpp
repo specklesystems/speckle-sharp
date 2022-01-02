@@ -11,12 +11,6 @@ static const char*		ProjectNameFieldName			= "name";
 static const char*		ProjectLocationFieldName		= "location";
 
 
-GS::String GetProjectInfo::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
-
 GS::String GetProjectInfo::GetName () const
 {
 	return GetProjectInfoCommandName;

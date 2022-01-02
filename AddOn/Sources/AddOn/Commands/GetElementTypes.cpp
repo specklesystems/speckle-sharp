@@ -9,12 +9,6 @@
 namespace AddOnCommands {
 
 
-GS::String GetElementTypes::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
-
 GS::String GetElementTypes::GetName () const
 {
 	return GetElementTypesCommandName;

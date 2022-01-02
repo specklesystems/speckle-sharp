@@ -7,6 +7,7 @@
 
 namespace Objects {
 
+
 class Point3D {
 public:
 	double X;
@@ -30,23 +31,7 @@ public:
 };
 
 
-class Point2D {
-public:
-	double X;
-	double Y;
-
-	Point2D ();
-	Point2D (double x, double y);
-	Point2D (const API_Coord& coord);
-
-	const API_Coord ToAPI_Coord () const;
-
-	bool operator == (const Point2D& rhs) const;
-
-	GSErrCode 			Restore (const GS::ObjectState& os);
-	GSErrCode			Store (GS::ObjectState& os) const;
-};
-
 }
+
 
 #endif

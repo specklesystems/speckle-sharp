@@ -1,10 +1,11 @@
-using Objects.BuiltElements.Archicad.Model;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Archicad.Operations;
+using Objects.Geometry;
 
 
 namespace Archicad.Converters
@@ -22,7 +23,28 @@ namespace Archicad.Converters
 
 		public async Task<List<string>> ConvertToArchicad (IEnumerable<Base> elements, CancellationToken token)
 		{
-			return new List<string> ();
+			IEnumerable<Objects.BuiltElements.Archicad.DirectShape> directShapes = elements.OfType<Objects.BuiltElements.Archicad.DirectShape> ();
+
+			List<Model.ElementModelData> elementModelDatas = new List<Model.ElementModelData> ();
+			foreach (var directShape in directShapes)
+			{
+				Base model = directShape["Model"] as Base;
+				if (model is null)
+				{
+					continue;
+				}
+
+				List<object> polygons = model["Polygons"] as List<object>;
+				if (polygons is null)
+				{
+					continue;
+				}
+
+				elementModelDatas.Add (new Model.ElementModelData { elementId = directShape.ElementId, model = ModelConverter.Convert (polygons.OfType<Mesh> ()) });
+			}
+
+			IEnumerable<string> result = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.CreateDirectShapes (elementModelDatas), token);
+			return result is null ? new List<string> () : result.ToList ();
 		}
 
 		public Task<List<Base>> ConvertToSpeckle (IEnumerable<Model.ElementModelData> elements, CancellationToken token)

@@ -9,7 +9,6 @@ namespace AddOnCommands {
 
 class CreateDirectShape : public BaseCommand {
 public:
-	virtual GS::String							GetNamespace () const override;
 	virtual GS::String							GetName () const override;
 	virtual GS::ObjectState						Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };

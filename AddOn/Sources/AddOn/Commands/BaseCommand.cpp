@@ -1,7 +1,14 @@
 #include "BaseCommand.hpp"
+#include "ResourceIds.hpp"
 
 
 namespace AddOnCommands {
+
+
+GS::String BaseCommand::GetNamespace () const
+{
+	return CommandNamespace;
+}
 
 
 GS::Optional<GS::UniString> BaseCommand::GetSchemaDefinitions () const

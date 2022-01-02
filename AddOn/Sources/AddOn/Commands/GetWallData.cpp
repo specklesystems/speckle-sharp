@@ -48,12 +48,6 @@ static GS::ObjectState SerializeWallType (const API_WallType& wall)
 }
 
 
-GS::String GetWallData::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
-
 GS::String GetWallData::GetName () const
 {
 	return GetWallDataCommandName;

@@ -39,11 +39,6 @@ GS::ObjectState SerializeSlabType (const API_SlabType& slab, const API_ElementMe
 	return os;
 }
 
-GS::String GetSlabData::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
 
 GS::String GetSlabData::GetName () const
 {

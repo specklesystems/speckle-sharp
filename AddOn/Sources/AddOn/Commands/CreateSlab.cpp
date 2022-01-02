@@ -133,12 +133,6 @@ static GSErrCode GetSlabFromObjectState (const GS::ObjectState&		os,
 }
 
 
-GS::String CreateSlab::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
-
 GS::String CreateSlab::GetName () const
 {
 	return CreateSlabCommandName;
@@ -155,8 +149,6 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 	const auto& listAdder = result.AddList<GS::UniString> (ElementIdsFieldName);
 
 	ACAPI_CallUndoableCommand ("CreateSpeckleSlab", [&] () -> GSErrCode {
-		GSErrCode err = NoError;
-
 		for (const GS::ObjectState& slabOs : slabs) {
 
 			API_Element slab {};
@@ -164,7 +156,7 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 			API_ElementMemo slabMemo {};
 			GS::UInt64 memoMask = 0;
 
-			err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
+			GSErrCode err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
 			if (err != NoError) {
 				ACAPI_DisposeElemMemoHdls (&slabMemo);
 				continue;
@@ -173,8 +165,7 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 			bool slabExists = Utility::ElementExists (slab.header.guid);
 			if (slabExists) {
 				err = ModifyExistingSlab (slab, slabMask, slabMemo, memoMask);
-			}
-			else {
+			} else {
 				err = CreateNewSlab (slab, slabMemo);
 			}
 
@@ -187,7 +178,7 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 			listAdder (elemId);
 
 		}
-		return err;
+		return NoError;
 	});
 
 	return result;

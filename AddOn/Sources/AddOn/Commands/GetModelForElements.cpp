@@ -1,119 +1,14 @@
 #include "GetModelForElements.hpp"
 #include "ResourceIds.hpp"
-#include "ObjectState.hpp"
 #include "Sight.hpp"
+#include "ModelInfo.hpp"
 #include "FieldNames.hpp"
 
 
 namespace AddOnCommands {
 
 
-static UInt32			MaximumSupportedPolygonPoints	= 4;
-
-
-class Model3DInfo {
-public:
-	class Vertex {
-	public:
-		Vertex (double x, double y, double z) : x (x), y (y), z (z)
-		{
-		}
-
-		GSErrCode Store (GS::ObjectState& os) const
-		{
-			os.Add (Model::VertexXFieldName, x);
-			os.Add (Model::VertexYFieldName, y);
-			os.Add (Model::VertexZFieldName, z);
-
-			return NoError;
-		}
-
-	private:
-		double x;
-		double y;
-		double z;
-	};
-
-	class Material {
-	public:
-		Material (const UMAT& aumat)
-		{
-			transparency = aumat.GetTransparency ();
-			ambientColor = aumat.GetSurfaceColor ();
-			emissionColor = aumat.GetEmissionColor ();
-		}
-
-		GSErrCode Store (GS::ObjectState& os) const
-		{
-			os.Add (Model::AmbientColorFieldName, ambientColor);
-			os.Add (Model::EmissionColorFieldName, emissionColor);
-			os.Add (Model::TransparencyieldName, transparency);
-
-			return NoError;
-		}
-
-	private:
-		short			transparency;			// [0..100]
-		GS_RGBColor		ambientColor;
-		GS_RGBColor		emissionColor;
-
-	};
-
-	class Polygon {
-	public:
-		Polygon (const GS::Array<Int32>& pointIds, const UMAT& aumat) : pointIds (pointIds), material (aumat)
-		{
-		}
-
-		GSErrCode Store (GS::ObjectState& os) const
-		{
-			os.Add (Model::PointIdsFieldName, pointIds);
-			os.Add (Model::MaterialFieldName, material);
-
-			return NoError;
-		}
-
-	private:
-		GS::Array<Int32> pointIds;
-		Material material;
-	};
-
-public:
-	void AddVertex (const Vertex& vertex)
-	{
-		vertices.Push (vertex);
-	}
-	void AddVertex (Vertex&& vertex)
-	{
-		vertices.Push (std::move (vertex));
-	}
-
-	void AddPolygon (const Polygon& polygon)
-	{
-		polygons.Push (polygon);
-	}
-	void AddPolygon (Polygon&& polygon)
-	{
-		polygons.Push (std::move (polygon));
-	}
-
-	inline const GS::Array<Vertex>& GetVertices () const
-	{
-		return vertices;
-	}
-
-	GSErrCode Store (GS::ObjectState& os) const
-	{
-		os.Add (Model::VerteciesFieldName, vertices);
-		os.Add (Model::PolygonsFieldName, polygons);
-
-		return NoError;
-	}
-
-private:
-	GS::Array<Vertex> vertices;
-	GS::Array<Polygon> polygons;
-};
+static UInt32 MaximumSupportedPolygonPoints	= 4;
 
 
 static GS::Array<Int32> GetPolygonFromBody (const Modeler::MeshBody& body, Int32 polygonIdx, Int32 convexPolygonIdx, UInt32 offset)
@@ -127,9 +22,9 @@ static GS::Array<Int32> GetPolygonFromBody (const Modeler::MeshBody& body, Int32
 }
 
 
-static GS::Array<Model3DInfo::Polygon> GetPolygonsFromBody (const Modeler::MeshBody& body, const Modeler::Attributes::Viewer& attributes, UInt32 offset)
+static GS::Array<Objects::ModelInfo::Polygon> GetPolygonsFromBody (const Modeler::MeshBody& body, const Modeler::Attributes::Viewer& attributes, UInt32 offset)
 {
-	GS::Array<Model3DInfo::Polygon> result;
+	GS::Array<Objects::ModelInfo::Polygon> result;
 
 	for (UInt32 polygonIdx = 0; polygonIdx < body.GetPolygonCount (); ++polygonIdx) {
 
@@ -161,7 +56,7 @@ static GS::Array<Model3DInfo::Polygon> GetPolygonsFromBody (const Modeler::MeshB
 }
 
 
-static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes, Model3DInfo& modelInfo)
+static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes, Objects::ModelInfo& modelInfo)
 {
 	const auto& transformation = elem.GetConstTrafo ();
 	for (const auto& body : elem.TessellatedBodies ()) {
@@ -169,7 +64,7 @@ static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::At
 
 		for (UInt32 vertexIdx = 0; vertexIdx < body.GetVertexCount (); ++vertexIdx) {
 			const auto coord = body.GetVertexPoint (vertexIdx, transformation);
-			modelInfo.AddVertex (Model3DInfo::Vertex (coord.x, coord.y, coord.z));
+			modelInfo.AddVertex (Objects::ModelInfo::Vertex (coord.x, coord.y, coord.z));
 		}
 
 		const auto polygons = GetPolygonsFromBody (body, attributes, offset);
@@ -262,9 +157,9 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& elementId)
 }
 
 
-static Model3DInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+static Objects::ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
 {
-	Model3DInfo modelInfo;
+	Objects::ModelInfo modelInfo;
 	const Modeler::Attributes::Viewer& attributes (modelViewer.GetConstAttributesPtr ());
 
 	GS::Array<API_Guid> elementIds = CheckForSubelements (elementId);
@@ -308,12 +203,6 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>& elementI
 	}
 
 	return result;
-}
-
-
-GS::String GetModelForElements::GetNamespace () const
-{
-	return CommandNamespace;
 }
 
 

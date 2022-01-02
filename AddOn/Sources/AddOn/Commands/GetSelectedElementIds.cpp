@@ -31,12 +31,6 @@ static GS::Array<API_Guid> GetSelectedElementGuids ()
 }
 
 
-GS::String GetSelectedElementIds::GetNamespace () const
-{
-	return CommandNamespace;
-}
-
-
 GS::String GetSelectedElementIds::GetName () const
 {
 	return GetSelectedElementIdsCommandName;

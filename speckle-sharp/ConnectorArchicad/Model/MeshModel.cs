@@ -11,11 +11,11 @@ namespace Archicad.Model
 		{
 			#region --- Fields ---
 
-			public double X { get; set; }
+			public double x { get; set; }
 
-			public double Y { get; set; }
+			public double y { get; set; }
 
-			public double Z { get; set; }
+			public double z { get; set; }
 
 			#endregion
 		}
@@ -50,7 +50,7 @@ namespace Archicad.Model
 
 		public sealed class Polygon
 		{
-			public List<int> pointIds { get; set; }
+			public List<int> pointIds { get; set; } = new List<int> ();
 
 			public Material material { get; set; }
 		}
@@ -60,9 +60,9 @@ namespace Archicad.Model
 
 		#region --- Fields ---
 
-		public List<Polygon> polygons { get; set; }
+		public List<Polygon> polygons { get; set; } = new List<Polygon> ();
 
-		public List<Vertex> vertecies { get; set; }
+		public List<Vertex> vertecies { get; set; } = new List<Vertex> ();
 
 		#endregion
 	}
