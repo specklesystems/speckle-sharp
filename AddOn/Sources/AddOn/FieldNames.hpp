@@ -48,6 +48,7 @@ namespace Model {
 	static const char* VertexYFieldName = "y";
 	static const char* VertexZFieldName = "z";
 	static const char* PolygonsFieldName = "polygons";
+	static const char* MaterialsFieldName = "materials";
 	static const char* PointIdsFieldName = "pointIds";
 	static const char* TransparencyieldName = "transparency";
 	static const char* AmbientColorFieldName = "ambientColor";

@@ -2,9 +2,6 @@
 #include "FieldNames.hpp"
 
 
-namespace Objects {
-
-
 ModelInfo::Vertex::Vertex (double x, double y, double z) : 
 	x (x),
 	y (y),
@@ -34,6 +31,7 @@ GSErrCode ModelInfo::Vertex::Restore (const GS::ObjectState& os)
 
 
 ModelInfo::Material::Material (const UMAT& aumat) :
+	name (aumat.GetName ()),
 	transparency (aumat.GetTransparency ()),
 	ambientColor (aumat.GetSurfaceColor ()),
 	emissionColor (aumat.GetEmissionColor ())
@@ -51,9 +49,9 @@ GSErrCode ModelInfo::Material::Store (GS::ObjectState& os) const
 }
 
 
-ModelInfo::Polygon::Polygon (const GS::Array<Int32>& pointIds, const UMAT& aumat) : 
+ModelInfo::Polygon::Polygon (const GS::Array<Int32>& pointIds, UInt32 material) : 
 	pointIds (pointIds),
-	material (aumat)
+	material (material)
 {
 }
 
@@ -99,13 +97,23 @@ void ModelInfo::AddPolygon (Polygon&& polygon)
 }
 
 
+UInt32 ModelInfo::AddMaterial (const UMAT& material)
+{
+	UIndex idx = materials.FindFirst ([&material] (const ModelInfo::Material& cachedMaterial) { return material.GetName () == cachedMaterial.GetName (); });
+	if (idx != MaxUIndex) {
+		return idx;
+	}
+
+	materials.PushNew (material);
+	return materials.GetSize () - 1;
+}
+
+
 GSErrCode ModelInfo::Store (GS::ObjectState& os) const
 {
 	os.Add (Model::VerteciesFieldName, vertices);
 	os.Add (Model::PolygonsFieldName, polygons);
+	os.Add (Model::MaterialsFieldName, materials);
 
 	return NoError;
-}
-
-
 }

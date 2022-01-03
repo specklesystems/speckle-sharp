@@ -30,7 +30,7 @@ static GSErrCode FindAndDeleteOldElement (const API_Guid& elementId)
 }
 
 
-static GS::Optional<API_Guid> CreateElement (const API_Guid& elementId, const GS::Array<Objects::ModelInfo::Vertex>& vertices, const GS::Array<Objects::ModelInfo::Polygon> polygons)
+static GS::Optional<API_Guid> CreateElement (const API_Guid& elementId, const GS::Array<ModelInfo::Vertex>& vertices, const GS::Array<ModelInfo::Polygon> polygons)
 {
 	GSErrCode err = FindAndDeleteOldElement (elementId);
 	if (err != NoError) {
@@ -102,10 +102,10 @@ static GS::Optional<API_Guid> CreateElement (const GS::ObjectState& elementModel
 			return GS::NoValue;
 		}
 
-		GS::Array<Objects::ModelInfo::Vertex> vertices;
+		GS::Array<ModelInfo::Vertex> vertices;
 		modelOs->Get (Model::VerteciesFieldName, vertices);
 
-		GS::Array<Objects::ModelInfo::Polygon> polygons;
+		GS::Array<ModelInfo::Polygon> polygons;
 		modelOs->Get (Model::PolygonsFieldName, polygons);
 
 		return CreateElement (APIGuidFromString (id.ToCStr ()), vertices, polygons);
@@ -143,11 +143,6 @@ GS::ObjectState CreateDirectShape::Execute (const GS::ObjectState& parameters, G
 	return GS::ObjectState (ElementIdsFieldName, elementIds);
 }
 
-
-//static private GS::Optional<API_Guid> CreateDirectShape (const GS::ObjectState& /*os*/)
-//{
-//	return GS::NoValue;
-//}
 
 
 }

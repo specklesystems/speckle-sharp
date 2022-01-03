@@ -11,21 +11,19 @@ namespace AddOnCommands {
 static UInt32 MaximumSupportedPolygonPoints	= 4;
 
 
-static GS::Array<Int32> GetPolygonFromBody (const Modeler::MeshBody& body, Int32 polygonIdx, Int32 convexPolygonIdx, UInt32 offset)
+static GS::Array<Int32> GetPolygonFromBody (const Modeler::MeshBody& body, Int32 polygonIdx, Int32 convexPolygonIdx, UInt32 vetrexOffset)
 {
 	GS::Array<Int32> polygonPoints;
 	for (Int32 convexPolygonVertexIdx = 0; convexPolygonVertexIdx < body.GetConvexPolygonVertexCount (polygonIdx, convexPolygonIdx); ++convexPolygonVertexIdx) {
-		polygonPoints.Push (body.GetConvexPolygonVertexIndex (polygonIdx, convexPolygonIdx, convexPolygonVertexIdx) + offset);
+		polygonPoints.Push (body.GetConvexPolygonVertexIndex (polygonIdx, convexPolygonIdx, convexPolygonVertexIdx) + vetrexOffset);
 	}
 
 	return polygonPoints;
 }
 
 
-static GS::Array<Objects::ModelInfo::Polygon> GetPolygonsFromBody (const Modeler::MeshBody& body, const Modeler::Attributes::Viewer& attributes, UInt32 offset)
+static void CollectPolygonsFromBody (const Modeler::MeshBody& body, const Modeler::Attributes::Viewer& attributes, UInt32 vetrexOffset, ModelInfo& modelInfo)
 {
-	GS::Array<Objects::ModelInfo::Polygon> result;
-
 	for (UInt32 polygonIdx = 0; polygonIdx < body.GetPolygonCount (); ++polygonIdx) {
 
 		const GSAttributeIndex matIdx = body.GetConstPolygonAttributes (polygonIdx).GetMaterialIndex ();
@@ -34,43 +32,40 @@ static GS::Array<Objects::ModelInfo::Polygon> GetPolygonsFromBody (const Modeler
 			continue;
 		}
 
+		UInt32 materialIdx = modelInfo.AddMaterial (*aumat);
+
 		for (Int32 convexPolygonIdx = 0; convexPolygonIdx < body.GetConvexPolygonCount (polygonIdx); ++convexPolygonIdx) {
-			GS::Array<Int32> polygonPointIds = GetPolygonFromBody (body, polygonIdx, convexPolygonIdx, offset);
+			GS::Array<Int32> polygonPointIds = GetPolygonFromBody (body, polygonIdx, convexPolygonIdx, vetrexOffset);
 			if (polygonPointIds.IsEmpty ()) {
 				continue;
 			}
 
 			if (polygonPointIds.GetSize () > MaximumSupportedPolygonPoints) {
 				for (UInt32 i = 1; i < polygonPointIds.GetSize () - 1; ++i) {
-					result.PushNew (GS::Array<Int32> { polygonPointIds[0], polygonPointIds[i], polygonPointIds[i + 1] }, *aumat);
+					modelInfo.AddPolygon (ModelInfo::Polygon (GS::Array<Int32> { polygonPointIds[0], polygonPointIds[i], polygonPointIds[i + 1] }, materialIdx));
 				}
 
 				continue;
 			}
 
-			result.PushNew (polygonPointIds, *aumat);
+			modelInfo.AddPolygon (ModelInfo::Polygon (polygonPointIds, materialIdx));
 		}
 	}
-
-	return result;
 }
 
 
-static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes, Objects::ModelInfo& modelInfo)
+static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::Attributes::Viewer& attributes, ModelInfo& modelInfo)
 {
 	const auto& transformation = elem.GetConstTrafo ();
 	for (const auto& body : elem.TessellatedBodies ()) {
-		UInt32 offset = modelInfo.GetVertices ().GetSize ();
+		UInt32 vetrexOffset = modelInfo.GetVertices ().GetSize ();
 
 		for (UInt32 vertexIdx = 0; vertexIdx < body.GetVertexCount (); ++vertexIdx) {
 			const auto coord = body.GetVertexPoint (vertexIdx, transformation);
-			modelInfo.AddVertex (Objects::ModelInfo::Vertex (coord.x, coord.y, coord.z));
+			modelInfo.AddVertex (ModelInfo::Vertex (coord.x, coord.y, coord.z));
 		}
 
-		const auto polygons = GetPolygonsFromBody (body, attributes, offset);
-		for (const auto& polygon : polygons) {
-			modelInfo.AddPolygon (polygon);
-		}
+		CollectPolygonsFromBody (body, attributes, vetrexOffset, modelInfo);
 	}
 }
 
@@ -157,9 +152,9 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& elementId)
 }
 
 
-static Objects::ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+static ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
 {
-	Objects::ModelInfo modelInfo;
+	ModelInfo modelInfo;
 	const Modeler::Attributes::Viewer& attributes (modelViewer.GetConstAttributesPtr ());
 
 	GS::Array<API_Guid> elementIds = CheckForSubelements (elementId);

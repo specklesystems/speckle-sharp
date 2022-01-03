@@ -52,7 +52,7 @@ namespace Archicad.Model
 		{
 			public List<int> pointIds { get; set; } = new List<int> ();
 
-			public Material material { get; set; }
+			public int material { get; set; }
 		}
 
 		#endregion
@@ -63,6 +63,8 @@ namespace Archicad.Model
 		public List<Polygon> polygons { get; set; } = new List<Polygon> ();
 
 		public List<Vertex> vertecies { get; set; } = new List<Vertex> ();
+
+		public List<Material> materials { get; set; } = new List<Material> ();
 
 		#endregion
 	}
