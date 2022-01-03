@@ -53,19 +53,15 @@ GS::ObjectState GetSlabData::Execute (const GS::ObjectState& parameters, GS::Pro
 	GS::Array<API_Guid>	elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
 
 	GS::ObjectState result;
-	
-	API_Element element;
-	API_ElementMemo elementMemo;
-	GSErrCode err;
 
 	const auto& listAdder = result.AddList<GS::ObjectState> (SlabsFieldName);
 	for (const API_Guid& guid : elementGuids) {
 
-		BNZeroMemory (&element, sizeof (API_Element));
-		BNZeroMemory (&elementMemo, sizeof (API_ElementMemo));
+		API_Element element {};
+		API_ElementMemo elementMemo {};
 
 		element.header.guid = guid;
-		err = ACAPI_Element_Get (&element);
+		GSErrCode err = ACAPI_Element_Get (&element);
 		if (err != NoError) continue;
 
 		if (element.header.typeID != API_SlabID) continue;

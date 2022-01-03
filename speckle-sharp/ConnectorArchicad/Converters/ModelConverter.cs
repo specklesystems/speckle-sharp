@@ -11,10 +11,10 @@ namespace Archicad.Operations
 	{
 		#region --- Functions ---
 
-		public static Base Convert (Model.MeshModel meshDatas)
+		public static Base Convert (Model.MeshModel meshModel)
 		{
 			Base result = new Base ();
-			result["Polygons"] = meshDatas.polygons.Select (p => CreateMeshFromPolygon (meshDatas.vertecies, p)).ToList ();
+			result["Polygons"] = meshModel.polygons.Select (p => CreateMeshFromPolygon (meshModel.vertecies, p, meshModel.materials[p.material])).ToList ();
 
 			return result;
 		}
@@ -88,13 +88,13 @@ namespace Archicad.Operations
 			};
 		}
 
-		private static Mesh CreateMeshFromPolygon (IList<Model.MeshModel.Vertex> vertices, Model.MeshModel.Polygon polygon)
+		private static Mesh CreateMeshFromPolygon (IList<Model.MeshModel.Vertex> vertices, Model.MeshModel.Polygon polygon, Model.MeshModel.Material material)
 		{
 			List<double> points = polygon.pointIds.SelectMany (id => FlattenPoint (vertices[id])).ToList ();
 			List<int> polygons = ConvertPolygon (polygon);
 
 			Mesh mesh = new Mesh (points, polygons);
-			mesh["renderMaterial"] = ConvertMaterial (polygon.material);
+			mesh["renderMaterial"] = ConvertMaterial (material);
 
 			return mesh;
 		}

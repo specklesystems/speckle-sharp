@@ -7,9 +7,6 @@
 #include "Model3D/UMAT.hpp"
 
 
-namespace Objects {
-
-
 class ModelInfo {
 public:
 	class Vertex {
@@ -35,9 +32,12 @@ public:
 		Material () = default;
 		Material (const UMAT& aumat);
 
+		inline const GS::UniString& GetName () const			{ return name; }
+
 		GSErrCode Store (GS::ObjectState& os) const;
 
 	private:
+		GS::UniString	name;
 		short			transparency = {};			// [0..100]
 		GS_RGBColor		ambientColor = {};
 		GS_RGBColor		emissionColor = {};
@@ -47,7 +47,7 @@ public:
 	class Polygon {
 	public:
 		Polygon () = default;
-		Polygon (const GS::Array<Int32>& pointIds, const UMAT& aumat);
+		Polygon (const GS::Array<Int32>& pointIds, UInt32 material);
 
 		inline const GS::Array<Int32>& GetPointIds () const					{ return pointIds; }
 
@@ -56,7 +56,7 @@ public:
 
 	private:
 		GS::Array<Int32> pointIds;
-		Material material;
+		UInt32 material = {};
 	};
 
 public:
@@ -66,6 +66,8 @@ public:
 	void AddPolygon (const Polygon& polygon);
 	void AddPolygon (Polygon&& polygon);
 
+	UInt32 AddMaterial (const UMAT& material);
+
 	inline const GS::Array<Vertex>& GetVertices () const		{ return vertices; }
 
 	GSErrCode Store (GS::ObjectState& os) const;
@@ -73,10 +75,8 @@ public:
 private:
 	GS::Array<Vertex> vertices;
 	GS::Array<Polygon> polygons;
+	GS::Array<Material> materials;
 };
-
-
-}
 
 
 #endif
