@@ -162,4 +162,23 @@ void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& leve
 }
 
 
+GS::Optional<GS::UniString> CreateOrChangeElement (API_Element element,
+												   const API_Element* mask,
+												   API_ElementMemo* memo,
+												   GS::UInt64 memoMask)
+{
+	GSErrCode err;
+
+	if (Utility::ElementExists (element.header.guid))
+		err = ACAPI_Element_Change (&element, mask, memo, memoMask, true);
+	else
+		err = ACAPI_Element_Create (&element, memo);
+
+	if (err != NoError)
+		return GS::NoValue;
+	else
+		return APIGuidToString (element.header.guid);;
+}
+
+
 }

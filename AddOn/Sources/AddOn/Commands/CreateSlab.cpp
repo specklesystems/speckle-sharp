@@ -11,18 +11,6 @@
 namespace AddOnCommands {
 
 
-static GSErrCode CreateNewSlab (API_Element& slab, API_ElementMemo& slabMemo)
-{
-	return ACAPI_Element_Create (&slab, &slabMemo);
-}
-
-
-static GSErrCode ModifyExistingSlab (API_Element& slab, API_Element& mask, API_ElementMemo& slabMemo, GS::UInt64 memoMask)
-{
-	return ACAPI_Element_Change (&slab, &mask, &slabMemo, memoMask, true);
-}
-
-
 static GSErrCode GetSlabFromObjectState (const GS::ObjectState&		os,
 										 API_Element&				element, 
 										 API_Element&				mask, 
@@ -162,21 +150,13 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 				continue;
 			}
 
-			bool slabExists = Utility::ElementExists (slab.header.guid);
-			if (slabExists) {
-				err = ModifyExistingSlab (slab, slabMask, slabMemo, memoMask);
-			} else {
-				err = CreateNewSlab (slab, slabMemo);
+			const auto result = Utility::CreateOrChangeElement (slab, &slabMask, &slabMemo, memoMask);
+			if (result.IsEmpty ()) {
+				ACAPI_DisposeElemMemoHdls(&slabMemo);
+				continue;
 			}
 
-			ACAPI_DisposeElemMemoHdls (&slabMemo);
-
-			if (err != NoError)
-				continue;
-
-			GS::UniString elemId = APIGuidToString (slab.header.guid);
-			listAdder (elemId);
-
+			listAdder (result.Get ());
 		}
 		return NoError;
 	});

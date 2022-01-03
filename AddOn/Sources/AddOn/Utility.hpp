@@ -24,6 +24,11 @@ void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& leve
 
 void SetStoryLevel (const double& inLevel, const short& floorInd, double& level);
 
+GS::Optional<GS::UniString> CreateOrChangeElement (API_Element element,
+												   const API_Element* mask = nullptr,
+												   API_ElementMemo* memo = nullptr,
+												   GS::UInt64 memoMask = 0);
+
 
 }
 
