@@ -3,6 +3,7 @@
 #include "ObjectState.hpp"
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
+#include "OnExit.hpp"
 
 
 namespace AddOnCommands {
@@ -76,6 +77,8 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid& elementId, const GS
 	}
 
 	API_ElementMemo memo = {};
+	GS::OnExit onExit ([&memo] { ACAPI_DisposeElemMemoHdls (&memo); });
+
 	ACAPI_Body_Finish (bodyData, &memo.morphBody, &memo.morphMaterialMapTable);
 	ACAPI_Body_Dispose (&bodyData);
 
@@ -84,8 +87,6 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid& elementId, const GS
 	if (err != NoError) {
 		return GS::NoValue;
 	}
-
-	ACAPI_DisposeElemMemoHdls (&memo);
 
 	return element.header.guid;
 }
