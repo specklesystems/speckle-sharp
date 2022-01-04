@@ -135,8 +135,10 @@ namespace Objects.Converter.ETABS
             case DesignProcedure.NoDesign:
               Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 7);
               break;
-
           }
+        if(ETABSelement1D.Modifiers != null){
+            var modifiers = ETABSelement1D.Modifiers;
+        Model.FrameObj.SetModifiers(ETABSelement1D.name, ref modifiers); }
         }
       }
 
@@ -281,6 +283,9 @@ namespace Objects.Converter.ETABS
             break;
       }
       }
+      double[] modifiers = new double[]{ };
+      int s = Model.FrameObj.GetModifiers(name, ref modifiers);
+      if(s==0){ speckleStructFrame.Modifiers = modifiers; }
 
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
