@@ -37,8 +37,11 @@ namespace Objects.Converter.ETABS
       double[] y = Y.ToArray();
       double[] z = Z.ToArray();
 
-
-      if (area.property != null)
+      if(area.property is ETABSOpening)
+      { Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
+        Model.AreaObj.SetOpening(name, true);
+      }
+      else if (area.property != null)
       {
         int numberNames = 0;
         string[] propNames = null;
@@ -52,7 +55,6 @@ namespace Objects.Converter.ETABS
           Property2DToNative((ETABSProperty2D)area.property);
           Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
         }
-
       }
       else
       {
@@ -104,9 +106,19 @@ namespace Objects.Converter.ETABS
         nodes.Add(node);
       }
       speckleStructArea.topology = nodes;
-      string propName = "";
-      Model.AreaObj.GetProperty(name, ref propName);
-      speckleStructArea.property = Property2DToSpeckle(name, propName);
+
+      bool isOpening = false;
+      Model.AreaObj.GetOpening(name, ref isOpening);
+      if(isOpening == true){
+        speckleStructArea.property = new ETABSOpening(true);
+      }
+      else
+      {
+        string propName = "";
+        Model.AreaObj.GetProperty(name, ref propName);
+        speckleStructArea.property = Property2DToSpeckle(name, propName);
+      }
+
 
       List<double> coordinates = new List<double> { };
       foreach (Node node in nodes)
