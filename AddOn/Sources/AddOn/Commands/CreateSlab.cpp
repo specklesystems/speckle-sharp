@@ -144,7 +144,7 @@ GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::Proc
 			API_Element	slabMask {};
 			API_ElementMemo slabMemo {};
 			GS::UInt64 memoMask = 0;
-			GS::OnExit onExit ([&slabMemo] { ACAPI_DisposeElemMemoHdls (&slabMemo); });
+			GS::OnExit memoDisposer ([&slabMemo] { ACAPI_DisposeElemMemoHdls (&slabMemo); });
 
 			GSErrCode err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
 			if (err != NoError) {
