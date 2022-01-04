@@ -61,6 +61,9 @@ namespace Objects.Converter.ETABS
           {
             Property2DToNative((ETABSProperty2D)property);
           }
+          else if (property is ETABSDiaphragm){
+            diaphragmToNative((ETABSDiaphragm)property);
+          }
           else if (property is Property1D)
           {
             Property1DToNative((Property1D)property);

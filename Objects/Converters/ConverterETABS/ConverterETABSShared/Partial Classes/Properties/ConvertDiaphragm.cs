@@ -11,6 +11,10 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
+  void diaphragmToNative(ETABSDiaphragm etabsDiaphragm){
+      Model.Diaphragm.SetDiaphragm(etabsDiaphragm.name, etabsDiaphragm.SemiRigid);
+
+  }
   ETABSDiaphragm diaphragmToSpeckle(string name){
       bool semiRigid = false;
       Model.Diaphragm.GetDiaphragm(name, ref semiRigid);

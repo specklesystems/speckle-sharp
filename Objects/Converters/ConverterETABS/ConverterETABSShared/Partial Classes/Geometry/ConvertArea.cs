@@ -80,6 +80,7 @@ namespace Objects.Converter.ETABS
         Model.AreaObj.SetSpandrel(ETABSarea.name, ETABSarea.SpandrelAssignment);
         if(ETABSarea.ETABSAreaSpring != null) { Model.AreaObj.SetSpringAssignment(ETABSarea.name, ETABSarea.ETABSAreaSpring.name); }
 
+        if(ETABSarea.DiaphragmAssignment != null){ Model.AreaObj.SetDiaphragm(ETABSarea.name, ETABSarea.DiaphragmAssignment); }
       
         }
 
