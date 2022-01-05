@@ -12,6 +12,18 @@
 namespace AddOnCommands {
 
 
+static GSErrCode CreateNewWall (API_Element& wall)
+{
+	return ACAPI_Element_Create (&wall, nullptr);
+}
+
+
+static GSErrCode ModifyExistingWall (API_Element& wall, API_Element& mask)
+{
+	return ACAPI_Element_Change (&wall, &mask, nullptr, 0, true);
+}
+
+
 static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element& element, API_Element& wallMask)
 {
 	GSErrCode err;
@@ -166,11 +178,17 @@ GS::ObjectState CreateWall::Execute (const GS::ObjectState& parameters, GS::Proc
 			if (err != NoError)
 				continue;
 
-			const auto result = Utility::CreateOrChangeElement (wall, &wallMask);
-			if (result.IsEmpty ())
-				continue;
+			bool wallExists = Utility::ElementExists (wall.header.guid);
+			if (wallExists) {
+				err = ModifyExistingWall (wall, wallMask);
+			} else {
+				err = CreateNewWall (wall);
+			}
 
-			listAdder (result.Get ());
+			if (err == NoError) {
+				GS::UniString elemId = APIGuidToString (wall.header.guid);
+				listAdder (elemId);
+			}
 		}
 
 		return NoError;
