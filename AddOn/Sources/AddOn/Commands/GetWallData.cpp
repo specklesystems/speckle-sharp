@@ -15,24 +15,48 @@ static GS::ObjectState SerializeWallType (const API_WallType& wall)
 {
 	GS::ObjectState os;
 
+	// The identifier of the wall
 	os.Add (ElementIdFieldName, APIGuidToString (wall.head.guid));
+
+	// The index of the wall's floor
 	os.Add (FloorIndexFieldName, wall.head.floorInd);
 
+	// The start and end points of the wall
 	double z = Utility::GetStoryLevel (wall.head.floorInd) + wall.bottomOffset;
 	os.Add (Wall::StartPointFieldName, Objects::Point3D (wall.begC.x, wall.begC.y, z));
 	os.Add (Wall::EndPointFieldName, Objects::Point3D (wall.endC.x, wall.endC.y, z));
 
+	// The arc angle of the wall
 	if (abs (wall.angle) > EPS)
 		os.Add (Wall::ArcAngleFieldName, wall.angle);
 
+	// The height of the wall
 	os.Add (Wall::HeightFieldName, wall.height);
 
+	// The structure type of the wall (basic, composite or profiled)
 	os.Add (Wall::StructureFieldName, structureTypeNames.Get (wall.modelElemStructureType));
 
+	// The building material index, composite index or the profile index of the wall
+	switch (wall.modelElemStructureType) {
+		case API_BasicStructure:			
+			os.Add (Wall::BuildingMaterialIndexFieldName, wall.buildingMaterial);
+			break;
+		case API_CompositeStructure:
+			os.Add (Wall::CompositeIndexFieldName, wall.composite);
+			break;
+		case API_ProfileStructure:
+			os.Add (Wall::ProfileIndexFieldName, wall.profileAttr);
+			break;
+		default:	break;
+	}
+
+	// The geometry method of the wall (straight, trapezoid or polygonal)
 	os.Add (Wall::GeometryMethodFieldName, wallTypeNames.Get (wall.type));
 
+	// The profile type of the wall (straight, slanted, trapezoid or polygonal)
 	os.Add (Wall::WallComplexityFieldName, profileTypeNames.Get (wall.profileType));
 
+	// The thickness of the wall (first and second thickness for trapezoid walls)
 	if (wall.type == APIWtyp_Trapez) {
 		os.Add (Wall::FirstThicknessFieldName, wall.thickness);
 		os.Add (Wall::SecondThicknessFieldName, wall.thickness1);
@@ -40,7 +64,10 @@ static GS::ObjectState SerializeWallType (const API_WallType& wall)
 		os.Add (Wall::ThicknessFieldName, wall.thickness);
 	}
 
+	// The outside slant angle of the wall
 	os.Add (Wall::OutsideSlantAngleFieldName, wall.slantAlpha);
+
+	// The inside slant angle of the wall
 	if (wall.profileType == APISect_Trapez)
 		os.Add (Wall::InsideSlantAngleFieldName, wall.slantBeta);
 

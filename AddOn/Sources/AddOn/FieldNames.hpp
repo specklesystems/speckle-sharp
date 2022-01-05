@@ -27,6 +27,9 @@ namespace Wall {
 	static const char* WallComplexityFieldName = "wallComplexity";
 	static const char* OutsideSlantAngleFieldName = "outsideSlantAngle";
 	static const char* InsideSlantAngleFieldName = "insideSlantAngle";
+	static const char* CompositeIndexFieldName = "compositeIndex";
+	static const char* BuildingMaterialIndexFieldName = "buildingMaterialIndex";
+	static const char* ProfileIndexFieldName = "profileIndex";
 }
 
 
@@ -38,6 +41,8 @@ namespace Slab {
 	static const char* EdgeAngleTypeFieldName = "edgeAngleType";
 	static const char* EdgeAngleFieldName = "edgeAngle";
 	static const char* ReferencePlaneLocationFieldName = "referencePlaneLocation";
+	static const char* CompositeIndexFieldName = "compositeIndex";
+	static const char* BuildingMaterialIndexFieldName = "buildingMaterialIndex";
 }
 
 

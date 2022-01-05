@@ -14,17 +14,35 @@ GS::ObjectState SerializeSlabType (const API_SlabType& slab, const API_ElementMe
 {
 	GS::ObjectState os;
 
+	// The identifier of the slab
 	os.Add (ElementIdFieldName, APIGuidToString (slab.head.guid));
 
+	// The index of the slab's floor
 	os.Add (FloorIndexFieldName, slab.head.floorInd);
 
+	// The shape of the slab
 	double level = Utility::GetStoryLevel (slab.head.floorInd) + slab.level;
 	os.Add (Slab::ShapeFieldName, Objects::ElementShape (slab.poly, memo, level));
-
+	
+	// The structure type of the slab (basic or composite)
 	os.Add (Slab::StructureFieldName, structureTypeNames.Get (slab.modelElemStructureType));
 
+	// The building material index or composite index of the slab
+	switch (slab.modelElemStructureType) {
+		case API_BasicStructure:			
+			os.Add (Slab::BuildingMaterialIndexFieldName, slab.buildingMaterial);
+			break;
+		case API_CompositeStructure:
+			os.Add (Slab::CompositeIndexFieldName, slab.composite);
+			break;
+		default:
+			break;
+	}
+
+	// The thickness of the slab
 	os.Add (Slab::ThicknessFieldName, slab.thickness);
 
+	// The edge type and edge angle of the slab
 	if ((BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim) >= 1) &&
 		(*(memo.edgeTrims))[1].sideType == APIEdgeTrim_CustomAngle) {
 		double angle = (*(memo.edgeTrims))[1].sideAngle;
@@ -34,6 +52,7 @@ GS::ObjectState SerializeSlabType (const API_SlabType& slab, const API_ElementMe
 		os.Add (Slab::EdgeAngleTypeFieldName, edgeAngleTypeNames.Get (APIEdgeTrim_Perpendicular));
 	}
 
+	// The reference plane location of the slab
 	os.Add (Slab::ReferencePlaneLocationFieldName, referencePlaneLocationNames.Get (slab.referencePlaneLocation));
 
 	return os;

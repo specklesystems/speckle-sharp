@@ -42,18 +42,19 @@ static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element&
 	ACAPI_ELEMENT_MASK_SET (wallMask, API_Elem_Head, floorInd);
 	ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, bottomOffset);
 
+	// The start and end points of the wall
 	Objects::Point3D startPoint;
 	if (os.Contains (Wall::StartPointFieldName)) {
 		os.Get (Wall::StartPointFieldName, startPoint);
 		element.wall.begC = startPoint.ToAPI_Coord ();
 	}
-
 	Objects::Point3D endPoint;
 	if (os.Contains (Wall::EndPointFieldName)) {
 		os.Get (Wall::EndPointFieldName, endPoint);
 		element.wall.endC = endPoint.ToAPI_Coord ();
 	}
 
+	// The floor index and bottom offest of the wall
 	if (os.Contains (FloorIndexFieldName)) {
 		os.Get (FloorIndexFieldName, element.header.floorInd);
 		Utility::SetStoryLevel (startPoint.Z, element.header.floorInd, element.wall.bottomOffset);
@@ -61,16 +62,19 @@ static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element&
 		Utility::SetStoryLevelAndFloor (startPoint.Z, element.header.floorInd, element.wall.bottomOffset);
 	}
 
+	// The arc angle of the wall
 	if (os.Contains (Wall::ArcAngleFieldName)) {
 		os.Get (Wall::ArcAngleFieldName, element.wall.angle);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, angle);
 	}
 
+	// The height of the wall
 	if (os.Contains (Wall::HeightFieldName)) {
 		os.Get (Wall::HeightFieldName, element.wall.height);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, height);
 	}
 
+	// The profile type of the wall
 	short profileType = 0;
 	if (os.Contains (Wall::WallComplexityFieldName)) {
 		GS::UniString wallComplexityName;
@@ -83,6 +87,7 @@ static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element&
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, profileType);
 	}
 
+	// The structure of the wall
 	if (os.Contains (Wall::StructureFieldName)) {
 		API_ModelElemStructureType structureType = API_BasicStructure;
 		GS::UniString structureName;
@@ -108,6 +113,7 @@ static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element&
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, modelElemStructureType);
 	}
 
+	// The geometry method of the wall
 	if (os.Contains (Wall::GeometryMethodFieldName)) {
 		GS::UniString wallGeometryName;
 		os.Get (Wall::GeometryMethodFieldName, wallGeometryName);
@@ -124,26 +130,52 @@ static GSErrCode GetWallFromObjectState (const GS::ObjectState& os, API_Element&
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, type);
 	}
 
+	// The building material index of the wall
+	if (os.Contains (Wall::BuildingMaterialIndexFieldName) &&
+		element.wall.modelElemStructureType == API_BasicStructure) {
+		os.Get (Wall::BuildingMaterialIndexFieldName, element.wall.buildingMaterial);
+		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, buildingMaterial);
+	}
+
+	// The composite index of the wall
+	if (os.Contains (Wall::CompositeIndexFieldName) &&
+		element.wall.modelElemStructureType == API_CompositeStructure) {
+		os.Get (Wall::CompositeIndexFieldName, element.wall.composite);
+		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, composite);
+	}
+
+	// The profile index of the wall
+	if (os.Contains (Wall::ProfileIndexFieldName) &&
+		element.wall.modelElemStructureType == API_ProfileStructure) {
+		os.Get (Wall::ProfileIndexFieldName, element.wall.profileAttr);
+		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, profileAttr);
+	}
+
+	// The thickness of the wall
 	if (os.Contains (Wall::ThicknessFieldName)) {
 		os.Get (Wall::ThicknessFieldName, element.wall.thickness);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, thickness);
 	}
 
+	// The first thickness of the trapezoid wall
 	if (os.Contains (Wall::FirstThicknessFieldName)) {
 		os.Get (Wall::FirstThicknessFieldName, element.wall.thickness);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, thickness);
 	}
 
+	// The second thickness of the trapezoid wall
 	if (os.Contains (Wall::SecondThicknessFieldName)) {
 		os.Get (Wall::SecondThicknessFieldName, element.wall.thickness1);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, thickness1);
 	}
 
+	// The outside slant angle of the wall
 	if (os.Contains (Wall::OutsideSlantAngleFieldName)) {
 		os.Get (Wall::OutsideSlantAngleFieldName, element.wall.slantAlpha);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, slantAlpha);
 	}
 
+	// The inside slant angle of the wall
 	if (os.Contains (Wall::InsideSlantAngleFieldName)) {
 		os.Get (Wall::InsideSlantAngleFieldName, element.wall.slantBeta);
 		ACAPI_ELEMENT_MASK_SET (wallMask, API_WallType, slantBeta);

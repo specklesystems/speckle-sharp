@@ -16,6 +16,10 @@ namespace Objects.BuiltElements.Archicad.Model
 
 		public string referencePlaneLocation { get; set; }
 
+		public int? compositeIndex { get; set; }
+
+		public int? buildingMaterialIndex { get; set; }
+
 		#endregion
 	}
 }

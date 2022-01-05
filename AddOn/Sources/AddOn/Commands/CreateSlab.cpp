@@ -97,6 +97,20 @@ static GSErrCode GetSlabFromObjectState (const GS::ObjectState&		os,
 		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, referencePlaneLocation);
 	}
 
+	// The building material index of the slab
+	if (os.Contains (Slab::BuildingMaterialIndexFieldName) &&
+		element.slab.modelElemStructureType == API_BasicStructure) {
+		os.Get (Slab::BuildingMaterialIndexFieldName, element.slab.buildingMaterial);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, buildingMaterial);
+	}
+
+	// The composite index of the slab
+	if (os.Contains (Slab::CompositeIndexFieldName) &&
+		element.slab.modelElemStructureType == API_CompositeStructure) {
+		os.Get (Slab::CompositeIndexFieldName, element.slab.composite);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, composite);
+	}
+
 	// The edge type of the slab
 	API_EdgeTrimID edgeType = APIEdgeTrim_Perpendicular;
 	if (os.Contains (Slab::EdgeAngleTypeFieldName)) {
@@ -116,7 +130,7 @@ static GSErrCode GetSlabFromObjectState (const GS::ObjectState&		os,
 		edgeAngle = angle;
 	}
 
-	// Setting sidematerials and edge angles
+	// Setting side materials and edge angles
 	BMhKill ((GSHandle*)&slabMemo.edgeTrims);
 	BMhKill ((GSHandle*)&slabMemo.edgeIDs);
 	BMpFree (reinterpret_cast<GSPtr> (slabMemo.sideMaterials));
