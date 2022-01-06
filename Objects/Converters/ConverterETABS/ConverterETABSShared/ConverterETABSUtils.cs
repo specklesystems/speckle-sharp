@@ -265,6 +265,7 @@ namespace Objects.Converter.ETABS
       Spandrel,
       Pier,
       Grids,
+      //Diaphragm,
       BeamLoading,
       ColumnLoading,
       BraceLoading,
