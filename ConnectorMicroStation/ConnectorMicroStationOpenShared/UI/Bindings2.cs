@@ -1,231 +1,258 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using System.IO;
-//using System.Collections.Concurrent;
-//using System.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Collections.Concurrent;
+using System.Collections;
 
-//using Speckle.Core.Api;
-//using Speckle.Core.Models;
-//using Speckle.Core.Kits;
-//using Speckle.Core.Transports;
-//using DesktopUI2;
-//using DesktopUI2.Models;
-//using DesktopUI2.ViewModels;
-//using DesktopUI2.Models.Filters;
-//using Speckle.ConnectorMicroStationOpenRoads.Entry;
-//using Speckle.ConnectorMicroStationOpenRoads.Storage;
+using Speckle.Core.Api;
+using Speckle.Core.Models;
+using Speckle.Core.Kits;
+using Speckle.Core.Transports;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Models.Filters;
+using Speckle.ConnectorMicroStationOpenRoads.Storage;
 
-//using Bentley.DgnPlatformNET;
-//using Bentley.DgnPlatformNET.Elements;
-//using Bentley.MstnPlatformNET;
-//using Bentley.DgnPlatformNET.DgnEC;
+using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.MstnPlatformNET;
+using Bentley.DgnPlatformNET.DgnEC;
 
-//#if (OPENBUILDINGS)
-//using Bentley.Building.Api;
-//#endif
+#if (OPENBUILDINGS)
+using Bentley.Building.Api;
+#endif
 
-//#if (OPENROADS || OPENRAIL)
-//using Bentley.CifNET.GeometryModel.SDK;
-//using Bentley.CifNET.LinearGeometry;
-//using Bentley.CifNET.SDK;
-//#endif
+#if (OPENROADS || OPENRAIL)
+using Bentley.CifNET.GeometryModel.SDK;
+using Bentley.CifNET.LinearGeometry;
+using Bentley.CifNET.SDK;
+#endif
 
-//using Stylet;
+using Stylet;
 
-//namespace Speckle.ConnectorMicroStationOpenRoads.UI
-//{
-//  public partial class ConnectorBindingsMicroStationOpenRoads2 : ConnectorBindings
-//  {
-//    public DgnModel Doc => Session.Instance.GetActiveDgnModel();
-//    public DgnFile File => Session.Instance.GetActiveDgnFile();
+namespace Speckle.ConnectorMicroStationOpen.UI
+{
+  public partial class ConnectorBindingsMicroStationOpen2 : ConnectorBindings
+  {
+    public DgnFile File => Session.Instance.GetActiveDgnFile();
+    public DgnModel Model => Session.Instance.GetActiveDgnModel();
+    public string ModelUnits { get; set; }
+#if (OPENROADS || OPENRAIL)
+    public GeometricModel GeomModel { get; private set; }
+    public List<string> civilElementKeys => new List<string> { "Alignment" };
+#endif
+    
+#if (OPENBUILDINGS)
+    public bool ExportGridLines { get; set; } = true;
+#else
+    public bool ExportGridLines = false;
+#endif
 
-//    public ConnectorBindingsMicroStationOpenRoads2() : base() { }
+    // Like the AutoCAD API, the Bentley APIs should only be called on the main thread.
+    // As in the AutoCAD/Civil3D connectors, we therefore creating a control in the ConnectorBindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread - thank you Claire!!
+    public System.Windows.Forms.Control Control;
+    public ConnectorBindingsMicroStationOpen2() : base()
+    {
+      Control = new System.Windows.Forms.Control();
+      Control.CreateControl();
 
-//    public override void WriteStreamsToFile(List<StreamState> streams)
-//    {
-//      StreamStateManager2.WriteStreamStateList(File, streams);
-//    }
+      ModelUnits = Model.GetModelInfo().GetMasterUnit().GetName(true, true);
 
-//    public override List<StreamState> GetStreamsInFile()
-//    {
-//      var streams = new List<StreamState>();
-//      if (File != null)
-//      {
-//        var schema = StreamStateManager2.StreamStateListSchema.GetSchema();
-//        streams = StreamStateManager2.ReadState(schema);
-//      }
+#if (OPENROADS || OPENRAIL)
+      ConsensusConnection sdkCon = Bentley.CifNET.SDK.Edit.ConsensusConnectionEdit.GetActive();
+      GeomModel = sdkCon.GetActiveGeometricModel();
+#endif
+    }
 
-//      return streams;
-//    }
+    #region local streams
+    public override void WriteStreamsToFile(List<StreamState> streams)
+    {
+      StreamStateManager2.WriteStreamStateList(File, streams);
+    }
 
-//    public override string GetHostAppName() => Utils.BentleyAppName;
+    public override List<StreamState> GetStreamsInFile()
+    {
+      var streams = new List<StreamState>();
+      if (File != null)
+        streams = StreamStateManager2.ReadState(File);
+      return streams;
+    }
+    #endregion
 
-//    public override string GetDocumentId()
-//    {
-//      string path = GetDocumentLocation();
-//      return Core.Models.Utilities.hashString(path + File.GetFileName(), Speckle.Core.Models.Utilities.HashingFuctions.MD5);
-//    }
+    #region boilerplate
+    public override string GetHostAppName() => Utils.BentleyAppName;
 
-//    public override string GetDocumentLocation()
-//    {
-//      return Path.GetDirectoryName(File.GetFileName());
-//    }
+    public override string GetDocumentId()
+    {
+      string path = GetDocumentLocation();
+      return Core.Models.Utilities.hashString(path + File.GetFileName(), Speckle.Core.Models.Utilities.HashingFuctions.MD5);
+    }
 
-//    public override string GetFileName()
-//    {
-//      return Path.GetFileName(File.GetFileName());
-//    }
+    public override string GetDocumentLocation() => Path.GetDirectoryName(File.GetFileName());
 
-//    public override string GetActiveViewName() => "Entire Document";
+    public override string GetFileName() => Path.GetFileName(File.GetFileName());
 
-//    public override List<string> GetObjectsInView()
-//    {
-//      if (Doc == null)
-//      {
-//        return new List<string>();
-//      }
+    public override string GetActiveViewName() => "Entire Document";
 
-//      var graphicElements = Doc.GetGraphicElements();
+    public override List<string> GetObjectsInView()
+    {
+      if (Model == null)
+        return new List<string>();
 
-//      var objs = new List<string>();
-//      using (var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator())
-//      {
-//        objs = graphicElements.Where(el => !el.IsInvisible).Select(el => el.ElementId.ToString()).ToList(); // Note: this returns all graphic objects in the model.
-//      }
+      var graphicElements = Model.GetGraphicElements();
 
-//      return objs;
-//    }
+      var objs = new List<string>();
+      using (var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator())
+      {
+        objs = graphicElements.Where(el => !el.IsInvisible).Select(el => el.ElementId.ToString()).ToList(); // Note: this returns all graphic objects in the model.
+      }
 
-//    public override List<string> GetSelectedObjects()
-//    {
-//      var objs = new List<string>();
+      return objs;
+    }
 
-//      if (Doc == null)
-//      {
-//        return objs;
-//      }
+    public override List<string> GetSelectedObjects()
+    {
+      var objs = new List<string>();
 
-//      uint numSelected = SelectionSetManager.NumSelected();
-//      DgnModelRef modelRef = Session.Instance.GetActiveDgnModelRef();
+      if (Model == null)
+      {
+        return objs;
+      }
 
-//      for (uint i = 0; i < numSelected; i++)
-//      {
-//        Element el = null;
-//        SelectionSetManager.GetElement(i, ref el, ref modelRef);
-//        objs.Add(el.ElementId.ToString());
-//      }
+      uint numSelected = SelectionSetManager.NumSelected();
+      DgnModelRef modelRef = Session.Instance.GetActiveDgnModelRef();
 
-//      return objs;
-//    }
+      for (uint i = 0; i < numSelected; i++)
+      {
+        Bentley.DgnPlatformNET.Elements.Element el = null;
+        SelectionSetManager.GetElement(i, ref el, ref modelRef);
+        objs.Add(el.ElementId.ToString());
+      }
 
-//    public override List<ISelectionFilter> GetSelectionFilters()
-//    {
-//      //Element Type, Element Class, Element Template, Material, Level, Color, Line Style, Line Weight
-//      var levels = new List<string>();
+      return objs;
+    }
 
-//      FileLevelCache levelCache = Doc.GetFileLevelCache();
-//      foreach (var level in levelCache.GetHandles())
-//      {
-//        levels.Add(level.Name);
-//      }
-//      levels.Sort();
+    public override List<ISelectionFilter> GetSelectionFilters()
+    {
+      //Element Type, Element Class, Element Template, Material, Level, Color, Line Style, Line Weight
+      var levels = new List<string>();
 
-//      var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
+      FileLevelCache levelCache = Model.GetFileLevelCache();
+      foreach (var level in levelCache.GetHandles())
+      {
+        levels.Add(level.Name);
+      }
+      levels.Sort();
 
-//      var filterList = new List<ISelectionFilter>();
-//      filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
-//      filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
+      var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
 
-//#if (OPENROADS || OPENRAIL)
-//      var civilElementTypes = new List<string> { "Alignment" };
-//      filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
-//#endif
+      var filterList = new List<ISelectionFilter>();
+      filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
+      filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
 
-//      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
-//      filterList.Add(new ManualSelectionFilter());
+#if (OPENROADS || OPENRAIL)
+      var civilElementTypes = new List<string> { "Alignment" };
+      filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
+#endif
 
-//      return filterList;
-//    }
+      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
 
-//    //TODO
-//    public override List<MenuItem> GetCustomStreamMenuItems()
-//    {
-//      return new List<MenuItem>();
-//    }
+      return filterList;
+    }
 
-//    public override void SelectClientObjects(string args)
-//    {
-//      throw new NotImplementedException();
-//    }
+    //TODO
+    public override List<MenuItem> GetCustomStreamMenuItems()
+    {
+      return new List<MenuItem>();
+    }
+
+    public override void SelectClientObjects(string args)
+    {
+      throw new NotImplementedException();
+    }
+    #endregion
+
+    #region receiving
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    {
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Utils.BentleyAppName);
+
+      if (converter == null)
+        throw new Exception("Could not find any Kit!");
+
+      if (Control.InvokeRequired)
+        Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
+      else
+        converter.SetContextDocument(Session.Instance);
 
 
-//    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
-//    {
-//      throw new NotImplementedException();
-//    }
+    }
 
-//    // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-//    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
-//    {
-//      var objects = new List<Tuple<Base, string>>();
+    // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
+    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
+    {
+      var objects = new List<Tuple<Base, string>>();
 
-//      if (obj is Base @base)
-//      {
-//        if (converter.CanConvertToNative(@base))
-//        {
-//          objects.Add(new Tuple<Base, string>(@base, layer));
-//          return objects;
-//        }
-//        else
-//        {
-//          int totalMembers = @base.GetDynamicMembers().Count();
-//          foreach (var prop in @base.GetDynamicMembers())
-//          {
-//            count++;
+      if (obj is Base @base)
+      {
+        if (converter.CanConvertToNative(@base))
+        {
+          objects.Add(new Tuple<Base, string>(@base, layer));
+          return objects;
+        }
+        else
+        {
+          int totalMembers = @base.GetDynamicMembers().Count();
+          foreach (var prop in @base.GetDynamicMembers())
+          {
+            count++;
 
-//            // get bake layer name
-//            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-//            string acLayerName = $"{layer}${objLayerName}";
+            // get bake layer name
+            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
+            string acLayerName = $"{layer}${objLayerName}";
 
-//            var nestedObjects = FlattenCommitObject(@base[prop], converter, acLayerName, state, ref count, foundConvertibleMember);
-//            if (nestedObjects.Count > 0)
-//            {
-//              objects.AddRange(nestedObjects);
-//              foundConvertibleMember = true;
-//            }
-//          }
-//          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-//            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
-//          return objects;
-//        }
-//      }
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, acLayerName, state, ref count, foundConvertibleMember);
+            if (nestedObjects.Count > 0)
+            {
+              objects.AddRange(nestedObjects);
+              foundConvertibleMember = true;
+            }
+          }
+          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
+            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
+          return objects;
+        }
+      }
 
-//      if (obj is List<object> list)
-//      {
-//        count = 0;
-//        foreach (var listObj in list)
-//          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
-//        return objects;
-//      }
+      if (obj is List<object> list)
+      {
+        count = 0;
+        foreach (var listObj in list)
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
+        return objects;
+      }
 
-//      if (obj is IDictionary dict)
-//      {
-//        count = 0;
-//        foreach (DictionaryEntry kvp in dict)
-//          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
-//        return objects;
-//      }
+      if (obj is IDictionary dict)
+      {
+        count = 0;
+        foreach (DictionaryEntry kvp in dict)
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
+        return objects;
+      }
 
-//      return objects;
-//    }
+      return objects;
+    }
+    #endregion
 
-//    public override async Task SendStream(StreamState state, ProgressViewModel progress)
-//    {
-//      throw new NotImplementedException();
-//    }
+    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
 
-//  }
-//}
+  }
+}

@@ -23,24 +23,25 @@ namespace Speckle.ConnectorMicroStationOpenRoads.Storage
     static readonly string propertyName = "StreamData";
 
     /// <summary>
-    /// Returns all the speckle stream states present in the custom schema (schema is attached to file).
+    /// Returns all the speckle stream states present in the file.
     /// </summary>
     /// <param name="schema"></param>
     /// <returns></returns>
-    public static List<StreamState> ReadState(ECSchema schema)
+    public static List<StreamState> ReadState(DgnFile file)
     {
-      DgnFile File = Session.Instance.GetActiveDgnFile();
-      DgnECManager Manager = DgnECManager.Manager;
-
+      var states = new List<StreamState>();
       try
       {
+        FindInstancesScope scope = FindInstancesScope.CreateScope(file, new FindInstancesScopeOption(DgnECHostType.All));
+        var schema = (ECSchema)DgnECManager.Manager.LocateSchemaInScope(scope, schemaName, 1, 0, SchemaMatchType.Latest);
+
+        if (schema == null)
+          return states;
+
         ECQuery readWidget = new ECQuery(schema.GetClass(className));
         readWidget.SelectClause.SelectAllProperties = true;
-
-        FindInstancesScope scope = FindInstancesScope.CreateScope(File, new FindInstancesScopeOption(DgnECHostType.All));
-
-        var states = new List<StreamState>();
-        using (DgnECInstanceCollection ecInstances = Manager.FindInstances(scope, readWidget))
+        
+        using (DgnECInstanceCollection ecInstances = DgnECManager.Manager.FindInstances(scope, readWidget))
         {
           var streamStatesInstance = ecInstances.First();
           if (streamStatesInstance != null)
