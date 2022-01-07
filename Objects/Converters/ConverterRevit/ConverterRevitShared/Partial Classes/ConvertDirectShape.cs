@@ -141,6 +141,7 @@ namespace Objects.Converter.Revit
     {
       var mesh = new Mesh();
       (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid> { solid });
+      mesh.units = ModelUnits;
       return mesh;
     }
 
