@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
@@ -15,6 +16,7 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Attributes;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
@@ -29,24 +31,24 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveComponent : SelectKitAsyncComponentBase
+  public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
   {
-    public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
+    public VariableInputReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      BaseWorker = new ReceiveComponentWorker(this);
-      Attributes = new ReceiveComponentAttributes(this);
+      BaseWorker = new VariableInputReceiveComponentWorker(this);
+      Attributes = new VariableInputReceiveComponentAttributes(this);
     }
 
-    public GH_Structure<IGH_Goo> PrevReceivedData;
+    public Dictionary<string, GH_Structure<IGH_Goo>> PrevReceivedData;
     public Client ApiClient { get; set; }
 
     public bool AutoReceive { get; set; }
     
     public bool ReceiveOnOpen { get; set; }
 
-    public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
-    public override bool Obsolete => true;
+    public override Guid ComponentGuid => new Guid("06A3E53B-2BFF-4EBD-BBCE-71B9CE36283E");
+
     public string CurrentComponentState { get; set; } = "needs_input";
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
@@ -170,8 +172,8 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
+      pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -268,7 +270,15 @@ namespace ConnectorGrasshopper.Ops
         Message = "Expired";
         if (PrevReceivedData != null)
         {
-          DA.SetDataTree(0, PrevReceivedData);
+          foreach (var key in PrevReceivedData.Keys)
+          {
+            var index = Params.Output.FindIndex(p => p.Name == key || p.NickName == key);
+            var outTree = PrevReceivedData[key];
+            DA.SetDataTree(index, outTree);
+          }
+          var infoIndex = Params.Output.FindIndex(p => p.Name == "Info" || p.NickName == "Info");
+          DA.SetData(infoIndex, LastInfoMessage);
+
           AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Output is based on a prior receive operation. If you are seeing this message, you most likely recomputed the Grasshopper solution (F5). To ensure you have the latest data, press the Receive button again.");
         }
         OnDisplayExpired(true);
@@ -290,7 +300,7 @@ namespace ConnectorGrasshopper.Ops
         //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
         total += kvp.Value;
       }
-      OverallProgress = total / ProgressReports.Keys.Count();
+      OverallProgress = total / ProgressReports.Keys.Count;
 
       RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
@@ -416,16 +426,49 @@ namespace ConnectorGrasshopper.Ops
 
       HandleNewCommit();
     }
+
+    public bool CanInsertParameter(GH_ParameterSide side, int index)
+    {
+      return false;
+    }
+
+    public bool CanRemoveParameter(GH_ParameterSide side, int index)
+    {
+      return false;
+    }
+
+    public IGH_Param CreateParameter(GH_ParameterSide side, int index)
+    {
+      var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Output);
+      return new Param_GenericObject
+      {
+        Name = uniqueName,
+        NickName = uniqueName,
+        MutableNickName = true,
+        Optional = false,
+        Access = GH_ParamAccess.tree
+      };
+    }
+
+    public bool DestroyParameter(GH_ParameterSide side, int index)
+    {
+      return true;
+    }
+
+    public void VariableParameterMaintenance()
+    {
+      
+    }
   }
 
-  public class ReceiveComponentWorker : WorkerInstance
+  public class VariableInputReceiveComponentWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> DataInput;
     private Action<string, Exception> ErrorAction;
 
     private Action<ConcurrentDictionary<string, int>> InternalProgressAction;
 
-    public ReceiveComponentWorker(GH_Component p) : base(p)
+    public VariableInputReceiveComponentWorker(GH_Component p) : base(p)
     {
     }
 
@@ -442,17 +485,17 @@ namespace ConnectorGrasshopper.Ops
 
     public override WorkerInstance Duplicate()
     {
-      return new ReceiveComponentWorker(Parent);
+      return new VariableInputReceiveComponentWorker(Parent);
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      InputWrapper = ((ReceiveComponent)Parent).StreamWrapper;
+      InputWrapper = ((VariableInputReceiveComponent)Parent).StreamWrapper;
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      var receiveComponent = ((ReceiveComponent)Parent);
+      var receiveComponent = ((VariableInputReceiveComponent)Parent);
       try
       {
         Tracker.TrackPageview("receive", receiveComponent.AutoReceive ? "auto" : "manual");
@@ -512,6 +555,7 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
+          ((VariableInputReceiveComponent)Parent).PrevReceivedData = null;
           var myCommit = await GetCommit(InputWrapper, client, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
@@ -561,7 +605,8 @@ namespace ConnectorGrasshopper.Ops
           {
             return;
           }
-
+          if(ReceivedObject != null)
+            AutoCreateOutputs(ReceivedObject);
           Done();
         });
         t.Wait();
@@ -643,7 +688,7 @@ namespace ConnectorGrasshopper.Ops
         Parent.AddRuntimeMessage(level, message);
       }
 
-      var parent = ((ReceiveComponent)Parent);
+      var parent = ((VariableInputReceiveComponent)Parent);
 
       parent.CurrentComponentState = "up_to_date";
 
@@ -656,31 +701,108 @@ namespace ConnectorGrasshopper.Ops
       }
 
       parent.JustPastedIn = false;
-
-      DA.SetData(1, parent.LastInfoMessage);
+      
+      // Info message is always the last output.
+      var infoIndex = Parent.Params.Output.FindIndex(p => p.Name == "Info");
+      DA.SetData(infoIndex, parent.LastInfoMessage);
 
       if (ReceivedObject == null)
       {
         return;
       }
-
+      
+      
       //the active document may have changed
       var converter = parent.Converter;
-
       converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-
-      var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
-      var receiveComponent = (ReceiveComponent)this.Parent;
-      receiveComponent.PrevReceivedData = tree;
-      DA.SetDataTree(0, tree);
+      parent.PrevReceivedData = new Dictionary<string, GH_Structure<IGH_Goo>>();  
+      GetOutputList(ReceivedObject).ForEach(name =>
+      {
+        var prop = ReceivedObject[name];
+        var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null};
+        var data = treeBuilder.Build(prop);
+        var param = Parent.Params.Output.FindIndex(p => p.NickName == name);
+        DA.SetDataTree(param, data);
+        parent.PrevReceivedData.Add(name,data);
+      });
     }
+        
+    private List<string> GetOutputList(Base b)
+    {
+      // Get the full list of output parameters
+      var fullProps = new List<string>();
+      b?.GetMemberNames().ToList().ForEach(prop =>
+      {
+        if (!fullProps.Contains(prop))
+          fullProps.Add(prop);
+      });
+      fullProps.Sort();
+      return fullProps;
+    }
+    
+    public List<string> outputList = new List<string>();
+
+    private bool OutputMismatch() =>
+      outputList.Count != Parent.Params.Output.Count
+      || outputList.Where((t, i) => Parent.Params.Output[i].NickName != t).Any();
+
+    private bool HasSingleRename()
+    {
+      var equalLength = outputList.Count == Parent.Params.Output.Count;
+      if (!equalLength) return false;
+      var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.NickName));
+      return diffParams.Count() == 1;
+    }
+    private void AutoCreateOutputs(Base @base)
+    {
+      outputList = GetOutputList(@base);
+      outputList.Insert(0,"Info");
+      if (!OutputMismatch()) 
+        return;
+      
+      Parent.RecordUndoEvent("Creating Outputs");
+      
+      // Check what params must be deleted, and do so when safe.
+      var remove = Parent.Params.Output.Select((p, i) =>
+      {
+        var res = outputList.Find(o => o == p.Name);
+        return res == null ? i : -1;
+      }).ToList();
+      remove.Reverse();
+      remove.ForEach(b =>
+      {
+        if (b != -1 && Parent.Params.Output[b].Recipients.Count == 0)
+          Parent.Params.UnregisterOutputParameter(Parent.Params.Output[b]);
+      });
+      
+      outputList.ForEach(s =>
+      {
+        var param = Parent.Params.Output.Find(p => p.Name == s);
+        if (param == null)
+        {
+          var newParam = ((IGH_VariableParameterComponent) Parent).CreateParameter(GH_ParameterSide.Output, Parent.Params.Output.Count);
+          newParam.Name = s;
+          newParam.NickName = s;
+          newParam.Description = $"Data from property: {s}";
+          newParam.MutableNickName = false;
+          newParam.Access = GH_ParamAccess.tree;
+          Parent.Params.RegisterOutputParam(newParam,Parent.Params.Output.Count);
+        }
+      });
+      // var paramNames = Parent.Params.Output.Select(p => p.Name).ToList();
+      // var sortOrder = Parent.Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();
+      // Parent.Params.SortOutput(sortOrder);
+      Parent.Params.OnParametersChanged();
+      ((IGH_VariableParameterComponent) Parent).VariableParameterMaintenance();
+    }
+
   }
 
-  public class ReceiveComponentAttributes : GH_ComponentAttributes
+  public class VariableInputReceiveComponentAttributes : GH_ComponentAttributes
   {
     private bool _selected;
 
-    public ReceiveComponentAttributes(GH_Component owner) : base(owner)
+    public VariableInputReceiveComponentAttributes(GH_Component owner) : base(owner)
     {
     }
 
@@ -691,7 +813,7 @@ namespace ConnectorGrasshopper.Ops
       get => _selected;
       set
       {
-        Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
+        //Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
         _selected = value;
       }
     }
@@ -716,11 +838,11 @@ namespace ConnectorGrasshopper.Ops
     {
       base.Render(canvas, graphics, channel);
 
-      var state = ((ReceiveComponent)Owner).CurrentComponentState;
+      var state = ((VariableInputReceiveComponent)Owner).CurrentComponentState;
 
       if (channel == GH_CanvasChannel.Objects)
       {
-        if (((ReceiveComponent)Owner).AutoReceive)
+        if (((VariableInputReceiveComponent)Owner).AutoReceive)
         {
           var autoSendButton =
             GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Receive", 2, 0);
@@ -755,21 +877,21 @@ namespace ConnectorGrasshopper.Ops
         return base.RespondToMouseDown(sender, e);
       }
 
-      if (((ReceiveComponent)Owner).CurrentComponentState == "receiving")
+      if (((VariableInputReceiveComponent)Owner).CurrentComponentState == "receiving")
       {
         return GH_ObjectResponse.Handled;
       }
 
-      if (((ReceiveComponent)Owner).AutoReceive)
+      if (((VariableInputReceiveComponent)Owner).AutoReceive)
       {
-        ((ReceiveComponent)Owner).AutoReceive = false;
+        ((VariableInputReceiveComponent)Owner).AutoReceive = false;
         Owner.OnDisplayExpired(true);
         return GH_ObjectResponse.Handled;
       }
 
       // TODO: check if owner has null account/client, and call the reset thing SYNC 
 
-      ((ReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
+      ((VariableInputReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
       Owner.ExpireSolution(true);
       return GH_ObjectResponse.Handled;
     }
