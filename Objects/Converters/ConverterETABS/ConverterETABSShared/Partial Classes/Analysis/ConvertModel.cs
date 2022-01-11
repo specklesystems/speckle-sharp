@@ -61,6 +61,9 @@ namespace Objects.Converter.ETABS
           {
             Property2DToNative((ETABSProperty2D)property);
           }
+          else if (property is ETABSDiaphragm){
+            diaphragmToNative((ETABSDiaphragm)property);
+          }
           else if (property is Property1D)
           {
             Property1DToNative((Property1D)property);
@@ -215,6 +218,15 @@ namespace Objects.Converter.ETABS
       {
         var specklePropertyTendon = TendonPropToSpeckle(propertyTendon);
         model.properties.Add(specklePropertyTendon);
+      }
+
+      string[] DiaphragmProperties = { };
+      Model.Diaphragm.GetNameList(ref number, ref DiaphragmProperties);
+      DiaphragmProperties.ToList();
+      foreach (string propertyDiaphragm in DiaphragmProperties)
+      {
+        var specklePropertyDiaphragm =diaphragmToSpeckle(propertyDiaphragm);
+        model.properties.Add(specklePropertyDiaphragm);
       }
 
       string[] properties2D = { };

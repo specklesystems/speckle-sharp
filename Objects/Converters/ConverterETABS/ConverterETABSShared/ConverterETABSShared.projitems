@@ -41,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelUnits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertDiaphragm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertLinkProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertSpring.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertTendonProperty.cs" />

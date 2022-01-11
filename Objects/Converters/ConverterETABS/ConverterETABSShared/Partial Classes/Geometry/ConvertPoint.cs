@@ -34,14 +34,29 @@ namespace Objects.Converter.ETABS
       {
         Model.PointObj.ChangeName(name, speckleStructNode.name);
       }
-      else{ Model.PointObj.ChangeName(name, speckleStructNode.id); }
+      else { Model.PointObj.ChangeName(name, speckleStructNode.id); }
 
-      if(speckleStructNode is ETABSNode){
+      if (speckleStructNode is ETABSNode)
+      {
         var ETABSnode = (ETABSNode)speckleStructNode;
         if (ETABSnode.ETABSSpringProperty != null) { Model.PointObj.SetSpringAssignment(ETABSnode.name, ETABSnode.ETABSSpringProperty.name); }
+        if (ETABSnode.DiaphragmAssignment != null)
+        {
+          switch (ETABSnode.DiaphragmOption)
+          {
+            case DiaphragmOption.Disconnect:
+              Model.PointObj.SetDiaphragm(ETABSnode.name, eDiaphragmOption.Disconnect, DiaphragmName: ETABSnode.DiaphragmAssignment);
+              break;
+            case DiaphragmOption.DefinedDiaphragm:
+              Model.PointObj.SetDiaphragm(ETABSnode.name, eDiaphragmOption.DefinedDiaphragm, DiaphragmName: ETABSnode.DiaphragmAssignment);
+              break;
+            case DiaphragmOption.FromShellObject:
+              Model.PointObj.SetDiaphragm(ETABSnode.name, eDiaphragmOption.FromShellObject, DiaphragmName: ETABSnode.DiaphragmAssignment);
+              break;
+          }
+        }
+
       }
-
-
 
       return speckleStructNode.name;
     }
@@ -68,8 +83,27 @@ namespace Objects.Converter.ETABS
 
       string SpringProp = null;
       Model.PointObj.GetSpringAssignment(name, ref SpringProp);
-      if(SpringProp != null) { speckleStructNode.ETABSSpringProperty = SpringPropertyToSpeckle(SpringProp); }
+      if (SpringProp != null) { speckleStructNode.ETABSSpringProperty = SpringPropertyToSpeckle(SpringProp); }
 
+      string diaphragmAssignment = null;
+      eDiaphragmOption eDiaphragmOption = eDiaphragmOption.Disconnect;
+      Model.PointObj.GetDiaphragm(name, ref eDiaphragmOption, ref diaphragmAssignment);
+      if (diaphragmAssignment != null)
+      {
+        speckleStructNode.DiaphragmAssignment = diaphragmAssignment;
+        switch (eDiaphragmOption)
+        {
+          case eDiaphragmOption.Disconnect:
+            speckleStructNode.DiaphragmOption = DiaphragmOption.Disconnect;
+            break;
+          case eDiaphragmOption.FromShellObject:
+            speckleStructNode.DiaphragmOption = DiaphragmOption.FromShellObject;
+            break;
+          case eDiaphragmOption.DefinedDiaphragm:
+            speckleStructNode.DiaphragmOption = DiaphragmOption.DefinedDiaphragm;
+            break;
+        }
+      }
 
       var GUID = "";
       Model.PointObj.GetGUID(name, ref GUID);
