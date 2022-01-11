@@ -63,6 +63,7 @@
     <Compile Include="Conversion\ToSpeckleTaskCapableComponent.cs" />
     <Compile Include="Extras\DebounceDispatcher.cs" />
     <Compile Include="Extras\GenericAccessParam.cs" />
+    <Compile Include="Extras\SendReceiveDataParam.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Extras\SpeckleBaseParam.cs" />
     <Compile Include="Extras\SpeckleStateTag.cs" />
