@@ -173,7 +173,13 @@ namespace ConnectorGrasshopper.Ops
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
-      pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
+      pManager.AddParameter(new SendReceiveDataParam
+      {
+        Name = "Data", 
+        NickName ="D", 
+        Description = "The received data.",
+        Detachable = false
+      });
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -272,7 +278,11 @@ namespace ConnectorGrasshopper.Ops
         {
           foreach (var key in PrevReceivedData.Keys)
           {
-            var index = Params.Output.FindIndex(p => p.Name == key || p.NickName == key);
+            var index = Params.Output.FindIndex(p => p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1));
+            if (key.StartsWith("@"))
+            {
+              // Property is detached, flag parameter accordingly.
+            }
             var outTree = PrevReceivedData[key];
             DA.SetDataTree(index, outTree);
           }
@@ -440,13 +450,12 @@ namespace ConnectorGrasshopper.Ops
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Output);
-      return new Param_GenericObject
+      return new SendReceiveDataParam
       {
         Name = uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
-        Optional = false,
-        Access = GH_ParamAccess.tree
+        Optional = false
       };
     }
 
@@ -515,7 +524,7 @@ namespace ConnectorGrasshopper.Ops
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
           var msg = exception.Message.Contains("401")
             ? "You don't have access to this stream/transport , or it doesn't exist."
-            : exception.Message;
+            : exception.InnerException != null ? exception.InnerException.Message : exception.Message;
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
@@ -721,7 +730,12 @@ namespace ConnectorGrasshopper.Ops
         var prop = ReceivedObject[name];
         var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null};
         var data = treeBuilder.Build(prop);
-        var param = Parent.Params.Output.FindIndex(p => p.NickName == name);
+        var param = Parent.Params.Output.FindIndex(p => p.NickName == name || p.NickName == name.Substring(1));
+        var ighP = Parent.Params.Output[param];
+        if (ighP is SendReceiveDataParam srParam)
+        {
+          srParam.Detachable = name.StartsWith("@");
+        }
         DA.SetDataTree(param, data);
         parent.PrevReceivedData.Add(name,data);
       });
@@ -765,7 +779,7 @@ namespace ConnectorGrasshopper.Ops
       // Check what params must be deleted, and do so when safe.
       var remove = Parent.Params.Output.Select((p, i) =>
       {
-        var res = outputList.Find(o => o == p.Name);
+        var res = outputList.Find(o => o == p.Name || p.Name == o.Substring(1));
         return res == null ? i : -1;
       }).ToList();
       remove.Reverse();
@@ -777,21 +791,34 @@ namespace ConnectorGrasshopper.Ops
       
       outputList.ForEach(s =>
       {
-        var param = Parent.Params.Output.Find(p => p.Name == s);
+        var isDetached = s.StartsWith("@");
+        var name = isDetached ? s.Substring(1) : s;
+        var param = Parent.Params.Output.Find(p => p.Name == name);
         if (param == null)
         {
-          var newParam = ((IGH_VariableParameterComponent) Parent).CreateParameter(GH_ParameterSide.Output, Parent.Params.Output.Count);
-          newParam.Name = s;
-          newParam.NickName = s;
-          newParam.Description = $"Data from property: {s}";
+          var newParam = ((IGH_VariableParameterComponent) Parent).CreateParameter(GH_ParameterSide.Output, Parent.Params.Output.Count) as SendReceiveDataParam;
+          newParam.Name = name;
+          newParam.NickName = name;
+          newParam.Description = $"Data from property: {name}";
           newParam.MutableNickName = false;
           newParam.Access = GH_ParamAccess.tree;
+          newParam.Detachable = isDetached;
           Parent.Params.RegisterOutputParam(newParam,Parent.Params.Output.Count);
         }
+        if (param is SendReceiveDataParam srParam)
+        {
+          srParam.Detachable = isDetached;
+        }
       });
-      // var paramNames = Parent.Params.Output.Select(p => p.Name).ToList();
-      // var sortOrder = Parent.Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();
-      // Parent.Params.SortOutput(sortOrder);
+
+
+      var paramNames = Parent.Params.Output.Select(p => p.Name).ToList();
+      paramNames.Sort();
+      var sortOrder = Parent.Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();
+      Parent.Params.SortOutput(sortOrder);
+      var infoParam = Parent.Params.Output.Find(p => p.Name == "Info");
+      Parent.Params.Output.Remove(infoParam);
+      Parent.Params.Output.Insert(0,infoParam);
       Parent.Params.OnParametersChanged();
       ((IGH_VariableParameterComponent) Parent).VariableParameterMaintenance();
     }

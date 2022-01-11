@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
@@ -105,8 +106,12 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.",
         GH_ParamAccess.tree, "");
-      pManager.AddGenericParameter("Data", "D", "The data to send.",
-        GH_ParamAccess.tree);
+      pManager.AddParameter(new SendReceiveDataParam
+      {
+        Name = "Data", 
+        NickName ="D", 
+        Description = "The data to send."
+      });
       Params.Input[1].Optional = true;
     }
 
@@ -237,13 +242,12 @@ namespace ConnectorGrasshopper.Ops
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
       
-      return new Param_GenericObject
+      return new SendReceiveDataParam
       {
         Name = "Data" + uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
-        Optional = false,
-        Access = GH_ParamAccess.tree
+        Optional = false
       };
     }
 
@@ -340,7 +344,14 @@ namespace ConnectorGrasshopper.Ops
             {
               ReportProgress("Conversion",Math.Round(convertedCount++ / (double) d.Value.DataCount / DataInputs.Count, 2));
             });
-            ObjectToSend[d.Key] = converted;
+            var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
+            var key = d.Key;
+            if (param is SendReceiveDataParam srParam)
+            {
+              if (srParam.Detachable && !key.StartsWith("@")) 
+                key = "@" + key;
+            }
+            ObjectToSend[key] = converted;
             TotalObjectCount += ObjectToSend.GetTotalChildrenCount();
           }
           catch (Exception e)
