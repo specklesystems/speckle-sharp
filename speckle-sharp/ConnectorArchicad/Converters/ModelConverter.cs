@@ -14,7 +14,7 @@ namespace Archicad.Operations
 		public static Base Convert (Model.MeshModel meshModel)
 		{
 			Base result = new Base ();
-			result["Polygons"] = meshModel.polygons.Select (p => CreateMeshFromPolygon (meshModel.vertecies, p, meshModel.materials[p.material])).ToList ();
+			result["Polygons"] = meshModel.polygons.Select (p => CreateMeshFromPolygon (meshModel.vertices, p, meshModel.materials[p.material])).ToList ();
 
 			return result;
 		}
@@ -23,7 +23,7 @@ namespace Archicad.Operations
 		{
 			return new Model.MeshModel
 			{
-				vertecies = mesh.GetPoints ().Select (p => new Model.MeshModel.Vertex { x = p.x, y = p.y, z = p.z }).ToList (),
+				vertices = mesh.GetPoints ().Select (p => new Model.MeshModel.Vertex { x = p.x, y = p.y, z = p.z }).ToList (),
 				polygons = ConvertPolygon (mesh.faces)
 			};
 		}
@@ -34,11 +34,11 @@ namespace Archicad.Operations
 
 			foreach (Mesh mesh in meshes)
 			{
-				int vertexOffset = meshModel.vertecies.Count;
+				int vertexOffset = meshModel.vertices.Count;
 				List<Model.MeshModel.Polygon> polygons = ConvertPolygon (mesh.faces);
 				polygons.ForEach (p => p.pointIds = p.pointIds.Select (l => l + vertexOffset).ToList ());
 
-				meshModel.vertecies.AddRange (mesh.GetPoints ().Select (p => new Model.MeshModel.Vertex { x = p.x, y = p.y, z = p.z }));
+				meshModel.vertices.AddRange (mesh.GetPoints ().Select (p => new Model.MeshModel.Vertex { x = p.x, y = p.y, z = p.z }));
 				meshModel.polygons.AddRange (polygons);
 			}
 

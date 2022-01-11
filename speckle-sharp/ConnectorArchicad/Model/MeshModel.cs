@@ -62,7 +62,7 @@ namespace Archicad.Model
 
 		public List<Polygon> polygons { get; set; } = new List<Polygon> ();
 
-		public List<Vertex> vertecies { get; set; } = new List<Vertex> ();
+		public List<Vertex> vertices { get; set; } = new List<Vertex> ();
 
 		public List<Material> materials { get; set; } = new List<Material> ();
 
