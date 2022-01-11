@@ -21,6 +21,8 @@ using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.MstnPlatformNET;
 using Bentley.DgnPlatformNET.DgnEC;
+using Speckle.ConnectorMicroStationOpen.Entry;
+using Speckle.ConnectorMicroStationOpen.Storage;
 
 #if (OPENBUILDINGS)
 using Bentley.Building.Api;
@@ -41,6 +43,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public DgnFile File => Session.Instance.GetActiveDgnFile();
     public DgnModel Model => Session.Instance.GetActiveDgnModel();
     public string ModelUnits { get; set; }
+    public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
 #if (OPENROADS || OPENRAIL)
     public GeometricModel GeomModel { get; private set; }
     public List<string> civilElementKeys => new List<string> { "Alignment" };
@@ -55,6 +58,10 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     // Like the AutoCAD API, the Bentley APIs should only be called on the main thread.
     // As in the AutoCAD/Civil3D connectors, we therefore creating a control in the ConnectorBindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread - thank you Claire!!
     public System.Windows.Forms.Control Control;
+    delegate void SetContextDelegate(object session);
+    delegate List<string> GetObjectsFromFilterDelegate(ISelectionFilter filter, ISpeckleConverter converter);
+    delegate Base SpeckleConversionDelegate(object commitObject);
+
     public ConnectorBindingsMicroStationOpen2() : base()
     {
       Control = new System.Windows.Forms.Control();
@@ -150,6 +157,11 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
       var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
 
+      return new List<ISelectionFilter>()
+      {
+
+      };
+
       var filterList = new List<ISelectionFilter>();
       filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
       filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
@@ -181,6 +193,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var transport = new ServerTransport(state.Client.Account, state.StreamId);
+      var stream = await state.Client.StreamGet(state.StreamId);
+      var previouslyReceivedObjects = state.ReceivedObjects;
 
       if (converter == null)
         throw new Exception("Could not find any Kit!");
@@ -190,69 +205,237 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       else
         converter.SetContextDocument(Session.Instance);
 
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
 
+      /*
+      if (Doc == null)
+      {
+        progress.Report.LogOperationError(new Exception($"No Document is open."));
+        progress.CancellationTokenSource.Cancel();
+      }
+      */
+
+      //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      Commit commit = null;
+      if (state.CommitId == "latest")
+      {
+        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+        commit = res.commits.items.FirstOrDefault();
+      }
+      else
+      {
+        commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+      }
+      string referencedObject = commit.referencedObject;
+
+      var commitObject = await Operations.Receive(
+        referencedObject,
+        progress.CancellationTokenSource.Token,
+        transport,
+        onProgressAction: dict => progress.Update(dict),
+        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
+        onErrorAction: (message, exception) =>
+        {
+          progress.Report.LogOperationError(exception);
+          progress.CancellationTokenSource.Cancel();
+        },
+        disposeTransports: true
+        );
+
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream?.id,
+          commitId = commit?.id,
+          message = commit?.message,
+          sourceApplication = Utils.BentleyAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
+      if (progress.Report.OperationErrorsCount != 0)
+        return state;
+
+      // invoke conversions on the main thread via control
+      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+      List<ApplicationPlaceholderObject> newPlaceholderObjects;
+      if (Control.InvokeRequired)
+        newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
+      else
+        newPlaceholderObjects = ConvertAndBakeReceivedObjects(flattenedObjects, converter, state, progress);
+
+      if (newPlaceholderObjects == null)
+      {
+        converter.Report.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
+        return null;
+      }
+
+      DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects);
+
+      state.ReceivedObjects = newPlaceholderObjects;
+
+      progress.Report.Merge(converter.Report);
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return null; // the commit is being rolled back
+
+      try
+      {
+        //await state.RefreshStream();
+        WriteStateToFile();
+      }
+      catch (Exception e)
+      {
+        progress.Report.OperationErrors.Add(e);
+      }
+
+      return state;
     }
 
-    // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
+    delegate List<ApplicationPlaceholderObject> NativeConversionAndBakeDelegate(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress);
+    private List<ApplicationPlaceholderObject> ConvertAndBakeReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
-      var objects = new List<Tuple<Base, string>>();
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+      Action updateProgressAction = () =>
+      {
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
+      };
+
+      foreach (var @base in objects)
+      {
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          placeholders = null;
+          break;
+        }
+
+        try
+        {
+          var convRes = converter.ConvertToNative(@base);
+
+          if (convRes is ApplicationPlaceholderObject placeholder)
+            placeholders.Add(placeholder);
+          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+            placeholders.AddRange(placeholderList);
+
+          // creating new elements, not updating existing!
+          var convertedElement = convRes as Element;
+          if (convertedElement != null)
+          {
+            var status = convertedElement.AddToModel();
+            if (status == StatusInt.Error)
+              converter.Report.LogConversionError(new Exception($"Failed to bake object {@base.id} of type {@base.speckle_type}."));
+          }
+          else
+          {
+            converter.Report.LogConversionError(new Exception($"Failed to convert object {@base.id} of type {@base.speckle_type}."));
+          }
+        }
+        catch (Exception e)
+        {
+          converter.Report.LogConversionError(e);
+        }
+      }
+
+      return placeholders;
+    }
+
+    /// <summary>
+    /// Recurses through the commit object and flattens it. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    {
+      List<Base> objects = new List<Base>();
 
       if (obj is Base @base)
       {
         if (converter.CanConvertToNative(@base))
         {
-          objects.Add(new Tuple<Base, string>(@base, layer));
+          objects.Add(@base);
+
           return objects;
         }
         else
         {
-          int totalMembers = @base.GetDynamicMembers().Count();
           foreach (var prop in @base.GetDynamicMembers())
           {
-            count++;
-
-            // get bake layer name
-            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-            string acLayerName = $"{layer}${objLayerName}";
-
-            var nestedObjects = FlattenCommitObject(@base[prop], converter, acLayerName, state, ref count, foundConvertibleMember);
-            if (nestedObjects.Count > 0)
-            {
-              objects.AddRange(nestedObjects);
-              foundConvertibleMember = true;
-            }
+            objects.AddRange(FlattenCommitObject(@base[prop], converter));
           }
-          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
           return objects;
         }
       }
 
       if (obj is List<object> list)
       {
-        count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
+        {
+          objects.AddRange(FlattenCommitObject(listObj, converter));
+        }
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
-        count = 0;
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
+        {
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
+        }
         return objects;
       }
 
       return objects;
     }
+
+    //delete previously sent object that are no longer in this stream
+    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    {
+      foreach (var obj in previouslyReceiveObjects)
+      {
+        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+          continue;
+
+        // get the model object from id               
+        ulong id = Convert.ToUInt64(obj.ApplicationGeneratedId);
+        var element = Model.FindElementById((ElementId)id);
+        if (element != null)
+        {
+          element.DeleteFromModel();
+        }
+      }
+    }
     #endregion
 
+    #region sending
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       throw new NotImplementedException();
     }
+    #endregion
 
+    #region helper methods
+    delegate void WriteStateDelegate(List<StreamState> DocumentStreams);
+
+    /// <summary>
+    /// Transaction wrapper around writing the local streams to the file.
+    /// </summary>
+    private void WriteStateToFile()
+    {
+      if (Control.InvokeRequired)
+        Control.Invoke(new WriteStateDelegate(StreamStateManager2.WriteStreamStateList), new object[] { DocumentStreams });
+      else
+        StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
+    }
+    #endregion
   }
 }
