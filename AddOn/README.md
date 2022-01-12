@@ -4,7 +4,7 @@ This repository contains a CMake based Add-On for Archicad. You can use it to ge
 
 ## Prerequisites
 
-- [CMake](https://cmake.org) (3.16 minimum version is needed).
+- [CMake](https://cmake.org) (3.16 minimum version is needed). on windows its the most painless to install cmake with choco -> `choco install cmake --installargs 'ADD_CMAKE_TO_PATH=User'`
 - [Python](https://www.python.org) for resource compilation (version 2.7+ or 3.8+).
 
 ## Build
@@ -16,7 +16,7 @@ This repository contains a CMake based Add-On for Archicad. You can use it to ge
   - `AC_ADDON_LANGUAGE`: (optional) The language code of the Add-On (default is "INT").
   - `AC_MDID_DEV`: (optional) Your Developer ID. Ommitting this will result in a 1 value.
   - `AC_MDID_LOC`: (optional) Add-On Local ID. Ommitting this will result in a 1 value. 
-- To release your Add-On you have to provide valid MDIDs
+- Without setting the last two variables AC will only load the addon in demo mode. To release your Add-On you have to provide valid MDIDs
 
 ### Visual Studio (Windows)
 
@@ -46,9 +46,21 @@ cd ..
 - Set the "AC_API_DEVKIT_DIR" environment variable to the installed Development Kit folder.
 - Open the root folder in Visual Studio Code, configure and build the solution.
 
-## Archicad Compatibility
+## Compile and run the full addon
 
-This template is tested with all Archicad versions starting from Archicad 25.
+The connector is built up from two parts. One is the C++ AC addon project, and the other is a C# application that runs the Speckle DUI2 and the core logic.
+Both of these project have to be built before the addon can be loaded into AC.
+The first project is created by the previous cmake command.
+This is because the cmake script generates the platform dependent project configuration based on the installed AC SDK.
+The build result of the C++ project contains the AC addon files, like the `Speckle Connector.apx`.
+
+The AC C++ addon expects the C# files to be present in a relative `./ConnectorArchicad` folder.
+Build the ConnectorArchicad C# project and copy the results next to the C++ artifacts in the `./ConnectorArchicad` folder.
+
+If the files are copied into the `Addons` folder in the AC installation folder, on startup, AC will try to load the addon.
+Or the addon can be manually loaded from the AddonManager found in the Options menu in AC.
+
+The connector can be started from the File/Interoperability/Speckle menu entry.
 
 ## Use in Archicad
 
@@ -58,3 +70,6 @@ You can start Archicad in demo mode with the following command line commands:
 - Windows: `ARCHICAD.exe -DEMO`
 - MacOS: `ARCHICAD\ 25.app/Contents/MacOS/ARCHICAD -demo`
 
+## Archicad Compatibility
+
+This template is tested with all Archicad versions starting from Archicad 25.
