@@ -26,11 +26,6 @@ namespace Speckle.ConnectorMicroStationOpen.Entry
     public static ConnectorBindingsMicroStationOpen2 Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
 
-    public static void InitAvalonia()
-    {
-      BuildAvaloniaApp().Start(AppMain, null);
-    }
-
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
@@ -38,28 +33,31 @@ namespace Speckle.ConnectorMicroStationOpen.Entry
       .LogToTrace()
       .UseReactiveUI();
 
-    public static void ShowPanel()
+    public static void InitAvalonia()
     {
       try
       {
-        if (MainWindow == null)
-        {
-
-          var viewModel = new MainWindowViewModel(Bindings);
-          MainWindow = new MainWindow
-          {
-            DataContext = viewModel
-          };
-
-          Task.Run(() => AvaloniaApp.Run(MainWindow));
-        }
-
-        MainWindow.Show();
-        MainWindow.Activate();
+        BuildAvaloniaApp().Start(AppMain, null);
       }
       catch (Exception e)
       {
+
       }
+    }
+
+    public static void CreateOrFocusSpeckle()
+    {
+      if (MainWindow == null)
+      {
+        var viewModel = new MainWindowViewModel(Bindings);
+        MainWindow = new MainWindow
+        {
+          DataContext = viewModel
+        };
+        Task.Run(() => AvaloniaApp.Run(MainWindow));
+      }
+      MainWindow.Show();
+      MainWindow.Activate();
     }
 
     private static void AppMain(Avalonia.Application app, string[] args)

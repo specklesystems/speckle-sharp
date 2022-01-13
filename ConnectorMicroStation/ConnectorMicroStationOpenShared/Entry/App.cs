@@ -15,6 +15,8 @@ using Bentley.GeometryNET;
 using Bentley.MstnPlatformNET;
 
 using Speckle.ConnectorMicroStationOpen.UI;
+using System.Reflection;
+using System.IO;
 
 namespace Speckle.ConnectorMicroStationOpen.Entry
 {
@@ -41,6 +43,31 @@ namespace Speckle.ConnectorMicroStationOpen.Entry
     public void Start(string unparsed)
     {
       SpeckleMicroStationOpenRoadsCommand.ShowPanel();
+    }
+
+    // for DUI2
+    public void Start2(string unparsed)
+    {
+      AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+
+      SpeckleMicroStationOpenRoadsCommand2.InitAvalonia();
+      SpeckleMicroStationOpenRoadsCommand2.Bindings = new ConnectorBindingsMicroStationOpen2();
+      SpeckleMicroStationOpenRoadsCommand2.CreateOrFocusSpeckle();
+    }
+
+    // This is necessary for finding assemblies when building Avalonia 
+    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
+
+      string assemblyFile = Path.Combine(path, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
     }
   }
   

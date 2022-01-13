@@ -424,7 +424,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region helper methods
-    delegate void WriteStateDelegate(List<StreamState> DocumentStreams);
+    delegate void WriteStateDelegate(DgnFile File, List<StreamState> DocumentStreams);
 
     /// <summary>
     /// Transaction wrapper around writing the local streams to the file.
@@ -432,7 +432,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     private void WriteStateToFile()
     {
       if (Control.InvokeRequired)
-        Control.Invoke(new WriteStateDelegate(StreamStateManager2.WriteStreamStateList), new object[] { DocumentStreams });
+        Control.Invoke(new WriteStateDelegate(StreamStateManager2.WriteStreamStateList), new object[] { File, DocumentStreams });
       else
         StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
     }
