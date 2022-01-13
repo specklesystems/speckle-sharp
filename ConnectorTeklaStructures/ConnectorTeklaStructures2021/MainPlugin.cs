@@ -3,27 +3,73 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using TSDatatype = Tekla.Structures.Datatype;
-using TSModel = Tekla.Structures.Model;
+using Tekla.Structures.Model;
 using Tekla.Structures.Plugins;
+using Tekla.Structures;
+using Tekla.Structures.Geometry3d;
+using Tekla.Structures.Model.UI;
 
-namespace ConnectorTeklaStructures2021
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.ReactiveUI;
+
+using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
+using System.Threading.Tasks;
+
+
+
+namespace Speckle.ConnectorTeklaStructures
 {
+
+
+
   public class StructuresData
   {
-    [StructuresField("ATTRIBUTE_NAME")]
-    public string name;
-
   }
-  [Plugin("FormPlugin")]
-  [PluginUserInterface("FormPlugin.MainForm")]
+  [Plugin("Speckle.ConnectorTeklaStructures")]
+  [PluginUserInterface("Speckle.ConnectorTeklaStructures.MainForm")]
+
+
   public class MainPlugin : PluginBase
   {
-    // Enable inserting of objects in a model
-    private readonly TSModel.Model _model;
+    public static Window MainWindow { get; private set; }
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
+.UsePlatformDetect()
+.With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+.With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+.LogToTrace()
+.UseReactiveUI();
 
-    public TSModel.Model Model
+    private static void AppMain(Application app, string[] args)
+    {
+      var viewModel = new MainWindowViewModel();
+      MainWindow = new DesktopUI2.Views.MainWindow
+      {
+        DataContext = viewModel
+      };
+
+      //app.Run(MainWindow);
+      System.Threading.Tasks.Task.Run(() => app.Run(MainWindow));
+    }
+    public static void CreateOrFocusSpeckle()
+    {
+      if (MainWindow == null)
+      {
+        BuildAvaloniaApp().Start(AppMain, null);
+      }
+
+
+      MainWindow.Show();
+      MainWindow.Activate();
+    }
+
+    // Enable inserting of objects in a model
+    private readonly Model _model;
+
+
+    public Model Model
     {
       get { return _model; }
     }
@@ -39,7 +85,7 @@ namespace ConnectorTeklaStructures2021
     public MainPlugin(StructuresData data)
     {
       // Link to model.         
-      _model = new TSModel.Model();
+      _model = new Model();
 
       // Link to input values.         
       _data = data;
@@ -52,12 +98,12 @@ namespace ConnectorTeklaStructures2021
     {
       try
       {
-        Console.WriteLine("Testing");
-        // Write your code here.         
+        CreateOrFocusSpeckle();
+
       }
       catch (Exception e)
       {
-        MessageBox.Show(e.ToString());
+
       }
       return true;
     }
