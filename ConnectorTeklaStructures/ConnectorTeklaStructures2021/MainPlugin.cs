@@ -9,6 +9,7 @@ using Tekla.Structures.Plugins;
 using Tekla.Structures;
 using Tekla.Structures.Geometry3d;
 using Tekla.Structures.Model.UI;
+using System.Reflection;
 
 using Avalonia;
 using Avalonia.Controls;
@@ -17,8 +18,8 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using System.Threading.Tasks;
-
-
+using System.IO;
+using Assembly = System.Reflection.Assembly;
 
 namespace Speckle.ConnectorTeklaStructures
 {
@@ -35,6 +36,8 @@ namespace Speckle.ConnectorTeklaStructures
   public class MainPlugin : PluginBase
   {
     public static Window MainWindow { get; private set; }
+
+    public static ConnectorBindingsTeklaStructures Bindings { get; set; }
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
 .UsePlatformDetect()
 .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
@@ -44,14 +47,14 @@ namespace Speckle.ConnectorTeklaStructures
 
     private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel();
-      MainWindow = new DesktopUI2.Views.MainWindow
+      var viewModel = new MainWindowViewModel(Bindings);
+      MainWindow = new MainWindow
       {
         DataContext = viewModel
       };
 
-      //app.Run(MainWindow);
-      System.Threading.Tasks.Task.Run(() => app.Run(MainWindow));
+      app.Run(MainWindow);
+      //System.Threading.Tasks.Task.Run(() => app.Run(MainWindow));
     }
     public static void CreateOrFocusSpeckle()
     {
@@ -75,7 +78,7 @@ namespace Speckle.ConnectorTeklaStructures
     }
     public override List<InputDefinition> DefineInput()
     {
-      return null;
+      return new List<InputDefinition>();
       // Define input objects.     
     }
 
@@ -91,6 +94,19 @@ namespace Speckle.ConnectorTeklaStructures
       _data = data;
     }
 
+    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      string path = Path.GetDirectoryName(typeof(MainPlugin).Assembly.Location);
+
+      string assemblyFile = Path.Combine(path, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
+    }
     // Specify the user input needed for the plugin.
 
     // This method is called upon execution of the plug-in and it´s the main method of the plug-in
@@ -98,6 +114,7 @@ namespace Speckle.ConnectorTeklaStructures
     {
       try
       {
+        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
         CreateOrFocusSpeckle();
 
       }

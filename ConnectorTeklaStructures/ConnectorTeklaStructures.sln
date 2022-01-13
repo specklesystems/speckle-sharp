@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2021", "ConnectorTeklaStructures2021\ConnectorTeklaStructures2021.csproj", "{3AF1EF30-0906-4926-A02C-4E3AD666352A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3BBE5766-C7C3-4B4F-894E-0DCAB955E8F3} = {3BBE5766-C7C3-4B4F-894E-0DCAB955E8F3}
+		{69B9DED4-7B66-4A54-AFF8-3A62880B8AF9} = {69B9DED4-7B66-4A54-AFF8-3A62880B8AF9}
+		{2530AEF3-2238-4166-9AAC-F674E3B429B6} = {2530AEF3-2238-4166-9AAC-F674E3B429B6}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{DCBFF5B9-602A-445F-8024-43E8E9ABA7E4}"
 EndProject
