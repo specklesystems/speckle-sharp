@@ -93,6 +93,8 @@ namespace Objects.Converter.MicroStationOpen
       ConsensusConnection sdkCon = Bentley.CifNET.SDK.Edit.ConsensusConnectionEdit.GetActive();
       GeomModel = sdkCon.GetActiveGeometricModel();
 #endif
+      Report.Log($"Using document: {Doc.GetFileName()}");
+      Report.Log($"Using units: {ModelUnits}");
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -103,99 +105,130 @@ namespace Objects.Converter.MicroStationOpen
       {
         case DPoint2d o:
           @base = Point2dToSpeckle(o);
+          Report.Log($"Converted DPoint2d {o}");
           break;
         case Point2d o:
           @base = Point2dToSpeckle(o);
+          Report.Log($"Converted Point2d {o}");
           break;
         case DPoint3d o:
           @base = Point3dToSpeckle(o);
+          Report.Log($"Converted DPoint3d {o}");
           break;
         case Point3d o:
           @base = Point3dToSpeckle(o);
+          Report.Log($"Converted Point3d {o}");
           break;
         case DVector2d o:
           @base = Vector2dToSpeckle(o);
+          Report.Log($"Converted DVector2d {o}");
           break;
         case DVector3d o:
           @base = Vector3dToSpeckle(o);
+          Report.Log($"Converted DVector3d {o}");
           break;
         case DRange1d o:
           @base = IntervalToSpeckle(o);
+          Report.Log($"Converted DRange1d {o} as Interval");
           break;
         case DSegment1d o:
           @base = IntervalToSpeckle(o);
+          Report.Log($"Converted DSegment1d {o} as Interval");
           break;
         case DRange2d o:
           @base = Interval2dToSpeckle(o);
+          Report.Log($"Converted DRange2d {o} as Interval");
           break;
         case DRange3d o:
           @base = BoxToSpeckle(o);
+          Report.Log($"Converted DRange3d {o} as Box");
           break;
         case LineElement o:
           @base = LineToSpeckle(o);
+          Report.Log($"Converted Line");
           break;
         case DSegment3d o:
           @base = LineToSpeckle(o);
+          Report.Log($"Converted DSegment3d as Line");
           break;
         case DPlane3d o:
           @base = PlaneToSpeckle(o);
+          Report.Log($"Converted Plane");
           break;
         case ShapeElement o:
           @base = ShapeToSpeckle(o);
+          Report.Log($"Converted Shape as Polyline");
           break;
         case ArcElement o:
           @base = ArcToSpeckle(o) as Base; //Arc, curve or circle
+          Report.Log($"Converted Arc as ICurve");
           break;
         case EllipseElement o:
           @base = EllipseToSpeckle(o) as Base; //Ellipse (with or without rotation) or circle
+          Report.Log($"Converted Ellipse as ICurve");
           break;
         case LineStringElement o:
           @base = PolylineToSpeckle(o); //Polyline
+          Report.Log($"Converted LineString as Polyline");
           break;
         case ComplexStringElement o:
           @base = PolycurveToSpeckle(o); //Polycurve
+          Report.Log($"Converted ComplexString as Polycurve");
           break;
         case BSplineCurveElement o:
           @base = BSplineCurveToSpeckle(o); //Nurbs curve
+          Report.Log($"Converted BSpline as Curve");
           break;
         case ComplexShapeElement o:
           @base = ComplexShapeToSpeckle(o);
+          Report.Log($"Converted ComplexShape as Polycurve");
           break;
         case MeshHeaderElement o:
           @base = MeshToSpeckle(o);
+          Report.Log($"Converted Mesh");
           break;
         case BSplineSurfaceElement o:
           @base = SurfaceToSpeckle(o);
+          Report.Log($"Converted Surface");
           break;
         case ExtendedElementElement o:
           @base = ExtendedElementToSpeckle(o);
+          Report.Log($"Converted ExtendedElement as Base");
           break;
         case CellHeaderElement o:
           @base = CellHeaderElementToSpeckle(o);
+          Report.Log($"Converted CellHeader as Base");
           break;
         case Type2Element o:
           @base = Type2ElementToSpeckle(o);
+          Report.Log($"Converted Type2 as Base");
           break;
 #if (OPENBUILDINGS)
         case ITFDrawingGrid o:
           @base = GridSystemsToSpeckle(o);
+          Report.Log($"Converted GridSystems as Base");
           break;
 #endif
 #if (OPENROADS || OPENRAIL)
         case Bentley.CifNET.GeometryModel.SDK.Alignment o:
           @base = AlignmentToSpeckle(o);
+          Report.Log($"Converted Alignment");
           break;
         case Corridor o:
           @base = CorridorToSpeckle(o);
+          Report.Log($"Converted Corridor as Base");
           break;
         case Profile o:
           @base = ProfileToSpeckle(o);
+          Report.Log($"Converted Profile as Base");
           break;
         case FeaturizedModelEntity o:
           @base = FeatureLineToSpeckle(o);
+          Report.Log($"Converted FeaturizedModel as Base");
           break;
 #endif
         default:
+          Report.Log($"Skipped not supported type: {@object.GetType()}");
           throw new NotSupportedException();
       }
 
@@ -222,52 +255,68 @@ namespace Objects.Converter.MicroStationOpen
       switch (@object)
       {
         case Point o:
+          Report.Log($"Created Point {o.id}");
           return PointToNative(o);
 
         case Vector o:
+          Report.Log($"Created Vector {o.id}");
           return VectorToNative(o);
 
         case Interval o:
+          Report.Log($"Created Interval {o.id}");
           return IntervalToNative(o);
 
         case Interval2d o:
+          Report.Log($"Created Interval2d {o.id}");
           return Interval2dToNative(o);
 
         case Line o:
+          Report.Log($"Created Line {o.id}");
           return LineToNative(o);
 
         case Plane o:
+          Report.Log($"Created Plane {o.id}");
           return PlaneToNative(o);
 
         case Circle o:
+          Report.Log($"Created Circle {o.id}");
           return CircleToNative(o);
 
         case Arc o:
+          Report.Log($"Created Arc {o.id}");
           return ArcToNative(o);
 
         case Ellipse o:
+          Report.Log($"Created Ellipse {o.id}");
           return EllipseToNative(o);
 
         case Polyline o:
+          Report.Log($"Created Polyline {o.id}");
           return PolylineToNative(o);
 
         case Polycurve o:
+          Report.Log($"Created Polycurve {o.id} asn ComplexString");
           return PolycurveToNative(o); // polycurve converted to complex chain
 
         case Curve o:
+          Report.Log($"Created Curve {o.id} as DisplayableElement");
           return CurveToNative(o);
 
         case Box o:
+          Report.Log($"Created Box {o.id} as DRange3d");
           return BoxToNative(o);
 
         case Mesh o:
+          Report.Log($"Created Mesh {o.id}");
           return MeshToNative(o);
 
 #if (OPENROADS || OPENRAIL)
         case Alignment o:
+        Report.Log($"Created Alignment {o.id}");
           return AlignmentToNative(o);
 #endif
         default:
+          Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
           throw new NotSupportedException();
       }
     }
