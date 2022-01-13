@@ -28,7 +28,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitBeam != null)
       {
-        if(level  != null)
+        if (level != null)
         {
           level = GetLevelByName(speckleRevitBeam.level.name);
         }
@@ -107,8 +107,10 @@ namespace Objects.Converter.Revit
         Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
         return RevitElementToSpeckle(revitBeam);
       }
+      var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
       var speckleBeam = new RevitBeam();
+      speckleBeam.family = symbol.FamilyName;
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);

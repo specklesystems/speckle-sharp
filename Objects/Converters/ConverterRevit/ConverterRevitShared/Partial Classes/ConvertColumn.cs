@@ -191,7 +191,10 @@ namespace Objects.Converter.Revit
 
     public Base ColumnToSpeckle(DB.FamilyInstance revitColumn)
     {
+      var symbol = Doc.GetElement(revitColumn.GetTypeId()) as FamilySymbol;
+
       var speckleColumn = new RevitColumn();
+      speckleColumn.family = symbol.FamilyName;
       speckleColumn.type = Doc.GetElement(revitColumn.GetTypeId()).Name;
       speckleColumn.level = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       speckleColumn.topLevel = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
