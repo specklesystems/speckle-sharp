@@ -15,7 +15,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
-using Speckle.ConnectorMicroStationOpenRoads.Storage;
 
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
@@ -147,20 +146,12 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     {
       //Element Type, Element Class, Element Template, Material, Level, Color, Line Style, Line Weight
       var levels = new List<string>();
-
       FileLevelCache levelCache = Model.GetFileLevelCache();
       foreach (var level in levelCache.GetHandles())
-      {
         levels.Add(level.Name);
-      }
       levels.Sort();
 
       var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
-
-      return new List<ISelectionFilter>()
-      {
-
-      };
 
       var filterList = new List<ISelectionFilter>();
       filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });

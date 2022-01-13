@@ -14,12 +14,12 @@ using Bentley.EC.Persistence.Query;
 using Speckle.Newtonsoft.Json;
 using DesktopUI2.Models;
 
-namespace Speckle.ConnectorMicroStationOpenRoads.Storage
+namespace Speckle.ConnectorMicroStationOpen.Storage
 {
   public static class StreamStateManager2
   {
     static readonly string schemaName = "StreamStateWrapper";
-    static readonly string className = "StreamStates";
+    static readonly string className = "StreamState";
     static readonly string propertyName = "StreamData";
 
     /// <summary>
@@ -66,15 +66,9 @@ namespace Speckle.ConnectorMicroStationOpenRoads.Storage
     public static void WriteStreamStateList(DgnFile File, List<StreamState> streamStates)
     {
       DgnECManager Manager = DgnECManager.Manager;
-
       FindInstancesScope scope = FindInstancesScope.CreateScope(File, new FindInstancesScopeOption(DgnECHostType.All));
-      IECSchema schema = Manager.LocateSchemaInScope(scope, schemaName, 1, 0, SchemaMatchType.Latest);
 
-      if (schema == null)
-      {
-        schema = CreateSchema(File);
-      }
-
+      IECSchema schema = RetrieveSchema(File, scope);
       IECClass ecClass = schema.GetClass(className);
 
       ECQuery readWidget = new ECQuery(ecClass);
@@ -108,6 +102,32 @@ namespace Speckle.ConnectorMicroStationOpenRoads.Storage
         return null;
 
       return newSchema;
+    }
+
+    private static ECSchema RetrieveSchema(DgnFile File, FindInstancesScope scope)
+    {
+      DgnECManager Manager = DgnECManager.Manager;
+      DgnModel model = Session.Instance.GetActiveDgnModel();
+      var schemas = (List<string>)Manager.DiscoverSchemasForModel(model, ReferencedModelScopeOption.All, false);
+      var schemaString = schemas.Where(x => x.Contains(schemaName)).FirstOrDefault();
+
+      if (schemaString != null)
+      {
+        try
+        {
+          IECSchema schema = Manager.LocateSchemaInScope(scope, schemaName, 1, 0, SchemaMatchType.Latest);
+          return (ECSchema)schema;
+        }
+        catch (Exception e)
+        {
+          return null;
+        }
+      }
+
+      else
+      {
+        return CreateSchema(File);
+      }
     }
   }
 }
