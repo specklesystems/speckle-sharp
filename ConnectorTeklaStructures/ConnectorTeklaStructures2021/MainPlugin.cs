@@ -47,7 +47,7 @@ namespace Speckle.ConnectorTeklaStructures
 
     private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel(Bindings);
+      var viewModel = new MainWindowViewModel();
       MainWindow = new MainWindow
       {
         DataContext = viewModel
@@ -69,12 +69,12 @@ namespace Speckle.ConnectorTeklaStructures
     }
 
     // Enable inserting of objects in a model
-    private readonly Model _model;
+    private readonly Model model;
 
 
     public Model Model
     {
-      get { return _model; }
+      get { return model; }
     }
     public override List<InputDefinition> DefineInput()
     {
@@ -88,7 +88,7 @@ namespace Speckle.ConnectorTeklaStructures
     public MainPlugin(StructuresData data)
     {
       // Link to model.         
-      _model = new Model();
+      model = new Model();
 
       // Link to input values.         
       _data = data;

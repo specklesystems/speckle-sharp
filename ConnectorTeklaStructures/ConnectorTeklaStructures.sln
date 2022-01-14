@@ -26,8 +26,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{2530AEF3-2238-4166-9AAC-F674E3B429B6}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorTeklaStructuresShared", "ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.shproj", "{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{28e2ea7f-ffd1-4e13-9165-0243b5ac82f5}*SharedItemsImports = 13
+		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{3bbe5766-c7c3-4b4f-894e-0dcab955e8f3}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{7ffdab72-145d-4490-9892-fac5f1d72b17}*SharedItemsImports = 13
 	EndGlobalSection
@@ -68,6 +72,7 @@ Global
 		{69B9DED4-7B66-4A54-AFF8-3A62880B8AF9} = {DCBFF5B9-602A-445F-8024-43E8E9ABA7E4}
 		{3D522DE4-1F73-486F-B07D-6AD794F784FD} = {DCBFF5B9-602A-445F-8024-43E8E9ABA7E4}
 		{2530AEF3-2238-4166-9AAC-F674E3B429B6} = {DCBFF5B9-602A-445F-8024-43E8E9ABA7E4}
+		{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5} = {7971F1F8-9B64-4BC5-A2F6-2E6277745440}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DDE456ED-2D08-4CD4-85D3-58340974B612}
