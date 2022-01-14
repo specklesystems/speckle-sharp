@@ -474,44 +474,25 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 #if (OPENBUILDINGS)
       if (ExportGridLines)
       {
-        // grab grid lines
-        ITFApplication appInst = new TFApplicationList();
+        var converted = ConvertGridLines(converter, progress);
 
-        if (0 == appInst.GetProject(0, out ITFLoadableProjectList projList) && projList != null)
+        if (converted == null)
         {
-          ITFLoadableProject proj = projList.AsTFLoadableProject;
-          if (null == proj)
-            return null;
+          progress.Report.LogConversionError(new Exception($"Failed to convert Gridlines."));
+        }
+        else
+        {
+          var containerName = "Grid Systems";
 
-          ITFDrawingGrid drawingGrid = null;
-          if (Control.InvokeRequired)
-            Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
-          else
-            proj.GetDrawingGrid(false, 0, out drawingGrid);
+          if (commitObj[$"@{containerName}"] == null)
+            commitObj[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
 
-          if (null == drawingGrid)
-            return null;
+          // not sure this makes much sense here
+          conversionProgressDict["Conversion"]++;
+          progress.Update(conversionProgressDict);
 
-          Base converted;
-          if (Control.InvokeRequired)
-            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
-          else
-            converted = converter.ConvertToSpeckle(drawingGrid);
-
-          if (converted != null)
-          {
-            var containerName = "Grid Systems";
-
-            if (commitObj[$"@{containerName}"] == null)
-              commitObj[$"@{containerName}"] = new List<Base>();
-            ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
-
-            // not sure this makes much sense here
-            conversionProgressDict["Conversion"]++;
-            progress.Update(conversionProgressDict);
-
-            convertedCount++;
-          }
+          convertedCount++;
         }
       }
 #endif
@@ -682,6 +663,41 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return civilObjs;
     }
 #endif
+#if (OPENBUILDINGS)
+    private Base ConvertGridLines(ISpeckleConverter converter, ProgressViewModel progress)
+    {
+      Base converted = null;
+
+      ITFApplication appInst = new TFApplicationList();
+      if (0 == appInst.GetProject(0, out ITFLoadableProjectList projList) && projList != null)
+      {
+        ITFLoadableProject proj = projList.AsTFLoadableProject;
+        if (null == proj)
+        {
+          progress.Report.ConversionErrors.Add(new Exception("Could not retrieve project for exporting gridlines"));
+          return converted;
+        }
+
+        ITFDrawingGrid drawingGrid = null;
+        if (Control.InvokeRequired)
+          Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
+        else
+          proj.GetDrawingGrid(false, 0, out drawingGrid);
+
+        if (null == drawingGrid)
+        {
+          progress.Report.ConversionErrors.Add(new Exception("Could not retrieve drawing grid for exporting gridlines"));
+          return converted;
+        }
+
+        if (Control.InvokeRequired)
+          converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
+        else
+          converted = converter.ConvertToSpeckle(drawingGrid);
+      }
+      return converted;
+    }
+#endif
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter, ProgressViewModel progress)
     {
@@ -777,9 +793,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           return selection;
       }
     }
-    #endregion
+#endregion
 
-    #region helper methods
+#region helper methods
     delegate void WriteStateDelegate(DgnFile File, List<StreamState> DocumentStreams);
 
     /// <summary>
@@ -792,6 +808,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       else
         StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
     }
-    #endregion
+#endregion
   }
 }
