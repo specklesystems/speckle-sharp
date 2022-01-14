@@ -58,7 +58,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     // As in the AutoCAD/Civil3D connectors, we therefore creating a control in the ConnectorBindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread - thank you Claire!!
     public System.Windows.Forms.Control Control;
     delegate void SetContextDelegate(object session);
-    delegate List<string> GetObjectsFromFilterDelegate(ISelectionFilter filter, ISpeckleConverter converter);
+    delegate List<string> GetObjectsFromFilterDelegate(ISelectionFilter filter, ISpeckleConverter converter, ProgressViewModel progress);
     delegate Base SpeckleConversionDelegate(object commitObject);
 
     public ConnectorBindingsMicroStationOpen2() : base()
@@ -410,7 +410,367 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #region sending
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var streamId = state.StreamId;
+      var client = state.Client;
+
+      if (Control.InvokeRequired)
+        Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
+      else
+        converter.SetContextDocument(Session.Instance);
+
+      var selectedObjects = new List<Object>();
+
+      if (state.Filter != null)
+      {
+        if (Control.InvokeRequired)
+          state.SelectedObjectIds = (List<string>)Control.Invoke(new GetObjectsFromFilterDelegate(GetObjectsFromFilter), new object[] { state.Filter, converter, progress });
+        else
+          state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter, progress);
+      }
+
+      if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
+      {
+        progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        return;
+      }
+
+      var commitObj = new Base();
+
+      var units = Units.GetUnitsFromString(ModelUnits).ToLower();
+      commitObj["units"] = units;
+
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+      int convertedCount = 0;
+
+      // grab elements from active model           
+      var objs = new List<Element>();
+#if (OPENROADS || OPENRAIL)
+      bool convertCivilObject = false;
+      var civObjs = new List<NamedModelEntity>();
+
+      if (civilElementKeys.Count(x => state.SelectedObjectIds.Contains(x)) > 0)
+      {
+        if (Control.InvokeRequired)
+          civObjs = (List<NamedModelEntity>)Control.Invoke(new GetCivilObjectsDelegate(GetCivilObjects), new object[] { state });
+        else
+          civObjs = GetCivilObjects(state);
+
+        objs = civObjs.Select(x => x.Element).ToList();
+        convertCivilObject = true;
+      }
+      else
+      {
+        objs = state.SelectedObjectIds.Select(x => Model.FindElementById((ElementId)Convert.ToUInt64(x))).ToList();
+      }
+#else
+      objs = state.SelectedObjectIds.Select(x => Model.FindElementById((ElementId)Convert.ToUInt64(x))).ToList();
+#endif
+
+#if (OPENBUILDINGS)
+      if (ExportGridLines)
+      {
+        // grab grid lines
+        ITFApplication appInst = new TFApplicationList();
+
+        if (0 == appInst.GetProject(0, out ITFLoadableProjectList projList) && projList != null)
+        {
+          ITFLoadableProject proj = projList.AsTFLoadableProject;
+          if (null == proj)
+            return null;
+
+          ITFDrawingGrid drawingGrid = null;
+          if (Control.InvokeRequired)
+            Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
+          else
+            proj.GetDrawingGrid(false, 0, out drawingGrid);
+
+          if (null == drawingGrid)
+            return null;
+
+          Base converted;
+          if (Control.InvokeRequired)
+            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
+          else
+            converted = converter.ConvertToSpeckle(drawingGrid);
+
+          if (converted != null)
+          {
+            var containerName = "Grid Systems";
+
+            if (commitObj[$"@{containerName}"] == null)
+              commitObj[$"@{containerName}"] = new List<Base>();
+            ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+            // not sure this makes much sense here
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
+
+            convertedCount++;
+          }
+        }
+      }
+#endif
+
+      foreach (var obj in objs)
+      {
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          return;
+
+        if (obj == null)
+        {
+          progress.Report.Log($"Skipped not found object.");
+          continue;
+        }
+
+        var objId = obj.ElementId.ToString();
+        var objType = obj.ElementType;
+
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          progress.Report.Log($"Skipped not supported type: ${objType}. Object ${objId} not sent.");
+          continue;
+        }
+
+        // convert obj
+        Base converted = null;
+        string containerName = string.Empty;
+        try
+        {
+          var levelCache = Model.GetFileLevelCache();
+          var objLevel = levelCache.GetLevel(obj.LevelId);
+          var layerName = "Unknown";
+          if (objLevel != null)
+            layerName = objLevel.Name;
+
+#if (OPENROADS || OPENRAIL)
+          if (convertCivilObject)
+          {
+            var civilObj = civObjs[objs.IndexOf(obj)];
+            if (Control.InvokeRequired)
+            {
+              converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { civilObj });
+              Control.Invoke((Action)(() => { containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name; }));
+            }
+            else
+            {
+              converted = converter.ConvertToSpeckle(civilObj);
+              containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name;
+            }
+          }
+          else
+          {
+            if (Control.InvokeRequired)
+              converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+            else
+              converted = converter.ConvertToSpeckle(obj);
+            containerName = layerName;
+          }
+#else
+          if (Control.InvokeRequired)
+            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+          else
+            converted = converter.ConvertToSpeckle(obj);
+
+          containerName = layerName;
+#endif
+          if (converted == null)
+          {
+            progress.Report.LogConversionError(new Exception($"Failed to convert object {objId} of type {objType}."));
+            continue;
+          }
+        }
+        catch
+        {
+          progress.Report.LogConversionError(new Exception($"Failed to convert object {objId} of type {objType}."));
+          continue;
+        }
+
+        /* TODO: adding the feature data and properties per object 
+        foreach (var key in obj.ExtensionDictionary)
+        {
+          converted[key] = obj.ExtensionDictionary.GetUserString(key);
+        }
+        */
+
+        if (commitObj[$"@{containerName}"] == null)
+          commitObj[$"@{containerName}"] = new List<Base>();
+        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
+
+        converted.applicationId = objId;
+
+        convertedCount++;
+      }
+
+      Execute.PostToUIThread(() => progress.Max = convertedCount);
+
+      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
+
+      var commitObjId = await Operations.Send(
+        commitObj,
+        progress.CancellationTokenSource.Token,
+        transports,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (err, exception) =>
+        {
+          progress.Report.LogOperationError(exception);
+          progress.CancellationTokenSource.Cancel();
+        },
+        disposeTransports: true
+        );
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return;
+
+      if (convertedCount > 0)
+      {
+        var actualCommit = new CommitCreateInput
+        {
+          streamId = streamId,
+          objectId = commitObjId,
+          branchName = state.BranchName,
+          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+          sourceApplication = Utils.BentleyAppName
+        };
+
+        if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+
+        try
+        {
+          var commitId = await client.CommitCreate(actualCommit);
+          state.PreviousCommitId = commitId;
+        }
+        catch (Exception e)
+        {
+          progress.Report.LogOperationError(e);
+        }
+      }
+      else
+      {
+        progress.Report.LogOperationError(new Exception("Did not create commit: no objects could be converted."));
+      }
+    }
+
+#if (OPENROADS || OPENRAIL)
+    delegate List<NamedModelEntity> GetCivilObjectsDelegate(StreamState state);
+    private List<NamedModelEntity> GetCivilObjects(StreamState state)
+    {
+      var civilObjs = new List<NamedModelEntity>();
+      foreach (var objId in state.SelectedObjectIds)
+      {
+        switch (objId)
+        {
+          case "Alignment":
+            civilObjs.AddRange(GeomModel.Alignments);
+            break;
+          case "Corridor":
+            civilObjs.AddRange(GeomModel.Corridors);
+            break;
+        }
+      }
+      return civilObjs;
+    }
+#endif
+
+    private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter, ProgressViewModel progress)
+    {
+      var selection = new List<string>();
+      switch (filter.Slug)
+      {
+        case "all":
+          return Model.ConvertibleObjects(converter);
+        case "level":
+          foreach (var levelName in filter.Selection)
+          {
+            var levelCache = Model.GetFileLevelCache();
+            var levelHandle = levelCache.GetLevelByName(levelName);
+            var levelId = levelHandle.LevelId;
+
+            var graphicElements = Model.GetGraphicElements();
+            var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator();
+            var objs = graphicElements.Where(el => el.LevelId == levelId).Select(el => el.ElementId.ToString()).ToList();
+            selection.AddRange(objs);
+          }
+          return selection;
+        case "elementType":
+          foreach (var typeName in filter.Selection)
+          {
+            MSElementType selectedType = MSElementType.None;
+            switch (typeName)
+            {
+              case "Arc":
+                selectedType = MSElementType.Arc;
+                break;
+              case "Ellipse":
+                selectedType = MSElementType.Ellipse;
+                break;
+              case "Line":
+                selectedType = MSElementType.Line;
+                break;
+              case "Spline":
+                selectedType = MSElementType.BsplineCurve;
+                break;
+              case "Line String":
+                selectedType = MSElementType.LineString;
+                break;
+              case "Complex Chain":
+                selectedType = MSElementType.ComplexString;
+                break;
+              case "Shape":
+                selectedType = MSElementType.Shape;
+                break;
+              case "Complex Shape":
+                selectedType = MSElementType.ComplexShape;
+                break;
+              case "Mesh":
+                selectedType = MSElementType.MeshHeader;
+                break;
+              case "Surface":
+                selectedType = MSElementType.BsplineSurface;
+                break;
+              default:
+                break;
+            }
+            var graphicElements = Model.GetGraphicElements();
+            var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator();
+            var objs = graphicElements.Where(el => el.ElementType == selectedType).Select(el => el.ElementId.ToString()).ToList();
+            selection.AddRange(objs);
+          }
+          return selection;
+#if (OPENROADS || OPENRAIL)
+        case "civilElementType":
+          foreach (var typeName in filter.Selection)
+          {
+            switch (typeName)
+            {
+              case "Alignment":
+                var alignments = GeomModel.Alignments;
+                if (alignments != null)
+                  if (alignments.Count() > 0)
+                    selection.Add("Alignment");
+                break;
+              case "Corridor":
+                var corridors = GeomModel.Corridors;
+                if (corridors != null)
+                  if (corridors.Count() > 0)
+                    selection.Add("Corridor");
+                break;
+              default:
+                break;
+            }
+          }
+          return selection;
+#endif
+        default:
+          progress.Report.LogConversionError(new Exception("Filter type is not supported in this app. Why did the developer implement it in the first place?"));
+          return selection;
+      }
     }
     #endregion
 
