@@ -22,6 +22,7 @@ using Bentley.MstnPlatformNET;
 using Bentley.DgnPlatformNET.DgnEC;
 using Speckle.ConnectorMicroStationOpen.Entry;
 using Speckle.ConnectorMicroStationOpen.Storage;
+using Speckle.Core.Logging;
 
 #if (OPENBUILDINGS)
 using Bentley.Building.Api;
@@ -608,6 +609,20 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         convertedCount++;
       }
 
+      progress.Report.Merge(converter.Report);
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return;
+
+      if (convertedCount == 0)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+        return;
+      }
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return;
+
       Execute.PostToUIThread(() => progress.Max = convertedCount);
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
@@ -625,35 +640,25 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         disposeTransports: true
         );
 
-      if (progress.Report.OperationErrorsCount != 0)
-        return;
-
-      if (convertedCount > 0)
+      var actualCommit = new CommitCreateInput
       {
-        var actualCommit = new CommitCreateInput
-        {
-          streamId = streamId,
-          objectId = commitObjId,
-          branchName = state.BranchName,
-          message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-          sourceApplication = Utils.BentleyAppName
-        };
+        streamId = streamId,
+        objectId = commitObjId,
+        branchName = state.BranchName,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+        sourceApplication = Utils.BentleyAppName
+      };
 
-        if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-        try
-        {
-          var commitId = await client.CommitCreate(actualCommit);
-          state.PreviousCommitId = commitId;
-        }
-        catch (Exception e)
-        {
-          progress.Report.LogOperationError(e);
-        }
+      try
+      {
+        var commitId = await client.CommitCreate(actualCommit);
+        state.PreviousCommitId = commitId;
       }
-      else
+      catch (Exception e)
       {
-        progress.Report.LogOperationError(new Exception("Did not create commit: no objects could be converted."));
+        progress.Report.LogOperationError(e);
       }
     }
 
