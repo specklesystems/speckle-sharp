@@ -53,17 +53,18 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
     public override string GetDocumentId() => GetDocHash();
 
-    private string GetDocHash() => Utilities.hashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFuctions.MD5);
+    private string GetDocHash() => Utilities.hashString(Model.GetInfo().ModelPath + Model.GetInfo().ModelName, Utilities.HashingFuctions.MD5);
 
-    public override string GetDocumentLocation() => Model.GetModelFilepath();
+    public override string GetDocumentLocation() => Model.GetInfo().ModelPath;
 
-    public override string GetFileName() => Model.GetModelFilename();
+    public override string GetFileName() => Model.GetInfo().ModelName;
 
-    public override string GetHostAppName() => ConnectorETABSUtils.ETABSAppName;
+    public override string GetHostAppName() => ConnectorTeklaStructuresUtils.TeklaStructuresAppName;
 
     public override List<string> GetObjectsInView()
     {
       throw new NotImplementedException();
     }
+    #endregion
   }
 }

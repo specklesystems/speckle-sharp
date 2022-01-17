@@ -35,6 +35,9 @@ namespace Speckle.Core.Kits
     public const string ETABSv19 = "ETABSv19";
     public const string ETABS = "ETABS";
 
+    public const string TeklaStructures2021 = "TeklaStructures2021";
+    public const string TeklaStructures = "TeklaStructures";
+
     public const string Script = "Script";
     public const string Other = "Other";
     public const string All = "All";

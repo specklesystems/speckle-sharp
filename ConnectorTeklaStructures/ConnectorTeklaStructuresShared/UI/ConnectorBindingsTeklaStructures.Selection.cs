@@ -38,15 +38,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
       string[] groupNames = null;
       var groups = new List<string>();
       int numNames = 0;
-      if (Model != null)
-      {
-        ConnectorTeklaStructuresUtils.GetObjectIDsTypesAndNames(Model);
-        objectTypes = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
-            .Select(pair => pair.Value.Item1).Distinct().ToList();
-        //objectIds = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames.Select(pair => pair.Key).ToList();
-        Model.GroupDef.GetNameList(ref numNames, ref groupNames);
-        groups = groupNames.ToList();
-      }
 
       return new List<ISelectionFilter>()
             {
@@ -113,11 +104,11 @@ namespace Speckle.ConnectorTeklaStructures.UI
           return selection;
         case "group":
           //Clear objects first
-          Model.SelectObj.ClearSelection();
+          //Model.SelectObj.ClearSelection();
           var groupFilter = filter as ListSelectionFilter;
           foreach (var group in groupFilter.Selection)
           {
-            Model.SelectObj.Group(group);
+            //Model.SelectObj.Group(group);
           }
           return GetSelectedObjects();
 
