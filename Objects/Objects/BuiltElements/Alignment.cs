@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Objects.BuiltElements
 {
-  public class Alignment : Base
+  public class Alignment : Base, IDisplayValue<Polyline>
   {
     [JsonIgnore, Obsolete("Use curves property")]
     public ICurve baseCurve { get; set; }
@@ -31,6 +31,7 @@ namespace Objects.BuiltElements
     /// </summary>
     public List<bool> stationEquationDirections { get; set; }
 
+    [DetachProperty]
     public Polyline displayValue { get; set; }
 
     public string units { get; set; }

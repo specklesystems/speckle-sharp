@@ -10,7 +10,6 @@ namespace Objects.Geometry
   public class Arc : Base, IHasBoundingBox, ICurve, IHasArea
   {
     public double? radius { get; set; }
-
     public double? startAngle { get; set; }
 
     public double? endAngle { get; set; }
