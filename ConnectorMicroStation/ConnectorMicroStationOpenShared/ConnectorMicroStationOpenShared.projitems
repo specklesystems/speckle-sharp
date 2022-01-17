@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMicroStationOpenCommand2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMicroStationOpenCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Keyins.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />

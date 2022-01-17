@@ -15,5 +15,9 @@ namespace Speckle.ConnectorMicroStationOpen
     {
       SpeckleMicroStationOpenApp.Instance.Start(unparsed);
     }
+    public static void Start2(string unparsed)
+    {
+      SpeckleMicroStationOpenApp.Instance.Start2(unparsed);
+    }
   }
 }

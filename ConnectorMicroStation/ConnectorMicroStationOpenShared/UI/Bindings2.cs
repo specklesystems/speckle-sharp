@@ -1,231 +1,813 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using System.IO;
-//using System.Collections.Concurrent;
-//using System.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Collections.Concurrent;
+using System.Collections;
 
-//using Speckle.Core.Api;
-//using Speckle.Core.Models;
-//using Speckle.Core.Kits;
-//using Speckle.Core.Transports;
-//using DesktopUI2;
-//using DesktopUI2.Models;
-//using DesktopUI2.ViewModels;
-//using DesktopUI2.Models.Filters;
-//using Speckle.ConnectorMicroStationOpenRoads.Entry;
-//using Speckle.ConnectorMicroStationOpenRoads.Storage;
+using Speckle.Core.Api;
+using Speckle.Core.Models;
+using Speckle.Core.Kits;
+using Speckle.Core.Transports;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Models.Filters;
 
-//using Bentley.DgnPlatformNET;
-//using Bentley.DgnPlatformNET.Elements;
-//using Bentley.MstnPlatformNET;
-//using Bentley.DgnPlatformNET.DgnEC;
+using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.MstnPlatformNET;
+using Bentley.DgnPlatformNET.DgnEC;
+using Speckle.ConnectorMicroStationOpen.Entry;
+using Speckle.ConnectorMicroStationOpen.Storage;
+using Speckle.Core.Logging;
 
-//#if (OPENBUILDINGS)
-//using Bentley.Building.Api;
-//#endif
+#if (OPENBUILDINGS)
+using Bentley.Building.Api;
+#endif
 
-//#if (OPENROADS || OPENRAIL)
-//using Bentley.CifNET.GeometryModel.SDK;
-//using Bentley.CifNET.LinearGeometry;
-//using Bentley.CifNET.SDK;
-//#endif
+#if (OPENROADS || OPENRAIL)
+using Bentley.CifNET.GeometryModel.SDK;
+using Bentley.CifNET.LinearGeometry;
+using Bentley.CifNET.SDK;
+#endif
 
-//using Stylet;
+using Stylet;
 
-//namespace Speckle.ConnectorMicroStationOpenRoads.UI
-//{
-//  public partial class ConnectorBindingsMicroStationOpenRoads2 : ConnectorBindings
-//  {
-//    public DgnModel Doc => Session.Instance.GetActiveDgnModel();
-//    public DgnFile File => Session.Instance.GetActiveDgnFile();
+namespace Speckle.ConnectorMicroStationOpen.UI
+{
+  public partial class ConnectorBindingsMicroStationOpen2 : ConnectorBindings
+  {
+    public DgnFile File => Session.Instance.GetActiveDgnFile();
+    public DgnModel Model => Session.Instance.GetActiveDgnModel();
+    public string ModelUnits { get; set; }
+    public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
+#if (OPENROADS || OPENRAIL)
+    public GeometricModel GeomModel { get; private set; }
+    public List<string> civilElementKeys => new List<string> { "Alignment" };
+#endif
+    
+#if (OPENBUILDINGS)
+    public bool ExportGridLines { get; set; } = true;
+#else
+    public bool ExportGridLines = false;
+#endif
 
-//    public ConnectorBindingsMicroStationOpenRoads2() : base() { }
+    // Like the AutoCAD API, the Bentley APIs should only be called on the main thread.
+    // As in the AutoCAD/Civil3D connectors, we therefore creating a control in the ConnectorBindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread - thank you Claire!!
+    public System.Windows.Forms.Control Control;
+    delegate void SetContextDelegate(object session);
+    delegate List<string> GetObjectsFromFilterDelegate(ISelectionFilter filter, ISpeckleConverter converter, ProgressViewModel progress);
+    delegate Base SpeckleConversionDelegate(object commitObject);
 
-//    public override void WriteStreamsToFile(List<StreamState> streams)
-//    {
-//      StreamStateManager2.WriteStreamStateList(File, streams);
-//    }
+    public ConnectorBindingsMicroStationOpen2() : base()
+    {
+      Control = new System.Windows.Forms.Control();
+      Control.CreateControl();
 
-//    public override List<StreamState> GetStreamsInFile()
-//    {
-//      var streams = new List<StreamState>();
-//      if (File != null)
-//      {
-//        var schema = StreamStateManager2.StreamStateListSchema.GetSchema();
-//        streams = StreamStateManager2.ReadState(schema);
-//      }
+      ModelUnits = Model.GetModelInfo().GetMasterUnit().GetName(true, true);
 
-//      return streams;
-//    }
+#if (OPENROADS || OPENRAIL)
+      ConsensusConnection sdkCon = Bentley.CifNET.SDK.Edit.ConsensusConnectionEdit.GetActive();
+      GeomModel = sdkCon.GetActiveGeometricModel();
+#endif
+    }
 
-//    public override string GetHostAppName() => Utils.BentleyAppName;
+    #region local streams
+    public override void WriteStreamsToFile(List<StreamState> streams)
+    {
+      StreamStateManager2.WriteStreamStateList(File, streams);
+    }
 
-//    public override string GetDocumentId()
-//    {
-//      string path = GetDocumentLocation();
-//      return Core.Models.Utilities.hashString(path + File.GetFileName(), Speckle.Core.Models.Utilities.HashingFuctions.MD5);
-//    }
+    public override List<StreamState> GetStreamsInFile()
+    {
+      var streams = new List<StreamState>();
+      if (File != null)
+        streams = StreamStateManager2.ReadState(File);
+      return streams;
+    }
+    #endregion
 
-//    public override string GetDocumentLocation()
-//    {
-//      return Path.GetDirectoryName(File.GetFileName());
-//    }
+    #region boilerplate
+    public override string GetHostAppName() => Utils.BentleyAppName;
 
-//    public override string GetFileName()
-//    {
-//      return Path.GetFileName(File.GetFileName());
-//    }
+    public override string GetDocumentId()
+    {
+      string path = GetDocumentLocation();
+      return Core.Models.Utilities.hashString(path + File.GetFileName(), Speckle.Core.Models.Utilities.HashingFuctions.MD5);
+    }
 
-//    public override string GetActiveViewName() => "Entire Document";
+    public override string GetDocumentLocation() => Path.GetDirectoryName(File.GetFileName());
 
-//    public override List<string> GetObjectsInView()
-//    {
-//      if (Doc == null)
-//      {
-//        return new List<string>();
-//      }
+    public override string GetFileName() => Path.GetFileName(File.GetFileName());
 
-//      var graphicElements = Doc.GetGraphicElements();
+    public override string GetActiveViewName() => "Entire Document";
 
-//      var objs = new List<string>();
-//      using (var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator())
-//      {
-//        objs = graphicElements.Where(el => !el.IsInvisible).Select(el => el.ElementId.ToString()).ToList(); // Note: this returns all graphic objects in the model.
-//      }
+    public override List<string> GetObjectsInView()
+    {
+      if (Model == null)
+        return new List<string>();
 
-//      return objs;
-//    }
+      var graphicElements = Model.GetGraphicElements();
 
-//    public override List<string> GetSelectedObjects()
-//    {
-//      var objs = new List<string>();
+      var objs = new List<string>();
+      using (var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator())
+      {
+        objs = graphicElements.Where(el => !el.IsInvisible).Select(el => el.ElementId.ToString()).ToList(); // Note: this returns all graphic objects in the model.
+      }
 
-//      if (Doc == null)
-//      {
-//        return objs;
-//      }
+      return objs;
+    }
 
-//      uint numSelected = SelectionSetManager.NumSelected();
-//      DgnModelRef modelRef = Session.Instance.GetActiveDgnModelRef();
+    public override List<string> GetSelectedObjects()
+    {
+      var objs = new List<string>();
 
-//      for (uint i = 0; i < numSelected; i++)
-//      {
-//        Element el = null;
-//        SelectionSetManager.GetElement(i, ref el, ref modelRef);
-//        objs.Add(el.ElementId.ToString());
-//      }
+      if (Model == null)
+      {
+        return objs;
+      }
 
-//      return objs;
-//    }
+      uint numSelected = SelectionSetManager.NumSelected();
+      DgnModelRef modelRef = Session.Instance.GetActiveDgnModelRef();
 
-//    public override List<ISelectionFilter> GetSelectionFilters()
-//    {
-//      //Element Type, Element Class, Element Template, Material, Level, Color, Line Style, Line Weight
-//      var levels = new List<string>();
+      for (uint i = 0; i < numSelected; i++)
+      {
+        Bentley.DgnPlatformNET.Elements.Element el = null;
+        SelectionSetManager.GetElement(i, ref el, ref modelRef);
+        objs.Add(el.ElementId.ToString());
+      }
 
-//      FileLevelCache levelCache = Doc.GetFileLevelCache();
-//      foreach (var level in levelCache.GetHandles())
-//      {
-//        levels.Add(level.Name);
-//      }
-//      levels.Sort();
+      return objs;
+    }
 
-//      var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
+    public override List<ISelectionFilter> GetSelectionFilters()
+    {
+      //Element Type, Element Class, Element Template, Material, Level, Color, Line Style, Line Weight
+      var levels = new List<string>();
+      FileLevelCache levelCache = Model.GetFileLevelCache();
+      foreach (var level in levelCache.GetHandles())
+        levels.Add(level.Name);
+      levels.Sort();
 
-//      var filterList = new List<ISelectionFilter>();
-//      filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
-//      filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
+      var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
 
-//#if (OPENROADS || OPENRAIL)
-//      var civilElementTypes = new List<string> { "Alignment" };
-//      filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
-//#endif
+      var filterList = new List<ISelectionFilter>();
+      filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
+      filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
 
-//      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
-//      filterList.Add(new ManualSelectionFilter());
+#if (OPENROADS || OPENRAIL)
+      var civilElementTypes = new List<string> { "Alignment" };
+      filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
+#endif
 
-//      return filterList;
-//    }
+      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
 
-//    //TODO
-//    public override List<MenuItem> GetCustomStreamMenuItems()
-//    {
-//      return new List<MenuItem>();
-//    }
+      return filterList;
+    }
 
-//    public override void SelectClientObjects(string args)
-//    {
-//      throw new NotImplementedException();
-//    }
+    //TODO
+    public override List<MenuItem> GetCustomStreamMenuItems()
+    {
+      return new List<MenuItem>();
+    }
 
+    public override void SelectClientObjects(string args)
+    {
+      throw new NotImplementedException();
+    }
+    #endregion
 
-//    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
-//    {
-//      throw new NotImplementedException();
-//    }
+    #region receiving
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    {
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var transport = new ServerTransport(state.Client.Account, state.StreamId);
+      var stream = await state.Client.StreamGet(state.StreamId);
+      var previouslyReceivedObjects = state.ReceivedObjects;
 
-//    // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-//    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
-//    {
-//      var objects = new List<Tuple<Base, string>>();
+      if (converter == null)
+        throw new Exception("Could not find any Kit!");
 
-//      if (obj is Base @base)
-//      {
-//        if (converter.CanConvertToNative(@base))
-//        {
-//          objects.Add(new Tuple<Base, string>(@base, layer));
-//          return objects;
-//        }
-//        else
-//        {
-//          int totalMembers = @base.GetDynamicMembers().Count();
-//          foreach (var prop in @base.GetDynamicMembers())
-//          {
-//            count++;
+      if (Control.InvokeRequired)
+        Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
+      else
+        converter.SetContextDocument(Session.Instance);
 
-//            // get bake layer name
-//            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-//            string acLayerName = $"{layer}${objLayerName}";
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
 
-//            var nestedObjects = FlattenCommitObject(@base[prop], converter, acLayerName, state, ref count, foundConvertibleMember);
-//            if (nestedObjects.Count > 0)
-//            {
-//              objects.AddRange(nestedObjects);
-//              foundConvertibleMember = true;
-//            }
-//          }
-//          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-//            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
-//          return objects;
-//        }
-//      }
+      /*
+      if (Doc == null)
+      {
+        progress.Report.LogOperationError(new Exception($"No Document is open."));
+        progress.CancellationTokenSource.Cancel();
+      }
+      */
 
-//      if (obj is List<object> list)
-//      {
-//        count = 0;
-//        foreach (var listObj in list)
-//          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
-//        return objects;
-//      }
+      //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      Commit commit = null;
+      if (state.CommitId == "latest")
+      {
+        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+        commit = res.commits.items.FirstOrDefault();
+      }
+      else
+      {
+        commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+      }
+      string referencedObject = commit.referencedObject;
 
-//      if (obj is IDictionary dict)
-//      {
-//        count = 0;
-//        foreach (DictionaryEntry kvp in dict)
-//          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
-//        return objects;
-//      }
+      var commitObject = await Operations.Receive(
+        referencedObject,
+        progress.CancellationTokenSource.Token,
+        transport,
+        onProgressAction: dict => progress.Update(dict),
+        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
+        onErrorAction: (message, exception) =>
+        {
+          progress.Report.LogOperationError(exception);
+          progress.CancellationTokenSource.Cancel();
+        },
+        disposeTransports: true
+        );
 
-//      return objects;
-//    }
+      try
+      {
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream?.id,
+          commitId = commit?.id,
+          message = commit?.message,
+          sourceApplication = Utils.BentleyAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
+      if (progress.Report.OperationErrorsCount != 0)
+        return state;
 
-//    public override async Task SendStream(StreamState state, ProgressViewModel progress)
-//    {
-//      throw new NotImplementedException();
-//    }
+      // invoke conversions on the main thread via control
+      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+      List<ApplicationPlaceholderObject> newPlaceholderObjects;
+      if (Control.InvokeRequired)
+        newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
+      else
+        newPlaceholderObjects = ConvertAndBakeReceivedObjects(flattenedObjects, converter, state, progress);
 
-//  }
-//}
+      if (newPlaceholderObjects == null)
+      {
+        converter.Report.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
+        return null;
+      }
+
+      DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects);
+
+      state.ReceivedObjects = newPlaceholderObjects;
+
+      progress.Report.Merge(converter.Report);
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return null; // the commit is being rolled back
+
+      try
+      {
+        //await state.RefreshStream();
+        WriteStateToFile();
+      }
+      catch (Exception e)
+      {
+        progress.Report.OperationErrors.Add(e);
+      }
+
+      return state;
+    }
+
+    delegate List<ApplicationPlaceholderObject> NativeConversionAndBakeDelegate(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress);
+    private List<ApplicationPlaceholderObject> ConvertAndBakeReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
+    {
+      var placeholders = new List<ApplicationPlaceholderObject>();
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+      Action updateProgressAction = () =>
+      {
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
+      };
+
+      foreach (var @base in objects)
+      {
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          placeholders = null;
+          break;
+        }
+
+        try
+        {
+          var convRes = converter.ConvertToNative(@base);
+
+          if (convRes is ApplicationPlaceholderObject placeholder)
+            placeholders.Add(placeholder);
+          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+            placeholders.AddRange(placeholderList);
+
+          // creating new elements, not updating existing!
+          var convertedElement = convRes as Element;
+          if (convertedElement != null)
+          {
+            var status = convertedElement.AddToModel();
+            if (status == StatusInt.Error)
+              converter.Report.LogConversionError(new Exception($"Failed to bake object {@base.id} of type {@base.speckle_type}."));
+          }
+          else
+          {
+            converter.Report.LogConversionError(new Exception($"Failed to convert object {@base.id} of type {@base.speckle_type}."));
+          }
+        }
+        catch (Exception e)
+        {
+          converter.Report.LogConversionError(e);
+        }
+      }
+
+      return placeholders;
+    }
+
+    /// <summary>
+    /// Recurses through the commit object and flattens it. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    {
+      List<Base> objects = new List<Base>();
+
+      if (obj is Base @base)
+      {
+        if (converter.CanConvertToNative(@base))
+        {
+          objects.Add(@base);
+
+          return objects;
+        }
+        else
+        {
+          foreach (var prop in @base.GetDynamicMembers())
+          {
+            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+          }
+          return objects;
+        }
+      }
+
+      if (obj is List<object> list)
+      {
+        foreach (var listObj in list)
+        {
+          objects.AddRange(FlattenCommitObject(listObj, converter));
+        }
+        return objects;
+      }
+
+      if (obj is IDictionary dict)
+      {
+        foreach (DictionaryEntry kvp in dict)
+        {
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
+        }
+        return objects;
+      }
+
+      return objects;
+    }
+
+    //delete previously sent object that are no longer in this stream
+    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    {
+      foreach (var obj in previouslyReceiveObjects)
+      {
+        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+          continue;
+
+        // get the model object from id               
+        ulong id = Convert.ToUInt64(obj.ApplicationGeneratedId);
+        var element = Model.FindElementById((ElementId)id);
+        if (element != null)
+        {
+          element.DeleteFromModel();
+        }
+      }
+    }
+    #endregion
+
+    #region sending
+    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    {
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var streamId = state.StreamId;
+      var client = state.Client;
+
+      if (Control.InvokeRequired)
+        Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
+      else
+        converter.SetContextDocument(Session.Instance);
+
+      var selectedObjects = new List<Object>();
+
+      if (state.Filter != null)
+      {
+        if (Control.InvokeRequired)
+          state.SelectedObjectIds = (List<string>)Control.Invoke(new GetObjectsFromFilterDelegate(GetObjectsFromFilter), new object[] { state.Filter, converter, progress });
+        else
+          state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter, progress);
+      }
+
+      if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
+      {
+        progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        return;
+      }
+
+      var commitObj = new Base();
+
+      var units = Units.GetUnitsFromString(ModelUnits).ToLower();
+      commitObj["units"] = units;
+
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 0;
+      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+      int convertedCount = 0;
+
+      // grab elements from active model           
+      var objs = new List<Element>();
+#if (OPENROADS || OPENRAIL)
+      bool convertCivilObject = false;
+      var civObjs = new List<NamedModelEntity>();
+
+      if (civilElementKeys.Count(x => state.SelectedObjectIds.Contains(x)) > 0)
+      {
+        if (Control.InvokeRequired)
+          civObjs = (List<NamedModelEntity>)Control.Invoke(new GetCivilObjectsDelegate(GetCivilObjects), new object[] { state });
+        else
+          civObjs = GetCivilObjects(state);
+
+        objs = civObjs.Select(x => x.Element).ToList();
+        convertCivilObject = true;
+      }
+      else
+      {
+        objs = state.SelectedObjectIds.Select(x => Model.FindElementById((ElementId)Convert.ToUInt64(x))).ToList();
+      }
+#else
+      objs = state.SelectedObjectIds.Select(x => Model.FindElementById((ElementId)Convert.ToUInt64(x))).ToList();
+#endif
+
+#if (OPENBUILDINGS)
+      if (ExportGridLines)
+      {
+        var converted = ConvertGridLines(converter, progress);
+
+        if (converted == null)
+        {
+          progress.Report.LogConversionError(new Exception($"Failed to convert Gridlines."));
+        }
+        else
+        {
+          var containerName = "Grid Systems";
+
+          if (commitObj[$"@{containerName}"] == null)
+            commitObj[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+          // not sure this makes much sense here
+          conversionProgressDict["Conversion"]++;
+          progress.Update(conversionProgressDict);
+
+          convertedCount++;
+        }
+      }
+#endif
+
+      foreach (var obj in objs)
+      {
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          return;
+
+        if (obj == null)
+        {
+          progress.Report.Log($"Skipped not found object.");
+          continue;
+        }
+
+        var objId = obj.ElementId.ToString();
+        var objType = obj.ElementType;
+
+        if (!converter.CanConvertToSpeckle(obj))
+        {
+          progress.Report.Log($"Skipped not supported type: ${objType}. Object ${objId} not sent.");
+          continue;
+        }
+
+        // convert obj
+        Base converted = null;
+        string containerName = string.Empty;
+        try
+        {
+          var levelCache = Model.GetFileLevelCache();
+          var objLevel = levelCache.GetLevel(obj.LevelId);
+          var layerName = "Unknown";
+          if (objLevel != null)
+            layerName = objLevel.Name;
+
+#if (OPENROADS || OPENRAIL)
+          if (convertCivilObject)
+          {
+            var civilObj = civObjs[objs.IndexOf(obj)];
+            if (Control.InvokeRequired)
+            {
+              converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { civilObj });
+              Control.Invoke((Action)(() => { containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name; }));
+            }
+            else
+            {
+              converted = converter.ConvertToSpeckle(civilObj);
+              containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name;
+            }
+          }
+          else
+          {
+            if (Control.InvokeRequired)
+              converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+            else
+              converted = converter.ConvertToSpeckle(obj);
+            containerName = layerName;
+          }
+#else
+          if (Control.InvokeRequired)
+            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+          else
+            converted = converter.ConvertToSpeckle(obj);
+
+          containerName = layerName;
+#endif
+          if (converted == null)
+          {
+            progress.Report.LogConversionError(new Exception($"Failed to convert object {objId} of type {objType}."));
+            continue;
+          }
+        }
+        catch
+        {
+          progress.Report.LogConversionError(new Exception($"Failed to convert object {objId} of type {objType}."));
+          continue;
+        }
+
+        /* TODO: adding the feature data and properties per object 
+        foreach (var key in obj.ExtensionDictionary)
+        {
+          converted[key] = obj.ExtensionDictionary.GetUserString(key);
+        }
+        */
+
+        if (commitObj[$"@{containerName}"] == null)
+          commitObj[$"@{containerName}"] = new List<Base>();
+        ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
+
+        converted.applicationId = objId;
+
+        convertedCount++;
+      }
+
+      progress.Report.Merge(converter.Report);
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return;
+
+      if (convertedCount == 0)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+        return;
+      }
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return;
+
+      Execute.PostToUIThread(() => progress.Max = convertedCount);
+
+      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
+
+      var commitObjId = await Operations.Send(
+        commitObj,
+        progress.CancellationTokenSource.Token,
+        transports,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (err, exception) =>
+        {
+          progress.Report.LogOperationError(exception);
+          progress.CancellationTokenSource.Cancel();
+        },
+        disposeTransports: true
+        );
+
+      var actualCommit = new CommitCreateInput
+      {
+        streamId = streamId,
+        objectId = commitObjId,
+        branchName = state.BranchName,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+        sourceApplication = Utils.BentleyAppName
+      };
+
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+
+      try
+      {
+        var commitId = await client.CommitCreate(actualCommit);
+        state.PreviousCommitId = commitId;
+      }
+      catch (Exception e)
+      {
+        progress.Report.LogOperationError(e);
+      }
+    }
+
+#if (OPENROADS || OPENRAIL)
+    delegate List<NamedModelEntity> GetCivilObjectsDelegate(StreamState state);
+    private List<NamedModelEntity> GetCivilObjects(StreamState state)
+    {
+      var civilObjs = new List<NamedModelEntity>();
+      foreach (var objId in state.SelectedObjectIds)
+      {
+        switch (objId)
+        {
+          case "Alignment":
+            civilObjs.AddRange(GeomModel.Alignments);
+            break;
+          case "Corridor":
+            civilObjs.AddRange(GeomModel.Corridors);
+            break;
+        }
+      }
+      return civilObjs;
+    }
+#endif
+#if (OPENBUILDINGS)
+    private Base ConvertGridLines(ISpeckleConverter converter, ProgressViewModel progress)
+    {
+      Base converted = null;
+
+      ITFApplication appInst = new TFApplicationList();
+      if (0 == appInst.GetProject(0, out ITFLoadableProjectList projList) && projList != null)
+      {
+        ITFLoadableProject proj = projList.AsTFLoadableProject;
+        if (null == proj)
+        {
+          progress.Report.ConversionErrors.Add(new Exception("Could not retrieve project for exporting gridlines"));
+          return converted;
+        }
+
+        ITFDrawingGrid drawingGrid = null;
+        if (Control.InvokeRequired)
+          Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
+        else
+          proj.GetDrawingGrid(false, 0, out drawingGrid);
+
+        if (null == drawingGrid)
+        {
+          progress.Report.ConversionErrors.Add(new Exception("Could not retrieve drawing grid for exporting gridlines"));
+          return converted;
+        }
+
+        if (Control.InvokeRequired)
+          converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
+        else
+          converted = converter.ConvertToSpeckle(drawingGrid);
+      }
+      return converted;
+    }
+#endif
+
+    private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter, ProgressViewModel progress)
+    {
+      var selection = new List<string>();
+      switch (filter.Slug)
+      {
+        case "all":
+          return Model.ConvertibleObjects(converter);
+        case "level":
+          foreach (var levelName in filter.Selection)
+          {
+            var levelCache = Model.GetFileLevelCache();
+            var levelHandle = levelCache.GetLevelByName(levelName);
+            var levelId = levelHandle.LevelId;
+
+            var graphicElements = Model.GetGraphicElements();
+            var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator();
+            var objs = graphicElements.Where(el => el.LevelId == levelId).Select(el => el.ElementId.ToString()).ToList();
+            selection.AddRange(objs);
+          }
+          return selection;
+        case "elementType":
+          foreach (var typeName in filter.Selection)
+          {
+            MSElementType selectedType = MSElementType.None;
+            switch (typeName)
+            {
+              case "Arc":
+                selectedType = MSElementType.Arc;
+                break;
+              case "Ellipse":
+                selectedType = MSElementType.Ellipse;
+                break;
+              case "Line":
+                selectedType = MSElementType.Line;
+                break;
+              case "Spline":
+                selectedType = MSElementType.BsplineCurve;
+                break;
+              case "Line String":
+                selectedType = MSElementType.LineString;
+                break;
+              case "Complex Chain":
+                selectedType = MSElementType.ComplexString;
+                break;
+              case "Shape":
+                selectedType = MSElementType.Shape;
+                break;
+              case "Complex Shape":
+                selectedType = MSElementType.ComplexShape;
+                break;
+              case "Mesh":
+                selectedType = MSElementType.MeshHeader;
+                break;
+              case "Surface":
+                selectedType = MSElementType.BsplineSurface;
+                break;
+              default:
+                break;
+            }
+            var graphicElements = Model.GetGraphicElements();
+            var elementEnumerator = (ModelElementsEnumerator)graphicElements.GetEnumerator();
+            var objs = graphicElements.Where(el => el.ElementType == selectedType).Select(el => el.ElementId.ToString()).ToList();
+            selection.AddRange(objs);
+          }
+          return selection;
+#if (OPENROADS || OPENRAIL)
+        case "civilElementType":
+          foreach (var typeName in filter.Selection)
+          {
+            switch (typeName)
+            {
+              case "Alignment":
+                var alignments = GeomModel.Alignments;
+                if (alignments != null)
+                  if (alignments.Count() > 0)
+                    selection.Add("Alignment");
+                break;
+              case "Corridor":
+                var corridors = GeomModel.Corridors;
+                if (corridors != null)
+                  if (corridors.Count() > 0)
+                    selection.Add("Corridor");
+                break;
+              default:
+                break;
+            }
+          }
+          return selection;
+#endif
+        default:
+          progress.Report.LogConversionError(new Exception("Filter type is not supported in this app. Why did the developer implement it in the first place?"));
+          return selection;
+      }
+    }
+#endregion
+
+#region helper methods
+    delegate void WriteStateDelegate(DgnFile File, List<StreamState> DocumentStreams);
+
+    /// <summary>
+    /// Transaction wrapper around writing the local streams to the file.
+    /// </summary>
+    private void WriteStateToFile()
+    {
+      if (Control.InvokeRequired)
+        Control.Invoke(new WriteStateDelegate(StreamStateManager2.WriteStreamStateList), new object[] { File, DocumentStreams });
+      else
+        StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
+    }
+#endregion
+  }
+}
