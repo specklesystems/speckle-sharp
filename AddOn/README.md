@@ -7,6 +7,10 @@ This repository contains a CMake based Add-On for Archicad. You can use it to ge
 - [CMake](https://cmake.org) (3.16 minimum version is needed). on windows its the most painless to install cmake with choco -> `choco install cmake --installargs 'ADD_CMAKE_TO_PATH=User'`
 - [Python](https://www.python.org) for resource compilation (version 2.7+ or 3.8+).
 
+On Windows, run the following in an elevated Powershell to install `cmake`:
+    
+    choco install cmake --installargs 'ADD_CMAKE_TO_PATH=User'
+
 ## Build
 
 - [Download the Archicad Add-On Development Kit from here](http://archicadapi.graphisoft.com).
@@ -18,6 +22,8 @@ This repository contains a CMake based Add-On for Archicad. You can use it to ge
   - `AC_MDID_LOC`: (optional) Add-On Local ID. Ommitting this will result in a 1 value. 
 - Without setting the last two variables AC will only load the addon in demo mode. To release your Add-On you have to provide valid MDIDs
 
+Note: when testing on Windows, none of these env variables needed to be set.
+
 ### Visual Studio (Windows)
 
 Run these commands from the command line.
@@ -28,6 +34,10 @@ cd Build
 cmake -G "Visual Studio 17 2022" -A "x64" -DAC_API_DEVKIT_DIR="C:\API Development Kit 25.3006" ..
 cd ..
 ```
+
+Alternatively, you can run the following one-liner:
+
+    cmake -B ./Build/ -DAC_API_DEVKIT_DIR="C:\Program Files\GRAPHISOFT\API Development Kit 25.3002" 
 
 ### XCode (MacOS)
 
@@ -67,8 +77,14 @@ The connector can be started from the File/Interoperability/Speckle menu entry.
 To use the Add-On in Archicad, you have to add your compiled .apx file in Add-On Manager. The example Add-On registers a new command into the Interoperability menu. Please note that the example Add-On works only in the demo version of Archicad. 
 
 You can start Archicad in demo mode with the following command line commands:
-- Windows: `ARCHICAD.exe -DEMO`
-- MacOS: `ARCHICAD\ 25.app/Contents/MacOS/ARCHICAD -demo`
+Windows:
+
+    cd "C:\Program Files\GRAPHISOFT\ARCHICAD 25"
+    ./ARCHICAD.exe -DEMO
+
+MacOS: 
+
+    ARCHICAD\ 25.app/Contents/MacOS/ARCHICAD -demo
 
 ## Archicad Compatibility
 

@@ -104,7 +104,7 @@ static GS::Optional<API_Guid> CreateElement (const GS::ObjectState& elementModel
 		}
 
 		GS::Array<ModelInfo::Vertex> vertices;
-		modelOs->Get (Model::VerteciesFieldName, vertices);
+		modelOs->Get (Model::VerticiesFieldName, vertices);
 
 		GS::Array<ModelInfo::Polygon> polygons;
 		modelOs->Get (Model::PolygonsFieldName, polygons);
