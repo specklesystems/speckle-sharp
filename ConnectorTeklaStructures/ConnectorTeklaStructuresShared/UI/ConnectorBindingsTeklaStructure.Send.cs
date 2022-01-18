@@ -14,12 +14,11 @@ using Speckle.ConnectorTeklaStructures.Util;
 using System.Linq;
 using DesktopUI2.ViewModels;
 
-using Tekla.Structures.Model;
-
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
+
   {
     #region sending
 

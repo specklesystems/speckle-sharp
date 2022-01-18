@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
+using Speckle.Core.Logging;
+using ConnectorTeklaStructures.Storage;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {

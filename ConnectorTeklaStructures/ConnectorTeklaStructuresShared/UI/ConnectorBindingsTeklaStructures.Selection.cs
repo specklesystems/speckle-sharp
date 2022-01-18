@@ -5,6 +5,9 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using Speckle.ConnectorTeklaStructures.Util;
 using System.Linq;
+using Tekla.Structures.Model;
+using Tekla.Structures.Model.UI;
+
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
@@ -13,20 +16,9 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public override List<string> GetSelectedObjects()
     {
       var names = new List<string>();
-      var util = new ConnectorTeklaStructuresUtils();
-      var typeNameTupleList = ConnectorTeklaStructuresUtils.SelectedObjects(Model);
-      if (typeNameTupleList == null) return new List<string>() { };
-      foreach (var item in typeNameTupleList)
-      {
-        (string typeName, string name) = item;
-        if (ConnectorTeklaStructuresUtils.IsTypeTeklaStructuresAPIUsable(typeName))
-        {
-          names.Add(string.Concat(typeName, ": ", name));
-        }
-      }
-      if (names.Count == 0)
-      {
-        return new List<string>() { };
+      ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
+      while(myEnum.MoveNext()){
+        names.Add(myEnum.Current.Identifier.ToString());
       }
       return names;
     }
@@ -57,9 +49,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
             new AllSelectionFilter {Slug="all",  Name = "All",
                 Icon = "CubeScan", Description = "Selects all document objects." },
 
-
-            new ListSelectionFilter { Slug = "group", Name = "Group",
-            Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to TeklaStructures Group" }
             };
     }
 
@@ -102,71 +91,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
                 .ToList());
           }
           return selection;
-        case "group":
-          //Clear objects first
-          //Model.SelectObj.ClearSelection();
-          var groupFilter = filter as ListSelectionFilter;
-          foreach (var group in groupFilter.Selection)
-          {
-            //Model.SelectObj.Group(group);
-          }
-          return GetSelectedObjects();
-
-
-
-          /// TeklaStructures doesn't list fields of different objects. 
-          /// For "param" search, maybe search over the name of
-          /// methods of each type?
-
-          //case "param":
-          //    try
-          //    {
-          //        if (ConnectorTeklaStructuresUtils.ObjectTypes.Count == 0)
-          //        {
-          //            var _ = ConnectorTeklaStructuresUtils.GetObjectTypesAndNames(Model);
-          //        }
-
-          //        var propFilter = filter as PropertySelectionFilter;
-          //        var query = new FilteredElementCollector(doc)
-          //          .WhereElementIsNotElementType()
-          //          .WhereElementIsNotElementType()
-          //          .WhereElementIsViewIndependent()
-          //          .Where(x => x.IsPhysicalElement())
-          //          .Where(fi => fi.LookupParameter(propFilter.PropertyName) != null);
-
-          //        propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
-
-          //        switch (propFilter.PropertyOperator)
-          //        {
-          //            case "equals":
-          //                query = query.Where(fi =>
-          //                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
-          //                break;
-          //            case "contains":
-          //                query = query.Where(fi =>
-          //                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
-          //                break;
-          //            case "is greater than":
-          //                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-          //                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-          //                                            fi.LookupParameter(propFilter.PropertyName)) >
-          //                                          double.Parse(propFilter.PropertyValue));
-          //                break;
-          //            case "is less than":
-          //                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-          //                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-          //                                            fi.LookupParameter(propFilter.PropertyName)) <
-          //                                          double.Parse(propFilter.PropertyValue));
-          //                break;
-          //        }
-
-          //        selection = query.ToList();
-          //    }
-          //    catch (Exception e)
-          //    {
-          //        Log.CaptureException(e);
-          //    }
-          //    return selection;
       }
 
       return selection;

@@ -73,7 +73,7 @@ namespace ConnectorTeklaStructures.Storage
     /// <param name="model"></param>
     private static void GetOrCreateSpeckleFilePath(Model model)
     {
-      string TeklaStructuresModelfilePath = model.GetModelFilename(true);
+      string TeklaStructuresModelfilePath = model.GetInfo().ModelPath;
       if (TeklaStructuresModelfilePath == "")
       {
         // TeklaStructures model is probably not saved, so speckle shouldn't do much
