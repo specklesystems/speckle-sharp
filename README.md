@@ -6,15 +6,30 @@ Private collaboration repository between the Graphisoft and Speckle teams for Ar
 
 ### Building the Connector
 
-Follow the instructions in the `AddOn/README.md` to build it using CMake. You will now have a `AddOn/Build` directory containing a `Speckle Connector.sln` file.
+There are two projects to build:
 
-Open the Speckle Connector solution file and build the entire solution.
+1. The `Speckle Connector` C++ project located in the `AddOns` directory
+2. The `ConnectorArchicad` C# project located in the `speckle-sharp/ConnectorArchicad` directory
+
+Note: More detailed instructions for building the AddOn with CMake can be found in the `AddOn/README.md`.
+
+Install `cmake` in an elevated powershell with chocolatey using the following command:
+    
+    choco install cmake --installargs 'ADD_CMAKE_TO_PATH=User'
+
+From the `./AddOn` directory, run the following command to build using `cmake`:
+
+    cmake -B ./Build/ -DAC_API_DEVKIT_DIR="C:\Program Files\GRAPHISOFT\API Development Kit 25.3002" 
+
+You will now have a `AddOn/Build` directory containing a `Speckle Connector.sln` file.
+
+Open the Speckle Connector solution file `Addon/Build/Speckle Connector.sln` in your editor of choice and build the entire solution.
 
 Next, open `speckle-sharp/ConnectorArchicad/ConnectorArchicad.sln` and build that entire solution.
 
 ### Adding the Connector to ArchiCAD
 
-You will now need to manually move the build files into the ArchiCAD `Add-Ons` directory. On Windows, you will find this directory at:
+You will now need to manually move the build files for both of the projects you've just built into the ArchiCAD `Add-Ons` directory. On Windows, you will find this directory at:
 
     C:\Program Files\GRAPHISOFT\ARCHICAD 25\Add-Ons
 
