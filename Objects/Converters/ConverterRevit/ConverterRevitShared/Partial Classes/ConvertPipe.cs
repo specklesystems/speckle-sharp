@@ -75,9 +75,9 @@ namespace Objects.Converter.Revit
       var placeholders = new List<ApplicationPlaceholderObject>
       {
         new ApplicationPlaceholderObject
-          {applicationId = specklePipe.applicationId, ApplicationGeneratedId = pipe.UniqueId, NativeObject = pipe}
+          {applicationId = specklePipe.applicationId, ApplicationGeneratedId = element.UniqueId, NativeObject = element}
       };
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} Pipe {pipe.Id}");
+      Report.Log($"{(isUpdate ? "Updated" : "Created")} Pipe {element.Id}");
       return placeholders;
     }
 
@@ -197,8 +197,6 @@ namespace Objects.Converter.Revit
           var et = new XYZ();
           var arcPoints = new List<XYZ>() { baseCurve.GetEndPoint(0), baseCurve.GetEndPoint(1) };
           pipe = DB.Plumbing.FlexPipe.Create(Doc, system.Id, type.Id, level.Id, st, et, arcPoints);
-          break;
-        case DB.PolyLine:
           break;
         default:
           break;

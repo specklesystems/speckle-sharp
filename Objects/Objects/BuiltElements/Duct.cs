@@ -3,12 +3,16 @@ using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Speckle.Newtonsoft.Json;
+using System;
 
 namespace Objects.BuiltElements
 {
   public class Duct : Base, IDisplayMesh
   {
+    [JsonIgnore, Obsolete("Replaced with baseCurve property")]
     public Line baseLine { get; set; }
+    public ICurve baseCurve { get; set; }
     public double width { get; set; }
     public double height { get; set; }
     public double diameter { get; set; }
