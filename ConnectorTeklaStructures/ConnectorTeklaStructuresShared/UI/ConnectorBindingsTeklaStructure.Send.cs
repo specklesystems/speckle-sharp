@@ -108,27 +108,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
         progress.Update(conversionProgressDict);
       }
 
-      Base ElementCount = converter.ConvertToSpeckle(("ElementsCount", "TeklaStructures"));
-      if (ElementCount.applicationId != null)
-      {
-        objCount = Convert.ToInt32(ElementCount.applicationId);
-      }
-      else
-      {
-        objCount = 0;
-      }
-
-
-      if (commitObj["@Model"] == null)
-      {
-        commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "TeklaStructures"));
-      }
-
-      if (commitObj["AnalysisResults"] == null)
-      {
-        commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "TeklaStructures"));
-      }
-
       progress.Report.Merge(converter.Report);
 
       if (objCount == 0)

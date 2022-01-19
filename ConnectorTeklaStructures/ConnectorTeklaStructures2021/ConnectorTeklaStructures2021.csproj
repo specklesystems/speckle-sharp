@@ -119,7 +119,6 @@
   <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2021.0\nt\bin\plugins\Speckle2Tekla" /Y /I /E</PostBuildEvent>
   </PropertyGroup>
 </Project>

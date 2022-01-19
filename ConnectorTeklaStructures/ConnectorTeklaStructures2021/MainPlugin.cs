@@ -20,6 +20,7 @@ using DesktopUI2.Views;
 using System.Threading.Tasks;
 using System.IO;
 using Assembly = System.Reflection.Assembly;
+using Speckle.ConnectorTeklaStructures.UI;
 
 namespace Speckle.ConnectorTeklaStructures
 {
@@ -47,7 +48,7 @@ namespace Speckle.ConnectorTeklaStructures
 
     private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel();
+      var viewModel = new MainWindowViewModel(Bindings);
       MainWindow = new MainWindow
       {
         DataContext = viewModel
@@ -89,6 +90,7 @@ namespace Speckle.ConnectorTeklaStructures
     {
       // Link to model.         
       model = new Model();
+      Bindings = new ConnectorBindingsTeklaStructures(model);
 
       // Link to input values.         
       _data = data;

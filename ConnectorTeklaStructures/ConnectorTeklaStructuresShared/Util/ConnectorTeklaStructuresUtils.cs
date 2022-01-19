@@ -51,16 +51,16 @@ namespace Speckle.ConnectorTeklaStructures.Util
       switch (objectType)
       {
       
+        
         default:
           return null;
       }
     }
     #region Get List Names
     #endregion
-
     public enum TeklaStructuresAPIUsableTypes
     {
-      Beam,
+      Beam = ModelObject.ModelObjectEnum.BEAM,
 
 
       //ColumnResults,

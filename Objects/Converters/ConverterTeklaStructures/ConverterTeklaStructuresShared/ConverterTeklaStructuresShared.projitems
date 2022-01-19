@@ -9,5 +9,8 @@
     <Import_RootNamespace>ConverterTeklaStructuresShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructureUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
   </ItemGroup>
 </Project>

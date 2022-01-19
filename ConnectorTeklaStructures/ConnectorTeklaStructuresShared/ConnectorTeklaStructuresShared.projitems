@@ -10,13 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.ClientOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorTeklaStructuresUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Receive.cs" />
-    <None Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Send.cs" />
   </ItemGroup>
 </Project>
