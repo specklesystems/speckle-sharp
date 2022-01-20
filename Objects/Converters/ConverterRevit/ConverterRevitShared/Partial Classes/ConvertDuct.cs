@@ -18,11 +18,9 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> DuctToNative(BuiltElements.Duct speckleDuct)
     {
       var speckleRevitDuct = speckleDuct as RevitDuct;
-      var ductType = GetElementType<DuctType>(speckleDuct);
-      var systemFamily = (speckleDuct is RevitDuct rd) ? rd.systemName : "";
-
+      var systemFamily = (speckleRevitDuct != null) ? speckleRevitDuct.systemName : "";
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType()
-        .OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();
+          .OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();
       var system = types.FirstOrDefault(x => x.Name == systemFamily);
       if (system == null)
       {
@@ -33,6 +31,8 @@ namespace Objects.Converter.Revit
       Element duct = null;
       if (speckleDuct.baseCurve == null || speckleDuct.baseCurve is Line)
       {
+        var ductType = GetElementType<DuctType>(speckleDuct);
+
         DB.Line baseLine = (speckleDuct.baseCurve != null) ? LineToNative(speckleDuct.baseCurve as Line) : LineToNative(speckleDuct.baseLine);
         XYZ startPoint = baseLine.GetEndPoint(0);
         XYZ endPoint = baseLine.GetEndPoint(1);
@@ -40,9 +40,18 @@ namespace Objects.Converter.Revit
         DB.Mechanical.Duct lineDuct = DB.Mechanical.Duct.Create(Doc, system.Id, ductType.Id, lineLevel.Id, startPoint, endPoint);
         duct = lineDuct;
       }
-      else if (speckleDuct.baseCurve is Polyline)
+      else if (speckleDuct.baseCurve is Polyline polyline)
       {
+        var ductType = GetElementType<FlexDuctType>(speckleDuct);
 
+        var speckleRevitFlexDuct = speckleDuct as RevitFlexDuct;
+        var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();
+        DB.Level flexLevel = LevelToNative(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromPoint(points.First()));
+        var startTangent = VectorToNative(speckleRevitFlexDuct.startTangent);
+        var endTangent = VectorToNative(speckleRevitFlexDuct.endTangent);
+
+        DB.Mechanical.FlexDuct flexDuct = DB.Mechanical.FlexDuct.Create(Doc, system.Id, ductType.Id, flexLevel.Id, startTangent, endTangent, points);
+        duct = flexDuct;
       }
       else
       {
@@ -64,7 +73,7 @@ namespace Objects.Converter.Revit
         TrySetParam(duct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM, speckleRevitDuct.diameter, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitDuct.length, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_VELOCITY, speckleRevitDuct.velocity, speckleRevitDuct.units);
-        //Report.Log($"Created Duct {duct.Id}");
+
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
@@ -100,7 +109,6 @@ namespace Objects.Converter.Revit
         displayMesh = GetElementMesh(revitDuct)
       };
 
-
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
@@ -110,33 +118,34 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
-      //Report.Log($"Converted Duct {revitDuct.Id}");
+
       return speckleDuct;
     }
 
     public BuiltElements.Duct DuctToSpeckle(FlexDuct revitDuct)
     {
-      var baseGeometry = LocationToSpeckle(revitDuct);
-      if (!(baseGeometry is Curve baseCurve))
-      {
-        throw new Speckle.Core.Logging.SpeckleException("Could not determine location from duct curve");
-      }
+      // create polyline from revitduct points
+      var polyline = new Polyline();
+      polyline.value = PointsToFlatList(revitDuct.Points.Select(o => PointToSpeckle(o)));
+      polyline.units = ModelUnits;
+      polyline.closed = false;
 
       // SPECKLE DUCT
-      var speckleDuct = new RevitDuct
+      var speckleDuct = new RevitFlexDuct
       {
         family = revitDuct.FlexDuctType.FamilyName,
         type = revitDuct.FlexDuctType.Name,
-        baseCurve = baseLine,
+        baseCurve = polyline,
         diameter = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM),
         height = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_HEIGHT_PARAM),
         width = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_WIDTH_PARAM),
         length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH),
+        startTangent = VectorToSpeckle(revitDuct.StartTangent),
+        endTangent = VectorToSpeckle(revitDuct.EndTangent),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayMesh = GetElementMesh(revitDuct)
       };
-
 
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
@@ -147,7 +156,7 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
-      //Report.Log($"Converted Duct {revitDuct.Id}");
+
       return speckleDuct;
     }
   }
