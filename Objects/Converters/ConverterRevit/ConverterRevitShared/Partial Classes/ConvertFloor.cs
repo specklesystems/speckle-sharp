@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
 
-      speckleFloor.displayMesh = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleFloor, revitFloor);
       //Report.Log($"Converted Floor {revitFloor.Id}");

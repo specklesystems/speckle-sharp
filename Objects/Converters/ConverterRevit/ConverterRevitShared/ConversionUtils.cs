@@ -829,21 +829,31 @@ namespace Objects.Converter.Revit
 
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
-      RenderMaterial material = null;
       var matId = element.GetMaterialIds(false).FirstOrDefault();
 
       if (matId == null)
       {
         // TODO: Fallback to display color or something? 
-        return material;
+        return null;
       }
 
       var revitMaterial = Doc.GetElement(matId) as Material;
-      material = new RenderMaterial();
-      material.opacity = 1 - revitMaterial.Transparency / 100f;
-      material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();
+      return RenderMaterialToNative(revitMaterial);
+    }
+    
+    public static RenderMaterial RenderMaterialToNative(Material revitMaterial)
+    {
+      RenderMaterial material = new RenderMaterial()
+      {
+        name = revitMaterial.Name,
+        opacity = 1 - (revitMaterial.Transparency / 100d),
+        //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
+        //roughness = 1 - (revitMaterial.Smoothness / 100d),
+        diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb()
+      };
 
       return material;
     }
+    
   }
 }

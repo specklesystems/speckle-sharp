@@ -87,7 +87,7 @@ namespace Objects.Converter.Revit
         length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayMesh = GetElementMesh(revitDuct)
+        displayValue = GetElementMesh(revitDuct)
       };
 
 

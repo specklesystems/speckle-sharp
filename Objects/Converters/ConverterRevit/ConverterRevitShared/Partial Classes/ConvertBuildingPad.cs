@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
-      specklePad.displayMesh = GetElementDisplayMesh(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      specklePad.displayValue = GetElementDisplayMesh(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       //Report.Log($"Converted BuildingPad {revitPad.Id}");
       return specklePad;
     }

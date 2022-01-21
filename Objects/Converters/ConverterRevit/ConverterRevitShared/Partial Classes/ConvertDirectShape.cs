@@ -150,20 +150,26 @@ namespace Objects.Converter.Revit
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
       var category = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat);
       var element = revitAc.get_Geometry(new Options());
-      var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
+
+      var geometries = new List<Base>();
+
+      foreach (var obj in element)
+      {
+        switch (obj)
         {
-          return obj
-          switch
-          {
-            DB.Mesh mesh => MeshToSpeckle(mesh),
-            Solid solid => SolidToSpeckleMesh(solid), // Should be replaced with 'BrepToSpeckle' when it works.
-            _ => null
-          };
-        });
+          case DB.Mesh mesh:
+            geometries.Add(MeshToSpeckle(mesh));
+            break;
+          case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
+            geometries.AddRange(GetMeshesFromSolids(new[] {solid}));
+            break;
+        }
+      }
+      
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
-        geometries.ToList()
+        geometries
       );
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;
