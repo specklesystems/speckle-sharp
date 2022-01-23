@@ -106,6 +106,8 @@ namespace Speckle.ConnectorDynamo.ViewNode
         return;
       }
 
+      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream View" } });
+
       Process.Start(Url);
     }
 

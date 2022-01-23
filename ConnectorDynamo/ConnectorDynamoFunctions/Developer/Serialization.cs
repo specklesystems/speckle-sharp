@@ -1,4 +1,5 @@
-﻿using Autodesk.DesignScript.Runtime;
+﻿using System.Collections.Generic;
+using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -15,6 +16,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static string Serialize(Base @base)
     {
       Tracker.TrackPageview(Tracker.SERIALIZE);
+      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Serialize" } });
       return Operations.Serialize(@base);
     }
 
@@ -26,6 +28,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object Deserialize(string json)
     {
       Tracker.TrackPageview(Tracker.DESERIALIZE);
+      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Deserialize" } });
       return Operations.Deserialize(json);
     }
   }
