@@ -109,6 +109,7 @@ namespace DesktopUI2.ViewModels
       get => _selectedAccount;
       set
       {
+        //the account will be cached, so no need to include it in future operations
         Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Select" } });
         this.RaiseAndSetIfChanged(ref _selectedAccount, value);
         if (value != null)
@@ -252,6 +253,7 @@ namespace DesktopUI2.ViewModels
       {
         SavedStreams.Remove(s);
         Tracker.TrackPageview("stream", "remove");
+        Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
@@ -312,6 +314,7 @@ namespace DesktopUI2.ViewModels
       var stream = parameter as Stream;
       Process.Start(new ProcessStartInfo($"{SelectedAccount.serverInfo.url.TrimEnd('/')}/streams/{stream.id}") { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
+      Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
     }
 
     public void SendCommand(object parameter)
@@ -386,6 +389,7 @@ namespace DesktopUI2.ViewModels
           OpenStream(streamState);
 
           Tracker.TrackPageview(Tracker.STREAM_CREATE);
+          Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Create" } });
 
           GetStreams().ConfigureAwait(false); //update streams
         }
@@ -462,6 +466,7 @@ namespace DesktopUI2.ViewModels
           OpenStream(streamState);
 
           Tracker.TrackPageview("stream", "add-from-url");
+          Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Add From URL" } });
         }
         catch (Exception e)
         {
