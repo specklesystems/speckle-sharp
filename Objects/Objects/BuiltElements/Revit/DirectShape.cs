@@ -19,7 +19,7 @@ namespace Objects.BuiltElements.Revit
     [DetachProperty]
     public List<Base> baseGeometries { get; set; }
     
-    [Chunkable]
+    [DetachProperty]
     public List<Base> displayValue { get; set; }
 
     public string units { get; set; }

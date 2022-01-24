@@ -41,7 +41,7 @@ namespace Objects.Geometry
 
     public Interval domain { get; set; }
 
-    [Chunkable]
+    [DetachProperty]
     public Polyline displayValue { get; set; }
 
     public bool closed { get; set; }

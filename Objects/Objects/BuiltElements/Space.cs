@@ -28,7 +28,7 @@ namespace Objects.BuiltElements
 
         // additional properties to add: also inclue space separation lines here? Phase? Associated Room? Zone object instead of id?
         
-        [Chunkable]
+        [DetachProperty]
         public List<Mesh> displayValue { get; set; }
         
         public string units { get; set; }
