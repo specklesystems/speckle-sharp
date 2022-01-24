@@ -1,13 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Objects.Converter.TeklaStructures2021</AssemblyName>
-    <RootNamespace>Converter.Converter.TeklaStructures</RootNamespace>
+    <RootNamespace>Objects.Converter.TeklaStructures</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;TeklaStructures2021</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TeklaStructures2021</DefineConstants>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -21,6 +25,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Tekla.Structures">
+      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2021.0\nt\bin\plugins\Tekla.Structures.dll</HintPath>
+    </Reference>
+    <Reference Include="Tekla.Structures.Model">
+      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2021.0\nt\bin\plugins\Tekla.Structures.Model.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <Import Project="..\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />

@@ -12,8 +12,6 @@ namespace Speckle.ConnectorTeklaStructures.Util
   {
 #if TeklaStructures2021
     public static string TeklaStructuresAppName = Applications.TeklaStructures2021;
-#else
-    public static string TeklaStructuresAppName = Applications.TeklaStructures;
 #endif
 
     public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
@@ -50,14 +48,24 @@ namespace Speckle.ConnectorTeklaStructures.Util
     {
       switch (objectType)
       {
-      
-        
+
+
         default:
           return null;
       }
     }
     #region Get List Names
+
+    public static List<string> GetAllBeams(){
+      List<string> identifiers = new List<string> { };
+      return identifiers;
+    }
     #endregion
+
+    private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>
+    {
+      ModelObject.ModelObjectEnum.BEAM
+    };
     public enum TeklaStructuresAPIUsableTypes
     {
       Beam = ModelObject.ModelObjectEnum.BEAM,

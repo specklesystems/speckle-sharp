@@ -13,6 +13,8 @@ using Speckle.Core.Logging;
 using Speckle.ConnectorTeklaStructures.Util;
 using System.Linq;
 using DesktopUI2.ViewModels;
+using Tekla.Structures.Model;
+
 
 
 namespace Speckle.ConnectorTeklaStructures.UI
@@ -22,7 +24,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
   {
     #region sending
 
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async System.Threading.Tasks.Task SendStream(StreamState state, ProgressViewModel progress)
     {
       //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
@@ -34,9 +36,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var commitObj = new Base();
       int objCount = 0;
 
+      var selectedObjects = new List<ModelObject>();
+
       if (state.Filter != null)
       {
-        state.SelectedObjectIds = GetSelectionFilterObjects(state.Filter);
+        selectedObjects = GetSelectionFilterObjects(state.Filter);
+        state.SelectedObjectIds = selectedObjects.Select(x => x.Identifier.GUID.ToString()).ToList();
       }
 
       var totalObjectCount = state.SelectedObjectIds.Count();
@@ -57,7 +62,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       //    commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "TeklaStructures"));
       //}
 
-      foreach (var applicationId in state.SelectedObjectIds)
+      foreach (ModelObject obj in selectedObjects)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
@@ -68,42 +73,42 @@ namespace Speckle.ConnectorTeklaStructures.UI
         string containerName = string.Empty;
 
 
-        var selectedObjectType = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
-            .Where(pair => pair.Key == applicationId)
-            .Select(pair => pair.Value.Item1).FirstOrDefault();
+        //var selectedObjectType = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
+        //    .Where(pair => pair.Key == applicationId)
+        //    .Select(pair => pair.Value.Item1).FirstOrDefault();
 
-        if (!converter.CanConvertToSpeckle(selectedObjectType))
+        if (!converter.CanConvertToSpeckle(obj))
         {
-          progress.Report.Log($"Skipped not supported type:  ${selectedObjectType} are not supported");
+          progress.Report.Log($"Skipped not supported type:  ${obj.GetType()} are not supported");
           continue;
         }
 
         Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
 
-        var typeAndName = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
-            .Where(pair => pair.Key == applicationId)
-            .Select(pair => pair.Value).FirstOrDefault();
+        //var typeAndName = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
+        //    .Where(pair => pair.Key == applicationId)
+        //    .Select(pair => pair.Value).FirstOrDefault();
 
-        converted = converter.ConvertToSpeckle(typeAndName);
+        converted = converter.ConvertToSpeckle(obj);
 
         if (converted == null)
         {
-          var exception = new Exception($"Failed to convert object ${applicationId} of type ${selectedObjectType}.");
+          var exception = new Exception($"Failed to convert object ${obj.Identifier.GUID} of type ${obj.GetType()}.");
           progress.Report.LogConversionError(exception);
           continue;
         }
 
 
-        //if (converted != null)
-        //{
-        //    if (commitObj[selectedObjectType] == null)
-        //    {
-        //        commitObj[selectedObjectType] = new List<Base>();
-        //    }
-        //             ((List<Base>)commitObj[selectedObjectType]).Add(converted);
-        //}
+        if (converted != null)
+        {
+          if (commitObj["@Base"] == null)
+          {
+            commitObj["@Base"] = new List<Base>();
+          }
+                     ((List<Base>)commitObj["@Base"]).Add(converted);
+        }
 
-        //objCount++;
+        objCount++;
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }

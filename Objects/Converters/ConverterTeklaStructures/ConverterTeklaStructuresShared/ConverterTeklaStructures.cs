@@ -5,9 +5,9 @@ using System.Linq;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
-using Objects.Converter.TeklaStructures;
 using Speckle.Core.Logging;
 using Tekla.Structures.Model;
+using Tekla.Structures;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -33,6 +33,18 @@ namespace Objects.Converter.TeklaStructures
     {
       Model = (Model)doc;
     }
+    /// <summary>
+    /// <para>To know which other objects are being converted, in order to sort relationships between them.
+    /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
+    /// </summary>
+    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
+    /// <summary>
+    /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
+    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
+    /// </summary>
+    public List<ApplicationPlaceholderObject> PreviousContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
@@ -40,72 +52,80 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToNative(Base @object)
     {
-      foreach (var type in Enum.GetNames(typeof(ConverterTeklaStructures.TeklaStructuresConverterSupported)))
-      {
-        if (type == @object.ToString().Split('.').Last())
-        {
-          return true;
-        }
-      }
-      return false;
+      return true;
+      //return @object
+      //  switch
+      //{
+      //  //geometry
+      //  BE.Beam _ => true,
+      //};
     }
 
     public bool CanConvertToSpeckle(object @object)
     {
-      foreach (var type in Enum.GetNames(typeof(ConverterTeklaStructures.TeklaStructuresAPIUsableTypes)))
+      //return @object
+      switch(@object)
       {
-        if (type == @object.ToString())
-        {
+        case Beam b:
           return true;
-        }
-      }
-      return false;
+        default:
+          return false;
+        //_ => (@object as ModelObject).IsElementSupported()
+      };
     }
+
+
 
     public object ConvertToNative(Base @object)
     {
       switch (@object)
       {
         default:
-          return null;
+          return false;
       }
     }
 
-    public List<object> ConvertToNative(List<Base> objects)
-    {
-      return objects.Select(x => ConvertToNative(x)).ToList();
-    }
+    public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public Base ConvertToSpeckle(object @object)
     {
-      (string type, string name) = ((string, string))@object;
+      
       Base returnObject = null;
-      switch (type)
+      switch (@object)
       {
-        case "Beam":
-          return BeamToSpeckle(type);
+        case Beam o:
+          returnObject =  BeamToSpeckle(o);
+          //Report.Log($"Created Beam");
+          break;
+          case PolyBeam o:
+          return null;
+        default:
+          ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
+          returnObject = null;
+          break;
 
       }
       return returnObject;
     }
 
-    public List<Base> ConvertToSpeckle(List<object> objects)
+    private string GetElemInfo(object o)
     {
-      return objects.Select(x => ConvertToSpeckle(x)).ToList();
+      if (o is ModelObject e)
+      {
+        return $", name: {e.Identifier.GetType().ToString()}, id: {e.Identifier.ToString()}";
+      }
+
+      return "";
     }
+
+    public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
     public IEnumerable<string> GetServicedApplications() => new string[] { TeklaStructuresAppName };
 
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
-    {
-      throw new NotImplementedException();
-    }
+    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
 
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects)
-    {
-      throw new NotImplementedException();
-    }
 
     public void SetConverterSettings(object settings)
     {
