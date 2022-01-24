@@ -1,21 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Runtime;
-using Speckle.ConnectorAutocadCivil.UI;
+using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+
 using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
+using Speckle.ConnectorAutocadCivil.UI;
 
 namespace Speckle.ConnectorAutocadCivil.Entry
 {
   public class SpeckleAutocadCommand2
   {
+    #region Avalonia parent window
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+    const int GWL_HWNDPARENT = -8;
+    #endregion
+
     public static Window MainWindow { get; private set; }
+
     public static ConnectorBindingsAutocad2 Bindings { get; set; }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
@@ -41,7 +52,15 @@ namespace Speckle.ConnectorAutocadCivil.Entry
 
       MainWindow.Show();
       MainWindow.Activate();
+
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        var parentHwnd = Application.MainWindow.Handle;
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      }
     }
+
     private static void AppMain(Avalonia.Application app, string[] args)
     {
       var viewModel = new MainWindowViewModel(Bindings);

@@ -30,6 +30,16 @@ namespace Objects.Converter.Revit
   /// </summary>
   public partial class ConverterRevit
   {
+    // Convenience methods point:
+    public double[] PointToArray(Point pt)
+    {
+      return new double[] { pt.x, pt.y, pt.z };
+    }
+    public List<double> PointsToFlatList(IEnumerable<Point> points)
+    {
+      return points.SelectMany(PointToArray).ToList();
+    }
+
     public object GeometryToNative(Base geom)
     {
       switch (geom)
@@ -54,14 +64,6 @@ namespace Objects.Converter.Revit
       var intPt = ToInternalCoordinates(revitPoint, true);
       return intPt;
     }
-
-    //does not work
-    //public ReferencePoint PointToNativeReferencePoint(Point pt)
-    //{
-    //  var revitPoint = PointToNative(pt);
-    //  var referencePoint = Doc.FamilyCreate.NewReferencePoint(revitPoint);
-    //  return referencePoint;
-    //}
 
     public Point PointToSpeckle(XYZ pt, string units = null)
     {

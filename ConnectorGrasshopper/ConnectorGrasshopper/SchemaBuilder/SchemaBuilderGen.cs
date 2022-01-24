@@ -245,9 +245,24 @@ public class DuctSchemaComponent: CreateSchemaObjectBase {
     public DuctSchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("51d40791-43ea-a8e7-ef13-e9bfdf9cd893");
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.Geometry.Line,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class Duct1SchemaComponent: CreateSchemaObjectBase {
+     
+    public Duct1SchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("7e3a3fba-7d4f-d549-96c0-41693b512db0");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.ICurve,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
         base.AddedToDocument(document);
     }
 }
@@ -1885,9 +1900,24 @@ public class RevitDuctSchemaComponent: CreateSchemaObjectBase {
     public RevitDuctSchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("d7781536-e8a9-8aef-1b27-571584f8c4a3");
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.Geometry.Line,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitDuct1SchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitDuct1SchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("7bb86598-9cd2-8d29-a1dc-7500c4b4ed4b");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
         base.AddedToDocument(document);
     }
 }
@@ -1914,6 +1944,32 @@ public class RevitFaceWallSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFaceWall.ctor(System.String,System.String,Objects.Geometry.Brep,Objects.BuiltElements.Level,Objects.BuiltElements.Revit.LocationLine,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFaceWall");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitFlexDuctSchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitFlexDuctSchemaComponent(): base("RevitFlexDuct", "RevitFlexDuct", "Creates a Revit flex duct", "Speckle 2 Revit", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("f350f9a2-06ca-6118-a4e6-88e721bb7f52");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFlexDuct.ctor(System.String,System.String,Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,Objects.Geometry.Vector,Objects.Geometry.Vector,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFlexDuct");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitFlexPipeSchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitFlexPipeSchemaComponent(): base("RevitFlexPipe", "RevitFlexPipe", "Creates a Revit flex pipe", "Speckle 2 Revit", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("219bfacc-9c41-441a-210c-c2cfb877929b");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFlexPipe.ctor(System.String,System.String,Objects.ICurve,System.Double,Objects.BuiltElements.Level,Objects.Geometry.Vector,Objects.Geometry.Vector,System.String,System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFlexPipe");
         base.AddedToDocument(document);
     }
 }
