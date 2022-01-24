@@ -165,6 +165,7 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamEditViewModel(HostScreen, StreamState));
       Tracker.TrackPageview("stream", "edit");
+      Telemetry.TrackEvent(Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
     }
 
     public void ViewOnlineSavedStreamCommand()
@@ -172,13 +173,14 @@ namespace DesktopUI2.ViewModels
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
+      Telemetry.TrackEvent(Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
 
     }
 
     public void CopyStreamURLCommand()
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
-      Tracker.TrackPageview("stream", "copy-link");
+      Telemetry.TrackEvent(Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Copy Link" } });
 
     }
 
@@ -189,6 +191,8 @@ namespace DesktopUI2.ViewModels
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
+
+      Telemetry.TrackEvent(StreamState.Client.Account, Telemetry.Events.Send);
       Tracker.TrackPageview(Tracker.SEND);
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)

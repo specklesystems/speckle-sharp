@@ -109,6 +109,7 @@ namespace DesktopUI2.ViewModels
       get => _selectedAccount;
       set
       {
+        Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Select" } });
         this.RaiseAndSetIfChanged(ref _selectedAccount, value);
         if (value != null)
           GetStreams().ConfigureAwait(false); //update streams
