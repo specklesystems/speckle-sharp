@@ -338,7 +338,7 @@ namespace Objects.Converter.Revit
 
         case BE.Structure o:
           Report.Log($"Created Structure {o.applicationId}");
-          return DirectShapeToNative(o.displayMesh);
+          return DirectShapeToNative(o.displayValue);
 
         //built elems
         case BER.AdaptiveComponent o:

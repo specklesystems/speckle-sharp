@@ -40,7 +40,7 @@ namespace Objects.Converter.Revit
             {
               Report.LogConversionError(new SpeckleException(
                 $"Could not convert block {instance.id} brep to native, falling back to mesh representation."));
-              meshes.Add(tbrep.displayMesh);
+              meshes.AddRange(tbrep.displayValue);
             }
             break;
           case Mesh mesh:

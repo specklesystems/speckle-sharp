@@ -68,23 +68,18 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
-      if (null == elem)
-      {
-        return null;
-      }
-      if (null == opt)
-      {
-        opt = new Options();
-      }
-
       List<Solid> solids = new List<Solid>();
-      GeometryElement gElem = null;
+      
+      if (null == elem) return solids;
+      
+      opt ??= new Options();
+      
+      GeometryElement gElem;
       try
       {
-        if (useOriginGeom4FamilyInstance && elem is Autodesk.Revit.DB.FamilyInstance)
+        if (useOriginGeom4FamilyInstance && elem is DB.FamilyInstance fInst)
         {
           // we transform the geometry to instance coordinate to reflect actual geometry
-          Autodesk.Revit.DB.FamilyInstance fInst = elem as Autodesk.Revit.DB.FamilyInstance;
           gElem = fInst.GetOriginalGeometry(opt);
           DB.Transform trf = fInst.GetTransform();
           if (!trf.IsIdentity)
@@ -95,16 +90,9 @@ namespace Objects.Converter.Revit
           gElem = elem.get_Geometry(opt);
         }
 
-        if (null == gElem)
-        {
-          return null;
-        }
-        IEnumerator<GeometryObject> gIter = gElem.GetEnumerator();
-        gIter.Reset();
-        while (gIter.MoveNext())
-        {
-          solids.AddRange(GetSolids(gIter.Current));
-        }
+        if (gElem == null ) return solids;
+
+        solids.AddRange(gElem.SelectMany(GetSolids));
       }
       catch (Exception ex)
       {
@@ -113,12 +101,7 @@ namespace Objects.Converter.Revit
       }
       return solids;
     }
-
-
-
     
-    
-
     private List<Mesh> GetMeshes(GeometryElement geom)
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
@@ -136,7 +119,7 @@ namespace Objects.Converter.Revit
           foreach (XYZ vert in mesh.Vertices)
           {
             var (x, y, z) = PointToSpeckle(vert);
-            speckleMesh.vertices.AddRange(new double[] { x, y, z });
+            speckleMesh.vertices.AddRange(new [] { x, y, z });
           }
           
           speckleMesh.faces.Capacity += mesh.NumTriangles * 4;
@@ -154,6 +137,9 @@ namespace Objects.Converter.Revit
       return buildHelper.GetAllValidMeshes();
     }
     
+    /// <summary>
+    /// Helper class for a single <see cref="Objects.Geometry.Mesh"/> object for each <see cref="DB.Material"/>
+    /// </summary>
     private class MeshBuildHelper
     {
       //Lazy initialised Dictionary of Revit material (hash) -> Speckle material
@@ -167,7 +153,7 @@ namespace Objects.Converter.Revit
         {
           return m;
         }
-        var material = RenderMaterialToNative(revitMaterial);
+        var material = RenderMaterialToSpeckle(revitMaterial);
         materialMap.Add(hash, material);
         return material;
       }
@@ -252,13 +238,18 @@ namespace Objects.Converter.Revit
       {
         foreach (Face face in solid.Faces)
         {
-          GetFaceVertexArrFromSolid(face, faceArr, vertexArr);
+          FaceToNative(face, faceArr, vertexArr);
         }
       }
 
       return (faceArr, vertexArr);
     }
     
+    /// <summary>
+    /// Given a collection of <paramref name="solids"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
+    /// </summary>
+    /// <param name="solids"></param>
+    /// <returns></returns>
     public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
@@ -269,17 +260,20 @@ namespace Objects.Converter.Revit
         {
           Material faceMaterial = Doc.GetElement(face.MaterialElementId) as Material;
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
-          GetFaceVertexArrFromSolid(face, m.faces, m.vertices);
+          FaceToNative(face, m.faces, m.vertices);
         }
       }
 
       return meshBuildHelper.GetAllValidMeshes();
     }
     
-    
-
-
-    private void GetFaceVertexArrFromSolid(Face face, List<int> faces, List<double> vertices)
+    /// <summary>
+    /// Given <paramref name="face"/>, will convert and add face data to <paramref name="faces"/> and <paramref name="vertices"/>
+    /// </summary>
+    /// <param name="face">The revit face to convert</param>
+    /// <param name="faces">The faces list to add to</param>
+    /// <param name="vertices">The vertices list to add to</param>
+    private void FaceToNative(Face face, List<int> faces, List<double> vertices)
     {
       int vertOffset = vertices.Count / 3;
       var m = face.Triangulate();

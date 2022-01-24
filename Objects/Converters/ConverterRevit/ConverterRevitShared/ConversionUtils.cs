@@ -838,10 +838,10 @@ namespace Objects.Converter.Revit
       }
 
       var revitMaterial = Doc.GetElement(matId) as Material;
-      return RenderMaterialToNative(revitMaterial);
+      return RenderMaterialToSpeckle(revitMaterial);
     }
     
-    public static RenderMaterial RenderMaterialToNative(Material revitMaterial)
+    public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
     {
       RenderMaterial material = new RenderMaterial()
       {
@@ -853,6 +853,19 @@ namespace Objects.Converter.Revit
       };
 
       return material;
+    }
+    
+    public ElementId RenderMaterialToNative(RenderMaterial speckleMaterial)
+    {
+      if (speckleMaterial == null) return ElementId.InvalidElementId;
+      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
+      Material mat = Doc.GetElement(materialId) as Material;
+      
+      var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
+      mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
+      mat.Transparency =  1 - (int)(speckleMaterial.opacity * 100d);
+      
+      return materialId;
     }
     
   }
