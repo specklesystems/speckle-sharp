@@ -95,7 +95,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
       if (string.IsNullOrEmpty(scope))
         scope = "UserLocalDefaultDb";
 
-      Tracker.TrackPageview("transports", "server");
+      Tracker.TrackPageview("transports", "sqlite");
       Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
 
       return new SQLiteTransport(basePath, applicationName, scope);

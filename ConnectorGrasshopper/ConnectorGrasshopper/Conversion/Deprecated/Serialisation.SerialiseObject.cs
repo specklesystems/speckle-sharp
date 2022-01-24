@@ -51,15 +51,15 @@ namespace ConnectorGrasshopper.Conversion
     {
       try
       {
-        if (CancellationToken.IsCancellationRequested)return;
-        
+        if (CancellationToken.IsCancellationRequested) return;
+
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
           var path = Objects.Paths[branchIndex];
           foreach (var item in list)
           {
-            if (CancellationToken.IsCancellationRequested)return;
+            if (CancellationToken.IsCancellationRequested) return;
 
             if (item != null && item.Value != null)
             {
@@ -76,7 +76,8 @@ namespace ConnectorGrasshopper.Conversion
             else
             {
               ConvertedObjects.Append(null, path);
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {{{path}}}[{list.IndexOf(item)}] is not a Base object."));            }
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {{{path}}}[{list.IndexOf(item)}] is not a Base object."));
+            }
 
             ReportProgress(Id, ((completed++ + 1) / (double)Objects.Count()));
           }
@@ -102,9 +103,13 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested)return;
-      if(DA.Iteration == 0)
+      if (CancellationToken.IsCancellationRequested) return;
+      if (DA.Iteration == 0)
+      {
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Serialize" } });
         Tracker.TrackPageview(Tracker.SERIALIZE);
+      }
+
       GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
 
@@ -122,7 +127,7 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested)return;
+      if (CancellationToken.IsCancellationRequested) return;
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);

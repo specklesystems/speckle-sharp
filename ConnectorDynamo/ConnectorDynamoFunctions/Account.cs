@@ -28,7 +28,7 @@ namespace Speckle.ConnectorDynamo.Functions
     [MultiReturn(new[] { "isDefault", "serverInfo", "userInfo" })]
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
-      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
+
 
       if (account == null)
       {
@@ -36,6 +36,7 @@ namespace Speckle.ConnectorDynamo.Functions
         Utils.HandleApiExeption(new WarningException("Provided account was invalid."));
       }
 
+      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
       Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
 
       return new Dictionary<string, object>

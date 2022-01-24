@@ -40,8 +40,12 @@ namespace ConnectorGrasshopper.Objects
       {
         var keys = new List<string>();
         var valueTree = new GH_Structure<IGH_Goo>();
-        if(DA.Iteration == 0)
+        if (DA.Iteration == 0)
+        {
+          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object By Key Value" } });
           Tracker.TrackPageview("objects", "create", "keyValue");
+        }
+
 
         DA.GetDataList(0, keys);
         DA.GetDataTree(1, out valueTree);
@@ -49,7 +53,7 @@ namespace ConnectorGrasshopper.Objects
         return;
       }
 
-      if(Converter != null)
+      if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
         {
@@ -58,7 +62,7 @@ namespace ConnectorGrasshopper.Objects
         }
         Converter.Report.ConversionErrors.Clear();
       }
-      
+
       if (!GetSolveResults(DA, out var result))
       {
         // Normal mode not supported
