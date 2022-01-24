@@ -117,7 +117,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, communityTip, "forum");
       RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, tutorialsTip, "tutorials");
       RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, docsTip, "docs");
-      
     }
 
     public void Terminate()
@@ -184,7 +183,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         button.CommandParameter = CommandParameter;
         button.CommandHandler = new ButtonCommandHandler(CommandParameter);
         sourcePanel.Items.Add(button);
-
       }
       else if (sourceButton != null)
       {
