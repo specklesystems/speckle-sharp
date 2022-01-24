@@ -140,7 +140,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent),
         endTangent = VectorToSpeckle(revitPipe.EndTangent),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayMesh = GetElementMesh(revitPipe)
+        displayValue = GetElementMesh(revitPipe)
       };
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
