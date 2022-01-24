@@ -2,6 +2,7 @@
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace ConnectorGrasshopper.Transports
@@ -35,9 +36,12 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another transport, please use a new component.");
         return;
       }
-      
-      if(DA.Iteration == 0)
+
+      if (DA.Iteration == 0)
+      {
         Tracker.TrackPageview("transports", "memory");
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
+      }
 
       string name = null;
       DA.GetData(0, ref name);

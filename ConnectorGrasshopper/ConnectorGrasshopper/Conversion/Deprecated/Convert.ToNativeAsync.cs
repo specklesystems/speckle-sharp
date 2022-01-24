@@ -137,7 +137,6 @@ namespace ConnectorGrasshopper.Conversion
       }
 
 
-
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 
