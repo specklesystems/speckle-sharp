@@ -12,6 +12,8 @@ namespace Speckle.ConnectorTeklaStructures.Util
   {
 #if TeklaStructures2021
     public static string TeklaStructuresAppName = Applications.TeklaStructures2021;
+#elif TeklaStructures2020
+  public static string TeklaStructuresAppName = Applications.TeklaStructures2020;
 #endif
 
     public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
