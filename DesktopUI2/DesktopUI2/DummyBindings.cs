@@ -19,7 +19,6 @@ namespace DesktopUI2
   {
     Random rnd = new Random();
 
-
     public override string GetActiveViewName()
     {
       return "An Active View Name";
@@ -77,9 +76,8 @@ namespace DesktopUI2
       var nums = rnd.Next(1000);
       var strs = new List<string>();
       for (int i = 0; i < nums; i++)
-      {
         strs.Add($"Object-{i}");
-      }
+
       return strs;
     }
 
@@ -228,20 +226,13 @@ namespace DesktopUI2
 
       #endregion
 
-
       foreach (var stream in testStreams)
-      {
         collection.Add(new StreamState(AccountManager.GetDefaultAccount(), stream));
-      }
 
       collection[0].SelectedObjectIds.Add("random_obj");
 
       return collection;
     }
-
-
-
-
 
     public override void SelectClientObjects(string args)
     {
@@ -259,9 +250,7 @@ namespace DesktopUI2
       for (int i = 1; i < 100; i += 10)
       {
         if (progress.CancellationTokenSource.IsCancellationRequested)
-        {
           return state;
-        }
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;

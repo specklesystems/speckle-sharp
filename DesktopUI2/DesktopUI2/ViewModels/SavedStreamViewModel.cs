@@ -38,7 +38,7 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _menuItems, value);
       }
     }
-
+    
     public string LastUpdated
     {
       get
@@ -77,7 +77,6 @@ namespace DesktopUI2.ViewModels
     public bool ShowNotification
     {
       get => !string.IsNullOrEmpty(Notification);
-
     }
 
     private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{StreamState.BranchName}"; }
@@ -172,36 +171,52 @@ namespace DesktopUI2.ViewModels
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
-
     }
 
     public void CopyStreamURLCommand()
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
       Tracker.TrackPageview("stream", "copy-link");
-
     }
 
     public async void SendCommand()
     {
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
+
+      var dialog = Dialogs.SendReceiveDialog("Sending...", this);
+
+      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+      {
+        if (x.Result.GetResult == "cancel")
+          Progress.CancellationTokenSource.Cancel();
+      });
+
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      dialog.GetWindow().Close();
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
       Tracker.TrackPageview(Tracker.SEND);
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
-
-
     }
 
     public async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
+
+      var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
+
+      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+      {
+        if (x.Result.GetResult == "cancel")
+          Progress.CancellationTokenSource.Cancel();
+      });
+
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+      dialog.GetWindow().Close();
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
 
@@ -215,11 +230,7 @@ namespace DesktopUI2.ViewModels
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
       report.ShowDialog(MainWindow.Instance);
-
-
     }
-
-
 
   }
 }
