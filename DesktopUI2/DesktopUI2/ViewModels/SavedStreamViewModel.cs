@@ -184,16 +184,8 @@ namespace DesktopUI2.ViewModels
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
 
-      var dialog = Dialogs.SendReceiveDialog("Sending...", this);
-
-      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
-      {
-        if (x.Result.GetResult == "cancel")
-          Progress.CancellationTokenSource.Cancel();
-      });
-
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
-      dialog.GetWindow().Close();
+
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
       Tracker.TrackPageview(Tracker.SEND);
@@ -207,21 +199,18 @@ namespace DesktopUI2.ViewModels
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
 
-      var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
-
-      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
-      {
-        if (x.Result.GetResult == "cancel")
-          Progress.CancellationTokenSource.Cancel();
-      });
-
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
-      dialog.GetWindow().Close();
+
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
+    }
+
+    public void CancelSendOrReceive()
+    {
+      Progress.CancellationTokenSource.Cancel();
     }
 
     public void OpenReportCommand()
