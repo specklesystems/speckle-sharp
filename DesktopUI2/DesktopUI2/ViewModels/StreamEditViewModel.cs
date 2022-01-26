@@ -128,7 +128,6 @@ namespace DesktopUI2.ViewModels
 
     private StreamState _streamState { get; }
 
-
     public string _previewImageUrl = "";
     public string PreviewImageUrl
     {
@@ -140,18 +139,12 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
-
-
     private Avalonia.Media.Imaging.Bitmap _previewImage = null;
     public Avalonia.Media.Imaging.Bitmap PreviewImage
     {
       get => _previewImage;
       set => this.RaiseAndSetIfChanged(ref _previewImage, value);
     }
-
-
-
 
     public StreamEditViewModel()
     {
@@ -164,7 +157,6 @@ namespace DesktopUI2.ViewModels
       Client = streamState.Client;
       _streamState = streamState; //cached, should not be accessed
 
-
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
@@ -175,7 +167,6 @@ namespace DesktopUI2.ViewModels
 
       GetBranchesAndRestoreState(streamState.Client, streamState);
     }
-
 
     private async void GetBranchesAndRestoreState(Client client, StreamState streamState)
     {
@@ -209,8 +200,6 @@ namespace DesktopUI2.ViewModels
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
       return _streamState;
-
-
     }
 
     private async void GetCommits()
@@ -228,12 +217,6 @@ namespace DesktopUI2.ViewModels
         Commits = new List<Commit>();
         SelectedCommit = null;
       }
-      //else
-      //{
-      //  Commits = new List<Commit>() { new Commit { id = "latest", message = "This branch has no commits." } };
-      //}
-
-
     }
 
     public void DownloadImage(string url)
@@ -283,7 +266,6 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = true;
       var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
-
       _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
       {
         if (x.Result.GetResult == "cancel")
@@ -302,13 +284,12 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = true;
       var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
-
       _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
       {
         if (x.Result.GetResult == "cancel")
           Progress.CancellationTokenSource.Cancel();
-      }
-        );
+      });
+
       await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
       dialog.GetWindow().Close();
       Progress.IsProgressing = false;
