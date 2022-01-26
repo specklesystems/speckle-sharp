@@ -16,7 +16,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static string Send([ArbitraryDimensionArrayImport] object data)
     {
       Tracker.TrackPageview(Tracker.SEND_LOCAL);
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
 
       var converter = new BatchConverter();
       var @base = converter.ConvertRecursivelyToSpeckle(data);
@@ -34,7 +34,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object Receive(string localDataId)
     {
       Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
 
       var @base = Task.Run(async () => await Operations.Receive(localDataId, disposeTransports: true)).Result;
       var converter = new BatchConverter();

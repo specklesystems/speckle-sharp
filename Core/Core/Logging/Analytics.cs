@@ -18,10 +18,10 @@ namespace Speckle.Core.Logging
   ///  Anonymous telemetry to help us understand how to make a better Speckle.
   ///  This really helps us to deliver a better open source project and product!
   /// </summary>
-  public static class Telemetry
+  public static class Analytics
   {
     private const string MixpanelToken = "acd87c5a50b56df91a795e999812a3a4";
-    private const string MixpanelServer = "https://api-eu.mixpanel.com";
+    private const string MixpanelServer = "https://analytics.speckle.systems";
 
     /// <summary>
     /// Default Mixpanel events

@@ -17,7 +17,7 @@ namespace Speckle.ConnectorDynamo.Functions
     public static Core.Credentials.Account GetById(string id)
     {
       var acc = AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == id);
-      Telemetry.TrackEvent(acc, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Get" } });
+      Analytics.TrackEvent(acc, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Get" } });
       return acc;
     }
 
@@ -37,7 +37,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
 
       Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
-      Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
 
       return new Dictionary<string, object>
       {

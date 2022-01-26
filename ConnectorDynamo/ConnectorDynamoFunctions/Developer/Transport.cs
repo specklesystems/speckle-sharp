@@ -23,7 +23,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Speckle\\DiskTransportFiles\\";
 
       Tracker.TrackPageview("transports", "disk");
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
 
       return new DiskTransport.DiskTransport(basePath);
     }
@@ -37,7 +37,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object MemoryTransport(string name = "Memory")
     {
       Tracker.TrackPageview("transports", "memory");
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
       return new MemoryTransport { TransportName = name };
     }
 
@@ -72,7 +72,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
 
       if (error != null) throw error;
 
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Server Transport" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Server Transport" } });
 
 
       return new ServerTransport(account, stream.StreamId);
@@ -96,7 +96,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
         scope = "UserLocalDefaultDb";
 
       Tracker.TrackPageview("transports", "sqlite");
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
 
       return new SQLiteTransport(basePath, applicationName, scope);
     }

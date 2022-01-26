@@ -64,7 +64,7 @@ namespace Speckle.Core.Logging
       }
     }
 
-    [Obsolete("The Tracker class will be deprecated soon, please use the new Telemetry.TrackEvent method.")]
+    [Obsolete("The Tracker class will be deprecated soon, please use the new Analytics.TrackEvent method.")]
     public static void TrackPageview(params string[] segments)
     {
 #if !DEBUG

@@ -149,7 +149,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
         this.Name = "Stream Created";
 
-        Telemetry.TrackEvent(SelectedAccount, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
+        Analytics.TrackEvent(SelectedAccount, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
 
         OnNodeModified(true);
       }

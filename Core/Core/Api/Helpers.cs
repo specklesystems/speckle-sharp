@@ -61,7 +61,7 @@ namespace Speckle.Core.Api
       }
 
       Tracker.TrackPageview(Tracker.RECEIVE);
-      Telemetry.TrackEvent(client.Account, Telemetry.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       var receiveRes = await Operations.Receive(
         objectId,
@@ -116,7 +116,7 @@ namespace Speckle.Core.Api
         onErrorAction, disposeTransports: true);
 
       Tracker.TrackPageview(Tracker.SEND);
-      Telemetry.TrackEvent(client.Account, Telemetry.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       return await client.CommitCreate(
             new CommitCreateInput

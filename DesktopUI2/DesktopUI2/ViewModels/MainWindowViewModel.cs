@@ -71,7 +71,7 @@ namespace DesktopUI2.ViewModels
 
     public void ToggleDarkThemeCommand()
     {
-      Telemetry.TrackEvent(Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
 
       var theme = PaletteHelper.GetTheme();
 
@@ -85,7 +85,7 @@ namespace DesktopUI2.ViewModels
 
     public void RefreshCommand()
     {
-      Telemetry.TrackEvent(Telemetry.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
       HomeViewModel.Instance.Init();
     }
 

@@ -108,7 +108,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     {
       SelectedUserId = account.userInfo.id;
 
-      Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Select" } });
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Select" } });
 
       OnNodeModified(true);
     }

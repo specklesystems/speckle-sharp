@@ -55,7 +55,7 @@ namespace Speckle.ConnectorDynamo.Functions
           Core.Api.Stream res = Task.Run(async () => await client.StreamGet(s.StreamId)).Result;
           s.UserId = accountToUse.userInfo.id;
 
-          Telemetry.TrackEvent(accountToUse, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
+          Analytics.TrackEvent(accountToUse, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
         }
       }
       catch (Exception ex)
@@ -122,7 +122,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (isPublic != null)
         input.isPublic = (bool)isPublic;
 
-      Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
 
       try
       {
@@ -205,7 +205,7 @@ namespace Speckle.ConnectorDynamo.Functions
           Utils.HandleApiExeption(ex);
           return details;
         }
-        Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
+        Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
       }
 
 
@@ -248,7 +248,7 @@ namespace Speckle.ConnectorDynamo.Functions
         Utils.HandleApiExeption(ex);
       }
 
-      Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
 
       return streamWrappers;
 

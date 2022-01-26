@@ -15,7 +15,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static Base ToSpeckle([ArbitraryDimensionArrayImport] object data)
     {
       Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
       var converter = new BatchConverter();
       return converter.ConvertRecursivelyToSpeckle(data);
     }
@@ -28,7 +28,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object ToNative(Base @base)
     {
       Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
       var converter = new BatchConverter();
       return converter.ConvertRecursivelyToNative(@base);
     }

@@ -70,7 +70,7 @@ namespace Speckle.ConnectorDynamo.Functions
               CommitId = res
             };
           commitWrappers.Add(wrapper.ToString());
-          Telemetry.TrackEvent(client.Account, Telemetry.Events.Send);
+          Analytics.TrackEvent(client.Account, Analytics.Events.Send);
         }
         catch (Exception ex)
         {
@@ -184,7 +184,7 @@ namespace Speckle.ConnectorDynamo.Functions
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
 
-      Telemetry.TrackEvent(client.Account, Telemetry.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }
