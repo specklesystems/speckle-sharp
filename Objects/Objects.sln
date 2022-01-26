@@ -85,10 +85,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterTeklaStructuresSha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2021", "Converters\ConverterTeklaStructures\ConverterTeklaStructures2021\ConverterTeklaStructures2021.csproj", "{ADC53DC0-0592-4F13-B456-65ADCB2164A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterTeklaStructures2020", "ConverterTeklaStructures2020\ConverterTeklaStructures2020.csproj", "{009470FD-DFB9-4690-8E83-9A7DA8CB3C63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2020", "Converters\ConverterTeklaStructures\ConverterTeklaStructures2020\ConverterTeklaStructures2020.csproj", "{08EE146E-9F7A-4C82-B790-688FE4532CA7}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{08ee146e-9f7a-4c82-b790-688fe4532ca7}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0bcb32cf-a3cf-4a6a-a9f8-dfe5d85d608c}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{13f93c20-793c-4f2d-b836-68d7744063df}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{156ff86c-8531-46d0-aa23-97db326bc591}*SharedItemsImports = 5
@@ -217,10 +218,10 @@ Global
 		{ADC53DC0-0592-4F13-B456-65ADCB2164A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADC53DC0-0592-4F13-B456-65ADCB2164A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADC53DC0-0592-4F13-B456-65ADCB2164A1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{009470FD-DFB9-4690-8E83-9A7DA8CB3C63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{009470FD-DFB9-4690-8E83-9A7DA8CB3C63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{009470FD-DFB9-4690-8E83-9A7DA8CB3C63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{009470FD-DFB9-4690-8E83-9A7DA8CB3C63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08EE146E-9F7A-4C82-B790-688FE4532CA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08EE146E-9F7A-4C82-B790-688FE4532CA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08EE146E-9F7A-4C82-B790-688FE4532CA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08EE146E-9F7A-4C82-B790-688FE4532CA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -263,7 +264,7 @@ Global
 		{98B557B0-CD26-40DE-9703-A27F07A942E3} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 		{7FFDAB72-145D-4490-9892-FAC5F1D72B17} = {98B557B0-CD26-40DE-9703-A27F07A942E3}
 		{ADC53DC0-0592-4F13-B456-65ADCB2164A1} = {98B557B0-CD26-40DE-9703-A27F07A942E3}
-		{009470FD-DFB9-4690-8E83-9A7DA8CB3C63} = {98B557B0-CD26-40DE-9703-A27F07A942E3}
+		{08EE146E-9F7A-4C82-B790-688FE4532CA7} = {98B557B0-CD26-40DE-9703-A27F07A942E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

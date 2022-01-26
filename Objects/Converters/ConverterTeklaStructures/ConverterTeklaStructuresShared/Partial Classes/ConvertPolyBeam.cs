@@ -16,18 +16,16 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures
   {
 
-    public BE.Beam BeamToSpeckle(Tekla.Structures.Model.Beam beam)
+    public BE.Beam PolyBeamToSpeckle(PolyBeam PolyBeam)
     {
       var speckleBeam = new BE.Beam();
-      var endPoint = beam.EndPoint;
-      var startPoint = beam.StartPoint;
-      Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z);
-      Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z);
-      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint);
-      var profile = beam.Profile.ProfileString;
-
-      var solid = beam.GetSolid();
+      var centerPolycurve = PolyBeam.GetCenterLinePolycurve();
+      speckleBeam.baseLine = (ICurve)centerPolycurve;
+      
+      var solid = PolyBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
+
+  
       return speckleBeam;
     }
   }

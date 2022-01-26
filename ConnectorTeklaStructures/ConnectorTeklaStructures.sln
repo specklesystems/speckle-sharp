@@ -32,6 +32,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolygonMesher", "..\Objects
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2020", "ConnectorTeklaStructures2020\ConnectorTeklaStructures2020.csproj", "{67157264-AAA5-46A8-A38B-16254B49B892}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2020", "..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2020\ConverterTeklaStructures2020.csproj", "{FD0C136E-E3F0-487F-B372-44E9E1640038}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{28e2ea7f-ffd1-4e13-9165-0243b5ac82f5}*SharedItemsImports = 13
@@ -41,6 +43,7 @@ Global
 		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{7ffdab72-145d-4490-9892-fac5f1d72b17}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{fd0c136e-e3f0-487f-b372-44e9e1640038}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +78,10 @@ Global
 		{67157264-AAA5-46A8-A38B-16254B49B892}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67157264-AAA5-46A8-A38B-16254B49B892}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67157264-AAA5-46A8-A38B-16254B49B892}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +96,7 @@ Global
 		{2530AEF3-2238-4166-9AAC-F674E3B429B6} = {DCBFF5B9-602A-445F-8024-43E8E9ABA7E4}
 		{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5} = {7971F1F8-9B64-4BC5-A2F6-2E6277745440}
 		{67157264-AAA5-46A8-A38B-16254B49B892} = {7971F1F8-9B64-4BC5-A2F6-2E6277745440}
+		{FD0C136E-E3F0-487F-B372-44E9E1640038} = {D82F9B5B-E018-422F-B3E3-B08FF5B27858}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DDE456ED-2D08-4CD4-85D3-58340974B612}
