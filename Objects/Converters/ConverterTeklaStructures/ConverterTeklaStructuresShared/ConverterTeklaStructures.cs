@@ -64,13 +64,15 @@ namespace Objects.Converter.TeklaStructures
     public bool CanConvertToSpeckle(object @object)
     {
       //return @object
-      switch(@object)
+      switch (@object)
       {
         case Beam b:
           return true;
+        case PolyBeam pb:
+          return true;
         default:
           return false;
-        //_ => (@object as ModelObject).IsElementSupported()
+          //_ => (@object as ModelObject).IsElementSupported()
       };
     }
 
@@ -89,16 +91,17 @@ namespace Objects.Converter.TeklaStructures
 
     public Base ConvertToSpeckle(object @object)
     {
-      
+
       Base returnObject = null;
       switch (@object)
       {
         case Beam o:
-          returnObject =  BeamToSpeckle(o);
+          returnObject = BeamToSpeckle(o);
           //Report.Log($"Created Beam");
           break;
-          case PolyBeam o:
-          return null;
+        case PolyBeam o:
+          returnObject = PolyBeamToSpeckle(o);
+          break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
           returnObject = null;

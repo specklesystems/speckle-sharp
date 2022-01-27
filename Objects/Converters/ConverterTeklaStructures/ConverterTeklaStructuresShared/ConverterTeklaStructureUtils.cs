@@ -14,7 +14,7 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures
   {
 
-    public Mesh GetMeshFromSolid(Tekla.Structures.Model.Solid solid){
+    public Mesh GetMeshFromSolid(Solid solid){
       List<double> MyList = new List<double> { };
       ArrayList MyFaceNormalList = new ArrayList();
       List<int> facesList = new List<int> { };
