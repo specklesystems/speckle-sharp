@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 using Speckle.Core.Kits;
 
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
-using System.Reflection;
+#if (CIVIL2021 || CIVIL2022)
+using Autodesk.Aec.ApplicationServices;
+#endif
 
 namespace Speckle.ConnectorAutocadCivil
 {
@@ -204,11 +207,38 @@ public static string AutocadAppName = Applications.Autocad2022;
     #endregion
 
     /// <summary>
-    /// Retrieves the handle from an input string
+    /// Retrieves the document's units.
     /// </summary>
-    /// <param name="str"></param>
+    /// <param name="doc"></param>
     /// <returns></returns>
-    public static Handle GetHandle(string str)
+    public static string GetUnits(Document doc)
+    {
+      var insUnits = doc.Database.Insunits;
+      string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
+      
+#if (CIVIL2021 || CIVIL2022)
+      if (units == Units.None)
+      {
+        // try to get the drawing unit instead
+        using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+        {
+          var id = DrawingSetupVariables.GetInstance(doc.Database, false);
+          var setupVariables = (DrawingSetupVariables)tr.GetObject(id, OpenMode.ForRead);
+          var linearUnit = setupVariables.LinearUnit;
+          units = Units.GetUnitsFromString(linearUnit.ToString());
+          tr.Commit();
+        }
+      }
+#endif
+      return units;
+    }
+
+  /// <summary>
+  /// Retrieves the handle from an input string
+  /// </summary>
+  /// <param name="str"></param>
+  /// <returns></returns>
+  public static Handle GetHandle(string str)
     {
       return new Handle(Convert.ToInt64(str, 16));
     }
