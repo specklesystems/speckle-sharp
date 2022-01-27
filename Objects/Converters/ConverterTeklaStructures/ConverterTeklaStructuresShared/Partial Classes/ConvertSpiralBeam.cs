@@ -10,26 +10,30 @@ using Tekla.Structures.Model;
 using Tekla.Structures.Solid;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
+using Tekla.Structures.Geometry3d;
 
 namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
 
-    public BE.Beam BeamToSpeckle(Tekla.Structures.Model.Beam beam)
+    public BE.Beam SpiralBeamToSpeckle(SpiralBeam SpiralBeam)
     {
       var speckleBeam = new BE.Beam();
-      //TO DO: Support for curved beams goes in here as well + twin beams
-      var endPoint = beam.EndPoint;
-      var startPoint = beam.StartPoint;
-
-      Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z);
-      Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z);
-      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint);
-      var profile = beam.Profile.ProfileString;
-
-      var solid = beam.GetSolid();
+      var curveLine = SpiralBeam.GetCenterLine(false);
+      var pointList = new List<double> { };
+      foreach (Tekla.Structures.Geometry3d.Point point in curveLine)
+      {
+        pointList.Add(point.X);
+        pointList.Add(point.Y);
+        pointList.Add(point.Z);
+      }
+      speckleBeam.baseLine = new Polyline(pointList);
+      //var refLine = SpiralBeam.GetReferenceLine(false);
+      var solid = SpiralBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
+
+
       return speckleBeam;
     }
   }

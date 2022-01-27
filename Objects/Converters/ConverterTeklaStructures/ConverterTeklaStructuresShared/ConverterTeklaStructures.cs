@@ -70,6 +70,8 @@ namespace Objects.Converter.TeklaStructures
           return true;
         case PolyBeam pb:
           return true;
+        case SpiralBeam sb:
+          return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -101,6 +103,9 @@ namespace Objects.Converter.TeklaStructures
           break;
         case PolyBeam o:
           returnObject = PolyBeamToSpeckle(o);
+          break;
+        case SpiralBeam o:
+          returnObject = SpiralBeamToSpeckle(o);
           break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
