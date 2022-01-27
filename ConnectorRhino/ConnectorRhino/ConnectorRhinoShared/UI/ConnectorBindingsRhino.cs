@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
 using Rhino.Display;
+using Rhino.Geometry;
 using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 
 namespace SpeckleRhino
@@ -374,7 +375,7 @@ namespace SpeckleRhino
     // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
-      var converted = converter.ConvertToNative(obj); // this may be an array, eg hatches
+      var converted = converter.ConvertToNative(obj); // This may be a GeometryBase, an Array (eg. hatches), or a nested array (e.g. direct shape)
       if (converted == null)
       {
         state.Errors.Add(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
@@ -382,16 +383,26 @@ namespace SpeckleRhino
       }
 
       var convertedList = new List<object>();
-      if (converted.GetType().IsArray)
-        foreach (object o in (Array)converted)
-          convertedList.Add(o);
-      else
-        convertedList.Add(converted);
+      
+      //Iteratively flatten any lists
+      void FlattenConvertedObject(object item)
+      {
+        if (item is IList list)
+        {
+          foreach(object child in list)
+            FlattenConvertedObject(child);
+        }
+        else
+        {
+          convertedList.Add(obj);
+        }
+      }
+
+      FlattenConvertedObject(converted);
 
       foreach (var convertedItem in convertedList)
       {
-        var convertedRH = convertedItem as Rhino.Geometry.GeometryBase;
-        if (convertedRH != null)
+        if (convertedItem is GeometryBase convertedRH)
         {
           if (convertedRH.IsValidWithLog(out string log))
           {
@@ -401,21 +412,18 @@ namespace SpeckleRhino
               var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
 
               // handle display
-              Base display = obj[@"displayStyle"] as Base;
-              if (display != null)
+              if (obj[@"displayStyle"] is Base display)
               {
-                var color = display["color"] as int?;
-                var lineStyle = display["linetype"] as string;
-                var lineWidth = display["lineweight"] as double?;
-
-                if (color != null)
+                if (display["color"] is int color)
                 {
                   attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                  attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
+                  attributes.ObjectColor = System.Drawing.Color.FromArgb(color);
                 }
-                if (lineWidth != null)
-                  attributes.PlotWeight = (double)lineWidth;
-                if (lineStyle != null)
+                if (display["lineweight"] is double lineWidth)
+                {
+                  attributes.PlotWeight = lineWidth;
+                }
+                if (display["linetype"] is string lineStyle)
                 {
                   var ls = Doc.Linetypes.FindName(lineStyle);
                   if (ls != null)
@@ -425,37 +433,29 @@ namespace SpeckleRhino
                   }
                 }
               }
-              /* Not implemented since revit displaymesh objs do not have render materials attached
               else
               {
-                Base render = obj[@"renderMaterial"] as Base;
-                if (render != null)
+                if (obj[@"renderMaterial"] is Base render)
                 {
-                  var color = render["diffuse"] as int?;
-
-                  if (color != null)
+                  if (render["diffuse"] is int color)
                   {
                     attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                    attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
+                    attributes.ObjectColor = System.Drawing.Color.FromArgb(color);
                   }
                 }
               }
-              */
 
               // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
-              string schema = obj["SpeckleSchema"] as string;
-              if (schema != null)
+              if (obj["SpeckleSchema"] is string schema)
                 attributes.SetUserString("SpeckleSchema", schema);
 
               // handle user strings
-              var userStrings = obj[UserStrings] as Dictionary<string, object>;
-              if (userStrings != null)
+              if (obj[UserStrings] is Dictionary<string, object> userStrings)
                 foreach (var key in userStrings.Keys)
                   attributes.SetUserString(key, userStrings[key].ToString());
 
               // handle user dictionaries
-              var dict = obj[UserDictionary] as Dictionary<string, object>;
-              if (dict != null)
+              if (obj[UserDictionary] is Dictionary<string, object> dict)
                 ParseDictionaryToArchivable(attributes.UserDictionary, dict);
 
               if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
