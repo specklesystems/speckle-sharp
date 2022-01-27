@@ -547,7 +547,10 @@ namespace Objects.Converter.Revit
       }
       
       var u = units ?? ModelUnits;
-      var speckleMesh = new Mesh(vertices, faces, units: u );
+      var speckleMesh = new Mesh(vertices, faces, units: u )
+      {
+        ["renderMaterial"] = RenderMaterialToSpeckle(Doc.GetElement(mesh.MaterialElementId ) as Material)
+      };
       
       return speckleMesh;
     }

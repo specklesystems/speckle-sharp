@@ -112,25 +112,8 @@ namespace Objects.Converter.Revit
         {
           var revitMaterial = Doc.GetElement(mesh.MaterialElementId) as Material;
           Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
-
-          int faceIndexOffset = speckleMesh.vertices.Count;
           
-          speckleMesh.vertices.Capacity += mesh.Vertices.Count * 3;
-          foreach (XYZ vert in mesh.Vertices)
-          {
-            var (x, y, z) = PointToSpeckle(vert);
-            speckleMesh.vertices.AddRange(new [] { x, y, z });
-          }
-          
-          speckleMesh.faces.Capacity += mesh.NumTriangles * 4;
-          for (int i = 0; i < mesh.NumTriangles; i++)
-          {
-            var triangle = mesh.get_Triangle(i);
-            speckleMesh.faces.Add(0); //Triangle indicator
-            speckleMesh.faces.Add( (int)(faceIndexOffset + triangle.get_Index(0)) );
-            speckleMesh.faces.Add( (int)(faceIndexOffset + triangle.get_Index(1)) );
-            speckleMesh.faces.Add( (int)(faceIndexOffset + triangle.get_Index(2)) );
-          }
+          ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices);
         }
       }
       
@@ -238,7 +221,7 @@ namespace Objects.Converter.Revit
       {
         foreach (Face face in solid.Faces)
         {
-          FaceToNative(face, faceArr, vertexArr);
+          ConvertMeshData(face.Triangulate(), faceArr, vertexArr);
         }
       }
 
@@ -260,39 +243,44 @@ namespace Objects.Converter.Revit
         {
           Material faceMaterial = Doc.GetElement(face.MaterialElementId) as Material;
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
-          FaceToNative(face, m.faces, m.vertices);
+          ConvertMeshData(face.Triangulate(), m.faces, m.vertices);
         }
       }
 
       return meshBuildHelper.GetAllValidMeshes();
     }
-    
+
+
     /// <summary>
-    /// Given <paramref name="face"/>, will convert and add face data to <paramref name="faces"/> and <paramref name="vertices"/>
+    /// Given <paramref name="mesh"/>, will convert and add triangle data to <paramref name="faces"/> and <paramref name="vertices"/>
     /// </summary>
-    /// <param name="face">The revit face to convert</param>
+    /// <param name="mesh">The revit mesh to convert</param>
     /// <param name="faces">The faces list to add to</param>
     /// <param name="vertices">The vertices list to add to</param>
-    private void FaceToNative(Face face, List<int> faces, List<double> vertices)
+    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices)
     {
-      int vertOffset = vertices.Count / 3;
-      var m = face.Triangulate();
-
-      foreach (var vert in m.Vertices)
+      int faceIndexOffset = vertices.Count / 3;
+      
+      vertices.Capacity += mesh.Vertices.Count * 3;
+      foreach (var vert in mesh.Vertices)
       {
         var (x, y, z) = PointToSpeckle(vert);
-        vertices.AddRange(new double[] { x, y, z });
+        vertices.Add(x);
+        vertices.Add(y);
+        vertices.Add(z);
       }
 
-      for (int i = 0; i < m.NumTriangles; i++)
+      faces.Capacity += mesh.NumTriangles * 4;
+      for (int i = 0; i < mesh.NumTriangles; i++)
       {
-        var triangle = m.get_Triangle(i);
+        var triangle = mesh.get_Triangle(i);
 
         faces.Add(0); // TRIANGLE flag
-        faces.Add((int)triangle.get_Index(0) + vertOffset);
-        faces.Add((int)triangle.get_Index(1) + vertOffset);
-        faces.Add((int)triangle.get_Index(2) + vertOffset);
+        faces.Add((int)triangle.get_Index(0) + faceIndexOffset);
+        faces.Add((int)triangle.get_Index(1) + faceIndexOffset);
+        faces.Add((int)triangle.get_Index(2) + faceIndexOffset);
       }
     }
+
   }
 }
