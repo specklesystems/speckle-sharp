@@ -422,7 +422,7 @@ namespace Objects.Converter.AutocadCivil
       if (elevationPoints.Count > 0)
         _featureline[@"elevationPoints"] = elevationPoints;
 
-      try { _featureline["site"] = featureline.SiteId; } catch { }
+      try { _featureline["site"] = featureline.SiteId.ToString(); } catch { }
 
       return _featureline;
     }
