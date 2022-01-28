@@ -19,7 +19,7 @@ namespace Objects.Converter.TeklaStructures
     public BE.Beam BeamToSpeckle(Tekla.Structures.Model.Beam beam)
     {
       var speckleBeam = new BE.Beam();
-      //TO DO: Support for curved beams goes in here as well + twin beams
+      //TO DO: Support for curved beams goes in here as well + twin beams + concrete and materials
       var endPoint = beam.EndPoint;
       var startPoint = beam.StartPoint;
 
