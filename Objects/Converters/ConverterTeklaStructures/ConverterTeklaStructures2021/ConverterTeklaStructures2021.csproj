@@ -30,10 +30,13 @@
 
   <ItemGroup>
     <Reference Include="Tekla.Structures">
-      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2021.0\nt\bin\plugins\Tekla.Structures.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.dll</HintPath>
+    </Reference>
+    <Reference Include="Tekla.Structures.Catalogs">
+      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.Catalogs.dll</HintPath>
     </Reference>
     <Reference Include="Tekla.Structures.Model">
-      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2021.0\nt\bin\plugins\Tekla.Structures.Model.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.Model.dll</HintPath>
     </Reference>
   </ItemGroup>
 
