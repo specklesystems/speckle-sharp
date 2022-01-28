@@ -56,8 +56,8 @@ namespace ConnectorGrasshopper.Ops
       BaseWorker = new SendComponentWorker(this);
       Attributes = new SendComponentAttributes(this);
     }
-    
-    
+
+
     public override bool Write(GH_IWriter writer)
     {
       writer.SetBoolean("UseDefaultCache", UseDefaultCache);
@@ -154,7 +154,7 @@ namespace ConnectorGrasshopper.Ops
 
       base.AppendAdditionalMenuItems(menu);
     }
-    
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -284,7 +284,7 @@ namespace ConnectorGrasshopper.Ops
           sendComponent.CurrentComponentState = "expired";
           return;
         }
-        
+
         Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
 
         //the active document may have changed
@@ -296,27 +296,27 @@ namespace ConnectorGrasshopper.Ops
           int convertedCount = 0;
           var converted = Utilities.DataTreeToNestedLists(DataInput, sendComponent.Converter, CancellationToken, () =>
           {
-            ReportProgress("Conversion",Math.Round(convertedCount++ / (double) DataInput.DataCount, 2));
+            ReportProgress("Conversion", Math.Round(convertedCount++ / (double)DataInput.DataCount, 2));
           });
-          
-          if ( convertedCount == 0 )
+
+          if (convertedCount == 0)
           {
-            RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
             Done();
             return;
           }
-          
+
           ObjectToSend = new Base();
           ObjectToSend["@data"] = converted;
           TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
         }
         catch (Exception e)
         {
-          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, e.Message ));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
           Done();
           return;
         }
-        
+
         if (CancellationToken.IsCancellationRequested)
         {
           sendComponent.CurrentComponentState = "expired";
@@ -381,6 +381,8 @@ namespace ConnectorGrasshopper.Ops
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
               continue;
             }
+
+            Telemetry.TrackEvent(acc, Telemetry.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
 
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
@@ -520,7 +522,7 @@ namespace ConnectorGrasshopper.Ops
       }
       catch (Exception e)
       {
-        
+
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));

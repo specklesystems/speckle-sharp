@@ -12,7 +12,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class GetObjectValueByKeyTaskComponent: SelectKitTaskCapableComponentBase<object>
+  public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBase<object>
   {
     public override Guid ComponentGuid => new Guid("BA787569-36E6-4522-AC76-B09983E0A40D");
     public override GH_Exposure Exposure => GH_Exposure.secondary;
@@ -43,11 +43,15 @@ namespace ConnectorGrasshopper.Objects
         var key = "";
         DA.GetData(0, ref speckleObj);
         DA.GetData(1, ref key);
-        if(DA.Iteration == 0)
+        if (DA.Iteration == 0)
+        {
+          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Object Value By Key" } });
           Tracker.TrackPageview("objects", "valueByKey");
+        }
+
 
         var @base = speckleObj?.Value;
-        var task = Task.Run(() => DoWork(@base,key, CancelToken));
+        var task = Task.Run(() => DoWork(@base, key, CancelToken));
         TaskList.Add(task);
         return;
       }
@@ -57,9 +61,9 @@ namespace ConnectorGrasshopper.Objects
         // No result could be obtained.
         return;
       }
-      
+
       // Report all conversion errors as warnings
-      if(Converter != null)
+      if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
         {
@@ -68,24 +72,24 @@ namespace ConnectorGrasshopper.Objects
         }
         Converter.Report.ConversionErrors.Clear();
       }
-      
+
       switch (value)
       {
         case null:
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object");
           break;
         case IList<object> list:
-        {
-          var ghGoos = list.Select(GH_Convert.ToGoo).ToList();
-          DA.SetDataList(0, ghGoos);
-          break;
-        }
+          {
+            var ghGoos = list.Select(GH_Convert.ToGoo).ToList();
+            DA.SetDataList(0, ghGoos);
+            break;
+          }
         default:
           Params.Output[0].Access = GH_ParamAccess.item;
           DA.SetData(0, GH_Convert.ToGoo(value));
           break;
       }
-      
+
     }
 
     private object DoWork(Base @base, string key, CancellationToken token)
@@ -97,22 +101,22 @@ namespace ConnectorGrasshopper.Objects
         {
           return null;
         }
-      
+
         var obj = @base[key] ?? @base["@" + key];
-        
+
         switch (obj)
         {
           case null:
             AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object: " + key);
             break;
           case List<object> list:
-          {
-            value = list.Select(
-              item => Converter != null ? Utilities.TryConvertItemToNative(item, Converter) : item).ToList();
-            break;
-          }
+            {
+              value = list.Select(
+                item => Converter != null ? Utilities.TryConvertItemToNative(item, Converter) : item).ToList();
+              break;
+            }
           default:
-            value = Converter!= null ? Utilities.TryConvertItemToNative(obj, Converter) : obj;
+            value = Converter != null ? Utilities.TryConvertItemToNative(obj, Converter) : obj;
             break;
         }
       }

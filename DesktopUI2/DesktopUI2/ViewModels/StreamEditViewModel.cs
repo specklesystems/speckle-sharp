@@ -255,9 +255,19 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState());
+
+
       if (IsReceiver)
+      {
         Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
-      else Tracker.TrackPageview(Tracker.SEND_ADDED);
+        Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
+      }
+
+      else
+      {
+        Tracker.TrackPageview(Tracker.SEND_ADDED);
+        Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
+      }
     }
 
     private async void SendCommand()
@@ -301,6 +311,7 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState(), true);
+      Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" }, { "filter", SelectedFilter.Filter.Name } });
       Tracker.TrackPageview(Tracker.SEND_ADDED);
     }
 
@@ -308,6 +319,7 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState(), false, true);
+      Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
       Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
     }
 

@@ -82,7 +82,7 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
-        if(DA.Iteration == 0)
+        if (DA.Iteration == 0)
           Tracker.TrackPageview(Tracker.STREAM_GET);
 
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
@@ -98,6 +98,7 @@ namespace ConnectorGrasshopper.Streams
           {
             var acc = idWrapper.GetAccount().Result;
             stream = idWrapper;
+            Telemetry.TrackEvent(accountToUse, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
           }
           catch (Exception e)
           {
@@ -106,7 +107,7 @@ namespace ConnectorGrasshopper.Streams
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
           }
         });
       }

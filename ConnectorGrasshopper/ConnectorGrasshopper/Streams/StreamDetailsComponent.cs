@@ -67,12 +67,12 @@ namespace ConnectorGrasshopper.Streams
           Message = null;
           return;
         }
-        
-        if(DA.Iteration == 0) 
+
+        if (DA.Iteration == 0)
           Tracker.TrackPageview(Tracker.STREAM_DETAILS);
-        
+
         Message = "Fetching";
-        
+
         if (ghStreamTree.DataCount == 0)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input S failed to collect data.");
@@ -106,7 +106,7 @@ namespace ConnectorGrasshopper.Streams
 
                 Account account = null;
                 try
-                { 
+                {
                   account = item.Value.GetAccount().Result;
                 }
                 catch (Exception e)
@@ -114,6 +114,8 @@ namespace ConnectorGrasshopper.Streams
                   error = e.InnerException ?? e;
                   return;
                 }
+
+                Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
 
                 var client = new Client(account);
 

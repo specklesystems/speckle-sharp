@@ -54,7 +54,7 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         string userId = null;
         var limit = 10;
-        if(DA.Iteration == 0)
+        if (DA.Iteration == 0)
           Tracker.TrackPageview(Tracker.STREAM_LIST);
 
         DA.GetData(0, ref userId);
@@ -81,6 +81,8 @@ namespace ConnectorGrasshopper.Streams
         }
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
+
+        Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
 
         Task.Run(async () =>
         {
