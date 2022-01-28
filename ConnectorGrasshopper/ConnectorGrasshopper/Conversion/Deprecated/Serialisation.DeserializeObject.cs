@@ -50,15 +50,15 @@ namespace ConnectorGrasshopper.Conversion
     {
       try
       {
-        if (CancellationToken.IsCancellationRequested)return;
-        
+        if (CancellationToken.IsCancellationRequested) return;
+
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
           var path = Objects.Paths[branchIndex];
           foreach (var item in list)
           {
-            if (CancellationToken.IsCancellationRequested)return;
+            if (CancellationToken.IsCancellationRequested) return;
 
             try
             {
@@ -93,10 +93,14 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested)return;
-      if(DA.Iteration == 0)
+      if (CancellationToken.IsCancellationRequested) return;
+      if (DA.Iteration == 0)
+      {
         Tracker.TrackPageview(Tracker.DESERIALIZE);
-      
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Deserialize" } });
+      }
+
+
       GH_Structure<GH_String> _objects;
       DA.GetDataTree(0, out _objects);
 
@@ -106,18 +110,18 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          if(item.IsValid) Objects.Append(item, path);
+          if (item.IsValid) Objects.Append(item, path);
           else RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}][{list.IndexOf(item)}] is not valid."));
         }
         branchIndex++;
       }
     }
-    
+
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested)return;
+      if (CancellationToken.IsCancellationRequested) return;
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);

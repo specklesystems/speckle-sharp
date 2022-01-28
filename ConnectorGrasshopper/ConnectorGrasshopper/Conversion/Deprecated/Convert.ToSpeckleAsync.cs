@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Conversion
     public ToSpeckleConverterAsync() : base("To Speckle", "To Speckle", "Convert data from Rhino to their Speckle Base equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
     }
-    
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "Data to convert to Speckle Base objects.", GH_ParamAccess.tree);
@@ -71,7 +71,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       try
       {
-        if (CancellationToken.IsCancellationRequested)return;
+        if (CancellationToken.IsCancellationRequested) return;
 
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
@@ -79,16 +79,16 @@ namespace ConnectorGrasshopper.Conversion
           var path = Objects.Paths[branchIndex];
           foreach (var item in list)
           {
-            if (CancellationToken.IsCancellationRequested)return;
+            if (CancellationToken.IsCancellationRequested) return;
 
             var converted = Utilities.TryConvertItemToSpeckle(item, Converter, true);
-            if(converted == null)
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning,$"Cannot convert item at {path}[{list.IndexOf(item)}] to Speckle."));
+            if (converted == null)
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Cannot convert item at {path}[{list.IndexOf(item)}] to Speckle."));
             else if (converted.GetType().IsSimpleType())
               ConvertedObjects.Append(new GH_ObjectWrapper(converted));
             else
               ConvertedObjects.Append(new GH_SpeckleBase { Value = converted as Base }, Objects.Paths[branchIndex]);
-            ReportProgress(Id, Math.Round((completed++ + 1) / (double)Objects.Count(),2));
+            ReportProgress(Id, Math.Round((completed++ + 1) / (double)Objects.Count(), 2));
           }
 
           branchIndex++;
@@ -109,29 +109,33 @@ namespace ConnectorGrasshopper.Conversion
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if (CancellationToken.IsCancellationRequested)return;
-      
+      if (CancellationToken.IsCancellationRequested) return;
+
       // Report all conversion errors as warnings
       foreach (var error in Converter.Report.ConversionErrors)
       {
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
       }
-      
+
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
       }
-      
+
       DA.SetDataTree(0, ConvertedObjects);
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested)return;
+      if (CancellationToken.IsCancellationRequested) return;
       DA.DisableGapLogic();
-      if(DA.Iteration == 0)
+      if (DA.Iteration == 0)
+      {
         Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
-      
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
+      }
+
+
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 

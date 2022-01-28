@@ -58,11 +58,11 @@ namespace ConnectorGrasshopper
       catch (Exception e)
       {
       }
-      
+
       var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
       objectItem.Checked = !UseSchemaTag;
       objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
-      
+
       var tagItem = schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam?.Name ?? "geometry"} with {Name} attached") as ToolStripMenuItem;
       tagItem.Checked = UseSchemaTag;
       tagItem.Enabled = mainParam != null;
@@ -164,7 +164,7 @@ namespace ConnectorGrasshopper
 
       if (!UserSetSchemaTag)
         UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
-      
+
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
@@ -328,9 +328,12 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      if(DA.Iteration == 0)
+      if (DA.Iteration == 0)
+      {
         Tracker.TrackPageview("objects", "create", "schema");
-      
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Grasshopper BIM" }, { "node", Name } });
+      }
+
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       List<object> cParamsValues = new List<object>();
@@ -382,9 +385,9 @@ namespace ConnectorGrasshopper
       {
         schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
         ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-        if(((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
+        if (((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
           ((Base)schemaObject)["units"] = units;
-      } 
+      }
       catch (Exception e)
       {
 
@@ -408,8 +411,8 @@ namespace ConnectorGrasshopper
 
           commitObj = ((Base)mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
-          if(commitObj["units"]==null || commitObj["units"] == "")
-          commitObj["units"] = units;
+          if (commitObj["units"] == null || commitObj["units"] == "")
+            commitObj["units"] = units;
         }
         catch (Exception e)
         {

@@ -75,7 +75,7 @@ namespace ConnectorGrasshopper.Ops
       Converter = Kit.LoadConverter(Applications.Rhino6);
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
-        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
+        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
@@ -84,7 +84,7 @@ namespace ConnectorGrasshopper.Ops
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:",null, false);
+      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
       menuItem.Enabled = false;
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
@@ -197,13 +197,13 @@ namespace ConnectorGrasshopper.Ops
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
-      
+
       if (!foundKit)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
         return;
       }
-      
+
       if (RunCount == 1)
       {
         CreateCancelationToken();
@@ -310,6 +310,8 @@ namespace ConnectorGrasshopper.Ops
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message);
                 continue;
               }
+
+              Telemetry.TrackEvent(acc, Telemetry.Events.Send, new Dictionary<string, object>() { { "sync", true } });
 
               var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
               transportBranches.Add(serverTransport, sw.BranchName ?? "main");
