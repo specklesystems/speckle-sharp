@@ -1,4 +1,6 @@
 ﻿using Objects.Geometry;
+using Objects.Structural.Materials;
+using Objects.Structural.Properties.Profiles;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -49,4 +51,28 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
     }
   }
+}
+
+namespace Objects.BuiltElements.Tekla
+{
+    public class TeklaBeam : Beam
+    {
+        public string name { get; set; }
+        public SectionProfile profile { get; set; }
+        public Material material { get; set; }
+        public string finish { get; set; }
+        public string classNumber { get; set; }
+        public Vector alignmentVector { get; set; }
+        public Base userProperties { get; set; }
+
+        public TeklaBeam() { }
+
+        [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]
+        public TeklaBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, Material material) 
+        {
+            this.baseLine = baseLine;
+            this.profile = profile;
+            this.material = material;
+        }
+    }
 }

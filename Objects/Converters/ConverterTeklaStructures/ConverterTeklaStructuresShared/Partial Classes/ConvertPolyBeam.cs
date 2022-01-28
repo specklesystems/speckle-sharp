@@ -19,16 +19,16 @@ namespace Objects.Converter.TeklaStructures
     public BE.Beam PolyBeamToSpeckle(PolyBeam PolyBeam)
     {
       var speckleBeam = new BE.Beam();
-      var centerPolycurve = PolyBeam.GetCenterLinePolycurve();
+      //var centerPolycurve = PolyBeam.GetCenterLinePolycurve();
       var polyLine = new Polycurve();
-      foreach (var curve in centerPolycurve)
-      {
-        var startPt = new Point(curve.StartPoint.X, curve.StartPoint.Y, curve.StartPoint.Z);
-        var endPt = new Point(curve.EndPoint.X, curve.EndPoint.Y, curve.EndPoint.Z);
-        var line = new Line(startPt, endPt);
-        polyLine.segments.Add(line);
+      //foreach (var curve in centerPolycurve)
+      //{
+      //  var startPt = new Point(curve.StartPoint.X, curve.StartPoint.Y, curve.StartPoint.Z);
+      //  var endPt = new Point(curve.EndPoint.X, curve.EndPoint.Y, curve.EndPoint.Z);
+      //  var line = new Line(startPt, endPt);
+      //  polyLine.segments.Add(line);
         
-      }
+      //}
       speckleBeam.baseLine = polyLine;
       var solid = PolyBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
