@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -68,7 +69,7 @@ namespace ConnectorGrasshopper.Streams
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another stream, please use a new component.");
         return;
       }
-      
+
       Tracker.TrackPageview(Tracker.STREAM_CREATE);
 
       string userId = null;
@@ -101,6 +102,8 @@ namespace ConnectorGrasshopper.Streams
         MutableNickName = false;
         return;
       }
+
+      Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
 
       Task.Run(async () =>
       {

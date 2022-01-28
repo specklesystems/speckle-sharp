@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.primary;
     public override Guid ComponentGuid => new Guid("DC561A9D-BF12-4EB3-8412-4B7FC6ECB291");
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObject;
-    
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       //throw new NotImplementedException();
@@ -50,9 +50,13 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional");
           return;
         }
-        
-        if(DA.Iteration == 0)
+
+        if (DA.Iteration == 0)
+        {
+          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object" } });
           Tracker.TrackPageview("objects", "create", "variableinput");
+        }
+
 
         Params.Input.ForEach(ighParam =>
         {
@@ -105,9 +109,9 @@ namespace ConnectorGrasshopper.Objects
         var task = Task.Run(() => DoWork(inputData));
         TaskList.Add(task);
         return;
-      } 
-      
-      if(Converter != null)
+      }
+
+      if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
         {
@@ -116,7 +120,7 @@ namespace ConnectorGrasshopper.Objects
         }
         Converter.Report.ConversionErrors.Clear();
       }
-      
+
       if (!GetSolveResults(DA, out Base result))
       {
         // Not running on multi threaded, handle this properly

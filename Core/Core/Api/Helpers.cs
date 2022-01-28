@@ -33,7 +33,7 @@ namespace Speckle.Core.Api
 
       string objectId = "";
       Commit commit = null;
-      
+
       //OBJECT URL
       if (!string.IsNullOrEmpty(sw.ObjectId))
       {
@@ -61,6 +61,7 @@ namespace Speckle.Core.Api
       }
 
       Tracker.TrackPageview(Tracker.RECEIVE);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       var receiveRes = await Operations.Receive(
         objectId,
@@ -70,7 +71,7 @@ namespace Speckle.Core.Api
         onTotalChildrenCountKnown: onTotalChildrenCountKnown,
         disposeTransports: true
       );
-      
+
       try
       {
         await client.CommitReceived(new CommitReceivedInput
@@ -115,6 +116,7 @@ namespace Speckle.Core.Api
         onErrorAction, disposeTransports: true);
 
       Tracker.TrackPageview(Tracker.SEND);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       return await client.CommitCreate(
             new CommitCreateInput

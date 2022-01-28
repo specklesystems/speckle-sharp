@@ -35,16 +35,6 @@ namespace Objects.Converter.ETABS
       {
         Point end1node = baseline.start;
         Point end2node = baseline.end;
-        //temp fix code for m 
-        if (baseline.units == "m")
-        {
-          end1node.x *= 1000;
-          end1node.y *= 1000;
-          end1node.z *= 1000;
-          end2node.x *= 1000;
-          end2node.y *= 1000;
-          end2node.z *= 1000;
-        }
         if (properties.Contains(element1D.property.name))
         {
           Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
@@ -58,15 +48,6 @@ namespace Objects.Converter.ETABS
       {
         Point end1node = element1D.end1Node.basePoint;
         Point end2node = element1D.end2Node.basePoint;
-        if (baseline.units == "m")
-        {
-          end1node.x *= 1000;
-          end1node.y *= 1000;
-          end1node.z *= 1000;
-          end2node.x *= 1000;
-          end2node.y *= 1000;
-          end2node.z *= 1000;
-        }
         if (properties.Contains(element1D.property.name))
         {
           Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
@@ -112,8 +93,37 @@ namespace Objects.Converter.ETABS
         if (ETABSelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(ETABSelement1D.name, ETABSelement1D.SpandrelAssignment); }
         if (ETABSelement1D.PierAssignment != null) { Model.FrameObj.SetPier(ETABSelement1D.name, ETABSelement1D.PierAssignment); }
         if (ETABSelement1D.ETABSLinearSpring != null) { Model.FrameObj.SetSpringAssignment(ETABSelement1D.name, ETABSelement1D.ETABSLinearSpring.name); }
+        if (ETABSelement1D.DesignProcedure != null){
+        switch(ETABSelement1D.DesignProcedure){
+            case DesignProcedure.ProgramDetermined:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 0);
+              break;
+            case DesignProcedure.CompositeBeamDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 3);
+              break;
+            case DesignProcedure.CompositeColumnDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 13);
+              break;
+            case DesignProcedure.SteelFrameDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 1);
+              break;
+            case DesignProcedure.ConcreteFrameDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 2);
+              break;
+            case DesignProcedure.SteelJoistDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 4);
+              break;
+            case DesignProcedure.NoDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 7);
+              break;
+          }
+        if(ETABSelement1D.Modifiers != null){
+            var modifiers = ETABSelement1D.Modifiers;
+        Model.FrameObj.SetModifiers(ETABSelement1D.name, ref modifiers); }
+        }
       }
 
+ 
 
 
       return element1D.name;
@@ -226,6 +236,37 @@ namespace Objects.Converter.ETABS
       {
         speckleStructFrame.SpandrelAssignment = spandrelAssignment;
       }
+
+      int designProcedure = 9;
+      Model.FrameObj.GetDesignProcedure(name, ref designProcedure);
+      if(designProcedure != 9){
+      switch(designProcedure){
+          case 0:
+            speckleStructFrame.DesignProcedure = DesignProcedure.ProgramDetermined;
+            break;
+          case 1:
+            speckleStructFrame.DesignProcedure = DesignProcedure.SteelFrameDesign;
+            break;
+          case 2:
+            speckleStructFrame.DesignProcedure = DesignProcedure.ConcreteFrameDesign;
+            break;
+          case 3:
+            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeBeamDesign;
+            break;
+          case 4:
+            speckleStructFrame.DesignProcedure = DesignProcedure.SteelJoistDesign;
+            break;  
+          case 7:
+            speckleStructFrame.DesignProcedure = DesignProcedure.NoDesign;
+            break;
+          case 13:
+            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeColumnDesign;
+            break;
+      }
+      }
+      double[] modifiers = new double[]{ };
+      int s = Model.FrameObj.GetModifiers(name, ref modifiers);
+      if(s==0){ speckleStructFrame.Modifiers = modifiers; }
 
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);

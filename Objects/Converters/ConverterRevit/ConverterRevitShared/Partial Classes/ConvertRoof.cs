@@ -178,8 +178,9 @@ namespace Objects.Converter.Revit
             break;
           }
       }
-
-      speckleRoof.type = Doc.GetElement(revitRoof.GetTypeId()).Name;
+      var symbol = Doc.GetElement(revitRoof.GetTypeId()) as FamilySymbol;
+      speckleRoof.type = symbol.Name;
+      speckleRoof.family = symbol.FamilyName;
 
       // TODO handle case if not one of our supported roofs
       if (profiles.Any())

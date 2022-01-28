@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
 using Objects.Structural.Properties;
+using Speckle.Core.Kits;
 
 namespace Objects.Structural.ETABS.Properties
 {
@@ -18,7 +19,7 @@ namespace Objects.Structural.ETABS.Properties
     public double MP3deltaEnd1 { get; set; }
     public double MP3deltaEnd2 { get; set; }
 
-
+    [SchemaInfo("ETABSLink", "Create an ETABS Link Property", "ETABS", "Properties")]
     public ETABSLinkProperty(string name, double mass, double weight, double rotationalInertia1, double rotationalInertia2, double rotationalInertia3, double m2PdeltaEnd1, double mP2deltaEnd2, double mP3deltaEnd1, double mP3deltaEnd2)
     {
       this.name = name;

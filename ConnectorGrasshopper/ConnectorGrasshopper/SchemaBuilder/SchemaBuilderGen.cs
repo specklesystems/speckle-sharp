@@ -245,9 +245,24 @@ public class DuctSchemaComponent: CreateSchemaObjectBase {
     public DuctSchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("51d40791-43ea-a8e7-ef13-e9bfdf9cd893");
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.Geometry.Line,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class Duct1SchemaComponent: CreateSchemaObjectBase {
+     
+    public Duct1SchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("7e3a3fba-7d4f-d549-96c0-41693b512db0");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.ICurve,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
         base.AddedToDocument(document);
     }
 }
@@ -318,6 +333,19 @@ public class ETABSAreaSpringSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class ETABSDiaphragmSchemaComponent: CreateSchemaObjectBase {
+     
+    public ETABSDiaphragmSchemaComponent(): base("ETABS Diaphragm", "ETABS Diaphragm", "Create an ETABS Diaphragm", "Speckle 2 ETABS", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("9096a94e-ac3e-21e9-3086-1c477e0b4b83");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSDiaphragm.ctor(System.String,System.Boolean)","Objects.Structural.ETABS.Properties.ETABSDiaphragm");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class ETABSElement1DSchemaComponent: CreateSchemaObjectBase {
      
     public ETABSElement1DSchemaComponent(): base("Element1D (from local axis)", "Element1D (from local axis)", "Creates a Speckle ETABS 1D element (from local axis)", "Speckle 2 ETABS", "Geometry") { }
@@ -325,7 +353,7 @@ public class ETABSElement1DSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("103e195c-e51b-87f3-dd08-364924b2bfd5");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Geometry.Plane,Objects.Structural.ETABS.Properties.ETABSLinearSpring)","Objects.Structural.ETABS.Geometry.ETABSElement1D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Geometry.Plane,Objects.Structural.ETABS.Properties.ETABSLinearSpring,System.Double[],Objects.Structural.ETABS.Properties.DesignProcedure)","Objects.Structural.ETABS.Geometry.ETABSElement1D");
         base.AddedToDocument(document);
     }
 }
@@ -338,7 +366,7 @@ public class ETABSElement1D1SchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("839cc57e-7437-90b1-21f4-588f08cce534");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Structural.Geometry.Node,System.Double,Objects.Structural.ETABS.Properties.ETABSLinearSpring)","Objects.Structural.ETABS.Geometry.ETABSElement1D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Structural.Geometry.Node,System.Double,Objects.Structural.ETABS.Properties.ETABSLinearSpring,System.Double[],Objects.Structural.ETABS.Properties.DesignProcedure)","Objects.Structural.ETABS.Geometry.ETABSElement1D");
         base.AddedToDocument(document);
     }
 }
@@ -351,7 +379,7 @@ public class ETABSElement2DSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("d151ee36-d250-814e-28ad-e9c9c125df42");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSElement2D.ctor(System.Collections.Generic.List`1[Objects.Structural.Geometry.Node],Objects.Structural.Properties.Property2D,System.Double,System.Double,Objects.Structural.ETABS.Properties.ETABSAreaSpring)","Objects.Structural.ETABS.Geometry.ETABSElement2D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSElement2D.ctor(System.Collections.Generic.List`1[Objects.Structural.Geometry.Node],Objects.Structural.Properties.Property2D,System.Double,System.Double,System.Double[],Objects.Structural.ETABS.Properties.ETABSAreaSpring,Objects.Structural.ETABS.Properties.ETABSDiaphragm)","Objects.Structural.ETABS.Geometry.ETABSElement2D");
         base.AddedToDocument(document);
     }
 }
@@ -370,6 +398,19 @@ public class ETABSLinearSpringSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class ETABSLinkPropertySchemaComponent: CreateSchemaObjectBase {
+     
+    public ETABSLinkPropertySchemaComponent(): base("ETABSLink", "ETABSLink", "Create an ETABS Link Property", "Speckle 2 ETABS", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("84d297c9-31d8-7699-b26b-771058c8d5ca");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSLinkProperty.ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.ETABS.Properties.ETABSLinkProperty");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class ETABSNodeSchemaComponent: CreateSchemaObjectBase {
      
     public ETABSNodeSchemaComponent(): base("Node with properties", "Node with properties", "Creates a Speckle ETABS node with spring, mass and/or damper properties", "Speckle 2 ETABS", "Geometry") { }
@@ -377,7 +418,20 @@ public class ETABSNodeSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("c09c0e14-134a-0f11-20c0-6e3000eb0ec7");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSNode.ctor(Objects.Geometry.Point,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Axis,Objects.Structural.ETABS.Properties.ETABSSpringProperty,Objects.Structural.Properties.PropertyMass,Objects.Structural.Properties.PropertyDamper)","Objects.Structural.ETABS.Geometry.ETABSNode");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Geometry.ETABSNode.ctor(Objects.Geometry.Point,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Axis,Objects.Structural.ETABS.Properties.ETABSSpringProperty,Objects.Structural.Properties.PropertyMass,Objects.Structural.Properties.PropertyDamper,Objects.Structural.ETABS.Properties.ETABSDiaphragm,Objects.Structural.ETABS.Properties.DiaphragmOption)","Objects.Structural.ETABS.Geometry.ETABSNode");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class ETABSOpeningSchemaComponent: CreateSchemaObjectBase {
+     
+    public ETABSOpeningSchemaComponent(): base("Opening", "Opening", "Create an ETABS Opening", "Speckle 2 ETABS", "Properties") { }
+    
+    public override Guid ComponentGuid => new Guid("f4c0f0ed-3d3c-8460-c1a1-9e529f8f1268");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.ETABS.Properties.ETABSOpening.ctor(System.Boolean)","Objects.Structural.ETABS.Properties.ETABSOpening");
         base.AddedToDocument(document);
     }
 }
@@ -1846,9 +1900,24 @@ public class RevitDuctSchemaComponent: CreateSchemaObjectBase {
     public RevitDuctSchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("d7781536-e8a9-8aef-1b27-571584f8c4a3");
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.Geometry.Line,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitDuct1SchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitDuct1SchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("7bb86598-9cd2-8d29-a1dc-7500c4b4ed4b");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
         base.AddedToDocument(document);
     }
 }
@@ -1875,6 +1944,32 @@ public class RevitFaceWallSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFaceWall.ctor(System.String,System.String,Objects.Geometry.Brep,Objects.BuiltElements.Level,Objects.BuiltElements.Revit.LocationLine,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFaceWall");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitFlexDuctSchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitFlexDuctSchemaComponent(): base("RevitFlexDuct", "RevitFlexDuct", "Creates a Revit flex duct", "Speckle 2 Revit", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("f350f9a2-06ca-6118-a4e6-88e721bb7f52");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFlexDuct.ctor(System.String,System.String,Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,Objects.Geometry.Vector,Objects.Geometry.Vector,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFlexDuct");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitFlexPipeSchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitFlexPipeSchemaComponent(): base("RevitFlexPipe", "RevitFlexPipe", "Creates a Revit flex pipe", "Speckle 2 Revit", "MEP") { }
+    
+    public override Guid ComponentGuid => new Guid("219bfacc-9c41-441a-210c-c2cfb877929b");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitFlexPipe.ctor(System.String,System.String,Objects.ICurve,System.Double,Objects.BuiltElements.Level,Objects.Geometry.Vector,Objects.Geometry.Vector,System.String,System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitFlexPipe");
         base.AddedToDocument(document);
     }
 }

@@ -16,7 +16,8 @@ namespace Speckle.ConnectorDynamo.Functions
     [IsVisibleInDynamoLibrary(false)]
     public static Core.Credentials.Account GetById(string id)
     {
-      var acc =  AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == id);
+      var acc = AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == id);
+      Analytics.TrackEvent(acc, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Get" } });
       return acc;
     }
 
@@ -24,15 +25,20 @@ namespace Speckle.ConnectorDynamo.Functions
     /// Get an Account details
     /// </summary>
     [NodeCategory("Query")]
-    [MultiReturn(new[] {"isDefault", "serverInfo", "userInfo"})]
+    [MultiReturn(new[] { "isDefault", "serverInfo", "userInfo" })]
     public static Dictionary<string, object> Details(Core.Credentials.Account account)
     {
-      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
-      if(account == null)
+
+
+      if (account == null)
       {
-        
+
         Utils.HandleApiExeption(new WarningException("Provided account was invalid."));
       }
+
+      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
+
       return new Dictionary<string, object>
       {
         {"isDefault", account.isDefault},

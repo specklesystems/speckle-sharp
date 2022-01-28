@@ -176,6 +176,9 @@ namespace Objects.Converter.ETABS
           returnObject = ETABSTendonToSpeckle(name);
           Report.Log($"Created Tendons");
           break;
+        //case "Diaphragm":
+        //  returnObject = diaphragmToSpeckle(name);
+        //  Report.Log($"Created Diaphragm");
         case "Links":
           returnObject = LinkToSpeckle(name);
           break;

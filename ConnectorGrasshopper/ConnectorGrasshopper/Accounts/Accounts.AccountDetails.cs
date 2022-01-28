@@ -48,9 +48,7 @@ namespace ConnectorGrasshopper.Streams
     {
       string userId = null;
       if (!DA.GetData(0, ref userId)) return;
-      
-      if(DA.Iteration == 0) // Only report on first iteration of the component.
-        Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
+
 
       if (string.IsNullOrEmpty(userId))
       {
@@ -65,6 +63,13 @@ namespace ConnectorGrasshopper.Streams
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
         return;
       }
+
+      if (DA.Iteration == 0) // Only report on first iteration of the component.
+      {
+        Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
+        Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
+      }
+
       Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
       DA.SetData(0, account.isDefault);

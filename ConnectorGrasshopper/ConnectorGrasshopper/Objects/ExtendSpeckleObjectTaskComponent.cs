@@ -61,9 +61,12 @@ namespace ConnectorGrasshopper.Objects
           inputData = null;
           return;
         }
-        
-        if(DA.Iteration == 0)
+
+        if (DA.Iteration == 0)
+        {
+          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Expand Object" } });
           Tracker.TrackPageview("objects", "extend", "variableinput");
+        }
 
         inputData = new Dictionary<string, object>();
         for (int i = 1; i < Params.Input.Count; i++)
@@ -79,7 +82,7 @@ namespace ConnectorGrasshopper.Objects
           if (willOverwrite)
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
               $"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten");
-          
+
           switch (param.Access)
           {
             case GH_ParamAccess.item:
@@ -124,7 +127,7 @@ namespace ConnectorGrasshopper.Objects
       }
 
       // Report all conversion errors as warnings
-      if(Converter != null)
+      if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
         {
