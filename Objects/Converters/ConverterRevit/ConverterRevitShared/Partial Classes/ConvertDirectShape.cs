@@ -172,12 +172,36 @@ namespace Objects.Converter.Revit
             break;
         }
       }
+
       
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
         geometries
       );
+
+      //Find display values in geometries
+      List<Base> displayValue = new List<Base>();
+      foreach (Base geo in geometries)
+      {
+        switch (geo["displayValue"])
+        {
+          case null:
+            //geo has no display value, we assume it is itself a valid displayValue
+            displayValue.Add(geo);
+            break;
+          
+          case Base b:
+            displayValue.Add(b);
+            break;
+          
+          case IEnumerable<Base> e:
+            displayValue.AddRange(e);
+            break;
+        }
+      }
+
+      speckleAc.displayValue = displayValue;
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;
       return speckleAc;
