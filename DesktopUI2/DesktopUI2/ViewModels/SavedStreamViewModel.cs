@@ -215,6 +215,7 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceive()
     {
       Progress.CancellationTokenSource.Cancel();
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancel Send or Receive" } });
     }
 
     public void OpenReportCommand()
@@ -223,6 +224,7 @@ namespace DesktopUI2.ViewModels
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
       report.ShowDialog(MainWindow.Instance);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }
 
   }
