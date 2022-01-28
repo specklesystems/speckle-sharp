@@ -38,7 +38,7 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _menuItems, value);
       }
     }
-
+    
     public string LastUpdated
     {
       get
@@ -77,7 +77,6 @@ namespace DesktopUI2.ViewModels
     public bool ShowNotification
     {
       get => !string.IsNullOrEmpty(Notification);
-
     }
 
     private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{StreamState.BranchName}"; }
@@ -213,17 +212,18 @@ namespace DesktopUI2.ViewModels
         Notification = "Something went wrong, please check the report.";
     }
 
+    public void CancelSendOrReceive()
+    {
+      Progress.CancellationTokenSource.Cancel();
+    }
+
     public void OpenReportCommand()
     {
       var report = new Report();
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
       report.ShowDialog(MainWindow.Instance);
-
-
     }
-
-
 
   }
 }
