@@ -21,6 +21,7 @@ namespace Objects.Converter.TeklaStructures
     {
       var speckleBeam = new TeklaBeam();
       //TO DO: Support for curved beams goes in here as well + twin beams
+
       var endPoint = beam.EndPoint;
       var startPoint = beam.StartPoint;
 

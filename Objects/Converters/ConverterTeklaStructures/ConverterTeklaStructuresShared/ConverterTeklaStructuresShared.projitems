@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructureUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBolts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolyBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpiralBeam.cs" />
   </ItemGroup>

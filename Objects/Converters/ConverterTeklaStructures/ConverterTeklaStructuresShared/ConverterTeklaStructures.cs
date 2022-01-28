@@ -72,6 +72,8 @@ namespace Objects.Converter.TeklaStructures
           return true;
         case SpiralBeam sb:
           return true;
+        case BoltGroup bg:
+          return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -106,6 +108,9 @@ namespace Objects.Converter.TeklaStructures
           break;
         case SpiralBeam o:
           returnObject = SpiralBeamToSpeckle(o);
+          break;
+        case BoltGroup o:
+          returnObject = BoltsToSpeckle(o);
           break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
