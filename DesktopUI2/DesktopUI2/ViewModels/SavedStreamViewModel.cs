@@ -164,6 +164,7 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamEditViewModel(HostScreen, StreamState));
       Tracker.TrackPageview("stream", "edit");
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
     }
 
     public void ViewOnlineSavedStreamCommand()
@@ -171,36 +172,39 @@ namespace DesktopUI2.ViewModels
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
+
     }
 
     public void CopyStreamURLCommand()
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
-      Tracker.TrackPageview("stream", "copy-link");
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Copy Link" } });
+
     }
 
     public async void SendCommand()
     {
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
-
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
-
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
+
+      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Send);
       Tracker.TrackPageview(Tracker.SEND);
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
+
+
     }
 
     public async void ReceiveCommand()
     {
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
-
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
-
       Progress.IsProgressing = false;
       LastUsed = DateTime.Now.ToString();
 
@@ -211,6 +215,7 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceive()
     {
       Progress.CancellationTokenSource.Cancel();
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancel Send or Receive" } });
     }
 
     public void OpenReportCommand()
@@ -219,6 +224,7 @@ namespace DesktopUI2.ViewModels
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
       report.ShowDialog(MainWindow.Instance);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }
 
   }

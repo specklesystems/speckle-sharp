@@ -45,7 +45,7 @@ namespace ConnectorGrasshopper.Ops
   public class SendLocalWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> data;
-    
+
     private string sentObjectId;
     public SendLocalWorker(GH_Component _parent) : base(_parent)
     { }
@@ -58,6 +58,7 @@ namespace ConnectorGrasshopper.Ops
       {
         Parent.Message = "Sending...";
         Tracker.TrackPageview(Tracker.SEND_LOCAL);
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
 
         var converter = (Parent as SendLocalComponent)?.Converter;
         converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
@@ -74,7 +75,7 @@ namespace ConnectorGrasshopper.Ops
 
       Done();
     }
-    
+
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)

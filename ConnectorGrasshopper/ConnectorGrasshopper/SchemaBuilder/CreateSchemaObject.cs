@@ -349,10 +349,14 @@ namespace ConnectorGrasshopper
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No schema has been selected.");
         return;
       }
-      
-      
-      if(DA.Iteration == 0)
+
+
+      if (DA.Iteration == 0)
+      {
         Tracker.TrackPageview("objects", "create", "variableinput");
+        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Schema Object" }, { "node", Name } });
+      }
+
 
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
