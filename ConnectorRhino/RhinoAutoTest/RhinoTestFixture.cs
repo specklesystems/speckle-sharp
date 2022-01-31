@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace IndustrialConstructionUnitTests
+namespace RhinoAutoTest
 {
 
     /// <summary>

@@ -11,7 +11,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Xunit;
 
-namespace IndustrialConstructionUnitTests
+namespace RhinoAutoTest
 {
     public class BaseTest
     {
@@ -25,15 +25,40 @@ namespace IndustrialConstructionUnitTests
         public static async Task<string> SendAllElements(string filePath)
         {
           var config = RhinoConfig.LoadConfig(filePath);
+          var doc = RhinoDoc.Open(config.WorkingFolder + "\\" + config.SourceFile, out var alreadyOpen);
 
           var kit = KitManager.GetDefaultKit();
           var converter = kit.LoadConverter(Applications.Rhino7);
-          var doc = RhinoDoc.Open(config.WorkingFolder + "\\" + config.SourceFile, out var alreadyOpen);
+
+          var enumerable = AccountManager.GetAccounts();
+          var acc = enumerable.FirstOrDefault(a => a.id == config.SenderId);
+          var client = new Client(acc);
+          var transport = new ServerTransport(acc, config.TargetStream);
           converter.SetContextDocument(doc);
 
-          var elements = doc.Objects.ToList();
+          var elements = doc.Objects.Select(o => o.Geometry);
 
-          return "yay!!";
+          var speckleObjects = new List<Base>();
+          foreach (var rhinoObject in elements)
+          {
+            if (!converter.CanConvertToSpeckle(rhinoObject))
+              continue;
+            var converted = converter.ConvertToSpeckle(rhinoObject);
+            speckleObjects.Add(converted);
+          }
+
+          var obj = new Base();
+          obj[ "convertedObjects" ] = speckleObjects;
+          var objectId = await Operations.Send(obj, new List<ITransport> { transport }, false);
+          var commitId = await client.CommitCreate(new CommitCreateInput
+          {
+            branchName = config.TargetBranch,
+            objectId = objectId,
+            sourceApplication = Applications.Rhino7,
+            streamId = config.TargetStream
+          });
+          
+          return commitId;
         }
     }
     
