@@ -10,15 +10,12 @@ namespace Archicad.Operations
   {
     #region --- Functions ---
 
-    public static Base Convert(Model.MeshModel meshModel)
+    public static List<Mesh> MeshToSpeckle(Model.MeshModel meshModel)
     {
-      Base result = new Base();
-      result["Polygons"] = meshModel.polygons.Select(p => CreateMeshFromPolygon(meshModel.vertices, p, meshModel.materials[p.material])).ToList();
-
-      return result;
+      return meshModel.polygons.Select(p => CreateMeshFromPolygon(meshModel.vertices, p, meshModel.materials[p.material])).ToList();
     }
 
-    public static Model.MeshModel Convert(Mesh mesh)
+    public static Model.MeshModel MeshToNative(Mesh mesh)
     {
       return new Model.MeshModel
       {
@@ -27,7 +24,7 @@ namespace Archicad.Operations
       };
     }
 
-    public static Model.MeshModel Convert(IEnumerable<Mesh> meshes)
+    public static Model.MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
       Model.MeshModel meshModel = new Model.MeshModel();
 

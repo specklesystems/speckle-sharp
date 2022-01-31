@@ -39,8 +39,8 @@ namespace Archicad.Converters
 			List<Base> ceilings = new List<Base> ();
 			foreach (CeilingData ceilingData in datas)
 			{
-				Base meshModel = Operations.ModelConverter.Convert (elements.First (e => e.elementId == ceilingData.elementId).model);
-				ceilings.Add (new Objects.BuiltElements.Archicad.Ceiling (ceilingData, meshModel));
+				var displayVal = Operations.ModelConverter.MeshToSpeckle (elements.First (e => e.elementId == ceilingData.elementId).model);
+				ceilings.Add (new Objects.BuiltElements.Archicad.Ceiling (ceilingData, displayVal));
 			}
 
 			return ceilings;

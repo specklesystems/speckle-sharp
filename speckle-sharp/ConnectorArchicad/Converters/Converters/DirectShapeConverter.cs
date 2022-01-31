@@ -40,7 +40,7 @@ namespace Archicad.Converters
 					continue;
 				}
 
-				elementModelDatas.Add (new Model.ElementModelData { elementId = directShape.ElementId, model = ModelConverter.Convert (polygons.OfType<Mesh> ()) });
+				elementModelDatas.Add (new Model.ElementModelData { elementId = directShape.ElementId, model = ModelConverter.MeshToNative (polygons.OfType<Mesh> ()) });
 			}
 
 			IEnumerable<string> result = await Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.CreateDirectShapes (elementModelDatas), token);
@@ -49,7 +49,7 @@ namespace Archicad.Converters
 
 		public Task<List<Base>> ConvertToSpeckle (IEnumerable<Model.ElementModelData> elements, CancellationToken token)
 		{
-			return Task.FromResult (new List<Base> (elements.Select (e => new Objects.BuiltElements.Archicad.DirectShape (e.elementId, Operations.ModelConverter.Convert (e.model)))));
+			return Task.FromResult (new List<Base> (elements.Select (e => new Objects.BuiltElements.Archicad.DirectShape (e.elementId, ModelConverter.MeshToSpeckle (e.model)))));
 		}
 
 		#endregion

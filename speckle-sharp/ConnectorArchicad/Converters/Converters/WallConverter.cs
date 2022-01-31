@@ -39,8 +39,8 @@ namespace Archicad.Converters
 			List<Base> walls = new List<Base> ();
 			foreach (WallData wallData in datas)
 			{
-				Base meshModel = Operations.ModelConverter.Convert (elements.First (e => e.elementId == wallData.elementId).model);
-				walls.Add (new Objects.BuiltElements.Archicad.Wall (wallData, meshModel));
+				var displayValue = Operations.ModelConverter.MeshToSpeckle (elements.First (e => e.elementId == wallData.elementId).model);
+				walls.Add (new Objects.BuiltElements.Archicad.Wall (wallData, displayValue));
 			}
 
 			return walls;

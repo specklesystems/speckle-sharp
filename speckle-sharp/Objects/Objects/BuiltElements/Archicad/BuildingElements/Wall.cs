@@ -1,29 +1,21 @@
+using System.Collections.Generic;
+using Objects.Geometry;
 using Speckle.Core.Models;
-
 
 namespace Objects.BuiltElements.Archicad
 {
 	public sealed class Wall : BuiltElements.Wall
 	{
-		#region --- Fields ---
 
 		public Model.WallData WallData { get; set; }
+    public List<Mesh> displayValue { get; set; }
 
-		#endregion
+		public Wall() { }
 
-
-		#region --- Ctor \ Dtor ---
-
-		public Wall ()
-		{ 
-		}
-
-		public Wall (Model.WallData wallData, Base meshModel)
+		public Wall(Model.WallData wallData, List<Mesh> displayValue)
 		{
 			WallData = wallData;
-			Operations.ModelProvider.Attach (this, meshModel);
-		}
-
-		#endregion
+      this.displayValue = displayValue;
+    }
 	}
 }

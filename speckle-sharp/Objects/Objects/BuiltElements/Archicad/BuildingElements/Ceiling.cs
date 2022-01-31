@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Objects.Geometry;
 using Speckle.Core.Models;
 
 
@@ -8,6 +10,7 @@ namespace Objects.BuiltElements.Archicad
 		#region --- Fields ---
 
 		public Model.CeilingData CeilingData { get; set; }
+    public List<Mesh> displayValue { get; set; }
 
 		#endregion
 
@@ -18,11 +21,11 @@ namespace Objects.BuiltElements.Archicad
         {
         }
 
-		public Ceiling (Model.CeilingData ceilingData, Base meshModel)
+		public Ceiling (Model.CeilingData ceilingData, List<Mesh> displayValue)
 		{
 			CeilingData = ceilingData;
-			Operations.ModelProvider.Attach (this, meshModel);
-		}
+      this.displayValue = displayValue;
+    }
 
 		#endregion
 	}
