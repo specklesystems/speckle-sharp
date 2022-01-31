@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Objects.BuiltElements.Archicad.Model;
 using Speckle.Core.Models;
 
 namespace Archicad.Converters
@@ -20,25 +19,25 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      IEnumerable<Objects.BuiltElements.Archicad.Wall> walls = elements.OfType<Objects.BuiltElements.Archicad.Wall>();
-      IEnumerable<string> result = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.CreateWall(walls.Select(x => x.WallData)), token);
+      var walls = elements.OfType<Objects.BuiltElements.Archicad.Wall>();
+      IEnumerable<string> result = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.CreateWall(walls), token);
 
       return result is null ? new List<string>() : result.ToList();
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
-      IEnumerable<WallData> datas = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetWallData(elements.Select(e => e.elementId)), token);
+      IEnumerable<Objects.BuiltElements.Archicad.Wall> datas = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetWallData(elements.Select(e => e.elementId)), token);
       if (datas is null)
       {
         return new List<Base>();
       }
 
       List<Base> walls = new List<Base>();
-      foreach (WallData wallData in datas)
+      foreach (Objects.BuiltElements.Archicad.Wall wall in datas)
       {
-        var displayValue = Operations.ModelConverter.MeshToSpeckle(elements.First(e => e.elementId == wallData.elementId).model);
-        walls.Add(new Objects.BuiltElements.Archicad.Wall(wallData, displayValue));
+        wall.displayValue = Operations.ModelConverter.MeshToSpeckle(elements.First(e => e.elementId == wall.elementId).model);
+        walls.Add(wall);
       }
 
       return walls;

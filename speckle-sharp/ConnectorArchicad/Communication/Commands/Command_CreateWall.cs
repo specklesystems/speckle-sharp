@@ -1,76 +1,52 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Archicad.Model;
-
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class CreateWall : ICommand<IEnumerable<string>>
-	{
-		#region --- Classes ---
+  sealed internal class CreateWall : ICommand<IEnumerable<string>>
+  {
 
-		[JsonObject(MemberSerialization.OptIn)]
-		public sealed class Parameters
-		{
-			#region --- Fields ---
+    [JsonObject(MemberSerialization.OptIn)]
+    public sealed class Parameters
+    {
 
-			[JsonProperty("walls")]
-			private IEnumerable<WallData> Datas { get; }
+      [JsonProperty("walls")]
+      private IEnumerable<Wall> Datas { get; }
 
-			#endregion
+      public Parameters(IEnumerable<Wall> datas)
+      {
+        Datas = datas;
+      }
 
+    }
 
-			#region --- Ctor \ Dtor ---
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class Result
+    {
 
-			public Parameters(IEnumerable<WallData> datas)
-			{
-				Datas = datas;
-			}
+      [JsonProperty("elementIds")]
+      public IEnumerable<string> ElementIds { get; private set; }
 
-			#endregion
-		}
+    }
 
+    private IEnumerable<Wall> Datas { get; }
 
-		[JsonObject(MemberSerialization.OptIn)]
-		private sealed class Result
-		{
-			#region --- Fields ---
+    public CreateWall(IEnumerable<Wall> datas)
+    {
+      foreach (var data in datas)
+        data.displayValue = null;
 
-			[JsonProperty("elementIds")]
-			public IEnumerable<string> ElementIds { get; private set; }
+      Datas = datas;
+    }
 
-			#endregion
-		}
+    public async Task<IEnumerable<string>> Execute()
+    {
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateWall", new Parameters(Datas));
+      return result.ElementIds;
+    }
 
-		#endregion
-
-
-		#region --- Fields ---
-
-		private IEnumerable<WallData> Datas { get; }
-
-		#endregion
-
-
-		#region --- Ctor \ Dtor ---
-
-		public CreateWall(IEnumerable<WallData> datas)
-		{
-			Datas = datas;
-		}
-
-		#endregion
-
-
-		#region --- Functions ---
-
-		public async Task<IEnumerable<string>> Execute()
-		{
-			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("CreateWall", new Parameters (Datas));
-			return result.ElementIds;
-		}
-
-		#endregion
-	}
+  }
 }
