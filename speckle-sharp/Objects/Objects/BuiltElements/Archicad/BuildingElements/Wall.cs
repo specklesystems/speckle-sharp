@@ -8,14 +8,14 @@ namespace Objects.BuiltElements.Archicad
 	{
 
 		public Model.WallData WallData { get; set; }
-    public List<Mesh> displayValue { get; set; }
+		public List<Mesh> displayValue { get; set; }
 
 		public Wall() { }
 
 		public Wall(Model.WallData wallData, List<Mesh> displayValue)
 		{
 			WallData = wallData;
-      this.displayValue = displayValue;
-    }
+			this.displayValue = displayValue;
+		}
 	}
 }
