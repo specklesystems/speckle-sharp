@@ -1,0 +1,21 @@
+﻿{
+  "license": "Apache 2",
+  "file_hash": null,
+  "name": "SpeckleDynamo2",
+  "version": "2.0.0",
+  "description": "The Speckle connector for Dynamo",
+  "group": "",
+  "keywords": [ "speckle", "connector", "dynamo" ],
+  "dependencies": [],
+  "contents": "",
+  "engine_version": "2.7",
+  "engine": "dynamo",
+  "engine_metadata": "",
+  "site_url": "https://speckle.systems/",
+  "repository_url": "https://github.com/specklesystems/speckle-sharp",
+  "contains_binaries": true,
+  "node_libraries": [
+    "SpeckleConnectorDynamo",
+    "SpeckleConnectorDynamoFunctions"
+  ]
+}

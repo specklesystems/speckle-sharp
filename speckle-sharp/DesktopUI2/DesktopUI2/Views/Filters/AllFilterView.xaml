@@ -1,0 +1,17 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Filters.AllFilterView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <StackPanel Spacing="15">
+    <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+    <TextBlock
+      HorizontalAlignment="Center"
+      Text="🙌"
+      TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

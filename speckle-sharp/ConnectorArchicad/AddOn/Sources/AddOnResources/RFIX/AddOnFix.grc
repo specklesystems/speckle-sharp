@@ -1,0 +1,10 @@
+#include "ResourceMDIDIds.hpp"
+
+'MDID' 32500 "Add-On Identifier" {
+	AC_MDID_DEV /* Set AC_MDID_DEV value as your developer id. */
+	AC_MDID_LOC /* Set AC_MDID_LOC value as your local id. */
+}
+
+'GICN' 10001 "AddOnIcon" {
+	"AddOnIcon"
+}
