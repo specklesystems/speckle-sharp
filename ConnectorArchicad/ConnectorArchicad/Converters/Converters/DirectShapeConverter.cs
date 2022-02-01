@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Archicad.Communication;
 using Archicad.Operations;
 using Objects.Geometry;
 using Speckle.Core.Models;
@@ -21,27 +22,17 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      IEnumerable<Objects.BuiltElements.Archicad.DirectShape> directShapes = elements.OfType<Objects.BuiltElements.Archicad.DirectShape>();
+      var directShapes = elements.OfType<Objects.BuiltElements.Archicad.DirectShape>();
 
-      List<Model.ElementModelData> elementModelDatas = new List<Model.ElementModelData>();
-      foreach (var directShape in directShapes)
-      {
-        Base model = directShape["Model"] as Base;
-        if (model is null)
+      var elementModelDatas = (from directShape in directShapes
+        let polygons = directShape.displayValue
+        where polygons is not null select new Model.ElementModelData
         {
-          continue;
-        }
+          elementId = directShape.ElementId,
+            model = ModelConverter.MeshToNative(polygons)
+        }).ToList();
 
-        List<object> polygons = model["Polygons"] as List<object>;
-        if (polygons is null)
-        {
-          continue;
-        }
-
-        elementModelDatas.Add(new Model.ElementModelData { elementId = directShape.ElementId, model = ModelConverter.MeshToNative(polygons.OfType<Mesh>()) });
-      }
-
-      IEnumerable<string> result = await Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.CreateDirectShapes(elementModelDatas), token);
+      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShapes(elementModelDatas), token);
       return result is null ? new List<string>() : result.ToList();
     }
 

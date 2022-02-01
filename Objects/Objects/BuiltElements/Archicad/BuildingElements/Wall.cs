@@ -5,12 +5,13 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.Archicad
 {
-	public sealed class Wall : BuiltElements.Wall
+	public sealed class Wall : BuiltElements.Wall, IArchicadElementBaseData
 	{
 		public string elementId { get; set; } = string.Empty;
 
 		public int? floorIndex { get; set; }
 
+		[DetachProperty]
 		public List<Mesh> displayValue { get; set; }
 
 		public Point startPoint { get; set; }

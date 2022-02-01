@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Archicad.Communication;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
@@ -27,7 +28,7 @@ namespace Archicad.Launcher
 
     public override string? GetDocumentId()
     {
-      Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetProjectInfo()).Result;
+      Model.ProjectInfoData projectInfo = AsyncCommandProcessor.Execute(new Communication.Commands.GetProjectInfo()).Result;
       if (projectInfo is null)
       {
         return string.Empty;
@@ -38,7 +39,7 @@ namespace Archicad.Launcher
 
     public override string GetDocumentLocation()
     {
-      Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetProjectInfo()).Result;
+      Model.ProjectInfoData projectInfo = AsyncCommandProcessor.Execute(new Communication.Commands.GetProjectInfo()).Result;
       return projectInfo is null ? string.Empty : projectInfo.location;
     }
 
@@ -59,7 +60,7 @@ namespace Archicad.Launcher
 
     public override List<string> GetSelectedObjects()
     {
-      IEnumerable<string> elementIds = Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetSelectedElements()).Result;
+      IEnumerable<string> elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetSelectedElements()).Result;
       return elementIds is null ? new List<string>() : elementIds.ToList();
     }
 

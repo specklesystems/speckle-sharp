@@ -44,8 +44,8 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<string>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateWall", new Parameters(Datas));
-      return result.ElementIds;
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateWall", new Parameters(Datas));
+      return result == null ? null : result.ElementIds;
     }
 
   }
