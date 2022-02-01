@@ -21,4 +21,11 @@
     <ProjectReference Include="..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="C:\Program Files\GRAPHISOFT\ARCHICAD 25\Add-Ons\ConnectorArchicad\ConnectorArchicad\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+
 </Project>

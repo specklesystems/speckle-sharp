@@ -1,76 +1,49 @@
-﻿using Newtonsoft.Json;
-using Objects.BuiltElements.Archicad.Model;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json;
+using Objects.BuiltElements.Archicad;
+using Objects.BuiltElements.Archicad.Model;
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class GetWallData : ICommand<IEnumerable<WallData>>
-	{
-		#region --- Classes ---
+  sealed internal class GetWallData : ICommand<IEnumerable<Wall>>
+  {
 
-		[JsonObject(MemberSerialization.OptIn)]
-		public sealed class Parameters
-		{
-			#region --- Fields ---
+    [JsonObject(MemberSerialization.OptIn)]
+    public sealed class Parameters
+    {
 
-			[JsonProperty("elementIds")]
-			private IEnumerable<string> ElementIds { get; }
+      [JsonProperty("elementIds")]
+      private IEnumerable<string> ElementIds { get; }
 
-			#endregion
+      public Parameters(IEnumerable<string> elementIds)
+      {
+        ElementIds = elementIds;
+      }
 
+    }
 
-			#region --- Ctor \ Dtor ---
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class Result
+    {
 
-			public Parameters(IEnumerable<string> elementIds)
-			{
-				ElementIds = elementIds;
-			}
+      [JsonProperty("walls")]
+      public IEnumerable<Wall> Datas { get; private set; }
 
-			#endregion
-		}
+    }
 
+    private IEnumerable<string> ElementIds { get; }
 
-		[JsonObject(MemberSerialization.OptIn)]
-		private sealed class Result
-		{
-			#region --- Fields ---
+    public GetWallData(IEnumerable<string> elementIds)
+    {
+      ElementIds = elementIds;
+    }
 
-			[JsonProperty("walls")]
-			public IEnumerable<WallData> Datas { get; private set; }
+    public async Task<IEnumerable<Wall>> Execute()
+    {
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetWallData", new Parameters(ElementIds));
+      return result.Datas;
+    }
 
-			#endregion
-		}
-
-		#endregion
-
-
-		#region --- Fields ---
-
-		private IEnumerable<string> ElementIds { get; }
-
-		#endregion
-
-
-		#region --- Ctor \ Dtor ---
-
-		public GetWallData(IEnumerable<string> elementIds)
-		{
-			ElementIds = elementIds;
-		}
-
-		#endregion
-
-
-		#region --- Functions ---
-
-		public async Task<IEnumerable<WallData>> Execute()
-		{
-			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetWallData", new Parameters (ElementIds));
-			return result.Datas;
-		}
-
-		#endregion
-	}
+  }
 }

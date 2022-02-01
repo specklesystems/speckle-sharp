@@ -48,7 +48,7 @@ namespace Slab {
 
 namespace Model {
 
-	static const char* VerticiesFieldName = "verticies";
+	static const char* VerticesFieldName = "vertices";
 	static const char* VertexXFieldName = "x";
 	static const char* VertexYFieldName = "y";
 	static const char* VertexZFieldName = "z";

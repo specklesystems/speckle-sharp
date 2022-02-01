@@ -1,132 +1,115 @@
-﻿using DesktopUI2;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.IO;
 using Speckle.Core.Api;
-using Speckle.Core.Models;
 using Speckle.Core.Credentials;
-
+using Speckle.Core.Models;
 
 namespace Archicad.Launcher
 {
-	public class ArchicadBinding : ConnectorBindings
-	{
-		public override string GetActiveViewName ()
-		{
-			throw new NotImplementedException ();
-		}
+  public class ArchicadBinding : ConnectorBindings
+  {
+    public override string GetActiveViewName()
+    {
+      throw new NotImplementedException();
+    }
 
-		public override List<MenuItem> GetCustomStreamMenuItems ()
-		{
-			return new List<MenuItem> ();
-		}
+    public override List<MenuItem> GetCustomStreamMenuItems()
+    {
+      return new List<MenuItem>();
+    }
 
-		public override string? GetDocumentId ()
-		{
-			Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
-			if (projectInfo is null)
-			{
-				return string.Empty;
-			}
+    public override string? GetDocumentId()
+    {
+      Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetProjectInfo()).Result;
+      if (projectInfo is null)
+      {
+        return string.Empty;
+      }
 
-			return projectInfo.name;
-		}
+      return projectInfo.name;
+    }
 
-		public override string GetDocumentLocation ()
-		{
-			Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetProjectInfo ()).Result;
-			if (projectInfo is null)
-			{
-				return string.Empty;
-			}
+    public override string GetDocumentLocation()
+    {
+      Model.ProjectInfoData projectInfo = Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetProjectInfo()).Result;
+      return projectInfo is null ? string.Empty : projectInfo.location;
+    }
 
-			return projectInfo.location;
-		}
+    public override string GetFileName()
+    {
+      return Path.GetFileName(GetDocumentLocation());
+    }
 
-		public override string GetFileName ()
-		{
-			return Path.GetFileName (GetDocumentLocation ());
-		}
+    public override string GetHostAppName()
+    {
+      return "Archicad";
+    }
 
-		public override string GetHostAppName ()
-		{
-			return "Archicad";
-		}
+    public override List<string> GetObjectsInView()
+    {
+      throw new NotImplementedException();
+    }
 
-		public override List<string> GetObjectsInView ()
-		{
-			throw new NotImplementedException ();
-		}
+    public override List<string> GetSelectedObjects()
+    {
+      IEnumerable<string> elementIds = Communication.AsyncCommandProcessor.Instance.Execute(new Communication.Commands.GetSelectedElements()).Result;
+      return elementIds is null ? new List<string>() : elementIds.ToList();
+    }
 
-		public override List<string> GetSelectedObjects ()
-		{
-			IEnumerable<string> elementIds = Communication.AsyncCommandProcessor.Instance.Execute (new Communication.Commands.GetSelectedElements ()).Result;
-			if (elementIds is null)
-			{
-				return new List<string> ();
-			}
+    public override List<ISelectionFilter> GetSelectionFilters()
+    {
+      return new List<ISelectionFilter> { new ManualSelectionFilter() };
+    }
 
-			return elementIds.ToList ();
-		}
+    public override List<StreamState> GetStreamsInFile()
+    {
+      return new List<StreamState>();
+    }
 
-		public override List<ISelectionFilter> GetSelectionFilters ()
-		{
-			return new List<ISelectionFilter> { new ManualSelectionFilter () };
-		}
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    {
+      Base commitObject = await Helpers.Receive(IdentifyStream(state));
+      if (commitObject is null)
+      {
+        return null;
+      }
 
-		public override List<StreamState> GetStreamsInFile ()
-		{
-			return new List<StreamState> ();
-		}
+      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, progress.CancellationTokenSource.Token);
 
-		public override async Task<StreamState> ReceiveStream (StreamState state, ProgressViewModel progress)
-		{
-			Base commitObject = await Helpers.Receive (IdentifyStream (state));
-			if (commitObject is null)
-			{
-				return null;
-			}
+      return state;
+    }
 
-			state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative (commitObject, progress.CancellationTokenSource.Token);
+    public override void SelectClientObjects(string args) { }
 
-			return state;
-		}
+    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    {
+      if (state.Filter is null)
+      {
+        return;
+      }
 
-		public override void SelectClientObjects (string args)
-		{
-		}
+      state.SelectedObjectIds = state.Filter.Selection;
 
-		public override async Task SendStream (StreamState state, ProgressViewModel progress)
-		{
-			if (state.Filter is null)
-			{
-				return;
-			}
+      Base commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
+      if (commitObject is not null)
+      {
+        await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
+      }
+    }
 
-			state.SelectedObjectIds = state.Filter.Selection;
+    public override void WriteStreamsToFile(List<StreamState> streams) { }
 
-			Base commitObject = await ElementConverterManager.Instance.ConvertToSpeckle (state.SelectedObjectIds, progress.CancellationTokenSource.Token);
-			if (commitObject is null)
-			{
-				return;
-			}
-
-			await Helpers.Send (IdentifyStream (state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
-		}
-
-		public override void WriteStreamsToFile (List<StreamState> streams)
-		{
-		}
-
-		private string IdentifyStream (StreamState state)
-		{
-			StreamWrapper stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName };
-			return stream.ToString ();
-		}
-	}
+    private static string IdentifyStream(StreamState state)
+    {
+      StreamWrapper stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName };
+      return stream.ToString();
+    }
+  }
 }

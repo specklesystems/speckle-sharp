@@ -111,7 +111,7 @@ UInt32 ModelInfo::AddMaterial (const UMAT& material)
 
 GSErrCode ModelInfo::Store (GS::ObjectState& os) const
 {
-	os.Add (Model::VerticiesFieldName, vertices);
+	os.Add (Model::VerticesFieldName, vertices);
 	os.Add (Model::PolygonsFieldName, polygons);
 	os.Add (Model::MaterialsFieldName, materials);
 
