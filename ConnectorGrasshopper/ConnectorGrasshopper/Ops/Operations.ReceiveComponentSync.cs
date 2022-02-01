@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -112,7 +112,7 @@ namespace ConnectorGrasshopper.Ops
     {
 
     }
-    
+
     public override void AddedToDocument(GH_Document document)
     {
       SetDefaultKitAndConverter();
@@ -249,7 +249,7 @@ namespace ConnectorGrasshopper.Ops
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-     
+
       if (RunCount == 1)
       {
         CreateCancelationToken();
@@ -267,6 +267,8 @@ namespace ConnectorGrasshopper.Ops
           var client = new Client(acc);
           var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
           remoteTransport.TransportName = "R";
+
+          Telemetry.TrackEvent(acc, Telemetry.Events.Receive, new Dictionary<string, object>() { { "sync", true } });
 
           var myCommit = await ReceiveComponentWorker.GetCommit(StreamWrapper, client, (level, message) =>
           {
@@ -306,7 +308,7 @@ namespace ConnectorGrasshopper.Ops
           {
             // Do nothing!
           }
-          
+
           return ReceivedObject;
         }, source.Token);
         TaskList.Add(task);

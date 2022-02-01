@@ -48,15 +48,19 @@ namespace ConnectorGrasshopper.Objects
         DA.GetData(0, ref @base);
         DA.GetDataList(1, keys);
         DA.GetDataTree(2, out valueTree);
-        
-        if(DA.Iteration == 0)
+
+        if (DA.Iteration == 0)
+        {
           Tracker.TrackPageview("objects", "extend", "keyValue");
+          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Extend Object By Key Value" } });
+        }
+
 
         TaskList.Add(Task.Run(() => DoWork(@base.Value.ShallowCopy(), keys, valueTree)));
         return;
       }
 
-      if(Converter != null)
+      if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
         {
@@ -65,7 +69,7 @@ namespace ConnectorGrasshopper.Objects
         }
         Converter.Report.ConversionErrors.Clear();
       }
-      
+
       if (!GetSolveResults(DA, out var result))
       {
         // Normal mode not supported

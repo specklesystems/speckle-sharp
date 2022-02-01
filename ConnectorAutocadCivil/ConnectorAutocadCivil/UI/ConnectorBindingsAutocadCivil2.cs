@@ -214,15 +214,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
-        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, progress, stream, commit.id });
+        Control.Invoke(new ReceivingDelegate(ConvertReceiveCommit), new object[] { commitObject, converter, state, progress, stream, commit.id });
       else
-        ConvertCommit(commitObject, converter, state, progress, stream, commit.id);
+        ConvertReceiveCommit(commitObject, converter, state, progress, stream, commit.id);
 
       return state;
     }
 
-    delegate void ConversionDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id);
-    private void ConvertCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id)
+    delegate void ReceivingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id);
+    private void ConvertReceiveCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id)
     {
       using (DocumentLock l = Doc.LockDocument())
       {
@@ -488,7 +488,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
-
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -497,9 +496,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var client = state.Client;
 
       if (state.Filter != null)
-      {
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
-      }
 
       // remove deleted object ids
       var deletedElements = new List<string>();
@@ -515,27 +512,91 @@ namespace Speckle.ConnectorAutocadCivil.UI
         return;
       }
 
-      var commitObj = new Base();
+      var commitObject = new Base();
+      commitObject["units"] = Utils.GetUnits(Doc); // TODO: check whether commits base needs units attached
 
-      var units = Units.GetUnitsFromString(Doc.Database.Insunits.ToString());
-      commitObj["units"] = units;
-
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
       int convertedCount = 0;
 
-      bool renamedlayers = false;
+      // invoke conversions on the main thread via control
+      if (Control.InvokeRequired)
+        Control.Invoke(new Action(() => ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount)), new object[] { });
+      else
+        ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount);
 
+      progress.Report.Merge(converter.Report);
+
+      if (convertedCount == 0)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+        return;
+      }
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return;
+
+      Execute.PostToUIThread(() => progress.Max = convertedCount);
+
+      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
+
+      var commitObjId = await Operations.Send(
+        commitObject,
+        progress.CancellationTokenSource.Token,
+        transports,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (err, exception) => 
+        {
+          progress.Report.LogOperationError(exception);
+          progress.CancellationTokenSource.Cancel();
+        },
+        disposeTransports: true
+        );
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return;
+
+      var actualCommit = new CommitCreateInput
+      {
+        streamId = streamId,
+        objectId = commitObjId,
+        branchName = state.BranchName,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+        sourceApplication = Utils.AutocadAppName
+      };
+
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+
+      try
+      {
+        var commitId = await client.CommitCreate(actualCommit);
+        state.PreviousCommitId = commitId;
+      }
+      catch (Exception e)
+      {
+        progress.Report.LogOperationError(e);
+      }
+    }
+
+    delegate void SendingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount);
+    private void ConvertSendCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount)
+    {
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
         converter.SetContextDocument(Doc);
 
+        var conversionProgressDict = new ConcurrentDictionary<string, int>();
+        conversionProgressDict["Conversion"] = 0;
+        Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+
+        bool renamedlayers = false;
+
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          {
+            tr.Commit();
             return;
+          }
 
           // get the db object from id
           Handle hn = Utils.GetHandle(autocadObjectHandle);
@@ -565,9 +626,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           /* TODO: adding the extension dictionary / xdata per object 
           foreach (var key in obj.ExtensionDictionary)
-          {
             converted[key] = obj.ExtensionDictionary.GetUserString(key);
-          }
           */
 
           if (obj is BlockReference)
@@ -581,9 +640,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
               renamedlayers = true;
           }
 
-          if (commitObj[$"@{containerName}"] == null)
-            commitObj[$"@{containerName}"] = new List<Base>();
-          ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+          if (commitObject[$"@{containerName}"] == null)
+            commitObject[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
@@ -592,64 +651,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           convertedCount++;
         }
+
+        if (renamedlayers)
+          progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
+
         tr.Commit();
-      }
-
-      progress.Report.Merge(converter.Report);
-
-      if (convertedCount == 0)
-      {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
-      }
-
-      if (renamedlayers)
-        progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
-
-      Execute.PostToUIThread(() => progress.Max = convertedCount);
-
-      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
-
-      var commitObjId = await Operations.Send(
-        commitObj,
-        progress.CancellationTokenSource.Token,
-        transports,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (err, exception) => 
-        {
-          progress.Report.LogOperationError(exception);
-          progress.CancellationTokenSource.Cancel();
-        },
-        disposeTransports: true
-        );
-
-      if (progress.Report.OperationErrorsCount != 0)
-      {
-        return;
-      }
-
-      var actualCommit = new CommitCreateInput
-      {
-        streamId = streamId,
-        objectId = commitObjId,
-        branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-        sourceApplication = Utils.AutocadAppName
-      };
-
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
-
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
       }
     }
 
