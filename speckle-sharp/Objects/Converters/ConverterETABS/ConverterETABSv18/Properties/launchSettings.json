@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ConverterETABSv18": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Computers and Structures\\ETABS 19\\ETABS.exe"
-    }
-  }
-}

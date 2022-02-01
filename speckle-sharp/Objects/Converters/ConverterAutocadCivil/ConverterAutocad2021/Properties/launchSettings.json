@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ConverterAutocad2021": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\AutoCAD 2021\\acad.exe"
-    }
-  }
-}

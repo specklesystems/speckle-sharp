@@ -34,6 +34,7 @@ namespace Speckle.Core.Kits
     public const string ETABSv18 = "ETABSv18";
     public const string ETABSv19 = "ETABSv19";
     public const string ETABS = "ETABS";
+    public const string Archicad = "Archicad";
 
     public const string Script = "Script";
     public const string Other = "Other";
