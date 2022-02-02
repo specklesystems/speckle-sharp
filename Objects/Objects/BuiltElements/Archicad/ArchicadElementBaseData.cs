@@ -1,6 +1,4 @@
-using Speckle.Core.Models;
-
-namespace Objects.BuiltElements.Archicad.Model
+namespace Objects.BuiltElements.Archicad
 {
   public interface IArchicadElementBaseData
   {

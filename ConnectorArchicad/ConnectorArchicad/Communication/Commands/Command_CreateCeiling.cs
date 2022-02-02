@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
-using Objects.BuiltElements.Archicad.Model;
 
 namespace Archicad.Communication.Commands
 {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
-using Objects.BuiltElements.Archicad.Model;
 using Speckle.Core.Models;
 
 namespace Archicad.Converters

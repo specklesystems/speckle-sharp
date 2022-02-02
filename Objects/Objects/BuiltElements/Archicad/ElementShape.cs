@@ -1,9 +1,8 @@
+using System.Collections.Generic;
 using Objects.Geometry;
 using Speckle.Core.Models;
-using System.Collections.Generic;
 
-
-namespace Objects.BuiltElements.Archicad.Model
+namespace Objects.BuiltElements.Archicad
 {
 	public sealed class ElementShape : Base
 	{
@@ -18,14 +17,12 @@ namespace Objects.BuiltElements.Archicad.Model
 			public double arcAngle { get; set; }
 		}
 
-
 		public sealed class Polyline : Base
 		{
 			public List<PolylineSegment> polylineSegments { get; set; }
 		}
 
 		#endregion
-
 
 		#region --- Fields ---
 

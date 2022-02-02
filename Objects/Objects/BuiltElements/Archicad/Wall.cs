@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Objects.BuiltElements.Archicad.Model;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
