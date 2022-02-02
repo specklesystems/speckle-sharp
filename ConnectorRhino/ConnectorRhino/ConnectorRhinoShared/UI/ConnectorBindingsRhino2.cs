@@ -83,6 +83,13 @@ namespace SpeckleRhino
       return states;
     }
 
+    public override void WriteStreamsToFile(List<StreamState> streams)
+    {
+      Doc.Strings.Delete(SpeckleKey);
+      foreach (var s in streams)
+        Doc.Strings.SetString(SpeckleKey, s.StreamId, JsonConvert.SerializeObject(s));
+    }
+
     #endregion
 
     #region boilerplate
@@ -729,17 +736,6 @@ namespace SpeckleRhino
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
     }
-
-    public override void WriteStreamsToFile(List<StreamState> streams)
-    {
-      Doc.Strings.Delete(SpeckleKey);
-
-      foreach (var s in streams)
-      {
-        Doc.Strings.SetString(SpeckleKey, s.StreamId, JsonConvert.SerializeObject(s));
-      }
-    }
-
 
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
