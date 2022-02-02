@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad
 {
   public sealed class Ceiling : BuiltElements.Ceiling, IArchicadElementBaseData
   {
     public ElementShape shape { get; set; }
+
+    [JsonIgnore]
+    public new ICurve outline => shape.contourPolyline;
 
     public string elementId { get; set; } = string.Empty;
 
