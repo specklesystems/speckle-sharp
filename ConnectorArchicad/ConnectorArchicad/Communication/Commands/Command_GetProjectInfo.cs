@@ -8,8 +8,7 @@ namespace Archicad.Communication.Commands
     #region --- Classes ---
 
     [JsonObject]
-    public sealed class Parameters
-    { }
+    public sealed class Parameters { }
 
     #endregion
 

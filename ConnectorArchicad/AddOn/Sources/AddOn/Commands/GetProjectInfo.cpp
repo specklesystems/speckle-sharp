@@ -2,40 +2,49 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 
-
-namespace AddOnCommands {
-
-
-static const char*		Untitled						= "Untitled";
-static const char*		ProjectNameFieldName			= "name";
-static const char*		ProjectLocationFieldName		= "location";
-
-
-GS::String GetProjectInfo::GetName () const
+namespace AddOnCommands
 {
-	return GetProjectInfoCommandName;
-}
 
+  static const char *Untitled = "Untitled";
+  static const char *ProjectNameFieldName = "name";
+  static const char *ProjectLocationFieldName = "location";
+  static const char *ProjectLengthUnitsFieldName = "lengthUnit";
+  static const char *ProjectAreaUnitsFieldName = "areaUnit";
+  static const char *ProjectVolumeUnitsFieldName = "volumeUnit";
+  static const char *ProjectAngleUnitsFieldName = "angleUnit";
 
-GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
-{
-	API_ProjectInfo projectInfo {};
+  GS::String GetProjectInfo::GetName() const
+  {
+    return GetProjectInfoCommandName;
+  }
 
-	const GSErrCode	err = ACAPI_Environment (APIEnv_ProjectID, &projectInfo, nullptr);
-	if (err != NoError) {
-		return GS::ObjectState{};
-	}
+  GS::ObjectState GetProjectInfo::Execute(const GS::ObjectState & /*parameters*/, GS::ProcessControl & /*processControl*/) const
+  {
+    API_ProjectInfo projectInfo{};
 
-	if (projectInfo.untitled) {
-		return GS::ObjectState{ ProjectNameFieldName, Untitled };
-	}
+    const GSErrCode err = ACAPI_Environment(APIEnv_ProjectID, &projectInfo, nullptr);
+    if (err != NoError)
+    {
+      return GS::ObjectState{};
+    }
 
-	GS::ObjectState os;
-	os.Add (ProjectNameFieldName, *projectInfo.projectName);
-	os.Add (ProjectLocationFieldName, *projectInfo.projectPath);
+    //if (projectInfo.untitled)
+    //{
+    //  return GS::ObjectState{ProjectNameFieldName, Untitled};
+    //}
 
-	return os;
-}
+    GS::ObjectState os;
+    os.Add(ProjectNameFieldName, *projectInfo.projectName);
+    os.Add(ProjectLocationFieldName, *projectInfo.projectPath);
 
+    API_WorkingUnitPrefs unitPrefs;
+    ACAPI_Environment(APIEnv_GetPreferencesID, &unitPrefs, (void *)APIPrefs_WorkingUnitsID);
+    os.Add(ProjectLengthUnitsFieldName, unitPrefs.lengthUnit);
+    os.Add(ProjectAreaUnitsFieldName, unitPrefs.areaUnit);
+    os.Add(ProjectVolumeUnitsFieldName, unitPrefs.volumeUnit);
+    os.Add(ProjectAngleUnitsFieldName, unitPrefs.angleUnit);
+
+    return os;
+  }
 
 }
