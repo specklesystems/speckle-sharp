@@ -201,9 +201,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
           sourceApplication = Utils.AutocadAppName
         });
       }
-      catch
+      catch(Exception e)
       {
-        // Do nothing!
+        progress.Report.OperationErrors.Add(e);
       }
       if (progress.Report.OperationErrorsCount != 0)
       {
@@ -246,7 +246,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.BranchName, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", commitPrefix);
+          if (Doc.UserData.ContainsKey("commit"))
+            Doc.UserData["commit"] = commitPrefix;
+          else
+            Doc.UserData.Add("commit", commitPrefix);
 
           // delete existing commit layers
           try
@@ -280,7 +283,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
             // create the object's bake layer if it doesn't already exist
             (Base obj, string layerName) = commitObj;
 
-            var converted = converter.ConvertToNative(obj);
+            object converted = null;
+            try
+            {
+              converted = converter.ConvertToNative(obj);
+            }
+            catch (Exception e)
+            {
+              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}: {e.Message}"));
+              continue;
+            }
             var convertedEntity = converted as Entity;
 
             if (convertedEntity != null)
