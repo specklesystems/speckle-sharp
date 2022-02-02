@@ -32,35 +32,31 @@ namespace Archicad
 
     #region --- Functions ---
 
-    public async Task<Base> ConvertToSpeckle(IEnumerable<string> elementIds, CancellationToken token)
+    public async Task<Base?> ConvertToSpeckle(IEnumerable<string> elementIds, CancellationToken token)
     {
       IEnumerable<Model.ElementModelData> rawModels = await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(elementIds), token);
       if (rawModels is null)
-      {
         return null;
-      }
 
       Dictionary<Type, IEnumerable<string>> elementTypeTable = await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(elementIds), token);
       if (elementTypeTable is null)
-      {
         return null;
-      }
 
-      List<Base> elements = new List<Base>();
-      foreach (var typeTableEntry in elementTypeTable)
+      var elements = new List<Base>();
+      foreach (var(key, value)in elementTypeTable)
       {
-        Converters.IConverter converter = GetConverterForElement(typeTableEntry.Key);
-        List<Base> convertedElements = await converter.ConvertToSpeckle(rawModels.Where(model => typeTableEntry.Value.Contains(model.elementId)), token);
+        var converter = GetConverterForElement(key);
+        List<Base> convertedElements = await converter.ConvertToSpeckle(rawModels.Where(model => value.Contains(model.elementId)), token);
         elements.AddRange(convertedElements);
       }
 
       if (elements.Count == 0)
-      {
         return null;
-      }
 
-      Base commitObject = new Base();
-      commitObject["Elements"] = elements;
+      var commitObject = new Base
+      {
+        ["@Elements"] = elements
+      };
 
       return commitObject;
     }
@@ -69,17 +65,14 @@ namespace Archicad
     {
       List<string> result = new List<string>();
 
-      List<object> ? elements = obj["Elements"] as List<object>;
-      if (elements is null)
-      {
+      if (obj["@Elements"] is not List<object> elements)
         return result;
-      }
 
-      Dictionary<Type, IEnumerable<Base>> elementTypeTable = elements.GroupBy(element => element.GetType()).ToDictionary(group => group.Key, group => group.Cast<Base>());
-      foreach (var elementTableEntry in elementTypeTable)
+      var elementTypeTable = elements.GroupBy(element => element.GetType()).ToDictionary(group => group.Key, group => group.Cast<Base>());
+      foreach (var(key, value)in elementTypeTable)
       {
-        Converters.IConverter converter = GetConverterForElement(elementTableEntry.Key);
-        List<string> convertedElementIds = await converter.ConvertToArchicad(elementTableEntry.Value, token);
+        var converter = GetConverterForElement(key);
+        List<string> convertedElementIds = await converter.ConvertToArchicad(value, token);
         result.AddRange(convertedElementIds);
       }
 
@@ -92,11 +85,9 @@ namespace Archicad
 
       foreach (Type converterType in convertes)
       {
-        Converters.IConverter? converter = Activator.CreateInstance(converterType)as Converters.IConverter;
+        var converter = Activator.CreateInstance(converterType)as Converters.IConverter;
         if (converter?.Type is null)
-        {
           continue;
-        }
 
         Converters.Add(converter.Type, converter);
       }

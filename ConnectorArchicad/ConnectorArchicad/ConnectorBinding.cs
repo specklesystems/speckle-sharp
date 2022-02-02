@@ -98,7 +98,7 @@ namespace Archicad.Launcher
 
       state.SelectedObjectIds = state.Filter.Selection;
 
-      Base commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
+      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
       if (commitObject is not null)
       {
         await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
