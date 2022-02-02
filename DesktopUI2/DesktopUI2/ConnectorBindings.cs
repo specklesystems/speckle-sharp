@@ -31,7 +31,6 @@ namespace DesktopUI2
 
     public UpdateSavedStreams UpdateSavedStreams;
 
-
     #endregion
 
 
