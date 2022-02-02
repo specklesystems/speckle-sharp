@@ -15,7 +15,7 @@ using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -232,7 +232,7 @@ namespace ConnectorGrasshopper.Ops
         DA.GetData(2, ref messageInput);
         var transportsInput = new List<IGH_Goo> { transportInput };
         //var transportsInput = Params.Input[1].VolatileData.AllData(true).Select(x => x).ToList();
-        Tracker.TrackPageview("send", "sync");
+        Logging.Tracker.TrackPageview("send", "sync");
 
         var task = Task.Run(async () =>
         {
@@ -311,7 +311,7 @@ namespace ConnectorGrasshopper.Ops
                 continue;
               }
 
-              Telemetry.TrackEvent(acc, Telemetry.Events.Send, new Dictionary<string, object>() { { "sync", true } });
+              Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "sync", true } });
 
               var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
               transportBranches.Add(serverTransport, sw.BranchName ?? "main");

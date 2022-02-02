@@ -14,7 +14,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -330,8 +330,8 @@ namespace ConnectorGrasshopper
 
       if (DA.Iteration == 0)
       {
-        Tracker.TrackPageview("objects", "create", "schema");
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Grasshopper BIM" }, { "node", Name } });
+        Logging.Tracker.TrackPageview("objects", "create", "schema");
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Grasshopper BIM" }, { "node", Name } });
       }
 
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
@@ -554,7 +554,7 @@ namespace ConnectorGrasshopper
       }
 
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
-      throw new SpeckleException($"Could not covert object to {type}");
+      throw new Logging.SpeckleException($"Could not covert object to {type}");
     }
 
     //keep public so it can be picked by reflection

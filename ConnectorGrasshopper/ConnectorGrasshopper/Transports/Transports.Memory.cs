@@ -1,5 +1,5 @@
 ﻿using Grasshopper.Kernel;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using System;
 using System.Collections.Generic;
@@ -39,8 +39,8 @@ namespace ConnectorGrasshopper.Transports
 
       if (DA.Iteration == 0)
       {
-        Tracker.TrackPageview("transports", "memory");
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
+        Logging.Tracker.TrackPageview("transports", "memory");
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
       }
 
       string name = null;

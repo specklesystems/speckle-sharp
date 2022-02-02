@@ -22,7 +22,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
@@ -455,7 +455,7 @@ namespace ConnectorGrasshopper.Ops
       var receiveComponent = ((ReceiveComponent)Parent);
       try
       {
-        Tracker.TrackPageview("receive", receiveComponent.AutoReceive ? "auto" : "manual");
+        Logging.Tracker.TrackPageview("receive", receiveComponent.AutoReceive ? "auto" : "manual");
 
 
         InternalProgressAction = dict =>
@@ -498,7 +498,7 @@ namespace ConnectorGrasshopper.Ops
           return;
         }
 
-        Telemetry.TrackEvent(client.Account, Telemetry.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
+        Logging.Analytics.TrackEvent(client.Account, Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
 
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
@@ -573,7 +573,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         var msg = e.InnerException?.Message ?? e.Message;
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, msg));
         Done();

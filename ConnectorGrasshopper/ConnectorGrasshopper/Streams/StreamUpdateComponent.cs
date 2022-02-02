@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -51,7 +52,7 @@ namespace ConnectorGrasshopper.Streams
       bool isPublic = false;
 
       if (DA.Iteration == 0)
-        Tracker.TrackPageview(Tracker.STREAM_UPDATE);
+        Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_UPDATE);
 
       if (!DA.GetData(0, ref ghSpeckleStream)) return;
       DA.GetData(1, ref name);
@@ -91,7 +92,7 @@ namespace ConnectorGrasshopper.Streams
 
             await client.StreamUpdate(input);
 
-            Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
+            Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
           }
           catch (Exception e)
           {

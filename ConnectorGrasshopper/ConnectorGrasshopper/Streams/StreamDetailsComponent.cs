@@ -10,7 +10,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -69,7 +69,7 @@ namespace ConnectorGrasshopper.Streams
         }
 
         if (DA.Iteration == 0)
-          Tracker.TrackPageview(Tracker.STREAM_DETAILS);
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_DETAILS);
 
         Message = "Fetching";
 
@@ -115,7 +115,7 @@ namespace ConnectorGrasshopper.Streams
                   return;
                 }
 
-                Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
+                Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
 
                 var client = new Client(account);
 
