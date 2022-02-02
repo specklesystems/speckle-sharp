@@ -10,6 +10,7 @@ using Tekla.Structures.Model;
 using Tekla.Structures.Solid;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
+using TSG = Tekla.Structures.Geometry3d;
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -23,6 +24,10 @@ namespace Objects.Converter.TeklaStructures
       speckleTeklaBolt.BoltSize = Bolts.BoltSize;
       speckleTeklaBolt.BoltStandard = Bolts.BoltStandard;
       speckleTeklaBolt.CutLength = Bolts.CutLength;
+        speckleTeklaBolt.Coordinates = Bolts.BoltPositions
+            .Cast<TSG.Point>()
+            .Select(p => new Point(p.X, p.Y, p.Z))
+            .ToList();
       
       var solid = Bolts.GetSolid();
       speckleTeklaBolt.displayMesh = GetMeshFromSolid(solid);
