@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Archicad.Operations
@@ -89,8 +90,10 @@ namespace Archicad.Operations
       List<double> points = polygon.pointIds.SelectMany(id => FlattenPoint(vertices[id])).ToList();
       List<int> polygons = ConvertPolygon(polygon);
 
-      Mesh mesh = new Mesh(points, polygons);
-      mesh["renderMaterial"] = ConvertMaterial(material);
+      var mesh = new Mesh(points, polygons, units : Units.Meters)
+      {
+        ["renderMaterial"] = ConvertMaterial(material)
+      };
 
       return mesh;
     }

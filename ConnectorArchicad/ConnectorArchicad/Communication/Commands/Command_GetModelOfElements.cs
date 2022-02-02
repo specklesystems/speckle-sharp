@@ -1,75 +1,69 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {
-	sealed internal class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
-	{
-		#region --- Classes ---
+  sealed internal class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
+  {
+    #region --- Classes ---
 
-		[JsonObject (MemberSerialization.OptIn)]
-		public sealed class Parameters
-		{
-			#region --- Fields ---
+    [JsonObject(MemberSerialization.OptIn)]
+    public sealed class Parameters
+    {
+      #region --- Fields ---
 
-			[JsonProperty ("elementIds")]
-			private IEnumerable<string> ElementIds { get; }
+      [JsonProperty("elementIds")]
+      private IEnumerable<string> ElementIds { get; }
 
-			#endregion
+      #endregion
 
+      #region --- Ctor \ Dtor ---
 
-			#region --- Ctor \ Dtor ---
+      public Parameters(IEnumerable<string> elementIds)
+      {
+        ElementIds = elementIds;
+      }
 
-			public Parameters (IEnumerable<string> elementIds)
-			{
-				ElementIds = elementIds;
-			}
+      #endregion
+    }
 
-			#endregion
-		}
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class Result
+    {
+      #region --- Fields ---
 
+      [JsonProperty("models")]
+      public IEnumerable<Model.ElementModelData> Models { get; private set; }
 
-		[JsonObject (MemberSerialization.OptIn)]
-		private sealed class Result
-		{
-			#region --- Fields ---
+      #endregion
+    }
 
-			[JsonProperty ("models")]
-			public IEnumerable<Model.ElementModelData> Models { get; private set; }
+    #endregion
 
-			#endregion
-		}
+    #region --- Fields ---
 
-		#endregion
+    private IEnumerable<string> ElementIds { get; }
 
+    #endregion
 
-		#region --- Fields ---
+    #region --- Ctor \ Dtor ---
 
-		private IEnumerable<string> ElementIds { get; }
+    public GetModelForElements(IEnumerable<string> elementIds)
+    {
+      ElementIds = elementIds;
+    }
 
-		#endregion
+    #endregion
 
+    #region --- Functions ---
 
-		#region --- Ctor \ Dtor ---
+    public async Task<IEnumerable<Model.ElementModelData>> Execute()
+    {
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ElementIds));
+      return result.Models;
+    }
 
-		public GetModelForElements (IEnumerable<string> elementIds)
-		{
-			ElementIds = elementIds;
-		}
-
-		#endregion
-
-
-		#region --- Functions ---
-
-		public async Task<IEnumerable<Model.ElementModelData>> Execute ()
-		{
-			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetModelForElements", new Parameters (ElementIds));
-			return result.Models;
-		}
-
-		#endregion
-	}
+    #endregion
+  }
 }

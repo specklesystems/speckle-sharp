@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
@@ -19,7 +20,7 @@ namespace Objects.BuiltElements.Archicad
 		public Point endPoint { get; set; }
 
 		[JsonIgnore]
-		public new ICurve baseLine => new Line(startPoint, endPoint, startPoint.units);
+		public new ICurve baseLine => new Line(startPoint, endPoint, startPoint.units ?? Units.Meters);
 
 		public double? arcAngle { get; set; }
 

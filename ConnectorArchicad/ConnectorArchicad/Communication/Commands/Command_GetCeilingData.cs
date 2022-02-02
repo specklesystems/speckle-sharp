@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Kits;
 
 namespace Archicad.Communication.Commands
 {
@@ -36,6 +37,9 @@ namespace Archicad.Communication.Commands
     public async Task<IEnumerable<Ceiling>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSlabData", new Parameters(ElementIds));
+      foreach (var ceiling in result.Datas)
+        ceiling.units = Units.Meters;
+
       return result.Datas;
     }
 

@@ -38,7 +38,8 @@ namespace Archicad.Converters
 
     public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
-      return Task.FromResult(new List<Base>(elements.Select(e => new Objects.BuiltElements.Archicad.DirectShape(e.elementId, ModelConverter.MeshToSpeckle(e.model)))));
+      return Task.FromResult(new List<Base>(elements.Select(e =>
+        new Objects.BuiltElements.Archicad.DirectShape(e.elementId, ModelConverter.MeshToSpeckle(e.model)))));
     }
 
     #endregion
