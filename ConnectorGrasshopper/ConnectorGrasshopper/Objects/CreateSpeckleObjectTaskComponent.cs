@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -53,8 +53,8 @@ namespace ConnectorGrasshopper.Objects
 
         if (DA.Iteration == 0)
         {
-          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object" } });
-          Tracker.TrackPageview("objects", "create", "variableinput");
+          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object" } });
+          Logging.Tracker.TrackPageview("objects", "create", "variableinput");
         }
 
 
@@ -162,7 +162,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureException(e);
+              Logging.Log.CaptureException(e);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
               hasErrors = true;
             }
@@ -173,7 +173,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureException(e);
+              Logging.Log.CaptureException(e);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               hasErrors = true;
             }
@@ -191,7 +191,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.CaptureException(e);
+              Logging.Log.CaptureException(e);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
               hasErrors = true;
             }
@@ -208,7 +208,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
       }
 

@@ -17,6 +17,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper
 {
@@ -354,7 +355,7 @@ namespace ConnectorGrasshopper
       if (DA.Iteration == 0)
       {
         Tracker.TrackPageview("objects", "create", "variableinput");
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Schema Object" }, { "node", Name } });
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Schema Object" }, { "node", Name } });
       }
 
 
