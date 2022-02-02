@@ -76,6 +76,8 @@ namespace Objects.Converter.TeklaStructures
           return true;
         case BoltGroup bg:
           return true;
+        case ContourPlate cp:
+            return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -114,6 +116,9 @@ namespace Objects.Converter.TeklaStructures
         case BoltGroup o:
           returnObject = BoltsToSpeckle(o);
           break;
+        case ContourPlate o:
+            returnObject = ContourPlateToSpeckle(o);
+            break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
           returnObject = null;

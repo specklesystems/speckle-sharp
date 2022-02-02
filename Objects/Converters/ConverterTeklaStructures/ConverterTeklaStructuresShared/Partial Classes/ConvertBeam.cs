@@ -5,7 +5,7 @@ using Objects.Structural.Geometry;
 using Objects.Structural.Analysis;
 using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
-using Objects.BuiltElements.Tekla;
+using Objects.BuiltElements.TeklaStructures;
 using System.Linq;
 using Tekla.Structures.Model;
 using Tekla.Structures.Solid;

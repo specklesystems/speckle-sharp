@@ -53,7 +53,7 @@ namespace Objects.BuiltElements.Revit
   }
 }
 
-namespace Objects.BuiltElements.Tekla
+namespace Objects.BuiltElements.TeklaStructures
 {
     public class TeklaBeam : Beam
     {
