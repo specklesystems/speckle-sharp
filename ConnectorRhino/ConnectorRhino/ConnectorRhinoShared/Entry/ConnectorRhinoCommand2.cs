@@ -1,36 +1,40 @@
 ﻿using System;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+
 using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
-using System.Collections.Generic;
-using System.Linq;
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using System.Threading.Tasks;
 
 namespace SpeckleRhino
 {
-
   public class SpeckleCommand2 : Command
   {
+    #region Avalonia parent window
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+    const int GWL_HWNDPARENT = -8;
+    #endregion
+
     public static SpeckleCommand2 Instance { get; private set; }
 
     public override string EnglishName => "SpeckleNewUi";
 
     public static Window MainWindow { get; private set; }
+
     public static ConnectorBindingsRhino2 Bindings { get; set; } = new ConnectorBindingsRhino2();
 
     public SpeckleCommand2()
     {
       Instance = this;
     }
-
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
@@ -48,14 +52,17 @@ namespace SpeckleRhino
     public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
-      {
-
         BuildAvaloniaApp().Start(AppMain, null);
-
-      }
 
       MainWindow.Show();
       MainWindow.Activate();
+
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        var parentHwnd = RhinoApp.MainWindowHandle();
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      }
     }
 
     private static void AppMain(Application app, string[] args)

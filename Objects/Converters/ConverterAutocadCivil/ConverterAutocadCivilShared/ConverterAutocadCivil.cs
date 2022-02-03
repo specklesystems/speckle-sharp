@@ -97,8 +97,6 @@ public static string AutocadAppName = Applications.Autocad2022;
           if (schema != null)
             return ObjectToSpeckleBuiltElement(o);
           */
-          DisplayStyle style = GetStyle(obj);
-
           switch (obj)
           {
             case DBPoint o:
@@ -166,6 +164,11 @@ public static string AutocadAppName = Applications.Autocad2022;
               Report.Log($"Converted SubD Mesh");
               break;
             case Solid3d o:
+              if (o.IsNull)
+              {
+                Report.Log($"Skipped null Solid");
+                return null;
+              }
               @base = SolidToSpeckle(o);
               Report.Log($"Converted Solid as Mesh");
               break;
@@ -216,6 +219,8 @@ public static string AutocadAppName = Applications.Autocad2022;
               break;
 #endif
           }
+
+          DisplayStyle style = GetStyle(obj);
           if (style != null)
             @base["displayStyle"] = style;
 

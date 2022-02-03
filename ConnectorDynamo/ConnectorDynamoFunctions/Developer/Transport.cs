@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Dynamo.Graph.Nodes;
@@ -22,6 +23,8 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
         basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Speckle\\DiskTransportFiles\\";
 
       Tracker.TrackPageview("transports", "disk");
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
+
       return new DiskTransport.DiskTransport(basePath);
     }
 
@@ -34,6 +37,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object MemoryTransport(string name = "Memory")
     {
       Tracker.TrackPageview("transports", "memory");
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
       return new MemoryTransport { TransportName = name };
     }
 
@@ -46,6 +50,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object ServerTransport(StreamWrapper stream)
     {
       Tracker.TrackPageview("transports", "server");
+
       var userId = stream.UserId;
       Core.Credentials.Account account;
 
@@ -67,6 +72,9 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
 
       if (error != null) throw error;
 
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Server Transport" } });
+
+
       return new ServerTransport(account, stream.StreamId);
     }
 
@@ -87,7 +95,9 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
       if (string.IsNullOrEmpty(scope))
         scope = "UserLocalDefaultDb";
 
-      Tracker.TrackPageview("transports", "server");
+      Tracker.TrackPageview("transports", "sqlite");
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
+
       return new SQLiteTransport(basePath, applicationName, scope);
     }
   }

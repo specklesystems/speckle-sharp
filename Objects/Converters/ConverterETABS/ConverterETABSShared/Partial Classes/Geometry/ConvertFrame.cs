@@ -13,7 +13,8 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object FrameToNative(ETABSElement1D element1D)
+  
+    public object FrameToNative(Element1D element1D)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
       {
@@ -34,16 +35,6 @@ namespace Objects.Converter.ETABS
       {
         Point end1node = baseline.start;
         Point end2node = baseline.end;
-        //temp fix code for m 
-        if (baseline.units == "m")
-        {
-          end1node.x *= 1000;
-          end1node.y *= 1000;
-          end1node.z *= 1000;
-          end2node.x *= 1000;
-          end2node.y *= 1000;
-          end2node.z *= 1000;
-        }
         if (properties.Contains(element1D.property.name))
         {
           Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
@@ -57,15 +48,6 @@ namespace Objects.Converter.ETABS
       {
         Point end1node = element1D.end1Node.basePoint;
         Point end2node = element1D.end2Node.basePoint;
-        if (baseline.units == "m")
-        {
-          end1node.x *= 1000;
-          end1node.y *= 1000;
-          end1node.z *= 1000;
-          end2node.x *= 1000;
-          end2node.y *= 1000;
-          end2node.z *= 1000;
-        }
         if (properties.Contains(element1D.property.name))
         {
           Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
@@ -78,29 +60,72 @@ namespace Objects.Converter.ETABS
 
       bool[] end1Release = null;
       bool[] end2Release = null;
+      double[] startV, endV;
+      startV = null;
+      endV = null;
       if (element1D.end1Releases != null && element1D.end2Releases != null)
       {
         end1Release = RestraintToNative(element1D.end1Releases);
         end2Release = RestraintToNative(element1D.end2Releases);
+        startV = PartialRestraintToNative(element1D.end1Releases);
+        endV = PartialRestraintToNative(element1D.end2Releases);
       }
 
-      double[] startV, endV;
-      startV = new double[] { };
-      endV = new double[] { };
 
       if (element1D.orientationAngle != null)
       {
         Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
       }
-
+      end1Release = end1Release.Select(b => !b).ToArray();
+      end2Release = end2Release.Select(b => !b).ToArray();
 
       Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
       if (element1D.name != null)
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
-      Model.FrameObj.SetSpandrel(element1D.name, element1D.SpandrelAssignment);
-      Model.FrameObj.SetPier(element1D.name, element1D.PierAssignment);
+      else{
+        Model.FrameObj.ChangeName(newFrame, element1D.id);
+      }
+      if(element1D is ETABSElement1D){ 
+      
+        var ETABSelement1D = (ETABSElement1D)element1D;
+        if (ETABSelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(ETABSelement1D.name, ETABSelement1D.SpandrelAssignment); }
+        if (ETABSelement1D.PierAssignment != null) { Model.FrameObj.SetPier(ETABSelement1D.name, ETABSelement1D.PierAssignment); }
+        if (ETABSelement1D.ETABSLinearSpring != null) { Model.FrameObj.SetSpringAssignment(ETABSelement1D.name, ETABSelement1D.ETABSLinearSpring.name); }
+        if (ETABSelement1D.DesignProcedure != null){
+        switch(ETABSelement1D.DesignProcedure){
+            case DesignProcedure.ProgramDetermined:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 0);
+              break;
+            case DesignProcedure.CompositeBeamDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 3);
+              break;
+            case DesignProcedure.CompositeColumnDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 13);
+              break;
+            case DesignProcedure.SteelFrameDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 1);
+              break;
+            case DesignProcedure.ConcreteFrameDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 2);
+              break;
+            case DesignProcedure.SteelJoistDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 4);
+              break;
+            case DesignProcedure.NoDesign:
+              Model.FrameObj.SetDesignProcedure(ETABSelement1D.name, 7);
+              break;
+          }
+        if(ETABSelement1D.Modifiers != null){
+            var modifiers = ETABSelement1D.Modifiers;
+        Model.FrameObj.SetModifiers(ETABSelement1D.name, ref modifiers); }
+        }
+      }
+
+ 
+
+
       return element1D.name;
     }
 
@@ -211,6 +236,37 @@ namespace Objects.Converter.ETABS
       {
         speckleStructFrame.SpandrelAssignment = spandrelAssignment;
       }
+
+      int designProcedure = 9;
+      Model.FrameObj.GetDesignProcedure(name, ref designProcedure);
+      if(designProcedure != 9){
+      switch(designProcedure){
+          case 0:
+            speckleStructFrame.DesignProcedure = DesignProcedure.ProgramDetermined;
+            break;
+          case 1:
+            speckleStructFrame.DesignProcedure = DesignProcedure.SteelFrameDesign;
+            break;
+          case 2:
+            speckleStructFrame.DesignProcedure = DesignProcedure.ConcreteFrameDesign;
+            break;
+          case 3:
+            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeBeamDesign;
+            break;
+          case 4:
+            speckleStructFrame.DesignProcedure = DesignProcedure.SteelJoistDesign;
+            break;  
+          case 7:
+            speckleStructFrame.DesignProcedure = DesignProcedure.NoDesign;
+            break;
+          case 13:
+            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeColumnDesign;
+            break;
+      }
+      }
+      double[] modifiers = new double[]{ };
+      int s = Model.FrameObj.GetModifiers(name, ref modifiers);
+      if(s==0){ speckleStructFrame.Modifiers = modifiers; }
 
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);

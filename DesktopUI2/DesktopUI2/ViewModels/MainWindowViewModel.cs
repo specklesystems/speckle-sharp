@@ -11,6 +11,7 @@ using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Splat;
 
 namespace DesktopUI2.ViewModels
@@ -70,6 +71,8 @@ namespace DesktopUI2.ViewModels
 
     public void ToggleDarkThemeCommand()
     {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+
       var theme = PaletteHelper.GetTheme();
 
       if (theme.GetBaseTheme() == BaseThemeMode.Dark)
@@ -82,6 +85,7 @@ namespace DesktopUI2.ViewModels
 
     public void RefreshCommand()
     {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
       HomeViewModel.Instance.Init();
     }
 

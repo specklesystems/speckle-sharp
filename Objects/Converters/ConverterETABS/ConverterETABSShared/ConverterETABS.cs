@@ -81,16 +81,16 @@ namespace Objects.Converter.ETABS
         //case osg.node o:
         //    return pointtonative(o);
         case OSG.Node o:
-          return PointToNative(o);
+          return PointToNative((ETABSNode)o);
           Report.Log($"Created Node {o.id}");
         case Geometry.Line o:
           return LineToNative(o);
           Report.Log($"Created Line {o.id}");
         case OSG.Element1D o:
-          return FrameToNative((ETABSElement1D)o);
+          return FrameToNative(o);
           Report.Log($"Created Element1D {o.id}");
         case OSG.Element2D o:
-          return AreaToNative((ETABSElement2D)o);
+          return AreaToNative(o);
           Report.Log($"Created Element2D {o.id}");
         case Model o:
           return ModelToNative(o);
@@ -176,6 +176,9 @@ namespace Objects.Converter.ETABS
           returnObject = ETABSTendonToSpeckle(name);
           Report.Log($"Created Tendons");
           break;
+        //case "Diaphragm":
+        //  returnObject = diaphragmToSpeckle(name);
+        //  Report.Log($"Created Diaphragm");
         case "Links":
           returnObject = LinkToSpeckle(name);
           break;

@@ -14,8 +14,8 @@ namespace Objects.Converter.ETABS
 public partial class ConverterETABS{ 
     public void LinkToNative(ETABSElement1D link){
 
-      PointToNative(link.end1Node);
-      PointToNative(link.end2Node);
+      PointToNative((ETABSNode)link.end1Node);
+      PointToNative((ETABSNode)link.end2Node);
       string linkName = null;
       int numberProps = 0;
       string[] listProp = null;

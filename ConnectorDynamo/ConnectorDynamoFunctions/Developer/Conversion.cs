@@ -1,4 +1,5 @@
-﻿using Autodesk.DesignScript.Runtime;
+﻿using System.Collections.Generic;
+using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -14,6 +15,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static Base ToSpeckle([ArbitraryDimensionArrayImport] object data)
     {
       Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
       var converter = new BatchConverter();
       return converter.ConvertRecursivelyToSpeckle(data);
     }
@@ -26,6 +28,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object ToNative(Base @base)
     {
       Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
+      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
       var converter = new BatchConverter();
       return converter.ConvertRecursivelyToNative(@base);
     }

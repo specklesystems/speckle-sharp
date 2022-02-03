@@ -11,7 +11,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -45,7 +45,7 @@ namespace ConnectorGrasshopper.Ops
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:",null, null, false);
+      Menu_AppendItem(menu, "Select the converter you want to use:", null, null, false);
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
       foreach (var kit in kits)
@@ -56,23 +56,23 @@ namespace ConnectorGrasshopper.Ops
 
       base.AppendAdditionalMenuItems(menu);
     }
-    
+
     public override void AddedToDocument(GH_Document document)
     {
       SetDefaultKitAndConverter();
       base.AddedToDocument(document);
     }
-    
+
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name)return;
+      if (kitName == Kit.Name) return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       Converter = Kit.LoadConverter(Applications.Rhino6);
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
         (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-      
+
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
@@ -81,7 +81,7 @@ namespace ConnectorGrasshopper.Ops
     private void SetDefaultKitAndConverter()
     {
       try
-      { 
+      {
         Kit = KitManager.GetDefaultKit();
         Converter = Kit.LoadConverter(Applications.Rhino6);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -119,9 +119,8 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        var acc = Speckle.Core.Credentials.AccountManager.GetDefaultAccount();
-        
-        Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
+        Logging.Tracker.TrackPageview(Logging.Tracker.RECEIVE_LOCAL);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
 
@@ -143,7 +142,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }
@@ -154,8 +153,8 @@ namespace ConnectorGrasshopper.Ops
 
     public override void SetData(IGH_DataAccess DA)
     {
-      if(data != null) DA.SetDataTree(0, data);
-      
+      if (data != null) DA.SetDataTree(0, data);
+
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
