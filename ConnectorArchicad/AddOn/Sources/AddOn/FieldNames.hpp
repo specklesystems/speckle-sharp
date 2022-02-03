@@ -1,16 +1,16 @@
 #ifndef FIELD_NAMES_HPP
 #define FIELD_NAMES_HPP
 
-static const char* ElementIdFieldName =		"elementId";
-static const char* ElementIdsFieldName =	"elementIds";
-static const char* ElementTypeFieldName =	"elementType";
-static const char* ElementTypesFieldName =	"elementTypes";
+static const char* ElementIdFieldName = "elementId";
+static const char* ElementIdsFieldName = "elementIds";
+static const char* ElementTypeFieldName = "elementType";
+static const char* ElementTypesFieldName = "elementTypes";
 
-static const char* FloorIndexFieldName =	"floorIndex";
+static const char* FloorIndexFieldName = "floorIndex";
 
-static const char* WallsFieldName	=		"walls";
-static const char* SlabsFieldName	=		"slabs";
-static const char* ModelsFieldName	=		"models";
+static const char* WallsFieldName = "walls";
+static const char* SlabsFieldName = "slabs";
+static const char* ModelsFieldName = "models";
 
 
 namespace Wall {

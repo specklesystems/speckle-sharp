@@ -1,84 +1,78 @@
 using Newtonsoft.Json;
 
-
 namespace Archicad.Communication
 {
-	[JsonObject (MemberSerialization.OptIn)]
-	internal sealed class AddOnCommandRequest<T> where T : class
-	{
-		#region --- Classes ---
+  [JsonObject(MemberSerialization.OptIn)]
+  internal sealed class AddOnCommandRequest<T> where T : class
+  {
+    #region --- Classes ---
 
-		[JsonObject (MemberSerialization.OptIn)]
-		private sealed class AddonCommandID
-		{
-			#region --- Fields ---
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class AddonCommandID
+    {
+      #region --- Fields ---
 
-			[JsonProperty ("commandName")]
-			public string CommandName { get; private set; }
+      [JsonProperty("commandName")]
+      public string CommandName { get; private set; }
 
-			[JsonProperty ("commandNamespace")]
-			public string CommandNamespace { get; } = "Speckle";
+      [JsonProperty("commandNamespace")]
+      public string CommandNamespace { get; } = "Speckle";
 
-			#endregion
+      #endregion
 
+      #region  --- Ctor \ Dtor ---
 
-			#region  --- Ctor \ Dtor ---
+      public AddonCommandID(string commandName)
+      {
+        CommandName = commandName;
+      }
 
-			public AddonCommandID (string commandName)
-			{
-				CommandName = commandName;
-			}
+      #endregion
+    }
 
-			#endregion
-		}
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class AddonCommandParameters
+    {
+      #region --- Fields ---
 
+      [JsonProperty("addOnCommandId")]
+      private AddonCommandID Id { get; set; }
 
-		[JsonObject (MemberSerialization.OptIn)]
-		private sealed class AddonCommandParameters
-		{
-			#region --- Fields ---
+      [JsonProperty("addOnCommandParameters")]
+      private T Parameters { get; set; }
 
-			[JsonProperty ("addOnCommandId")]
-			private AddonCommandID Id { get; set; }
+      #endregion
 
-			[JsonProperty ("addOnCommandParameters")]
-			private T Parameters { get; set; }
+      #region  --- Ctor \ Dtor ---
 
-			#endregion
+      public AddonCommandParameters(string commandName, T parameters)
+      {
+        Id = new AddonCommandID(commandName);
+        Parameters = parameters;
+      }
 
+      #endregion
+    }
 
-			#region  --- Ctor \ Dtor ---
+    #endregion
 
-			public AddonCommandParameters (string commandName, T parameters)
-			{
-				Id = new AddonCommandID (commandName);
-				Parameters = parameters;
-			}
+    #region --- Fields ---
 
-			#endregion
-		}
+    [JsonProperty("command")]
+    private string Command { get; } = "API.ExecuteAddOnCommand";
 
-		#endregion
+    [JsonProperty("parameters")]
+    private AddonCommandParameters Parameters { get; set; }
 
+    #endregion
 
-		#region --- Fields ---
+    #region  --- Ctor \ Dtor ---
 
-		[JsonProperty ( "command")]
-		private string Command  { get; } = "API.ExecuteAddOnCommand";
+    public AddOnCommandRequest(string commandName, T requestParams)
+    {
+      Parameters = new AddonCommandParameters(commandName, requestParams);
+    }
 
-		[JsonProperty ("parameters")]
-		private AddonCommandParameters Parameters { get; set; }
-
-		#endregion
-
-
-		#region  --- Ctor \ Dtor ---
-
-		public AddOnCommandRequest (string commandName, T requestParams)
-		{
-			Parameters = new AddonCommandParameters (commandName, requestParams);
-		}
-
-		#endregion
-	}
+    #endregion
+  }
 }

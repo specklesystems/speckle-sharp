@@ -2,41 +2,37 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetSelectedElements : ICommand<IEnumerable<string>>
-	{
-		#region --- Classes ---
+  internal sealed class GetSelectedElements : ICommand<IEnumerable<string>>
+  {
+    #region --- Classes ---
 
-		[JsonObject]
-		public sealed class Parameters
-		{
-		}
+    [JsonObject]
+    public sealed class Parameters
+    { }
 
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class Result
+    {
+      #region --- Fields ---
 
-		[JsonObject (MemberSerialization.OptIn)]
-		private sealed class Result
-		{
-			#region --- Fields ---
+      [JsonProperty("elementIds")]
+      public IEnumerable<string> ElementIds { get; private set; }
 
-			[JsonProperty ("elementIds")]
-			public IEnumerable<string> ElementIds { get; private set; }
+      #endregion
+    }
 
-			#endregion
-		}
+    #endregion
 
-		#endregion
+    #region --- Functions ---
 
+    public async Task<IEnumerable<string>> Execute()
+    {
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSelectedElementIds", null);
+      return result.ElementIds;
+    }
 
-		#region --- Functions ---
-
-		public async Task<IEnumerable<string>> Execute ()
-		{
-			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetSelectedElementIds", null);
-			return result.ElementIds;
-		}
-
-		#endregion
-	}
+    #endregion
+  }
 }

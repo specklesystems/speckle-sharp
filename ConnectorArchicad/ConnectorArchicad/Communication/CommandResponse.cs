@@ -1,45 +1,42 @@
 using Newtonsoft.Json;
 
-
 namespace Archicad.Communication
 {
-	[JsonObject (MemberSerialization.OptIn)]
-	internal sealed class AddOnCommandResponse<T> where T : class
-	{
-		#region --- Classes ---
+  [JsonObject(MemberSerialization.OptIn)]
+  internal sealed class AddOnCommandResponse<T> where T : class
+  {
+    #region --- Classes ---
 
-		[JsonObject (MemberSerialization.OptIn)]
-		private sealed class AddOnCommandResult
-		{
-			#region --- Fields ---
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class AddOnCommandResult
+    {
+      #region --- Fields ---
 
-			[JsonProperty ("addOnCommandResponse")]
-			public T Response { get; private set; }
+      [JsonProperty("addOnCommandResponse")]
+      public T Response { get; private set; }
 
-			#endregion
-		}
+      #endregion
+    }
 
-		#endregion
+    #endregion
 
+    #region --- Fields ---
 
-		#region --- Fields ---
+    [JsonProperty("succeeded")]
+    public bool Succeeded { get; private set; }
 
-		[JsonProperty ("succeeded")]
-		public bool Succeeded { get; private set; }
+    [JsonProperty("result")]
+    private AddOnCommandResult Response { get; set; }
 
-		[JsonProperty ("result")]
-		private AddOnCommandResult Response { get; set; }
+    #endregion
 
-		#endregion
+    #region --- Properties ---
 
+    public T Result
+    {
+      get { return Response?.Response; }
+    }
 
-		#region --- Properties ---
-
-		public T Result
-		{
-			get { return Response?.Response; }
-		}
-
-		#endregion
-	}
+    #endregion
+  }
 }

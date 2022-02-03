@@ -1,44 +1,42 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 
-
 namespace Archicad.Communication
 {
-	internal class ConnectionManager
-	{
-		#region --- Fields ---
+  internal class ConnectionManager
+  {
+    #region --- Fields ---
 
-		private HttpClient HttpClient { get; set; }
+    private HttpClient HttpClient { get; set; }
 
-		public static ConnectionManager Instance { get; } = new ConnectionManager ();
+    public static ConnectionManager Instance { get; } = new ConnectionManager();
 
-		#endregion
+    #endregion
 
+    #region --- Functions ---
 
-		#region --- Functions ---
+    public void Start(uint portNumber)
+    {
+      HttpClient = new HttpClient { BaseAddress = new System.Uri("http://127.0.0.1:" + portNumber) };
+    }
 
-		public void Start (uint portNumber)
-		{
-			HttpClient = new HttpClient { BaseAddress = new System.Uri ("http://127.0.0.1:" + portNumber) };
-		}
+    public void Stop()
+    {
+      HttpClient?.CancelPendingRequests();
+    }
 
-		public void Stop ()
-		{
-			HttpClient?.CancelPendingRequests ();
-		}
+    public async Task<string> Send(string message)
+    {
+      if (HttpClient is null)
+      {
+        throw new System.Exception("Connection is not started!");
+      }
 
-		public async Task<string> Send (string message)
-		{
-			if (HttpClient is null)
-			{
-				throw new System.Exception ("Connection is not started!");
-			}
+      HttpRequestMessage requestMessage = new HttpRequestMessage { Method = HttpMethod.Post, Content = new StringContent(message) };
+      HttpResponseMessage responseMessage = await HttpClient.SendAsync(requestMessage);
+      return await responseMessage.Content.ReadAsStringAsync();
+    }
 
-			HttpRequestMessage requestMessage = new HttpRequestMessage { Method = HttpMethod.Post, Content = new StringContent (message) };
-			HttpResponseMessage responseMessage = await HttpClient.SendAsync (requestMessage);
-			return await responseMessage.Content.ReadAsStringAsync ();
-		}
-
-		#endregion
-	}
+    #endregion
+  }
 }

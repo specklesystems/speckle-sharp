@@ -1,23 +1,25 @@
-using Objects.BuiltElements.Archicad;
 using System;
-
+using Objects.BuiltElements.Archicad;
 
 namespace Archicad
 {
-	public static class ElementTypeProvider
-	{
-		#region --- Functions ---
+  public static class ElementTypeProvider
+  {
+    #region --- Functions ---
 
-		public static Type GetTypeByName (string name)
-		{
-			switch (name)
-			{
-				case "Wall":	return typeof (Wall);
-				case "Slab":	return typeof (Ceiling);
-				default:		return typeof (DirectShape);
-			}
-		}
+    public static Type GetTypeByName(string name)
+    {
+      switch (name)
+      {
+        case "Wall":
+          return typeof(Wall);
+        case "Slab":
+          return typeof(Ceiling);
+        default:
+          return typeof(DirectShape);
+      }
+    }
 
-		#endregion
-	}
+    #endregion
+  }
 }

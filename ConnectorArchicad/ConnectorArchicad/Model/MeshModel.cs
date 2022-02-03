@@ -1,71 +1,68 @@
 using System.Collections.Generic;
 
-
 namespace Archicad.Model
 {
-	public sealed class MeshModel
-	{
-		#region --- Classes ---
+  public sealed class MeshModel
+  {
+    #region --- Classes ---
 
-		public sealed class Vertex
-		{
-			#region --- Fields ---
+    public sealed class Vertex
+    {
+      #region --- Fields ---
 
-			public double x { get; set; }
+      public double x { get; set; }
 
-			public double y { get; set; }
+      public double y { get; set; }
 
-			public double z { get; set; }
+      public double z { get; set; }
 
-			#endregion
-		}
+      #endregion
+    }
 
-		public sealed class Material
-		{
-			#region --- Classes ---
+    public sealed class Material
+    {
+      #region --- Classes ---
 
-			public class Color
-			{
-				public int red { get; set; }
-				
-				public int green { get; set; }
-				
-				public int blue { get; set; }
+      public class Color
+      {
+        public int red { get; set; }
 
-			}
+        public int green { get; set; }
 
-			#endregion
+        public int blue { get; set; }
 
+      }
 
-			#region --- Fields ---
+      #endregion
 
-			public Color ambientColor { get; set; }
+      #region --- Fields ---
 
-			public Color emissionColor { get; set; }
+      public Color ambientColor { get; set; }
 
-			public double transparency { get; set; }
+      public Color emissionColor { get; set; }
 
-			#endregion
-		}
+      public double transparency { get; set; }
 
-		public sealed class Polygon
-		{
-			public List<int> pointIds { get; set; } = new List<int> ();
+      #endregion
+    }
 
-			public int material { get; set; }
-		}
+    public sealed class Polygon
+    {
+      public List<int> pointIds { get; set; } = new List<int>();
 
-		#endregion
+      public int material { get; set; }
+    }
 
+    #endregion
 
-		#region --- Fields ---
+    #region --- Fields ---
 
-		public List<Polygon> polygons { get; set; } = new List<Polygon> ();
+    public List<Polygon> polygons { get; set; } = new List<Polygon>();
 
-		public List<Vertex> vertices { get; set; } = new List<Vertex> ();
+    public List<Vertex> vertices { get; set; } = new List<Vertex>();
 
-		public List<Material> materials { get; set; } = new List<Material> ();
+    public List<Material> materials { get; set; } = new List<Material>();
 
-		#endregion
-	}
+    #endregion
+  }
 }

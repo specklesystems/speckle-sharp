@@ -1,27 +1,25 @@
-using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Speckle.Core.Models;
 
 namespace Archicad.Converters
 {
-	public interface IConverter
-	{
-		#region --- Properties ---
+  public interface IConverter
+  {
+    #region --- Properties ---
 
-		Type Type { get; }
+    Type Type { get; }
 
-		#endregion
+    #endregion
 
+    #region --- Functions ---
 
-		#region --- Functions ---
+    Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token);
 
-		Task<List<Base>> ConvertToSpeckle (IEnumerable<Model.ElementModelData> elements, CancellationToken token);
+    Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token);
 
-		Task<List<string>> ConvertToArchicad (IEnumerable<Base> elements, CancellationToken token);
-
-		#endregion
-	}
+    #endregion
+  }
 }

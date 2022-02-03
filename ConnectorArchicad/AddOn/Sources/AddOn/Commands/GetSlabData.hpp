@@ -7,11 +7,11 @@
 namespace AddOnCommands {
 
 
-class GetSlabData : public BaseCommand {
-public:
-	virtual GS::String							GetName () const override;
-	virtual GS::ObjectState						Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-};
+	class GetSlabData : public BaseCommand {
+	public:
+		virtual GS::String							GetName() const override;
+		virtual GS::ObjectState						Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+	};
 
 
 }

@@ -1,89 +1,82 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-
 namespace Archicad.Communication.Commands
 {
-	internal sealed class GetElementsType : ICommand<Dictionary<Type, IEnumerable<string>>>
-	{
-		#region --- Classes ---
+  internal sealed class GetElementsType : ICommand<Dictionary<Type, IEnumerable<string>>>
+  {
+    #region --- Classes ---
 
-		[JsonObject (MemberSerialization.OptIn)]
-		public sealed class Parameters
-		{
-			#region --- Fields ---
+    [JsonObject(MemberSerialization.OptIn)]
+    public sealed class Parameters
+    {
+      #region --- Fields ---
 
-			[JsonProperty ("elementIds")]
-			private IEnumerable<string> ElementIds { get; }
+      [JsonProperty("elementIds")]
+      private IEnumerable<string> ElementIds { get; }
 
-			#endregion
+      #endregion
 
+      #region --- Ctor \ Dtor ---
 
-			#region --- Ctor \ Dtor ---
+      public Parameters(IEnumerable<string> elementIds)
+      {
+        ElementIds = elementIds;
+      }
 
-			public Parameters (IEnumerable<string> elementIds)
-			{
-				ElementIds = elementIds;
-			}
+      #endregion
+    }
 
-			#endregion
-		}
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class Result
+    {
+      #region --- Fields ---
 
+      [JsonProperty("elementTypes")]
+      public IEnumerable<TypeDescription> ElementTypes { get; private set; }
 
-		[JsonObject (MemberSerialization.OptIn)]
-		private sealed class Result
-		{
-			#region --- Fields ---
+      #endregion
+    }
 
-			[JsonProperty ("elementTypes")]
-			public IEnumerable<TypeDescription> ElementTypes { get; private set; }
+    [JsonObject(MemberSerialization.OptIn)]
+    private sealed class TypeDescription
+    {
+      [JsonProperty("elementId")]
+      public string ElementId { get; private set; }
 
-			#endregion
-		}
+      [JsonProperty("elementType")]
+      public string ElementType { get; private set; }
 
+    }
 
-		[JsonObject(MemberSerialization.OptIn)]
-		private sealed class TypeDescription
-		{
-			[JsonProperty("elementId")]
-			public string ElementId { get; private set; }
+    #endregion
 
-			[JsonProperty("elementType")]
-			public string ElementType { get; private set; }
+    #region --- Fields ---
 
-		}
+    private IEnumerable<string> ElementIds { get; }
 
-		#endregion
+    #endregion
 
+    #region --- Ctor \ Dtor ---
 
-		#region --- Fields ---
+    public GetElementsType(IEnumerable<string> elementIds)
+    {
+      ElementIds = elementIds;
+    }
 
-		private IEnumerable<string> ElementIds { get; }
+    #endregion
 
-		#endregion
+    #region --- Functions ---
 
+    public async Task<Dictionary<Type, IEnumerable<string>>> Execute()
+    {
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementTypes", new Parameters(ElementIds));
+      return result.ElementTypes.GroupBy(row => ElementTypeProvider.GetTypeByName(row.ElementType)).ToDictionary(group => group.Key, group => group.Select(x => x.ElementId));
+    }
 
-		#region --- Ctor \ Dtor ---
-
-		public GetElementsType (IEnumerable<string> elementIds)
-		{
-			ElementIds = elementIds;
-		}
-
-		#endregion
-
-
-		#region --- Functions ---
-
-		public async Task<Dictionary<Type, IEnumerable<string>>> Execute ()
-		{
-			Result result = await HttpCommandExecutor.Execute<Parameters, Result> ("GetElementTypes", new Parameters (ElementIds));
-			return result.ElementTypes.GroupBy (row => ElementTypeProvider.GetTypeByName (row.ElementType)).ToDictionary (group => group.Key, group => group.Select (x => x.ElementId));
-		}
-
-		#endregion
-	}
+    #endregion
+  }
 }
