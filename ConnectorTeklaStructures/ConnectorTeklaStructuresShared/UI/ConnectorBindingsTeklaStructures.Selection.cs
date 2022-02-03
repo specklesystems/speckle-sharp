@@ -34,7 +34,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       {
         var phaseCollection = Model.GetPhases();
         foreach(Phase p in phaseCollection){
-          phases.Add(string.Concat(p.PhaseName," ",p.PhaseNumber.ToString()));
+          phases.Add(p.PhaseName);
         }
         //selectionCount = Model.Selection.GetElementIds().Count();
         //categories = ConnectorTeklaStructuresUtils.GetCategoryNames(Model);
@@ -102,12 +102,9 @@ namespace Speckle.ConnectorTeklaStructures.UI
           {
             foreach (var phase in phaseFilter.Selection)
             {
-              var phaseValues = phase.Split();
-              int phaseNumber = int.Parse(phaseValues.Last());
-              string phaseName = phaseValues.First();
               Phase phaseTemp = new Phase();
               myEnum.Current.GetPhase(out phaseTemp);
-              if(phaseTemp.PhaseName == phaseName && phaseTemp.PhaseNumber == phaseNumber){
+              if(phaseTemp.PhaseName == phase){
                 selection.Add(myEnum.Current);
               }
             }
