@@ -17,7 +17,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
     {
       var names = new List<string>();
       ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
-      while(myEnum.MoveNext()){
+      while (myEnum.MoveNext())
+      {
         names.Add(myEnum.Current.Identifier.GUID.ToString());
       }
       return names;
@@ -28,8 +29,13 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var categories = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
+      var phases = new List<string>();
       if (Model != null)
       {
+        var phaseCollection = Model.GetPhases();
+        foreach(Phase p in phaseCollection){
+          phases.Add(string.Concat(p.PhaseName," ",p.PhaseNumber.ToString()));
+        }
         //selectionCount = Model.Selection.GetElementIds().Count();
         //categories = ConnectorTeklaStructuresUtils.GetCategoryNames(Model);
         //parameters = ConnectorTeklaStructuresUtils.GetParameterNames(Model);
@@ -50,8 +56,11 @@ namespace Speckle.ConnectorTeklaStructures.UI
         //  Values = objectNames,
         //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         //},
-            new AllSelectionFilter {Slug="all",  Name = "All",
-                Icon = "CubeScan", Description = "Selects all document objects." },
+          new ListSelectionFilter {Slug="phase", Name = "Phases",
+            Icon = "SelectGroup", Values = phases,
+            Description="Adds all objects belonging to the selected phase"},
+          new AllSelectionFilter {Slug="all",  Name = "All",
+              Icon = "CubeScan", Description = "Selects all document objects." },
 
             };
     }
@@ -70,7 +79,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       switch (filter.Slug)
       {
         case "manual":
-           ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
+          ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
           while (myEnum.MoveNext())
           {
             selection.Add(myEnum.Current);
@@ -86,20 +95,27 @@ namespace Speckle.ConnectorTeklaStructures.UI
           return selection;
 
 
-        //case "type":
-        //  var typeFilter = filter as ListSelectionFilter;
-        //  if (ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames == null)
-        //  {
-        //    ConnectorTeklaStructuresUtils.GetObjectIDsTypesAndNames(Model);
-        //  }
-        //  foreach (var type in typeFilter.Selection)
-        //  {
-        //    selection.AddRange(ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
-        //        .Where(pair => pair.Value.Item1 == type)
-        //        .Select(pair => pair.Key)
-        //        .ToList());
-        //  }
-        //  return selection;
+        case "phase":
+          var phaseFilter = filter as ListSelectionFilter;
+          myEnum = Model.GetModelObjectSelector().GetAllObjects();
+          while(myEnum.MoveNext())
+          {
+            foreach (var phase in phaseFilter.Selection)
+            {
+              var phaseValues = phase.Split();
+              int phaseNumber = int.Parse(phaseValues.Last());
+              string phaseName = phaseValues.First();
+              Phase phaseTemp = new Phase();
+              myEnum.Current.GetPhase(out phaseTemp);
+              if(phaseTemp.PhaseName == phaseName && phaseTemp.PhaseNumber == phaseNumber){
+                selection.Add(myEnum.Current);
+              }
+            }
+          }
+
+
+
+          return selection;
       }
 
       return selection;
