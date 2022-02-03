@@ -112,9 +112,10 @@ namespace Speckle.Core.Logging
       LastEmail = email;
       LastServer = server;
 
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // TODO only track if in RELEASE MODE
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#if DEBUG
+      //only track in prod
+      return;
+#endif
 
       Task.Run(() =>
       {
@@ -174,6 +175,7 @@ namespace Speckle.Core.Logging
         }
 
       });
+
     }
 
     private static string CleanURL(string server)
