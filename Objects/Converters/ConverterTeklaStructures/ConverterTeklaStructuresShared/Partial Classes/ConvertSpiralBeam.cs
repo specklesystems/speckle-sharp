@@ -19,6 +19,7 @@ namespace Objects.Converter.TeklaStructures
 
     public BE.Beam SpiralBeamToSpeckle(SpiralBeam SpiralBeam)
     {
+      var units = GetUnitsFromModel();
       var speckleBeam = new BE.Beam();
       var curveLine = SpiralBeam.GetCenterLine(false);
       var pointList = new List<double> { };
@@ -28,7 +29,7 @@ namespace Objects.Converter.TeklaStructures
         pointList.Add(point.Y);
         pointList.Add(point.Z);
       }
-      speckleBeam.baseLine = new Polyline(pointList);
+      speckleBeam.baseLine = new Polyline(pointList,units);
       //var refLine = SpiralBeam.GetReferenceLine(false);
       var solid = SpiralBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);

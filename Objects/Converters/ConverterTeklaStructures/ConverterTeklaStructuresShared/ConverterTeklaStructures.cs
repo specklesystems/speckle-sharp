@@ -105,19 +105,23 @@ namespace Objects.Converter.TeklaStructures
       {
         case Beam o:
           returnObject = BeamToSpeckle(o);
-          //Report.Log($"Created Beam");
+          Report.Log($"Created Beam");
           break;
         case PolyBeam o:
           returnObject = PolyBeamToSpeckle(o);
+          Report.Log($"Created PolyBeam");
           break;
         case SpiralBeam o:
           returnObject = SpiralBeamToSpeckle(o);
+          Report.Log($"Created SpiralBeam");
           break;
         case BoltGroup o:
           returnObject = BoltsToSpeckle(o);
+          Report.Log($"Created Bolts");
           break;
         case ContourPlate o:
             returnObject = ContourPlateToSpeckle(o);
+          Report.Log($"Created ContourPlate");
             break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));

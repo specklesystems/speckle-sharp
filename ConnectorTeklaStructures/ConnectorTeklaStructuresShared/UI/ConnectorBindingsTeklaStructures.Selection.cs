@@ -37,7 +37,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
       return new List<ISelectionFilter>()
             {
-            //new ManualSelectionFilter(),
+            new ManualSelectionFilter(),
             //new ListSelectionFilter {Slug="type", Name = "Categories",
             //    Icon = "Category", Values = objectTypes,
             //    Description="Adds all objects belonging to the selected types"},

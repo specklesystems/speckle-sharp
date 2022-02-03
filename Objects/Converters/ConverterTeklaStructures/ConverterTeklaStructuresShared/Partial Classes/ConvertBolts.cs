@@ -20,13 +20,13 @@ namespace Objects.Converter.TeklaStructures
     public BE.TeklaStructures.Bolts BoltsToSpeckle(BoltGroup Bolts)
     {
       var speckleTeklaBolt= new BE.TeklaStructures.Bolts();
-
+      var units = GetUnitsFromModel();
       speckleTeklaBolt.BoltSize = Bolts.BoltSize;
       speckleTeklaBolt.BoltStandard = Bolts.BoltStandard;
       speckleTeklaBolt.CutLength = Bolts.CutLength;
         speckleTeklaBolt.Coordinates = Bolts.BoltPositions
             .Cast<TSG.Point>()
-            .Select(p => new Point(p.X, p.Y, p.Z))
+            .Select(p => new Point(p.X, p.Y, p.Z,units))
             .ToList();
       
       var solid = Bolts.GetSolid();

@@ -14,5 +14,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public string BoltStandard { get; set; }
     public double CutLength { get; set; }
     public List<Point> Coordinates { get; set; }
+    public Bolts() { }
+
   }
 }

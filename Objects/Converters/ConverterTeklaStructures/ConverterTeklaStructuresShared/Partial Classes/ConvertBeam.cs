@@ -16,7 +16,10 @@ namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
-
+  public void BeamToNative(BE.Beam beam){
+      var TeklaBeam = new Beam();
+      //return TeklaBeam;
+  }
     public BE.Beam BeamToSpeckle(Tekla.Structures.Model.Beam beam)
     {
       var speckleBeam = new TeklaBeam();
@@ -24,20 +27,21 @@ namespace Objects.Converter.TeklaStructures
 
       var endPoint = beam.EndPoint;
       var startPoint = beam.StartPoint;
+      var units = GetUnitsFromModel();
 
-      Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z);
-      Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z);
-      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint);
+      Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z,units);
+      Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z,units);
+      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint,units);
 
-            speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
-            speckleBeam.material = GetMaterial(beam.Material.MaterialString);
-            var beamCS = beam.GetCoordinateSystem();
-            speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z);
-            speckleBeam.finish = beam.Finish;
-            speckleBeam.classNumber = beam.Class;
-            speckleBeam.name = beam.Name;
+      speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
+      speckleBeam.material = GetMaterial(beam.Material.MaterialString);
+      var beamCS = beam.GetCoordinateSystem();
+      speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z,units);
+      speckleBeam.finish = beam.Finish;
+      speckleBeam.classNumber = beam.Class;
+      speckleBeam.name = beam.Name;
 
-            GetAllUserProperties(speckleBeam, beam);
+      GetAllUserProperties(speckleBeam, beam);
 
       var solid = beam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
