@@ -69,10 +69,16 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       switch (filter.Slug)
       {
-        //case "manual":
+        case "manual":
+           ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
+          while (myEnum.MoveNext())
+          {
+            selection.Add(myEnum.Current);
+          }
+          return selection;
         //  return GetSelectedObjects();
         case "all":
-          ModelObjectEnumerator myEnum = Model.GetModelObjectSelector().GetAllObjects();
+          myEnum = Model.GetModelObjectSelector().GetAllObjects();
           while (myEnum.MoveNext())
           {
             selection.Add(myEnum.Current);
