@@ -154,9 +154,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       if (Doc == null)
       {
@@ -176,8 +174,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
-
-      var commitObject = await Operations.Receive(
+      Base commitObject = null;
+      try
+      {
+        commitObject = await Operations.Receive(
         referencedObject,
         progress.CancellationTokenSource.Token,
         transport,
@@ -191,8 +191,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         disposeTransports: true
         );
       
-      try
-      {
         await state.Client.CommitReceived(new CommitReceivedInput
         {
           streamId = stream?.id,
@@ -203,12 +201,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       catch(Exception e)
       {
-        progress.Report.OperationErrors.Add(e);
+        progress.Report.OperationErrors.Add(new Exception($"Could not receive or deserialize commit: {e.Message}"));
       }
-      if (progress.Report.OperationErrorsCount != 0)
-      {
+      if (progress.Report.OperationErrorsCount != 0 || commitObject == null)
         return state;
-      }
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
