@@ -113,24 +113,34 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private List<FilterViewModel> _filters;
-    public List<FilterViewModel> Filters
+    private List<FilterViewModel> _availableFilters;
+    public List<FilterViewModel> AvailableFilters
     {
-      get => _filters;
-      private set => this.RaiseAndSetIfChanged(ref _filters, value);
+      get => _availableFilters;
+      private set => this.RaiseAndSetIfChanged(ref _availableFilters, value);
     }
 
-    private List<SettingViewModel> _settings;
-    public List<SettingViewModel> Settings
+    private List<SettingViewModel> _savedSettings;
+    public List<SettingViewModel> SavedSettings
     {
-      get => _settings;
+      get => _savedSettings;
       private set
       {
-        this.RaiseAndSetIfChanged(ref _settings, value);
+        this.RaiseAndSetIfChanged(ref _savedSettings, value);
+      }
+    }
+
+    private List<ISetting> _availableSettings;
+    public List<ISetting> AvailableSettings
+    {
+      get => _availableSettings;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _availableSettings, value);
         this.RaisePropertyChanged("HasSettings");
       }
     }
-    public bool HasSettings => Settings != null && Settings.Any();
+    public bool HasSettings => AvailableSettings != null && AvailableSettings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
     #endregion
@@ -170,11 +180,12 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       //get available filters from our bindings
-      Filters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
-      SelectedFilter = Filters[0];
+      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
+      SelectedFilter = AvailableFilters[0];
 
       //get available settings from our bindings
-      Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
+      AvailableSettings = Bindings.GetSettings();
+
 
       IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
@@ -194,17 +205,17 @@ namespace DesktopUI2.ViewModels
 
       if (streamState.Filter != null)
       {
-        SelectedFilter = Filters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
+        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
         if (SelectedFilter != null)
           SelectedFilter.Filter = streamState.Filter;
       }
       if (streamState.Settings != null)
       {
-        foreach (var setting in Settings)
+        foreach (var setting in streamState.Settings)
         {
-          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Setting.Slug).First();
+          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
           if (savedSetting != null)
-            setting.Setting.Selection = savedSetting.Selection;
+            setting.Selection = savedSetting.Selection;
         }
       }
     }
@@ -220,7 +231,7 @@ namespace DesktopUI2.ViewModels
         _streamState.CommitId = SelectedCommit.id;
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
-      _streamState.Settings = Settings.Select(o => o.Setting).ToList();
+      _streamState.Settings = SavedSettings.Select(o => o.Setting).ToList();
       return _streamState;
     }
 
@@ -328,23 +339,27 @@ namespace DesktopUI2.ViewModels
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
 
-    private void OpenSettingsCommand()
+    private async void OpenSettingsCommand()
     {
       try
       {
         var settings = new Settings();
-        settings.DataContext = new SettingsPageViewModel(Settings);
+        settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        var settingsPageViewModel = new SettingsPageViewModel(SavedSettings);
+        settings.DataContext = settingsPageViewModel;
         settings.Title = $"Settings for {Stream.name}";
-        settings.ShowDialog(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
-        (settings.DataContext as SettingsPageViewModel).SettingsSaved += SettingsPageViewModel_SettingsSaved;
+
+        var saveResult = await settings.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
+
+        if (saveResult != null && (bool)saveResult)
+        {
+          SavedSettings = settingsPageViewModel.Settings;
+        }
+
       }
-      catch (Exception e) 
-      { 
+      catch (Exception e)
+      {
       }
-    }
-    void SettingsPageViewModel_SettingsSaved(Object sender, EventArgs e)
-    {
-      Settings = (sender as SettingsPageViewModel).Settings;
     }
 
     private void SaveSendCommand()

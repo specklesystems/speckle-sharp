@@ -14,13 +14,15 @@ namespace DesktopUI2.ViewModels
   public class SettingViewModel : ReactiveObject
   {
     private ISetting _setting;
-    
-    public ISetting Setting { get => _setting;
+
+    public ISetting Setting
+    {
+      get => _setting;
       set
       {
         this.RaiseAndSetIfChanged(ref _setting, value);
         this.RaisePropertyChanged("Summary");
-      } 
+      }
     }
 
     public UserControl SettingView { get; private set; }
@@ -45,8 +47,8 @@ namespace DesktopUI2.ViewModels
 
     void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
-      Setting.Selection = e.SelectedItems.First().ToString();
-      this.RaisePropertyChanged("Summary");
+      // Setting.Selection = e.SelectedItems.First().ToString();
+      // this.RaisePropertyChanged("Summary");
     }
 
     #endregion
