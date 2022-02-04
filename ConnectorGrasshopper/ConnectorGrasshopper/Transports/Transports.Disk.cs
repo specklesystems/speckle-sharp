@@ -1,5 +1,5 @@
 ﻿using Grasshopper.Kernel;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -38,8 +38,8 @@ namespace ConnectorGrasshopper.Transports
 
       if (DA.Iteration == 0)
       {
-        Tracker.TrackPageview("transports", "disk");
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
+        Logging.Tracker.TrackPageview("transports", "disk");
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
       }
 
       string basePath = null;

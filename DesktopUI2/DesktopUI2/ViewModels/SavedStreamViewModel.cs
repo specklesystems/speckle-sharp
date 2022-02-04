@@ -173,14 +173,12 @@ namespace DesktopUI2.ViewModels
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
-
     }
 
     public void CopyStreamURLCommand()
     {
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Copy Link" } });
-
     }
 
     public async void SendCommand()
@@ -196,8 +194,6 @@ namespace DesktopUI2.ViewModels
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
-
-
     }
 
     public async void ReceiveCommand()

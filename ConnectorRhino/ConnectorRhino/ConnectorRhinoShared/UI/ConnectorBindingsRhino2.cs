@@ -1,11 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
-using Rhino;
-using Rhino.DocObjects;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,14 +7,24 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
+using System.Threading;
+using Timer = System.Timers.Timer;
+
+using Rhino;
+using Rhino.DocObjects;
 using Rhino.Display;
+
+using Speckle.Newtonsoft.Json;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Speckle.Core.Logging;
+
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
-using System.Threading;
-using Speckle.Core.Logging;
-using Timer = System.Timers.Timer;
 
 namespace SpeckleRhino
 {
@@ -31,7 +34,7 @@ namespace SpeckleRhino
 
     public Timer SelectionTimer;
 
-    private static string SpeckleKey = "speckle";
+    private static string SpeckleKey = "speckle2";
     private static string UserStrings = "userStrings";
     private static string UserDictionary = "userDictionary";
 
@@ -47,36 +50,24 @@ namespace SpeckleRhino
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
       if (Doc == null)
-      {
         return;
-      }
-
       var selection = GetSelectedObjects();
-      //TODO
-      //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
-      //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
     {
       if (e.Merge)
-      {
         return; // prevents triggering this on copy pastes, imports, etc.
-      }
 
-      if (e.Document == null || UpdateSavedStreams == null)
-      {
+      if (e.Document == null)
         return;
-      }
 
       var streams = GetStreamsInFile();
-      //TODO check if needed
-      //if (streams != null && streams.Count != 0)
-      //{
-      //  SpeckleRevitCommand2.CreateOrFocusSpeckle();
-      //}
-
-      UpdateSavedStreams(streams);
+      if (streams != null && streams.Count != 0)
+      {
+        SpeckleCommand2.CreateOrFocusSpeckle();
+        UpdateSavedStreams(streams);
+      }
     }
 
     #region Local streams I/O with local file
@@ -84,14 +75,19 @@ namespace SpeckleRhino
     public override List<StreamState> GetStreamsInFile()
     {
       var strings = Doc?.Strings.GetEntryNames(SpeckleKey);
+
       if (strings == null)
-      {
         return new List<StreamState>();
-      }
 
       var states = strings.Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue(SpeckleKey, s))).ToList();
-
       return states;
+    }
+
+    public override void WriteStreamsToFile(List<StreamState> streams)
+    {
+      Doc.Strings.Delete(SpeckleKey);
+      foreach (var s in streams)
+        Doc.Strings.SetString(SpeckleKey, s.StreamId, JsonConvert.SerializeObject(s));
     }
 
     #endregion
@@ -144,7 +140,6 @@ namespace SpeckleRhino
     {
       throw new NotImplementedException();
     }
-
 
     #endregion
 
@@ -741,17 +736,6 @@ namespace SpeckleRhino
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
     }
-
-    public override void WriteStreamsToFile(List<StreamState> streams)
-    {
-      Doc.Strings.Delete(SpeckleKey);
-
-      foreach (var s in streams)
-      {
-        Doc.Strings.SetString(SpeckleKey, s.StreamId, JsonConvert.SerializeObject(s));
-      }
-    }
-
 
     public override List<MenuItem> GetCustomStreamMenuItems()
     {

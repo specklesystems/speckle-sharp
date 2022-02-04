@@ -87,10 +87,10 @@ namespace Objects.Converter.ETABS
           return LineToNative(o);
           Report.Log($"Created Line {o.id}");
         case OSG.Element1D o:
-          return FrameToNative((ETABSElement1D)o);
+          return FrameToNative(o);
           Report.Log($"Created Element1D {o.id}");
         case OSG.Element2D o:
-          return AreaToNative((ETABSElement2D)o);
+          return AreaToNative(o);
           Report.Log($"Created Element2D {o.id}");
         case Model o:
           return ModelToNative(o);

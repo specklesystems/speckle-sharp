@@ -10,7 +10,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -57,8 +57,8 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Parent.Message = "Sending...";
-        Tracker.TrackPageview(Tracker.SEND_LOCAL);
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
+        Logging.Tracker.TrackPageview(Logging.Tracker.SEND_LOCAL);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
 
         var converter = (Parent as SendLocalComponent)?.Converter;
         converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);

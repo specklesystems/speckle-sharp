@@ -21,7 +21,7 @@ using Sentry.PlatformAbstractions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
@@ -285,7 +285,7 @@ namespace ConnectorGrasshopper.Ops
           return;
         }
 
-        Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
+        Logging.Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
 
         //the active document may have changed
         sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
@@ -382,7 +382,7 @@ namespace ConnectorGrasshopper.Ops
               continue;
             }
 
-            Telemetry.TrackEvent(acc, Telemetry.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
+            Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
 
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
@@ -524,7 +524,7 @@ namespace ConnectorGrasshopper.Ops
       {
 
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         //Parent.Message = "Error";
         //((SendComponent)Parent).CurrentComponentState = "expired";

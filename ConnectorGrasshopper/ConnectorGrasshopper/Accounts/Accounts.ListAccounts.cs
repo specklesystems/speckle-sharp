@@ -9,7 +9,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Special;
 using Rhino;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Accounts
 {
@@ -74,7 +74,7 @@ namespace ConnectorGrasshopper.Accounts
         index++;
       }
 
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account List" } });
+      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account List" } });
 
       if (string.IsNullOrEmpty(selectedServerUrl) && string.IsNullOrEmpty(selectedUserId))
       {
@@ -164,7 +164,7 @@ namespace ConnectorGrasshopper.Accounts
 
     public override void AddedToDocument(GH_Document document)
     {
-      Tracker.TrackPageview(Tracker.ACCOUNT_LIST);
+      Logging.Tracker.TrackPageview(Logging.Tracker.ACCOUNT_LIST);
       base.AddedToDocument(document);
       SetAccountList();
     }

@@ -80,15 +80,15 @@ namespace Speckle.Core.Api
     public string streamId { get; set; }
     public string id { get; set; }
   }
-  
-  public class CommitReceivedInput 
+
+  public class CommitReceivedInput
   {
-    public string streamId { get; set;}
-    public string commitId { get; set;}
-    public string sourceApplication { get; set;}
-    public string message { get; set;}
+    public string streamId { get; set; }
+    public string commitId { get; set; }
+    public string sourceApplication { get; set; }
+    public string message { get; set; }
   }
-  
+
   #endregion
 
   public class Stream
@@ -144,14 +144,14 @@ namespace Speckle.Core.Api
   public class Branches
   {
     public int totalCount { get; set; }
-    public DateTime cursor { get; set; }
+    public string cursor { get; set; }
     public List<Branch> items { get; set; }
   }
 
   public class Commits
   {
     public int totalCount { get; set; }
-    public object cursor { get; set; }
+    public string cursor { get; set; }
     public List<Commit> items { get; set; }
   }
 
@@ -201,7 +201,7 @@ namespace Speckle.Core.Api
   public class Streams
   {
     public int totalCount { get; set; }
-    public DateTime cursor { get; set; }
+    public string cursor { get; set; }
     public List<Stream> items { get; set; }
   }
 
@@ -238,7 +238,7 @@ namespace Speckle.Core.Api
 
   public class UserSearch
   {
-    public DateTime cursor { get; set; }
+    public string cursor { get; set; }
     public List<User> items { get; set; }
   }
 

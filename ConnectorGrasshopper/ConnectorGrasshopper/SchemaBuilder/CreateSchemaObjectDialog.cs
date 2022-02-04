@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
@@ -35,7 +35,7 @@ namespace ConnectorGrasshopper
       Padding = 5;
       Resizable = true;
 
-      types = CSOUtils.ListAvailableTypes();
+      types = CSOUtils.ListAvailableTypes(false);
       typesFiltered = types;
 
       search = new SearchBox
@@ -110,7 +110,7 @@ namespace ConnectorGrasshopper
         RecurseNamespace(type.Namespace.Split('.'), tree, type);
         //treat the type name as part of the namespace, since now we are using constructors to populate
         //out tree items
-        IncreaseCounts($"{type.Namespace}.{type.Name}", CSOUtils.GetValidConstr(type).Count());
+        IncreaseCounts($"{type.Namespace}.{type.Name}", CSOUtils.GetValidConstr(type, false).Count());
       }
 
       var item = new TreeGridItem();
@@ -133,14 +133,21 @@ namespace ConnectorGrasshopper
       }
       else
       {
-        var constructors = CSOUtils.GetValidConstr(t)
-          .ToDictionary(x => x.GetCustomAttribute<SchemaInfo>().Name, x => (object)x);
-        if (constructors.Values.Count > 1)
-          ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
-        else
+        var temp = CSOUtils.GetValidConstr(t, false);
+        try
         {
-          //simplify structure if only 1 constructor
-          ((Dictionary<string, object>)tree[key])[t.Name] = constructors.Values.First();
+          var  constructors = temp.ToDictionary(x => x.GetCustomAttribute<SchemaInfo>().Name, x => (object)x);
+          if (constructors.Values.Count > 1)
+            ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
+          else
+          {
+            //simplify structure if only 1 constructor
+            ((Dictionary<string, object>)tree[key])[t.Name] = constructors.Values.First();
+          }
+        }
+        catch (Exception e)
+        {
+          Console.WriteLine(e);
         }
 
       }

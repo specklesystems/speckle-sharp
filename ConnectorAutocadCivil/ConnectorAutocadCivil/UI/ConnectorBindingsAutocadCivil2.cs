@@ -18,8 +18,6 @@ using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
 
-using AcadApp = Autodesk.AutoCAD.ApplicationServices;
-using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
@@ -32,7 +30,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 {
   public partial class ConnectorBindingsAutocad2 : ConnectorBindings
   {
-    public Document Doc => Application.DocumentManager.MdiActiveDocument;
+    public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
@@ -156,9 +154,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       if (Doc == null)
       {
@@ -178,8 +174,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
-
-      var commitObject = await Operations.Receive(
+      Base commitObject = null;
+      try
+      {
+        commitObject = await Operations.Receive(
         referencedObject,
         progress.CancellationTokenSource.Token,
         transport,
@@ -193,8 +191,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         disposeTransports: true
         );
       
-      try
-      {
         await state.Client.CommitReceived(new CommitReceivedInput
         {
           streamId = stream?.id,
@@ -203,14 +199,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
           sourceApplication = Utils.AutocadAppName
         });
       }
-      catch
+      catch(Exception e)
       {
-        // Do nothing!
+        progress.Report.OperationErrors.Add(new Exception($"Could not receive or deserialize commit: {e.Message}"));
       }
-      if (progress.Report.OperationErrorsCount != 0)
-      {
+      if (progress.Report.OperationErrorsCount != 0 || commitObject == null)
         return state;
-      }
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
@@ -248,7 +242,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.BranchName, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", commitPrefix);
+          if (Doc.UserData.ContainsKey("commit"))
+            Doc.UserData["commit"] = commitPrefix;
+          else
+            Doc.UserData.Add("commit", commitPrefix);
 
           // delete existing commit layers
           try
@@ -282,7 +279,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
             // create the object's bake layer if it doesn't already exist
             (Base obj, string layerName) = commitObj;
 
-            var converted = converter.ConvertToNative(obj);
+            object converted = null;
+            try
+            {
+              converted = converter.ConvertToNative(obj);
+            }
+            catch (Exception e)
+            {
+              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}: {e.Message}"));
+              continue;
+            }
             var convertedEntity = converted as Entity;
 
             if (convertedEntity != null)
@@ -684,6 +690,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region events
+    public void RegisterAppEvents()
+    {
+      //// GLOBAL EVENT HANDLERS
+      Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
+      Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
+      Doc.BeginDocumentClose += Application_DocumentClosed;
+    }
+
+    //checks whether to refresh the stream list in case the user changes active view and selects a different document
+    private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
+    {
+      if (e.DocumentWindow.Document == null)
+        return;
+
+      var streams = GetStreamsInFile();
+      UpdateSavedStreams(streams);
+    }
 
     private void Application_DocumentClosed(object sender, DocumentBeginCloseEventArgs e)
     {
@@ -698,11 +721,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
     private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
     {
       // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+      if (e.Document == null)
+        return;
+
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
+      {
         SpeckleAutocadCommand2.CreateOrFocusSpeckle();
-
-      UpdateSavedStreams(streams);
+        UpdateSavedStreams(streams);
+      }
     }
     #endregion
   }

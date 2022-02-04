@@ -8,7 +8,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -55,8 +55,8 @@ namespace ConnectorGrasshopper.Objects
 
         if (DA.Iteration == 0)
         {
-          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Expand Object" } });
-          Tracker.TrackPageview("objects", "expand");
+          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Expand Object" } });
+          Logging.Tracker.TrackPageview("objects", "expand");
         }
 
 
@@ -241,7 +241,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         return null;
       }
