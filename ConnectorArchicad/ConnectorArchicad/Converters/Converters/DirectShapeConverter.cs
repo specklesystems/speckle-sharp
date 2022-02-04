@@ -22,13 +22,12 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var directShapes = elements.OfType<Objects.BuiltElements.Archicad.DirectShape>();
-
-      var elementModelDatas = (from directShape in directShapes
-        let polygons = directShape.displayValue
+      var elementModelDatas = (from directShape in elements
+        let polygons = (List<Mesh>)directShape["displayValue"] ??
+          (directShape is Mesh mesh ? new List<Mesh>() { mesh } : null)
         where polygons is not null select new Model.ElementModelData
         {
-          elementId = directShape.ElementId,
+          elementId = (string)directShape["ElementId"] ?? string.Empty,
             model = ModelConverter.MeshToNative(polygons)
         }).ToList();
 

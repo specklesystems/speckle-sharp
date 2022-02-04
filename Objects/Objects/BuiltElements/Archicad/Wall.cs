@@ -38,5 +38,12 @@ namespace Objects.BuiltElements.Archicad
 		public int? profileIndex { get; set; }
 
 		public Wall() { }
+
+		public Wall(Point startPoint, Point endPoint, double height)
+		{
+			this.startPoint = startPoint;
+			this.endPoint = endPoint;
+			this.height = height;
+		}
 	}
 }

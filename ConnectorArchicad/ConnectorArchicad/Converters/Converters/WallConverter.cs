@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects.Geometry;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Archicad.Converters
@@ -14,7 +13,7 @@ namespace Archicad.Converters
   {
     #region --- Properties ---
 
-    public Type Type => typeof(Objects.BuiltElements.Archicad.Wall);
+    public Type Type => typeof(Objects.BuiltElements.Wall);
 
     #endregion
 
@@ -22,7 +21,22 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var walls = elements.OfType<Objects.BuiltElements.Archicad.Wall>();
+      var walls = new List<Objects.BuiltElements.Archicad.Wall>();
+      foreach (var el in elements)
+      {
+        switch (el)
+        {
+          case Objects.BuiltElements.Archicad.Wall archiWall:
+            walls.Add(archiWall);
+            break;
+          case Objects.BuiltElements.Wall wall:
+            {
+              var baseLine = (Line)wall.baseLine;
+              walls.Add(new Objects.BuiltElements.Archicad.Wall(Utils.ScaleToNative(baseLine.start), Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units)));
+              break;
+            }
+        }
+      }
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token);
 
       return result is null ? new List<string>() : result.ToList();

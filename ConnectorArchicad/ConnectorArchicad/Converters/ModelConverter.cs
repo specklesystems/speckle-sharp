@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Archicad.Converters;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -18,9 +20,11 @@ namespace Archicad.Operations
 
     public static Model.MeshModel MeshToNative(Mesh mesh)
     {
+      var conversionFactor = Units.GetConversionFactor(mesh.units, Units.Meters);
+
       return new Model.MeshModel
       {
-        vertices = mesh.GetPoints().Select(p => new Model.MeshModel.Vertex { x = p.x, y = p.y, z = p.z }).ToList(),
+        vertices = mesh.GetPoints().Select(p => Utils.PointToNative(p)).ToList(),
           polygons = ConvertPolygon(mesh.faces)
       };
     }
@@ -28,14 +32,15 @@ namespace Archicad.Operations
     public static Model.MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
       Model.MeshModel meshModel = new Model.MeshModel();
-
-      foreach (Mesh mesh in meshes)
+      var enumerable = meshes as Mesh[ ] ?? meshes.ToArray();
+      Console.WriteLine($">>> in mesh to native - converting {enumerable.Count()} meshes");
+      foreach (Mesh mesh in enumerable)
       {
         int vertexOffset = meshModel.vertices.Count;
         List<Model.MeshModel.Polygon> polygons = ConvertPolygon(mesh.faces);
         polygons.ForEach(p => p.pointIds = p.pointIds.Select(l => l + vertexOffset).ToList());
 
-        meshModel.vertices.AddRange(mesh.GetPoints().Select(p => new Model.MeshModel.Vertex { x = p.x, y = p.y, z = p.z }));
+        meshModel.vertices.AddRange(mesh.GetPoints().Select(p => Utils.PointToNative(p)));
         meshModel.polygons.AddRange(polygons);
       }
 
