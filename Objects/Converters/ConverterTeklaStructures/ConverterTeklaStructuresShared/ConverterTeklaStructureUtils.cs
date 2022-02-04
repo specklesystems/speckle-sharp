@@ -352,6 +352,18 @@ namespace Objects.Converter.TeklaStructures
 
     }
 
+    public Polygon ToNativePolygon(Polyline polyline){
+      var coordinates = polyline.value;
+      var polygon = new Polygon();
+      for(int j = 0; j <coordinates.Count; j++ ){
+      if(j%3 == 0){
+          var point = new TSG.Point(coordinates[j], coordinates[j + 1], coordinates[j + 2]);
+          polygon.Points.Add(point);
+      }
+      }
+
+      return polygon;
+    }
     public Polyline ToSpecklePolyline(Tekla.Structures.Model.Polygon polygon)
     {
       List<double> coordinateList = new List<double>();

@@ -9,6 +9,7 @@ using Objects.BuiltElements.TeklaStructures;
 using System.Linq;
 using Tekla.Structures.Model;
 using Tekla.Structures.Solid;
+using TSG  = Tekla.Structures.Geometry3d;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
 
@@ -17,7 +18,25 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures
   {
   public void BeamToNative(BE.Beam beam){
-      var TeklaBeam = new Beam();
+      if(!(beam.baseLine is Line)){
+      }
+      Line line = (Line)beam.baseLine;
+      TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
+      TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+      Beam myBeam = new Beam(startPoint, endPoint);
+
+      if(beam is TeklaBeam){
+        var teklaBeam = (TeklaBeam)beam;
+        myBeam.Material.MaterialString = teklaBeam.material.name;
+        myBeam.Profile.ProfileString = teklaBeam.profile.name;
+        myBeam.Class = teklaBeam.classNumber;
+        myBeam.Finish = teklaBeam.finish;
+        myBeam.Name = teklaBeam.name;
+
+      }
+      myBeam.Insert();
+      Model.CommitChanges();
+
       //return TeklaBeam;
   }
     public BE.Beam BeamToSpeckle(Tekla.Structures.Model.Beam beam)

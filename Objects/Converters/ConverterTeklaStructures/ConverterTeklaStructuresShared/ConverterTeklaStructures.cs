@@ -54,13 +54,16 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToNative(Base @object)
     {
-      return true;
-      //return @object
-      //  switch
-      //{
-      //  //geometry
-      //  BE.Beam _ => true,
-      //};
+      switch (@object)
+      {
+        case BE.Beam b:
+          return true;
+        case BE.Area a:
+          return true;
+        default:
+          return false;
+          //_ => (@object as ModelObject).IsElementSupported()
+      };
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -90,6 +93,11 @@ namespace Objects.Converter.TeklaStructures
     {
       switch (@object)
       {
+        case BE.Beam o:
+          BeamToNative(o);
+          return true;
+        case BE.Area o:
+          return true;
         default:
           return false;
       }

@@ -33,34 +33,27 @@ namespace Speckle.ConnectorTeklaStructures.UI
       if (Model != null)
       {
         var phaseCollection = Model.GetPhases();
-        foreach(Phase p in phaseCollection){
+        foreach (Phase p in phaseCollection)
+        {
           phases.Add(p.PhaseName);
         }
+  
         //selectionCount = Model.Selection.GetElementIds().Count();
-        //categories = ConnectorTeklaStructuresUtils.GetCategoryNames(Model);
+        categories = ConnectorTeklaStructuresUtils.GetCategoryNames(Model);
         //parameters = ConnectorTeklaStructuresUtils.GetParameterNames(Model);
         //views = ConnectorTeklaStructuresUtils.GetViewNames(Model);
       }
       return new List<ISelectionFilter>()
             {
             new ManualSelectionFilter(),
-            //new ListSelectionFilter {Slug="type", Name = "Categories",
-            //    Icon = "Category", Values = objectTypes,
-            //    Description="Adds all objects belonging to the selected types"},
-        //new PropertySelectionFilter{
-        //  Slug="param",
-        //  Name = "Param",
-        //  Description="Adds  all objects satisfying the selected parameter",
-        //  Icon = "FilterList",
-        //  HasCustomProperty = false,
-        //  Values = objectNames,
-        //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        //},
-          new ListSelectionFilter {Slug="phase", Name = "Phases",
-            Icon = "SelectGroup", Values = phases,
-            Description="Adds all objects belonging to the selected phase"},
-          new AllSelectionFilter {Slug="all",  Name = "All",
-              Icon = "CubeScan", Description = "Selects all document objects." },
+            new ListSelectionFilter {Slug="type", Name = "Categories",
+                Icon = "Category", Values = categories,
+                Description="Adds all objects belonging to the selected types"},
+            new ListSelectionFilter {Slug="phase", Name = "Phases",
+              Icon = "SelectGroup", Values = phases,
+              Description="Adds all objects belonging to the selected phase"},
+            new AllSelectionFilter {Slug="all",  Name = "All",
+                Icon = "CubeScan", Description = "Selects all document objects." },
 
             };
     }
@@ -98,21 +91,37 @@ namespace Speckle.ConnectorTeklaStructures.UI
         case "phase":
           var phaseFilter = filter as ListSelectionFilter;
           myEnum = Model.GetModelObjectSelector().GetAllObjects();
-          while(myEnum.MoveNext())
+          while (myEnum.MoveNext())
           {
             foreach (var phase in phaseFilter.Selection)
             {
               Phase phaseTemp = new Phase();
               myEnum.Current.GetPhase(out phaseTemp);
-              if(phaseTemp.PhaseName == phase){
+              if (phaseTemp.PhaseName == phase)
+              {
                 selection.Add(myEnum.Current);
               }
             }
           }
 
-
-
           return selection;
+        case "type":
+          var catFilter = filter as ListSelectionFilter;
+          var categories = ConnectorTeklaStructuresUtils.GetCategories(Model);
+
+          foreach (var cat in catFilter.Selection)
+          {
+              if(categories.ContainsKey(cat)){
+              myEnum = Model.GetModelObjectSelector().GetAllObjectsWithType(categories[cat]);
+              while (myEnum.MoveNext())
+              {
+                selection.Add(myEnum.Current);
+              }
+            }
+          }
+          return selection;
+
+
       }
 
       return selection;
