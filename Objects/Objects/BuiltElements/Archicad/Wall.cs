@@ -19,12 +19,7 @@ namespace Objects.BuiltElements.Archicad
 
 		public Point endPoint { get; set; }
 
-		[JsonIgnore]
-		public new ICurve baseLine => new Line(startPoint, endPoint, startPoint.units ?? Units.Meters);
-
 		public double? arcAngle { get; set; }
-
-		public double? height { get; set; }
 
 		public string structure { get; set; }
 

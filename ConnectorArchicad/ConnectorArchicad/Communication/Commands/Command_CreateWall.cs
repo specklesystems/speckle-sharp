@@ -36,7 +36,10 @@ namespace Archicad.Communication.Commands
     public CreateWall(IEnumerable<Wall> datas)
     {
       foreach (var data in datas)
+      {
         data.displayValue = null;
+        data.baseLine = null;
+      }
 
       Datas = datas;
     }

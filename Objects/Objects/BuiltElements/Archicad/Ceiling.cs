@@ -9,9 +9,6 @@ namespace Objects.BuiltElements.Archicad
   {
     public ElementShape shape { get; set; }
 
-    [JsonIgnore]
-    public new ICurve outline => shape.contourPolyline;
-
     public string elementId { get; set; } = string.Empty;
 
     public int? floorIndex { get; set; }
