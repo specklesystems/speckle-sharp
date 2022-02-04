@@ -120,27 +120,18 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _availableFilters, value);
     }
 
-    private List<SettingViewModel> _savedSettings;
-    public List<SettingViewModel> SavedSettings
-    {
-      get => _savedSettings;
-      private set
-      {
-        this.RaiseAndSetIfChanged(ref _savedSettings, value);
-      }
-    }
 
-    private List<ISetting> _availableSettings;
-    public List<ISetting> AvailableSettings
+    private List<ISetting> _settings;
+    public List<ISetting> Settings
     {
-      get => _availableSettings;
+      get => _settings;
       private set
       {
-        this.RaiseAndSetIfChanged(ref _availableSettings, value);
+        this.RaiseAndSetIfChanged(ref _settings, value);
         this.RaisePropertyChanged("HasSettings");
       }
     }
-    public bool HasSettings => AvailableSettings != null && AvailableSettings.Any();
+    public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
     #endregion
@@ -184,8 +175,7 @@ namespace DesktopUI2.ViewModels
       SelectedFilter = AvailableFilters[0];
 
       //get available settings from our bindings
-      AvailableSettings = Bindings.GetSettings();
-
+      Settings = Bindings.GetSettings();
 
       IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
@@ -231,7 +221,7 @@ namespace DesktopUI2.ViewModels
         _streamState.CommitId = SelectedCommit.id;
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
-      _streamState.Settings = SavedSettings.Select(o => o.Setting).ToList();
+      _streamState.Settings = Settings.Select(o => o).ToList();
       return _streamState;
     }
 
@@ -343,17 +333,21 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        var settings = new Settings();
-        settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        var settingsPageViewModel = new SettingsPageViewModel(SavedSettings);
-        settings.DataContext = settingsPageViewModel;
-        settings.Title = $"Settings for {Stream.name}";
+        var settingsWindow = new Settings();
+        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-        var saveResult = await settings.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
+        // Not doing this causes Avalonia to throw an error about the owner being already set on the Setting View UserControl
+        Settings.ForEach(x => x.ResetView());
+
+        var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
+        settingsWindow.DataContext = settingsPageViewModel;
+        settingsWindow.Title = $"Settings for {Stream.name}";
+
+        var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
 
         if (saveResult != null && (bool)saveResult)
         {
-          SavedSettings = settingsPageViewModel.Settings;
+          Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
         }
 
       }

@@ -11,9 +11,6 @@ namespace DesktopUI2.ViewModels
 {
   public class SettingsPageViewModel : ReactiveObject
   {
-    private ConnectorBindings Bindings;
-
-
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
     {
@@ -21,43 +18,9 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _settings, value);
     }
 
-    public SettingsPageViewModel(List<SettingViewModel> savedSettings)
+    public SettingsPageViewModel(List<SettingViewModel> settings)
     {
-      //use dependency injection to get bindings
-      Bindings = Locator.Current.GetService<ConnectorBindings>();
-
-      //get available settings from our bindings
-      Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
-
-
-      if (savedSettings != null)
-      {
-        foreach (var savedSetting in savedSettings)
-        {
-
-          var s = Settings.FirstOrDefault(x => x.Setting.Slug == savedSetting.Setting.Slug);
-          if (s != null)
-          {
-            if (s.Setting is ListBoxSetting lbs)
-            {
-              try
-              {
-                var i = lbs.Values.IndexOf(savedSetting.Setting.Selection);
-                s.SelectionModel.Select(i);
-                //s.Setting.Selection = savedSetting.Setting.Selection;
-              }
-              catch (Exception e)
-              {
-
-              }
-            }
-
-
-          }
-
-
-        }
-      }
+      Settings = settings;
     }
 
     public void SaveCommand(Window window)

@@ -14,7 +14,7 @@
 			<ComboBox
         HorizontalAlignment="Stretch"
         Items="{Binding Setting.Values}"
-        Selection="{Binding Setting.SelectionModel}" />
+        SelectedItem="{Binding Selection}" />
 			<TextBlock Text="{Binding Setting.Summary}" />
 		</StackPanel>
 	</Grid>

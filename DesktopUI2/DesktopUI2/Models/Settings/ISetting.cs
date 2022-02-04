@@ -46,5 +46,11 @@ namespace DesktopUI2.Models.Settings
     /// View associated to this setting type
     /// </summary>    
     UserControl View { get; set; }
+
+    /// <summary>
+    /// Method to restore the View if this object is reused
+    /// </summary>
+    void ResetView();
+
   }
 }
