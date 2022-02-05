@@ -19,12 +19,15 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures
   {
 
-  public void SetUnits(string units){
+    public void SetUnits(string units)
+    {
 
-  }
-  public string GetUnitsFromModel(){
+    }
+    public string GetUnitsFromModel()
+    {
       var unit = Distance.CurrentUnitType;
-      switch(unit){
+      switch (unit)
+      {
         case Distance.UnitType.Millimeter:
           return "mm";
         case Distance.UnitType.Centimeter:
@@ -41,7 +44,7 @@ namespace Objects.Converter.TeklaStructures
       }
 
 
-  }
+    }
     public Mesh GetMeshFromSolid(Solid solid)
     {
       List<double> MyList = new List<double> { };
@@ -352,17 +355,23 @@ namespace Objects.Converter.TeklaStructures
 
     }
 
-    public Polygon ToNativePolygon(Polyline polyline){
+    public void ToNativePolygon(Polyline polyline,Contour contour)
+    {
       var coordinates = polyline.value;
       var polygon = new Polygon();
-      for(int j = 0; j <coordinates.Count; j++ ){
-      if(j%3 == 0){
-          var point = new TSG.Point(coordinates[j], coordinates[j + 1], coordinates[j + 2]);
-          polygon.Points.Add(point);
-      }
+      for (int j = 0; j < coordinates.Count; j++)
+      {
+        if (j % 3 == 0)
+        {
+          var  point = new ContourPoint();
+          point.X = coordinates[j];
+          point.Y = coordinates[j + 1];
+          point.Z = coordinates[j + 2];
+
+          contour.AddContourPoint(point);
+        }
       }
 
-      return polygon;
     }
     public Polyline ToSpecklePolyline(Tekla.Structures.Model.Polygon polygon)
     {
@@ -376,7 +385,7 @@ namespace Objects.Converter.TeklaStructures
         coordinateList.Add(pt.Z);
       }
 
-      var specklePolyline = new Polyline(coordinateList,units);
+      var specklePolyline = new Polyline(coordinateList, units);
       return specklePolyline;
     }
     //public static bool IsElementSupported(this ModelObject e)

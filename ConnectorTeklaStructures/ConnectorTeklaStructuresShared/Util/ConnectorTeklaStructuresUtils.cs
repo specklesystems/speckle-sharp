@@ -20,47 +20,29 @@ namespace Speckle.ConnectorTeklaStructures.Util
 
     public List<SpeckleException> ConversionErrors { get; set; }
 
-    public static void GetObjectIDsTypesAndNames(Model model)
+    private static Dictionary<string, ModelObject.ModelObjectEnum> _categories { get; set; }
+
+    public static Dictionary<string, ModelObject.ModelObjectEnum> GetCategories(Model model)
     {
-      ObjectIDsTypesAndNames = new Dictionary<string, (string, string)>();
-      foreach (var objectType in Enum.GetNames(typeof(TeklaStructuresAPIUsableTypes)))
+      if (_categories == null)
       {
-        var names = new List<string>();
-        try
+        _categories = new Dictionary<string, ModelObject.ModelObjectEnum>();
+        foreach (var bic in SupportedBuiltInCategories)
         {
-          names = GetAllNamesOfObjectType(model, objectType);
-        }
-        catch { }
-        if (names.Count > 0)
-        {
-          foreach (string name in names)
-          {
-            ObjectIDsTypesAndNames.Add(string.Concat(objectType, ": ", name), (objectType, name));
-          }
+          var category = model.GetModelObjectSelector().GetAllObjectsWithType(bic);
+          if (category == null)
+            continue;
+            _categories.Add(bic.ToString(),bic);
         }
       }
+      return _categories;
     }
 
-    public static bool IsTypeTeklaStructuresAPIUsable(string type)
-    {
-      return Enum.GetNames(typeof(TeklaStructuresAPIUsableTypes)).Contains(type);
-    }
-
-    public static List<string> GetAllNamesOfObjectType(Model model, string objectType)
-    {
-      switch (objectType)
-      {
-
-
-        default:
-          return null;
-      }
-    }
     #region Get List Names
 
-    public static List<string> GetAllBeams(){
-      List<string> identifiers = new List<string> { };
-      return identifiers;
+    public static List<string> GetCategoryNames(Model model)
+    {
+      return GetCategories(model).Keys.OrderBy(x => x).ToList();
     }
     #endregion
 
@@ -68,27 +50,5 @@ namespace Speckle.ConnectorTeklaStructures.Util
     {
       ModelObject.ModelObjectEnum.BEAM
     };
-    public enum TeklaStructuresAPIUsableTypes
-    {
-      Beam = ModelObject.ModelObjectEnum.BEAM,
-
-
-      //ColumnResults,
-      //BeamResults,
-      //BraceResults,
-      //PierResults,
-      //SpandrelResults,
-      //AnalysisResults
-    }
-
-    /// <summary>
-    /// same as ObjectType in TeklaStructures cSelect.GetSelected API function
-    /// </summary>
-    public enum TeklaStructuresViewSelectableTypes
-    {
-      Point = 1,
-      Frame = 2,
-      Area = 4
-    }
   }
 }
