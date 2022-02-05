@@ -181,6 +181,7 @@ namespace Speckle.Core.Kits
       {
         case "mm":
         case "mil":
+        case "millimeter":
         case "millimeters":
         case "millimetres":
           return Units.Millimeters;
@@ -213,6 +214,7 @@ namespace Speckle.Core.Kits
         case "mi":
           return Units.Miles;
         case "kilometers":
+        case "kilometer":
         case "km":
           return Units.Kilometers;
         case "none":
