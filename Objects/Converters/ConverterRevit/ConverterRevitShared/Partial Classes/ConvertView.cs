@@ -149,12 +149,17 @@ namespace Objects.Converter.Revit
       // append commit info as prefix
       if (prefix != null)
         name = prefix + "-" + name;
-
+      
       // replace or remove all invalid chars
+      name = name.Replace("{", "");
+      name = name.Replace("[", "");
+      name = name.Replace("]", "");
+      name = name.Replace("}", "");
+      name = name.Replace("-", "   ");
       var replaceOpen = Replace(name, new char[] { '{', '[' }, "(");
       var replaceClose = Replace(replaceOpen, new char[] { '}', ']' }, ")");
       var cleanName = Replace(replaceClose, new char[] { '\\', ':', '|', ';', '<', '>', '?', '`', '~' }, "");
-      return cleanName;
+      return name;
     }
   }
 }
