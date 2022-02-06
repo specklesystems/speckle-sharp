@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -364,7 +365,15 @@ namespace Objects.Converter.Revit
               break;
 
             case StorageType.String:
-              rp.Set(Convert.ToString(sp.value));
+              if (rp.Definition.Name.ToLower().Contains("name"))
+              {
+                var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
+                rp.Set(temp);
+              }
+              else
+              {
+                rp.Set(Convert.ToString(sp.value));
+              }
               break;
             default:
               break;
@@ -509,7 +518,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        throw new Speckle.Core.Logging.SpeckleException($"Could not find any type symbol to use for family {nameof(T)}.");
+        throw new Speckle.Core.Logging.SpeckleException($"{element.id}: Could not find any type symbol to use for family {nameof(T)}.");
       }
 
       var family = element["family"] as string;
