@@ -159,7 +159,6 @@ namespace Speckle.ConnectorRevit
         return _cachedParameters;
       }
       return GetParameterNamesAsync(doc).Result;
-
     }
 
     private async static Task<List<string>> GetViewNamesAsync(Document doc)
@@ -187,7 +186,6 @@ namespace Speckle.ConnectorRevit
         return _cachedViews;
       }
       return GetViewNamesAsync(doc).Result;
-
     }
 
     public static bool IsPhysicalElement(this Element e)
@@ -208,7 +206,6 @@ namespace Speckle.ConnectorRevit
         return true;
       return false;
     }
-
 
     //list of currently supported Categories (for sending only)
     //exact copy of the one in the ConverterRevitShared.Categories

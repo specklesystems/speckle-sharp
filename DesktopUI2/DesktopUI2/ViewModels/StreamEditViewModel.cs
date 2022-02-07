@@ -120,7 +120,6 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _availableFilters, value);
     }
 
-
     private List<ISetting> _settings;
     public List<ISetting> Settings
     {

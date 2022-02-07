@@ -19,17 +19,22 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
+    // CAUTION: these strings need to have the same values as in the converter
+    const string InternalOrigin = "Internal Origin (default)";
+    const string ProjectBase = "Project Base";
+    const string Survey = "Survey";
+
     public override List<ISetting> GetSettings()
     {
-      List<string> referencePoints = new List<string>() { "Internal Origin (default)" };
+      List<string> referencePoints = new List<string>() { InternalOrigin };
 
       // find project base point and survey point. these don't always have name props, so store them under custom strings
       var basePoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
       if (basePoint != null)
-        referencePoints.Add("Project Base Point");
+        referencePoints.Add(ProjectBase);
       var surveyPoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == true).FirstOrDefault();
       if (surveyPoint != null)
-        referencePoints.Add("Survey Point");
+        referencePoints.Add(Survey);
 
       return new List<ISetting>
       {
