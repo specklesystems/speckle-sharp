@@ -201,7 +201,7 @@ namespace DesktopUI2.ViewModels
       }
       if (streamState.Settings != null)
       {
-        foreach (var setting in streamState.Settings)
+        foreach (var setting in Settings)
         {
           var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
           if (savedSetting != null)
