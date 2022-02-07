@@ -41,7 +41,9 @@
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
+    <None Remove="Views\Settings\ListBoxSettingView.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
+    <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Playground.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
@@ -116,7 +118,13 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Settings.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
@@ -173,6 +181,9 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
+      <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Report.xaml.cs">
       <DependentUpon>Report.xaml</DependentUpon>

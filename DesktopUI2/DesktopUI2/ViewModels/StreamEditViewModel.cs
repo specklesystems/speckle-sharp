@@ -4,7 +4,9 @@ using Avalonia.Data;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Windows;
 using Material.Dialog;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -81,8 +83,6 @@ namespace DesktopUI2.ViewModels
           else
             PreviewImageUrl = _streamState.Client.Account.serverInfo.url + $"/preview/{_streamState.StreamId}/commits/{_selectedCommit.id}";
         }
-
-
       }
     }
 
@@ -96,7 +96,6 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasCommits");
       }
     }
-
 
     private FilterViewModel _selectedFilter;
     public FilterViewModel SelectedFilter
@@ -114,14 +113,25 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
-    private List<FilterViewModel> _filters;
-    public List<FilterViewModel> Filters
+    private List<FilterViewModel> _availableFilters;
+    public List<FilterViewModel> AvailableFilters
     {
-      get => _filters;
-      private set => this.RaiseAndSetIfChanged(ref _filters, value);
+      get => _availableFilters;
+      private set => this.RaiseAndSetIfChanged(ref _availableFilters, value);
     }
 
+
+    private List<ISetting> _settings;
+    public List<ISetting> Settings
+    {
+      get => _settings;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _settings, value);
+        this.RaisePropertyChanged("HasSettings");
+      }
+    }
+    public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
     #endregion
@@ -161,10 +171,13 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       //get available filters from our bindings
-      Filters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
-      SelectedFilter = Filters[0];
-      IsReceiver = streamState.IsReceiver;
+      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
+      SelectedFilter = AvailableFilters[0];
 
+      //get available settings from our bindings
+      Settings = Bindings.GetSettings();
+
+      IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
     }
 
@@ -182,9 +195,18 @@ namespace DesktopUI2.ViewModels
 
       if (streamState.Filter != null)
       {
-        SelectedFilter = Filters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
+        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
         if (SelectedFilter != null)
           SelectedFilter.Filter = streamState.Filter;
+      }
+      if (streamState.Settings != null)
+      {
+        foreach (var setting in Settings)
+        {
+          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
+          if (savedSetting != null)
+            setting.Selection = savedSetting.Selection;
+        }
       }
     }
 
@@ -199,6 +221,7 @@ namespace DesktopUI2.ViewModels
         _streamState.CommitId = SelectedCommit.id;
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
+      _streamState.Settings = Settings.Select(o => o).ToList();
       return _streamState;
     }
 
@@ -246,7 +269,6 @@ namespace DesktopUI2.ViewModels
         System.Diagnostics.Debug.WriteLine(ex);
         PreviewImageUrl = null; // Could not download...
       }
-
     }
 
     #region commands
@@ -305,6 +327,33 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = false;
       //TODO: display other dialog if operation failed etc
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+    }
+
+    private async void OpenSettingsCommand()
+    {
+      try
+      {
+        var settingsWindow = new Settings();
+        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+        // Not doing this causes Avalonia to throw an error about the owner being already set on the Setting View UserControl
+        Settings.ForEach(x => x.ResetView());
+
+        var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
+        settingsWindow.DataContext = settingsPageViewModel;
+        settingsWindow.Title = $"Settings for {Stream.name}";
+
+        var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
+
+        if (saveResult != null && (bool)saveResult)
+        {
+          Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
+        }
+
+      }
+      catch (Exception e)
+      {
+      }
     }
 
     private void SaveSendCommand()

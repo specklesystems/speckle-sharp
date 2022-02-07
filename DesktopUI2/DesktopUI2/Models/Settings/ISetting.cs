@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DesktopUI2.Models.Filters
+namespace DesktopUI2.Models.Settings
 {
-  public interface ISelectionFilter
+  public interface ISetting
   {
     /// <summary>
     /// User friendly name displayed in the UI
@@ -18,7 +18,7 @@ namespace DesktopUI2.Models.Filters
     string Icon { get; set; }
 
     /// <summary>
-    /// Internal filter name 
+    /// Internal setting name 
     /// </summary>
     string Slug { get; set; }
 
@@ -28,23 +28,29 @@ namespace DesktopUI2.Models.Filters
     string Type { get; }
 
     /// <summary>
-    /// Shoud return a succint summary of the filter: what does it contain inside?
+    /// Shoud return a succint summary of the setting: what does it contain inside?
     /// </summary>
     string Summary { get; }
 
     /// <summary>
-    /// Should contain a generic description of the filter and how it works.
+    /// Should contain a generic description of the setting and what it changes.
     /// </summary>
     string Description { get; set; }
 
     /// <summary>
-    /// Holds the values that the user selected from the filter. Not the actual objects.
+    /// Holds the value that the user selected from the setting.
     /// </summary>    
-    List<string> Selection { get; set; }
+    string Selection { get; set; }
 
     /// <summary>
-    /// View associated to this filter type
+    /// View associated to this setting type
     /// </summary>    
     UserControl View { get; set; }
+
+    /// <summary>
+    /// Method to restore the View if this object is reused
+    /// </summary>
+    void ResetView();
+
   }
 }

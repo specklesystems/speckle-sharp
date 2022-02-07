@@ -161,7 +161,6 @@ namespace Speckle.ConnectorRevit.UI
         {
           CurrentDoc.Document.Delete(element.Id);
         }
-
       }
     }
 

@@ -11,6 +11,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using ReactiveUI;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 
 namespace DesktopUI2.Models
 {
@@ -100,6 +101,8 @@ namespace DesktopUI2.Models
 
     //[JsonProperty]
     public ISelectionFilter Filter { get; set; }
+
+    public List<ISetting> Settings { get; set; }
 
     //List of uniqueids of the currently selected objects
     //the values are updated only upon sending

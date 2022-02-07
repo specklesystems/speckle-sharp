@@ -79,7 +79,6 @@
     </Grid>
     <TabControl Grid.Row="1" SelectedIndex="{Binding IsReceiver}">
 
-
       <TabItem>
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
@@ -101,8 +100,6 @@
         </TabItem.Header>
         <uc:Send IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" />
       </TabItem>
-
-
 
       <TabItem>
         <TabItem.Header>

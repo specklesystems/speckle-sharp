@@ -14,6 +14,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
@@ -127,6 +128,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
         new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
         new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
       };
+    }
+
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
     }
 
     //TODO

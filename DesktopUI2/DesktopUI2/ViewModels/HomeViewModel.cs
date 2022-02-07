@@ -13,7 +13,9 @@ using Avalonia.Input;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Windows;
 using Material.Dialog;
 using Material.Dialog.Views;
 using ReactiveUI;
@@ -170,7 +172,6 @@ namespace DesktopUI2.ViewModels
       this.RaisePropertyChanged("HasSavedStreams");
       SelectedTab = 1;
 
-
       //for save&send and save&receive
       if (send)
         savedState.SendCommand();
@@ -178,7 +179,6 @@ namespace DesktopUI2.ViewModels
       if (receive)
         savedState.ReceiveCommand();
     }
-
 
     private async Task GetStreams()
     {
@@ -197,8 +197,6 @@ namespace DesktopUI2.ViewModels
       {
         InProgress = false;
       }
-
-
     }
 
     private async Task SearchStreams()
@@ -225,7 +223,6 @@ namespace DesktopUI2.ViewModels
       {
         InProgress = false;
       }
-
     }
 
     internal void Init()
@@ -488,7 +485,6 @@ namespace DesktopUI2.ViewModels
       }
       catch { return new Tuple<bool, string>(false, "URL is not a Stream."); }
 
-
       return new Tuple<bool, string>(true, "");
     }
 
@@ -499,7 +495,6 @@ namespace DesktopUI2.ViewModels
 
       if (name.Trim().Length < 3)
         return new Tuple<bool, string>(false, "Name is too short.");
-
 
       return new Tuple<bool, string>(true, "");
     }

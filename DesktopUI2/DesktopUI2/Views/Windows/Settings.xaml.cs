@@ -2,23 +2,17 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using DesktopUI2.ViewModels;
+using System;
 using System.Diagnostics;
 
 namespace DesktopUI2.Views.Windows
 {
-  public partial class Report : Window
+  public partial class Settings : Window
   {
-    public Report()
+    public Settings()
     {
       AvaloniaXamlLoader.Load(this);
-#if DEBUG
-      this.AttachDevTools();
-#endif
-    }
-
-    private void Close_Click(object sender, RoutedEventArgs e)
-    {
-      this.Close();
     }
   }
 }

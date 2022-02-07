@@ -25,6 +25,10 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
+using System.Threading;
+using Speckle.Core.Logging;
+using Timer = System.Timers.Timer;
 
 namespace SpeckleRhino
 {
@@ -136,6 +140,19 @@ namespace SpeckleRhino
       };
     }
 
+    public override List<ISetting> GetSettings()
+    {
+      /*
+      var referencePoints = new List<string>() { "Internal Origin (default)" };
+      referencePoints.AddRange(Doc.NamedConstructionPlanes.Select(o => o.Name).ToList());
+      return new List<ISetting>()
+      {
+        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Receives stream objects in relation to this document point"}
+      };
+      */
+      return new List<ISetting>();
+    }
+
     public override void SelectClientObjects(string args)
     {
       throw new NotImplementedException();
@@ -208,7 +225,6 @@ namespace SpeckleRhino
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-
 
       // get commit layer name 
       var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, state.CommitId);
