@@ -633,6 +633,11 @@ namespace Objects.Converter.Revit
 
     #region Reference Point
 
+    // CAUTION: these strings need to have the same values as in the connector bindings
+    const string InternalOrigin = "Internal Origin (default)";
+    const string ProjectBase = "Project Base";
+    const string Survey = "Survey";
+
     private DB.Transform _transform;
     private DB.Transform ReferencePointTransform
     {
@@ -666,7 +671,7 @@ namespace Objects.Converter.Revit
 
       switch (type)
       {
-        case "Project Base Point":
+        case ProjectBase:
           if (projectPoint != null)
           {
 #if REVIT2019
@@ -677,7 +682,7 @@ namespace Objects.Converter.Revit
             referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
           }
           break;
-        case "Survey Point":
+        case Survey:
           if (surveyPoint != null)
           {
 #if REVIT2019

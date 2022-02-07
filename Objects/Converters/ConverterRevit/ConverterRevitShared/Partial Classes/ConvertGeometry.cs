@@ -486,9 +486,7 @@ namespace Objects.Converter.Revit
     public Polyline PolylineToSpeckle(PolyLine polyline, string units = null)
     {
       var coords = polyline.GetCoordinates().SelectMany(coord => PointToSpeckle(coord).ToList()).ToList();
-
       return new Polyline(coords, units ?? ModelUnits);
-
     }
 
     public Box BoxToSpeckle(DB.BoundingBoxXYZ box, string units = null)
@@ -525,9 +523,7 @@ namespace Objects.Converter.Revit
     {
       var vertices = new List<double>(mesh.Vertices.Count * 3);
       foreach (var vert in mesh.Vertices)
-      {
         vertices.AddRange(PointToSpeckle(vert).ToList());
-      }
       
       var faces = new List<int>(mesh.NumTriangles * 4);
       for (int i = 0; i < mesh.NumTriangles; i++)
@@ -621,9 +617,7 @@ namespace Objects.Converter.Revit
     public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
       if (arr.Count % 3 != 0)
-      {
         throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
-      }
 
       XYZ[] points = new XYZ[arr.Count / 3];
 
@@ -643,9 +637,7 @@ namespace Objects.Converter.Revit
       var xn = new XYZ(1, 0, 0);
 
       if (ixn.IsAlmostEqualTo(xn))
-      {
         xn = new XYZ(0, 1, 0);
-      }
 
       return ixn.CrossProduct(xn).Normalize();
     }
@@ -735,9 +727,7 @@ namespace Objects.Converter.Revit
         if (nativeCurve == null)
           return new List<BRepBuilderEdgeGeometry>();
         if (isTrimmed)
-        {
           nativeCurve.MakeBound(edge.Domain.start ?? 0, edge.Domain.end ?? 1);
-        }
         if (!nativeCurve.IsBound)
           nativeCurve.MakeBound(0, nativeCurve.Period);
 
@@ -824,9 +814,7 @@ namespace Objects.Converter.Revit
 
       int j = 0, k = 0;
       while (j < count)
-      {
         knots[++k] = list[j++];
-      }
 
       knots[0] = knots[1];
       knots[count + 1] = knots[count];
