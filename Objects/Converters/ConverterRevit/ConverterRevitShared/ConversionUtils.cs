@@ -368,6 +368,7 @@ namespace Objects.Converter.Revit
               if (rp.Definition.Name.ToLower().Contains("name"))
               {
                 var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
+                Report.ConversionLog.Add($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
                 rp.Set(temp);
               }
               else
@@ -761,11 +762,6 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region misc
-    public string Replace(string s, char[] separators, string newVal)
-    {
-      string[] _string = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-      return String.Join(newVal, _string);
-    }
 
     public string GetTemplatePath(string templateName)
     {

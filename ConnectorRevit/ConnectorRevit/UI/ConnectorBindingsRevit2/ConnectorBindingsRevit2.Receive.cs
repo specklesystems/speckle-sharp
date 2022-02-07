@@ -253,7 +253,7 @@ namespace Speckle.ConnectorRevit.UI
 
       else
       {
-        if(obj != null)
+        if(obj != null && !obj.GetType().IsPrimitive)
           converter.Report.Log($"Skipped object of type {obj.GetType()}, not supported.");
       }
 
