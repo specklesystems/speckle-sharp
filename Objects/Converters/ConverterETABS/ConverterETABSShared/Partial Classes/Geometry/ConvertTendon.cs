@@ -37,6 +37,7 @@ namespace Objects.Converter.ETABS
       string tendonProp = null;
       Model.TendonObj.GetProperty(name, ref tendonProp);
       speckleETABSTendon.ETABSTendonProperty = TendonPropToSpeckle(tendonProp);
+      SpeckleModel.elements.Add(speckleETABSTendon);
       return speckleETABSTendon;
 
   }

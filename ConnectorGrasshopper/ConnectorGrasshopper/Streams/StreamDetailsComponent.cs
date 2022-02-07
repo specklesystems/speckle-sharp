@@ -10,7 +10,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -67,12 +67,12 @@ namespace ConnectorGrasshopper.Streams
           Message = null;
           return;
         }
-        
-        if(DA.Iteration == 0) 
-          Tracker.TrackPageview(Tracker.STREAM_DETAILS);
-        
+
+        if (DA.Iteration == 0)
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_DETAILS);
+
         Message = "Fetching";
-        
+
         if (ghStreamTree.DataCount == 0)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Input S failed to collect data.");
@@ -106,7 +106,7 @@ namespace ConnectorGrasshopper.Streams
 
                 Account account = null;
                 try
-                { 
+                {
                   account = item.Value.GetAccount().Result;
                 }
                 catch (Exception e)
@@ -114,6 +114,8 @@ namespace ConnectorGrasshopper.Streams
                   error = e.InnerException ?? e;
                   return;
                 }
+
+                Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
 
                 var client = new Client(account);
 

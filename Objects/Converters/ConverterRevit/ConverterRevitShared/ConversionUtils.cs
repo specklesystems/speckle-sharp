@@ -173,10 +173,6 @@ namespace Objects.Converter.Revit
         }
       }
 
-
-
-
-
       if (paramBase.GetDynamicMembers().Any())
         speckleElement["parameters"] = paramBase;
       speckleElement["elementId"] = revitElement.Id.ToString();
@@ -563,42 +559,33 @@ namespace Objects.Converter.Revit
 
     private ElementFilter GetCategoryFilter(Base element)
     {
-      ElementFilter filter = null;
-      if (element is BuiltElements.Wall)
+      switch (element)
       {
-        filter = new ElementMulticategoryFilter(Categories.wallCategories);
+        case BuiltElements.Wall _:
+          return new ElementMulticategoryFilter(Categories.wallCategories);
+        case Column _:
+          return new ElementMulticategoryFilter(Categories.columnCategories);
+        case Beam _:
+        case Brace _:
+          return new ElementMulticategoryFilter(Categories.beamCategories);
+        case Duct _:
+          return new ElementMulticategoryFilter(Categories.ductCategories);
+        case Floor _:
+          return new ElementMulticategoryFilter(Categories.floorCategories);
+        case Pipe _:
+          return new ElementMulticategoryFilter(Categories.pipeCategories);
+        case Roof _:
+          return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
+        default:
+          ElementFilter filter = null;
+          if (element["category"] != null)
+          {
+            var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
+            if (cat != null)
+              filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
+          }
+          return filter;
       }
-      else if (element is Column)
-      {
-        filter = new ElementMulticategoryFilter(Categories.columnCategories);
-      }
-      else if (element is Beam || element is Brace)
-      {
-        filter = new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-      else if (element is Duct)
-      {
-        filter = new ElementMulticategoryFilter(Categories.ductCategories);
-      }
-      else if (element is Floor)
-      {
-        filter = new ElementMulticategoryFilter(Categories.floorCategories);
-      }
-      else if (element is Roof)
-      {
-        filter = new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
-      }
-      else
-      {
-        //try get category from the parameters
-        if (element["category"] != null)
-        {
-          var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
-          if (cat != null)
-            filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
-        }
-      }
-      return filter;
     }
 
     #endregion

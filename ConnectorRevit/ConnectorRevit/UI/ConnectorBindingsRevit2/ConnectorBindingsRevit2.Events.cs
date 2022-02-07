@@ -89,8 +89,8 @@ namespace Speckle.ConnectorRevit.UI
       {
         SpeckleRevitCommand2.CreateOrFocusSpeckle();
       }
-
-      UpdateSavedStreams(streams);
+      if(UpdateSavedStreams!=null)
+        UpdateSavedStreams(streams);
     }
 
 

@@ -56,4 +56,27 @@ namespace Objects.BuiltElements.Revit
       this.parameters = parameters.ToBase();
     }
   }
+
+  public class RevitFlexPipe : RevitPipe
+  {
+    public Vector startTangent { get; set; }
+    public Vector endTangent { get; set; }
+
+    public RevitFlexPipe() { }
+
+    [SchemaInfo("RevitFlexPipe", "Creates a Revit flex pipe", "Revit", "MEP")]
+    public RevitFlexPipe(string family, string type, [SchemaMainParam] ICurve baseCurve, double diameter, Level level, Vector startTangent, Vector endTangent, string systemName = "", string systemType = "", List<Parameter> parameters = null)
+    {
+      this.family = family;
+      this.type = type;
+      this.baseCurve = baseCurve;
+      this.diameter = diameter;
+      this.startTangent = startTangent;
+      this.endTangent = endTangent;
+      this.systemName = systemName;
+      this.systemType = systemType;
+      this.level = level;
+      this.parameters = parameters.ToBase();
+    }
+  }
 }

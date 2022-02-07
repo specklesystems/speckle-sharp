@@ -13,8 +13,13 @@ namespace Objects.Structural.ETABS.Properties
 {
   public class ETABSTendonProperty: Property1D
   {
-  public ModelingOption modelingOption { get; set; }
+    public ETABSTendonProperty()
+    {
+    }
+
+    public ModelingOption modelingOption { get; set; }
     public double Area { get; set; }
+
 
   }
 }

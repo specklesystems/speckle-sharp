@@ -17,5 +17,10 @@ namespace DesktopUI2.Models.Settings
     public string Selection { get; set; }
     public UserControl View { get; set; } = new ListBoxSettingView();
     public string Summary { get; set; }
+
+    public void ResetView()
+    {
+      View = new ListBoxSettingView();
+    }
   }
 }

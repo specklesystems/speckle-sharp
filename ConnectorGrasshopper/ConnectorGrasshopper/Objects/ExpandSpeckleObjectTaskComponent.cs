@@ -8,7 +8,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
- 
+
       if (InPreSolve)
       {
         GH_SpeckleBase ghSpeckleBase = null;
@@ -52,15 +52,19 @@ namespace ConnectorGrasshopper.Objects
           OnDisplayExpired(true);
           return;
         }
-        
-        if(DA.Iteration == 0)
-          Tracker.TrackPageview("objects", "expand");
+
+        if (DA.Iteration == 0)
+        {
+          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Expand Object" } });
+          Logging.Tracker.TrackPageview("objects", "expand");
+        }
+
 
         var task = Task.Run(() => DoWork(@base));
         TaskList.Add(task);
         return;
       }
-      if(Converter != null)
+      if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
         {
@@ -69,7 +73,7 @@ namespace ConnectorGrasshopper.Objects
         }
         Converter.Report.ConversionErrors.Clear();
       }
-      
+
       if (!GetSolveResults(DA, out Dictionary<string, object> result))
       {
         // Normal mode not supported
@@ -81,8 +85,8 @@ namespace ConnectorGrasshopper.Objects
         foreach (var key in result.Keys)
         {
           var indexOfOutputParam = Params.IndexOfOutputParam(key);
-          
-          if(indexOfOutputParam != -1)
+
+          if (indexOfOutputParam != -1)
           {
             var obj = result[key];
             switch (obj)
@@ -91,7 +95,7 @@ namespace ConnectorGrasshopper.Objects
                 DA.SetDataList(indexOfOutputParam, list);
                 break;
               default:
-                DA.SetDataList(indexOfOutputParam, new List<object>{ obj });
+                DA.SetDataList(indexOfOutputParam, new List<object> { obj });
                 break;
             }
           }
@@ -137,23 +141,23 @@ namespace ConnectorGrasshopper.Objects
     }
     private void AutoCreateOutputs()
     {
-      if (!OutputMismatch()) 
+      if (!OutputMismatch())
         return;
-      
+
       RecordUndoEvent("Creating Outputs");
-      
+
       // Check for single param rename, if so, just rename it and go on.
       if (HasSingleRename())
       {
         var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName));
         var diffOut = outputList
-          .Where(name => 
+          .Where(name =>
             !Params.Output.Select(p => p.NickName)
               .Contains(name));
-      
+
         var newName = diffOut.First();
         var renameParam = diffParams.First();
-      
+
         renameParam.NickName = newName;
         renameParam.Name = newName;
         renameParam.Description = $"Data from property: {newName}";
@@ -208,12 +212,12 @@ namespace ConnectorGrasshopper.Objects
       }
       base.BeforeSolveInstance();
     }
-    
+
     private List<string> GetOutputList(GH_Structure<GH_SpeckleBase> speckleObjects)
     {
       // Get the full list of output parameters
       var fullProps = new List<string>();
-      
+
       foreach (var ghGoo in speckleObjects.AllData(true))
       {
         var b = (ghGoo as GH_SpeckleBase)?.Value;
@@ -227,7 +231,7 @@ namespace ConnectorGrasshopper.Objects
       fullProps.Sort();
       return fullProps;
     }
-    
+
     public Dictionary<string, object> DoWork(Base @base)
     {
       try
@@ -237,12 +241,12 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         return null;
       }
     }
-    
+
     private Dictionary<string, object> CreateOutputDictionary(Base @base)
     {
       // Create empty data tree placeholders for output.
@@ -292,7 +296,7 @@ namespace ConnectorGrasshopper.Objects
             break;
         }
       }
-      
+
       return outputDict;
     }
   }

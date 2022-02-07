@@ -10,7 +10,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -45,7 +45,7 @@ namespace ConnectorGrasshopper.Ops
   public class SendLocalWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> data;
-    
+
     private string sentObjectId;
     public SendLocalWorker(GH_Component _parent) : base(_parent)
     { }
@@ -57,7 +57,8 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Parent.Message = "Sending...";
-        Tracker.TrackPageview(Tracker.SEND_LOCAL);
+        Logging.Tracker.TrackPageview(Logging.Tracker.SEND_LOCAL);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
 
         var converter = (Parent as SendLocalComponent)?.Converter;
         converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
@@ -74,7 +75,7 @@ namespace ConnectorGrasshopper.Ops
 
       Done();
     }
-    
+
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void SetData(IGH_DataAccess DA)

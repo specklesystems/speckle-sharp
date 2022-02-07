@@ -113,15 +113,15 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private List<FilterViewModel> _filters;
-    public List<FilterViewModel> Filters
+    private List<FilterViewModel> _availableFilters;
+    public List<FilterViewModel> AvailableFilters
     {
-      get => _filters;
-      private set => this.RaiseAndSetIfChanged(ref _filters, value);
+      get => _availableFilters;
+      private set => this.RaiseAndSetIfChanged(ref _availableFilters, value);
     }
 
-    private List<SettingViewModel> _settings;
-    public List<SettingViewModel> Settings
+    private List<ISetting> _settings;
+    public List<ISetting> Settings
     {
       get => _settings;
       private set
@@ -130,7 +130,7 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasSettings");
       }
     }
-    public bool HasSettings => Settings != null && Settings.Any();
+    public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
     #endregion
@@ -170,11 +170,11 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       //get available filters from our bindings
-      Filters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
-      SelectedFilter = Filters[0];
+      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
+      SelectedFilter = AvailableFilters[0];
 
       //get available settings from our bindings
-      Settings = new List<SettingViewModel>(Bindings.GetSettings().Select(x => new SettingViewModel(x)));
+      Settings = Bindings.GetSettings();
 
       IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState(streamState.Client, streamState);
@@ -194,7 +194,7 @@ namespace DesktopUI2.ViewModels
 
       if (streamState.Filter != null)
       {
-        SelectedFilter = Filters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
+        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
         if (SelectedFilter != null)
           SelectedFilter.Filter = streamState.Filter;
       }
@@ -202,9 +202,9 @@ namespace DesktopUI2.ViewModels
       {
         foreach (var setting in Settings)
         {
-          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Setting.Slug).First();
+          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
           if (savedSetting != null)
-            setting.Setting.Selection = savedSetting.Selection;
+            setting.Selection = savedSetting.Selection;
         }
       }
     }
@@ -220,7 +220,7 @@ namespace DesktopUI2.ViewModels
         _streamState.CommitId = SelectedCommit.id;
       if (!IsReceiver)
         _streamState.Filter = SelectedFilter.Filter;
-      _streamState.Settings = Settings.Select(o => o.Setting).ToList();
+      _streamState.Settings = Settings.Select(o => o).ToList();
       return _streamState;
     }
 
@@ -239,10 +239,6 @@ namespace DesktopUI2.ViewModels
         Commits = new List<Commit>();
         SelectedCommit = null;
       }
-      //else
-      //{
-      //  Commits = new List<Commit>() { new Commit { id = "latest", message = "This branch has no commits." } };
-      //}
     }
 
     public void DownloadImage(string url)
@@ -280,9 +276,19 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState());
+
+
       if (IsReceiver)
+      {
         Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
-      else Tracker.TrackPageview(Tracker.SEND_ADDED);
+        Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
+      }
+
+      else
+      {
+        Tracker.TrackPageview(Tracker.SEND_ADDED);
+        Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
+      }
     }
 
     private async void SendCommand()
@@ -313,8 +319,8 @@ namespace DesktopUI2.ViewModels
       {
         if (x.Result.GetResult == "cancel")
           Progress.CancellationTokenSource.Cancel();
-      }
-        );
+      });
+
       await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
       dialog.GetWindow().Close();
       Progress.IsProgressing = false;
@@ -322,29 +328,38 @@ namespace DesktopUI2.ViewModels
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
 
-    private void OpenSettingsCommand()
+    private async void OpenSettingsCommand()
     {
       try
       {
-        var settings = new Settings();
-        settings.DataContext = new SettingsPageViewModel(Settings);
-        settings.Title = $"Settings for {Stream.name}";
-        settings.ShowDialog(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
-        (settings.DataContext as SettingsPageViewModel).SettingsSaved += SettingsPageViewModel_SettingsSaved;
+        var settingsWindow = new Settings();
+        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+        // Not doing this causes Avalonia to throw an error about the owner being already set on the Setting View UserControl
+        Settings.ForEach(x => x.ResetView());
+
+        var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
+        settingsWindow.DataContext = settingsPageViewModel;
+        settingsWindow.Title = $"Settings for {Stream.name}";
+
+        var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
+
+        if (saveResult != null && (bool)saveResult)
+        {
+          Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
+        }
+
       }
-      catch (Exception e) 
-      { 
+      catch (Exception e)
+      {
       }
-    }
-    void SettingsPageViewModel_SettingsSaved(Object sender, EventArgs e)
-    {
-      Settings = (sender as SettingsPageViewModel).Settings;
     }
 
     private void SaveSendCommand()
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState(), true);
+      Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" }, { "filter", SelectedFilter.Filter.Name } });
       Tracker.TrackPageview(Tracker.SEND_ADDED);
     }
 
@@ -352,6 +367,7 @@ namespace DesktopUI2.ViewModels
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState(), false, true);
+      Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
       Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
     }
 

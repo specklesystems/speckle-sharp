@@ -108,12 +108,9 @@ namespace Speckle.ConnectorRevit.UI
         {
           progress.Report.LogConversionError(e);
         }
-
       }
 
-
       progress.Report.Merge(converter.Report);
-
 
       if (convertedCount == 0)
       {
@@ -122,9 +119,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return;
-      }
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
@@ -142,14 +137,10 @@ namespace Speckle.ConnectorRevit.UI
         );
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return;
-      }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return;
-      }
 
       var actualCommit = new CommitCreateInput()
       {

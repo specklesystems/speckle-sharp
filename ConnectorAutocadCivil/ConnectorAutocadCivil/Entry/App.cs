@@ -40,12 +40,13 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         //the below should fix it! This affects Avalonia and Material 
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-        // set up bindings and subscribe to doument events
+        // set up bindings and subscribe to document events
         SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
         SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
 
         // for DUI2
         SpeckleAutocadCommand2.Bindings = new ConnectorBindingsAutocad2();
+        SpeckleAutocadCommand2.Bindings.RegisterAppEvents();
       }
       catch(System.Exception e)
       {
@@ -117,7 +118,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, communityTip, "forum");
       RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, tutorialsTip, "tutorials");
       RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, docsTip, "docs");
-      
     }
 
     public void Terminate()
@@ -184,7 +184,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         button.CommandParameter = CommandParameter;
         button.CommandHandler = new ButtonCommandHandler(CommandParameter);
         sourcePanel.Items.Add(button);
-
       }
       else if (sourceButton != null)
       {

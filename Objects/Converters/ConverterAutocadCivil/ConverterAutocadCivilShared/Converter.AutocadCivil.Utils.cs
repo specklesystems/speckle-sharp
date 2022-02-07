@@ -1,9 +1,14 @@
 ﻿using System.Text.RegularExpressions;
-using Autodesk.AutoCAD.Colors;
-using Autodesk.AutoCAD.DatabaseServices;
+
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+
+using Autodesk.AutoCAD.Colors;
+using Autodesk.AutoCAD.DatabaseServices;
+#if (CIVIL2021 || CIVIL2022)
+using Autodesk.Aec.ApplicationServices;
+#endif
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -35,7 +40,24 @@ namespace Objects.Converter.AutocadCivil
       get
       {
         if (string.IsNullOrEmpty(_modelUnits))
+        {
           _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
+
+#if (CIVIL2021 || CIVIL2022)
+          if (_modelUnits == Units.None)
+          {
+            // try to get the drawing unit instead
+            using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+            {
+              var id = DrawingSetupVariables.GetInstance(Doc.Database, false);
+              var setupVariables = (DrawingSetupVariables)tr.GetObject(id, OpenMode.ForRead);
+              var linearUnit = setupVariables.LinearUnit;
+              _modelUnits = Units.GetUnitsFromString(linearUnit.ToString());
+              tr.Commit();
+            }
+          }
+#endif
+        }
         return _modelUnits;
       }
     }
@@ -75,6 +97,8 @@ namespace Objects.Converter.AutocadCivil
         case UnitsValue.Miles:
         case UnitsValue.USSurveyMile:
           return Units.Miles;
+        case UnitsValue.Undefined:
+          return Units.None;
         default:
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }

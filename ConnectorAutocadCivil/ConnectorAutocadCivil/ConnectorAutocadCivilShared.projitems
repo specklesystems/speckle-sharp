@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />

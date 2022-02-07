@@ -239,7 +239,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         if (_transports == null)
           throw new SpeckleException("The stream provided is invalid");
-        
+
         long totalCount = 0;
         Base @base = null;
         var converter = new BatchConverter();

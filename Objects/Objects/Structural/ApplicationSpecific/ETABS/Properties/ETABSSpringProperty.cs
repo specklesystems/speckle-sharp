@@ -23,7 +23,7 @@ namespace Objects.Structural.ETABS.Properties
     {
     }
 
-    [SchemaInfo("PointSpring", "Create an ETABS PointSpring from Link", "ETABS", "Properties")]
+    [SchemaInfo("PointSpring from Link", "Create an ETABS PointSpring from Link", "ETABS", "Properties")]
     public ETABSSpringProperty( string name, string cYs, double StiffnessX, double StiffnessY, double StiffnessZ, double StiffnessXX, double StiffnezzYY, double StiffnessZZ)
     {
       this.name = name;
@@ -37,7 +37,7 @@ namespace Objects.Structural.ETABS.Properties
       CYs = cYs;
     }
 
-    [SchemaInfo("PointSpring", "Create an ETABS PointSpring from Soil Profile", "ETABS", "Properties")]
+    [SchemaInfo("PointSpring from Soil Profile", "Create an ETABS PointSpring from Soil Profile", "ETABS", "Properties")]
     public ETABSSpringProperty( string name, string soilProfile, string footing, double period)
     {
       this.name = name;

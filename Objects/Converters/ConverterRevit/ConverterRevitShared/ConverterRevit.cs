@@ -160,6 +160,10 @@ namespace Objects.Converter.Revit
           returnObject = DuctToSpeckle(o);
           Report.Log($"Converted Duct {o.Id}");
           break;
+        case DB.Mechanical.FlexDuct o:
+          returnObject = DuctToSpeckle(o);
+          Report.Log($"Converted FlexDuct {o.Id}");
+          break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           Report.Log($"Converted Space {o.Id}");
@@ -167,6 +171,10 @@ namespace Objects.Converter.Revit
         case DB.Plumbing.Pipe o:
           returnObject = PipeToSpeckle(o);
           Report.Log($"Converted Pipe {o.Id}");
+          break;
+        case DB.Plumbing.FlexPipe o:
+          returnObject = PipeToSpeckle(o);
+          Report.Log($"Converted FlexPipe {o.Id}");
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
@@ -292,7 +300,6 @@ namespace Objects.Converter.Revit
             return FreeformElementToNativeFamily(o);
           default:
             return null;
-
         }
       }
 
@@ -508,8 +515,10 @@ namespace Objects.Converter.Revit
         DB.Architecture.TopographySurface _ => true,
         DB.Wall _ => true,
         DB.Mechanical.Duct _ => true,
+        DB.Mechanical.FlexDuct _ => true,
         DB.Mechanical.Space _ => true,
         DB.Plumbing.Pipe _ => true,
+        DB.Plumbing.FlexPipe _ => true,
         DB.Electrical.Wire _ => true,
         DB.CurtainGridLine _ => true, //these should be handled by curtain walls
         DB.Architecture.BuildingPad _ => true,

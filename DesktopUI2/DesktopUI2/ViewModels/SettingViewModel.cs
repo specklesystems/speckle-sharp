@@ -14,42 +14,43 @@ namespace DesktopUI2.ViewModels
   public class SettingViewModel : ReactiveObject
   {
     private ISetting _setting;
-    
-    public ISetting Setting { get => _setting;
+
+    public ISetting Setting
+    {
+      get => _setting;
       set
       {
         this.RaiseAndSetIfChanged(ref _setting, value);
         this.RaisePropertyChanged("Summary");
-      } 
+      }
     }
 
     public UserControl SettingView { get; private set; }
 
-    public SelectionModel<string> SelectionModel { get; }
+    private string _selection;
+    public string Selection
+    {
+      get => _selection;
+      set
+      {
+        //sets the selected item on the data model
+        Setting.Selection = value;
+        this.RaiseAndSetIfChanged(ref _selection, value);
 
-    public string Summary { get { return Setting.Summary; } }
+      }
+    }
 
     public SettingViewModel(ISetting setting)
     {
-      SelectionModel = new SelectionModel<string>();
-      SelectionModel.SingleSelect = true;
-      SelectionModel.SelectionChanged += SelectionChanged;
-
       Setting = setting;
       SettingView = setting.View;
 
       SettingView.DataContext = this;
+
+      //restores the selected item
+      Selection = setting.Selection;
     }
 
-    #region LISTBOX SETTING
-
-    void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
-    {
-      Setting.Selection = e.SelectedItems.First().ToString();
-      this.RaisePropertyChanged("Summary");
-    }
-
-    #endregion
 
   }
 }

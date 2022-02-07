@@ -15,7 +15,7 @@ using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -75,7 +75,7 @@ namespace ConnectorGrasshopper.Ops
       Converter = Kit.LoadConverter(Applications.Rhino6);
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
-        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
+        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
 
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
@@ -84,7 +84,7 @@ namespace ConnectorGrasshopper.Ops
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
     {
       Menu_AppendSeparator(menu);
-      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:",null, false);
+      var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
       menuItem.Enabled = false;
       var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
 
@@ -197,13 +197,13 @@ namespace ConnectorGrasshopper.Ops
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
-      
+
       if (!foundKit)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
         return;
       }
-      
+
       if (RunCount == 1)
       {
         CreateCancelationToken();
@@ -232,7 +232,7 @@ namespace ConnectorGrasshopper.Ops
         DA.GetData(2, ref messageInput);
         var transportsInput = new List<IGH_Goo> { transportInput };
         //var transportsInput = Params.Input[1].VolatileData.AllData(true).Select(x => x).ToList();
-        Tracker.TrackPageview("send", "sync");
+        Logging.Tracker.TrackPageview("send", "sync");
 
         var task = Task.Run(async () =>
         {
@@ -310,6 +310,8 @@ namespace ConnectorGrasshopper.Ops
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message);
                 continue;
               }
+
+              Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "sync", true } });
 
               var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
               transportBranches.Add(serverTransport, sw.BranchName ?? "main");

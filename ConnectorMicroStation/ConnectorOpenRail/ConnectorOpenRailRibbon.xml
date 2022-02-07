@@ -49,6 +49,12 @@
             <PopupAccessText>s</PopupAccessText>
           </ButtonParams>
         </ButtonRef>
+        <ButtonRef Name="Speckle.ShowUI2" Priority="10000">
+          <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
+            <AccessText>SS</AccessText>
+            <PopupAccessText>s</PopupAccessText>
+          </ButtonParams>
+        </ButtonRef>
       </GroupItems>
     </Group>
     <Group GroupZone="Primary" Name="Speckle.ToolsGroup" PanelType="Collapsible" Priority="1000">
@@ -70,6 +76,22 @@
         <CommandData Type="UserKeyinCommand">
           <UserKeyinCommand>
             <Keyin>speckle speckle</Keyin>
+            <Icon Type="NamedIcon">
+              <NamedIcon>s2block</NamedIcon>
+            </Icon>
+          </UserKeyinCommand>
+        </CommandData>
+      </ButtonData>
+    </Button>
+    <Button Name="Speckle.ShowUI2" Priority="100">
+      <Label>Connector OpenRail (New UI!)</Label>
+      <Description>Launches the Speckle OpenRail Connector with our New UI</Description>
+      <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
+      </ButtonParams>
+      <ButtonData>
+        <CommandData Type="UserKeyinCommand">
+          <UserKeyinCommand>
+            <Keyin>Speckle SpeckleNewUI</Keyin>
             <Icon Type="NamedIcon">
               <NamedIcon>s2block</NamedIcon>
             </Icon>

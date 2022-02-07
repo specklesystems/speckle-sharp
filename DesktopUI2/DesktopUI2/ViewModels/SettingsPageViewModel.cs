@@ -5,21 +5,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Avalonia.Controls;
+using DesktopUI2.Models.Settings;
 
 namespace DesktopUI2.ViewModels
 {
   public class SettingsPageViewModel : ReactiveObject
   {
-    private SettingViewModel _selectedSetting;
-
-    public event EventHandler SettingsSaved;
-
-    public SettingViewModel SelectedSetting
-    {
-      get => _selectedSetting;
-      set => this.RaiseAndSetIfChanged(ref _selectedSetting, value);
-    }
-
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
     {
@@ -30,14 +21,12 @@ namespace DesktopUI2.ViewModels
     public SettingsPageViewModel(List<SettingViewModel> settings)
     {
       Settings = settings;
-      SelectedSetting = settings.Count > 0 ? Settings[0] : null;
     }
 
     public void SaveCommand(Window window)
     {
-      SettingsSaved?.Invoke(this, EventArgs.Empty);
       if (window != null)
-        window.Close();
+        window.Close(true);
     }
   }
 }

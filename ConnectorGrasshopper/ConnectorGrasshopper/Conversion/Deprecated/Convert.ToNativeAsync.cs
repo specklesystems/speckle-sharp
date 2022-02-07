@@ -11,7 +11,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Conversion
       "Convert data from Speckle's Base object to its Rhino equivalent.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {
     }
-    
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Base", "B",
@@ -73,7 +73,7 @@ namespace ConnectorGrasshopper.Conversion
       {
         if (CancellationToken.IsCancellationRequested)
           return;
-        
+
         int branchIndex = 0, completed = 0;
         foreach (var list in Objects.Branches)
         {
@@ -95,7 +95,7 @@ namespace ConnectorGrasshopper.Conversion
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         Parent.Message = "Error";
       }
@@ -107,20 +107,20 @@ namespace ConnectorGrasshopper.Conversion
       {
         return;
       }
-      
+
       foreach (var error in Converter.Report.ConversionErrors)
       {
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.Message + ": " + error.InnerException?.Message);
       }
-      
+
       foreach (var (level, message) in RuntimeMessages)
       {
         Parent.AddRuntimeMessage(level, message);
       }
-      
+
       DA.SetDataTree(0, ConvertedObjects);
     }
-    
+
     List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
@@ -129,9 +129,13 @@ namespace ConnectorGrasshopper.Conversion
       {
         return;
       }
-      
-      if(DA.Iteration == 0)
-        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
+
+      if (DA.Iteration == 0)
+      {
+        Logging.Tracker.TrackPageview(Logging.Tracker.CONVERT_TONATIVE);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
+      }
+
 
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
@@ -142,8 +146,8 @@ namespace ConnectorGrasshopper.Conversion
         var path = _objects.Paths[branchIndex];
         foreach (var item in list)
         {
-          if(!item.IsValid) 
-             RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));
+          if (!item.IsValid)
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, $"Item at path {path}[{list.IndexOf(item)}] is not a Base object."));
           var scriptVariable = item.ScriptVariable();
           Objects.Append(new GH_ObjectWrapper(scriptVariable), path);
         }
