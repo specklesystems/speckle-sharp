@@ -28,7 +28,6 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using System.Threading;
 using Speckle.Core.Logging;
-using Timer = System.Timers.Timer;
 
 namespace SpeckleRhino
 {
