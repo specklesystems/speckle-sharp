@@ -71,7 +71,7 @@
       Margin="10,10,0,10"
       HorizontalAlignment="Stretch"
       VerticalAlignment="Center"
-      Items="{Binding Filters}"
+      Items="{Binding AvailableFilters}"
       PlaceholderText="Select a filter"
       SelectedIndex="0"
       SelectedItem="{Binding SelectedFilter}">

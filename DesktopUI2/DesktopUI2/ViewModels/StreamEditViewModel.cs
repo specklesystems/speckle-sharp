@@ -54,10 +54,8 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _selectedBranch, value);
-
         if (value != null)
           GetCommits();
-
       }
     }
 
@@ -277,7 +275,6 @@ namespace DesktopUI2.ViewModels
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       HomeViewModel.Instance.AddSavedStream(GetStreamState());
 
-
       if (IsReceiver)
       {
         Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
@@ -348,7 +345,6 @@ namespace DesktopUI2.ViewModels
         {
           Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
         }
-
       }
       catch (Exception e)
       {
