@@ -11,16 +11,17 @@ using Tekla.Structures.Solid;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
 using Tekla.Structures.Geometry3d;
+using Objects.BuiltElements.TeklaStructures;
 
 namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
 
-    public BE.Beam SpiralBeamToSpeckle(SpiralBeam SpiralBeam)
+    public TeklaBeam SpiralBeamToSpeckle(SpiralBeam SpiralBeam)
     {
       var units = GetUnitsFromModel();
-      var speckleBeam = new BE.Beam();
+      var speckleBeam = new TeklaBeam();
       var curveLine = SpiralBeam.GetCenterLine(false);
       var pointList = new List<double> { };
       foreach (Tekla.Structures.Geometry3d.Point point in curveLine)
@@ -29,7 +30,13 @@ namespace Objects.Converter.TeklaStructures
         pointList.Add(point.Y);
         pointList.Add(point.Z);
       }
+
       speckleBeam.baseLine = new Polyline(pointList,units);
+      speckleBeam.profile = GetProfile(SpiralBeam.Profile.ProfileString);
+      speckleBeam.material = GetMaterial(SpiralBeam.Material.MaterialString);
+      speckleBeam.finish = SpiralBeam.Finish;
+      speckleBeam.classNumber = SpiralBeam.Class;
+      speckleBeam.name = SpiralBeam.Name;
       //var refLine = SpiralBeam.GetReferenceLine(false);
       var solid = SpiralBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);

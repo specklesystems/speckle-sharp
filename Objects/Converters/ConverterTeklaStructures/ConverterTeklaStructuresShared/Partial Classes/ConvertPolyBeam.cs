@@ -10,15 +10,16 @@ using Tekla.Structures.Model;
 using Tekla.Structures.Solid;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
+using Objects.BuiltElements.TeklaStructures;
 
 namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
 
-    public BE.Beam PolyBeamToSpeckle(PolyBeam PolyBeam)
+    public TeklaBeam PolyBeamToSpeckle(PolyBeam PolyBeam)
     {
-      var speckleBeam = new BE.Beam();
+      var speckleBeam = new TeklaBeam();
       var units = GetUnitsFromModel();
       var centerPolyCurve = PolyBeam.GetCenterLine(false);
       //var centerPolycurve = PolyBeam.GetCenterLinePolycurve();
@@ -30,6 +31,11 @@ namespace Objects.Converter.TeklaStructures
         pointList.Add(point.Y);
         pointList.Add(point.Z);
       }
+      speckleBeam.profile = GetProfile(PolyBeam.Profile.ProfileString);
+      speckleBeam.material = GetMaterial(PolyBeam.Material.MaterialString);
+      speckleBeam.finish = PolyBeam.Finish;
+      speckleBeam.classNumber = PolyBeam.Class;
+      speckleBeam.name = PolyBeam.Name;
       speckleBeam.baseLine = new Polyline(pointList, units);
       var solid = PolyBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
