@@ -29,6 +29,10 @@ namespace Objects.Converter.TeklaStructures
         ContourPlate.Class = ContourPlate.Class;
         ContourPlate.Material.MaterialString = contour.material.name;
       }
+
+      ContourPlate.Insert();
+      Model.CommitChanges();
+
     }
     public BE.Area ContourPlateToSpeckle(Tekla.Structures.Model.ContourPlate plate)
     {

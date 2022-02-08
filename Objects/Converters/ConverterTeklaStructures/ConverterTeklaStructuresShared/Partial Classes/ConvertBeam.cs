@@ -35,7 +35,7 @@ namespace Objects.Converter.TeklaStructures
 
       }
       myBeam.Insert();
-      Model.CommitChanges();
+      //Model.CommitChanges();
 
       //return TeklaBeam;
   }

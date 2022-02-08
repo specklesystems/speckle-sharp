@@ -367,7 +367,6 @@ namespace Objects.Converter.TeklaStructures
           point.X = coordinates[j];
           point.Y = coordinates[j + 1];
           point.Z = coordinates[j + 2];
-
           contour.AddContourPoint(point);
         }
       }
