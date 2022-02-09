@@ -12,16 +12,18 @@ using System.Collections;
 using StructuralUtilities.PolygonMesher;
 using Tekla.Structures.Geometry3d;
 using Objects.BuiltElements.TeklaStructures;
+using SpiralBeam = Objects.BuiltElements.TeklaStructures.SpiralBeam;
+using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
 
-    public TeklaBeam SpiralBeamToSpeckle(SpiralBeam SpiralBeam)
+    public SpiralBeam SpiralBeamToSpeckle(Tekla.Structures.Model.SpiralBeam SpiralBeam)
     {
       var units = GetUnitsFromModel();
-      var speckleBeam = new TeklaBeam();
+      var speckleBeam = new SpiralBeam();
       var curveLine = SpiralBeam.GetCenterLine(false);
       var pointList = new List<double> { };
       foreach (Tekla.Structures.Geometry3d.Point point in curveLine)
@@ -32,6 +34,7 @@ namespace Objects.Converter.TeklaStructures
       }
 
       speckleBeam.baseLine = new Polyline(pointList,units);
+
       speckleBeam.profile = GetProfile(SpiralBeam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(SpiralBeam.Material.MaterialString);
       speckleBeam.finish = SpiralBeam.Finish;
@@ -44,6 +47,14 @@ namespace Objects.Converter.TeklaStructures
       //var refLine = SpiralBeam.GetReferenceLine(false);
       var solid = SpiralBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
+
+      speckleBeam.startPoint = new Point(SpiralBeam.StartPoint.X, SpiralBeam.StartPoint.Y, SpiralBeam.StartPoint.Z);
+      speckleBeam.rotationAxisPt1 = new Point(SpiralBeam.RotationAxisBasePoint.X, SpiralBeam.RotationAxisBasePoint.Y, SpiralBeam.RotationAxisBasePoint.Z);
+      speckleBeam.rotationAxisPt2 = new Point(SpiralBeam.RotationAxisUpPoint.X, SpiralBeam.RotationAxisUpPoint.Y, SpiralBeam.RotationAxisUpPoint.Z);
+      speckleBeam.totalRise = SpiralBeam.TotalRise;
+      speckleBeam.rotationAngle = SpiralBeam.RotationAngle;
+      speckleBeam.twistAngleStart = SpiralBeam.TwistAngleStart;
+      speckleBeam.twistAngleEnd = SpiralBeam.TwistAngleEnd;
 
 
       return speckleBeam;

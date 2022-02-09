@@ -40,15 +40,24 @@ namespace Objects.Converter.TeklaStructures
             Model.CommitChanges();
             break;
           case TeklaBeamType.PolyBeam:
-            Polycurve polyline = (Polycurve)beam.baseLine;
+            Polyline polyline = (Polyline)beam.baseLine;
             var polyBeam = new PolyBeam();
+            ToNativeContour(polyline, polyBeam.Contour);
             SetBeamProperties(polyBeam, teklaBeam);
             polyBeam.Insert();
             Model.CommitChanges();
             break;
           case TeklaBeamType.SpiralBeam:
-            Polycurve polycurve = (Polycurve)beam.baseLine;
-            var spiralBeam = new SpiralBeam();
+            Polyline polyline2 = (Polyline)beam.baseLine;
+            var teklaSpiralBeam = (Objects.BuiltElements.TeklaStructures.SpiralBeam)teklaBeam;
+            var startPt = new TSG.Point(teklaSpiralBeam.startPoint.x, teklaSpiralBeam.startPoint.y, teklaSpiralBeam.startPoint.z);
+            var rotatAxisPt1 = new TSG.Point(teklaSpiralBeam.rotationAxisPt1.x, teklaSpiralBeam.rotationAxisPt1.y, teklaSpiralBeam.rotationAxisPt1.z);
+            var rotatAxisPt2 = new TSG.Point(teklaSpiralBeam.rotationAxisPt2.x, teklaSpiralBeam.rotationAxisPt2.y, teklaSpiralBeam.rotationAxisPt2.z);
+            var totalRise = teklaSpiralBeam.totalRise;
+            var rotationAngle = teklaSpiralBeam.rotationAngle;
+            var twistAngleStart = teklaSpiralBeam.twistAngleStart;
+            var twistAngleEnd = teklaSpiralBeam.twistAngleEnd;
+            var spiralBeam = new Tekla.Structures.Model.SpiralBeam(startPt, rotatAxisPt1, rotatAxisPt2, totalRise, rotationAngle, twistAngleStart, twistAngleEnd);
             SetBeamProperties(spiralBeam, teklaBeam);
             spiralBeam.Insert();
             Model.CommitChanges();

@@ -77,4 +77,13 @@ namespace Objects.BuiltElements.TeklaStructures
             this.material = material;
         }
     }
+    public class SpiralBeam : TeklaBeam {
+    public Point startPoint { get; set; }
+    public Point rotationAxisPt1 { get; set; }
+    public Point rotationAxisPt2 { get; set; }
+    public double totalRise { get; set; }
+    public double rotationAngle { get; set; }
+    public double twistAngleStart { get; set; }
+    public double twistAngleEnd { get; set; }
+    }
 }

@@ -355,10 +355,9 @@ namespace Objects.Converter.TeklaStructures
 
     }
 
-    public void ToNativePolygon(Polyline polyline,Contour contour)
+    public void ToNativeContour(Polyline polyline,Contour contour)
     {
       var coordinates = polyline.value;
-      var polygon = new Polygon();
       for (int j = 0; j < coordinates.Count; j++)
       {
         if (j % 3 == 0)
@@ -369,6 +368,15 @@ namespace Objects.Converter.TeklaStructures
           point.Z = coordinates[j + 2];
           contour.AddContourPoint(point);
         }
+      }
+
+    }
+    public void ToNativeContourFromSpiral(Polycurve polycurve, Contour contour)
+    {
+      var curves = polycurve.segments;
+      foreach(var curve in curves)
+      {
+
       }
 
     }

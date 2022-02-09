@@ -20,8 +20,9 @@ namespace Objects.Converter.TeklaStructures
     {
       if (!(area.outline is Polyline)) { }
       var ContourPlate = new ContourPlate();
-      ToNativePolygon((Polyline)area.outline, ContourPlate.Contour);
-      if(area is TeklaContourPlate){
+      ToNativeContour((Polyline)area.outline, ContourPlate.Contour);
+      if (area is TeklaContourPlate)
+      {
         var contour = (TeklaContourPlate)area;
         ContourPlate.Name = contour.name;
         ContourPlate.Profile.ProfileString = contour.profile.name;
@@ -29,7 +30,6 @@ namespace Objects.Converter.TeklaStructures
         ContourPlate.Class = ContourPlate.Class;
         ContourPlate.Material.MaterialString = contour.material.name;
       }
-
       ContourPlate.Insert();
       Model.CommitChanges();
 
