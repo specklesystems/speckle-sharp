@@ -97,6 +97,7 @@ namespace Objects.Converter.TeklaStructures
           BeamToNative(o);
           return true;
         case BE.Area o:
+          ContourPlateToNative(o);
           return true;
         default:
           return false;

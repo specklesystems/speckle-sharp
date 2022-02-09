@@ -65,6 +65,8 @@ namespace Objects.BuiltElements.TeklaStructures
         public Vector alignmentVector { get; set; }
         public Base userProperties { get; set; }
 
+        public TeklaBeamType TeklaBeamType { get; set; }
+
         public TeklaBeam() { }
 
         [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]

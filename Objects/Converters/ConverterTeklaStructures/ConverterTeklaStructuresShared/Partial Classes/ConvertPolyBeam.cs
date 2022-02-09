@@ -35,8 +35,12 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.material = GetMaterial(PolyBeam.Material.MaterialString);
       speckleBeam.finish = PolyBeam.Finish;
       speckleBeam.classNumber = PolyBeam.Class;
+      var beamCS = PolyBeam.GetCoordinateSystem();
+      speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
       speckleBeam.name = PolyBeam.Name;
       speckleBeam.baseLine = new Polyline(pointList, units);
+      speckleBeam.TeklaBeamType = TeklaBeamType.PolyBeam;
+      GetAllUserProperties(speckleBeam, PolyBeam);
       var solid = PolyBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
 

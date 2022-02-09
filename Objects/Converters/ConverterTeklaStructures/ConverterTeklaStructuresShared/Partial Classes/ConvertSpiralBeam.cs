@@ -37,6 +37,10 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.finish = SpiralBeam.Finish;
       speckleBeam.classNumber = SpiralBeam.Class;
       speckleBeam.name = SpiralBeam.Name;
+      var beamCS = SpiralBeam.GetCoordinateSystem();
+      speckleBeam.alignmentVector = new Objects.Geometry.Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
+      GetAllUserProperties(speckleBeam, SpiralBeam);
+      speckleBeam.TeklaBeamType = TeklaBeamType.SpiralBeam;
       //var refLine = SpiralBeam.GetReferenceLine(false);
       var solid = SpiralBeam.GetSolid();
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
