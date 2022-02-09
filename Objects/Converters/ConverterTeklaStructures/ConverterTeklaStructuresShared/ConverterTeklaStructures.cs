@@ -81,6 +81,12 @@ namespace Objects.Converter.TeklaStructures
           return true;
         case ContourPlate cp:
             return true;
+        case Weld w:
+            return true;
+        case PolygonWeld pw:
+            return true;
+        case BooleanPart bp:
+            return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -129,8 +135,20 @@ namespace Objects.Converter.TeklaStructures
           Report.Log($"Created Bolts");
           break;
         case ContourPlate o:
-            returnObject = ContourPlateToSpeckle(o);
+          returnObject = ContourPlateToSpeckle(o);
           Report.Log($"Created ContourPlate");
+            break;
+        case Weld o:
+          returnObject = WeldsToSpeckle(o);
+          Report.Log($"Created Weld");
+          break;
+        case PolygonWeld o:
+            returnObject = PoylgonWeldsToSpeckle(o);
+            Report.Log($"Created PolygonWeld");
+            break;
+        case BooleanPart o:
+            returnObject = BooleanPartToSpeckle(o);
+            Report.Log($"Created BooleanPart");
             break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));

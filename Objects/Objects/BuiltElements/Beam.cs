@@ -58,11 +58,14 @@ namespace Objects.BuiltElements.TeklaStructures
     public class TeklaBeam : Beam
     {
         public string name { get; set; }
+        [DetachProperty]
         public SectionProfile profile { get; set; }
+        [DetachProperty]
         public Material material { get; set; }
         public string finish { get; set; }
         public string classNumber { get; set; }
-        public Vector alignmentVector { get; set; }
+        public Vector alignmentVector { get; set; } // This can be set to get proper rotation if coming from an application that doesn't have positioning
+        public TeklaPosition position { get; set; }
         public Base userProperties { get; set; }
 
         public TeklaBeamType TeklaBeamType { get; set; }

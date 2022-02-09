@@ -13,6 +13,7 @@ using StructuralUtilities.PolygonMesher;
 using Speckle.Core.Models;
 using Objects.Structural.Properties.Profiles;
 using Tekla.Structures.Datatype;
+using Objects.BuiltElements.TeklaStructures;
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -153,7 +154,7 @@ namespace Objects.Converter.TeklaStructures
         speckleElement["parameters"] = paramBase;
       //speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = teklaObject.Identifier.GUID.ToString();
-      //speckleElement["units"] = ModelUnits;
+      speckleElement["units"] = GetUnitsFromModel();
     }
 
     public Structural.Properties.Profiles.SectionProfile GetProfile(string teklaProfileString)
@@ -385,6 +386,21 @@ namespace Objects.Converter.TeklaStructures
 
       var specklePolyline = new Polyline(coordinateList, units);
       return specklePolyline;
+    }
+
+    public TeklaPosition GetPositioning(Position position)
+    {
+        var specklePosition = new TeklaPosition()
+        {
+            Depth = (TeklaDepthEnum)position.Depth,
+            Plane = (TeklaPlaneEnum)position.Plane,
+            Rotation = (TeklaRotationEnum)position.Rotation,
+            depthOffset = position.DepthOffset,
+            planeOffset = position.PlaneOffset,
+            rotationOffset = position.RotationOffset
+        };
+            
+        return specklePosition;
     }
     //public static bool IsElementSupported(this ModelObject e)
     //{
