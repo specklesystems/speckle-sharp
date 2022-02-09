@@ -371,15 +371,6 @@ namespace Objects.Converter.TeklaStructures
       }
 
     }
-    public void ToNativeContourFromSpiral(Polycurve polycurve, Contour contour)
-    {
-      var curves = polycurve.segments;
-      foreach(var curve in curves)
-      {
-
-      }
-
-    }
     public Polyline ToSpecklePolyline(Tekla.Structures.Model.Polygon polygon)
     {
       List<double> coordinateList = new List<double>();
