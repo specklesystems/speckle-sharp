@@ -36,6 +36,7 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.finish = PolyBeam.Finish;
       speckleBeam.classNumber = PolyBeam.Class;
       var beamCS = PolyBeam.GetCoordinateSystem();
+      speckleBeam.position = GetPositioning(PolyBeam.Position);
       speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
       speckleBeam.name = PolyBeam.Name;
       speckleBeam.baseLine = new Polyline(pointList, units);

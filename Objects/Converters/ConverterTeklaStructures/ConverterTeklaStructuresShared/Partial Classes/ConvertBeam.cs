@@ -37,7 +37,7 @@ namespace Objects.Converter.TeklaStructures
             var myBeam = new Beam(startPoint, endPoint);
             SetBeamProperties(myBeam, teklaBeam);
             myBeam.Insert();
-            Model.CommitChanges();
+            //Model.CommitChanges();
             break;
           case TeklaBeamType.PolyBeam:
             Polyline polyline = (Polyline)beam.baseLine;
@@ -45,7 +45,7 @@ namespace Objects.Converter.TeklaStructures
             ToNativeContour(polyline, polyBeam.Contour);
             SetBeamProperties(polyBeam, teklaBeam);
             polyBeam.Insert();
-            Model.CommitChanges();
+            //Model.CommitChanges();
             break;
           case TeklaBeamType.SpiralBeam:
             Polyline polyline2 = (Polyline)beam.baseLine;
@@ -60,7 +60,7 @@ namespace Objects.Converter.TeklaStructures
             var spiralBeam = new Tekla.Structures.Model.SpiralBeam(startPt, rotatAxisPt1, rotatAxisPt2, totalRise, rotationAngle, twistAngleStart, twistAngleEnd);
             SetBeamProperties(spiralBeam, teklaBeam);
             spiralBeam.Insert();
-            Model.CommitChanges();
+            //Model.CommitChanges();
             break;
         }
       }
@@ -74,7 +74,7 @@ namespace Objects.Converter.TeklaStructures
         TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
         var myBeam = new Beam(startPoint, endPoint);
         myBeam.Insert();
-        Model.CommitChanges();
+        //Model.CommitChanges();
       }
     }
 
@@ -102,6 +102,7 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);
       var beamCS = beam.GetCoordinateSystem();
+            speckleBeam.position = GetPositioning(beam.Position);
       speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
       speckleBeam.finish = beam.Finish;
       speckleBeam.classNumber = beam.Class;
@@ -114,5 +115,36 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
       return speckleBeam;
     }
-  }
+        /// <summary>
+        /// Create beam without display mesh for boolean parts
+        /// </summary>
+        /// <param name="beam"></param>
+        /// <returns></returns>
+        public TeklaBeam AntiBeamToSpeckle(Tekla.Structures.Model.Beam beam)
+        {
+            var speckleBeam = new TeklaBeam();
+            //TO DO: Support for curved beams goes in here as well + twin beams
+
+            var endPoint = beam.EndPoint;
+            var startPoint = beam.StartPoint;
+            var units = GetUnitsFromModel();
+
+            Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
+            Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+            speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
+
+            speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
+            speckleBeam.material = GetMaterial(beam.Material.MaterialString);
+            var beamCS = beam.GetCoordinateSystem();
+            speckleBeam.position = GetPositioning(beam.Position);
+            speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
+            speckleBeam.classNumber = beam.Class;
+            speckleBeam.name = beam.Name;
+            speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
+            speckleBeam.applicationId = beam.Identifier.GUID.ToString();
+            speckleBeam["units"] = units;
+
+            return speckleBeam;
+        }
+    }
 }

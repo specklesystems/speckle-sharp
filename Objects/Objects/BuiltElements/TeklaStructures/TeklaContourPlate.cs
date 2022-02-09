@@ -10,12 +10,13 @@ namespace Objects.BuiltElements.TeklaStructures
 {
     public class TeklaContourPlate : Area
     {
+        [DetachProperty]
         public SectionProfile profile { get; set; }
+        [DetachProperty]
         public Material material { get; set; }
         public string finish { get; set; }
         public string classNumber { get; set; }
-        //public Base userProperties { get; set; }
-        //public List<TeklaContourPoint> contourPoints { get; set; }
+        public TeklaPosition position { get; set; }
 
         [DetachProperty]
         public Mesh displayMesh { get; set; }

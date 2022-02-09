@@ -21,17 +21,29 @@ namespace Objects.Converter.TeklaStructures
     {
       var speckleTeklaBolt= new BE.TeklaStructures.Bolts();
       var units = GetUnitsFromModel();
-      speckleTeklaBolt.BoltSize = Bolts.BoltSize;
-      speckleTeklaBolt.BoltStandard = Bolts.BoltStandard;
-      speckleTeklaBolt.CutLength = Bolts.CutLength;
-        speckleTeklaBolt.Coordinates = Bolts.BoltPositions
+      speckleTeklaBolt.boltSize = Bolts.BoltSize;
+      speckleTeklaBolt.boltStandard = Bolts.BoltStandard;
+      speckleTeklaBolt.cutLength = Bolts.CutLength;
+        speckleTeklaBolt.coordinates = Bolts.BoltPositions
             .Cast<TSG.Point>()
             .Select(p => new Point(p.X, p.Y, p.Z,units))
             .ToList();
-      
-      var solid = Bolts.GetSolid();
-      speckleTeklaBolt.displayMesh = GetMeshFromSolid(solid);
 
+            // Add bolted parts necessary for insertion into Tekla
+            speckleTeklaBolt.boltedPartsIds.Add(Bolts.PartToBeBolted.Identifier.GUID.ToString());
+            speckleTeklaBolt.boltedPartsIds.Add(Bolts.PartToBoltTo.Identifier.GUID.ToString()); 
+            if (Bolts.OtherPartsToBolt.Count > 0)
+            {
+                foreach (Part otherPart in Bolts.OtherPartsToBolt.Cast<Part>())
+                {
+                    speckleTeklaBolt.boltedPartsIds.Add(otherPart.Identifier.GUID.ToString());
+                }
+            }
+
+            GetAllUserProperties(speckleTeklaBolt, Bolts);
+
+            var solid = Bolts.GetSolid();
+      speckleTeklaBolt.displayMesh = GetMeshFromSolid(solid);
 
       return speckleTeklaBolt;
     }
