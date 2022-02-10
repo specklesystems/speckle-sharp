@@ -32,19 +32,24 @@ namespace Archicad.Converters
           case Objects.BuiltElements.Wall wall:
             {
               var baseLine = (Line)wall.baseLine;
-              walls.Add(new Objects.BuiltElements.Archicad.Wall(Utils.ScaleToNative(baseLine.start), Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units)));
+              walls.Add(new Objects.BuiltElements.Archicad.Wall(Utils.ScaleToNative(baseLine.start),
+                Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units)));
               break;
             }
         }
       }
+
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token);
 
       return result is null ? new List<string>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token)
     {
-      IEnumerable<Objects.BuiltElements.Archicad.Wall> data = await AsyncCommandProcessor.Execute(new Communication.Commands.GetWallData(elements.Select(e => e.elementId)), token);
+      IEnumerable<Objects.BuiltElements.Archicad.Wall> data =
+        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWallData(elements.Select(e => e.elementId)),
+          token);
       if (data is null)
       {
         return new List<Base>();
@@ -53,7 +58,8 @@ namespace Archicad.Converters
       List<Base> walls = new List<Base>();
       foreach (Objects.BuiltElements.Archicad.Wall wall in data)
       {
-        wall.displayValue = Operations.ModelConverter.MeshToSpeckle(elements.First(e => e.elementId == wall.elementId).model);
+        wall.displayValue =
+          Operations.ModelConverter.MeshToSpeckle(elements.First(e => e.elementId == wall.elementId).model);
         wall.baseLine = new Line(wall.startPoint, wall.endPoint);
         walls.Add(wall);
       }

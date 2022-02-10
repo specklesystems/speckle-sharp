@@ -10,7 +10,7 @@ namespace Archicad.Converters
 {
   public sealed class Ceiling : IConverter
   {
-    public Type Type => typeof(Objects.BuiltElements.Archicad.Ceiling);
+    public Type Type => typeof(Objects.BuiltElements.Ceiling);
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {

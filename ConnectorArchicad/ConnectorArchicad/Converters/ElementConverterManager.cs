@@ -81,12 +81,24 @@ namespace Archicad
         .ToDictionary(group => group.Key, group => group.Cast<Base>());
       foreach (var(key, value)in elementTypeTable)
       {
-        var converter = GetConverterForElement(key);
-        List<string> convertedElementIds = await converter.ConvertToArchicad(value, token);
-        result.AddRange(convertedElementIds);
+        var convertedElementIds = await ConvertBasesToNative(value, token);
+        if (convertedElementIds != null)
+          result.AddRange(convertedElementIds);
       }
 
       return result;
+    }
+
+    public async Task<List<string> ?> ConvertBasesToNative(IEnumerable<Base> objects, CancellationToken token)
+    {
+      var objs = objects as Base[ ] ?? objects.ToArray();
+      return objs[0]
+      switch
+      {
+        Wall => await GetConverterForElement(typeof(Wall)).ConvertToArchicad(objs, token),
+        Ceiling => await GetConverterForElement(typeof(Ceiling)).ConvertToArchicad(objs, token),
+        _ => await GetConverterForElement(typeof(DirectShape)).ConvertToArchicad(objs, token)
+      };
     }
 
     private void RegisterConverters()
