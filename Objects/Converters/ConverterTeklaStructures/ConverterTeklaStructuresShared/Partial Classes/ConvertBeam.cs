@@ -108,6 +108,8 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.classNumber = beam.Class;
       speckleBeam.name = beam.Name;
       speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
+      var rebar = beam.GetReinforcements();
+
 
       GetAllUserProperties(speckleBeam, beam);
 

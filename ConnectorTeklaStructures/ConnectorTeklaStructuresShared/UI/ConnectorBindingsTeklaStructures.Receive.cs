@@ -127,7 +127,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
 
 
-
+      Model.CommitChanges();
       try
       {
         //await state.RefreshStream();

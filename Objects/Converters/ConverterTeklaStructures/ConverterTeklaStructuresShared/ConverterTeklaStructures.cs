@@ -134,6 +134,10 @@ namespace Objects.Converter.TeklaStructures
           returnObject = BoltsToSpeckle(o);
           Report.Log($"Created Bolts");
           break;
+        case RebarGroup o:
+          returnObject = RebarGroupToSpeckle(o);
+          Report.Log($"Created Rebars");
+          break;
         case ContourPlate o:
           returnObject = ContourPlateToSpeckle(o);
           Report.Log($"Created ContourPlate");
