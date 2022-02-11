@@ -110,7 +110,7 @@ namespace Archicad.Launcher
 
     private static string IdentifyStream(StreamState state)
     {
-      var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId};
+      var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null};
       return stream.ToString();
     }
   }
