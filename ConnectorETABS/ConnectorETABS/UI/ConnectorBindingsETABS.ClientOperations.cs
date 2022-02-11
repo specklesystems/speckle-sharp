@@ -7,6 +7,7 @@ using Speckle.Core.Logging;
 using ConnectorETABS.Storage;
 using System.Linq;
 using System.Threading.Tasks;
+using DesktopUI2.Models.Settings;
 
 namespace Speckle.ConnectorETABS.UI
 {
@@ -62,6 +63,11 @@ namespace Speckle.ConnectorETABS.UI
         DocumentStreams = StreamStateManager.ReadState(Model);
 
       return DocumentStreams;
+    }
+
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting> { };
     }
 
     //public override void PersistAndUpdateStreamInFile(StreamState state)
