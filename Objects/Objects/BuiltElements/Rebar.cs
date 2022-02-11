@@ -28,14 +28,27 @@ namespace Objects.BuiltElements.TeklaStructures
 {
   public class TeklaRebar : Rebar
   {
+    public TeklaRebar()
+    {
+    }
+
     public string name { get; set; }
+    
+    [DetachProperty]
     public Hook startHook { get; set; }
+    [DetachProperty]
     public Hook endHook { get; set; }
     public double classNumber { get; set; }
     public string size { get; set; }
+
+    [DetachProperty]
     public Material material { get; set; }
   }
   public class Hook{
+    public Hook()
+    {
+    }
+
     public double angle { get; set; }
     public double length { get; set; }
     public double radius { get; set; }

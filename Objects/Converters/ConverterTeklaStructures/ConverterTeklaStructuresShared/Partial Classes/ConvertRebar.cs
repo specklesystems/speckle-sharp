@@ -12,6 +12,7 @@ using Tekla.Structures.Solid;
 using TSG = Tekla.Structures.Geometry3d;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
+using Objects.Structural.Materials;
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -28,10 +29,12 @@ namespace Objects.Converter.TeklaStructures
       }
       Rebar.units = GetUnitsFromModel();
       Rebar.name = rebarGroup.Name;
+      Rebar.material = new Structural.Materials.Material();
       Rebar.material.name = rebarGroup.Grade;
       Rebar.material.grade = rebarGroup.Grade;
       Rebar.size = rebarGroup.Size;
       Rebar.classNumber = rebarGroup.Class;
+      Rebar.startHook = new Hook();
       Rebar.startHook.angle = rebarGroup.StartHook.Angle;
       Rebar.startHook.length = rebarGroup.StartHook.Length;
       Rebar.startHook.radius = rebarGroup.StartHook.Radius;
@@ -52,6 +55,7 @@ namespace Objects.Converter.TeklaStructures
           Rebar.startHook.shape = shape.CUSTOM_HOOK;
           break;
       }
+      Rebar.endHook = new Hook();
       Rebar.endHook.angle = rebarGroup.EndHook.Angle;
       Rebar.endHook.length = rebarGroup.EndHook.Length;
       Rebar.endHook.radius = rebarGroup.EndHook.Radius;

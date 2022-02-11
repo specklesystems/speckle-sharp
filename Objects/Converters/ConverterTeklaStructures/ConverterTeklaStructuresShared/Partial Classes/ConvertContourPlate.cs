@@ -20,15 +20,15 @@ namespace Objects.Converter.TeklaStructures
     {
       if (!(area.outline is Polyline)) { }
       var ContourPlate = new ContourPlate();
-      ToNativeContour((Polyline)area.outline, ContourPlate.Contour);
+      ToNativeContourPlate((Polyline)area.outline, ContourPlate.Contour);
       if (area is TeklaContourPlate)
       {
         var contour = (TeklaContourPlate)area;
         ContourPlate.Name = contour.name;
         ContourPlate.Profile.ProfileString = contour.profile.name;
         ContourPlate.Finish = contour.finish;
-        ContourPlate.Class = ContourPlate.Class;
-        ContourPlate.Material.MaterialString = contour.material.name;
+        //ContourPlate.Class = ContourPlate.Class;
+        //ContourPlate.Material.MaterialString = contour.material.name;
       }
       ContourPlate.Insert();
       //Model.CommitChanges();
@@ -43,45 +43,55 @@ namespace Objects.Converter.TeklaStructures
       specklePlate.material = GetMaterial(plate.Material.MaterialString);
       specklePlate.finish = plate.Finish;
       specklePlate.classNumber = plate.Class;
-            specklePlate.position = GetPositioning(plate.Position);
+      specklePlate.position = GetPositioning(plate.Position);
 
       Polygon teklaPolygon = null;
       plate.Contour.CalculatePolygon(out teklaPolygon);
       if (teklaPolygon != null)
         specklePlate.outline = ToSpecklePolyline(teklaPolygon);
 
-            GetAllUserProperties(specklePlate, plate);
+      GetAllUserProperties(specklePlate, plate);
 
       var solid = plate.GetSolid();
       specklePlate.displayMesh = GetMeshFromSolid(solid);
+      var rebars = plate.GetReinforcements();
+      if (rebars != null)
+      {
+        foreach (var rebar in rebars)
+        {
+          if (rebar is RebarGroup) {specklePlate.rebars = RebarGroupToSpeckle((RebarGroup)rebar); }
 
+        }
+      }
+      return specklePlate;
+
+
+    }
+    /// <summary>
+    /// Create a contour plate without a display mesh for boolean parts
+    /// </summary>
+    /// <param name="plate"></param>
+    /// <returns></returns>
+    public TeklaContourPlate AntiContourPlateToSpeckle(Tekla.Structures.Model.ContourPlate plate)
+    {
+      var specklePlate = new TeklaContourPlate();
+      specklePlate.name = plate.Name;
+      specklePlate.profile = GetProfile(plate.Profile.ProfileString);
+      specklePlate.material = GetMaterial(plate.Material.MaterialString);
+
+      specklePlate.classNumber = plate.Class;
+      specklePlate.position = GetPositioning(plate.Position);
+
+      Polygon teklaPolygon = null;
+      plate.Contour.CalculatePolygon(out teklaPolygon);
+      if (teklaPolygon != null)
+        specklePlate.outline = ToSpecklePolyline(teklaPolygon);
+
+      var units = GetUnitsFromModel();
+      specklePlate.applicationId = plate.Identifier.GUID.ToString();
+      specklePlate["units"] = units;
       return specklePlate;
     }
-        /// <summary>
-        /// Create a contour plate without a display mesh for boolean parts
-        /// </summary>
-        /// <param name="plate"></param>
-        /// <returns></returns>
-        public TeklaContourPlate AntiContourPlateToSpeckle(Tekla.Structures.Model.ContourPlate plate)
-        {
-            var specklePlate = new TeklaContourPlate();
-            specklePlate.name = plate.Name;
-            specklePlate.profile = GetProfile(plate.Profile.ProfileString);
-            specklePlate.material = GetMaterial(plate.Material.MaterialString);
-
-            specklePlate.classNumber = plate.Class;
-            specklePlate.position = GetPositioning(plate.Position);
-
-            Polygon teklaPolygon = null;
-            plate.Contour.CalculatePolygon(out teklaPolygon);
-            if (teklaPolygon != null)
-                specklePlate.outline = ToSpecklePolyline(teklaPolygon);
-
-            var units = GetUnitsFromModel();
-            specklePlate.applicationId = plate.Identifier.GUID.ToString();
-            specklePlate["units"] = units;
-            return specklePlate;
-        }
-    }
+  }
 
 }

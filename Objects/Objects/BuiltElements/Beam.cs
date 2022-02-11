@@ -68,6 +68,9 @@ namespace Objects.BuiltElements.TeklaStructures
         public TeklaPosition position { get; set; }
         public Base userProperties { get; set; }
 
+        [DetachProperty]
+        public Base rebars { get; set; }
+
         public TeklaBeamType TeklaBeamType { get; set; }
 
         public TeklaBeam() { }
@@ -81,6 +84,10 @@ namespace Objects.BuiltElements.TeklaStructures
         }
     }
     public class SpiralBeam : TeklaBeam {
+    public SpiralBeam()
+    {
+    }
+
     public Point startPoint { get; set; }
     public Point rotationAxisPt1 { get; set; }
     public Point rotationAxisPt2 { get; set; }
@@ -88,5 +95,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public double rotationAngle { get; set; }
     public double twistAngleStart { get; set; }
     public double twistAngleEnd { get; set; }
+
+   
     }
 }

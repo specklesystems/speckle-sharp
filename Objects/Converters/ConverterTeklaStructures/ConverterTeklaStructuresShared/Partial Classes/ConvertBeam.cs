@@ -42,7 +42,7 @@ namespace Objects.Converter.TeklaStructures
           case TeklaBeamType.PolyBeam:
             Polyline polyline = (Polyline)beam.baseLine;
             var polyBeam = new PolyBeam();
-            ToNativeContour(polyline, polyBeam.Contour);
+            ToNativeContourPlate(polyline, polyBeam.Contour);
             SetBeamProperties(polyBeam, teklaBeam);
             polyBeam.Insert();
             //Model.CommitChanges();
@@ -102,14 +102,21 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);
       var beamCS = beam.GetCoordinateSystem();
-            speckleBeam.position = GetPositioning(beam.Position);
+      speckleBeam.position = GetPositioning(beam.Position);
       speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
       speckleBeam.finish = beam.Finish;
       speckleBeam.classNumber = beam.Class;
       speckleBeam.name = beam.Name;
       speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
-      var rebar = beam.GetReinforcements();
+      var rebars = beam.GetReinforcements();
+      if (rebars != null)
+      {
+        foreach (var rebar in rebars)
+        {
+           if (rebar is RebarGroup) {speckleBeam.rebars =  RebarGroupToSpeckle((RebarGroup)rebar); }
 
+        }
+      }
 
       GetAllUserProperties(speckleBeam, beam);
 
@@ -117,36 +124,36 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
       return speckleBeam;
     }
-        /// <summary>
-        /// Create beam without display mesh for boolean parts
-        /// </summary>
-        /// <param name="beam"></param>
-        /// <returns></returns>
-        public TeklaBeam AntiBeamToSpeckle(Tekla.Structures.Model.Beam beam)
-        {
-            var speckleBeam = new TeklaBeam();
-            //TO DO: Support for curved beams goes in here as well + twin beams
+    /// <summary>
+    /// Create beam without display mesh for boolean parts
+    /// </summary>
+    /// <param name="beam"></param>
+    /// <returns></returns>
+    public TeklaBeam AntiBeamToSpeckle(Tekla.Structures.Model.Beam beam)
+    {
+      var speckleBeam = new TeklaBeam();
+      //TO DO: Support for curved beams goes in here as well + twin beams
 
-            var endPoint = beam.EndPoint;
-            var startPoint = beam.StartPoint;
-            var units = GetUnitsFromModel();
+      var endPoint = beam.EndPoint;
+      var startPoint = beam.StartPoint;
+      var units = GetUnitsFromModel();
 
-            Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
-            Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
-            speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
+      Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
+      Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
 
-            speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
-            speckleBeam.material = GetMaterial(beam.Material.MaterialString);
-            var beamCS = beam.GetCoordinateSystem();
-            speckleBeam.position = GetPositioning(beam.Position);
-            speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
-            speckleBeam.classNumber = beam.Class;
-            speckleBeam.name = beam.Name;
-            speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
-            speckleBeam.applicationId = beam.Identifier.GUID.ToString();
-            speckleBeam["units"] = units;
+      speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
+      speckleBeam.material = GetMaterial(beam.Material.MaterialString);
+      var beamCS = beam.GetCoordinateSystem();
+      speckleBeam.position = GetPositioning(beam.Position);
+      speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
+      speckleBeam.classNumber = beam.Class;
+      speckleBeam.name = beam.Name;
+      speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
+      speckleBeam.applicationId = beam.Identifier.GUID.ToString();
+      speckleBeam["units"] = units;
 
-            return speckleBeam;
-        }
+      return speckleBeam;
     }
+  }
 }

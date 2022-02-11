@@ -21,6 +21,9 @@ namespace Objects.BuiltElements.TeklaStructures
         [DetachProperty]
         public Mesh displayMesh { get; set; }
 
+        [DetachProperty]
+        public Base rebars { get; set; }
+
         public string units { get; set; }
 
         [SchemaInfo("ContourPlate", "Creates a TeklaStructures contour plate.", "Tekla", "Structure")]
