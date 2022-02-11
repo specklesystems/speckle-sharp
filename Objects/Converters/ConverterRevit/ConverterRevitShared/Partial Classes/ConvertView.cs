@@ -69,12 +69,15 @@ namespace Objects.Converter.Revit
 
     public DB.View ViewToNative(View3D speckleView)
     {
+      var editViewName = EditViewName(speckleView.name, "SpeckleView");
+
       // get view3d type
-      ViewFamilyType viewType = new FilteredElementCollector(Doc)
-        .WhereElementIsElementType().OfClass(typeof(ViewFamilyType))
-        .ToElements().Cast<ViewFamilyType>()
-        .Where(o => o.ViewFamily == ViewFamily.ThreeDimensional)
-        .FirstOrDefault();
+      var viewType = new FilteredElementCollector(Doc)
+        .WhereElementIsElementType()
+        .OfClass(typeof(ViewFamilyType))
+        .ToElements()
+        .Cast<ViewFamilyType>()
+        .FirstOrDefault(o => o.ViewFamily == ViewFamily.ThreeDimensional);
 
       // get orientation
       var up = new XYZ(speckleView.upDirection.x, speckleView.upDirection.y, speckleView.upDirection.z).Normalize(); //unit vector
@@ -95,14 +98,23 @@ namespace Objects.Converter.Revit
       view.SetOrientation(orientation);
       view.SaveOrientationAndLock();
 
-      if (view != null && view.IsValidObject)
+      if (view.IsValidObject)
         SetInstanceParameters(view, speckleView);
       view = SetViewParams(view, speckleView);
-
+    
       // set name last due to duplicate name errors
-      view.Name = EditViewName(speckleView.name, "SpeckleView");
-
-      return view;
+      try
+      {
+        view.Name = editViewName;
+        return view;
+      }
+      catch (Exception e)
+      {
+        Report.ConversionErrors.Add(new Exception($@"View {editViewName} already exists."));
+        view.Dispose();
+        view = null;
+        return null;
+      }
     }
 
     private void AttachViewParams(View speckleView, DB.View view)
@@ -146,15 +158,28 @@ namespace Objects.Converter.Revit
 
     private string EditViewName(string name, string prefix = null)
     {
+      var newName = name;
       // append commit info as prefix
       if (prefix != null)
-        name = prefix + "-" + name;
+        newName = prefix + "-" + name;
+      
+      // Check for invalid characters in view name
+      var results = new Regex("[\\{\\}\\[\\]\\:|;<>?`~]")
+        .Match(newName);
+      
+      // If none, fast exit
+      if (results.Length <= 0) 
+        return newName;
+      
+      // Name contains invalid characters, replace accordingly.
+      var corrected = Regex.Replace(newName, "[\\{\\[]", "(");
+      corrected = Regex.Replace(corrected, "[\\}\\]]", ")");
+      corrected = Regex.Replace(corrected, "[\\:|;<>?`~]", "-");
+      
+      Report.ConversionLog.Add($@"Renamed view {name} to {corrected} due to invalid characters.");
+      
+      return corrected;
 
-      // replace or remove all invalid chars
-      var replaceOpen = Replace(name, new char[] { '{', '[' }, "(");
-      var replaceClose = Replace(replaceOpen, new char[] { '}', ']' }, ")");
-      var cleanName = Replace(replaceClose, new char[] { '\\', ':', '|', ';', '<', '>', '?', '`', '~' }, "");
-      return cleanName;
     }
   }
 }

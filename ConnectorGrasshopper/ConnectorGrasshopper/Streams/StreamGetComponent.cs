@@ -8,7 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -83,7 +83,7 @@ namespace ConnectorGrasshopper.Streams
         // Validation
         string errorMessage = null;
         if (DA.Iteration == 0)
-          Tracker.TrackPageview(Tracker.STREAM_GET);
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_GET);
 
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
@@ -98,7 +98,7 @@ namespace ConnectorGrasshopper.Streams
           {
             var acc = idWrapper.GetAccount().Result;
             stream = idWrapper;
-            Telemetry.TrackEvent(accountToUse, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
+            Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
           }
           catch (Exception e)
           {

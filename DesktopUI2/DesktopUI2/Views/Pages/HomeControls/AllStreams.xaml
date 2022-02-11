@@ -115,10 +115,6 @@
       </m:Card>
     </Grid>
 
-
-
-
-
     <Grid Grid.Row="3" Margin="0,15,0,0">
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding InProgress}" />
     </Grid>

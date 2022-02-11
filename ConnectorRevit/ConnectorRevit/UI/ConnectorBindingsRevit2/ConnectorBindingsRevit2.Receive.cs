@@ -24,8 +24,6 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
-
-
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -38,6 +36,12 @@ namespace Speckle.ConnectorRevit.UI
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
       var previouslyReceiveObjects = state.ReceivedObjects;
+
+      // set converter settings as tuples (setting slug, setting selection)
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
@@ -136,14 +140,11 @@ namespace Speckle.ConnectorRevit.UI
 
       });
 
-
-
       if (converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
       {
         // the commit is being rolled back
         return null;
       }
-
 
       return state;
     }
@@ -161,7 +162,6 @@ namespace Speckle.ConnectorRevit.UI
         {
           CurrentDoc.Document.Delete(element.Id);
         }
-
       }
     }
 
@@ -253,13 +253,11 @@ namespace Speckle.ConnectorRevit.UI
 
       else
       {
-        converter.Report.Log($"Skipped object of type {obj.GetType()}, not supported.");
+        if(obj != null && !obj.GetType().IsPrimitive)
+          converter.Report.Log($"Skipped object of type {obj.GetType()}, not supported.");
       }
 
       return objects;
     }
-
-
-
   }
 }

@@ -8,7 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -55,7 +55,7 @@ namespace ConnectorGrasshopper.Streams
         string userId = null;
         var limit = 10;
         if (DA.Iteration == 0)
-          Tracker.TrackPageview(Tracker.STREAM_LIST);
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_LIST);
 
         DA.GetData(0, ref userId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
@@ -82,7 +82,7 @@ namespace ConnectorGrasshopper.Streams
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-        Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
+        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
 
         Task.Run(async () =>
         {

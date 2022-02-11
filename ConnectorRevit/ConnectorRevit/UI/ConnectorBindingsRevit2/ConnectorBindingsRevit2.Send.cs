@@ -32,13 +32,17 @@ namespace Speckle.ConnectorRevit.UI
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
 
+      // set converter settings as tuples (setting slug, setting selection)
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
+
       var streamId = state.StreamId;
       var client = state.Client;
 
       var selectedObjects = GetSelectionFilterObjects(state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
-
-
 
       if (!selectedObjects.Any())
       {

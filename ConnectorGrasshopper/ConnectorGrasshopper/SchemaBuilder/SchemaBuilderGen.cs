@@ -439,7 +439,7 @@ public class ETABSOpeningSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSSpringPropertySchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSSpringPropertySchemaComponent(): base("PointSpring", "PointSpring", "Create an ETABS PointSpring from Link", "Speckle 2 ETABS", "Properties") { }
+    public ETABSSpringPropertySchemaComponent(): base("PointSpring from Link", "PointSpring from Link", "Create an ETABS PointSpring from Link", "Speckle 2 ETABS", "Properties") { }
     
     public override Guid ComponentGuid => new Guid("83812607-cf77-2b4e-44ce-ccf4349a227f");
     
@@ -452,7 +452,7 @@ public class ETABSSpringPropertySchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSSpringProperty1SchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSSpringProperty1SchemaComponent(): base("PointSpring", "PointSpring", "Create an ETABS PointSpring from Soil Profile", "Speckle 2 ETABS", "Properties") { }
+    public ETABSSpringProperty1SchemaComponent(): base("PointSpring from Soil Profile", "PointSpring from Soil Profile", "Create an ETABS PointSpring from Soil Profile", "Speckle 2 ETABS", "Properties") { }
     
     public override Guid ComponentGuid => new Guid("7ff9c658-f671-8a85-9842-a9f20346bd69");
     

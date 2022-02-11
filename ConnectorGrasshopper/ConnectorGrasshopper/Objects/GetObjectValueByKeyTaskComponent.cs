@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -45,8 +46,8 @@ namespace ConnectorGrasshopper.Objects
         DA.GetData(1, ref key);
         if (DA.Iteration == 0)
         {
-          Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Object Value By Key" } });
-          Tracker.TrackPageview("objects", "valueByKey");
+          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Object Value By Key" } });
+          Logging.Tracker.TrackPageview("objects", "valueByKey");
         }
 
 
@@ -78,12 +79,12 @@ namespace ConnectorGrasshopper.Objects
         case null:
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object");
           break;
-        case IList<object> list:
-          {
-            var ghGoos = list.Select(GH_Convert.ToGoo).ToList();
-            DA.SetDataList(0, ghGoos);
-            break;
-          }
+        case IEnumerable list:
+        {
+          var ghGoos = list.Cast<object>().Select(GH_Convert.ToGoo).ToList();
+          DA.SetDataList(0, ghGoos);
+          break;
+        }
         default:
           Params.Output[0].Access = GH_ParamAccess.item;
           DA.SetData(0, GH_Convert.ToGoo(value));
@@ -109,12 +110,12 @@ namespace ConnectorGrasshopper.Objects
           case null:
             AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object: " + key);
             break;
-          case List<object> list:
-            {
-              value = list.Select(
-                item => Converter != null ? Utilities.TryConvertItemToNative(item, Converter) : item).ToList();
-              break;
-            }
+          case IList list:
+          {
+            value = list.Cast<object>().Select(
+              item => Converter != null ? Utilities.TryConvertItemToNative(item, Converter) : item).ToList();
+            break;
+          }
           default:
             value = Converter != null ? Utilities.TryConvertItemToNative(obj, Converter) : obj;
             break;
@@ -123,7 +124,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
 
       }

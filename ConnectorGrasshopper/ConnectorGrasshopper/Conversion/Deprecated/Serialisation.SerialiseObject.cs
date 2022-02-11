@@ -7,7 +7,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Conversion
@@ -89,7 +89,7 @@ namespace ConnectorGrasshopper.Conversion
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }
@@ -106,8 +106,8 @@ namespace ConnectorGrasshopper.Conversion
       if (CancellationToken.IsCancellationRequested) return;
       if (DA.Iteration == 0)
       {
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Serialize" } });
-        Tracker.TrackPageview(Tracker.SERIALIZE);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Serialize" } });
+        Logging.Tracker.TrackPageview(Logging.Tracker.SERIALIZE);
       }
 
       GH_Structure<GH_SpeckleBase> _objects;

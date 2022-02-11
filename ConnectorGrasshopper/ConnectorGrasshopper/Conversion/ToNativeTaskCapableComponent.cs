@@ -41,34 +41,23 @@ namespace ConnectorGrasshopper.Conversion
     {
       pManager.AddGenericParameter("Data", "D", "Converted data in GH native format.", GH_ParamAccess.item);
     }
-
-    private CancellationTokenSource source;
-
+    
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (RunCount == 1)
-      {
-        source = new CancellationTokenSource(1000);
-      }
-
       if (InPreSolve)
       {
-        // You must place "RunCount == 1" here,
-        // because RunCount is reset when "InPreSolve" becomes "false"
-        if (RunCount == 1)
-          source = new CancellationTokenSource(100);
-
         object item = null;
         DA.GetData(0, ref item);
-        var task = Task.Run(() => DoWork(item, DA), source.Token);
+        var task = Task.Run(() => DoWork(item, DA), CancelToken);
         TaskList.Add(task);
         return;
       }
 
-      if (source.IsCancellationRequested || !GetSolveResults(DA, out var data))
+      var solveResults = GetSolveResults(DA, out var data);
+      if (solveResults == false)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Couldn't do the request");
-        DA.AbortComponentSolution(); // You must abort the `SolveInstance` iteration
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $@"The conversion operation failed for {DA.ParameterTargetPath(0)}[{DA.ParameterTargetIndex(0)}]");
+        //DA.AbortComponentSolution(); // You must abort the `SolveInstance` iteration
         return;
       }
 
@@ -79,15 +68,14 @@ namespace ConnectorGrasshopper.Conversion
     {
       try
       {
-        if (source.Token.IsCancellationRequested)
-          DA.AbortComponentSolution();
-
         return ConnectorGrasshopper.Extras.Utilities.TryConvertItemToNative(item, Converter, true);
-
       }
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
+        if (e is AggregateException aggregateException)
+          e = aggregateException.Flatten();
+        
         Log.CaptureException(e);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
         return new GH_SpeckleBase();

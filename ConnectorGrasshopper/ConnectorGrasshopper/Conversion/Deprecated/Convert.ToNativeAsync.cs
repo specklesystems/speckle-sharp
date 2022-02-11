@@ -11,7 +11,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -95,7 +95,7 @@ namespace ConnectorGrasshopper.Conversion
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
         Parent.Message = "Error";
       }
@@ -132,8 +132,8 @@ namespace ConnectorGrasshopper.Conversion
 
       if (DA.Iteration == 0)
       {
-        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
+        Logging.Tracker.TrackPageview(Logging.Tracker.CONVERT_TONATIVE);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
       }
 
 
