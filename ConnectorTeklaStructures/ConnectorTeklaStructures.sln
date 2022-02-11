@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31919.166
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2021", "ConnectorTeklaStructures2021\ConnectorTeklaStructures2021.csproj", "{3AF1EF30-0906-4926-A02C-4E3AD666352A}"
 	ProjectSection(ProjectDependencies) = postProject

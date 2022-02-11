@@ -13,12 +13,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Speckle.ConnectorTeklaStructures.Util;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Models.Settings;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
   {
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
+    }
     #region receiving
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {

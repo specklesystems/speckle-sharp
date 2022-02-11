@@ -44,7 +44,7 @@ namespace Objects.BuiltElements.TeklaStructures
     [DetachProperty]
     public Material material { get; set; }
   }
-  public class Hook{
+  public class Hook :Base {
     public Hook()
     {
     }
