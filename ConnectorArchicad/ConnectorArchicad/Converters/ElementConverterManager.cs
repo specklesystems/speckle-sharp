@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
+using Archicad.Model;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
@@ -19,9 +20,9 @@ namespace Archicad
   {
     #region --- Fields ---
 
-    public static ElementConverterManager Instance { get; } = new ElementConverterManager();
+    public static ElementConverterManager Instance { get; } = new();
 
-    private Dictionary<Type, Converters.IConverter> Converters { get; } = new Dictionary<Type, Converters.IConverter>();
+    private Dictionary<Type, Converters.IConverter> Converters { get; } = new();
 
     private Converters.IConverter DefaultConverter { get; } = new Converters.DirectShape();
 
@@ -40,65 +41,50 @@ namespace Archicad
 
     public async Task<Base?> ConvertToSpeckle(IEnumerable<string> elementIds, CancellationToken token)
     {
-      IEnumerable<Model.ElementModelData> rawModels =
+      IEnumerable<ElementModelData> rawModels =
         await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(elementIds), token);
-      if (rawModels is null)
+      if ( rawModels is null )
         return null;
 
       Dictionary<Type, IEnumerable<string>> elementTypeTable =
         await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(elementIds), token);
-      if (elementTypeTable is null)
+      if ( elementTypeTable is null )
         return null;
 
       var elements = new List<Base>();
-      foreach (var(key, value)in elementTypeTable)
+      foreach ( var (key, value)in elementTypeTable )
       {
         var converter = GetConverterForElement(key);
-        List<Base> convertedElements =
+        var convertedElements =
           await converter.ConvertToSpeckle(rawModels.Where(model => value.Contains(model.elementId)), token);
         elements.AddRange(convertedElements);
       }
 
-      if (elements.Count == 0)
+      if ( elements.Count == 0 )
         return null;
 
-      var commitObject = new Base
-      {
-        ["@Elements"] = elements
-      };
+      var commitObject = new Base { [ "@Elements" ] = elements };
 
       return commitObject;
     }
 
     public async Task<List<string>> ConvertToNative(Base obj, CancellationToken token)
     {
-      List<string> result = new List<string>();
+      var result = new List<string>();
 
       var elements = FlattenCommitObject(obj);
       Console.WriteLine(String.Join(", ", elements.Select(el => $"{el.speckle_type}: {el.id}")));
 
       var elementTypeTable = elements.GroupBy(element => element.GetType())
         .ToDictionary(group => group.Key, group => group.Cast<Base>());
-      foreach (var(key, value)in elementTypeTable)
+      foreach ( var (key, value)in elementTypeTable )
       {
-        var convertedElementIds = await ConvertBasesToNative(value, token);
-        if (convertedElementIds != null)
-          result.AddRange(convertedElementIds);
+        var converter = GetConverterForElement(key);
+        var convertedElementIds = await converter.ConvertToArchicad(value, token);
+        result.AddRange(convertedElementIds);
       }
 
       return result;
-    }
-
-    public async Task<List<string> ?> ConvertBasesToNative(IEnumerable<Base> objects, CancellationToken token)
-    {
-      var objs = objects as Base[ ] ?? objects.ToArray();
-      return objs[0]
-      switch
-      {
-        Wall => await GetConverterForElement(typeof(Wall)).ConvertToArchicad(objs, token),
-        Ceiling => await GetConverterForElement(typeof(Ceiling)).ConvertToArchicad(objs, token),
-        _ => await GetConverterForElement(typeof(DirectShape)).ConvertToArchicad(objs, token)
-      };
     }
 
     private void RegisterConverters()
@@ -106,10 +92,10 @@ namespace Archicad
       IEnumerable<Type> convertes = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
         t.IsClass && !t.IsAbstract && typeof(Converters.IConverter).IsAssignableFrom(t));
 
-      foreach (Type converterType in convertes)
+      foreach ( Type converterType in convertes )
       {
-        var converter = Activator.CreateInstance(converterType)as Converters.IConverter;
-        if (converter?.Type is null)
+        var converter = Activator.CreateInstance(converterType) as Converters.IConverter;
+        if ( converter?.Type is null )
           continue;
 
         Converters.Add(converter.Type, converter);
@@ -118,20 +104,27 @@ namespace Archicad
 
     private Converters.IConverter GetConverterForElement(Type elementType)
     {
-      return Converters.ContainsKey(elementType) ? Converters[elementType] : DefaultConverter;
+      if ( Converters.ContainsKey(elementType) )
+        return Converters[ elementType ];
+      if ( elementType.IsSubclassOf(typeof(Wall)) )
+        return Converters[ typeof(Wall) ];
+      if ( elementType.IsSubclassOf(typeof(Ceiling)) )
+        return Converters[ typeof(Ceiling) ];
+
+      return DefaultConverter;
     }
 
-    public bool CanConvertToNative(Base @object)
+    public static bool CanConvertToNative(Base @object)
     {
       return @object
-      switch
-      {
-        Wall _ => true,
+        switch
+        {
+          Wall _ => true,
           Ceiling _ => true,
           DirectShape _ => true,
           Mesh _ => true,
           _ => false
-      };
+        };
     }
 
     /// <summary>
@@ -145,33 +138,33 @@ namespace Archicad
     {
       List<Base> objects = new List<Base>();
 
-      switch (obj)
+      switch ( obj )
       {
         case Base @base when CanConvertToNative(@base):
           objects.Add(@base);
 
           return objects;
         case Base @base:
-          {
-            foreach (var prop in @base.GetDynamicMembers())
-              objects.AddRange(FlattenCommitObject(@base[prop]));
+        {
+          foreach ( var prop in @base.GetDynamicMembers() )
+            objects.AddRange(FlattenCommitObject(@base[ prop ]));
 
-            return objects;
-          }
+          return objects;
+        }
         case IReadOnlyList<object> list:
-          {
-            foreach (var listObj in list)
-              objects.AddRange(FlattenCommitObject(listObj));
+        {
+          foreach ( var listObj in list )
+            objects.AddRange(FlattenCommitObject(listObj));
 
-            return objects;
-          }
+          return objects;
+        }
         case IDictionary dict:
-          {
-            foreach (DictionaryEntry kvp in dict)
-              objects.AddRange(FlattenCommitObject(kvp.Value));
+        {
+          foreach ( DictionaryEntry kvp in dict )
+            objects.AddRange(FlattenCommitObject(kvp.Value));
 
-            return objects;
-          }
+          return objects;
+        }
         default:
           return objects;
       }
