@@ -145,7 +145,7 @@ class RevitHandler: IHandler
     //this method would be responsible for installing the tester plugin from ie object storage
     Directory.CreateDirectory(pluginFolder);
     CopyFilesRecursively(sourceFolder,pluginFolder);
-    var addinFile = "RevitAutoTest2022.addin"; 
+    var addinFile = "RevitAutoTest2022.addin";
     File.Move(Path.Combine(pluginFolder,addinFile), Path.Combine(addinsFolder,addinFile));
   }
   private static void CopyFilesRecursively(string sourcePath, string targetPath)

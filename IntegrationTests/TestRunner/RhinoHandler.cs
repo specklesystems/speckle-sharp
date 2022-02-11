@@ -17,7 +17,8 @@ class RhinoHandler : IHandler
     // run dotnet test, with the path to the project
     // for now we only support rhino 7 cause running 6 is a bit too hacky
     // we assume that every major version will be a separate dotnet test project
-    throw new NotImplementedException();
+    var sourceFolder = Path.Combine("C:/spockle/plugin", "rhino7");
+    Process.Start("dotnet", $@"build {sourceFolder}/");
   }
 
   public void Teardown()
@@ -33,10 +34,12 @@ class RhinoSender : ISender
   public async Task<SendResult> Send()
   {
     // this should run dotnet test with the target project
+    var projPath = Environment.GetEnvironmentVariable("RhinoTestProjPath");
     var process = Process.Start(
       "dotnet",
-      "test /home/gergojedlicska/Speckle/speckle-sharp/IntegrationTests/TestFaker/TestFaker.csproj"
+      $@"build -t:Test {projPath}"
     );
+    await process.WaitForExitAsync();
     return new SendResult(true, "we've done it");
   }
 }

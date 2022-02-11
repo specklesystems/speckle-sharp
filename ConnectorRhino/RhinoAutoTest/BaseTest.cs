@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -13,12 +14,14 @@ using Xunit;
 
 namespace RhinoAutoTest
 {
-    public class BaseTest
+    public class BaseTest: IDisposable
     {
         protected RhinoTestFixture _fixture;
         
         public BaseTest(RhinoTestFixture fixture)
         {
+          Console.WriteLine("Speckle - BaseTest created!");
+
             _fixture = fixture;
         }
 
@@ -57,8 +60,16 @@ namespace RhinoAutoTest
             sourceApplication = Applications.Rhino7,
             streamId = config.TargetStream
           });
+          Console.WriteLine("Speckle - Sent!!!");
           
           return commitId;
+        }
+
+        public void Dispose()
+        {
+          Console.WriteLine("SPeckle - Disposing!");
+          _fixture?.Dispose();
+          Console.WriteLine("Speckle - disposed");
         }
     }
     

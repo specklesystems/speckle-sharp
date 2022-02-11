@@ -7,16 +7,22 @@ using Xunit.Abstractions;
 namespace RhinoAutoTest
 {
   [Collection("RhinoTestingCollection")]
-  [TestCaseOrderer("RhinoAutoTest.RhinoTestOrderer", "RhinoAutoTest")]
   public class SendingTests : BaseTest
   {
+    
+    
     [Theory]
     [ClassData(typeof(RhinoTestingFileData))]
     public void Can_SendAllElements(string path)
     {
+      Console.WriteLine("Speckle - Starting!");
       var commitId = SendAllElements(path).Result;
+      Console.WriteLine("Speckle - Sent!");
+
       Assert.NotNull(commitId);
       Assert.NotEmpty(commitId);
+      Console.WriteLine("Speckle - Asserted!");
+
     }
     
     public SendingTests(RhinoTestFixture fixture) : base(fixture)

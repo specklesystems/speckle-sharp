@@ -21,6 +21,8 @@ namespace RhinoAutoTest
         /// </summary>
         public RhinoTestFixture()
         {
+          Console.WriteLine("Speckle - Fixture created!");
+
             //get the correct rhino 7 installation directory
             rhinoDir = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\McNeel\Rhinoceros\7.0\Install", "Path", null) as string ?? string.Empty;
             Assert.True(Directory.Exists(rhinoDir), String.Format("Rhino system dir not found: {0}", rhinoDir));
@@ -47,7 +49,6 @@ namespace RhinoAutoTest
 
             // We have to load grasshopper.dll on the current AppDomain manually for some reason
             AppDomain.CurrentDomain.AssemblyResolve += ResolveGrasshopper;
-            
         }
 
         /// <summary>

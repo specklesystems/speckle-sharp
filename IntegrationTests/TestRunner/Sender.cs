@@ -145,13 +145,4 @@ namespace Sender
       }
     }
   }
-
-  class RhinoSender : ISender
-  {
-    public SendResult? SendResult { get; }
-    public Task<SendResult> Send()
-    {
-      throw new NotImplementedException();
-    }
-  }
 }
