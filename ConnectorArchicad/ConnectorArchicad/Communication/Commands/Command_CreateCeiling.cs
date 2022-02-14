@@ -22,8 +22,8 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-      [JsonProperty("elementIds")]
-      public IEnumerable<string> ElementIds { get; private set; }
+      [JsonProperty("applicationIds")]
+      public IEnumerable<string> ApplicationIds { get; private set; }
     }
 
     private IEnumerable<Ceiling> Datas { get; }
@@ -36,7 +36,7 @@ namespace Archicad.Communication.Commands
     public async Task<IEnumerable<string>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateSlab", new Parameters(Datas));
-      return result.ElementIds;
+      return result.ApplicationIds;
     }
   }
 }

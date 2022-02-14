@@ -15,7 +15,7 @@ namespace AddOnCommands
     GS::ObjectState os;
 
     // The identifier of the wall
-    os.Add(ElementIdFieldName, APIGuidToString(wall.head.guid));
+    os.Add(ApplicationIdFieldName, APIGuidToString(wall.head.guid));
 
     // The index of the wall's floor
     os.Add(FloorIndexFieldName, wall.head.floorInd);
@@ -86,7 +86,7 @@ namespace AddOnCommands
   GS::ObjectState GetWallData::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
   {
     GS::Array<GS::UniString> ids;
-    parameters.Get(ElementIdsFieldName, ids);
+    parameters.Get(ApplicationIdsFieldName, ids);
     GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid>([](const GS::UniString& idStr)
       { return APIGuidFromString(idStr.ToCStr()); });
 

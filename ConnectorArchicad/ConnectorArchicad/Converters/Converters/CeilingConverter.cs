@@ -26,13 +26,13 @@ namespace Archicad.Converters
       CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetCeilingData(elements.Select(e => e.elementId)), token);
+        new Communication.Commands.GetCeilingData(elements.Select(e => e.applicationId)), token);
 
       var ceilings = new List<Base>();
       foreach (var ceiling in data)
       {
         ceiling.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
-          .First(e => e.elementId == ceiling.elementId)
+          .First(e => e.applicationId == ceiling.applicationId)
           .model);
         ceiling.outline = ceiling.shape.contourPolyline;
         ceilings.Add(ceiling);

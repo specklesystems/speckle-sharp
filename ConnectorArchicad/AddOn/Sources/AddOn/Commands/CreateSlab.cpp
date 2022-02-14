@@ -31,7 +31,7 @@ namespace AddOnCommands {
     GS::UInt64& memoMask)
   {
     GS::UniString guidString;
-    os.Get(ElementIdFieldName, guidString);
+    os.Get(ApplicationIdFieldName, guidString);
     element.header.guid = APIGuidFromString(guidString.ToCStr());
     element.header.typeID = API_SlabID;
 
@@ -162,7 +162,7 @@ namespace AddOnCommands {
     GS::Array<GS::ObjectState> slabs;
     parameters.Get(SlabsFieldName, slabs);
 
-    const auto& listAdder = result.AddList<GS::UniString>(ElementIdsFieldName);
+    const auto& listAdder = result.AddList<GS::UniString>(ApplicationIdsFieldName);
 
     ACAPI_CallUndoableCommand("CreateSpeckleSlab", [&]() -> GSErrCode {
       for (const GS::ObjectState& slabOs : slabs) {

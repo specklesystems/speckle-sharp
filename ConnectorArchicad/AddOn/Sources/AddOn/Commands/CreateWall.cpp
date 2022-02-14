@@ -26,7 +26,7 @@ namespace AddOnCommands
     GSErrCode err;
 
     GS::UniString guidString;
-    os.Get(ElementIdFieldName, guidString);
+    os.Get(ApplicationIdFieldName, guidString);
     element.header.guid = APIGuidFromString(guidString.ToCStr());
     element.header.typeID = API_WallID;
 
@@ -218,7 +218,7 @@ namespace AddOnCommands
     GS::Array<GS::ObjectState> walls;
     parameters.Get(WallsFieldName, walls);
 
-    const auto& listAdder = result.AddList<GS::UniString>(ElementIdsFieldName);
+    const auto& listAdder = result.AddList<GS::UniString>(ApplicationIdsFieldName);
 
     ACAPI_CallUndoableCommand("CreateSpeckleWall", [&]() -> GSErrCode
       {

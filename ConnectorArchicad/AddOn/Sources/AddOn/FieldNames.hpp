@@ -1,8 +1,8 @@
 #ifndef FIELD_NAMES_HPP
 #define FIELD_NAMES_HPP
 
-static const char* ElementIdFieldName = "elementId";
-static const char* ElementIdsFieldName = "elementIds";
+static const char* ApplicationIdFieldName = "applicationId";
+static const char* ApplicationIdsFieldName = "applicationIds";
 static const char* ElementTypeFieldName = "elementType";
 static const char* ElementTypesFieldName = "elementTypes";
 

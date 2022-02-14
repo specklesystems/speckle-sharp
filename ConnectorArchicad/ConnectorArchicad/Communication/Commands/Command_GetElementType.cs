@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {
-  internal sealed class GetElementsType : ICommand<Dictionary<Type, IEnumerable<string>>>
+  internal sealed class GetElementsType : ICommand<Dictionary<string, IEnumerable<string>>>
   {
     #region --- Classes ---
 
@@ -15,16 +15,16 @@ namespace Archicad.Communication.Commands
     {
       #region --- Fields ---
 
-      [JsonProperty("elementIds")]
-      private IEnumerable<string> ElementIds { get; }
+      [JsonProperty("applicationIds")]
+      private IEnumerable<string> ApplicationIds { get; }
 
       #endregion
 
       #region --- Ctor \ Dtor ---
 
-      public Parameters(IEnumerable<string> elementIds)
+      public Parameters(IEnumerable<string> applicationIds)
       {
-        ElementIds = elementIds;
+        ApplicationIds = applicationIds;
       }
 
       #endregion
@@ -44,8 +44,8 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class TypeDescription
     {
-      [JsonProperty("elementId")]
-      public string ElementId { get; private set; }
+      [JsonProperty("applicationId")]
+      public string ApplicationId { get; private set; }
 
       [JsonProperty("elementType")]
       public string ElementType { get; private set; }
@@ -56,15 +56,15 @@ namespace Archicad.Communication.Commands
 
     #region --- Fields ---
 
-    private IEnumerable<string> ElementIds { get; }
+    private IEnumerable<string> ApplicationIds { get; }
 
     #endregion
 
     #region --- Ctor \ Dtor ---
 
-    public GetElementsType(IEnumerable<string> elementIds)
+    public GetElementsType(IEnumerable<string> applicationIds)
     {
-      ElementIds = elementIds;
+      ApplicationIds = applicationIds;
     }
 
     #endregion

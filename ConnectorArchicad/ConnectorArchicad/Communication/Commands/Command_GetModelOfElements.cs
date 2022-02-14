@@ -6,64 +6,39 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
   {
-    #region --- Classes ---
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-      #region --- Fields ---
+      [JsonProperty("applicationIds")] private IEnumerable<string> ApplicationIds { get; }
 
-      [JsonProperty("elementIds")]
-      private IEnumerable<string> ElementIds { get; }
 
-      #endregion
-
-      #region --- Ctor \ Dtor ---
-
-      public Parameters(IEnumerable<string> elementIds)
+      public Parameters(IEnumerable<string> applicationIds)
       {
-        ElementIds = elementIds;
+        ApplicationIds = applicationIds;
       }
-
-      #endregion
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-      #region --- Fields ---
-
-      [JsonProperty("models")]
-      public IEnumerable<Model.ElementModelData> Models { get; private set; }
-
-      #endregion
+      [JsonProperty("models")] public IEnumerable<Model.ElementModelData> Models { get; private set; }
     }
 
-    #endregion
 
-    #region --- Fields ---
+    private IEnumerable<string> ApplicationIds { get; }
 
-    private IEnumerable<string> ElementIds { get; }
 
-    #endregion
-
-    #region --- Ctor \ Dtor ---
-
-    public GetModelForElements(IEnumerable<string> elementIds)
+    public GetModelForElements(IEnumerable<string> applicationIds)
     {
-      ElementIds = elementIds;
+      ApplicationIds = applicationIds;
     }
 
-    #endregion
-
-    #region --- Functions ---
 
     public async Task<IEnumerable<Model.ElementModelData>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ElementIds));
+      Result result =
+        await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ApplicationIds));
       return result.Models;
     }
-
-    #endregion
   }
 }

@@ -27,7 +27,7 @@ namespace Archicad.Converters
           (directShape is Mesh mesh ? new List<Mesh>() { mesh } : null)
         where polygons is not null select new Model.ElementModelData
         {
-          elementId = (string)directShape["ElementId"] ?? string.Empty,
+          applicationId = (string)directShape.applicationId ?? string.Empty,
             model = ModelConverter.MeshToNative(polygons)
         }).ToList();
 
@@ -38,7 +38,7 @@ namespace Archicad.Converters
     public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       return Task.FromResult(new List<Base>(elements.Select(e =>
-        new Objects.BuiltElements.Archicad.DirectShape(e.elementId, ModelConverter.MeshesToSpeckle(e.model)))));
+        new Objects.BuiltElements.Archicad.DirectShape(e.applicationId, ModelConverter.MeshesToSpeckle(e.model)))));
     }
 
     #endregion

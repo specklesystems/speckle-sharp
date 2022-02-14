@@ -9,16 +9,15 @@ namespace Archicad.Communication.Commands
     #region --- Classes ---
 
     [JsonObject]
-    public sealed class Parameters
-    { }
+    public sealed class Parameters { }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
       #region --- Fields ---
 
-      [JsonProperty("elementIds")]
-      public IEnumerable<string> ElementIds { get; private set; }
+      [JsonProperty("applicationIds")]
+      public IEnumerable<string> ApplicationIds { get; private set; }
 
       #endregion
     }
@@ -29,8 +28,8 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<string>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSelectedElementIds", null);
-      return result.ElementIds;
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSelectedApplicationIds", null);
+      return result.ApplicationIds;
     }
 
     #endregion

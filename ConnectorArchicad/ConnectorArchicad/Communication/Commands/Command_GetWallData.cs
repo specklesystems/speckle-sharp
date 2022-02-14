@@ -13,12 +13,12 @@ namespace Archicad.Communication.Commands
     public sealed class Parameters
     {
 
-      [JsonProperty("elementIds")]
-      private IEnumerable<string> ElementIds { get; }
+      [JsonProperty("applicationIds")]
+      private IEnumerable<string> ApplicationIds { get; }
 
-      public Parameters(IEnumerable<string> elementIds)
+      public Parameters(IEnumerable<string> applicationIds)
       {
-        ElementIds = elementIds;
+        ApplicationIds = applicationIds;
       }
 
     }
@@ -32,16 +32,16 @@ namespace Archicad.Communication.Commands
 
     }
 
-    private IEnumerable<string> ElementIds { get; }
+    private IEnumerable<string> ApplicationIds { get; }
 
-    public GetWallData(IEnumerable<string> elementIds)
+    public GetWallData(IEnumerable<string> applicationIds)
     {
-      ElementIds = elementIds;
+      ApplicationIds = applicationIds;
     }
 
     public async Task<IEnumerable<Wall>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetWallData", new Parameters(ElementIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetWallData", new Parameters(ApplicationIds));
       foreach (var wall in result.Datas)
         wall.units = Units.Meters;
 

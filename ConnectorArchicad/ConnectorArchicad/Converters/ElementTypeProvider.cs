@@ -12,8 +12,5 @@ namespace Archicad
     {
       return _nameToType.TryGetValue(name, out var value) ? value : typeof(DirectShape);
     }
-    }
-
-    #endregion
   }
 }

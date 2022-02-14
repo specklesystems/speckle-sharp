@@ -15,7 +15,7 @@ namespace AddOnCommands {
 		GS::ObjectState os;
 
 		// The identifier of the slab
-		os.Add(ElementIdFieldName, APIGuidToString(slab.head.guid));
+		os.Add(ApplicationIdFieldName, APIGuidToString(slab.head.guid));
 
 		// The index of the slab's floor
 		os.Add(FloorIndexFieldName, slab.head.floorInd);
@@ -69,7 +69,7 @@ namespace AddOnCommands {
 	GS::ObjectState GetSlabData::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 	{
 		GS::Array<GS::UniString> ids;
-		parameters.Get(ElementIdsFieldName, ids);
+		parameters.Get(ApplicationIdsFieldName, ids);
 		GS::Array<API_Guid>	elementGuids = ids.Transform<API_Guid>([](const GS::UniString& idStr) { return APIGuidFromString(idStr.ToCStr()); });
 
 		GS::ObjectState result;

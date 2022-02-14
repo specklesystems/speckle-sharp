@@ -70,73 +70,73 @@ namespace AddOnCommands {
 	}
 
 
-	static GS::Array<API_Guid> GetCurtainWallSubElements(const API_Guid& elementId)
+	static GS::Array<API_Guid> GetCurtainWallSubElements(const API_Guid& applicationId)
 	{
-		GS::Array<API_Guid> elementIds;
+		GS::Array<API_Guid> applicationIds;
 
 		API_ElementMemo memo{};
-		ACAPI_Element_GetMemo(elementId, &memo, APIMemoMask_CWallFrames | APIMemoMask_CWallPanels | APIMemoMask_CWallJunctions | APIMemoMask_CWallAccessories);
+		ACAPI_Element_GetMemo(applicationId, &memo, APIMemoMask_CWallFrames | APIMemoMask_CWallPanels | APIMemoMask_CWallJunctions | APIMemoMask_CWallAccessories);
 
 		GSSize nFrames = BMGetPtrSize(reinterpret_cast<GSPtr>(memo.cWallFrames)) / sizeof(API_CWFrameType);
 		for (Int32 idx = 0; idx < nFrames; ++idx) {
-			elementIds.Push(memo.cWallFrames[idx].head.guid);
+			applicationIds.Push(memo.cWallFrames[idx].head.guid);
 		}
 
 		GSSize nPanels = BMGetPtrSize(reinterpret_cast<GSPtr>(memo.cWallPanels)) / sizeof(API_CWPanelType);
 		for (Int32 idx = 0; idx < nPanels; ++idx) {
-			elementIds.Push(memo.cWallPanels[idx].head.guid);
+			applicationIds.Push(memo.cWallPanels[idx].head.guid);
 		}
 
 		GSSize nJunctions = BMGetPtrSize(reinterpret_cast<GSPtr>(memo.cWallJunctions)) / sizeof(API_CWJunctionType);
 		for (Int32 idx = 0; idx < nJunctions; ++idx) {
-			elementIds.Push(memo.cWallJunctions[idx].head.guid);
+			applicationIds.Push(memo.cWallJunctions[idx].head.guid);
 		}
 
 		GSSize nAccessories = BMGetPtrSize(reinterpret_cast<GSPtr>(memo.cWallAccessories)) / sizeof(API_CWAccessoryType);
 		for (Int32 idx = 0; idx < nAccessories; ++idx) {
-			elementIds.Push(memo.cWallAccessories[idx].head.guid);
+			applicationIds.Push(memo.cWallAccessories[idx].head.guid);
 		}
 
-		return elementIds;
+		return applicationIds;
 	}
 
 
-	static GS::Array<API_Guid> GetBeamSubElements(const API_Guid& elementId)
+	static GS::Array<API_Guid> GetBeamSubElements(const API_Guid& applicationId)
 	{
-		GS::Array<API_Guid> elementIds;
+		GS::Array<API_Guid> applicationIds;
 
 		API_ElementMemo memo{};
-		ACAPI_Element_GetMemo(elementId, &memo, APIMemoMask_BeamSegment);
+		ACAPI_Element_GetMemo(applicationId, &memo, APIMemoMask_BeamSegment);
 
 		GSSize nSegments = BMGetPtrSize(reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof(API_BeamSegmentType);
 		for (Int32 idx = 0; idx < nSegments; ++idx) {
-			elementIds.Push(memo.beamSegments[idx].head.guid);
+			applicationIds.Push(memo.beamSegments[idx].head.guid);
 		}
 
-		return elementIds;
+		return applicationIds;
 	}
 
 
-	static GS::Array<API_Guid> GetColumnSubElements(const API_Guid& elementId)
+	static GS::Array<API_Guid> GetColumnSubElements(const API_Guid& applicationId)
 	{
-		GS::Array<API_Guid> elementIds;
+		GS::Array<API_Guid> applicationIds;
 
 		API_ElementMemo memo{};
-		ACAPI_Element_GetMemo(elementId, &memo, APIMemoMask_ColumnSegment);
+		ACAPI_Element_GetMemo(applicationId, &memo, APIMemoMask_ColumnSegment);
 
 		GSSize nSegments = BMGetPtrSize(reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof(API_ColumnSegmentType);
 		for (Int32 idx = 0; idx < nSegments; ++idx) {
-			elementIds.Push(memo.columnSegments[idx].head.guid);
+			applicationIds.Push(memo.columnSegments[idx].head.guid);
 		}
 
-		return elementIds;
+		return applicationIds;
 	}
 
 
-	static GS::Array<API_Guid> CheckForSubelements(const API_Guid& elementId)
+	static GS::Array<API_Guid> CheckForSubelements(const API_Guid& applicationId)
 	{
 		API_Elem_Head header{};
-		header.guid = elementId;
+		header.guid = applicationId;
 
 		const GSErrCode err = ACAPI_Element_GetHeader(&header);
 		if (err != NoError) {
@@ -144,21 +144,21 @@ namespace AddOnCommands {
 		}
 
 		switch (header.typeID) {
-		case API_CurtainWallID:					return GetCurtainWallSubElements(elementId);
-		case API_BeamID:						return GetBeamSubElements(elementId);
-		case API_ColumnID:						return GetColumnSubElements(elementId);
-		default:								return GS::Array<API_Guid> { elementId };
+		case API_CurtainWallID:					return GetCurtainWallSubElements(applicationId);
+		case API_BeamID:						return GetBeamSubElements(applicationId);
+		case API_ColumnID:						return GetColumnSubElements(applicationId);
+		default:								return GS::Array<API_Guid> { applicationId };
 		}
 	}
 
 
-	static ModelInfo CalculateModelOfElement(const Modeler::Model3DViewer& modelViewer, const API_Guid& elementId)
+	static ModelInfo CalculateModelOfElement(const Modeler::Model3DViewer& modelViewer, const API_Guid& applicationId)
 	{
 		ModelInfo modelInfo;
 		const Modeler::Attributes::Viewer& attributes(modelViewer.GetConstAttributesPtr());
 
-		GS::Array<API_Guid> elementIds = CheckForSubelements(elementId);
-		for (const auto& id : elementIds) {
+		GS::Array<API_Guid> applicationIds = CheckForSubelements(applicationId);
+		for (const auto& id : applicationIds) {
 			const auto modelElement = modelViewer.GetConstElemPtr(APIGuid2GSGuid(id));
 			if (modelElement == nullptr) {
 				continue;
@@ -171,7 +171,7 @@ namespace AddOnCommands {
 	}
 
 
-	static GS::ObjectState StoreModelOfElements(const GS::Array<API_Guid>& elementIds)
+	static GS::ObjectState StoreModelOfElements(const GS::Array<API_Guid>& applicationIds)
 	{
 		GSErrCode err = ACAPI_Automate(APIDo_ShowAllIn3DID);
 		if (err != NoError) {
@@ -193,8 +193,8 @@ namespace AddOnCommands {
 
 		GS::ObjectState result;
 		const auto modelInserter = result.AddList<GS::ObjectState>(ModelsFieldName);
-		for (const auto& elementId : elementIds) {
-			modelInserter(GS::ObjectState{ ElementIdFieldName, APIGuidToString(elementId), Model::ModelFieldName, CalculateModelOfElement(modelViewer, elementId) });
+		for (const auto& applicationId : applicationIds) {
+			modelInserter(GS::ObjectState{ ApplicationIdFieldName, APIGuidToString(applicationId), Model::ModelFieldName, CalculateModelOfElement(modelViewer, applicationId) });
 		}
 
 		return result;
@@ -210,7 +210,7 @@ namespace AddOnCommands {
 	GS::ObjectState GetModelForElements::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 	{
 		GS::Array<GS::UniString> ids;
-		parameters.Get(ElementIdsFieldName, ids);
+		parameters.Get(ApplicationIdsFieldName, ids);
 
 		return StoreModelOfElements(ids.Transform<API_Guid>([](const GS::UniString& idStr) { return APIGuidFromString(idStr.ToCStr()); }));
 	}

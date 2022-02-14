@@ -6,11 +6,9 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad
 {
-	public sealed class Wall : BuiltElements.Wall, IArchicadElementBaseData
+	public sealed class Wall : BuiltElements.Wall
 	{
-		public string elementId { get; set; } = string.Empty;
-
-		public int? floorIndex { get; set; }
+    public int? floorIndex { get; set; }
 
 		[DetachProperty]
 		public List<Mesh> displayValue { get; set; }

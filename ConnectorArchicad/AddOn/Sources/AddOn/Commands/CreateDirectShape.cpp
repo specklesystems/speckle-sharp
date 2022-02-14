@@ -9,10 +9,10 @@
 namespace AddOnCommands {
 
 
-	static GSErrCode FindAndDeleteOldElement(const API_Guid& elementId)
+	static GSErrCode FindAndDeleteOldElement(const API_Guid& applicationId)
 	{
 		API_Elem_Head head{};
-		head.guid = elementId;
+		head.guid = applicationId;
 
 		GSErrCode err = ACAPI_Element_GetHeader(&head);
 		if (err == APIERR_BADID) {
@@ -27,13 +27,13 @@ namespace AddOnCommands {
 			return APIERR_CANCEL;
 		}
 
-		return ACAPI_Element_Delete({ elementId });
+		return ACAPI_Element_Delete({ applicationId });
 	}
 
 
-	static GS::Optional<API_Guid> CreateElement(const API_Guid& elementId, const GS::Array<ModelInfo::Vertex>& vertices, const GS::Array<ModelInfo::Polygon> polygons)
+	static GS::Optional<API_Guid> CreateElement(const API_Guid& applicationId, const GS::Array<ModelInfo::Vertex>& vertices, const GS::Array<ModelInfo::Polygon> polygons)
 	{
-		GSErrCode err = FindAndDeleteOldElement(elementId);
+		GSErrCode err = FindAndDeleteOldElement(applicationId);
 		if (err != NoError) {
 			return GS::NoValue;
 		}
@@ -44,7 +44,7 @@ namespace AddOnCommands {
 		if (err != NoError) {
 			return GS::NoValue;
 		}
-		element.header.guid = elementId;
+		element.header.guid = applicationId;
 
 		void* bodyData = nullptr;
 		ACAPI_Body_Create(nullptr, nullptr, &bodyData);
@@ -96,7 +96,7 @@ namespace AddOnCommands {
 	{
 		try {
 			GS::UniString id;
-			elementModelOs.Get(ElementIdFieldName, id);
+			elementModelOs.Get(ApplicationIdFieldName, id);
 
 			const GS::ObjectState* modelOs = elementModelOs.Get(Model::ModelFieldName);
 			if (modelOs == nullptr) {
@@ -125,7 +125,7 @@ namespace AddOnCommands {
 
 	GS::ObjectState CreateDirectShape::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 	{
-		GS::Array<GS::UniString> elementIds;
+		GS::Array<GS::UniString> applicationIds;
 
 		GS::Array<GS::ObjectState> models;
 		parameters.Get(ModelsFieldName, models);
@@ -135,14 +135,14 @@ namespace AddOnCommands {
 			for (const auto& model : models) {
 				const auto result = CreateElement(model);
 				if (result.HasValue()) {
-					elementIds.Push(APIGuidToString(result.Get()));
+					applicationIds.Push(APIGuidToString(result.Get()));
 				}
 			}
 
 			return NoError;
 			});
 
-		return GS::ObjectState(ElementIdsFieldName, elementIds);
+		return GS::ObjectState(ApplicationIdsFieldName, applicationIds);
 	}
 
 

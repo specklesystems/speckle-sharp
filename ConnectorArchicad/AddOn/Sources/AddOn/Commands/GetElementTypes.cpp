@@ -18,7 +18,7 @@ namespace AddOnCommands {
 	GS::ObjectState GetElementTypes::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 	{
 		GS::Array<GS::UniString> ids;
-		parameters.Get(ElementIdsFieldName, ids);
+		parameters.Get(ApplicationIdsFieldName, ids);
 
 		GS::ObjectState result;
 
@@ -27,7 +27,7 @@ namespace AddOnCommands {
 			API_Guid guid = APIGuidFromString(id.ToCStr());
 			API_ElemTypeID elementTypeId = Utility::GetElementType(guid);
 			GS::UniString elemType = elementNames.Get(elementTypeId);
-			GS::ObjectState listElem{ ElementIdFieldName, id, ElementTypeFieldName, elemType };
+			GS::ObjectState listElem{ ApplicationIdFieldName, id, ElementTypeFieldName, elemType };
 			listAdder(listElem);
 		}
 

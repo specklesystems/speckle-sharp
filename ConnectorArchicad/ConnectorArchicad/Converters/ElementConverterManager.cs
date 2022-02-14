@@ -46,7 +46,7 @@ namespace Archicad
       if ( rawModels is null )
         return null;
 
-      Dictionary<Type, IEnumerable<string>> elementTypeTable =
+      var elementTypeTable =
         await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(elementIds), token);
       if ( elementTypeTable is null )
         return null;

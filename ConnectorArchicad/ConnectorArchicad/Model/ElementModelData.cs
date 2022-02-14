@@ -6,7 +6,7 @@ namespace Archicad.Model
 
     public MeshModel model { get; set; }
 
-    public string elementId { get; set; }
+    public string applicationId { get; set; }
 
     #endregion
   }

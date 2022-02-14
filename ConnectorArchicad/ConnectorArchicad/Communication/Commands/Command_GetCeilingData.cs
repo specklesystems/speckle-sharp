@@ -11,12 +11,12 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-      [JsonProperty("elementIds")]
-      private IEnumerable<string> ElementIds { get; }
+      [JsonProperty("applicationIds")]
+      private IEnumerable<string> ApplicationIds { get; }
 
-      public Parameters(IEnumerable<string> elementIds)
+      public Parameters(IEnumerable<string> applicationIds)
       {
-        ElementIds = elementIds;
+        ApplicationIds = applicationIds;
       }
     }
 
@@ -27,16 +27,16 @@ namespace Archicad.Communication.Commands
       public IEnumerable<Ceiling> Datas { get; private set; }
     }
 
-    private IEnumerable<string> ElementIds { get; }
+    private IEnumerable<string> ApplicationIds { get; }
 
-    public GetCeilingData(IEnumerable<string> elementIds)
+    public GetCeilingData(IEnumerable<string> applicationIds)
     {
-      ElementIds = elementIds;
+      ApplicationIds = applicationIds;
     }
 
     public async Task<IEnumerable<Ceiling>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSlabData", new Parameters(ElementIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSlabData", new Parameters(ApplicationIds));
       foreach (var ceiling in result.Datas)
         ceiling.units = Units.Meters;
 

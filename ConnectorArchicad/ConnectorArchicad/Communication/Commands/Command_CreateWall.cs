@@ -26,8 +26,8 @@ namespace Archicad.Communication.Commands
     private sealed class Result
     {
 
-      [JsonProperty("elementIds")]
-      public IEnumerable<string> ElementIds { get; private set; }
+      [JsonProperty("applicationIds")]
+      public IEnumerable<string> ApplicationIds { get; private set; }
 
     }
 
@@ -47,7 +47,7 @@ namespace Archicad.Communication.Commands
     public async Task<IEnumerable<string>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateWall", new Parameters(Datas));
-      return result == null ? null : result.ElementIds;
+      return result == null ? null : result.ApplicationIds;
     }
 
   }

@@ -50,7 +50,7 @@ namespace Archicad.Converters
     {
       var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.Wall> data =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWallData(elementModels.Select(e => e.elementId)),
+        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
           token);
       if (data is null)
       {
@@ -61,7 +61,7 @@ namespace Archicad.Converters
       foreach (Objects.BuiltElements.Archicad.Wall wall in data)
       {
         wall.displayValue =
-          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.elementId == wall.elementId).model);
+          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == wall.applicationId).model);
         wall.baseLine = new Line(wall.startPoint, wall.endPoint);
         walls.Add(wall);
       }
