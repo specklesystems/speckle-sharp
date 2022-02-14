@@ -54,21 +54,27 @@ namespace Archicad.Operations
 
     private static List<int> ConvertPolygon(Model.MeshModel.Polygon polygon)
     {
-      List<int> vertexIds = new List<int> { polygon.pointIds.Count() == 3 ? 0 : 1 };
-      vertexIds.AddRange(Enumerable.Range(0, polygon.pointIds.Count()));
+      // wait until ngons are supported in the viewer
+      // var n = polygon.pointIds.Count;
+      // if ( n < 3 ) n += 3;
+      // var vertexIds = new List<int> { n };
+
+      var vertexIds = new List<int> { polygon.pointIds.Count == 3 ? 0 : 1 };
+      vertexIds.AddRange(Enumerable.Range(0, polygon.pointIds.Count).Select(r => r + offset));
 
       return vertexIds;
     }
 
     private static List<Model.MeshModel.Polygon> ConvertPolygon(List<int> polygon)
     {
-      List<Model.MeshModel.Polygon> result = new List<Model.MeshModel.Polygon>();
+      var result = new List<MeshModel.Polygon>();
 
-      for (int i = 0; i < polygon.Count; i++)
+      for ( var i = 0; i < polygon.Count; i++ )
       {
-        int step = polygon[i] == 0 ? 3 : 4;
-        result.Add(new Model.MeshModel.Polygon { pointIds = polygon.GetRange(i + 1, step) });
-        i += step;
+        var n = polygon[ i ];
+        if ( n < 3 ) n += 3;
+        result.Add(new MeshModel.Polygon { pointIds = polygon.GetRange(i + 1, n) });
+        i += n;
       }
 
       return result;
