@@ -2,42 +2,42 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Archicad.Converters;
+using Archicad.Model;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 
 namespace Archicad.Operations
 {
   public static class ModelConverter
   {
-    #region --- Functions ---
-
-    public static List<Mesh> MeshToSpeckle(Model.MeshModel meshModel)
+    public static List<Mesh> MeshesToSpeckle(MeshModel meshModel)
     {
-      return meshModel.polygons.Select(p => CreateMeshFromPolygon(meshModel.vertices, p, meshModel.materials[p.material])).ToList();
-    }
+      var materials = meshModel.materials.Select(MaterialToSpeckle).ToList();
+      var meshes = materials.Select(m => new Mesh { units = Units.Meters, [ "renderMaterial" ] = m }).ToList();
+      var vertCount = new int[ materials.Count ];
 
-    public static Model.MeshModel MeshToNative(Mesh mesh)
-    {
-      var conversionFactor = Units.GetConversionFactor(mesh.units, Units.Meters);
-
-      return new Model.MeshModel
+      foreach ( var poly in meshModel.polygons )
       {
-        vertices = mesh.GetPoints().Select(p => Utils.PointToNative(p)).ToList(),
-          polygons = ConvertPolygon(mesh.faces)
-      };
+        var meshIndex = poly.material;
+        meshes[ meshIndex ].vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[ id ]))
+          .ToList());
+        meshes[ meshIndex ].faces
+          .AddRange(PolygonToSpeckle(poly, vertCount[ meshIndex ]));
+        vertCount[ meshIndex ] += poly.pointIds.Count;
+      }
+
+      return meshes;
     }
 
-    public static Model.MeshModel MeshToNative(IEnumerable<Mesh> meshes)
+    public static MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
-      Model.MeshModel meshModel = new Model.MeshModel();
+      var meshModel = new MeshModel();
       var enumerable = meshes as Mesh[ ] ?? meshes.ToArray();
-      Console.WriteLine($">>> in mesh to native - converting {enumerable.Count()} meshes");
-      foreach (Mesh mesh in enumerable)
+      foreach ( var mesh in enumerable )
       {
         int vertexOffset = meshModel.vertices.Count;
-        List<Model.MeshModel.Polygon> polygons = ConvertPolygon(mesh.faces);
+        var polygons = PolygonToNative(mesh.faces);
         polygons.ForEach(p => p.pointIds = p.pointIds.Select(l => l + vertexOffset).ToList());
 
         meshModel.vertices.AddRange(mesh.GetPoints().Select(p => Utils.PointToNative(p)));
@@ -47,12 +47,12 @@ namespace Archicad.Operations
       return meshModel;
     }
 
-    private static List<double> FlattenPoint(Model.MeshModel.Vertex vertex)
+    private static IEnumerable<double> FlattenPoint(MeshModel.Vertex vertex)
     {
       return new List<double> { vertex.x, vertex.y, vertex.z };
     }
 
-    private static List<int> ConvertPolygon(Model.MeshModel.Polygon polygon)
+    private static IEnumerable<int> PolygonToSpeckle(MeshModel.Polygon polygon, int offset = 0)
     {
       // wait until ngons are supported in the viewer
       // var n = polygon.pointIds.Count;
@@ -65,7 +65,7 @@ namespace Archicad.Operations
       return vertexIds;
     }
 
-    private static List<Model.MeshModel.Polygon> ConvertPolygon(List<int> polygon)
+    private static List<MeshModel.Polygon> PolygonToNative(List<int> polygon)
     {
       var result = new List<MeshModel.Polygon>();
 
@@ -80,7 +80,7 @@ namespace Archicad.Operations
       return result;
     }
 
-    private static RenderMaterial ConvertMaterial(Model.MeshModel.Material material)
+    private static RenderMaterial MaterialToSpeckle(Model.MeshModel.Material material)
     {
       System.Drawing.Color ConvertColor(Model.MeshModel.Material.Color color)
       {
@@ -91,24 +91,9 @@ namespace Archicad.Operations
       return new RenderMaterial
       {
         diffuse = ConvertColor(material.ambientColor).ToArgb(),
-          emissive = ConvertColor(material.emissionColor).ToArgb(),
-          opacity = 1.0 - material.transparency / 100.0
+        emissive = ConvertColor(material.emissionColor).ToArgb(),
+        opacity = 1.0 - material.transparency / 100.0
       };
     }
-
-    private static Mesh CreateMeshFromPolygon(IList<Model.MeshModel.Vertex> vertices, Model.MeshModel.Polygon polygon, Model.MeshModel.Material material)
-    {
-      List<double> points = polygon.pointIds.SelectMany(id => FlattenPoint(vertices[id])).ToList();
-      List<int> polygons = ConvertPolygon(polygon);
-
-      var mesh = new Mesh(points, polygons, units : Units.Meters)
-      {
-        ["renderMaterial"] = ConvertMaterial(material)
-      };
-
-      return mesh;
-    }
-
-    #endregion
   }
 }

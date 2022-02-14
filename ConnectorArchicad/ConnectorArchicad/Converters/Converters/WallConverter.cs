@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
+using Archicad.Model;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
@@ -47,8 +48,9 @@ namespace Archicad.Converters
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
       CancellationToken token)
     {
+      var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.Wall> data =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWallData(elements.Select(e => e.elementId)),
+        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWallData(elementModels.Select(e => e.elementId)),
           token);
       if (data is null)
       {
@@ -59,7 +61,7 @@ namespace Archicad.Converters
       foreach (Objects.BuiltElements.Archicad.Wall wall in data)
       {
         wall.displayValue =
-          Operations.ModelConverter.MeshToSpeckle(elements.First(e => e.elementId == wall.elementId).model);
+          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.elementId == wall.elementId).model);
         wall.baseLine = new Line(wall.startPoint, wall.endPoint);
         walls.Add(wall);
       }

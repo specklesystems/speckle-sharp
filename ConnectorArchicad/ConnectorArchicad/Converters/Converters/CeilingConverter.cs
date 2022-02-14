@@ -31,7 +31,7 @@ namespace Archicad.Converters
       var ceilings = new List<Base>();
       foreach (var ceiling in data)
       {
-        ceiling.displayValue = Operations.ModelConverter.MeshToSpeckle(elements
+        ceiling.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
           .First(e => e.elementId == ceiling.elementId)
           .model);
         ceiling.outline = ceiling.shape.contourPolyline;
