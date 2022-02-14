@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,10 +71,10 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<Dictionary<Type, IEnumerable<string>>> Execute()
+    public async Task<Dictionary<string, IEnumerable<string>>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementTypes", new Parameters(ElementIds));
-      return result.ElementTypes.GroupBy(row => ElementTypeProvider.GetTypeByName(row.ElementType)).ToDictionary(group => group.Key, group => group.Select(x => x.ElementId));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementTypes", new Parameters(ApplicationIds));
+      return result.ElementTypes.GroupBy(row => row.ElementType).ToDictionary(group => group.Key, group => group.Select(x => x.ApplicationId));
     }
 
     #endregion

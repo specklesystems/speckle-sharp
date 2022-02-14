@@ -51,19 +51,23 @@ namespace Archicad
       if ( elementTypeTable is null )
         return null;
 
-      var elements = new List<Base>();
+      var converted = new Dictionary<string, List<Base>>();
       foreach ( var (key, value)in elementTypeTable )
       {
-        var converter = GetConverterForElement(key);
-        var convertedElements =
-          await converter.ConvertToSpeckle(rawModels.Where(model => value.Contains(model.elementId)), token);
-        elements.AddRange(convertedElements);
+        var converter = GetConverterForElement(ElementTypeProvider.GetTypeByName(key));
+        var bases = await converter.ConvertToSpeckle(rawModels.Where(model => value.Contains(model.applicationId)), token);
+        if ( bases.Count > 0 )
+          converted[ key ] = bases;
       }
 
-      if ( elements.Count == 0 )
+      if ( converted.Count == 0 )
         return null;
 
-      var commitObject = new Base { [ "@Elements" ] = elements };
+      var commitObject = new Base();
+      foreach ( var (key, bases) in converted )
+      {
+        commitObject[ "@" + key ] = bases;
+      }
 
       return commitObject;
     }
