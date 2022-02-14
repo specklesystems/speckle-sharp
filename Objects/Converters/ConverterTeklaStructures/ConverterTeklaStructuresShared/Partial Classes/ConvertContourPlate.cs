@@ -20,13 +20,16 @@ namespace Objects.Converter.TeklaStructures
     {
       if (!(area.outline is Polyline)) { }
       var ContourPlate = new ContourPlate();
-      ToNativeContourPlate((Polyline)area.outline, ContourPlate.Contour);
       if (area is TeklaContourPlate)
       {
+        var countourPoints = GetContourPointsFromPolyLine((Polyline)area.outline);
         var contour = (TeklaContourPlate)area;
+
         ContourPlate.Name = contour.name;
         ContourPlate.Profile.ProfileString = contour.profile.name;
         ContourPlate.Finish = contour.finish;
+        ContourPlate.Contour.ContourPoints = countourPoints;
+    
         //ContourPlate.Class = ContourPlate.Class;
         //ContourPlate.Material.MaterialString = contour.material.name;
       }

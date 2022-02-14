@@ -356,6 +356,24 @@ namespace Objects.Converter.TeklaStructures
 
     }
 
+    public ArrayList GetContourPointsFromPolyLine(Polyline polyline)
+    {
+      var contourList = new ArrayList();
+      var coordinates = polyline.value;
+      for (int j = 0; j < coordinates.Count; j++)
+      {
+        if (j % 3 == 0)
+        {
+          var point = new TSG.Point();
+          point.X = coordinates[j];
+          point.Y = coordinates[j + 1];
+          point.Z = coordinates[j + 2];
+          contourList.Add(new ContourPoint(point, new Chamfer()));
+        }
+
+      }
+      return contourList;
+    }
     public void ToNativeContourPlate(Polyline polyline, Contour contour){
       var coordinates = polyline.value;
       for (int j = 0; j < coordinates.Count; j++)
