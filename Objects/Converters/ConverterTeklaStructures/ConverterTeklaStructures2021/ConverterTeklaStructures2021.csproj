@@ -19,28 +19,16 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="TeklaOpenAPI" Version="2021.0.1" />
+    <PackageReference Include="Tekla.Structures" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures.Catalogs" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures.Datatype" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures.Model" Version="2021.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
     <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Tekla.Structures">
-      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.dll</HintPath>
-    </Reference>
-    <Reference Include="Tekla.Structures.Catalogs">
-      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.Catalogs.dll</HintPath>
-    </Reference>
-    <Reference Include="Tekla.Structures.Datatype">
-      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.Datatype.dll</HintPath>
-    </Reference>
-    <Reference Include="Tekla.Structures.Model">
-      <HintPath>..\..\..\..\..\..\..\..\..\TeklaStructures\2020.0\nt\bin\plugins\Tekla.Structures.Model.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <Import Project="..\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />
