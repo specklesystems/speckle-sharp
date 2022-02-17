@@ -32,10 +32,10 @@ namespace Speckle.Core.Api
       return Send(
         @object,
         CancellationToken.None,
-        onErrorAction,
         transports,
         useDefaultCache,
         onProgressAction,
+        onErrorAction,
         disposeTransports,
         serializerVersion
       );
