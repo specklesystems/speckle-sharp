@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
+using DisplayStyle = Objects.Other.DisplayStyle;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
 using Polyline = Objects.Geometry.Polyline;
@@ -23,6 +24,20 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    public ObjectAttributes DisplayStyleToNative(DisplayStyle display)
+    {
+      var attributes = new ObjectAttributes();
+
+      attributes.ColorSource = ObjectColorSource.ColorFromObject;
+      attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
+      attributes.PlotWeight = display.lineweight;
+      attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+      var lineStyle = Doc.Linetypes.FindName(display.linetype);
+      attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
+
+      return attributes;
+    }
+
     public Rhino.Geometry.Hatch[] HatchToNative(Hatch hatch)
     {
 

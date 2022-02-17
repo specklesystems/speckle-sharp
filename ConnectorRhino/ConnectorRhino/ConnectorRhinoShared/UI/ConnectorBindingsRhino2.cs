@@ -163,9 +163,6 @@ namespace SpeckleRhino
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      //ConversionErrors.Clear();
-      //OperationErrors.Clear();
-
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
 
@@ -173,7 +170,6 @@ namespace SpeckleRhino
       {
         throw new Exception("Could not find any Kit!");
         progress.CancellationTokenSource.Cancel();
-        //return null;
       }
 
       converter.SetContextDocument(Doc);
@@ -181,9 +177,7 @@ namespace SpeckleRhino
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       string referencedObject = null;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
@@ -216,9 +210,7 @@ namespace SpeckleRhino
           );
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return state;
-      }
 
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
@@ -269,10 +261,10 @@ namespace SpeckleRhino
         else
         {
           List<string> props = @base.GetDynamicMembers().ToList();
-          if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists
-            props.Add("displayMesh");
-          else if (@base.GetMembers().ContainsKey("displayValue"))
+          if (@base.GetMembers().ContainsKey("displayValue"))
             props.Add("displayValue");
+          if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
           int totalMembers = props.Count;
 
           foreach (var prop in props)
@@ -292,10 +284,8 @@ namespace SpeckleRhino
           }
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-          {
-
             converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
-          }
+
           return objects;
         }
       }
@@ -347,32 +337,15 @@ namespace SpeckleRhino
             Layer bakeLayer = Doc.GetLayer(layerPath, true);
             if (bakeLayer != null)
             {
-              var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
+              var attributes = new ObjectAttributes();
 
               // handle display
               Base display = obj[@"displayStyle"] as Base;
               if (display != null)
               {
-                var color = display["color"] as int?;
-                var lineStyle = display["linetype"] as string;
-                var lineWidth = display["lineweight"] as double?;
-
-                if (color != null)
-                {
-                  attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                  attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
-                }
-                if (lineWidth != null)
-                  attributes.PlotWeight = (double)lineWidth;
-                if (lineStyle != null)
-                {
-                  var ls = Doc.Linetypes.FindName(lineStyle);
-                  if (ls != null)
-                  {
-                    attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
-                    attributes.LinetypeIndex = ls.Index;
-                  }
-                }
+                var displayAttribute = converter.ConvertToNative(display) as ObjectAttributes;
+                if (displayAttribute != null)
+                  attributes = displayAttribute;
               }
 
               /* Not implemented since revit displaymesh objs do not have render materials attached
@@ -391,6 +364,9 @@ namespace SpeckleRhino
                 }
               }
               */
+
+              // assign layer
+              attributes.LayerIndex = bakeLayer.Index;
 
               // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
               string schema = obj["SpeckleSchema"] as string;
@@ -462,9 +438,7 @@ namespace SpeckleRhino
       foreach (var applicationId in state.SelectedObjectIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        {
           return;
-        }
 
         Base converted = null;
         string containerName = string.Empty;
@@ -561,14 +535,10 @@ namespace SpeckleRhino
       }
 
       if (renamedlayers)
-      {
         progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
-      }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return;
-      }
 
       progress.Max = objCount;
 
@@ -591,9 +561,7 @@ namespace SpeckleRhino
         );
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return;
-      }
 
       var actualCommit = new CommitCreateInput
       {

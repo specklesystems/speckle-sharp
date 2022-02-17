@@ -567,6 +567,7 @@ namespace Objects.Converter.RhinoGh
             Report.Log($"Created Brep {o.id}");
           }
           break;
+
         case Surface o:
           rhinoObj = SurfaceToNative(o);
           Report.Log($"Created Surface {o.id}");
@@ -615,6 +616,10 @@ namespace Objects.Converter.RhinoGh
         case Text o:
           rhinoObj = TextToNative(o);
           Report.Log($"Created Text {o.id}");
+          break;
+
+        case DisplayStyle o:
+          rhinoObj = DisplayStyleToNative(o);
           break;
 
         default:
@@ -706,6 +711,7 @@ case RH.SubD _:
 
         //TODO: This types are not supported in GH!
         case Pointcloud _:
+        case DisplayStyle _:
         case ModelCurve _:
         case DirectShape _:
         case View3D _:
