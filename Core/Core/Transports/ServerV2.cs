@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
@@ -252,6 +251,9 @@ namespace Speckle.Core.Transports
         catch(Exception ex)
         {
           OnErrorAction?.Invoke(TransportName, ex);
+          // if sending fails, mark it as write complete
+          // otherwise send is stuck in an infinite loop
+          IsWriteComplete = true;
           return;
         }
       }
