@@ -35,7 +35,12 @@ namespace Objects.Converter.TeklaStructures
             TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
             TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
             var myBeam = new Beam(startPoint, endPoint);
-            SetBeamProperties(myBeam, teklaBeam);
+            SetPartProperties(myBeam, teklaBeam);
+            if (!IsProfileValid(myBeam.Profile.ProfileString))
+            {
+                Report.Log($"{myBeam.Profile.ProfileString} not in model catalog. Cannot place object {beam.id}");
+                return;
+            }
             myBeam.Insert();
             //Model.CommitChanges();
             break;
@@ -43,7 +48,12 @@ namespace Objects.Converter.TeklaStructures
             Polyline polyline = (Polyline)beam.baseLine;
             var polyBeam = new PolyBeam();
             ToNativeContourPlate(polyline, polyBeam.Contour);
-            SetBeamProperties(polyBeam, teklaBeam);
+            SetPartProperties(polyBeam, teklaBeam);
+            if (!IsProfileValid(polyBeam.Profile.ProfileString))
+            {
+                Report.Log($"{polyBeam.Profile.ProfileString} not in model catalog. Cannot place object {beam.id}");
+                return;
+            }
             polyBeam.Insert();
             //Model.CommitChanges();
             break;
@@ -58,7 +68,12 @@ namespace Objects.Converter.TeklaStructures
             var twistAngleStart = teklaSpiralBeam.twistAngleStart;
             var twistAngleEnd = teklaSpiralBeam.twistAngleEnd;
             var spiralBeam = new Tekla.Structures.Model.SpiralBeam(startPt, rotatAxisPt1, rotatAxisPt2, totalRise, rotationAngle, twistAngleStart, twistAngleEnd);
-            SetBeamProperties(spiralBeam, teklaBeam);
+            SetPartProperties(spiralBeam, teklaBeam);
+            if (!IsProfileValid(spiralBeam.Profile.ProfileString))
+            {
+                Report.Log($"{spiralBeam.Profile.ProfileString} not in model catalog. Cannot place object {beam.id}");
+                return;
+            }
             spiralBeam.Insert();
             //Model.CommitChanges();
             break;
@@ -78,14 +93,16 @@ namespace Objects.Converter.TeklaStructures
       }
     }
 
-    public void SetBeamProperties(Part beam, TeklaBeam teklaBeam)
+    public void SetPartProperties(Part part, TeklaBeam teklaBeam)
     {
-      beam.Material.MaterialString = teklaBeam.material.name;
-      beam.Profile.ProfileString = teklaBeam.profile.name;
-      beam.Class = teklaBeam.classNumber;
-      beam.Finish = teklaBeam.finish;
-      beam.Name = teklaBeam.name;
+      part.Material.MaterialString = teklaBeam.material.name;
+      part.Profile.ProfileString = teklaBeam.profile.name;
+      part.Class = teklaBeam.classNumber;
+      part.Finish = teklaBeam.finish;
+      part.Name = teklaBeam.name;
+            part.Position = SetPositioning(teklaBeam.position);
     }
+        
     public TeklaBeam BeamToSpeckle(Tekla.Structures.Model.Beam beam)
     {
       var speckleBeam = new TeklaBeam();
@@ -99,7 +116,7 @@ namespace Objects.Converter.TeklaStructures
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
       speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
 
-      speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
+      speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);
       var beamCS = beam.GetCoordinateSystem();
       speckleBeam.position = GetPositioning(beam.Position);
@@ -142,7 +159,7 @@ namespace Objects.Converter.TeklaStructures
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
       speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
 
-      speckleBeam.profile = GetProfile(beam.Profile.ProfileString);
+      speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);
       var beamCS = beam.GetCoordinateSystem();
       speckleBeam.position = GetPositioning(beam.Position);

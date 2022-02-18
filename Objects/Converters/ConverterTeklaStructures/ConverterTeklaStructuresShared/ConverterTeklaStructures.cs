@@ -60,6 +60,17 @@ namespace Objects.Converter.TeklaStructures
           return true;
         case BE.Area a:
           return true;
+        //recieving should first be ordered to place parts first before fittings, welds, booleans, bolts can be converted
+        //case BE.TeklaStructures.Bolts b:
+        //    return true;
+        //case BE.TeklaStructures.Welds w:
+        //    return true;
+        //case BE.Opening o:
+        //    return true;
+        //case Geometry.Plane p:
+        //    return true;
+        //case Geometry.Plane p:
+        //    return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -87,6 +98,8 @@ namespace Objects.Converter.TeklaStructures
             return true;
         case BooleanPart bp:
             return true;
+        case Fitting ft:
+            return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -105,6 +118,18 @@ namespace Objects.Converter.TeklaStructures
         case BE.Area o:
           ContourPlateToNative(o);
           return true;
+        case Geometry.Plane o:
+            FittingToNative(o);
+            return true;
+        case BE.Opening o:
+            BooleanPartToNative(o);
+            return true;
+        case BE.TeklaStructures.Bolts o:
+            BoltsToNative(o);
+            return true;
+        case BE.TeklaStructures.Welds o:
+            WeldsToNative(o);
+            return true;
         default:
           return false;
       }
@@ -153,6 +178,10 @@ namespace Objects.Converter.TeklaStructures
         case BooleanPart o:
             returnObject = BooleanPartToSpeckle(o);
             Report.Log($"Created BooleanPart");
+            break;
+        case Fitting o:
+            returnObject = FittingsToSpeckle(o);
+            Report.Log($"Created Fitting");
             break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
