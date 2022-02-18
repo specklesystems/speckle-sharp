@@ -103,16 +103,12 @@ namespace Objects.BuiltElements.TeklaStructures
     public class TeklaContourOpening : TeklaOpening
     {
         public TeklaContourPlate cuttingPlate { get; set; }
-        public string profileName { get; set; }
         public double thickness { get; set; }
         public TeklaContourOpening() { }
     }
     public class TeklaBeamOpening : TeklaOpening
     {
         public TeklaBeam cuttingBeam { get; set; }
-        public string profileName { get; set; }
-        public Point startPoint { get; set; }
-        public Point endPoint { get; set; }
         public TeklaBeamOpening() { }
     }
 }

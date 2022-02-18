@@ -157,7 +157,7 @@ namespace Objects.Converter.TeklaStructures
       speckleElement["units"] = GetUnitsFromModel();
     }
 
-    public Structural.Properties.Profiles.SectionProfile GetProfile(string teklaProfileString)
+    public Structural.Properties.Profiles.SectionProfile GetBeamProfile(string teklaProfileString)
     {
       SectionProfile profile = null;
       ProfileItem profileItem = null;
@@ -210,11 +210,17 @@ namespace Objects.Converter.TeklaStructures
       }
       return profile;
     }
+        public Structural.Properties.Profiles.SectionProfile GetContourPlateProfile(string teklaProfileString) 
+        {
+            ParametricProfileItem paramItem = new ParametricProfileItem();
+            SectionProfile profile = new SectionProfile() { name = teklaProfileString , shapeType = Structural.ShapeType.Perimeter };
+            return profile;
+        }
 
 
 
     #region Profile type getters
-    private Structural.Properties.Profiles.ISection GetIProfile(ProfileItem profileItem)
+        private Structural.Properties.Profiles.ISection GetIProfile(ProfileItem profileItem)
     {
       // Set profile name depending on type
       var name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
@@ -403,6 +409,70 @@ namespace Objects.Converter.TeklaStructures
       var specklePolyline = new Polyline(coordinateList, units);
       return specklePolyline;
     }
+        public Polycurve ToSpecklePolycurve(Tekla.Structures.Geometry3d.Polycurve teklaPolycurve)
+        {
+            var units = GetUnitsFromModel();
+            var specklePolycurve = new Polycurve(units);
+
+            foreach (var curveSegment in teklaPolycurve)
+            {
+                if (curveSegment is TSG.LineSegment)
+                {
+                    var lineSeg = (TSG.LineSegment)curveSegment;
+
+                    Point start = new Point(lineSeg.StartPoint.X, lineSeg.StartPoint.Y, lineSeg.StartPoint.Z, units);
+                    Point end = new Point(lineSeg.EndPoint.X, lineSeg.EndPoint.Y, lineSeg.EndPoint.Z, units);
+
+                    Line speckleLine = new Line(start, end, units);
+                    specklePolycurve.segments.Add(speckleLine);
+                }
+                else if (curveSegment is TSG.Arc)
+                {
+                    var arcSeg = (TSG.Arc)curveSegment;
+
+                    Point start = new Point(arcSeg.StartPoint.X, arcSeg.StartPoint.Y, arcSeg.StartPoint.Z, units);
+                    Point end = new Point(arcSeg.EndPoint.X, arcSeg.EndPoint.Y, arcSeg.EndPoint.Z, units);
+                    Point mid = new Point(arcSeg.ArcMiddlePoint.X, arcSeg.ArcMiddlePoint.Y, arcSeg.ArcMiddlePoint.Z, units);
+                    
+
+                    Arc speckleArc = new Arc();
+                    speckleArc.startPoint = start;
+                    speckleArc.endPoint = end;
+                    speckleArc.midPoint = mid;
+                    speckleArc.radius = arcSeg.Radius;
+                    speckleArc.angleRadians = arcSeg.Angle;
+
+                    specklePolycurve.segments.Add(speckleArc);
+                }
+            }
+            return specklePolycurve;
+        }
+        public TeklaContourPoint ToSpeckleContourPoint(ContourPoint contourPoint)
+        {
+            var speckleCP = new TeklaContourPoint();
+            speckleCP.x = contourPoint.X;
+            speckleCP.y = contourPoint.Y;
+            speckleCP.z = contourPoint.Z;
+
+            speckleCP.chamferType = (TeklaChamferType)contourPoint.Chamfer.Type;
+            speckleCP.xDim = contourPoint.Chamfer.X;
+            speckleCP.yDim = contourPoint.Chamfer.Y;
+            speckleCP.dz1 = contourPoint.Chamfer.DZ1;
+            speckleCP.dz2 = contourPoint.Chamfer.DZ2;
+            speckleCP.units = GetUnitsFromModel();
+            return speckleCP;
+        }
+        public ContourPoint ToTeklaContourPoint(TeklaContourPoint speckleCP)
+        {
+            var teklaCP = new ContourPoint();
+            teklaCP.SetPoint(new TSG.Point(speckleCP.x, speckleCP.y, speckleCP.z));
+            teklaCP.Chamfer.Type = (Chamfer.ChamferTypeEnum)speckleCP.chamferType;
+            teklaCP.Chamfer.X = speckleCP.xDim;
+            teklaCP.Chamfer.Y = speckleCP.yDim;
+            teklaCP.Chamfer.DZ1 = speckleCP.dz1;
+            teklaCP.Chamfer.DZ2 = speckleCP.dz2;
+            return teklaCP;
+        }
 
     public TeklaPosition GetPositioning(Position position)
     {
@@ -418,21 +488,52 @@ namespace Objects.Converter.TeklaStructures
             
         return specklePosition;
     }
-    //public static bool IsElementSupported(this ModelObject e)
-    //{
+        public Position SetPositioning(TeklaPosition position)
+        {
+            var teklaPosition = new Position()
+            {
+                Depth = (Position.DepthEnum)position.Depth,
+                Plane = (Position.PlaneEnum)position.Plane,
+                Rotation = (Position.RotationEnum)position.Rotation,
+                DepthOffset = position.depthOffset,
+                PlaneOffset = position.planeOffset,
+                RotationOffset = position.rotationOffset
+            };
 
-    //  if (SupportedBuiltInCategories.Contains(e)
-    //    return true;
-    //  return false;
-    //}
+            return teklaPosition;
+        }
+        public bool IsProfileValid(string profileName)
+        {
+            if (string.IsNullOrEmpty(profileName))
+                return false;
 
-    ////list of currently supported Categories (for sending only)
-    ////exact copy of the one in the Speckle.ConnectorRevit.ConnectorRevitUtils
-    ////until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
-    //private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>{
+            LibraryProfileItem lpi = new LibraryProfileItem();
+            if (lpi.Select(profileName))
+                return true;
+            else
+            {
+                ParametricProfileItem ppi = new ParametricProfileItem();
+                if (ppi.Select(profileName))
+                    return true;
+                else
+                 return false;
+            }
+        }
+        //public static bool IsElementSupported(this ModelObject e)
+        //{
 
-    //ModelObject.ModelObjectEnum.BEAM,
+        //  if (SupportedBuiltInCategories.Contains(e)
+        //    return true;
+        //  return false;
+        //}
+
+        ////list of currently supported Categories (for sending only)
+        ////exact copy of the one in the Speckle.ConnectorRevit.ConnectorRevitUtils
+        ////until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
+        //private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>{
+
+        //ModelObject.ModelObjectEnum.BEAM,
 
 
-  }
+    }
 }

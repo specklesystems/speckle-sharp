@@ -31,7 +31,7 @@ namespace Objects.Converter.TeklaStructures
         pointList.Add(point.Y);
         pointList.Add(point.Z);
       }
-      speckleBeam.profile = GetProfile(PolyBeam.Profile.ProfileString);
+      speckleBeam.profile = GetBeamProfile(PolyBeam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(PolyBeam.Material.MaterialString);
       speckleBeam.finish = PolyBeam.Finish;
       speckleBeam.classNumber = PolyBeam.Class;

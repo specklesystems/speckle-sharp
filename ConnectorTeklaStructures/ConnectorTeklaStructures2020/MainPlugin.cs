@@ -30,7 +30,6 @@ namespace Speckle.ConnectorTeklaStructures
   [Plugin("Speckle.ConnectorTeklaStructures")]
   [PluginUserInterface("Speckle.ConnectorTeklaStructures.MainForm")]
 
-
   public class MainPlugin : PluginBase
   {
     public static Window MainWindow { get; private set; }

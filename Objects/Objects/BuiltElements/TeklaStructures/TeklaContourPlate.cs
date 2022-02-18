@@ -23,6 +23,7 @@ namespace Objects.BuiltElements.TeklaStructures
 
         [DetachProperty]
         public Base rebars { get; set; }
+        public List<TeklaContourPoint> contour { get; set; } // Use for ToNative to Tekla. Other programs can use Area.outline.
 
         public string units { get; set; }
 
