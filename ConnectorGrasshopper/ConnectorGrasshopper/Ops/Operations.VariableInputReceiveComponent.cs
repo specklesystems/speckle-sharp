@@ -36,6 +36,7 @@ namespace ConnectorGrasshopper.Ops
     public VariableInputReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
+      ExpandOutput = true;
       BaseWorker = new VariableInputReceiveComponentWorker(this);
       Attributes = new VariableInputReceiveComponentAttributes(this);
     }
@@ -46,6 +47,8 @@ namespace ConnectorGrasshopper.Ops
     public bool AutoReceive { get; set; }
     
     public bool ReceiveOnOpen { get; set; }
+    
+    public bool ExpandOutput { get; set; }
 
     public override Guid ComponentGuid => new Guid("06A3E53B-2BFF-4EBD-BBCE-71B9CE36283E");
 
@@ -140,6 +143,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedCommitId", ReceivedCommitId);
       writer.SetBoolean("ReceiveOnOpen", ReceiveOnOpen);
+      writer.SetBoolean("ExpandOutput", ExpandOutput);
       return base.Write(writer);
     }
 
@@ -153,7 +157,7 @@ namespace ConnectorGrasshopper.Ops
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedCommitId = reader.GetString("ReceivedCommitId");
-      
+      ExpandOutput = reader.GetBoolean("ExpandOutput");
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString))
       {
@@ -185,7 +189,16 @@ namespace ConnectorGrasshopper.Ops
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
+    
+      Menu_AppendSeparator(menu);
 
+      var noExpandMi = Menu_AppendItem(menu, "Do not expand", (s, e) =>
+      {
+        ExpandOutput = !ExpandOutput;
+        RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
+      },null,false,);
+      noExpandMi.ToolTipText = "Prevents expanding the commit object and outputs everything into the @data output.";
+      
       Menu_AppendSeparator(menu);
 
       if (InputType == "Stream" || InputType == "Branch")
