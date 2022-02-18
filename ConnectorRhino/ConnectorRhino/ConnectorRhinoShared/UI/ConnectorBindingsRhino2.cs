@@ -265,6 +265,8 @@ namespace SpeckleRhino
             props.Add("displayValue");
           if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
             props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
           int totalMembers = props.Count;
 
           foreach (var prop in props)
@@ -294,6 +296,14 @@ namespace SpeckleRhino
       {
         count = 0;
         foreach (var listObj in list)
+          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
+        return objects;
+      }
+
+      if (obj is IReadOnlyList<object> readOnlyList)
+      {
+        count = 0;
+        foreach (var listObj in readOnlyList)
           objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
         return objects;
       }
