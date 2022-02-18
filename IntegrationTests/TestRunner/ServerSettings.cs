@@ -17,7 +17,6 @@ class ServerSettings
 
     public static async Task<ServerSettings> Initialize()
     {
-
         // set up a user for latest.speckle.dev
         var latestAcc = AccountManager.GetAccounts().Where(a => a.serverInfo.url == "https://latest.speckle.dev").First();
         var client = new Client(latestAcc);

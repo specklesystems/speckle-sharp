@@ -21,8 +21,7 @@ namespace RhinoAutoTest
         public BaseTest(RhinoTestFixture fixture)
         {
           Console.WriteLine("Speckle - BaseTest created!");
-
-            _fixture = fixture;
+          _fixture = fixture;
         }
 
         public static async Task<string> SendAllElements(string filePath)
@@ -38,6 +37,8 @@ namespace RhinoAutoTest
           var client = new Client(acc);
           var transport = new ServerTransport(acc, config.TargetStream);
           converter.SetContextDocument(doc);
+          
+          
 
           var elements = doc.Objects.Select(o => o.Geometry);
 
@@ -52,16 +53,16 @@ namespace RhinoAutoTest
 
           var obj = new Base();
           obj[ "convertedObjects" ] = speckleObjects;
-          var objectId = await Operations.Send(obj, new List<ITransport> { transport }, false);
-          var commitId = await client.CommitCreate(new CommitCreateInput
+          var objectId = Operations.Send(obj, new List<ITransport> { transport }, false, disposeTransports: true).Result;
+          var commitId = client.CommitCreate(new CommitCreateInput
           {
             branchName = config.TargetBranch,
             objectId = objectId,
             sourceApplication = Applications.Rhino7,
             streamId = config.TargetStream
-          });
+          }).Result;
           Console.WriteLine("Speckle - Sent!!!");
-          
+          doc.Dispose();
           return commitId;
         }
 

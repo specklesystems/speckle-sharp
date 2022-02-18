@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace RhinoAutoTest
 {
   [Collection("RhinoTestingCollection")]
-  public class SendingTests : BaseTest
+  public class SendingTests : BaseTest, IDisposable
   {
     
     
