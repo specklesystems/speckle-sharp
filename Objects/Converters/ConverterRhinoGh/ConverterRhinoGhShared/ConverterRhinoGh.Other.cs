@@ -9,6 +9,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
@@ -18,6 +19,7 @@ using HatchLoop = Objects.Other.HatchLoop;
 using Polyline = Objects.Geometry.Polyline;
 using Text = Objects.Other.Text;
 using RH = Rhino.DocObjects;
+using RenderMaterial = Objects.Other.RenderMaterial;
 using Rhino;
 
 namespace Objects.Converter.RhinoGh
@@ -38,6 +40,32 @@ namespace Objects.Converter.RhinoGh
       return attributes;
     }
 
+    public Rhino.Render.RenderMaterial RenderMaterialToNative(RenderMaterial speckleMaterial)
+    {
+      var commitInfo = GetCommitInfo();
+      var name = $"{commitInfo} - {speckleMaterial.name}";
+      
+      var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == name);
+      if (existing != null)
+      {
+        return existing;
+      }
+      
+      var rhinoMaterial = new Material
+      {
+        Name = name,
+        DiffuseColor = Color.FromArgb(speckleMaterial.diffuse),
+        EmissionColor = Color.FromArgb(speckleMaterial.emissive),
+        Transparency = 1 - speckleMaterial.opacity,
+        Reflectivity = speckleMaterial.metalness,
+      };
+      
+      var renderMaterial = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
+      Doc.RenderMaterials.Add(renderMaterial);
+
+      return renderMaterial;
+    }
+    
     public Rhino.Geometry.Hatch[] HatchToNative(Hatch hatch)
     {
 

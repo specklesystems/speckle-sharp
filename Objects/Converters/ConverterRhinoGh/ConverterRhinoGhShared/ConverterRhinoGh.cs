@@ -621,6 +621,10 @@ namespace Objects.Converter.RhinoGh
         case DisplayStyle o:
           rhinoObj = DisplayStyleToNative(o);
           break;
+        
+        case RenderMaterial o:
+          rhinoObj = RenderMaterialToNative(o);
+          break;
 
         default:
           Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
