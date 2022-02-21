@@ -1,5 +1,6 @@
 ﻿using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -97,6 +98,14 @@ namespace DesktopUI2
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         },
          new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
+      };
+    }
+
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>
+      {
+        new ListBoxSetting {Name = "Reference Point", Icon = "mdiCrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} }
       };
     }
 

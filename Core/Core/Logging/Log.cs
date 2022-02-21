@@ -57,6 +57,10 @@ namespace Speckle.Core.Logging
     {
       Initialize();
 
+      //ignore infos as they're hogging us
+      if (level == SentryLevel.Info)
+        return;
+
       SentrySdk.WithScope(s =>
       {
         s.Level = level;

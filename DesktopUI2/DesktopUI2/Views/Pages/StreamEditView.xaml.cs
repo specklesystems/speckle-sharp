@@ -14,7 +14,5 @@ namespace DesktopUI2.Views.Pages
       this.WhenActivated(disposables => { });
       AvaloniaXamlLoader.Load(this);
     }
-
-
   }
 }

@@ -16,12 +16,9 @@ namespace DesktopUI2.Views.Windows
 #endif
     }
 
-
     private void Close_Click(object sender, RoutedEventArgs e)
     {
       this.Close();
     }
-
-
   }
 }

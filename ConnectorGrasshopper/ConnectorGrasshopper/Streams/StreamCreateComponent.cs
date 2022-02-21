@@ -9,7 +9,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -70,7 +70,7 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Tracker.TrackPageview(Tracker.STREAM_CREATE);
+      Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_CREATE);
 
       string userId = null;
       Account account = null;
@@ -103,7 +103,7 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
+      Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
 
       Task.Run(async () =>
       {
