@@ -260,7 +260,7 @@ namespace SpeckleRhino
           List<string> props = @base.GetDynamicMembers().ToList();
           if (@base.GetMembers().ContainsKey("displayValue"))
             props.Add("displayValue");
-          if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
             props.Add("displayMesh");
           if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
             props.Add("elements");
@@ -332,7 +332,7 @@ namespace SpeckleRhino
         }
         else
         {
-          convertedList.Add(obj);
+          convertedList.Add(item);
         }
       }
 
