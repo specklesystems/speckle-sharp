@@ -68,14 +68,14 @@
   </Groups>
   <Buttons>
     <Button Name="Speckle.ShowUI" Priority="100">
-      <Label>Connector OpenBuildings</Label>
-      <Description>Launches the Speckle OpenBuildings Connector</Description>
+      <Label>Connector OpenBuildings (old)</Label>
+      <Description>Launches the old Speckle OpenBuildings Connector</Description>
       <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
       </ButtonParams>
       <ButtonData>
         <CommandData Type="UserKeyinCommand">
           <UserKeyinCommand>
-            <Keyin>speckle speckle</Keyin>
+            <Keyin>speckle speckleold</Keyin>
             <Icon Type="NamedIcon">
               <NamedIcon>s2block</NamedIcon>
             </Icon>
@@ -84,14 +84,14 @@
       </ButtonData>
     </Button>
     <Button Name="Speckle.ShowUI2" Priority="100">
-      <Label>Connector OpenBuildings (New UI!)</Label>
-      <Description>Launches the Speckle OpenBuildings Connector with our new UI</Description>
+      <Label>Connector OpenBuildings</Label>
+      <Description>Launches the Speckle OpenBuildings Connector</Description>
       <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
       </ButtonParams>
       <ButtonData>
         <CommandData Type="UserKeyinCommand">
           <UserKeyinCommand>
-            <Keyin>Speckle SpeckleNewUI</Keyin>
+            <Keyin>Speckle Speckle</Keyin>
             <Icon Type="NamedIcon">
               <NamedIcon>s2block</NamedIcon>
             </Icon>
