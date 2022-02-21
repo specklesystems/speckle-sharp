@@ -378,10 +378,8 @@ namespace SpeckleRhino
 
         // handle user strings
         if (obj[UserStrings] is Dictionary<string, string> userStrings)
-        {
           foreach (var key in userStrings.Keys)
             attributes.SetUserString(key, userStrings[key]);
-        }
 
         // handle user dictionaries
         if (obj[UserDictionary] is Dictionary<string, object> dict)
@@ -396,6 +394,7 @@ namespace SpeckleRhino
           continue;
         }
         
+        // handle render material
         if (obj[@"renderMaterial"] is Base render)
         {
           var convertedMaterial = converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
