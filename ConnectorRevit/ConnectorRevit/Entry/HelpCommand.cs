@@ -14,7 +14,6 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class ForumCommand : IExternalCommand
   {
-
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       Process.Start("https://speckle.community/");
@@ -24,7 +23,6 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class DocsCommand : IExternalCommand
   {
-
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       Process.Start("https://speckle.guide/user/revit.html");
@@ -34,7 +32,6 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class TutorialsCommand : IExternalCommand
   {
-
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       Process.Start("https://speckle.systems/tutorials/");
@@ -45,7 +42,6 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class ManagerCommand : IExternalCommand
   {
-
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe"));

@@ -22,7 +22,6 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class SpeckleRevitCommand2 : IExternalCommand
   {
-
     public static Window MainWindow { get; private set; }
     public static ConnectorBindingsRevit2 Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
@@ -40,15 +39,9 @@ namespace Speckle.ConnectorRevit.Entry
       .LogToTrace()
       .UseReactiveUI();
 
-
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       uiapp = commandData.Application;
-
-      //UIDocument uidoc = uiapp.ActiveUIDocument;
-      //Application app = uiapp.Application;
-      //Document doc = uidoc.Document;
-
       CreateOrFocusSpeckle();
 
       return Result.Succeeded;
@@ -56,14 +49,12 @@ namespace Speckle.ConnectorRevit.Entry
 
     private void MainWindow_StateChanged(object sender, EventArgs e)
     {
-
     }
 
     public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
       {
-
         var viewModel = new MainWindowViewModel(Bindings);
         MainWindow = new MainWindow
         {
@@ -81,7 +72,6 @@ namespace Speckle.ConnectorRevit.Entry
     {
       AvaloniaApp = app;
     }
-
 
   }
 
