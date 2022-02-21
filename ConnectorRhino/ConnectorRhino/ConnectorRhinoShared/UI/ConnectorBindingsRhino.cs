@@ -12,12 +12,15 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
 using Rhino.Display;
+using Rhino.Geometry;
+using Rhino.Render;
 using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 
 namespace SpeckleRhino
@@ -390,82 +393,87 @@ namespace SpeckleRhino
 
       foreach (var convertedItem in convertedList)
       {
-        var convertedRH = convertedItem as Rhino.Geometry.GeometryBase;
-        if (convertedRH != null)
+        if (!(convertedItem is GeometryBase convertedRH)) continue;
+
+        if (!convertedRH.IsValidWithLog(out string log))
         {
-          if (convertedRH.IsValidWithLog(out string log))
+          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}"));
+          continue;
+        }
+
+        Layer bakeLayer = Doc.GetLayer(layerPath, true);
+        if (bakeLayer == null)
+        {
+          state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
+          continue;
+        }
+
+        var attributes = new ObjectAttributes {LayerIndex = bakeLayer.Index};
+
+        // handle display
+        if (obj[@"displayStyle"] is Base display)
+        {
+          var color = display[ "color" ] as int?;
+          var lineStyle = display[ "linetype" ] as string;
+          var lineWidth = display[ "lineweight" ] as double?;
+
+          if (color != null)
           {
-            Layer bakeLayer = Doc.GetLayer(layerPath, true);
-            if (bakeLayer != null)
-            {
-              var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
-
-              // handle display
-              Base display = obj[@"displayStyle"] as Base;
-              if (display != null)
-              {
-                var color = display["color"] as int?;
-                var lineStyle = display["linetype"] as string;
-                var lineWidth = display["lineweight"] as double?;
-
-                if (color != null)
-                {
-                  attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                  attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
-                }
-                if (lineWidth != null)
-                  attributes.PlotWeight = (double)lineWidth;
-                if (lineStyle != null)
-                {
-                  var ls = Doc.Linetypes.FindName(lineStyle);
-                  if (ls != null)
-                  {
-                    attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
-                    attributes.LinetypeIndex = ls.Index;
-                  }
-                }
-              }
-              /* Not implemented since revit displaymesh objs do not have render materials attached
-              else
-              {
-                Base render = obj[@"renderMaterial"] as Base;
-                if (render != null)
-                {
-                  var color = render["diffuse"] as int?;
-
-                  if (color != null)
-                  {
-                    attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                    attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
-                  }
-                }
-              }
-              */
-
-              // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
-              string schema = obj["SpeckleSchema"] as string;
-              if (schema != null)
-                attributes.SetUserString("SpeckleSchema", schema);
-
-              // handle user strings
-              var userStrings = obj[UserStrings] as Dictionary<string, object>;
-              if (userStrings != null)
-                foreach (var key in userStrings.Keys)
-                  attributes.SetUserString(key, userStrings[key].ToString());
-
-              // handle user dictionaries
-              var dict = obj[UserDictionary] as Dictionary<string, object>;
-              if (dict != null)
-                ParseDictionaryToArchivable(attributes.UserDictionary, dict);
-
-              if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
-                state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
-            }
-            else
-              state.Errors.Add(new Exception($"Could not create layer {layerPath} to bake objects into."));
+            attributes.ColorSource = ObjectColorSource.ColorFromObject;
+            attributes.ObjectColor = System.Drawing.Color.FromArgb((int) color);
           }
-          else
-            state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}"));
+
+          if (lineWidth != null)
+            attributes.PlotWeight = (double) lineWidth;
+          if (lineStyle != null)
+          {
+            var ls = Doc.Linetypes.FindName(lineStyle);
+            if (ls != null)
+            {
+              attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+              attributes.LinetypeIndex = ls.Index;
+            }
+          }
+        }
+        else if (obj[@"renderMaterial"] is Base renderMaterial)
+        {
+          if (renderMaterial["diffuse"] is int color)
+          {
+            attributes.ColorSource = ObjectColorSource.ColorFromObject;
+            attributes.ObjectColor = Color.FromArgb(color);
+          }
+        }
+
+        // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
+        if (obj["SpeckleSchema"] is string schema)
+          attributes.SetUserString("SpeckleSchema", schema);
+
+        // handle user strings
+        if (obj[UserStrings] is Dictionary<string, object> userStrings)
+          foreach (var key in userStrings.Keys)
+            attributes.SetUserString(key, userStrings[ key ].ToString());
+
+        // handle user dictionaries
+        if (obj[UserDictionary] is Dictionary<string, object> dict)
+          ParseDictionaryToArchivable(attributes.UserDictionary, dict);
+
+        Guid id = Doc.Objects.Add(convertedRH, attributes);
+        
+        if (id == Guid.Empty)
+        {
+          state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
+          continue;
+        }
+        
+        if (obj[@"renderMaterial"] is Base render)
+        {
+          var convertedMaterial = converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
+          if (convertedMaterial is RenderMaterial rm)
+          {
+            var rhinoObject = Doc.Objects.FindId(id);
+            rhinoObject.RenderMaterial = rm;
+            rhinoObject.CommitChanges();
+          }
         }
       }
     }

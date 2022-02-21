@@ -109,8 +109,8 @@ namespace Objects.Converter.RhinoGh
       Base schema = null;
       if (@object is RhinoObject ro)
       {
-        material = GetMaterial(ro);
-        style = GetStyle(ro);
+        material = RenderMaterialToSpeckle(ro.GetMaterial(true));
+        style = DisplayStyleToSpeckle(ro.Attributes);
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
            schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
@@ -621,6 +621,10 @@ namespace Objects.Converter.RhinoGh
         case DisplayStyle o:
           rhinoObj = DisplayStyleToNative(o);
           break;
+        
+        case RenderMaterial o:
+          rhinoObj = RenderMaterialToNative(o);
+          break;
 
         default:
           Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
@@ -718,6 +722,7 @@ case RH.SubD _:
         case BlockDefinition _:
         case BlockInstance _:
         case Alignment _:
+        case RenderMaterial _:
         case Text _:
           return true;
 

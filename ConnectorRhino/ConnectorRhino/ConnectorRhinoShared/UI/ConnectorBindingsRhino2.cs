@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -27,6 +28,8 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using System.Threading;
+using Rhino.Geometry;
+using Rhino.Render;
 using Speckle.Core.Logging;
 
 namespace SpeckleRhino
@@ -292,18 +295,10 @@ namespace SpeckleRhino
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
         count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
-        return objects;
-      }
-
-      if (obj is IReadOnlyList<object> readOnlyList)
-      {
-        count = 0;
-        foreach (var listObj in readOnlyList)
           objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
         return objects;
       }
@@ -339,77 +334,75 @@ namespace SpeckleRhino
 
       foreach (var convertedItem in convertedList)
       {
-        var convertedRH = convertedItem as Rhino.Geometry.GeometryBase;
-        if (convertedRH != null)
+        if (!(convertedItem is GeometryBase convertedRH)) continue;
+        
+        if (!convertedRH.IsValidWithLog(out string log))
         {
-          if (convertedRH.IsValidWithLog(out string log))
+          var exception =
+            new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}");
+          converter.Report.LogConversionError(exception);
+          continue;
+        }
+
+        Layer bakeLayer = Doc.GetLayer(layerPath, true);
+        if (bakeLayer == null)
+        {
+          var exception = new Exception($"Could not create layer {layerPath} to bake objects into.");
+          converter.Report.LogConversionError(exception);
+          continue;
+        }
+
+        var attributes = new ObjectAttributes();
+
+        // handle display style
+        if (obj[@"displayStyle"] is Base display)
+        {
+          if (converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
+            attributes = displayAttribute;
+        }
+        else if (obj[@"renderMaterial"] is Base renderMaterial)
+        {
+          if (renderMaterial["diffuse"] is int color)
           {
-            Layer bakeLayer = Doc.GetLayer(layerPath, true);
-            if (bakeLayer != null)
-            {
-              var attributes = new ObjectAttributes();
-
-              // handle display
-              Base display = obj[@"displayStyle"] as Base;
-              if (display != null)
-              {
-                var displayAttribute = converter.ConvertToNative(display) as ObjectAttributes;
-                if (displayAttribute != null)
-                  attributes = displayAttribute;
-              }
-
-              /* Not implemented since revit displaymesh objs do not have render materials attached
-              else
-              {
-                Base render = obj[@"renderMaterial"] as Base;
-                if (render != null)
-                {
-                  var color = render["diffuse"] as int?;
-
-                  if (color != null)
-                  {
-                    attributes.ColorSource = ObjectColorSource.ColorFromObject;
-                    attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
-                  }
-                }
-              }
-              */
-
-              // assign layer
-              attributes.LayerIndex = bakeLayer.Index;
-
-              // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
-              string schema = obj["SpeckleSchema"] as string;
-              if (schema != null)
-                attributes.SetUserString("SpeckleSchema", schema);
-
-              // handle user strings
-              var userStrings = obj[UserStrings] as Dictionary<string, string>;
-              if (userStrings != null)
-                foreach (var key in userStrings.Keys)
-                  attributes.SetUserString(key, userStrings[key]);
-
-              // handle user dictionaries
-              var dict = obj[UserDictionary] as Dictionary<string, object>;
-              if (dict != null)
-                ParseDictionaryToArchivable(attributes.UserDictionary, dict);
-
-              if (Doc.Objects.Add(convertedRH, attributes) == Guid.Empty)
-              {
-                var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
-                converter.Report.LogConversionError(exception);
-              }
-            }
-            else
-            {
-              var exception = new Exception($"Could not create layer {layerPath} to bake objects into.");
-              converter.Report.LogConversionError(exception);
-            }
+            attributes.ColorSource = ObjectColorSource.ColorFromObject;
+            attributes.ObjectColor = Color.FromArgb(color);
           }
-          else
+        }
+        
+        // assign layer
+        attributes.LayerIndex = bakeLayer.Index;
+
+        // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
+        if (obj["SpeckleSchema"] is string schema)
+          attributes.SetUserString("SpeckleSchema", schema);
+
+        // handle user strings
+        if (obj[UserStrings] is Dictionary<string, string> userStrings)
+          foreach (var key in userStrings.Keys)
+            attributes.SetUserString(key, userStrings[key]);
+
+        // handle user dictionaries
+        if (obj[UserDictionary] is Dictionary<string, object> dict)
+          ParseDictionaryToArchivable(attributes.UserDictionary, dict);
+
+        Guid id = Doc.Objects.Add(convertedRH, attributes);
+
+        if (id == Guid.Empty)
+        {
+          var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}.");
+          converter.Report.LogConversionError(exception);
+          continue;
+        }
+        
+        // handle render material
+        if (obj[@"renderMaterial"] is Base render)
+        {
+          var convertedMaterial = converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
+          if (convertedMaterial is RenderMaterial rm)
           {
-            var exception = new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}: {log.Replace("\n", "").Replace("\r", "")}");
-            converter.Report.LogConversionError(exception);
+            var rhinoObject = Doc.Objects.FindId(id);
+            rhinoObject.RenderMaterial = rm;
+            rhinoObject.CommitChanges();
           }
         }
       }   
