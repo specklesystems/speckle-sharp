@@ -156,7 +156,9 @@ namespace ConnectorGrasshopper.Ops
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedCommitId = reader.GetString("ReceivedCommitId");
-      ExpandOutput = reader.GetBoolean("ExpandOutput");
+      var expand = true;
+      reader.TryGetBoolean("ExpandOutput", ref expand);
+      ExpandOutput = expand;
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString))
       {
