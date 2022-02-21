@@ -196,7 +196,7 @@ namespace ConnectorGrasshopper.Ops
       var noExpandMi = Menu_AppendItem(menu, "Expand commit object properties", (s, e) =>
       {
         ExpandOutput = !ExpandOutput;
-        RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
+        RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
       }, null, true, ExpandOutput);
       noExpandMi.ToolTipText = "Prevents expanding the commit object and outputs everything into the @data output.";
       
