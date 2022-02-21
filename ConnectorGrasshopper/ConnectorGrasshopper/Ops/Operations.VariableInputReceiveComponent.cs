@@ -36,6 +36,7 @@ namespace ConnectorGrasshopper.Ops
     public VariableInputReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
+      ExpandOutput = true;
       BaseWorker = new VariableInputReceiveComponentWorker(this);
       Attributes = new VariableInputReceiveComponentAttributes(this);
     }
@@ -46,6 +47,8 @@ namespace ConnectorGrasshopper.Ops
     public bool AutoReceive { get; set; }
     
     public bool ReceiveOnOpen { get; set; }
+    
+    public bool ExpandOutput { get; set; }
 
     public override Guid ComponentGuid => new Guid("06A3E53B-2BFF-4EBD-BBCE-71B9CE36283E");
 
@@ -109,8 +112,7 @@ namespace ConnectorGrasshopper.Ops
 
       base.DocumentContextChanged(document, context);
     }
-
-
+    
     private void HandleNewCommit()
     {
       Message = "Expired";
@@ -140,6 +142,7 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedCommitId", ReceivedCommitId);
       writer.SetBoolean("ReceiveOnOpen", ReceiveOnOpen);
+      writer.SetBoolean("ExpandOutput", ExpandOutput);
       return base.Write(writer);
     }
 
@@ -153,7 +156,9 @@ namespace ConnectorGrasshopper.Ops
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedCommitId = reader.GetString("ReceivedCommitId");
-      
+      var expand = true;
+      reader.TryGetBoolean("ExpandOutput", ref expand);
+      ExpandOutput = expand;
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString))
       {
@@ -185,7 +190,16 @@ namespace ConnectorGrasshopper.Ops
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
+    
+      Menu_AppendSeparator(menu);
 
+      var noExpandMi = Menu_AppendItem(menu, "Expand commit object properties", (s, e) =>
+      {
+        ExpandOutput = !ExpandOutput;
+        RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
+      }, null, true, ExpandOutput);
+      noExpandMi.ToolTipText = "Prevents expanding the commit object and outputs everything into the @data output.";
+      
       Menu_AppendSeparator(menu);
 
       if (InputType == "Stream" || InputType == "Branch")
@@ -258,11 +272,6 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
       
-      // Force update output parameters
-      // TODO: This is a hack due to the fact that GH_AsyncComponent overrides ExpireDownstreamObjects()
-      // and will only propagate the call upwards to GH_Component if the private 'setData' prop  is == 1.
-      // We should provide access to the non-overriden method, or a way to call Done() from inherited classes.
-
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {
@@ -279,10 +288,6 @@ namespace ConnectorGrasshopper.Ops
           foreach (var key in PrevReceivedData.Keys)
           {
             var index = Params.Output.FindIndex(p => p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1));
-            if (key.StartsWith("@"))
-            {
-              // Property is detached, flag parameter accordingly.
-            }
             var outTree = PrevReceivedData[key];
             DA.SetDataTree(index, outTree);
           }
@@ -318,7 +323,6 @@ namespace ConnectorGrasshopper.Ops
     public override void RemovedFromDocument(GH_Document document)
     {
       RequestCancellation();
-      //CleanApiClient();
       ApiClient?.Dispose();
       base.RemovedFromDocument(document);
     }
@@ -725,6 +729,16 @@ namespace ConnectorGrasshopper.Ops
       var converter = parent.Converter;
       converter?.SetContextDocument(RhinoDoc.ActiveDoc);
       parent.PrevReceivedData = new Dictionary<string, GH_Structure<IGH_Goo>>();  
+
+      if (!parent.ExpandOutput)
+      {
+        var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
+        var receiveComponent = (VariableInputReceiveComponent)this.Parent;
+        receiveComponent.PrevReceivedData["Data"] = tree;
+        DA.SetDataTree(1, tree);
+        return;
+      }
+      
       GetOutputList(ReceivedObject).ForEach(name =>
       {
         var prop = ReceivedObject[name];
@@ -743,6 +757,8 @@ namespace ConnectorGrasshopper.Ops
         
     private List<string> GetOutputList(Base b)
     {
+      if (!((VariableInputReceiveComponent)Parent).ExpandOutput)
+        return new List<string> { "Data" };
       // Get the full list of output parameters
       var fullProps = new List<string>();
       b?.GetMemberNames().ToList().ForEach(prop =>
@@ -822,7 +838,6 @@ namespace ConnectorGrasshopper.Ops
       Parent.Params.OnParametersChanged();
       ((IGH_VariableParameterComponent) Parent).VariableParameterMaintenance();
     }
-
   }
 
   public class VariableInputReceiveComponentAttributes : GH_ComponentAttributes
