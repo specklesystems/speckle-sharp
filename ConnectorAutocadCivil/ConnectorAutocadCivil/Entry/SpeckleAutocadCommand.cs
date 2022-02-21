@@ -15,7 +15,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     /// <summary>
     /// Main command to initialize Speckle Connector
     /// </summary>
-    [CommandMethod("Speckle", CommandFlags.Modal)]
+    [CommandMethod("SpeckleOld", CommandFlags.Modal)]
     public static void SpeckleCommand()
     {
       try
