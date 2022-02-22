@@ -422,7 +422,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
         count = 0;
         foreach (var listObj in list)
