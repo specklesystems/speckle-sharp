@@ -21,8 +21,7 @@ namespace Objects.Converter.Revit
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
 
-      //delete and re-create line
-      //TODO: check if can be modified
+      //try update the gridline
       var isUpdate = false;
       if (revitGrid != null)
       {
@@ -55,7 +54,10 @@ namespace Objects.Converter.Revit
 
           try
           {
-            revitGrid.SetCurveInView(DatumExtentType.Model, Doc.ActiveView, Line.CreateBound(newStart, newEnd));
+            var datumLine = revitGrid.GetCurvesInView(DatumExtentType.Model, Doc.ActiveView)[0];
+            var datumLineZ = datumLine.GetEndPoint(0).Z;
+            //note the new datum line has endpoints flipped!
+            revitGrid.SetCurveInView(DatumExtentType.Model, Doc.ActiveView, Line.CreateBound(new XYZ(newEnd.X, newEnd.Y, datumLineZ), new XYZ(newStart.X, newStart.Y, datumLineZ)));
           }
           catch (Exception e)
           {
