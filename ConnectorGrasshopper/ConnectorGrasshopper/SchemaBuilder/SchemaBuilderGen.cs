@@ -513,6 +513,19 @@ public class GridLineSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class GridLine1SchemaComponent: CreateSchemaObjectBase {
+     
+    public GridLine1SchemaComponent(): base("GridLine with Label", "GridLine with Label", "Creates a Speckle grid line with a label", "Speckle 2 BIM", "Other") { }
+    
+    public override Guid ComponentGuid => new Guid("436f3773-b3f9-1a35-684e-a75f25f6c3bd");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.GridLine.ctor(Objects.ICurve,System.String)","Objects.BuiltElements.GridLine");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class GSAAlignmentSchemaComponent: CreateSchemaObjectBase {
      
     public GSAAlignmentSchemaComponent(): base("GSAAlignment", "GSAAlignment", "Creates a Speckle structural alignment for GSA (as a setting out feature for bridge models)", "Speckle 2 GSA", "Bridge") { }

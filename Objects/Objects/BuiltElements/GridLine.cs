@@ -17,9 +17,18 @@ namespace Objects.BuiltElements
     public GridLine() { }
 
     [SchemaInfo("GridLine", "Creates a Speckle grid line", "BIM", "Other")]
+    [SchemaDeprecated]
     public GridLine([SchemaParamInfo("NOTE: only Line and Arc curves are supported in Revit")][SchemaMainParam] ICurve baseLine)
     {
       this.baseLine = baseLine;
+      this.label = label;
+    }
+
+    [SchemaInfo("GridLine", "Creates a Speckle grid line with a label", "BIM", "Other")]
+    public GridLine([SchemaParamInfo("NOTE: only Line and Arc curves are supported in Revit")][SchemaMainParam] ICurve baseLine, string label = "")
+    {
+      this.baseLine = baseLine;
+      this.label = label;
     }
   }
 }
