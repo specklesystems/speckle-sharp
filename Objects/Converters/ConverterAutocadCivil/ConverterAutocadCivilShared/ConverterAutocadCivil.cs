@@ -41,13 +41,13 @@ namespace Objects.Converter.AutocadCivil
   public partial class ConverterAutocadCivil : ISpeckleConverter
   {
 #if AUTOCAD2021
-    public static string AutocadAppName = Applications.Autocad2021;
+    public static string AutocadAppName = VersionedHostApplications.Autocad2021;
 #elif AUTOCAD2022
-public static string AutocadAppName = Applications.Autocad2022;
+public static string AutocadAppName = VersionedHostApplications.Autocad2022;
 #elif CIVIL2021
-    public static string AutocadAppName = Applications.Civil2021;
+    public static string AutocadAppName = VersionedHostApplications.Civil2021;
 #elif CIVIL2022
-    public static string AutocadAppName = Applications.Civil2022;
+    public static string AutocadAppName = VersionedHostApplications.Civil2022;
 #endif
 
     public ConverterAutocadCivil()

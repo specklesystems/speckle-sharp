@@ -28,15 +28,15 @@ namespace Objects.Converter.Dynamo
   {
 
 #if REVIT2023
-    public static string AppName = Applications.DynamoRevit2023;
+    public static string AppName = VersionedHostApplications.DynamoRevit2023;
 #elif REVIT2022
-    public static string AppName = Applications.DynamoRevit2022;
+    public static string AppName = VersionedHostApplications.DynamoRevit2022;
 #elif REVIT2021
-    public static string AppName = Applications.DynamoRevit2021;
+    public static string AppName = VersionedHostApplications.DynamoRevit2021;
 #elif REVIT
-    public static string AppName = Applications.DynamoRevit;
+    public static string AppName = VersionedHostApplications.DynamoRevit;
 #else
-    public static string AppName = Applications.DynamoSandbox;
+    public static string AppName = VersionedHostApplications.DynamoSandbox;
 #endif
 
     public string Description => "Default Speckle Kit for Dynamo";

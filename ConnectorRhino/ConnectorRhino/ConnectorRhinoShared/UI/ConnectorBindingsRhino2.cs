@@ -111,7 +111,8 @@ namespace SpeckleRhino
       return objs;
     }
 
-    public override string GetHostAppName() => Utils.RhinoAppName;
+    public override string GetHostAppNameVersion() => Utils.RhinoAppName;
+    public override string GetHostAppName() => HostApplications.Rhino.Slug;
 
     public override string GetDocumentId()
     {
@@ -335,7 +336,7 @@ namespace SpeckleRhino
       foreach (var convertedItem in convertedList)
       {
         if (!(convertedItem is GeometryBase convertedRH)) continue;
-        
+
         if (!convertedRH.IsValidWithLog(out string log))
         {
           var exception =
@@ -368,7 +369,7 @@ namespace SpeckleRhino
             attributes.ObjectColor = Color.FromArgb(color);
           }
         }
-        
+
         // assign layer
         attributes.LayerIndex = bakeLayer.Index;
 
@@ -393,7 +394,7 @@ namespace SpeckleRhino
           converter.Report.LogConversionError(exception);
           continue;
         }
-        
+
         // handle render material
         if (obj[@"renderMaterial"] is Base render)
         {
@@ -405,7 +406,7 @@ namespace SpeckleRhino
             rhinoObject.CommitChanges();
           }
         }
-      }   
+      }
     }
 
     #endregion
@@ -597,7 +598,7 @@ namespace SpeckleRhino
     /// <param name="dict"></param>
     private void ParseArchivableToDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
     {
-      foreach(var key in dict.Keys)
+      foreach (var key in dict.Keys)
       {
         var obj = dict[key];
         switch (obj)

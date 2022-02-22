@@ -15,11 +15,11 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures : ISpeckleConverter
   {
 #if TeklaStructures2021
-    public static string TeklaStructuresAppName = Applications.TeklaStructures2021;
+    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2021;
 #elif TeklaStructures2020
-  public static string TeklaStructuresAppName = Applications.TeklaStructures2020;
+  public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
 #else
-    public static string TeklaStructuresAppName = Applications.TeklaStructures;
+    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.Name;
 #endif
     public string Description => "Default Speckle Kit for TeklaStructures";
 
@@ -91,15 +91,15 @@ namespace Objects.Converter.TeklaStructures
         case BoltGroup bg:
           return true;
         case ContourPlate cp:
-            return true;
+          return true;
         case Weld w:
-            return true;
+          return true;
         case PolygonWeld pw:
-            return true;
+          return true;
         case BooleanPart bp:
-            return true;
+          return true;
         case Fitting ft:
-            return true;
+          return true;
         default:
           return false;
           //_ => (@object as ModelObject).IsElementSupported()
@@ -119,17 +119,17 @@ namespace Objects.Converter.TeklaStructures
           ContourPlateToNative(o);
           return true;
         case Geometry.Plane o:
-            FittingToNative(o);
-            return true;
+          FittingToNative(o);
+          return true;
         case BE.Opening o:
-            BooleanPartToNative(o);
-            return true;
+          BooleanPartToNative(o);
+          return true;
         case BE.TeklaStructures.Bolts o:
-            BoltsToNative(o);
-            return true;
+          BoltsToNative(o);
+          return true;
         case BE.TeklaStructures.Welds o:
-            WeldsToNative(o);
-            return true;
+          WeldsToNative(o);
+          return true;
         default:
           return false;
       }
@@ -166,23 +166,23 @@ namespace Objects.Converter.TeklaStructures
         case ContourPlate o:
           returnObject = ContourPlateToSpeckle(o);
           Report.Log($"Created ContourPlate");
-            break;
+          break;
         case Weld o:
           returnObject = WeldsToSpeckle(o);
           Report.Log($"Created Weld");
           break;
         case PolygonWeld o:
-            returnObject = PoylgonWeldsToSpeckle(o);
-            Report.Log($"Created PolygonWeld");
-            break;
+          returnObject = PoylgonWeldsToSpeckle(o);
+          Report.Log($"Created PolygonWeld");
+          break;
         case BooleanPart o:
-            returnObject = BooleanPartToSpeckle(o);
-            Report.Log($"Created BooleanPart");
-            break;
+          returnObject = BooleanPartToSpeckle(o);
+          Report.Log($"Created BooleanPart");
+          break;
         case Fitting o:
-            returnObject = FittingsToSpeckle(o);
-            Report.Log($"Created Fitting");
-            break;
+          returnObject = FittingsToSpeckle(o);
+          Report.Log($"Created Fitting");
+          break;
         default:
           ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
           returnObject = null;
