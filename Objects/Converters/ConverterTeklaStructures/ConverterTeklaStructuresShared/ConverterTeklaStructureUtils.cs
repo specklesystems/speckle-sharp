@@ -62,8 +62,10 @@ namespace Objects.Converter.TeklaStructures
         Face MyFace = MyFaceEnum.Current as Face;
         if (MyFace != null)
         {
-          List<double> TempList = new List<double> { };
+          List<double> outerLoopList = new List<double> { };
+          List<List<double>> innerLoopList = new List<List<double>>();
           LoopEnumerator MyLoopEnum = MyFace.GetLoopEnumerator();
+          var inner_loop = 0;
           while (MyLoopEnum.MoveNext())
           {
             Loop MyLoop = MyLoopEnum.Current as Loop;
@@ -71,26 +73,42 @@ namespace Objects.Converter.TeklaStructures
             {
 
               VertexEnumerator MyVertexEnum = MyLoop.GetVertexEnumerator() as VertexEnumerator;
+              var innerLoopListOfList = new List<double> { };
               while (MyVertexEnum.MoveNext())
               {
 
                 Tekla.Structures.Geometry3d.Point MyVertex = MyVertexEnum.Current as Tekla.Structures.Geometry3d.Point;
-                if (MyVertex != null)
+                if (MyVertex != null && inner_loop == 0)
                 {
-                  TempList.Add(MyVertex.X);
-                  TempList.Add(MyVertex.Y);
-                  TempList.Add(MyVertex.Z);
+                  outerLoopList.Add(MyVertex.X);
+                  outerLoopList.Add(MyVertex.Y);
+                  outerLoopList.Add(MyVertex.Z);
 
+                }
+                else
+                {
+                  innerLoopListOfList.Add(MyVertex.X);
+                  innerLoopListOfList.Add(MyVertex.Y);
+                  innerLoopListOfList.Add(MyVertex.Z);
                 }
 
 
                 //speckleBeam.displayMesh = beam.Profile.
               }
-              counter++;
+              inner_loop++;
+              if(innerLoopListOfList.Any()){
+                innerLoopList.Add(innerLoopListOfList);
+              }
             }
           }
-
-          mesher.Init(TempList);
+          if (!innerLoopList.Any())
+          {
+            mesher.Init(outerLoopList);
+          }
+          else
+          {
+            mesher.Init(outerLoopList, innerLoopList);
+          }
           var faces = mesher.Faces();
           var vertices = mesher.Coordinates;
           var verticesList = vertices.ToList();
@@ -210,17 +228,17 @@ namespace Objects.Converter.TeklaStructures
       }
       return profile;
     }
-        public Structural.Properties.Profiles.SectionProfile GetContourPlateProfile(string teklaProfileString) 
-        {
-            ParametricProfileItem paramItem = new ParametricProfileItem();
-            SectionProfile profile = new SectionProfile() { name = teklaProfileString , shapeType = Structural.ShapeType.Perimeter };
-            return profile;
-        }
+    public Structural.Properties.Profiles.SectionProfile GetContourPlateProfile(string teklaProfileString)
+    {
+      ParametricProfileItem paramItem = new ParametricProfileItem();
+      SectionProfile profile = new SectionProfile() { name = teklaProfileString, shapeType = Structural.ShapeType.Perimeter };
+      return profile;
+    }
 
 
 
     #region Profile type getters
-        private Structural.Properties.Profiles.ISection GetIProfile(ProfileItem profileItem)
+    private Structural.Properties.Profiles.ISection GetIProfile(ProfileItem profileItem)
     {
       // Set profile name depending on type
       var name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
@@ -380,7 +398,8 @@ namespace Objects.Converter.TeklaStructures
       }
       return contourList;
     }
-    public void ToNativeContourPlate(Polyline polyline, Contour contour){
+    public void ToNativeContourPlate(Polyline polyline, Contour contour)
+    {
       var coordinates = polyline.value;
       for (int j = 0; j < coordinates.Count; j++)
       {
@@ -390,7 +409,7 @@ namespace Objects.Converter.TeklaStructures
           point.X = coordinates[j];
           point.Y = coordinates[j + 1];
           point.Z = coordinates[j + 2];
-          contour.AddContourPoint(new ContourPoint(point,null));
+          contour.AddContourPoint(new ContourPoint(point, null));
         }
       }
     }
@@ -409,131 +428,131 @@ namespace Objects.Converter.TeklaStructures
       var specklePolyline = new Polyline(coordinateList, units);
       return specklePolyline;
     }
-        public Polycurve ToSpecklePolycurve(Tekla.Structures.Geometry3d.Polycurve teklaPolycurve)
+    public Polycurve ToSpecklePolycurve(Tekla.Structures.Geometry3d.Polycurve teklaPolycurve)
+    {
+      var units = GetUnitsFromModel();
+      var specklePolycurve = new Polycurve(units);
+
+      foreach (var curveSegment in teklaPolycurve)
+      {
+        if (curveSegment is TSG.LineSegment)
         {
-            var units = GetUnitsFromModel();
-            var specklePolycurve = new Polycurve(units);
+          var lineSeg = (TSG.LineSegment)curveSegment;
 
-            foreach (var curveSegment in teklaPolycurve)
-            {
-                if (curveSegment is TSG.LineSegment)
-                {
-                    var lineSeg = (TSG.LineSegment)curveSegment;
+          Point start = new Point(lineSeg.StartPoint.X, lineSeg.StartPoint.Y, lineSeg.StartPoint.Z, units);
+          Point end = new Point(lineSeg.EndPoint.X, lineSeg.EndPoint.Y, lineSeg.EndPoint.Z, units);
 
-                    Point start = new Point(lineSeg.StartPoint.X, lineSeg.StartPoint.Y, lineSeg.StartPoint.Z, units);
-                    Point end = new Point(lineSeg.EndPoint.X, lineSeg.EndPoint.Y, lineSeg.EndPoint.Z, units);
-
-                    Line speckleLine = new Line(start, end, units);
-                    specklePolycurve.segments.Add(speckleLine);
-                }
-                else if (curveSegment is TSG.Arc)
-                {
-                    var arcSeg = (TSG.Arc)curveSegment;
-
-                    Point start = new Point(arcSeg.StartPoint.X, arcSeg.StartPoint.Y, arcSeg.StartPoint.Z, units);
-                    Point end = new Point(arcSeg.EndPoint.X, arcSeg.EndPoint.Y, arcSeg.EndPoint.Z, units);
-                    Point mid = new Point(arcSeg.ArcMiddlePoint.X, arcSeg.ArcMiddlePoint.Y, arcSeg.ArcMiddlePoint.Z, units);
-                    
-
-                    Arc speckleArc = new Arc();
-                    speckleArc.startPoint = start;
-                    speckleArc.endPoint = end;
-                    speckleArc.midPoint = mid;
-                    speckleArc.radius = arcSeg.Radius;
-                    speckleArc.angleRadians = arcSeg.Angle;
-
-                    specklePolycurve.segments.Add(speckleArc);
-                }
-            }
-            return specklePolycurve;
+          Line speckleLine = new Line(start, end, units);
+          specklePolycurve.segments.Add(speckleLine);
         }
-        public TeklaContourPoint ToSpeckleContourPoint(ContourPoint contourPoint)
+        else if (curveSegment is TSG.Arc)
         {
-            var speckleCP = new TeklaContourPoint();
-            speckleCP.x = contourPoint.X;
-            speckleCP.y = contourPoint.Y;
-            speckleCP.z = contourPoint.Z;
+          var arcSeg = (TSG.Arc)curveSegment;
 
-            speckleCP.chamferType = (TeklaChamferType)contourPoint.Chamfer.Type;
-            speckleCP.xDim = contourPoint.Chamfer.X;
-            speckleCP.yDim = contourPoint.Chamfer.Y;
-            speckleCP.dz1 = contourPoint.Chamfer.DZ1;
-            speckleCP.dz2 = contourPoint.Chamfer.DZ2;
-            speckleCP.units = GetUnitsFromModel();
-            return speckleCP;
+          Point start = new Point(arcSeg.StartPoint.X, arcSeg.StartPoint.Y, arcSeg.StartPoint.Z, units);
+          Point end = new Point(arcSeg.EndPoint.X, arcSeg.EndPoint.Y, arcSeg.EndPoint.Z, units);
+          Point mid = new Point(arcSeg.ArcMiddlePoint.X, arcSeg.ArcMiddlePoint.Y, arcSeg.ArcMiddlePoint.Z, units);
+
+
+          Arc speckleArc = new Arc();
+          speckleArc.startPoint = start;
+          speckleArc.endPoint = end;
+          speckleArc.midPoint = mid;
+          speckleArc.radius = arcSeg.Radius;
+          speckleArc.angleRadians = arcSeg.Angle;
+
+          specklePolycurve.segments.Add(speckleArc);
         }
-        public ContourPoint ToTeklaContourPoint(TeklaContourPoint speckleCP)
-        {
-            var teklaCP = new ContourPoint();
-            teklaCP.SetPoint(new TSG.Point(speckleCP.x, speckleCP.y, speckleCP.z));
-            teklaCP.Chamfer.Type = (Chamfer.ChamferTypeEnum)speckleCP.chamferType;
-            teklaCP.Chamfer.X = speckleCP.xDim;
-            teklaCP.Chamfer.Y = speckleCP.yDim;
-            teklaCP.Chamfer.DZ1 = speckleCP.dz1;
-            teklaCP.Chamfer.DZ2 = speckleCP.dz2;
-            return teklaCP;
-        }
+      }
+      return specklePolycurve;
+    }
+    public TeklaContourPoint ToSpeckleContourPoint(ContourPoint contourPoint)
+    {
+      var speckleCP = new TeklaContourPoint();
+      speckleCP.x = contourPoint.X;
+      speckleCP.y = contourPoint.Y;
+      speckleCP.z = contourPoint.Z;
+
+      speckleCP.chamferType = (TeklaChamferType)contourPoint.Chamfer.Type;
+      speckleCP.xDim = contourPoint.Chamfer.X;
+      speckleCP.yDim = contourPoint.Chamfer.Y;
+      speckleCP.dz1 = contourPoint.Chamfer.DZ1;
+      speckleCP.dz2 = contourPoint.Chamfer.DZ2;
+      speckleCP.units = GetUnitsFromModel();
+      return speckleCP;
+    }
+    public ContourPoint ToTeklaContourPoint(TeklaContourPoint speckleCP)
+    {
+      var teklaCP = new ContourPoint();
+      teklaCP.SetPoint(new TSG.Point(speckleCP.x, speckleCP.y, speckleCP.z));
+      teklaCP.Chamfer.Type = (Chamfer.ChamferTypeEnum)speckleCP.chamferType;
+      teklaCP.Chamfer.X = speckleCP.xDim;
+      teklaCP.Chamfer.Y = speckleCP.yDim;
+      teklaCP.Chamfer.DZ1 = speckleCP.dz1;
+      teklaCP.Chamfer.DZ2 = speckleCP.dz2;
+      return teklaCP;
+    }
 
     public TeklaPosition GetPositioning(Position position)
     {
-        var specklePosition = new TeklaPosition()
-        {
-            Depth = (TeklaDepthEnum)position.Depth,
-            Plane = (TeklaPlaneEnum)position.Plane,
-            Rotation = (TeklaRotationEnum)position.Rotation,
-            depthOffset = position.DepthOffset,
-            planeOffset = position.PlaneOffset,
-            rotationOffset = position.RotationOffset
-        };
-            
-        return specklePosition;
+      var specklePosition = new TeklaPosition()
+      {
+        Depth = (TeklaDepthEnum)position.Depth,
+        Plane = (TeklaPlaneEnum)position.Plane,
+        Rotation = (TeklaRotationEnum)position.Rotation,
+        depthOffset = position.DepthOffset,
+        planeOffset = position.PlaneOffset,
+        rotationOffset = position.RotationOffset
+      };
+
+      return specklePosition;
     }
-        public Position SetPositioning(TeklaPosition position)
-        {
-            var teklaPosition = new Position()
-            {
-                Depth = (Position.DepthEnum)position.Depth,
-                Plane = (Position.PlaneEnum)position.Plane,
-                Rotation = (Position.RotationEnum)position.Rotation,
-                DepthOffset = position.depthOffset,
-                PlaneOffset = position.planeOffset,
-                RotationOffset = position.rotationOffset
-            };
+    public Position SetPositioning(TeklaPosition position)
+    {
+      var teklaPosition = new Position()
+      {
+        Depth = (Position.DepthEnum)position.Depth,
+        Plane = (Position.PlaneEnum)position.Plane,
+        Rotation = (Position.RotationEnum)position.Rotation,
+        DepthOffset = position.depthOffset,
+        PlaneOffset = position.planeOffset,
+        RotationOffset = position.rotationOffset
+      };
 
-            return teklaPosition;
-        }
-        public bool IsProfileValid(string profileName)
-        {
-            if (string.IsNullOrEmpty(profileName))
-                return false;
-
-            LibraryProfileItem lpi = new LibraryProfileItem();
-            if (lpi.Select(profileName))
-                return true;
-            else
-            {
-                ParametricProfileItem ppi = new ParametricProfileItem();
-                if (ppi.Select(profileName))
-                    return true;
-                else
-                 return false;
-            }
-        }
-        //public static bool IsElementSupported(this ModelObject e)
-        //{
-
-        //  if (SupportedBuiltInCategories.Contains(e)
-        //    return true;
-        //  return false;
-        //}
-
-        ////list of currently supported Categories (for sending only)
-        ////exact copy of the one in the Speckle.ConnectorRevit.ConnectorRevitUtils
-        ////until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
-        //private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>{
-
-        //ModelObject.ModelObjectEnum.BEAM,
-
-
+      return teklaPosition;
     }
+    public bool IsProfileValid(string profileName)
+    {
+      if (string.IsNullOrEmpty(profileName))
+        return false;
+
+      LibraryProfileItem lpi = new LibraryProfileItem();
+      if (lpi.Select(profileName))
+        return true;
+      else
+      {
+        ParametricProfileItem ppi = new ParametricProfileItem();
+        if (ppi.Select(profileName))
+          return true;
+        else
+          return false;
+      }
+    }
+    //public static bool IsElementSupported(this ModelObject e)
+    //{
+
+    //  if (SupportedBuiltInCategories.Contains(e)
+    //    return true;
+    //  return false;
+    //}
+
+    ////list of currently supported Categories (for sending only)
+    ////exact copy of the one in the Speckle.ConnectorRevit.ConnectorRevitUtils
+    ////until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
+    //private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>{
+
+    //ModelObject.ModelObjectEnum.BEAM,
+
+
+  }
 }
