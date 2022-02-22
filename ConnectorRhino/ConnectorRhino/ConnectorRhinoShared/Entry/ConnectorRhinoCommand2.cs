@@ -25,7 +25,7 @@ namespace SpeckleRhino
 
     public static SpeckleCommand2 Instance { get; private set; }
 
-    public override string EnglishName => "SpeckleNewUi";
+    public override string EnglishName => "Speckle";
 
     public static Window MainWindow { get; private set; }
 

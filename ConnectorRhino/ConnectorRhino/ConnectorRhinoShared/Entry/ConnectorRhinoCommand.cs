@@ -16,7 +16,7 @@ namespace SpeckleRhino
   {
     public static SpeckleCommand Instance { get; private set; }
 
-    public override string EnglishName => "Speckle";
+    public override string EnglishName => "SpeckleOld";
 
     public static Bootstrapper Bootstrapper { get; set; }
 

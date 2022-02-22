@@ -15,6 +15,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
@@ -166,6 +167,11 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
 
       return filterList;
+    }
+
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
     }
 
     //TODO
@@ -795,7 +801,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     }
 #endregion
 
-#region helper methods
+    #region helper methods
     delegate void WriteStateDelegate(DgnFile File, List<StreamState> DocumentStreams);
 
     /// <summary>
@@ -808,6 +814,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       else
         StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
     }
-#endregion
+    #endregion
   }
 }
