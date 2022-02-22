@@ -100,7 +100,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
   test-core: 
     executor:
       name: win/default
-      shell: powershell.exe
+      shell: bash.exe
     # docker:
     #   - image: 'mcr.microsoft.com/dotnet/framework/sdk:4.8' # dotnet core 2.1 sdk (for netstandard support on build)
     #   # Node, redis, postgres and speckle-server images for test server
