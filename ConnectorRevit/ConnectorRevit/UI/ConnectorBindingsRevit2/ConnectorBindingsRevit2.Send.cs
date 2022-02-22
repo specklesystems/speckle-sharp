@@ -66,9 +66,7 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           if (revitElement == null)
-          {
             continue;
-          }
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
@@ -77,9 +75,7 @@ namespace Speckle.ConnectorRevit.UI
           }
 
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          {
             return;
-          }
 
           var conversionResult = converter.ConvertToSpeckle(revitElement);
 
@@ -97,9 +93,8 @@ namespace Speckle.ConnectorRevit.UI
           {
             var category = $"@{revitElement.Category.Name}";
             if (commitObject[category] == null)
-            {
               commitObject[category] = new List<Base>();
-            }
+
              ((List<Base>)commitObject[category]).Add(conversionResult);
           }
 
