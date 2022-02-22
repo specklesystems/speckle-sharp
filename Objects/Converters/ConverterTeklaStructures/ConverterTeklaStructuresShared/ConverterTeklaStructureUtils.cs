@@ -48,7 +48,7 @@ namespace Objects.Converter.TeklaStructures
     }
     public Mesh GetMeshFromSolid(Solid solid)
     {
-      List<double> MyList = new List<double> { };
+      List<double> vertexList = new List<double> { };
       ArrayList MyFaceNormalList = new ArrayList();
       List<int> facesList = new List<int> { };
 
@@ -57,6 +57,8 @@ namespace Objects.Converter.TeklaStructures
       var counter = 0;
       while (MyFaceEnum.MoveNext())
       {
+        int faceIndexOffset = vertexList.Count / 3;
+
         var mesher = new PolygonMesher();
 
         Face MyFace = MyFaceEnum.Current as Face;
@@ -109,34 +111,34 @@ namespace Objects.Converter.TeklaStructures
           {
             mesher.Init(outerLoopList, innerLoopList);
           }
-          var faces = mesher.Faces();
+          var faces = mesher.Faces(faceIndexOffset);
           var vertices = mesher.Coordinates;
           var verticesList = vertices.ToList();
-          MyList.AddRange(verticesList);
-          var largestVertixCount = 0;
-          if (facesList.Count == 0)
-          {
-            largestVertixCount = 0;
-          }
-          else
-          {
-            largestVertixCount = facesList.Max() + 1;
-          }
-          for (int i = 0; i < faces.Length; i++)
-          {
-            if (i % 4 == 0)
-            {
-              continue;
-            }
-            else
-            {
-              faces[i] += largestVertixCount;
-            }
-          }
+          vertexList.AddRange(verticesList);
+          //var largestVertixCount = 0;
+          //if (facesList.Count == 0)
+          //{
+          //  largestVertixCount = 0;
+          //}
+          //else
+          //{
+          //  largestVertixCount = facesList.Max() + 1;
+          //}
+          //for (int i = 0; i < faces.Length; i++)
+          //{
+          //  if (i % 4 == 0)
+          //  {
+          //    continue;
+          //  }
+          //  else
+          //  {
+          //    faces[i] += largestVertixCount;
+          //  }
+          //}
           facesList.AddRange(faces.ToList());
         }
       }
-      return new Mesh(MyList, facesList);
+      return new Mesh(vertexList, facesList,units: GetUnitsFromModel());
 
     }
     /// <summary>
