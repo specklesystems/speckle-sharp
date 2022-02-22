@@ -41,7 +41,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              var mesh = MeshToNative(brep.displayMesh);
+              var mesh = brep.displayValue.SelectMany(m => MeshToNative(m));
               converted.AddRange(mesh);
             }
             break;
@@ -100,21 +100,25 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         Report.LogConversionError(new Exception(e.Message));
-        var mesh = MeshToNative(brep.displayMesh);
-        revitDs.SetShape(mesh);
+        var mesh = brep.displayValue.SelectMany(m => MeshToNative(m));
+        revitDs.SetShape(mesh.ToArray());
       }
       //Report.Log($"Converted DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
-    {
-      // if it comes from GH it doesn't have an applicationId, the use the hash id
-      if (mesh.applicationId == null)
-        mesh.applicationId = mesh.id;
 
-      var docObj = GetExistingElementByApplicationId(mesh.applicationId);
+    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    => DirectShapeToNative(new []{mesh}, cat);
+
+    public ApplicationPlaceholderObject DirectShapeToNative(IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    {
+      // if it comes from GH it doesn't have an applicationId, then use the hash id 
+      if (meshes.Count == 0) return null;
+      string applicationId = meshes[0].applicationId ?? meshes[0].id;
+
+      var docObj = GetExistingElementByApplicationId(applicationId);
 
       //just create new one 
       if (docObj != null)
@@ -123,18 +127,21 @@ namespace Objects.Converter.Revit
       }
 
       var converted = new List<GeometryObject>();
-      var rMesh = MeshToNative(mesh);
-      converted.AddRange(rMesh);
-
+      foreach (Mesh m in meshes)
+      {
+        var rMesh = MeshToNative(m);
+        converted.AddRange(rMesh);
+      }
+      
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
 
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
-      revitDs.ApplicationId = mesh.applicationId;
+      revitDs.ApplicationId =applicationId;
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(converted);
-      revitDs.Name = "Mesh " + mesh.applicationId;
+      revitDs.Name = "Mesh " + applicationId;
       Report.Log($"Converted DirectShape {revitDs.Id}");
-      return new ApplicationPlaceholderObject { applicationId = mesh.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
+      return new ApplicationPlaceholderObject { applicationId = applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
     private Mesh SolidToSpeckleMesh(Solid solid)
@@ -150,21 +157,51 @@ namespace Objects.Converter.Revit
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
       var category = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat);
       var element = revitAc.get_Geometry(new Options());
-      var geometries = element.ToList().Select<GeometryObject, Base>(obj =>
+
+      var geometries = new List<Base>();
+
+      foreach (var obj in element)
+      {
+        switch (obj)
         {
-          return obj
-          switch
-          {
-            DB.Mesh mesh => MeshToSpeckle(mesh),
-            Solid solid => SolidToSpeckleMesh(solid), // Should be replaced with 'BrepToSpeckle' when it works.
-            _ => null
-          };
-        });
+          case DB.Mesh mesh:
+            geometries.Add(MeshToSpeckle(mesh));
+            break;
+          case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
+            geometries.AddRange(GetMeshesFromSolids(new[] {solid}));
+            break;
+        }
+      }
+
+      
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
-        geometries.ToList()
+        geometries
       );
+
+      //Find display values in geometries
+      List<Base> displayValue = new List<Base>();
+      foreach (Base geo in geometries)
+      {
+        switch (geo["displayValue"])
+        {
+          case null:
+            //geo has no display value, we assume it is itself a valid displayValue
+            displayValue.Add(geo);
+            break;
+          
+          case Base b:
+            displayValue.Add(b);
+            break;
+          
+          case IEnumerable<Base> e:
+            displayValue.AddRange(e);
+            break;
+        }
+      }
+
+      speckleAc.displayValue = displayValue;
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       speckleAc["type"] = revitAc.Name;
       return speckleAc;

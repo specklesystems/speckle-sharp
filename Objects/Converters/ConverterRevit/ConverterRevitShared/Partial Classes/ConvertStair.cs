@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
 
-      speckleStair.displayMesh = GetElementDisplayMesh(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleStair.displayValue = GetElementDisplayMesh(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       //Report.Log($"Converted Stair {revitStair.Id}");
       return speckleStair;
     }

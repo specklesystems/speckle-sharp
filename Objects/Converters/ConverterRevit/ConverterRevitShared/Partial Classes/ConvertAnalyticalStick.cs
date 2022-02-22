@@ -387,7 +387,7 @@ switch (speckleStick.type)
     speckleElement1D.property = prop;
 
     GetAllRevitParamsAndIds(speckleElement1D, revitStick);
-    speckleElement1D.displayMesh = GetElementDisplayMesh(Doc.GetElement(revitStick.GetElementId()));
+    speckleElement1D.displayValue = GetElementDisplayMesh(Doc.GetElement(revitStick.GetElementId()));
     return speckleElement1D;
   }
 

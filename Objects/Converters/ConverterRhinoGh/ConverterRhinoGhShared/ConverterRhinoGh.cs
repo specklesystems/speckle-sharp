@@ -558,8 +558,8 @@ namespace Objects.Converter.RhinoGh
           var b = BrepToNative(o);
           if (b == null)
           {
-            rhinoObj = (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
-            Report.Log($"Created Brep {o.id} as Mesh");
+            rhinoObj = o.displayValue?.Select(MeshToNative).ToArray();
+            Report.Log($"Created Brep {o.id} as Meshes");
           }
           else
           {
@@ -590,14 +590,10 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case DirectShape o:
-          if (o.displayMesh != null)
-          {
-            rhinoObj = MeshToNative(o.displayMesh);
-            Report.Log($"Created DirectShape {o.id}");
-          }
-          Report.Log($"Skipping DirectShape {o.id} because it has no displayMesh");
+          rhinoObj = DirectShapeToNative(o);
+          Report.Log($"Created DirectShape {o.id}");
           break;
-
+        
         case View3D o:
           rhinoObj = ViewToNative(o);
           Report.Log($"Created View3D {o.id}");

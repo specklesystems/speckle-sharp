@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayMesh = GetElementMesh(revitPipe)
+        displayValue = GetElementMesh(revitPipe)
       };
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
@@ -140,7 +140,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent),
         endTangent = VectorToSpeckle(revitPipe.EndTangent),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayMesh = GetElementMesh(revitPipe)
+        displayValue = GetElementMesh(revitPipe)
       };
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>

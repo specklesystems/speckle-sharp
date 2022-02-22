@@ -178,9 +178,9 @@ namespace Objects.Converter.Revit
             break;
           }
       }
-      var symbol = Doc.GetElement(revitRoof.GetTypeId()) as FamilySymbol;
-      speckleRoof.type = symbol.Name;
-      speckleRoof.family = symbol.FamilyName;
+      var elementType = Doc.GetElement(revitRoof.GetTypeId()) as ElementType;
+      speckleRoof.type = elementType.Name;
+      speckleRoof.family = elementType.FamilyName;
 
       // TODO handle case if not one of our supported roofs
       if (profiles.Any())
@@ -195,7 +195,7 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleRoof, revitRoof,
         new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM" });
 
-      speckleRoof.displayMesh = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleRoof, revitRoof);
       //Report.Log($"Converted Roof {revitRoof.Id}");

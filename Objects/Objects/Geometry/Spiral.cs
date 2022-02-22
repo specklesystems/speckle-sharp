@@ -5,6 +5,7 @@ using System.Text;
 using Objects.Primitive;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
@@ -22,7 +23,7 @@ namespace Objects.Geometry
     Unknown
   }
 
-  public class Spiral : Base, ICurve, IHasBoundingBox
+  public class Spiral : Base, ICurve, IHasBoundingBox, IDisplayValue<Polyline>
   {
     public Point startPoint { get; set; }
     public Point endPoint { get; set; }
@@ -31,7 +32,8 @@ namespace Objects.Geometry
     public Vector pitchAxis { get; set; } = new Vector();
     public double pitch { get; set; } = 0;
     public SpiralType spiralType { get; set; }
-
+  
+    [DetachProperty]
     public Polyline displayValue { get; set; }
 
     public Box bbox { get; set; }

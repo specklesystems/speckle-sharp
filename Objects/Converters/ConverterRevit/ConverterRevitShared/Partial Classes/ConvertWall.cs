@@ -157,23 +157,27 @@ namespace Objects.Converter.Revit
             speckleWall.elements.Add(WallToSpeckle(wall));
         }
 
-        speckleWall.displayMesh = GetElementDisplayMesh(revitWall,
+        speckleWall.displayValue = GetElementDisplayMesh(revitWall,
           new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       }
       else
       {
         // curtain walls have two meshes, one for panels and one for mullions
         // adding mullions as sub-elements so they can be correctly displayed in viewers etc
-        (var panelsMesh, var mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
+        var (panelsMesh, mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
         speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
-        speckleWall.displayMesh = panelsMesh;
-
-        var mullions = new Base
+        speckleWall.displayValue = panelsMesh;
+        
+        var elements = new List<Base>();
+        if (mullionsMesh.Count > 0) //Only add mullions object if they have meshes 
         {
-          ["@displayMesh"] = mullionsMesh,
-          ["renderMaterial"] = new Other.RenderMaterial() { diffuse = System.Drawing.Color.DarkGray.ToArgb() }
-        };
-        speckleWall.elements = new List<Base> { mullions };
+          elements.Add(new Base
+          {
+            ["@displayValue"] = mullionsMesh
+          });
+        }
+
+        speckleWall.elements = elements;
 
       }
 
@@ -192,13 +196,10 @@ namespace Objects.Converter.Revit
       return speckleWall;
     }
 
-    private (Mesh, Mesh) GetCurtainWallDisplayMesh(DB.Wall wall)
+    private (List<Mesh>, List<Mesh>) GetCurtainWallDisplayMesh(DB.Wall wall)
     {
       var grid = wall.CurtainGrid;
-
-      var meshPanels = new Mesh();
-      var meshMullions = new Mesh();
-
+      
       var solidPanels = new List<Solid>();
       var solidMullions = new List<Solid>();
       foreach (ElementId panelId in grid.GetPanelIds())
@@ -209,11 +210,9 @@ namespace Objects.Converter.Revit
       {
         solidMullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
       }
-      (meshPanels.faces, meshPanels.vertices) = GetFaceVertexArrFromSolids(solidPanels);
-      (meshMullions.faces, meshMullions.vertices) = GetFaceVertexArrFromSolids(solidMullions);
-      meshPanels.units = ModelUnits;
-      meshMullions.units = ModelUnits;
-
+      
+      var meshPanels = GetMeshesFromSolids(solidPanels);
+      var meshMullions = GetMeshesFromSolids(solidMullions);
 
       return (meshPanels, meshMullions);
     }

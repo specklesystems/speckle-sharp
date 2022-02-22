@@ -350,13 +350,15 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
           Report.Log($"Created Curve {o.id}");
           break;
 
-        //case Surface o: 
-        //  return SurfaceToNative(o);
+        /*
+        case Surface o: 
+          return SurfaceToNative(o);
 
         case Brep o:
           acadObj = (o.displayMesh != null) ? MeshToNativeDB(o.displayMesh) : null;
           Report.Log($"Created Brep {o.id} as Mesh");
           break;
+        */
 
         case Mesh o:
           acadObj = MeshToNativeDB(o);
@@ -491,7 +493,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
         case Polyline _:
         case Polycurve _:
         case Curve _:
-        case Brep _:
+        //case Brep _:
         case Mesh _:
 
         case BlockDefinition _:

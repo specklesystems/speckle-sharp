@@ -6,15 +6,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using System.Timers;
 using System.Threading;
 using Timer = System.Timers.Timer;
-
 using Rhino;
 using Rhino.DocObjects;
-using Rhino.Display;
-
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -27,10 +23,8 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
-using System.Threading;
 using Rhino.Geometry;
 using Rhino.Render;
-using Speckle.Core.Logging;
 
 namespace SpeckleRhino
 {
@@ -267,7 +261,7 @@ namespace SpeckleRhino
           List<string> props = @base.GetDynamicMembers().ToList();
           if (@base.GetMembers().ContainsKey("displayValue"))
             props.Add("displayValue");
-          if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
             props.Add("displayMesh");
           if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
             props.Add("elements");
@@ -314,25 +308,37 @@ namespace SpeckleRhino
 
       return objects;
     }
-
+    
+    
     // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
-      var converted = converter.ConvertToNative(obj); // this may be an array, eg hatches
+      var converted = converter.ConvertToNative(obj); // This may be a GeometryBase, an Array (eg. hatches), or a nested array (e.g. direct shape)
       if (converted == null)
       {
         var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}.");
         converter.Report.LogConversionError(exception);
         return;
       }
-
+      
       var convertedList = new List<object>();
-      if (converted.GetType().IsArray)
-        foreach (object o in (Array)converted)
-          convertedList.Add(o);
-      else
-        convertedList.Add(converted);
 
+      //Iteratively flatten any lists
+      void FlattenConvertedObject(object item)
+      {
+        if (item is IList list)
+        {
+          foreach(object child in list)
+            FlattenConvertedObject(child);
+        }
+        else
+        {
+          convertedList.Add(item);
+        }
+      }
+
+      FlattenConvertedObject(converted);
+      
       foreach (var convertedItem in convertedList)
       {
         if (!(convertedItem is GeometryBase convertedRH)) continue;

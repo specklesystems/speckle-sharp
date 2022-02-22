@@ -8,6 +8,7 @@ using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
+using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
@@ -30,8 +31,8 @@ namespace Objects.Converter.Revit
             catch (Exception e)
             {
               Report.LogConversionError(new SpeckleException($"Could not convert BREP {freeformElement.id} to native, falling back to mesh representation.", e));
-              var brepMeshSolids = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
-                  .Select(m => m as DB.Solid);
+
+              var brepMeshSolids = GetSolidMeshes(brep.displayValue);
               solids.AddRange(brepMeshSolids);
             }
             break;
@@ -66,7 +67,7 @@ namespace Objects.Converter.Revit
         NativeObject = freeform
       };
     }
-
+    
 
     public List<ApplicationPlaceholderObject> FreeformElementToNativeFamily(Brep brep)
     {
@@ -78,9 +79,8 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        var mesh = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid)
-            .Select(m => (m as DB.Solid));
-        solids.AddRange(mesh);
+        var meshes = GetSolidMeshes(brep.displayValue);
+        solids.AddRange(meshes);
       }
 
       var applicationPlaceholders = new List<ApplicationPlaceholderObject>();
@@ -130,6 +130,13 @@ namespace Objects.Converter.Revit
 
     }
 
+    private IEnumerable<Solid> GetSolidMeshes(IEnumerable<Mesh> meshes)
+    {
+      return meshes
+        .SelectMany(m => MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort))
+        .Select(m => m as DB.Solid);
+    }
+    
     private ApplicationPlaceholderObject FreeformElementToNative(Brep brep)
     {
       var solids = new List<DB.Solid>();
@@ -140,9 +147,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        var mesh = MeshToNative(brep.displayMesh, DB.TessellatedShapeBuilderTarget.Solid)
-            .Select(m => (m as DB.Solid));
-        solids.AddRange(mesh);
+        solids.AddRange(GetSolidMeshes(brep.displayValue));
       }
 
       var tempPath = CreateFreeformElementFamily(solids, brep.id);
