@@ -129,9 +129,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Unit Test
           command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - run:
-        command: |
-          docker info
-          docker run circleci/redis:6
+          command: |
+            docker info
+            docker run circleci/redis:6
       # - run:
       #     name: Integration Tests # The integration tests are runinng on our test sevrer
       #     command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
