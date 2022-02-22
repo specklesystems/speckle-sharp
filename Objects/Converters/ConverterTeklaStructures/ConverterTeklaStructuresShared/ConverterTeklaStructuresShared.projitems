@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7ffdab72-145d-4490-9892-fac5f1d72b17</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConverterTeklaStructuresShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructureUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFitting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBooleanPart.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolygonWelds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWelds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBentPlate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertContourPlate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBolts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertLoftedPlates.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolyBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRebar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpiralBeam.cs" />
+  </ItemGroup>
+</Project>

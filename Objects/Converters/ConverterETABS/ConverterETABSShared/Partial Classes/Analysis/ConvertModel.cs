@@ -24,7 +24,6 @@ namespace Objects.Converter.ETABS
     {
       if(model.specs != null) { ModelInfoToNative(model.specs); }
 
-
       if (model.materials != null)
       {
         foreach (Material material in model.materials)

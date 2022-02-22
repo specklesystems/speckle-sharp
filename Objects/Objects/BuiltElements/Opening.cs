@@ -91,3 +91,24 @@ namespace Objects.BuiltElements.Revit
     */
   }
 }
+
+namespace Objects.BuiltElements.TeklaStructures
+{
+    public class TeklaOpening : Opening
+    {
+        public string openingHostId { get; set; }
+        public TeklaOpeningTypeEnum openingType { get; set; }
+        public TeklaOpening() { }
+    }
+    public class TeklaContourOpening : TeklaOpening
+    {
+        public TeklaContourPlate cuttingPlate { get; set; }
+        public double thickness { get; set; }
+        public TeklaContourOpening() { }
+    }
+    public class TeklaBeamOpening : TeklaOpening
+    {
+        public TeklaBeam cuttingBeam { get; set; }
+        public TeklaBeamOpening() { }
+    }
+}
