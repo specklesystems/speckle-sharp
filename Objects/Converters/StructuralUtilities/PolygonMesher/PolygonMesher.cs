@@ -145,17 +145,17 @@ namespace StructuralUtilities.PolygonMesher
 
       return l;
     }
-
-    public int[] Faces()
+        
+    public List<int> Faces(int faceIndexOffset = 0)
     {
       var faces = new List<int>();
       foreach (var t in Triangles)
       {
         faces.Add(0); // signifying a triangle
-        faces.AddRange(t.Indices.Take(3));
+        faces.AddRange(t.Indices.Take(3).Select(x => x + faceIndexOffset));
       }
 
-      return faces.ToArray();
+      return faces;
     }
 
     private bool GenerateFaces()

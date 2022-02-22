@@ -151,6 +151,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2019", "Objec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2022", "ConnectorRevit\ConnectorRevit2022\ConnectorRevit2022.csproj", "{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TeklaStructures", "TeklaStructures", "{18C8730C-0173-4987-9416-46F86EC20541}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorTeklaStructuresShared", "ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.shproj", "{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2021", "ConnectorTeklaStructures\ConnectorTeklaStructures2021\ConnectorTeklaStructures2021.csproj", "{3AF1EF30-0906-4926-A02C-4E3AD666352A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2020", "ConnectorTeklaStructures\ConnectorTeklaStructures2020\ConnectorTeklaStructures2020.csproj", "{67157264-AAA5-46A8-A38B-16254B49B892}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ConnectorMicroStation\ConnectorMicroStationOpenShared\ConnectorMicroStationOpenShared.projitems*{0420d74a-2997-4b92-844b-c3769deaa1ad}*SharedItemsImports = 4
@@ -158,9 +166,12 @@ Global
 		Objects\Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{208b25e4-2d0e-4534-b197-4c5c96cc53ce}*SharedItemsImports = 13
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{26eca1be-f5b2-4a41-9658-46a4a917bfe6}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
+		ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{28e2ea7f-ffd1-4e13-9165-0243b5ac82f5}*SharedItemsImports = 13
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
 		ConnectorMicroStation\ConnectorMicroStationOpenShared\ConnectorMicroStationOpenShared.projitems*{372d9f0f-ede9-4050-bf8c-758911c5c2e0}*SharedItemsImports = 13
+		ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
+		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{3cdef4cc-2cfa-4939-8427-3ed00fa9db55}*SharedItemsImports = 5
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{3df12639-78b6-41b3-a046-a675035369be}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{464f2220-d7d9-4d8c-bb3d-b93a1c603469}*SharedItemsImports = 4
@@ -170,6 +181,8 @@ Global
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{5c1c6c3b-e7bb-4572-9c97-e691e47764fc}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{5fd0d810-03e9-4fd2-93e4-b1b51e5d82c5}*SharedItemsImports = 13
+		ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
+		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{76937388-bc9e-4083-9d6e-59cc627e3804}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{78573adc-87a5-489f-8134-fb4a435a05f0}*SharedItemsImports = 5
 		Objects\Converters\ConverterETABS\ConverterETABSShared\ConverterETABSShared.projitems*{7f5a5e2b-d74f-483d-8983-97dc049c6d28}*SharedItemsImports = 13
@@ -566,6 +579,22 @@ Global
 		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|x64.ActiveCfg = Release|Any CPU
 		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}.Release|x64.Build.0 = Release|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Debug|x64.Build.0 = Debug|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Release|x64.ActiveCfg = Release|Any CPU
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A}.Release|x64.Build.0 = Release|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Debug|x64.Build.0 = Debug|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Release|x64.ActiveCfg = Release|Any CPU
+		{67157264-AAA5-46A8-A38B-16254B49B892}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -641,6 +670,10 @@ Global
 		{C21A6553-B4EC-4EC3-B82A-C7A83CFFB809} = {925C0BF6-A0B1-4699-9C4B-078E01D652CC}
 		{98136BFC-A71B-48AD-B0D2-8A5A07FD3D6D} = {925C0BF6-A0B1-4699-9C4B-078E01D652CC}
 		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
+		{18C8730C-0173-4987-9416-46F86EC20541} = {DD7DA7E3-FBB7-4216-852B-A4A5BF3AB9AB}
+		{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5} = {18C8730C-0173-4987-9416-46F86EC20541}
+		{3AF1EF30-0906-4926-A02C-4E3AD666352A} = {18C8730C-0173-4987-9416-46F86EC20541}
+		{67157264-AAA5-46A8-A38B-16254B49B892} = {18C8730C-0173-4987-9416-46F86EC20541}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}

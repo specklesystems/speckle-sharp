@@ -20,7 +20,6 @@ namespace Speckle.Core.Kits
     public const string DynamoRevit2023 = "DynamoRevit2023";
     public const string Unity = "Unity";
     public const string Excel = "Excel";
-    public const string Tekla = "Tekla";
     public const string GSA = "GSA";
     public const string Civil2021 = "Civil2021";
     public const string Civil2022 = "Civil2022";
@@ -34,7 +33,8 @@ namespace Speckle.Core.Kits
     public const string OpenBuildings = "OpenBuildings";
     public const string ETABSv18 = "ETABSv18";
     public const string ETABSv19 = "ETABSv19";
-
+    public const string TeklaStructures2021 = "TeklaStructures2021";
+    public const string TeklaStructures2020 = "TeklaStructures2020";
     public const string Script = "Script";
     public const string Other = "Other";
     public const string All = "All";
@@ -75,12 +75,6 @@ namespace Speckle.Core.Kits
     {
       public const string Name = "Unity";
       public const string Slug = "unity";
-    }
-
-    public static class Tekla
-    {
-      public const string Name = "Tekla";
-      public const string Slug = "tekla";
     }
 
     public static class GSA
@@ -131,6 +125,12 @@ namespace Speckle.Core.Kits
       public const string Slug = "etabs";
     }
 
+    public static class TeklaStructures
+    {
+      public const string Name = "Tekla Structures";
+      public const string Slug = "teklastructures";
+    }
+
   }
 
   /// <summary>
@@ -154,7 +154,6 @@ namespace Speckle.Core.Kits
     public const string DynamoRevit2023 = "DynamoRevit2023";
     public const string Unity = "Unity";
     public const string Excel = "Excel";
-    public const string Tekla = "Tekla";
     public const string GSA = "GSA";
     public const string Civil2021 = "Civil2021";
     public const string Civil2022 = "Civil2022";
@@ -168,7 +167,8 @@ namespace Speckle.Core.Kits
     public const string OpenBuildings = "OpenBuildings";
     public const string ETABSv18 = "ETABSv18";
     public const string ETABSv19 = "ETABSv19";
-
+    public const string TeklaStructures2021 = "TeklaStructures2021";
+    public const string TeklaStructures2020 = "TeklaStructures2020";
     public const string Script = "Script";
     public const string Other = "Other";
     public const string All = "All";

@@ -2216,6 +2216,32 @@ public class TeeSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class TeklaBeamSchemaComponent: CreateSchemaObjectBase {
+     
+    public TeklaBeamSchemaComponent(): base("TeklaBeam", "TeklaBeam", "Creates a Tekla Structures beam by curve.", "Speckle 2 Tekla", "Structure") { }
+    
+    public override Guid ComponentGuid => new Guid("5a4187bc-05d8-2447-7238-cdbc4b2fae45");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaBeam.ctor(Objects.ICurve,Objects.Structural.Properties.Profiles.SectionProfile,Objects.Structural.Materials.Material)","Objects.BuiltElements.TeklaStructures.TeklaBeam");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class TeklaContourPlateSchemaComponent: CreateSchemaObjectBase {
+     
+    public TeklaContourPlateSchemaComponent(): base("ContourPlate", "ContourPlate", "Creates a TeklaStructures contour plate.", "Speckle 2 Tekla", "Structure") { }
+    
+    public override Guid ComponentGuid => new Guid("3b092935-3c2f-c084-eea5-077630507a49");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaContourPlate.ctor(Objects.Structural.Properties.Profiles.SectionProfile,Objects.Geometry.Polyline,System.String,System.String,System.String,Objects.Structural.Materials.Material,Objects.BuiltElements.TeklaStructures.TeklaPosition,Speckle.Core.Models.Base)","Objects.BuiltElements.TeklaStructures.TeklaContourPlate");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class TimberSchemaComponent: CreateSchemaObjectBase {
      
     public TimberSchemaComponent(): base("Timber", "Timber", "Creates a Speckle structural material for timber (to be used in structural analysis models)", "Speckle 2 Structural", "Materials") { }
