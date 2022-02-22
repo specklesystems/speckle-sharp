@@ -114,7 +114,7 @@ namespace Speckle.Core.Logging
 
 #if DEBUG
       //only track in prod
-      //return;
+      return;
 #endif
 
       Task.Run(() =>
