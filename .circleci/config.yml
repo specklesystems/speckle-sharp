@@ -98,36 +98,39 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: dotnet build Core/Core.sln -c Release -v q
 
   test-core: 
-    docker:
-      - image: 'mcr.microsoft.com/dotnet/framework/sdk:4.8' # dotnet core 2.1 sdk (for netstandard support on build)
-      # Node, redis, postgres and speckle-server images for test server
-      - image: 'circleci/node:12'
-      - image: 'circleci/redis:6'
-      - image: 'circleci/postgres:12'
-        environment:
-          POSTGRES_DB: speckle2_test
-          POSTGRES_PASSWORD: speckle
-          POSTGRES_USER: speckle
-      - image: 'speckle/speckle-server:latest'
-        command: ["bash", "-c", "/wait && node bin/www"]
-        environment:
-          POSTGRES_URL: "localhost"
-          POSTGRES_USER: "speckle"
-          POSTGRES_PASSWORD: "speckle"
-          POSTGRES_DB: "speckle2_test"
-          REDIS_URL: "redis://localhost"
-          SESSION_SECRET: 'keyboard cat'
-          STRATEGY_LOCAL: "true"
-          CANONICAL_URL: 'http://localhost:3000'
-          WAIT_HOSTS: localhost:5432, localhost:6379
+    executor:
+      name: win/default
+      shell: powershell.exe
+    # docker:
+    #   - image: 'mcr.microsoft.com/dotnet/framework/sdk:4.8' # dotnet core 2.1 sdk (for netstandard support on build)
+    #   # Node, redis, postgres and speckle-server images for test server
+    #   - image: 'circleci/node:12'
+    #   - image: 'circleci/redis:6'
+    #   - image: 'circleci/postgres:12'
+    #     environment:
+    #       POSTGRES_DB: speckle2_test
+    #       POSTGRES_PASSWORD: speckle
+    #       POSTGRES_USER: speckle
+    #   - image: 'speckle/speckle-server:latest'
+    #     command: ["bash", "-c", "/wait && node bin/www"]
+    #     environment:
+    #       POSTGRES_URL: "localhost"
+    #       POSTGRES_USER: "speckle"
+    #       POSTGRES_PASSWORD: "speckle"
+    #       POSTGRES_DB: "speckle2_test"
+    #       REDIS_URL: "redis://localhost"
+    #       SESSION_SECRET: 'keyboard cat'
+    #       STRATEGY_LOCAL: "true"
+    #       CANONICAL_URL: 'http://localhost:3000'
+    #       WAIT_HOSTS: localhost:5432, localhost:6379
     steps:
       - checkout 
       - run: 
           name: Unit Test
           command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - run:
-          name: Integration Tests # The integration tests are runinng on our test sevrer
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      # - run:
+      #     name: Integration Tests # The integration tests are runinng on our test sevrer
+      #     command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - store_test_results:
           path: TestResults
       - store_artifacts:
