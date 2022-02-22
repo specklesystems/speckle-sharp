@@ -170,7 +170,7 @@ namespace Speckle.ConnectorDynamo.Functions
           streamId = stream.StreamId,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Applications.DynamoRevit
+          sourceApplication = VersionedHostApplications.DynamoRevit
         }).Wait();
       }
       catch

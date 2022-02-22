@@ -46,6 +46,12 @@ namespace DesktopUI2
     #region abstract methods
 
     /// <summary>
+    /// Gets the current host application name with version.
+    /// </summary>
+    /// <returns></returns>
+    public abstract string GetHostAppNameVersion();
+
+    /// <summary>
     /// Gets the current host application name.
     /// </summary>
     /// <returns></returns>

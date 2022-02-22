@@ -109,7 +109,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return Path.GetFileName(File.GetFileName());
     }
 
-    public override string GetHostAppName() => Utils.BentleyAppName;
+    public override string GetHostAppName() => Utils.VersionedAppName;
 
     public override List<string> GetObjectsInView()
     {
@@ -246,7 +246,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       OperationErrors.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       if (converter == null)
       {
         RaiseNotification($"Could not find any Kit!");
@@ -505,7 +505,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       OperationErrors.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
 
       if (Control.InvokeRequired)
         Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
@@ -736,7 +736,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           objectId = commitObjId,
           branchName = state.Branch.name,
           message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-          sourceApplication = Utils.BentleyAppName
+          sourceApplication = Utils.VersionedAppName
         };
 
         if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using Speckle.Core.Kits;
 
 namespace Speckle.Core.Logging
 {
@@ -14,9 +15,10 @@ namespace Speckle.Core.Logging
   {
     private readonly static string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
 
-    public static void Init(string hostApplication)
+    public static void Init(string versionedHostApplication, string hostApplication)
     {
       HostApplication = hostApplication;
+      VersionedHostApplication = versionedHostApplication;
 
       //needed by older .net frameworks, eg Revit 2019
       ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
@@ -28,7 +30,11 @@ namespace Speckle.Core.Logging
     /// <summary>
     /// Set from the connectors, defines which current host application we're running on.
     /// </summary>
-    internal static string HostApplication { get; private set; } = "unknown";
+    internal static string HostApplication { get; private set; } = "other";
+    /// <summary>
+    /// Set from the connectors, defines which current host application we're running on - includes the version.
+    /// </summary>
+    internal static string VersionedHostApplication { get; private set; } = VersionedHostApplications.Other;
 
     private static string _suuid { get; set; }
 
