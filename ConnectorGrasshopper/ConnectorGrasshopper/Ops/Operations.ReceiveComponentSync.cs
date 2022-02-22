@@ -122,7 +122,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+      var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
       foreach (var kit in kits)
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
@@ -212,7 +212,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -301,7 +301,7 @@ namespace ConnectorGrasshopper.Ops
               streamId = StreamWrapper.StreamId,
               commitId = myCommit.id,
               message = myCommit.message,
-              sourceApplication = Applications.Grasshopper
+              sourceApplication = VersionedHostApplications.Grasshopper
             });
           }
           catch

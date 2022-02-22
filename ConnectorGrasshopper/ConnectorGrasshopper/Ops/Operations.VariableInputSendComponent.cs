@@ -58,8 +58,8 @@ namespace ConnectorGrasshopper.Ops
       BaseWorker = new VariableInputSendComponentWorker(this);
       Attributes = new VariableInputSendComponentAttributes(this);
     }
-    
-    
+
+
     public override bool Write(GH_IWriter writer)
     {
       writer.SetBoolean("UseDefaultCache", UseDefaultCache);
@@ -108,8 +108,8 @@ namespace ConnectorGrasshopper.Ops
         GH_ParamAccess.tree, "");
       pManager.AddParameter(new SendReceiveDataParam
       {
-        Name = "Data", 
-        NickName ="D", 
+        Name = "Data",
+        NickName = "D",
         Description = "The data to send."
       });
       Params.Input[1].Optional = true;
@@ -160,7 +160,7 @@ namespace ConnectorGrasshopper.Ops
 
       base.AppendAdditionalMenuItems(menu);
     }
-    
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -230,7 +230,7 @@ namespace ConnectorGrasshopper.Ops
 
     public bool CanInsertParameter(GH_ParameterSide side, int index)
     {
-      return side == GH_ParameterSide.Input &&  index >= 2;
+      return side == GH_ParameterSide.Input && index >= 2;
     }
 
     public bool CanRemoveParameter(GH_ParameterSide side, int index)
@@ -241,7 +241,7 @@ namespace ConnectorGrasshopper.Ops
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-      
+
       return new SendReceiveDataParam
       {
         Name = "Data" + uniqueName,
@@ -264,7 +264,7 @@ namespace ConnectorGrasshopper.Ops
   public class VariableInputSendComponentWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> DataInput;
-    Dictionary<string,GH_Structure<IGH_Goo>> DataInputs;
+    Dictionary<string, GH_Structure<IGH_Goo>> DataInputs;
     GH_Structure<IGH_Goo> _TransportsInput;
     GH_Structure<GH_String> _MessageInput;
 
@@ -326,7 +326,7 @@ namespace ConnectorGrasshopper.Ops
           sendComponent.CurrentComponentState = "expired";
           return;
         }
-        
+
         Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
 
         //the active document may have changed
@@ -336,19 +336,19 @@ namespace ConnectorGrasshopper.Ops
         ObjectToSend = new Base();
         int convertedCount = 0;
 
-        foreach(var d in DataInputs)
+        foreach (var d in DataInputs)
         {
           try
           {
             var converted = Utilities.DataTreeToNestedLists(d.Value, sendComponent.Converter, CancellationToken, () =>
             {
-              ReportProgress("Conversion",Math.Round(convertedCount++ / (double) d.Value.DataCount / DataInputs.Count, 2));
+              ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
             });
             var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
             var key = d.Key;
             if (param is SendReceiveDataParam srParam)
             {
-              if (srParam.Detachable && !key.StartsWith("@")) 
+              if (srParam.Detachable && !key.StartsWith("@"))
                 key = "@" + key;
             }
             ObjectToSend[key] = converted;
@@ -356,15 +356,15 @@ namespace ConnectorGrasshopper.Ops
           }
           catch (Exception e)
           {
-            RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, e.Message ));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
             Done();
             return;
           }
         }
-        
-        if ( convertedCount == 0 )
+
+        if (convertedCount == 0)
         {
-          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
           Done();
           return;
         }
@@ -538,7 +538,7 @@ namespace ConnectorGrasshopper.Ops
                 message = message,
                 objectId = BaseId,
                 streamId = ((ServerTransport)transport).StreamId,
-                sourceApplication = Applications.Grasshopper
+                sourceApplication = VersionedHostApplications.Grasshopper
               };
 
               // Check to see if we have a previous commit; if so set it.
@@ -571,7 +571,7 @@ namespace ConnectorGrasshopper.Ops
       }
       catch (Exception e)
       {
-        
+
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));

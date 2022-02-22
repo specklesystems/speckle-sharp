@@ -2,7 +2,7 @@
 
 namespace Speckle.Core.Kits
 {
-  [Obsolete("Use VersionedHostApplications or HostApplications instead.", true)]
+  [Obsolete("Use VersionedHostApplications or HostApplications instead.")]
   public static class Applications
   {
     public const string Rhino6 = "Rhino6";

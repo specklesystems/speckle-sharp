@@ -490,7 +490,7 @@ namespace ConnectorGrasshopper.Ops
                 message = message,
                 objectId = BaseId,
                 streamId = ((ServerTransport)transport).StreamId,
-                sourceApplication = Applications.Grasshopper
+                sourceApplication = VersionedHostApplications.Grasshopper
               };
 
               // Check to see if we have a previous commit; if so set it.
