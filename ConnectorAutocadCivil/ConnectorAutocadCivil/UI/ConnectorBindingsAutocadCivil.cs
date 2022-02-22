@@ -102,7 +102,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return objs;
     }
 
-    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppName() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
 
     public override string GetDocumentId()
     {
@@ -183,7 +183,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Exceptions.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var transport = new ServerTransport(state.Client.Account, state.Stream.id);
 
       var stream = await state.Client.StreamGet(state.Stream.id);
@@ -225,7 +225,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           streamId = stream.id,
           commitId = commitId,
           message = commitMsg,
-          sourceApplication = Utils.AutocadAppName
+          sourceApplication = Utils.VersionedAppName
         });
       }
       catch
@@ -531,7 +531,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task<StreamState> SendStream(StreamState state)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       
       var streamId = state.Stream.id;
       var client = state.Client;
@@ -682,7 +682,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           objectId = commitObjId,
           branchName = state.Branch.name,
           message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-          sourceApplication = Utils.AutocadAppName
+          sourceApplication = Utils.VersionedAppName
         };
 
         if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }

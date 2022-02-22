@@ -24,7 +24,7 @@ namespace ConnectorGrasshopper
 
     public override GH_LoadingInstruction PriorityLoad()
     {
-      Setup.Init(Applications.Grasshopper);
+      Setup.Init(VersionedHostApplications.Grasshopper, HostApplications.Grasshopper.Name);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
         Properties.Resources.speckle_logo);
@@ -71,7 +71,7 @@ namespace ConnectorGrasshopper
 
       try
       {
-        loadedKits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+        loadedKits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
         var kitItems = new List<ToolStripItem>();
         loadedKits.ToList().ForEach(kit =>
@@ -144,18 +144,18 @@ namespace ConnectorGrasshopper
       var tabsMenu = speckleMenu.DropDown.Items.Add("Tabs") as ToolStripMenuItem;
       var warn = tabsMenu.DropDown.Items.Add("Changes require restarting Rhino to take effect.");
       warn.Enabled = false;
-      new List<string>{"BIM", "Revit", "Structural", "ETABS", "GSA"}.ForEach(s =>
-      {
-        var category = $"Speckle 2 {s}";
-        var mi = tabsMenu.DropDown.Items.Add(category) as ToolStripMenuItem;
-        mi.CheckOnClick = true;
-        mi.Checked = SpeckleGHSettings.GetTabVisibility(category);
-        mi.Click += (sender, args) =>
-        {
-          var tmi = sender as ToolStripMenuItem;
-          SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
-        };
-      });
+      new List<string> { "BIM", "Revit", "Structural", "ETABS", "GSA" }.ForEach(s =>
+         {
+           var category = $"Speckle 2 {s}";
+           var mi = tabsMenu.DropDown.Items.Add(category) as ToolStripMenuItem;
+           mi.CheckOnClick = true;
+           mi.Checked = SpeckleGHSettings.GetTabVisibility(category);
+           mi.Click += (sender, args) =>
+           {
+             var tmi = sender as ToolStripMenuItem;
+             SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
+           };
+         });
     }
 
     private void CreateMeshingSettingsMenu()
@@ -163,14 +163,14 @@ namespace ConnectorGrasshopper
       var defaultSetting = new ToolStripMenuItem(
         "Default")
       {
-        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, 
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default,
         CheckOnClick = true
       };
 
       var currentDocSetting = new ToolStripMenuItem(
         "Current Rhino doc")
       {
-        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc, 
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc,
         CheckOnClick = true
       };
       currentDocSetting.Click += (sender, args) =>

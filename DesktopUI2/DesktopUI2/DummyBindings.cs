@@ -61,9 +61,14 @@ namespace DesktopUI2
       return "Some Random File";
     }
 
-    public override string GetHostAppName()
+    public override string GetHostAppNameVersion()
     {
       return "Desktop";
+    }
+
+    public override string GetHostAppName()
+    {
+      return "dui2";
     }
 
     public override List<string> GetObjectsInView()

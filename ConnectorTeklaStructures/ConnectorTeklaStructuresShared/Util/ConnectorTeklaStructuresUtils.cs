@@ -11,9 +11,9 @@ namespace Speckle.ConnectorTeklaStructures.Util
   class ConnectorTeklaStructuresUtils
   {
 #if TeklaStructures2021
-    public static string TeklaStructuresAppName = Applications.TeklaStructures2021;
+    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2021;
 #elif TeklaStructures2020
-  public static string TeklaStructuresAppName = Applications.TeklaStructures2020;
+  public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
 #endif
 
     public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
@@ -32,7 +32,7 @@ namespace Speckle.ConnectorTeklaStructures.Util
           var category = model.GetModelObjectSelector().GetAllObjectsWithType(bic);
           if (category == null)
             continue;
-            _categories.Add(bic.ToString(),bic);
+          _categories.Add(bic.ToString(), bic);
         }
       }
       return _categories;

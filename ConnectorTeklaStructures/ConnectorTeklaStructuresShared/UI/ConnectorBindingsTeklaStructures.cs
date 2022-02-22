@@ -6,10 +6,11 @@ using Speckle.Core.Models;
 using Speckle.ConnectorTeklaStructures.Util;
 using System.Timers;
 using Tekla.Structures.Model;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
-  public partial class ConnectorBindingsTeklaStructures : ConnectorBindings 
+  public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
   {
     public static Model Model { get; set; }
@@ -59,7 +60,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
     public override string GetFileName() => Model.GetInfo().ModelName;
 
-    public override string GetHostAppName() => ConnectorTeklaStructuresUtils.TeklaStructuresAppName;
+    public override string GetHostAppNameVersion() => ConnectorTeklaStructuresUtils.TeklaStructuresAppName;
+    public override string GetHostAppName() => HostApplications.TeklaStructures.Slug;
 
     public override List<string> GetObjectsInView()
     {
