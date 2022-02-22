@@ -63,8 +63,7 @@ namespace TestsIntegration
 
       Console.WriteLine(redirectUrl);
       Console.WriteLine("Why do the tests pass locally?");
-      var newAcc = redirectUrl.Split( new [] { "?access_code=" }, StringSplitOptions.RemoveEmptyEntries)[1];
-      var accessCode = redirectUrl.Split( new[] { "?access_code=" })[1];
+      var accessCode = redirectUrl.Split( new [] { "?access_code=" }, StringSplitOptions.RemoveEmptyEntries )[1];
       var tokenBody = new Dictionary<string, string>()
       {
         ["accessCode"] = accessCode,
