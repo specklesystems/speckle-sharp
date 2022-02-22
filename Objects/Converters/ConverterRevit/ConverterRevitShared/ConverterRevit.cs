@@ -15,15 +15,15 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit : ISpeckleConverter
   {
 #if REVIT2023
-    public static string RevitAppName = Applications.Revit2023;
+    public static string RevitAppName = VersionedHostApplications.Revit2023;
 #elif REVIT2022
-    public static string RevitAppName = Applications.Revit2022;
+    public static string RevitAppName = VersionedHostApplications.Revit2022;
 #elif REVIT2021
-    public static string RevitAppName = Applications.Revit2021;
+    public static string RevitAppName = VersionedHostApplications.Revit2021;
 #elif REVIT2020
-    public static string RevitAppName = Applications.Revit2020;
+    public static string RevitAppName = VersionedHostApplications.Revit2020;
 #else
-    public static string RevitAppName = Applications.Revit2019;
+    public static string RevitAppName = VersionedHostApplications.Revit2019;
 #endif
 
     #region ISpeckleConverter props
@@ -63,6 +63,8 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
     public ConverterRevit()
@@ -82,7 +84,7 @@ namespace Objects.Converter.Revit
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
     public void SetConverterSettings(object settings)
     {
-      throw new NotImplementedException("This converter does not have any settings.");
+      Settings = settings as Dictionary<string, string>;
     }
 
     public Base ConvertToSpeckle(object @object)

@@ -52,13 +52,13 @@ namespace Objects.Converter.MicroStationOpen
   public partial class ConverterMicroStationOpen : ISpeckleConverter
   {
 #if MICROSTATION
-    public static string BentleyAppName = Applications.MicroStation;
+    public static string BentleyAppName = VersionedHostApplications.MicroStation;
 #elif OPENROADS
-    public static string BentleyAppName = Applications.OpenRoads;
+    public static string BentleyAppName = VersionedHostApplications.OpenRoads;
 #elif OPENRAIL
-    public static string BentleyAppName = Applications.OpenRail;
+    public static string BentleyAppName = VersionedHostApplications.OpenRail;
 #elif OPENBUILDINGS
-    public static string BentleyAppName = Applications.OpenBuildings;
+    public static string BentleyAppName = VersionedHostApplications.OpenBuildings;
 #endif
     public string Description => "Default Speckle Kit for MicroStation, OpenRoads, OpenRail and OpenBuildings";
     public string Name => nameof(ConverterMicroStationOpen);

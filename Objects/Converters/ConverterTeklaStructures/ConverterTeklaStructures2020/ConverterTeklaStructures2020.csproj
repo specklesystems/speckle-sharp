@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.TeklaStructures2020</AssemblyName>
+    <RootNamespace>Objects.Converter.TeklaStructures</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;TeklaStructures2020</DefineConstants>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tekla.Structures" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures.Catalogs" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures.Datatype" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures.Model" Version="2021.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+  </Target>
+
+</Project>

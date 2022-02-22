@@ -15,6 +15,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
@@ -48,7 +49,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public GeometricModel GeomModel { get; private set; }
     public List<string> civilElementKeys => new List<string> { "Alignment" };
 #endif
-    
+
 #if (OPENBUILDINGS)
     public bool ExportGridLines { get; set; } = true;
 #else
@@ -91,7 +92,10 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppName() => Utils.BentleyAppName;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName;
+
+    public override string GetHostAppName() => Utils.Slug;
+
 
     public override string GetDocumentId()
     {
@@ -168,6 +172,11 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return filterList;
     }
 
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
+    }
+
     //TODO
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
@@ -184,7 +193,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
       var stream = await state.Client.StreamGet(state.StreamId);
       var previouslyReceivedObjects = state.ReceivedObjects;
@@ -242,7 +251,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           streamId = stream?.id,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Utils.BentleyAppName
+          sourceApplication = Utils.VersionedAppName
         });
       }
       catch
@@ -412,7 +421,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var streamId = state.StreamId;
       var client = state.Client;
 
@@ -627,7 +636,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         objectId = commitObjId,
         branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-        sourceApplication = Utils.BentleyAppName
+        sourceApplication = Utils.VersionedAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -793,9 +802,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           return selection;
       }
     }
-#endregion
+    #endregion
 
-#region helper methods
+    #region helper methods
     delegate void WriteStateDelegate(DgnFile File, List<StreamState> DocumentStreams);
 
     /// <summary>
@@ -808,6 +817,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       else
         StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
     }
-#endregion
+    #endregion
   }
 }

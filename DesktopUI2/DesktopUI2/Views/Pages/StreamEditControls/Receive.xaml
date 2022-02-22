@@ -120,6 +120,21 @@
       HorizontalAlignment="Right"
       Orientation="Horizontal"
       Spacing="10">
+      <m:FloatingButton
+      VerticalAlignment="Center"
+      Background="Transparent"
+      Classes="Mini"
+      IsEnabled="{Binding HasSettings}"
+      Command="{Binding OpenSettingsCommand}"
+      ToolTip.Tip="Receive Settings">
+        <Button.Content>
+          <icons:MaterialIcon
+            Width="15"
+            Height="15"
+            assists:ShadowAssist.ShadowDepth="0"
+            Kind="Settings" />
+        </Button.Content>
+      </m:FloatingButton>
       <Button
         Classes="Flat"
         Command="{Binding ReceiveCommand}"

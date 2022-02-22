@@ -726,7 +726,8 @@ namespace Objects.Converter.RhinoGh
 
         i += n + 1;
       }
-
+      m.Faces.CullDegenerateFaces();
+      
       return m;
     }
 

@@ -113,7 +113,7 @@ namespace DesktopUI2.ViewModels
         new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
-        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox),
+        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox)
       };
       var customMenues = Bindings.GetCustomStreamMenuItems();
       if (customMenues != null)

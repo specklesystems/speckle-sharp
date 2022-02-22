@@ -23,7 +23,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _filter, value);
         RestoreSelectedItems();
         this.RaisePropertyChanged("Summary");
-        
       } 
     }
 
@@ -32,9 +31,6 @@ namespace DesktopUI2.ViewModels
     public SelectionModel<string> SelectionModel { get; }
 
     public string Summary { get { return Filter.Summary; } }
-
-
-
 
     public FilterViewModel(ISelectionFilter filter)
     {
@@ -53,9 +49,7 @@ namespace DesktopUI2.ViewModels
       if (filter is ListSelectionFilter l)
         _valuesList = SearchResults = new List<string>(l.Values);
 
-
       FilterView.DataContext = this;
-
     }
 
     #region LIST FILTER
@@ -187,11 +181,7 @@ namespace DesktopUI2.ViewModels
           return false;
       }
 
-
-
       return true;
-
     }
-
   }
 }

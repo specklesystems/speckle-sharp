@@ -379,15 +379,6 @@ namespace ConnectorGrasshopper.Extras
         var converted = Converter.ConvertToNative(@base);
         data.Append(TryConvertItemToNative(converted, Converter));
       }
-      // We unpack automatically since we auto-wrapped it initially
-      // case 2: it's a wrapper Base
-      //       2a: if there's only one member unpack it
-      //       2b: otherwise return dictionary of unpacked members
-      else if (@base.IsWrapper())
-      {
-        var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null};
-        data = treeBuilder.Build(@base[@base.GetDynamicMembers().ElementAt(0)]);
-      }
       // Simple pass the SpeckleBase
       else
       {

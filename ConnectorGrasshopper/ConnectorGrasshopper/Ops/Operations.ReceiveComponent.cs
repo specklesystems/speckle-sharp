@@ -46,7 +46,7 @@ namespace ConnectorGrasshopper.Ops
     public bool ReceiveOnOpen { get; set; }
 
     public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
-
+    public override bool Obsolete => true;
     public string CurrentComponentState { get; set; } = "needs_input";
 
     public override GH_Exposure Exposure => GH_Exposure.primary;

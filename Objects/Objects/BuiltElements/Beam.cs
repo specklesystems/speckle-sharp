@@ -1,4 +1,6 @@
 ﻿using Objects.Geometry;
+using Objects.Structural.Materials;
+using Objects.Structural.Properties.Profiles;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -59,4 +61,51 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
     }
   }
+}
+
+namespace Objects.BuiltElements.TeklaStructures
+{
+    public class TeklaBeam : Beam
+    {
+        public string name { get; set; }
+        [DetachProperty]
+        public SectionProfile profile { get; set; }
+        [DetachProperty]
+        public Material material { get; set; }
+        public string finish { get; set; }
+        public string classNumber { get; set; }
+        public Vector alignmentVector { get; set; } // This can be set to get proper rotation if coming from an application that doesn't have positioning
+        public TeklaPosition position { get; set; }
+        public Base userProperties { get; set; }
+
+        [DetachProperty]
+        public Base rebars { get; set; }
+
+        public TeklaBeamType TeklaBeamType { get; set; }
+
+        public TeklaBeam() { }
+
+        [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]
+        public TeklaBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, Material material) 
+        {
+            this.baseLine = baseLine;
+            this.profile = profile;
+            this.material = material;
+        }
+    }
+    public class SpiralBeam : TeklaBeam {
+    public SpiralBeam()
+    {
+    }
+
+    public Point startPoint { get; set; }
+    public Point rotationAxisPt1 { get; set; }
+    public Point rotationAxisPt2 { get; set; }
+    public double totalRise { get; set; }
+    public double rotationAngle { get; set; }
+    public double twistAngleStart { get; set; }
+    public double twistAngleEnd { get; set; }
+
+   
+    }
 }

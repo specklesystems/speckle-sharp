@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2 .Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.cs" />

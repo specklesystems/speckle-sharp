@@ -34,35 +34,33 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling += Initialise;
 
       var specklePanel = application.CreateRibbonPanel("Speckle 2");
-      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
+      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 (old)", "Revit Connector (old)", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
       string path = typeof(App).Assembly.Location;
 
       if (speckleButton != null)
       {
         speckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
         speckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        speckleButton.ToolTip = "Speckle Connector for Revit";
+        speckleButton.ToolTip = "Speckle Connector for Revit (old)";
         speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
       //desktopui 2
-      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2 New Ui", "Revit Connector\nNew UI (alpha)!", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
+      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
       if (speckleButton2 != null)
       {
         speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
         speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        speckleButton2.ToolTip = "Speckle Connector for Revit - With a new UI";
+        speckleButton2.ToolTip = "Speckle Connector for Revit";
         speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
-
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
       helpPulldown.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help32.png", path);
-
 
       PushButton forum = helpPulldown.AddPushButton(new PushButtonData("forum", "Community Forum", typeof(App).Assembly.Location, typeof(ForumCommand).FullName)) as PushButton;
       forum.ToolTip = "Check out our Community Forum! Opens a page in your web browser.";
