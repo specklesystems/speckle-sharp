@@ -39,13 +39,13 @@ namespace Objects.Converter.RhinoGh
   public partial class ConverterRhinoGh : ISpeckleConverter
   {
 #if RHINO6
-    public static string RhinoAppName = Applications.Rhino6;
-    public static string GrasshopperAppName = Applications.Grasshopper;
+    public static string RhinoAppName = VersionedHostApplications.Rhino6;
+    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #elif RHINO7
-    public static string RhinoAppName = Applications.Rhino7;
-    public static string GrasshopperAppName = Applications.Grasshopper;
+    public static string RhinoAppName = VersionedHostApplications.Rhino7;
+    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #endif
-    
+
     public enum MeshSettings
     {
       Default,
@@ -70,7 +70,7 @@ namespace Objects.Converter.RhinoGh
     {
 
 #if RHINO6
-      return new string[] { RhinoAppName, Applications.Grasshopper };
+      return new string[] { RhinoAppName, VersionedHostApplications.Grasshopper };
 #elif RHINO7
       return new string[] {RhinoAppName};
 #endif   

@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Speckle.Newtonsoft.Json;
+using Objects.Structural.Materials;
 
 namespace Objects.BuiltElements
 {
@@ -19,7 +20,7 @@ namespace Objects.BuiltElements
     public List<Mesh> displayValue { get; set; }
     
     public string units { get; set; }
-    public double volume { get ; set ; }
+    public double volume { get; set; }
 
     public Rebar() { }
     
@@ -33,6 +34,46 @@ namespace Objects.BuiltElements
   }
 }
 
+namespace Objects.BuiltElements.TeklaStructures
+{
+  public class TeklaRebar : Rebar
+  {
+    public TeklaRebar()
+    {
+    }
+
+    public string name { get; set; }
+    
+    [DetachProperty]
+    public Hook startHook { get; set; }
+    [DetachProperty]
+    public Hook endHook { get; set; }
+    public double classNumber { get; set; }
+    public string size { get; set; }
+
+    [DetachProperty]
+    public Material material { get; set; }
+  }
+  public class Hook :Base {
+    public Hook()
+    {
+    }
+
+    public double angle { get; set; }
+    public double length { get; set; }
+    public double radius { get; set; }
+    public shape shape { get; set; }
+  }
+  public enum shape
+  {
+    NO_HOOK = 0,
+    HOOK_90_DEGREES = 1,
+    HOOK_135_DEGREES = 2,
+    HOOK_180_DEGREES = 3,
+    CUSTOM_HOOK = 4
+  }
+
+}
 namespace Objects.BuiltElements.Revit
 {
   public class RevitRebar : Rebar

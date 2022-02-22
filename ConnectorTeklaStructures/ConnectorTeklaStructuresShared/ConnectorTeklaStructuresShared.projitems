@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>28e2ea7f-ffd1-4e13-9165-0243b5ac82f5</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConnectorTeklaStructuresShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.ClientOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Receive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorTeklaStructuresUtils.cs" />
+  </ItemGroup>
+</Project>

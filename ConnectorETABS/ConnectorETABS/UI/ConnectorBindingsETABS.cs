@@ -6,6 +6,7 @@ using Speckle.Core.Models;
 using Speckle.ConnectorETABS.Util;
 using System.Timers;
 using ETABSv1;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorETABS.UI
 {
@@ -58,7 +59,8 @@ namespace Speckle.ConnectorETABS.UI
 
     public override string GetFileName() => Model.GetModelFilename();
 
-    public override string GetHostAppName() => ConnectorETABSUtils.ETABSAppName;
+    public override string GetHostAppNameVersion() => ConnectorETABSUtils.ETABSAppName;
+    public override string GetHostAppName() => HostApplications.ETABS.Slug;
 
     public override List<string> GetObjectsInView()
     {
