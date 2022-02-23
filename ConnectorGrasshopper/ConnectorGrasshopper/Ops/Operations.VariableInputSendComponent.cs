@@ -300,7 +300,7 @@ namespace ConnectorGrasshopper.Ops
       for (var i = 2; i < Params.Input.Count; i++)
       {
         DA.GetDataTree(i, out GH_Structure<IGH_Goo> input);
-        DataInputs.Add(Params.Input[i].NickName, input);
+        DataInputs.Add(Params.Input[i].Name, input);
       }
       DA.GetDataTree(0, out _TransportsInput);
       DA.GetDataTree(1, out _MessageInput);
