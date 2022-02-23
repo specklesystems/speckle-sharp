@@ -259,6 +259,30 @@ namespace ConnectorGrasshopper.Ops
     public void VariableParameterMaintenance()
     {
     }
+    
+    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document); // This would set the converter already.
+      Params.ParameterChanged += (sender, args) =>
+      {
+        if (args.ParameterSide != GH_ParameterSide.Input) return;
+        switch (args.OriginalArguments.Type)
+        {
+          case GH_ObjectEventType.NickName:
+            // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
+            // Prevents UI from locking too soon while writing new names for inputs.
+            args.Parameter.Name = args.Parameter.NickName;
+            nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
+            break;
+          case GH_ObjectEventType.NickNameAccepted:
+            args.Parameter.Name = args.Parameter.NickName;
+            ExpireSolution(true);
+            break;
+        }
+      };
+    }
   }
 
   public class VariableInputSendComponentWorker : WorkerInstance
