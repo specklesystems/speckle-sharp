@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
       }
 
       GetAllRevitParamsAndIds(speckleView, revitView);
-      //Report.Log($"Converted View {revitView.ViewType} {revitView.Id}");
+      Report.Log($"Converted View {revitView.ViewType} {revitView.Id}");
       return speckleView;
     }
 

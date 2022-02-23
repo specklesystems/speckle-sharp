@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
 
 namespace Objects.Converter.Revit
 {
@@ -21,7 +19,7 @@ namespace Objects.Converter.Revit
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
 
       var railingType = GetElementType<RailingType>(speckleRailing);
-      Level level = LevelToNative(speckleRailing.level);
+      Level level = ConvertLevelToRevit(speckleRailing.level);
 
       //we currently don't support railings hosted on stairs, and these have null level
       if (level == null)
@@ -86,8 +84,10 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
+
       speckleRailing.displayValue = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      //Report.Log($"Converted Railing {revitRailing.Id}");
+      Report.Log($"Converted Railing {revitRailing.Id}");
+
       return speckleRailing;
     }
 

@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
           var newEnd = curve.GetEndPoint(1);
 
           //only update if it has changed
-          if (!(oldStart.DistanceTo(newStart) < 0.005 && oldEnd.DistanceTo(newEnd) < 0.005))
+          if (!(oldStart.DistanceTo(newStart) < TOLERANCE && oldEnd.DistanceTo(newEnd) < TOLERANCE))
           {
             var translate = newStart.Subtract(oldStart);
             ElementTransformUtils.MoveElement(Doc, revitGrid.Id, translate);
@@ -112,7 +112,7 @@ namespace Objects.Converter.Revit
       //speckleGridline.elementId = revitCurve.Id.ToString(); this would need a RevitGridLine element
       speckleGridline.applicationId = revitGridLine.UniqueId;
       speckleGridline.units = ModelUnits;
-      //Report.Log($"Converted GridLine {revitGridLine.Id}");
+      Report.Log($"Converted GridLine {revitGridLine.Id}");
       return speckleGridline;
     }
 

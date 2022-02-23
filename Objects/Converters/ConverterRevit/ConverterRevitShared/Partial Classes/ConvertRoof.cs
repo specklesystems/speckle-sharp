@@ -29,11 +29,11 @@ namespace Objects.Converter.Revit
       var speckleRevitRoof = speckleRoof as RevitRoof;
       if (speckleRevitRoof != null)
       {
-        level = LevelToNative(speckleRevitRoof.level);
+        level = ConvertLevelToRevit(speckleRevitRoof.level);
       }
       else
       {
-        level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
       }
 
       var roofType = GetElementType<RoofType>((Base)speckleRoof);
@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
 
             if (speckleFootprintRoof.cutOffLevel != null)
             {
-              var cutOffLevel = LevelToNative(speckleFootprintRoof.cutOffLevel);
+              var cutOffLevel = ConvertLevelToRevit(speckleFootprintRoof.cutOffLevel);
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 
@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleRoof, revitRoof);
       placeholders.AddRange(hostedElements);
-      //Report.Log($"Created Roof {revitRoof.Id}");
+      Report.Log($"Created Roof {revitRoof.Id}");
       return placeholders;
     }
 
@@ -198,7 +198,7 @@ namespace Objects.Converter.Revit
       speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleRoof, revitRoof);
-      //Report.Log($"Converted Roof {revitRoof.Id}");
+      Report.Log($"Converted Roof {revitRoof.Id}");
       return speckleRoof;
     }
 

@@ -38,7 +38,7 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _menuItems, value);
       }
     }
-    
+
     public string LastUpdated
     {
       get
@@ -183,6 +183,7 @@ namespace DesktopUI2.ViewModels
 
     public async void SendCommand()
     {
+      Notification = "";
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
@@ -198,6 +199,7 @@ namespace DesktopUI2.ViewModels
 
     public async void ReceiveCommand()
     {
+      Notification = "";
       Progress = new ProgressViewModel();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
