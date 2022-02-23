@@ -156,12 +156,6 @@ namespace Objects.Converter.RhinoGh
           if (converted != null)
           {
             converted["Layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
-            var display = DisplayStyleToSpeckle(obj.Attributes);
-            if (display != null)
-              converted["displayStyle"] = display;
-            var material = RenderMaterialToSpeckle(obj.GetMaterial(true));
-            if (material != null)
-              converted["renderMaterial"] = material;
             geometry.Add(converted);
           }
         }
