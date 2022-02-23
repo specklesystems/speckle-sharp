@@ -781,7 +781,7 @@ namespace ConnectorGrasshopper.Ops
       var equalLength = outputList.Count == Parent?.Params.Output.Count;
       if (!equalLength) return false;
       
-      var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains(param.NickName.Substring(1)));
+      var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
       return diffParams.Count() == 1;
     }
     private void AutoCreateOutputs(Base @base)
