@@ -244,7 +244,7 @@ namespace ConnectorGrasshopper.Ops
 
       return new SendReceiveDataParam
       {
-        Name = "Data" + uniqueName,
+        Name = uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
         Optional = false
