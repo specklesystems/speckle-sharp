@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -131,7 +131,7 @@ namespace ConnectorGrasshopper.Extras
           {
             ghDocument.AddObject(ghParam, false);
             ghParam.AddSource(this);
-            ExpireSolution(true);
+            ghParam.ExpireSolution(true);
           }
         }
       }
