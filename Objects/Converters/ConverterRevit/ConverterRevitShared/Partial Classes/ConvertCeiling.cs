@@ -1,13 +1,12 @@
 ﻿
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DB = Autodesk.Revit.DB;
 using Ceiling = Objects.BuiltElements.Ceiling;
+using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
@@ -31,8 +30,10 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM", "CEILING_HEIGHTABOVELEVEL_PARAM" });
 
       GetHostedElements(speckleCeiling, revitCeiling);
+
       speckleCeiling.displayValue = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      //Report.Log($"Converted BuildingPad {revitCeiling.Id}");
+      Report.Log($"Converted BuildingPad {revitCeiling.Id}");
+
       return speckleCeiling;
     }
 

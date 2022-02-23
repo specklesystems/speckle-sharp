@@ -65,7 +65,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleRevitWall, revitWall);
       placeholders.AddRange(hostedElements);
-      //Report.Log($"Created ProfileWall {revitWall.Id}");
+      Report.Log($"Created ProfileWall {revitWall.Id}");
       return placeholders;
     }
 

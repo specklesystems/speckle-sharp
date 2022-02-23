@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -192,7 +192,8 @@ namespace Objects.Converter.Revit
       });
 
       GetHostedElements(speckleWall, revitWall);
-      //Report.Log($"Converted Wall {revitWall.Id}");
+      Report.Log($"Converted Wall {revitWall.Id}");
+
       return speckleWall;
     }
 

@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
       revitDs.SetShape(converted);
       revitDs.Name = speckleDs.name;
       SetInstanceParameters(revitDs, speckleDs);
-      //Report.Log($"Created DirectShape {revitDs.Id}");
+      Report.Log($"Created DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
@@ -103,7 +103,7 @@ namespace Objects.Converter.Revit
         var mesh = brep.displayValue.SelectMany(m => MeshToNative(m));
         revitDs.SetShape(mesh.ToArray());
       }
-      //Report.Log($"Converted DirectShape {revitDs.Id}");
+      Report.Log($"Converted DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 

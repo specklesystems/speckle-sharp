@@ -1,10 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
-using Objects.Geometry;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 using DB = Autodesk.Revit.DB.Mechanical;
 using Point = Objects.Geometry.Point;
 
@@ -112,8 +111,10 @@ namespace Objects.Converter.Revit
       speckleSpace.zoneName = revitSpace.Zone.Name;
 
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
+
       speckleSpace.displayValue = GetElementDisplayMesh(revitSpace);
-      //Report.Log($"Converted Space {revitSpace.Id}");
+      Report.Log($"Converted Space {revitSpace.Id}");
+
       return speckleSpace;
     }
   }

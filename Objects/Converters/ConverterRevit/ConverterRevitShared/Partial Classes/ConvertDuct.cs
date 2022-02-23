@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Curve = Objects.Geometry.Curve;
 using Line = Objects.Geometry.Line;
 using Polyline = Objects.Geometry.Polyline;
 
@@ -74,6 +72,8 @@ namespace Objects.Converter.Revit
         TrySetParam(duct, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitDuct.length, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_VELOCITY, speckleRevitDuct.velocity, speckleRevitDuct.units);
 
+
+
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
@@ -82,7 +82,7 @@ namespace Objects.Converter.Revit
         new ApplicationPlaceholderObject
           {applicationId = speckleDuct.applicationId, ApplicationGeneratedId = duct.UniqueId, NativeObject = duct}
       };
-
+      Report.Log($"Created Duct {duct.Id}");
       return placeholders;
     }
 
@@ -156,6 +156,8 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
+
+      Report.Log($"Converted Duct {revitDuct.Id}");
 
       return speckleDuct;
     }

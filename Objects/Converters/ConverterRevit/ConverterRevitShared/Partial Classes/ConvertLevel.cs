@@ -99,7 +99,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleLevel, revitLevel);
 
-      //Report.Log($"Converted Level {revitLevel.Id}");
+      Report.Log($"Converted Level {revitLevel.Id}");
       return speckleLevel;
     }
 
@@ -114,7 +114,7 @@ namespace Objects.Converter.Revit
       }
       catch { }
 
-      //Report.Log($"Created ViewPlan {view.Id}");
+      Report.Log($"Created ViewPlan {view.Id}");
     }
 
     private Level GetLevelByName(string name)

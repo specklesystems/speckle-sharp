@@ -1,9 +1,6 @@
 ﻿
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB.Architecture;
@@ -29,8 +26,10 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
+
       specklePad.displayValue = GetElementDisplayMesh(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      //Report.Log($"Converted BuildingPad {revitPad.Id}");
+      Report.Log($"Converted BuildingPad {revitPad.Id}");
+
       return specklePad;
     }
   }

@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
-      //Report.Log($"Converted Pipe {revitPipe.Id}");
+      Report.Log($"Converted Pipe {revitPipe.Id}");
       return specklePipe;
     }
     public BuiltElements.Pipe PipeToSpeckle(DB.Plumbing.FlexPipe revitPipe)

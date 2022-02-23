@@ -106,7 +106,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
-      //Report.Log($"Created FaceWall {revitWall.Id}");
+      Report.Log($"Created FaceWall {revitWall.Id}");
       return placeholders;
     }
 
@@ -182,7 +182,7 @@ namespace Objects.Converter.Revit
       so.OverwriteExistingFile = true;
       famDoc.SaveAs(tempFamilyPath, so);
       famDoc.Close();
-      //Report.Log($"Created temp family {tempFamilyPath}");
+      Report.Log($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
 
