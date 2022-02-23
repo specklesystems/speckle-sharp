@@ -15,9 +15,9 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> SpaceToNative(Space speckleSpace)
     {
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
-      var level = LevelToNative(speckleSpace.level);
+      var level = ConvertLevelToRevit(speckleSpace.level);
       var basePoint = PointToNative(speckleSpace.basePoint);
-      var upperLimit = LevelToNative(speckleSpace.topLevel);
+      var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel);
       // create new space if none existing, include zone information if available
       if (revitSpace == null)
       {

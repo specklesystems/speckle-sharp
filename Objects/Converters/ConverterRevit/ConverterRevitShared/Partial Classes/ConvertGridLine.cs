@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
           var newEnd = curve.GetEndPoint(1);
 
           //only update if it has changed
-          if (!(oldStart.DistanceTo(newStart) < 0.005 && oldEnd.DistanceTo(newEnd) < 0.005))
+          if (!(oldStart.DistanceTo(newStart) < TOLERANCE && oldEnd.DistanceTo(newEnd) < TOLERANCE))
           {
             var translate = newStart.Subtract(oldStart);
             ElementTransformUtils.MoveElement(Doc, revitGrid.Id, translate);

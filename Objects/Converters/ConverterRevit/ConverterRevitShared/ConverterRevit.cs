@@ -37,6 +37,8 @@ namespace Objects.Converter.Revit
 
     #endregion ISpeckleConverter props
 
+    private const double TOLERANCE = 0.0164042; // 5mm in ft
+
     public Document Doc { get; private set; }
 
     /// <summary>
@@ -392,7 +394,6 @@ namespace Objects.Converter.Revit
           return FloorToNative(o);
 
         case BE.Level o:
-          Report.Log($"Created Level {o.applicationId}");
           return LevelToNative(o);
 
         case BERC.ModelCurve o:

@@ -42,7 +42,7 @@ namespace Objects.Converter.Revit
         throw (new Exception($"Failed to create wall ${speckleRevitWall.applicationId}."));
       }
 
-      var level = LevelToNative(speckleRevitWall.level);
+      var level = ConvertLevelToRevit(speckleRevitWall.level);
       TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
 
       if (revitWall.WallType.Name != wallType.Name)

@@ -46,8 +46,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = LevelToNative(rs.bottomLevel);
-            var topLevel = LevelToNative(rs.topLevel);
+            var bottomLevel = ConvertLevelToRevit(rs.bottomLevel);
+            var topLevel = ConvertLevelToRevit(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height, rs.units);
 

@@ -36,7 +36,7 @@ namespace Objects.Converter.Revit
 
       if (level == null)
       {
-        level = LevelToNative(LevelFromCurve(baseLine));
+        level = ConvertLevelToRevit(LevelFromCurve(baseLine));
       }
       var isUpdate = false;
       //try update existing 

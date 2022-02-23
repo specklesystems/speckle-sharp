@@ -36,7 +36,7 @@ namespace Objects.Converter.Revit
         DB.Line baseLine = (speckleDuct.baseCurve != null) ? LineToNative(speckleDuct.baseCurve as Line) : LineToNative(speckleDuct.baseLine);
         XYZ startPoint = baseLine.GetEndPoint(0);
         XYZ endPoint = baseLine.GetEndPoint(1);
-        DB.Level lineLevel = LevelToNative(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromCurve(baseLine));
+        DB.Level lineLevel = ConvertLevelToRevit(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromCurve(baseLine));
         DB.Mechanical.Duct lineDuct = DB.Mechanical.Duct.Create(Doc, system.Id, ductType.Id, lineLevel.Id, startPoint, endPoint);
         duct = lineDuct;
       }
@@ -46,7 +46,7 @@ namespace Objects.Converter.Revit
 
         var speckleRevitFlexDuct = speckleDuct as RevitFlexDuct;
         var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();
-        DB.Level flexLevel = LevelToNative(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromPoint(points.First()));
+        DB.Level flexLevel = ConvertLevelToRevit(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromPoint(points.First()));
         var startTangent = VectorToNative(speckleRevitFlexDuct.startTangent);
         var endTangent = VectorToNative(speckleRevitFlexDuct.endTangent);
 

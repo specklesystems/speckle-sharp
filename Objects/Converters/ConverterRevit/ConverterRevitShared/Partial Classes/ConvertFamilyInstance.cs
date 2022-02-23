@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
-      DB.Level level = LevelToNative(speckleFi.level);
+      DB.Level level = ConvertLevelToRevit(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
       //try update existing

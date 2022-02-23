@@ -56,13 +56,13 @@ namespace Objects.Converter.Revit
       DB.Line slopeDirection = null;
       if (speckleCeiling is RevitCeiling speckleRevitCeiling)
       {
-        level = LevelToNative(speckleRevitCeiling.level);
+        level = ConvertLevelToRevit(speckleRevitCeiling.level);
         slope = speckleRevitCeiling.slope;
         slopeDirection = (speckleRevitCeiling.slopeDirection != null) ? LineToNative(speckleRevitCeiling.slopeDirection) : null;
       }
       else
       {
-        level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
       }
 
       var ceilingType = GetElementType<CeilingType>(speckleCeiling);

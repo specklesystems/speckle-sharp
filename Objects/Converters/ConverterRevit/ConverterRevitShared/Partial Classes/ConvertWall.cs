@@ -28,12 +28,12 @@ namespace Objects.Converter.Revit
 
       if (speckleWall is RevitWall speckleRevitWall)
       {
-        level = LevelToNative(speckleRevitWall.level);
+        level = ConvertLevelToRevit(speckleRevitWall.level);
         structural = speckleRevitWall.structural;
       }
       else
       {
-        level = LevelToNative(LevelFromCurve(baseCurve));
+        level = ConvertLevelToRevit(LevelFromCurve(baseCurve));
       }
 
       //if it's a new element, we don't need to update certain properties
@@ -68,7 +68,7 @@ namespace Objects.Converter.Revit
         var newz = baseCurve.GetEndPoint(0).Z;
         var offset = level.Elevation - newz;
         var newCurve = baseCurve;
-        if (Math.Abs(offset) > 0.0164042) // level and curve are not at the same height
+        if (Math.Abs(offset) > TOLERANCE) // level and curve are not at the same height
         {
           newCurve = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, offset)));
         }
@@ -86,7 +86,7 @@ namespace Objects.Converter.Revit
 
         if (spklRevitWall.topLevel != null)
         {
-          var topLevel = LevelToNative(spklRevitWall.topLevel);
+          var topLevel = ConvertLevelToRevit(spklRevitWall.topLevel);
           TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
         }
         else
@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
         var (panelsMesh, mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
         speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
         speckleWall.displayValue = panelsMesh;
-        
+
         var elements = new List<Base>();
         if (mullionsMesh.Count > 0) //Only add mullions object if they have meshes 
         {
@@ -199,7 +199,7 @@ namespace Objects.Converter.Revit
     private (List<Mesh>, List<Mesh>) GetCurtainWallDisplayMesh(DB.Wall wall)
     {
       var grid = wall.CurtainGrid;
-      
+
       var solidPanels = new List<Solid>();
       var solidMullions = new List<Solid>();
       foreach (ElementId panelId in grid.GetPanelIds())
@@ -210,7 +210,7 @@ namespace Objects.Converter.Revit
       {
         solidMullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
       }
-      
+
       var meshPanels = GetMeshesFromSolids(solidPanels);
       var meshMullions = GetMeshesFromSolids(solidMullions);
 

@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
 
       var railingType = GetElementType<RailingType>(speckleRailing);
-      Level level = LevelToNative(speckleRailing.level);
+      Level level = ConvertLevelToRevit(speckleRailing.level);
 
       //we currently don't support railings hosted on stairs, and these have null level
       if (level == null)

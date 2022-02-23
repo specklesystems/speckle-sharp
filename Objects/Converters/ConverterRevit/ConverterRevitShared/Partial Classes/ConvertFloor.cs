@@ -29,14 +29,14 @@ namespace Objects.Converter.Revit
       DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
-        level = LevelToNative(speckleRevitFloor.level);
+        level = ConvertLevelToRevit(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
         slope = speckleRevitFloor.slope;
         slopeDirection = (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
       }
       else
       {
-        level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
       }
 
       var floorType = GetElementType<FloorType>(speckleFloor);
