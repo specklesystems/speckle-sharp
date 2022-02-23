@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Speckle.Newtonsoft.Json;
+﻿using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using ReactiveUI;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
+using Speckle.Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DesktopUI2.Models
 {
@@ -45,8 +40,26 @@ namespace DesktopUI2.Models
       }
     }
 
+    private Stream cachedStream;
+
     [JsonProperty]
-    public Stream CachedStream { get; set; }
+    public Stream CachedStream
+    {
+      get
+      {
+        return cachedStream;
+      }
+
+      set
+      {
+        var stream = value;
+        if (stream != null)
+        {
+          stream.collaborators = new List<Collaborator>();
+        }
+        cachedStream = stream;
+      }
+    }
 
 
     [JsonProperty]
