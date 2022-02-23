@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Objects
     {
       try
       {
-        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+        var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
@@ -50,15 +50,15 @@ namespace ConnectorGrasshopper.Objects
 
     public void SetConverterFromKit(string kitName)
     {
-      if (kitName == Kit.Name)return;
+      if (kitName == Kit.Name) return;
 
       try
       {
         Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-        Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
-          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         Converter.SetContextDocument(RhinoDoc.ActiveDoc);
         Message = $"Using the {Kit.Name} Converter";
         ExpireSolution(true);
@@ -95,12 +95,12 @@ namespace ConnectorGrasshopper.Objects
       base.AddedToDocument(document);
       try
       {
-        Kit = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6).FirstOrDefault(kit => kit.Name == SpeckleGHSettings.SelectedKitName);
-        Converter = Kit.LoadConverter(Applications.Rhino6);
+        Kit = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6).FirstOrDefault(kit => kit.Name == SpeckleGHSettings.SelectedKitName);
+        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
-          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
+          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         Message = $"{Kit.Name} Kit";
       }
       catch

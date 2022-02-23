@@ -185,7 +185,7 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi.displayMesh = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
+      speckleFi.displayValue = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 

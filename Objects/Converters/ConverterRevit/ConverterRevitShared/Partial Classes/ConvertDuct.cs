@@ -106,7 +106,7 @@ namespace Objects.Converter.Revit
         length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayMesh = GetElementMesh(revitDuct)
+        displayValue = GetElementMesh(revitDuct)
       };
 
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
@@ -144,7 +144,7 @@ namespace Objects.Converter.Revit
         endTangent = VectorToSpeckle(revitDuct.EndTangent),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayMesh = GetElementMesh(revitDuct)
+        displayValue = GetElementMesh(revitDuct)
       };
 
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());

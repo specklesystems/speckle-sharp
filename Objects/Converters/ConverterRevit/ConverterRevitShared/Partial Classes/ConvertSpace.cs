@@ -112,7 +112,7 @@ namespace Objects.Converter.Revit
       speckleSpace.zoneName = revitSpace.Zone.Name;
 
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
-      speckleSpace.displayMesh = GetElementDisplayMesh(revitSpace);
+      speckleSpace.displayValue = GetElementDisplayMesh(revitSpace);
       //Report.Log($"Converted Space {revitSpace.Id}");
       return speckleSpace;
     }

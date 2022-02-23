@@ -231,7 +231,7 @@ namespace Objects.Converter.Revit
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
       }
 
-      speckleColumn.displayMesh = GetElementMesh(revitColumn);
+      speckleColumn.displayValue = GetElementMesh(revitColumn);
 
       return speckleColumn;
     }

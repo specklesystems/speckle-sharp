@@ -1,14 +1,15 @@
-﻿using Objects.Geometry;
+﻿using System;
+using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.Linq;
 using Speckle.Newtonsoft.Json;
-using System;
 
 namespace Objects.BuiltElements
 {
-  public class Duct : Base, IDisplayMesh
+  public class Duct : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
   {
     [JsonIgnore, Obsolete("Replaced with baseCurve property")]
     public Line baseLine { get; set; }
@@ -18,9 +19,9 @@ namespace Objects.BuiltElements
     public double diameter { get; set; }
     public double length { get; set; }
     public double velocity { get; set; }
-
+    
     [DetachProperty]
-    public Mesh displayMesh { get; set; }
+    public List<Mesh> displayValue { get; set; }
 
     public string units { get; set; }
 
@@ -64,6 +65,14 @@ namespace Objects.BuiltElements
       this.diameter = diameter;
       this.velocity = velocity;
     }
+    
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> {value};
+    }
+    #endregion
   }
 }
 

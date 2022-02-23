@@ -852,21 +852,44 @@ namespace Objects.Converter.Revit
 
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
-      RenderMaterial material = null;
       var matId = element.GetMaterialIds(false).FirstOrDefault();
 
       if (matId == null)
       {
         // TODO: Fallback to display color or something? 
-        return material;
+        return null;
       }
 
       var revitMaterial = Doc.GetElement(matId) as Material;
-      material = new RenderMaterial();
-      material.opacity = 1 - revitMaterial.Transparency / 100f;
-      material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();
+      return RenderMaterialToSpeckle(revitMaterial);
+    }
+    
+    public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
+    {
+      RenderMaterial material = new RenderMaterial()
+      {
+        name = revitMaterial.Name,
+        opacity = 1 - (revitMaterial.Transparency / 100d),
+        //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
+        //roughness = 1 - (revitMaterial.Smoothness / 100d),
+        diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb()
+      };
 
       return material;
     }
+    
+    public ElementId RenderMaterialToNative(RenderMaterial speckleMaterial)
+    {
+      if (speckleMaterial == null) return ElementId.InvalidElementId;
+      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
+      Material mat = Doc.GetElement(materialId) as Material;
+      
+      var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
+      mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
+      mat.Transparency =  1 - (int)(speckleMaterial.opacity * 100d);
+      
+      return materialId;
+    }
+    
   }
 }

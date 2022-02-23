@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Threading;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -22,10 +19,13 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class SpeckleRevitCommand2 : IExternalCommand
   {
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+    const int GWL_HWNDPARENT = -8;
     public static Window MainWindow { get; private set; }
     public static ConnectorBindingsRevit2 Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
-    UIApplication uiapp;
+    private static UIApplication uiapp;
 
     public static void InitAvalonia()
     {
@@ -66,6 +66,13 @@ namespace Speckle.ConnectorRevit.Entry
 
       MainWindow.Show();
       MainWindow.Activate();
+
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        var parentHwnd = uiapp.MainWindowHandle;
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      }
     }
 
     private static void AppMain(Avalonia.Application app, string[] args)

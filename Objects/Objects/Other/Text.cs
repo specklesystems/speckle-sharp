@@ -12,7 +12,7 @@ namespace Objects.Other
   /// <summary>
   /// Text class for Rhino and AutoCAD
   /// </summary>
-  public class Text : Base
+  public class Text : Base, IDisplayValue<List<Polyline>>
   {
     public List<ICurve> curves { get; set; }
     public List<Polyline> displayValue { get; set; } = new List<Polyline>();

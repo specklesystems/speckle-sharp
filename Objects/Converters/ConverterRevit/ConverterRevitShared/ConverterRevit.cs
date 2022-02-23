@@ -266,7 +266,9 @@ namespace Objects.Converter.Revit
 
       // NOTE: Only try generic method assignment if there is no existing render material from conversions;
       // we might want to try later on to capture it more intelligently from inside conversion routines.
-      if (returnObject != null && returnObject["renderMaterial"] == null)
+      if (returnObject != null
+          && returnObject["renderMaterial"] == null
+          && returnObject["displayValue"] == null)
       {
         var material = GetElementRenderMaterial(@object as DB.Element);
         returnObject["renderMaterial"] = material;
@@ -345,7 +347,7 @@ namespace Objects.Converter.Revit
 
         case BE.Structure o:
           Report.Log($"Created Structure {o.applicationId}");
-          return DirectShapeToNative(o.displayMesh);
+          return DirectShapeToNative(o.displayValue);
 
         //built elems
         case BER.AdaptiveComponent o:
