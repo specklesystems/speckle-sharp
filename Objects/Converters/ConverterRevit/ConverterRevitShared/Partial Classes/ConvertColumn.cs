@@ -39,8 +39,8 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitColumn != null)
       {
-        level = LevelToNative(speckleRevitColumn.level);
-        topLevel = LevelToNative(speckleRevitColumn.topLevel);
+        level = ConvertLevelToRevit(speckleRevitColumn.level);
+        topLevel = ConvertLevelToRevit(speckleRevitColumn.topLevel);
         //structuralType = speckleRevitColumn.structural ? StructuralType.Column : StructuralType.NonStructural;
         //non slanted columns are point based
         isLineBased = speckleRevitColumn.isSlanted;
@@ -48,8 +48,8 @@ namespace Objects.Converter.Revit
 
       if (level == null)
       {
-        level = LevelToNative(LevelFromCurve(baseLine));
-        topLevel = LevelToNative(LevelFromPoint(baseLine.GetEndPoint(1)));
+        level = ConvertLevelToRevit(LevelFromCurve(baseLine));
+        topLevel = ConvertLevelToRevit(LevelFromPoint(baseLine.GetEndPoint(1)));
       }
 
       //try update existing 

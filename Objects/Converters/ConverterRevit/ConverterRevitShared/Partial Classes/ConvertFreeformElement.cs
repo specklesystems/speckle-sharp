@@ -59,7 +59,7 @@ namespace Objects.Converter.Revit
       var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
 
       SetInstanceParameters(freeform, freeformElement);
-      //Report.Log($"Created FreeformElement {freeform.Id}");
+      Report.Log($"Created FreeformElement {freeform.Id}");
       return new ApplicationPlaceholderObject
       {
         applicationId = freeformElement.id,
@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
           ApplicationGeneratedId = form.UniqueId,
           NativeObject = s
         });
-        //Report.Log($"Created FreeformElement {form.Id}");
+        Report.Log($"Created FreeformElement {form.Id}");
       }
 
 

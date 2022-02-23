@@ -44,7 +44,7 @@ namespace Objects.Converter.Revit
         organizationName = revitInfo.OrganizationName,
         status = revitInfo.Status
       };
-      //Report.Log($"Converted ProjectInfo");
+      Report.Log($"Converted ProjectInfo");
       return speckleInfo;
     }
   }
