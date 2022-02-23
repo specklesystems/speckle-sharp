@@ -84,7 +84,9 @@ namespace ConnectorGrasshopper.Objects
       {
         foreach (var key in result.Keys)
         {
-          var indexOfOutputParam = Params.IndexOfOutputParam(key);
+          var isDetached = key.StartsWith("@");
+          var name = isDetached ? key.Substring(1) : key;
+          var indexOfOutputParam = Params.IndexOfOutputParam(name);
 
           if (indexOfOutputParam != -1)
           {
@@ -130,14 +132,21 @@ namespace ConnectorGrasshopper.Objects
 
     private bool OutputMismatch() =>
       outputList.Count != Params.Output.Count
-      || outputList.Where((t, i) => Params.Output[i].NickName != t).Any();
+      || outputList.Where((t, i) =>
+      {
+        var isDetached = t.StartsWith("@");
+        var name = isDetached ? t.Substring(1) : t;
+        var nickChange = Params.Output[i].NickName != t;
+        var detachChange = (Params.Output[i] as GenericAccessParam).Detachable != isDetached;
+        return nickChange || detachChange;
+      }).Any();
 
     private bool HasSingleRename()
     {
       var equalLength = outputList.Count == Params.Output.Count;
       if (!equalLength) return false;
       
-      var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains(param.NickName.Substring(1)));
+      var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
       return diffParams.Count() == 1;
     }
     private void AutoCreateOutputs()
@@ -150,11 +159,11 @@ namespace ConnectorGrasshopper.Objects
       // Check for single param rename, if so, just rename it and go on.
       if (HasSingleRename())
       { 
-        var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName));
+        var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
         var diffOut = outputList
           .Where(name =>
             !Params.Output.Select(p => p.NickName)
-              .Contains(name));
+              .Contains(name.StartsWith("@") ? name.Substring(1) : name));
 
         var newName = diffOut.First();
         var renameParam = diffParams.First();
