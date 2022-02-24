@@ -778,9 +778,10 @@ namespace ConnectorGrasshopper.Ops
 
     private bool HasSingleRename()
     {
-      var equalLength = outputList.Count == Parent.Params.Output.Count;
+      var equalLength = outputList.Count == Parent?.Params.Output.Count;
       if (!equalLength) return false;
-      var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.NickName));
+      
+      var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
       return diffParams.Count() == 1;
     }
     private void AutoCreateOutputs(Base @base)
@@ -791,7 +792,25 @@ namespace ConnectorGrasshopper.Ops
         return;
 
       Parent.RecordUndoEvent("Creating Outputs");
+      if (HasSingleRename())
+      { 
+        var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.NickName));
+        var diffOut = outputList
+          .Where(name =>
+            !Parent.Params.Output.Select(p => p.NickName)
+              .Contains(name));
 
+        var newName = diffOut.First();
+        var renameParam = diffParams.First();
+        var isDetached = newName.StartsWith("@");
+        var cleanName = isDetached ? newName.Substring(1) : newName;
+        renameParam.NickName = cleanName;
+        renameParam.Name = cleanName;
+        renameParam.Description = $"Data from property: {cleanName}";
+        (renameParam as SendReceiveDataParam).Detachable = isDetached;
+        return;
+      }
+      
       // Check what params must be deleted, and do so when safe.
       var remove = Parent.Params.Output.Select((p, i) =>
       {
