@@ -77,6 +77,7 @@
       <ComboBox.ItemTemplate>
         <DataTemplate>
           <Grid ColumnDefinitions="auto,auto,auto,*">
+
             <icons:MaterialIcon
               Margin="0,0,5,0"
               Foreground="DarkGray"
@@ -121,12 +122,12 @@
       Orientation="Horizontal"
       Spacing="10">
       <m:FloatingButton
-      VerticalAlignment="Center"
-      Background="Transparent"
-      Classes="Mini"
-      IsEnabled="{Binding HasSettings}"
-      Command="{Binding OpenSettingsCommand}"
-      ToolTip.Tip="Receive Settings">
+        VerticalAlignment="Center"
+        Background="Transparent"
+        Classes="Mini"
+        Command="{Binding OpenSettingsCommand}"
+        IsEnabled="{Binding HasSettings}"
+        ToolTip.Tip="Receive Settings">
         <Button.Content>
           <icons:MaterialIcon
             Width="15"
