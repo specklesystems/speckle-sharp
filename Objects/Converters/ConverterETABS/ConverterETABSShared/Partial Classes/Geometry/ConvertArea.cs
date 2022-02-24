@@ -168,7 +168,7 @@ namespace Objects.Converter.ETABS
       polygonMesher.Init(coordinates);
       var faces = polygonMesher.Faces();
       var vertices = polygonMesher.Coordinates;
-      speckleStructArea.displayMesh = new Geometry.Mesh(vertices.ToList(), faces, units: ModelUnits());
+      speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces.ToArray(), units: ModelUnits());
 
       //Model.AreaObj.GetModifiers(area, ref value);
       //speckleProperty2D.modifierInPlane = value[2];
