@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> RoomToNative(Room speckleRoom)
     {
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
-      var level = LevelToNative(speckleRoom.level);
+      var level = ConvertLevelToRevit(speckleRoom.level);
 
       var isUpdate = true;
       if (revitRoom == null)
@@ -62,8 +61,10 @@ namespace Objects.Converter.Revit
       }
 
       GetAllRevitParamsAndIds(speckleRoom, revitRoom);
+
       speckleRoom.displayValue = GetElementDisplayMesh(revitRoom);
-      //Report.Log($"Converted Room {revitRoom.Id}");
+      Report.Log($"Converted Room {revitRoom.Id}");
+
       return speckleRoom;
     }
 

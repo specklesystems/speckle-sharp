@@ -123,7 +123,7 @@ namespace Objects.Converter.Revit
         }
 
       GetAllRevitParamsAndIds(speckleWire, revitWire, new List<string>());
-      //Report.Log($"Converted Wire {revitWire.Id}");
+      Report.Log($"Converted Wire {revitWire.Id}");
       return speckleWire;
     }
   }

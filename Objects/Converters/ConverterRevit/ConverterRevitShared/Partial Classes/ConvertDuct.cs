@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Curve = Objects.Geometry.Curve;
 using Line = Objects.Geometry.Line;
 using Polyline = Objects.Geometry.Polyline;
 
@@ -36,7 +34,7 @@ namespace Objects.Converter.Revit
         DB.Line baseLine = (speckleDuct.baseCurve != null) ? LineToNative(speckleDuct.baseCurve as Line) : LineToNative(speckleDuct.baseLine);
         XYZ startPoint = baseLine.GetEndPoint(0);
         XYZ endPoint = baseLine.GetEndPoint(1);
-        DB.Level lineLevel = LevelToNative(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromCurve(baseLine));
+        DB.Level lineLevel = ConvertLevelToRevit(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromCurve(baseLine));
         DB.Mechanical.Duct lineDuct = DB.Mechanical.Duct.Create(Doc, system.Id, ductType.Id, lineLevel.Id, startPoint, endPoint);
         duct = lineDuct;
       }
@@ -46,7 +44,7 @@ namespace Objects.Converter.Revit
 
         var speckleRevitFlexDuct = speckleDuct as RevitFlexDuct;
         var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();
-        DB.Level flexLevel = LevelToNative(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromPoint(points.First()));
+        DB.Level flexLevel = ConvertLevelToRevit(speckleRevitDuct != null ? speckleRevitDuct.level : LevelFromPoint(points.First()));
         var startTangent = VectorToNative(speckleRevitFlexDuct.startTangent);
         var endTangent = VectorToNative(speckleRevitFlexDuct.endTangent);
 
@@ -74,6 +72,8 @@ namespace Objects.Converter.Revit
         TrySetParam(duct, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitDuct.length, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_VELOCITY, speckleRevitDuct.velocity, speckleRevitDuct.units);
 
+
+
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
@@ -82,7 +82,7 @@ namespace Objects.Converter.Revit
         new ApplicationPlaceholderObject
           {applicationId = speckleDuct.applicationId, ApplicationGeneratedId = duct.UniqueId, NativeObject = duct}
       };
-
+      Report.Log($"Created Duct {duct.Id}");
       return placeholders;
     }
 
@@ -156,6 +156,8 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
+
+      Report.Log($"Converted Duct {revitDuct.Id}");
 
       return speckleDuct;
     }

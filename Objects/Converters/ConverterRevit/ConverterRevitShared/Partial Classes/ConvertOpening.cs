@@ -46,8 +46,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = LevelToNative(rs.bottomLevel);
-            var topLevel = LevelToNative(rs.topLevel);
+            var bottomLevel = ConvertLevelToRevit(rs.bottomLevel);
+            var topLevel = ConvertLevelToRevit(rs.topLevel);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height, rs.units);
 
@@ -72,7 +72,7 @@ namespace Objects.Converter.Revit
       {
         SetInstanceParameters(revitOpening, ro);
       }
-      //Report.Log($"Created Opening {revitOpening.Id}");
+      Report.Log($"Created Opening {revitOpening.Id}");
       return new ApplicationPlaceholderObject { NativeObject = revitOpening, applicationId = speckleOpening.applicationId, ApplicationGeneratedId = revitOpening.UniqueId };
     }
 
@@ -134,7 +134,7 @@ namespace Objects.Converter.Revit
       speckleOpening["type"] = revitOpening.Name;
 
       GetAllRevitParamsAndIds(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
-      //Report.Log($"Converted Opening {revitOpening.Id}");
+      Report.Log($"Converted Opening {revitOpening.Id}");
       return speckleOpening;
     }
   }

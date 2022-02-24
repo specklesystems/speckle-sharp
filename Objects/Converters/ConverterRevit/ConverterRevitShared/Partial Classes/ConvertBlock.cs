@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Speckle.Core.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using BlockInstance = Objects.Other.BlockInstance;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
-using BlockInstance = Objects.Other.BlockInstance;
 using Transform = Objects.Other.Transform;
 
 namespace Objects.Converter.Revit
@@ -18,7 +17,7 @@ namespace Objects.Converter.Revit
     public Group BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
-      if ( transform != null )
+      if (transform != null)
         transform *= instance.transform;
       else
         transform = instance.transform;
@@ -28,13 +27,13 @@ namespace Objects.Converter.Revit
       var meshes = new List<Mesh>();
       var curves = new List<DB.Curve>();
       var blocks = new List<BlockInstance>();
-      foreach ( var geometry in instance.blockDefinition.geometry )
+      foreach (var geometry in instance.blockDefinition.geometry)
       {
-        switch ( geometry )
+        switch (geometry)
         {
           case Brep brep:
             var success = brep.TransformTo(transform, out var tbrep);
-            if ( success )
+            if (success)
               breps.Add(tbrep);
             else
             {
@@ -50,16 +49,16 @@ namespace Objects.Converter.Revit
           case ICurve curve:
             try
             {
-              if ( curve is ITransformable tCurve )
+              if (curve is ITransformable tCurve)
               {
-                tCurve.TransformTo( transform, out tCurve );
-                curve = ( ICurve ) tCurve;
+                tCurve.TransformTo(transform, out tCurve);
+                curve = (ICurve)tCurve;
               }
 
               var modelCurves = CurveToNative(curve);
               curves.AddRange(modelCurves.Cast<DB.Curve>());
             }
-            catch ( Exception e )
+            catch (Exception e)
             {
               Report.LogConversionError(
                 new SpeckleException($"Could not convert block {instance.id} curve to native.", e));
@@ -73,26 +72,27 @@ namespace Objects.Converter.Revit
       }
 
       var ids = new List<ElementId>();
-      breps.ForEach(o => { ids.Add(( DirectShapeToNative(o).NativeObject as DB.DirectShape )?.Id); });
-      meshes.ForEach(o => { ids.Add(( DirectShapeToNative(o).NativeObject as DB.DirectShape )?.Id); });
+      breps.ForEach(o => { ids.Add((DirectShapeToNative(o).NativeObject as DB.DirectShape)?.Id); });
+      meshes.ForEach(o => { ids.Add((DirectShapeToNative(o).NativeObject as DB.DirectShape)?.Id); });
       curves.ForEach(o => { ids.Add(Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc)).Id); });
       blocks.ForEach(o => { ids.Add(BlockInstanceToNative(o, transform).Id); });
 
       var group = Doc.Create.NewGroup(ids);
       group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
+      Report.Log($"Created Group '{ group.GroupType.Name}' {group.Id}");
       return group;
     }
 
 
-    private bool MatrixDecompose(double[ ] m, out double rotation)
+    private bool MatrixDecompose(double[] m, out double rotation)
     {
       var matrix = new Matrix4x4(
-        ( float ) m[ 0 ], ( float ) m[ 1 ], ( float ) m[ 2 ], ( float ) m[ 3 ],
-        ( float ) m[ 4 ], ( float ) m[ 5 ], ( float ) m[ 6 ], ( float ) m[ 7 ],
-        ( float ) m[ 8 ], ( float ) m[ 9 ], ( float ) m[ 10 ], ( float ) m[ 11 ],
-        ( float ) m[ 12 ], ( float ) m[ 13 ], ( float ) m[ 14 ], ( float ) m[ 15 ]);
+        (float)m[0], (float)m[1], (float)m[2], (float)m[3],
+        (float)m[4], (float)m[5], (float)m[6], (float)m[7],
+        (float)m[8], (float)m[9], (float)m[10], (float)m[11],
+        (float)m[12], (float)m[13], (float)m[14], (float)m[15]);
 
-      if ( Matrix4x4.Decompose(matrix, out Vector3 _scale, out Quaternion _rotation, out Vector3 _translation) )
+      if (Matrix4x4.Decompose(matrix, out Vector3 _scale, out Quaternion _rotation, out Vector3 _translation))
       {
         rotation = Math.Acos(_rotation.W) * 2;
         return true;

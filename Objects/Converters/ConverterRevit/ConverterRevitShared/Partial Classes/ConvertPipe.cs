@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
         var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
 
         DB.Line baseLine = LineToNative(line);
-        DB.Level level = LevelToNative(speckleRevitPipe != null ? speckleRevitPipe.level : LevelFromCurve(baseLine));
+        DB.Level level = ConvertLevelToRevit(speckleRevitPipe != null ? speckleRevitPipe.level : LevelFromCurve(baseLine));
         var linePipe = DB.Plumbing.Pipe.Create(Doc, system.Id, pipeType.Id, level.Id, baseLine.GetEndPoint(0), baseLine.GetEndPoint(1));
         if (docObj != null)
         {
@@ -54,7 +54,7 @@ namespace Objects.Converter.Revit
         var pipeType = GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe);
 
         var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();
-        DB.Level level = LevelToNative(speckleRevitFlexPipe != null ? speckleRevitFlexPipe.level : LevelFromPoint(points.First()));
+        DB.Level level = ConvertLevelToRevit(speckleRevitFlexPipe != null ? speckleRevitFlexPipe.level : LevelFromPoint(points.First()));
         var startTangent = VectorToNative(speckleRevitFlexPipe.startTangent);
         var endTangent = VectorToNative(speckleRevitFlexPipe.endTangent);
         var flexPipe = DB.Plumbing.FlexPipe.Create(Doc, system.Id, pipeType.Id, level.Id, startTangent, endTangent, points);
@@ -116,7 +116,7 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
-      //Report.Log($"Converted Pipe {revitPipe.Id}");
+      Report.Log($"Converted Pipe {revitPipe.Id}");
       return specklePipe;
     }
     public BuiltElements.Pipe PipeToSpeckle(DB.Plumbing.FlexPipe revitPipe)
