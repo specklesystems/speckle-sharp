@@ -12,6 +12,10 @@
     <WarningsAsErrors />
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;TeklaStructures2020</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Tekla.Structures" Version="2021.0.0" />
     <PackageReference Include="Tekla.Structures.Catalogs" Version="2021.0.0" />
