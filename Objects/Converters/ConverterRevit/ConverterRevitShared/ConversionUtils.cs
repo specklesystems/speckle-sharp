@@ -866,6 +866,8 @@ namespace Objects.Converter.Revit
     
     public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
     {
+      if ( revitMaterial == null )
+        return null;
       RenderMaterial material = new RenderMaterial()
       {
         name = revitMaterial.Name,
