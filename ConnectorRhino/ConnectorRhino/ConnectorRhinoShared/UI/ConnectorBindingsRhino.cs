@@ -323,10 +323,12 @@ namespace SpeckleRhino
         else
         {
           List<string> props = @base.GetDynamicMembers().ToList();
-          if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists
-            props.Add("displayMesh");
-          else if (@base.GetMembers().ContainsKey("displayValue"))
+          if (@base.GetMembers().ContainsKey("displayValue"))
             props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
           int totalMembers = props.Count;
 
           foreach (var prop in props)
@@ -394,7 +396,7 @@ namespace SpeckleRhino
         }
         else
         {
-          convertedList.Add(obj);
+          convertedList.Add(item);
         }
       }
 

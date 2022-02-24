@@ -866,6 +866,8 @@ namespace Objects.Converter.Revit
     
     public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
     {
+      if ( revitMaterial == null )
+        return null;
       RenderMaterial material = new RenderMaterial()
       {
         name = revitMaterial.Name,
@@ -881,12 +883,22 @@ namespace Objects.Converter.Revit
     public ElementId RenderMaterialToNative(RenderMaterial speckleMaterial)
     {
       if (speckleMaterial == null) return ElementId.InvalidElementId;
+
+      // Try and find an existing material
+      var existing = new FilteredElementCollector(Doc)
+        .OfClass(typeof(Material))
+        .Cast<Material>()
+        .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
+
+      if (existing != null) return existing.Id;
+      
+      // Create new material
       ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
       Material mat = Doc.GetElement(materialId) as Material;
-      
+    
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
       mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
-      mat.Transparency =  1 - (int)(speckleMaterial.opacity * 100d);
+      mat.Transparency = (int)((1d - speckleMaterial.opacity) * 100d);
       
       return materialId;
     }
