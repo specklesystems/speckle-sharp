@@ -220,7 +220,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
 #endif
           }
 
-          DisplayStyle style = GetStyle(obj);
+          DisplayStyle style = DisplayStyleToSpeckle(obj as Entity);
           if (style != null)
             @base["displayStyle"] = style;
 
