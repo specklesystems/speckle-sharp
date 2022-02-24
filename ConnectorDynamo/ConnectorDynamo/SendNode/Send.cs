@@ -1,22 +1,20 @@
-﻿using Dynamo.Graph.Nodes;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading;
+using Dynamo.Engine;
+using Dynamo.Graph.Nodes;
+using Dynamo.Utilities;
+using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
+using ProtoCore.Mirror;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Core.Logging;
-using Dynamo.Engine;
-using ProtoCore.Mirror;
-using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Threading;
-using Dynamo.Utilities;
-using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.SendNode
 {
@@ -281,9 +279,16 @@ namespace Speckle.ConnectorDynamo.SendNode
         void ErrorAction(string transportName, Exception e)
         {
           hasErrors = true;
-          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-          Message = Message.Contains("401") ? "Not authorized" : Message;
+
+          while (e != null)
+          {
+            Message += e.Message;
+            e = e.InnerException;
+          }
+
+          Message = Message.Contains("401") ? "You don't have enough permissions to send to this stream." : Message;
           _cancellationToken.Cancel();
+          ResetNode();
         }
 
         var plural = (totalCount == 1) ? "" : "s";
