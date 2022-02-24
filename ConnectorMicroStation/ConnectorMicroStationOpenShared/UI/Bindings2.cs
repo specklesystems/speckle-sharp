@@ -262,7 +262,8 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         return state;
 
       // invoke conversions on the main thread via control
-      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+      int count = 0;
+      var flattenedObjects = FlattenCommitObject(commitObject, converter, ref count);
       List<ApplicationPlaceholderObject> newPlaceholderObjects;
       if (Control.InvokeRequired)
         newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
@@ -350,12 +351,14 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Recurses through the commit object and flattens it
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
+    /// <param name="count"></param>
+    /// <param name="foundConvertibleMember"></param>
     /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter, ref int count, bool foundConvertibleMember = false)
     {
       List<Base> objects = new List<Base>();
 
@@ -364,34 +367,51 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         if (converter.CanConvertToNative(@base))
         {
           objects.Add(@base);
-
           return objects;
         }
         else
         {
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+            count++;
+
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, ref count, foundConvertibleMember);
+            if (nestedObjects.Count > 0)
+            {
+              objects.AddRange(nestedObjects);
+              foundConvertibleMember = true;
+            }
           }
+
+          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
+            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
+
           return objects;
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
+        count = 0;
         foreach (var listObj in list)
-        {
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
+          objects.AddRange(FlattenCommitObject(listObj, converter, ref count));
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
+        count = 0;
         foreach (DictionaryEntry kvp in dict)
-        {
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, ref count));
         return objects;
       }
 

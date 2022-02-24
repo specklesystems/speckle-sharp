@@ -1,20 +1,16 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Models;
+﻿using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
 using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
-using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -188,10 +184,13 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
-      LastUsed = DateTime.Now.ToString();
 
-      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Send);
-      Tracker.TrackPageview(Tracker.SEND);
+      if (!Progress.CancellationTokenSource.IsCancellationRequested)
+      {
+        LastUsed = DateTime.Now.ToString();
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Send);
+        Tracker.TrackPageview(Tracker.SEND);
+      }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
@@ -204,7 +203,13 @@ namespace DesktopUI2.ViewModels
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
       Progress.IsProgressing = false;
-      LastUsed = DateTime.Now.ToString();
+
+      if (!Progress.CancellationTokenSource.IsCancellationRequested)
+      {
+        LastUsed = DateTime.Now.ToString();
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive);
+        Tracker.TrackPageview(Tracker.RECEIVE);
+      }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         Notification = "Something went wrong, please check the report.";
