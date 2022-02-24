@@ -311,28 +311,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 var res = convertedEntity.Append(cleanName);
                 if (res.IsValid)
                 {
-                  // handle display
+                  // handle display - fallback to rendermaterial if no displaystyle exists
                   Base display = obj[@"displayStyle"] as Base;
-                  if (display != null)
-                  {
-                    var color = display["color"] as int?;
-                    var lineType = display["linetype"] as string;
-                    var lineWidth = display["lineweight"] as double?;
-
-                    if (color != null)
-                    {
-                      var systemColor = System.Drawing.Color.FromArgb((int)color);
-                      convertedEntity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-                      convertedEntity.Transparency = new Transparency(systemColor.A);
-                    }
-
-                    if (lineWidth != null)
-                      convertedEntity.LineWeight = Utils.GetLineWeight((double)lineWidth);
-
-                    if (lineType != null)
-                      if (lineTypeDictionary.ContainsKey(lineType))
-                        convertedEntity.LinetypeId = lineTypeDictionary[lineType];
-                  }
+                  if (display == null) display = obj[@"renderMaterial"] as Base;
+                  if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
+                    
                   tr.TransactionManager.QueueForGraphicsFlush();
                 }
                 else
