@@ -21,16 +21,21 @@ namespace ConnectorGrasshopper.Extras
       get
       {
         var tags = base.StateTags;
-        if (Kind != GH_ParamKind.input) return tags;
-        if (Optional)
-        {
-          tags.Add(new OptionalStateTag());
-        }
 
-        if (Detachable)
-          tags.Add(new DetachedStateTag());
-        if (Access == GH_ParamAccess.list)
-          tags.Add(new ListAccesStateTag());
+        if (Kind == GH_ParamKind.input)
+        {
+          if (Optional)
+            tags.Add(new OptionalStateTag());
+          if (Detachable)
+            tags.Add(new DetachedStateTag());
+          if (Access == GH_ParamAccess.list)
+            tags.Add(new ListAccesStateTag());
+        }
+        else if (Kind == GH_ParamKind.output)
+        {
+          if (Detachable)
+            tags.Add(new DetachedStateTag());
+        }
 
         return tags;
       }
