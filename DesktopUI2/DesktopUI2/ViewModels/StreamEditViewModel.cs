@@ -302,6 +302,14 @@ namespace DesktopUI2.ViewModels
         await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
         dialog.GetWindow().Close();
         Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Tracker.TrackPageview(Tracker.SEND);
+        }
+
+        //TODO: display other dialog if operation failed etc
         MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
 
       }
@@ -328,6 +336,13 @@ namespace DesktopUI2.ViewModels
         await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
         dialog.GetWindow().Close();
         Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Tracker.TrackPageview(Tracker.SEND);
+        }
+
         //TODO: display other dialog if operation failed etc
         MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       }
