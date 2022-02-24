@@ -5,26 +5,25 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using System.Threading;
-using Timer = System.Timers.Timer;
-using Rhino;
-using Rhino.DocObjects;
-using Speckle.Newtonsoft.Json;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using Speckle.Core.Logging;
-
 using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
+using Rhino;
+using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
+using Timer = System.Timers.Timer;
 
 namespace SpeckleRhino
 {
@@ -190,6 +189,9 @@ namespace SpeckleRhino
         referencedObject = res.referencedObject;
       }
 
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
+
       var contex = SynchronizationContext.Current;
 
       //var commit = state.Commit;
@@ -210,6 +212,9 @@ namespace SpeckleRhino
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
+
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -224,6 +229,9 @@ namespace SpeckleRhino
       // flatten the commit object to retrieve children objs
       int count = 0;
       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
 
       foreach (var commitObj in commitObjs)
       {
@@ -240,6 +248,9 @@ namespace SpeckleRhino
       // undo notes edit
       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
       Doc.Notes = segments[0];
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
 
       return state;
     }
@@ -308,8 +319,8 @@ namespace SpeckleRhino
 
       return objects;
     }
-    
-    
+
+
     // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
@@ -320,7 +331,7 @@ namespace SpeckleRhino
         converter.Report.LogConversionError(exception);
         return;
       }
-      
+
       var convertedList = new List<object>();
 
       //Iteratively flatten any lists
@@ -328,7 +339,7 @@ namespace SpeckleRhino
       {
         if (item is IList list)
         {
-          foreach(object child in list)
+          foreach (object child in list)
             FlattenConvertedObject(child);
         }
         else
@@ -338,7 +349,7 @@ namespace SpeckleRhino
       }
 
       FlattenConvertedObject(converted);
-      
+
       foreach (var convertedItem in convertedList)
       {
         if (!(convertedItem is GeometryBase convertedRH)) continue;
@@ -571,6 +582,9 @@ namespace SpeckleRhino
         );
 
       if (progress.Report.OperationErrorsCount != 0)
+        return;
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return;
 
       var actualCommit = new CommitCreateInput
