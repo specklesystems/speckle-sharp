@@ -2112,6 +2112,19 @@ public class RoomSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class Room1SchemaComponent: CreateSchemaObjectBase {
+     
+    public Room1SchemaComponent(): base("RevitRoom", "RevitRoom", "Creates a Revit room with parameters", "Speckle 2 Revit", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("9be891e2-aaf6-1d4e-3d6b-bd7ba1a06563");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Room.ctor(System.String,System.String,Objects.BuiltElements.Level,Objects.Geometry.Point,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Room");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class RoomBoundaryLineSchemaComponent: CreateSchemaObjectBase {
      
     public RoomBoundaryLineSchemaComponent(): base("RoomBoundaryLine", "RoomBoundaryLine", "Creates a Revit room boundary line", "Speckle 2 Revit", "Curves") { }
