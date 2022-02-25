@@ -48,7 +48,7 @@ namespace ConnectorGrasshopper.Extras
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      if (Kind != GH_ParamKind.input || Kind != GH_ParamKind.floating)
+      if (Kind != GH_ParamKind.input)
       {
         // Append graft,flatten,etc... options to outputs.
         base.AppendAdditionalMenuItems(menu);
