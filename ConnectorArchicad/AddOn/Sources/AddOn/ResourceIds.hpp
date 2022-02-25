@@ -10,6 +10,7 @@
 #define GetElementTypesCommandName				"GetElementTypes";
 #define GetWallDataCommandName					"GetWallData";
 #define GetSlabDataCommandName					"GetSlabData";
+#define GetRoomDataCommandName					"GetRoomData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
 #define CreateDirectShapesCommandName 			"CreateDirectShapes";
 #define CreateWallCommandName					"CreateWall";

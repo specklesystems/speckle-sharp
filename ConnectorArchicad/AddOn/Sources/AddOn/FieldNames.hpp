@@ -10,6 +10,7 @@ static const char* FloorIndexFieldName = "floorIndex";
 
 static const char* WallsFieldName = "walls";
 static const char* SlabsFieldName = "slabs";
+static const char* RoomsFieldName = "rooms";
 static const char* ModelsFieldName = "models";
 
 
@@ -45,6 +46,13 @@ namespace Slab {
 	static const char* BuildingMaterialIndexFieldName = "buildingMaterialIndex";
 }
 
+namespace  Room
+{
+    static const char* NameFieldName = "name";
+    static const char* NumberFieldName = "number";
+    static const char* BasePointFieldName = "basePoint";
+    static const char* HeightFieldName = "height";
+}
 
 namespace Model {
 
