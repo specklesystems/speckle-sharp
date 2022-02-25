@@ -18,7 +18,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
 namespace ConnectorGrasshopper.Ops
@@ -122,7 +122,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+      var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
       foreach (var kit in kits)
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
@@ -212,7 +212,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -259,7 +259,7 @@ namespace ConnectorGrasshopper.Ops
 
       if (InPreSolve)
       {
-        Tracker.TrackPageview("receive", "sync");
+        Logging.Tracker.TrackPageview("receive", "sync");
 
         var task = Task.Run(async () =>
         {
@@ -268,7 +268,7 @@ namespace ConnectorGrasshopper.Ops
           var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
           remoteTransport.TransportName = "R";
 
-          Telemetry.TrackEvent(acc, Telemetry.Events.Receive, new Dictionary<string, object>() { { "sync", true } });
+          Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "sync", true } });
 
           var myCommit = await ReceiveComponentWorker.GetCommit(StreamWrapper, client, (level, message) =>
           {
@@ -301,7 +301,7 @@ namespace ConnectorGrasshopper.Ops
               streamId = StreamWrapper.StreamId,
               commitId = myCommit.id,
               message = myCommit.message,
-              sourceApplication = Applications.Grasshopper
+              sourceApplication = VersionedHostApplications.Grasshopper
             });
           }
           catch

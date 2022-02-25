@@ -9,7 +9,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FreeformElement : Base , IDisplayMesh
+  public class FreeformElement : Base , IDisplayMesh, IDisplayValue<List<Mesh>>
   {
     public Base parameters { get; set; }
     
@@ -36,8 +36,8 @@ namespace Objects.BuiltElements.Revit
     public List<Base> baseGeometries { get; set; }
     
     [DetachProperty]
-    public Mesh displayMesh { get; set; }
-
+    public List<Mesh> displayValue { get; set; }
+    
     public string units { get; set; }
 
     public FreeformElement() { }
@@ -67,5 +67,13 @@ namespace Objects.BuiltElements.Revit
       @base is Mesh
       || @base is Brep
       || @base is Geometry.Curve;
+    
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> {value};
+    }
+    #endregion
   }
 }

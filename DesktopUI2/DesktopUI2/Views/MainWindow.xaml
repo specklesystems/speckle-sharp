@@ -88,14 +88,10 @@
       </Grid>
     </m:Card>
 
-
     <reactiveUi:RoutedViewHost
       Grid.Row="1"
       PageTransition="{x:Null}"
       Router="{Binding Router}" />
-
-
-
 
   </Grid>
 </Window>

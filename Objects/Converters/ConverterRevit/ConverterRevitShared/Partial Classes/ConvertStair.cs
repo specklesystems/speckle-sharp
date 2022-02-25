@@ -1,12 +1,9 @@
 ﻿
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.DB.Architecture;
 
 namespace Objects.Converter.Revit
 {
@@ -37,8 +34,9 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
 
-      speckleStair.displayMesh = GetElementDisplayMesh(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      //Report.Log($"Converted Stair {revitStair.Id}");
+      speckleStair.displayValue = GetElementDisplayMesh(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      Report.Log($"Converted Stair {revitStair.Id}");
+
       return speckleStair;
     }
 

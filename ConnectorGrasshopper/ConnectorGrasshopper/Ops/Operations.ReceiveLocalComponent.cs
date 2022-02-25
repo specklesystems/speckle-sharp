@@ -11,7 +11,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -46,7 +46,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:", null, null, false);
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+      var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
       foreach (var kit in kits)
       {
@@ -68,7 +68,7 @@ namespace ConnectorGrasshopper.Ops
       if (kitName == Kit.Name) return;
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino6);
+      Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
         (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -83,7 +83,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -119,8 +119,8 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        Tracker.TrackPageview(Tracker.RECEIVE_LOCAL);
-        Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
+        Logging.Tracker.TrackPageview(Logging.Tracker.RECEIVE_LOCAL);
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
 
@@ -142,7 +142,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         Parent.Message = "Error";
       }

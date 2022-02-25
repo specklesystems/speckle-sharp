@@ -9,6 +9,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Timer = System.Timers.Timer;
 
@@ -35,8 +36,6 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp = revitApp;
     }
 
-
-
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
       var selectedObjects = GetSelectedObjects();
@@ -47,7 +46,8 @@ namespace Speckle.ConnectorRevit.UI
       //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
     }
 
-    public override string GetHostAppName() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
+    public override string GetHostAppNameVersion() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
+    public override string GetHostAppName() => HostApplications.Revit.Slug;
 
     public override string GetDocumentId() => GetDocHash(CurrentDoc?.Document);
 
@@ -64,7 +64,6 @@ namespace Speckle.ConnectorRevit.UI
       throw new NotImplementedException();
     }
 
-
     public override List<StreamState> GetStreamsInFile()
     {
       var streams = new List<StreamState>();
@@ -79,7 +78,5 @@ namespace Speckle.ConnectorRevit.UI
     {
       return new List<MenuItem>();
     }
-
-
   }
 }

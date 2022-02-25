@@ -63,6 +63,9 @@ parameters:
   run_connector_microstation:
     type: boolean
     default: false
+  run_connector_teklastructures:
+    type: boolean
+    default: false
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   
@@ -83,7 +86,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
             {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"},
-            {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"}
+            {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"},
+            {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"}
           ]'
           base-branch: 'main'
   
@@ -337,6 +341,14 @@ workflows:
           slnname: ConnectorMicroStation
           dllname: SpeckleConnectorOpenRoads.dll
 
+  # TeklaStructures Connector - Build/Test
+  connector_teklastructures:
+    when: << pipeline.parameters.run_connector_teklastructures>>
+    jobs:
+      - build-connector: 
+          name: build-connector-teklastructures
+          slnname: ConnectorTeklaStructures
+          dllname: SpeckleConnectorTeklaStructures.dll
   nuget:
     jobs:
       # CORE Nuget Publish        
@@ -378,7 +390,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT BOTTOM --        
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads|bentley)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -544,6 +556,21 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(openroads|bentley|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      
+      # TeklaStructures Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-teklastructures
+          slnname: ConnectorTeklaStructures
+          dllname: SpeckleConnectorTeklaStructures.dll
+          slug: teklastructures
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(teklastructures|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
      
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
@@ -560,6 +587,7 @@ workflows:
             - build-deploy-connector-openbuildings
             - build-deploy-connector-openrail
             - build-deploy-connector-openroads
+            - build-deploy-connector-teklastructures
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT ~380  --    
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads|bentley)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/

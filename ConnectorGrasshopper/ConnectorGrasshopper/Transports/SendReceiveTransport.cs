@@ -1,7 +1,7 @@
 ﻿using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
@@ -40,8 +40,8 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send To Transports" } });
-      Tracker.TrackPageview("transports", "send_to_transport");
+      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send To Transports" } });
+      Logging.Tracker.TrackPageview("transports", "send_to_transport");
 
       List<ITransport> transports = new List<ITransport>();
       DA.GetDataList(0, transports);
@@ -97,8 +97,8 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
-      Telemetry.TrackEvent(Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive From Transports" } });
-      Tracker.TrackPageview("transports", "receive_from_transport");
+      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive From Transports" } });
+      Logging.Tracker.TrackPageview("transports", "receive_from_transport");
 
       List<string> ids = new List<string>();
       DA.GetDataList(1, ids);

@@ -19,11 +19,11 @@ namespace Objects.Converter.ETABS
   public partial class ConverterETABS : ISpeckleConverter
   {
 #if ETABSV18
-    public static string ETABSAppName = Applications.ETABSv18;
+    public static string ETABSAppName = VersionedHostApplications.ETABSv18;
 #elif ETABSV19
-    public static string ETABSAppName = Applications.ETABSv19;
+    public static string ETABSAppName = VersionedHostApplications.ETABSv19;
 #else
-        public static string ETABSAppName = Applications.ETABS;
+        public static string ETABSAppName = VersionedHostApplications.ETABS;
 #endif
     public string Description => "Default Speckle Kit for ETABS";
 
@@ -87,10 +87,10 @@ namespace Objects.Converter.ETABS
           return LineToNative(o);
           Report.Log($"Created Line {o.id}");
         case OSG.Element1D o:
-          return FrameToNative((ETABSElement1D)o);
+          return FrameToNative(o);
           Report.Log($"Created Element1D {o.id}");
         case OSG.Element2D o:
-          return AreaToNative((ETABSElement2D)o);
+          return AreaToNative(o);
           Report.Log($"Created Element2D {o.id}");
         case Model o:
           return ModelToNative(o);

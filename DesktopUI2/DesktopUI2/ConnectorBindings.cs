@@ -7,6 +7,7 @@ using Sentry.Reflection;
 using Speckle.Newtonsoft.Json;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using System.Collections.ObjectModel;
 
@@ -26,14 +27,11 @@ namespace DesktopUI2
 
     //public List<StreamState> SavedStreamStates = new List<StreamState>();
 
-
     #region delegates
 
     public UpdateSavedStreams UpdateSavedStreams;
 
-
     #endregion
-
 
     public virtual bool CanSelectObjects()
     {
@@ -46,6 +44,12 @@ namespace DesktopUI2
     }
 
     #region abstract methods
+
+    /// <summary>
+    /// Gets the current host application name with version.
+    /// </summary>
+    /// <returns></returns>
+    public abstract string GetHostAppNameVersion();
 
     /// <summary>
     /// Gets the current host application name.
@@ -150,6 +154,8 @@ namespace DesktopUI2
     /// </summary>
     /// <returns></returns>
     public abstract List<MenuItem> GetCustomStreamMenuItems();
+
+    public abstract List<ISetting> GetSettings();
 
     #endregion
   }

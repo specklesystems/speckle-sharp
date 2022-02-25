@@ -245,21 +245,6 @@ public class DuctSchemaComponent: CreateSchemaObjectBase {
     public DuctSchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("51d40791-43ea-a8e7-ef13-e9bfdf9cd893");
-    public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.Geometry.Line,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
-public class Duct1SchemaComponent: CreateSchemaObjectBase {
-     
-    public Duct1SchemaComponent(): base("Duct", "Duct", "Creates a Speckle duct", "Speckle 2 BIM", "MEP") { }
-    
-    public override Guid ComponentGuid => new Guid("7e3a3fba-7d4f-d549-96c0-41693b512db0");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Duct.ctor(Objects.ICurve,System.Double,System.Double,System.Double,System.Double)","Objects.BuiltElements.Duct");
@@ -439,7 +424,7 @@ public class ETABSOpeningSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSSpringPropertySchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSSpringPropertySchemaComponent(): base("PointSpring", "PointSpring", "Create an ETABS PointSpring from Link", "Speckle 2 ETABS", "Properties") { }
+    public ETABSSpringPropertySchemaComponent(): base("PointSpring from Link", "PointSpring from Link", "Create an ETABS PointSpring from Link", "Speckle 2 ETABS", "Properties") { }
     
     public override Guid ComponentGuid => new Guid("83812607-cf77-2b4e-44ce-ccf4349a227f");
     
@@ -452,7 +437,7 @@ public class ETABSSpringPropertySchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class ETABSSpringProperty1SchemaComponent: CreateSchemaObjectBase {
      
-    public ETABSSpringProperty1SchemaComponent(): base("PointSpring", "PointSpring", "Create an ETABS PointSpring from Soil Profile", "Speckle 2 ETABS", "Properties") { }
+    public ETABSSpringProperty1SchemaComponent(): base("PointSpring from Soil Profile", "PointSpring from Soil Profile", "Create an ETABS PointSpring from Soil Profile", "Speckle 2 ETABS", "Properties") { }
     
     public override Guid ComponentGuid => new Guid("7ff9c658-f671-8a85-9842-a9f20346bd69");
     
@@ -507,21 +492,6 @@ public class FreeformElementSchemaComponent: CreateSchemaObjectBase {
     public FreeformElementSchemaComponent(): base("Freeform element", "Freeform element", "Creates a Revit Freeform element using a list of Brep or Meshes.", "Speckle 2 Revit", "Families") { }
     
     public override Guid ComponentGuid => new Guid("b24dc861-1c3c-a509-bc8b-560e9f7d503e");
-    public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.FreeformElement.ctor(Speckle.Core.Models.Base,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.FreeformElement");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
-public class FreeformElement1SchemaComponent: CreateSchemaObjectBase {
-     
-    public FreeformElement1SchemaComponent(): base("Freeform element", "Freeform element", "Creates a Revit Freeform element using a list of Brep or Meshes.", "Speckle 2 Revit", "Families") { }
-    
-    public override Guid ComponentGuid => new Guid("d1bb3f50-6abc-9f34-acf3-297e82bbd8ac");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.FreeformElement.ctor(System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.FreeformElement");
@@ -532,12 +502,12 @@ public class FreeformElement1SchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class GridLineSchemaComponent: CreateSchemaObjectBase {
      
-    public GridLineSchemaComponent(): base("GridLine", "GridLine", "Creates a Speckle grid line", "Speckle 2 BIM", "Other") { }
+    public GridLineSchemaComponent(): base("GridLine", "GridLine", "Creates a Speckle grid line with a label", "Speckle 2 BIM", "Other") { }
     
     public override Guid ComponentGuid => new Guid("b2d4bd71-86a7-c142-7220-d9ed2ee7b02e");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.GridLine.ctor(Objects.ICurve)","Objects.BuiltElements.GridLine");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.GridLine.ctor(Objects.ICurve,System.String)","Objects.BuiltElements.GridLine");
         base.AddedToDocument(document);
     }
 }
@@ -1900,21 +1870,6 @@ public class RevitDuctSchemaComponent: CreateSchemaObjectBase {
     public RevitDuctSchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
     
     public override Guid ComponentGuid => new Guid("d7781536-e8a9-8aef-1b27-571584f8c4a3");
-    public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.Geometry.Line,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
-public class RevitDuct1SchemaComponent: CreateSchemaObjectBase {
-     
-    public RevitDuct1SchemaComponent(): base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
-    
-    public override Guid ComponentGuid => new Guid("7bb86598-9cd2-8d29-a1dc-7500c4b4ed4b");
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitDuct.ctor(System.String,System.String,Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitDuct");
@@ -2144,21 +2099,6 @@ public class RibbedSlabSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
-public class RoofSchemaComponent: CreateSchemaObjectBase {
-     
-    public RoofSchemaComponent(): base("Roof", "Roof", "Creates a Speckle roof", "Speckle 2 BIM", "Architecture") { }
-    
-    public override Guid ComponentGuid => new Guid("c10c6dcd-e6a8-be88-32f3-45c935d0bae9");
-    public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Roof.ctor(Objects.ICurve,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Roof");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
 public class RoomSchemaComponent: CreateSchemaObjectBase {
      
     public RoomSchemaComponent(): base("Room", "Room", "Creates a Speckle room", "Speckle 2 BIM", "Architecture") { }
@@ -2271,6 +2211,32 @@ public class TeeSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Profiles.Tee.ctor(System.String,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.Properties.Profiles.Tee");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class TeklaBeamSchemaComponent: CreateSchemaObjectBase {
+     
+    public TeklaBeamSchemaComponent(): base("TeklaBeam", "TeklaBeam", "Creates a Tekla Structures beam by curve.", "Speckle 2 Tekla", "Structure") { }
+    
+    public override Guid ComponentGuid => new Guid("5a4187bc-05d8-2447-7238-cdbc4b2fae45");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaBeam.ctor(Objects.ICurve,Objects.Structural.Properties.Profiles.SectionProfile,Objects.Structural.Materials.Material)","Objects.BuiltElements.TeklaStructures.TeklaBeam");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class TeklaContourPlateSchemaComponent: CreateSchemaObjectBase {
+     
+    public TeklaContourPlateSchemaComponent(): base("ContourPlate", "ContourPlate", "Creates a TeklaStructures contour plate.", "Speckle 2 Tekla", "Structure") { }
+    
+    public override Guid ComponentGuid => new Guid("3b092935-3c2f-c084-eea5-077630507a49");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaContourPlate.ctor(Objects.Structural.Properties.Profiles.SectionProfile,Objects.Geometry.Polyline,System.String,System.String,System.String,Objects.Structural.Materials.Material,Objects.BuiltElements.TeklaStructures.TeklaPosition,Speckle.Core.Models.Base)","Objects.BuiltElements.TeklaStructures.TeklaContourPlate");
         base.AddedToDocument(document);
     }
 }

@@ -23,7 +23,7 @@ using System.Reflection;
 using System.IO;
 
 using Speckle.ConnectorETABS.Util;
-
+using Speckle.Core.Kits;
 
 namespace SpeckleConnectorETABS
 {
@@ -163,7 +163,7 @@ namespace SpeckleConnectorETABS
       cSapModel model;
       pluginCallback = ISapPlugin;
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-      Setup.Init(ConnectorETABSUtils.ETABSAppName);
+
       try
       {
         cHelper helper = new Helper();

@@ -15,7 +15,7 @@ using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -72,7 +72,7 @@ namespace ConnectorGrasshopper.Ops
       }
 
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
-      Converter = Kit.LoadConverter(Applications.Rhino6);
+      Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
         (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -86,7 +86,7 @@ namespace ConnectorGrasshopper.Ops
       Menu_AppendSeparator(menu);
       var menuItem = Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
       menuItem.Enabled = false;
-      var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+      var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
       foreach (var kit in kits)
       {
@@ -172,7 +172,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Applications.Rhino6);
+        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -232,7 +232,7 @@ namespace ConnectorGrasshopper.Ops
         DA.GetData(2, ref messageInput);
         var transportsInput = new List<IGH_Goo> { transportInput };
         //var transportsInput = Params.Input[1].VolatileData.AllData(true).Select(x => x).ToList();
-        Tracker.TrackPageview("send", "sync");
+        Logging.Tracker.TrackPageview("send", "sync");
 
         var task = Task.Run(async () =>
         {
@@ -311,7 +311,7 @@ namespace ConnectorGrasshopper.Ops
                 continue;
               }
 
-              Telemetry.TrackEvent(acc, Telemetry.Events.Send, new Dictionary<string, object>() { { "sync", true } });
+              Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "sync", true } });
 
               var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
               transportBranches.Add(serverTransport, sw.BranchName ?? "main");
@@ -382,7 +382,7 @@ namespace ConnectorGrasshopper.Ops
                 message = message,
                 objectId = BaseId,
                 streamId = ((ServerTransport)transport).StreamId,
-                sourceApplication = Applications.Grasshopper
+                sourceApplication = VersionedHostApplications.Grasshopper
               };
 
               // Check to see if we have a previous commit; if so set it.

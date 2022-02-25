@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -364,7 +365,16 @@ namespace Objects.Converter.Revit
               break;
 
             case StorageType.String:
-              rp.Set(Convert.ToString(sp.value));
+              if (rp.Definition.Name.ToLower().Contains("name"))
+              {
+                var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
+                Report.ConversionLog.Add($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+                rp.Set(temp);
+              }
+              else
+              {
+                rp.Set(Convert.ToString(sp.value));
+              }
               break;
             default:
               break;
@@ -509,7 +519,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        throw new Speckle.Core.Logging.SpeckleException($"Could not find any type symbol to use for family {nameof(T)}.");
+        throw new Speckle.Core.Logging.SpeckleException($"{element.id}: Could not find any type symbol to use for family {nameof(T)}.");
       }
 
       var family = element["family"] as string;
@@ -618,10 +628,26 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-    #region Project Base Point
-    private class BetterBasePoint
+    #region Reference Point
+
+    // CAUTION: these strings need to have the same values as in the connector bindings
+    const string InternalOrigin = "Internal Origin (default)";
+    const string ProjectBase = "Project Base";
+    const string Survey = "Survey";
+
+    private DB.Transform _transform;
+    private DB.Transform ReferencePointTransform
     {
-      public DB.Transform TotalTransform { get; set; } = DB.Transform.Identity;
+      get
+      {
+        if (_transform == null)
+        {
+          // get from settings
+          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
+          _transform = GetReferencePointTransform(referencePointSetting);
+        }
+        return _transform;
+      }
     }
 
     ////////////////////////////////////////////////
@@ -631,30 +657,45 @@ namespace Objects.Converter.Revit
     /// The BasePoint non-shared properties are based off of the internal origin.
     /// Also, survey point does NOT have an rotation parameter.
     ////////////////////////////////////////////////
-
-    private BetterBasePoint _basePoint;
-    private BetterBasePoint BasePoint
+    private DB.Transform GetReferencePointTransform(string type)
     {
-      get
+      // get the correct base point from settings
+      var referencePointTransform = DB.Transform.Identity;
+
+      var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
+      var projectPoint = points.Where(o => o.IsShared == false).FirstOrDefault();
+      var surveyPoint = points.Where(o => o.IsShared == true).FirstOrDefault();
+
+      switch (type)
       {
-        if (_basePoint == null)
-        {
-          // try and get the project base point (is shared = false) and survey point (is shared = true)
-          BasePoint bp = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
-          if (bp == null)
-            _basePoint = new BetterBasePoint();
-          else
+        case ProjectBase:
+          if (projectPoint != null)
           {
 #if REVIT2019
-            var point = bp.get_BoundingBox(null).Min;
+            var point = projectPoint.get_BoundingBox(null).Min;
 #else
-            var point = bp.Position;
+            var point = projectPoint.Position;
 #endif
-            _basePoint = new BetterBasePoint { TotalTransform = DB.Transform.CreateTranslation(point).Inverse }; // rotation already accounted for
+            referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
           }
-        }
-        return _basePoint;
+          break;
+        case Survey:
+          if (surveyPoint != null)
+          {
+#if REVIT2019
+            var point = surveyPoint.get_BoundingBox(null).Min;
+#else
+            var point = surveyPoint.Position;
+#endif
+            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
+            referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+          } 
+          break;
+        default:
+          break;
       }
+
+      return referencePointTransform;
     }
 
     /// <summary>
@@ -664,7 +705,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? BasePoint.TotalTransform.OfPoint(p) : BasePoint.TotalTransform.OfVector(p);
+      return (isPoint) ? ReferencePointTransform.Inverse.OfPoint(p) : ReferencePointTransform.Inverse.OfVector(p);
     }
 
     /// <summary>
@@ -674,7 +715,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? BasePoint.TotalTransform.Inverse.OfPoint(p) : BasePoint.TotalTransform.Inverse.OfVector(p);
+      return (isPoint) ? ReferencePointTransform.OfPoint(p) : ReferencePointTransform.OfVector(p);
     }
     #endregion
 
@@ -752,11 +793,6 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region misc
-    public string Replace(string s, char[] separators, string newVal)
-    {
-      string[] _string = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-      return String.Join(newVal, _string);
-    }
 
     public string GetTemplatePath(string templateName)
     {
@@ -816,21 +852,44 @@ namespace Objects.Converter.Revit
 
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
-      RenderMaterial material = null;
       var matId = element.GetMaterialIds(false).FirstOrDefault();
 
       if (matId == null)
       {
         // TODO: Fallback to display color or something? 
-        return material;
+        return null;
       }
 
       var revitMaterial = Doc.GetElement(matId) as Material;
-      material = new RenderMaterial();
-      material.opacity = 1 - revitMaterial.Transparency / 100f;
-      material.diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb();
+      return RenderMaterialToSpeckle(revitMaterial);
+    }
+    
+    public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
+    {
+      RenderMaterial material = new RenderMaterial()
+      {
+        name = revitMaterial.Name,
+        opacity = 1 - (revitMaterial.Transparency / 100d),
+        //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
+        //roughness = 1 - (revitMaterial.Smoothness / 100d),
+        diffuse = System.Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue).ToArgb()
+      };
 
       return material;
     }
+    
+    public ElementId RenderMaterialToNative(RenderMaterial speckleMaterial)
+    {
+      if (speckleMaterial == null) return ElementId.InvalidElementId;
+      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
+      Material mat = Doc.GetElement(materialId) as Material;
+      
+      var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
+      mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
+      mat.Transparency =  1 - (int)(speckleMaterial.opacity * 100d);
+      
+      return materialId;
+    }
+    
   }
 }

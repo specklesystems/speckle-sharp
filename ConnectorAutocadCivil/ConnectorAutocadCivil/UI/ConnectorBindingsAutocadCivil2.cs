@@ -14,12 +14,11 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
 
-using AcadApp = Autodesk.AutoCAD.ApplicationServices;
-using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
@@ -32,12 +31,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
 {
   public partial class ConnectorBindingsAutocad2 : ConnectorBindings
   {
-    public Document Doc => Application.DocumentManager.MdiActiveDocument;
+    public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
-    public System.Windows.Forms.Control Control; 
+    public System.Windows.Forms.Control Control;
 
     public ConnectorBindingsAutocad2() : base()
     {
@@ -61,10 +60,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppName() => Utils.Slug;
+
+
 
     private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
-    
+
     public override string GetDocumentId()
     {
       string path = GetDocPath(Doc);
@@ -131,6 +133,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
       };
     }
 
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
+    }
+
     //TODO
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
@@ -148,7 +155,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       if (converter == null)
         throw new Exception("Could not find any Kit!");
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
@@ -156,9 +163,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       if (Doc == null)
       {
@@ -178,39 +183,37 @@ namespace Speckle.ConnectorAutocadCivil.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
-
-      var commitObject = await Operations.Receive(
+      Base commitObject = null;
+      try
+      {
+        commitObject = await Operations.Receive(
         referencedObject,
         progress.CancellationTokenSource.Token,
         transport,
         onProgressAction: dict => progress.Update(dict),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
-        onErrorAction: (message, exception) => 
+        onErrorAction: (message, exception) =>
         {
           progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
         );
-      
-      try
-      {
+
         await state.Client.CommitReceived(new CommitReceivedInput
         {
           streamId = stream?.id,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Utils.AutocadAppName
+          sourceApplication = Utils.VersionedAppName
         });
       }
-      catch
+      catch (Exception e)
       {
-        // Do nothing!
+        progress.Report.OperationErrors.Add(new Exception($"Could not receive or deserialize commit: {e.Message}"));
       }
-      if (progress.Report.OperationErrorsCount != 0)
-      {
+      if (progress.Report.OperationErrorsCount != 0 || commitObject == null)
         return state;
-      }
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
@@ -248,7 +251,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.BranchName, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", commitPrefix);
+          if (Doc.UserData.ContainsKey("commit"))
+            Doc.UserData["commit"] = commitPrefix;
+          else
+            Doc.UserData.Add("commit", commitPrefix);
 
           // delete existing commit layers
           try
@@ -282,7 +288,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
             // create the object's bake layer if it doesn't already exist
             (Base obj, string layerName) = commitObj;
 
-            var converted = converter.ConvertToNative(obj);
+            object converted = null;
+            try
+            {
+              converted = converter.ConvertToNative(obj);
+            }
+            catch (Exception e)
+            {
+              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}: {e.Message}"));
+              continue;
+            }
             var convertedEntity = converted as Entity;
 
             if (convertedEntity != null)
@@ -360,8 +375,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         else
         {
-          int totalMembers = @base.GetDynamicMembers().Count();
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
             count++;
 
@@ -382,7 +405,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
         count = 0;
         foreach (var listObj in list)
@@ -491,7 +514,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var streamId = state.StreamId;
       var client = state.Client;
 
@@ -543,7 +566,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         progress.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (err, exception) => 
+        onErrorAction: (err, exception) =>
         {
           progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
@@ -560,7 +583,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         objectId = commitObjId,
         branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-        sourceApplication = Utils.AutocadAppName
+        sourceApplication = Utils.VersionedAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -684,6 +707,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region events
+    public void RegisterAppEvents()
+    {
+      //// GLOBAL EVENT HANDLERS
+      Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
+      Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
+      Doc.BeginDocumentClose += Application_DocumentClosed;
+    }
+
+    //checks whether to refresh the stream list in case the user changes active view and selects a different document
+    private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
+    {
+      if (e.DocumentWindow.Document == null)
+        return;
+
+      var streams = GetStreamsInFile();
+      UpdateSavedStreams(streams);
+    }
 
     private void Application_DocumentClosed(object sender, DocumentBeginCloseEventArgs e)
     {
@@ -698,11 +738,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
     private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
     {
       // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+      if (e.Document == null)
+        return;
+
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
+      {
         SpeckleAutocadCommand2.CreateOrFocusSpeckle();
-
-      UpdateSavedStreams(streams);
+        UpdateSavedStreams(streams);
+      }
     }
     #endregion
   }

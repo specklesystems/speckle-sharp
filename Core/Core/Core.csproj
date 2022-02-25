@@ -36,7 +36,7 @@
   <Choose>
     <When Condition="$([MSBuild]::IsOsPlatform('Windows')) Or $([MSBuild]::IsOsPlatform('Linux')) ">
       <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115" />
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
       </ItemGroup>
     </When>
     <When Condition="$([MSBuild]::IsOsPlatform('OSX'))">
@@ -46,10 +46,10 @@
     </When>
   </Choose>
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="3.2.4" />
+    <PackageReference Include="GraphQL.Client" Version="4.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Piwik.Tracker" Version="3.0.0" />
-    <PackageReference Include="Sentry" Version="3.9.4" />
+    <PackageReference Include="Sentry" Version="3.13.0" />
     <PackageReference Include="Speckle.Newtonsoft.Json" Version="12.0.3.1">
       <Aliases></Aliases>
     </PackageReference>

@@ -15,52 +15,6 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
-    private RenderMaterial GetMaterial(RhinoObject o)
-    {
-      var material = o.GetMaterial(true);
-      var renderMaterial = new RenderMaterial();
-
-      // If it's a default material use the display color.
-      if (!material.HasId)
-      {
-        renderMaterial.diffuse = o.Attributes.DrawColor(Doc).ToArgb();
-        return renderMaterial;
-      }
-
-      // Otherwise, extract what properties we can. 
-      renderMaterial.name = material.Name;
-      renderMaterial.diffuse = material.DiffuseColor.ToArgb();
-      renderMaterial.emissive = material.EmissionColor.ToArgb();
-      renderMaterial.opacity = 1 - material.Transparency;
-      renderMaterial.metalness = material.Reflectivity;
-      
-      if (material.Name != null && material.Name.ToLower().Contains("glass") && renderMaterial.opacity == 0)
-      {
-        renderMaterial.opacity = 0.3;
-      }
-
-      return renderMaterial;
-    }
-
-    private DisplayStyle GetStyle(RhinoObject o)
-    {
-      var att = o.Attributes;
-      var style = new DisplayStyle();
-
-      // color
-      style.color = att.DrawColor(Doc).ToArgb();
-
-      // linetype
-      var lineType = Doc.Linetypes[att.LinetypeIndex];
-      if (lineType.HasName)
-        style.linetype = lineType.Name;
-
-      // lineweight
-      style.lineweight = att.PlotWeight;
-
-      return style;
-    }
-
     private string GetSchema(RhinoObject obj, out string[] args)
     {
       args = null;

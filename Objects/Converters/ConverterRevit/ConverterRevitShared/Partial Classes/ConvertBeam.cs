@@ -36,7 +36,7 @@ namespace Objects.Converter.Revit
 
       if (level == null)
       {
-        level = LevelToNative(LevelFromCurve(baseLine));
+        level = ConvertLevelToRevit(LevelFromCurve(baseLine));
       }
       var isUpdate = false;
       //try update existing 
@@ -114,11 +114,11 @@ namespace Objects.Converter.Revit
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-      speckleBeam.displayMesh = GetElementMesh(revitBeam);
+      speckleBeam.displayValue = GetElementMesh(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
-      //Report.Log($"Converted Beam {revitBeam.Id}");
+      Report.Log($"Converted Beam {revitBeam.Id}");
       return speckleBeam;
     }
   }

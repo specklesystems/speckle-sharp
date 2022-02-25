@@ -8,7 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -66,8 +66,8 @@ namespace ConnectorGrasshopper.Streams
 
       if (DA.Iteration == 0) // Only report on first iteration of the component.
       {
-        Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
-        Telemetry.TrackEvent(account, Telemetry.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
+        Logging.Tracker.TrackPageview(Logging.Tracker.ACCOUNT_DETAILS);
+        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
       }
 
       Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);

@@ -11,6 +11,7 @@ using Plane = Objects.Geometry.Plane;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Objects.Structural.Analysis;
+using Objects.Structural.ETABS.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -26,13 +27,21 @@ namespace Objects.Converter.Revit
       }
       foreach (var element in speckleStructModel.elements)
       {
-        Element1D element1D = new Element1D();
-        if (element.GetType().Equals(element1D.GetType()))
+        
+        if (element is Element1D)
         {
           try
           {
-            var Application = AnalyticalStickToNative((Element1D)element);
-            placeholderObjects.Concat(Application);
+            if(element is ETABSElement1D){
+              var Application = AnalyticalStickToNative((ETABSElement1D)element);
+              placeholderObjects.Concat(Application);
+            }
+            else { var Application = AnalyticalStickToNative((Element1D)element);
+              placeholderObjects.Concat(Application);
+            }
+
+
+            
           }
           catch { }
 
@@ -41,8 +50,16 @@ namespace Objects.Converter.Revit
         {
           try
           {
-            var Application = AnalyticalSurfaceToNative((Element2D)element);
-            placeholderObjects.Concat(Application);
+            if (element is ETABSElement2D)
+            {
+              var Application = AnalyticalSurfaceToNative((ETABSElement2D)element);
+              placeholderObjects.Concat(Application);
+            }
+            else
+            {
+              var Application = AnalyticalSurfaceToNative((Element2D)element);
+              placeholderObjects.Concat(Application);
+            }
           }
           catch { }
         }

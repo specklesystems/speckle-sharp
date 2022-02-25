@@ -1,12 +1,15 @@
-﻿using Objects.Geometry;
+﻿using System;
+using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.Linq;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FamilyInstance : Base, IDisplayMesh
+  public class FamilyInstance : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
   {
     public Point basePoint { get; set; }
     public string family { get; set; }
@@ -21,9 +24,9 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public List<Base> elements { get; set; }
-
+    
     [DetachProperty]
-    public Mesh displayMesh { get; set; }
+    public List<Mesh> displayValue { get; set; }
 
     public string units { get; set; }
 
@@ -43,5 +46,13 @@ namespace Objects.BuiltElements.Revit
       this.handFlipped = handFlipped;
       this.parameters = parameters.ToBase();
     }
+    
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> {value};
+    }
+    #endregion
   }
 }

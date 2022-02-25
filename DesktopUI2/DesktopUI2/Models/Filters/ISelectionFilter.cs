@@ -7,7 +7,6 @@ namespace DesktopUI2.Models.Filters
 {
   public interface ISelectionFilter
   {
-
     /// <summary>
     /// User friendly name displayed in the UI
     /// </summary>
@@ -17,7 +16,6 @@ namespace DesktopUI2.Models.Filters
     /// MaterialDesignIcon use the demo app from the MaterialDesignInXamlToolkit to get the correct name
     /// </summary>
     string Icon { get; set; }
-
 
     /// <summary>
     /// Internal filter name 

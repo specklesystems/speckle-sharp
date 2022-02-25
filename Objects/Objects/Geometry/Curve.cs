@@ -10,7 +10,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Geometry
 {
-  public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable
+  public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable, IDisplayValue<Polyline>
   {
     public int degree { get; set; }
 
@@ -41,6 +41,7 @@ namespace Objects.Geometry
 
     public Interval domain { get; set; }
 
+    [DetachProperty]
     public Polyline displayValue { get; set; }
 
     public bool closed { get; set; }
