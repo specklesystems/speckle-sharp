@@ -25,9 +25,6 @@ namespace Objects.BuiltElements.Archicad
 
     public int? buildingMaterialIndex { get; set; }
 
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-
     public Ceiling() { }
   }
 }

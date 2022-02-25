@@ -8,6 +8,7 @@ using Archicad.Model;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -25,6 +26,11 @@ namespace Archicad.Launcher
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
       return new List<MenuItem>();
+    }
+
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
     }
 
     public ProjectInfoData? GetProjectInfo()
@@ -47,6 +53,11 @@ namespace Archicad.Launcher
     public override string GetFileName()
     {
       return Path.GetFileName(GetDocumentLocation());
+    }
+
+    public override string GetHostAppNameVersion()
+    {
+      return "Archicad 25";
     }
 
     public override string GetHostAppName()

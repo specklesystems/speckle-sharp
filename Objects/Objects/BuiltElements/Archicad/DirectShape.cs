@@ -6,6 +6,7 @@ namespace Objects.BuiltElements.Archicad
 {
 	public class DirectShape : Base
 	{
+    [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
 		public DirectShape() { }

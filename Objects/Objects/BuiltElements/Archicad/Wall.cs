@@ -10,10 +10,7 @@ namespace Objects.BuiltElements.Archicad
 	{
     public int? floorIndex { get; set; }
 
-		[DetachProperty]
-		public List<Mesh> displayValue { get; set; }
-
-		public Point startPoint { get; set; }
+    public Point startPoint { get; set; }
 
 		public Point endPoint { get; set; }
 
