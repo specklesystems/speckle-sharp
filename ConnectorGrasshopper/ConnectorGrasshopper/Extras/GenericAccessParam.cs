@@ -1,10 +1,12 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 using GH_IO;
 using GH_IO.Serialization;
 using Grasshopper;
+using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Attributes;
@@ -44,6 +46,13 @@ namespace ConnectorGrasshopper.Extras
       }
     }
 
+    public override void CreateAttributes()
+    {
+      base.CreateAttributes();
+      if (Attributes is GH_LinkedParamAttributes)
+        m_attributes = new GenericAccessParamAttributes(this, Attributes.Parent);
+    }
+
     public bool Detachable { get; set; } = true;
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -56,7 +65,14 @@ namespace ConnectorGrasshopper.Extras
           Menu_AppendExtractParameter(menu);
         return;
       }
+      
+      Menu_AppendSeparator(menu);
 
+      var inheritNames = Menu_AppendItem(
+        menu, 
+        "Inherit names",
+        (sender, args) => { InheritNickname(); });
+      
       Menu_AppendSeparator(menu);
 
       var listAccessToggle = Menu_AppendItem(
@@ -90,6 +106,19 @@ namespace ConnectorGrasshopper.Extras
       Menu_AppendSeparator(menu);
 
       base.AppendAdditionalMenuItems(menu);
+    }
+
+    public void InheritNickname()
+    {
+      var names = Sources.Select(s => s.NickName).ToList();
+      var fullname = string.Join("|", names);
+      Name = fullname;
+      NickName = fullname;
+      if (Kind == GH_ParamKind.input || Kind == GH_ParamKind.output)
+      {
+        
+      }
+      Attributes.Parent.DocObject.ExpireSolution(true);
     }
 
 
@@ -177,4 +206,22 @@ namespace ConnectorGrasshopper.Extras
     }
   }
 
+  public class GenericAccessParamAttributes : GH_LinkedParamAttributes
+  {
+
+
+    public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
+    {
+      if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+      {
+        MessageBox.Show("KeyPress " + Keys.Shift);
+      }
+      return base.RespondToMouseDoubleClick(sender, e);
+    }
+
+    public GenericAccessParamAttributes(IGH_Param param, IGH_Attributes parent) : base(param, parent)
+    {
+      
+    }
+  }
 }

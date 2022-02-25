@@ -231,6 +231,7 @@ namespace ConnectorGrasshopper.Objects
       myParam.NickName = myParam.Name;
       myParam.Optional = false;
       myParam.ObjectChanged += (sender, e) => { };
+      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
       return myParam;
     }
 
