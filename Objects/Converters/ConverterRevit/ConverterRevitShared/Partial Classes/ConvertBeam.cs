@@ -27,17 +27,9 @@ namespace Objects.Converter.Revit
       var speckleRevitBeam = speckleBeam as RevitBeam;
 
       if (speckleRevitBeam != null)
-      {
-        if (level != null)
-        {
-          level = GetLevelByName(speckleRevitBeam.level.name);
-        }
-      }
+        level = GetLevelByName(speckleRevitBeam.level.name);
 
-      if (level == null)
-      {
-        level = ConvertLevelToRevit(LevelFromCurve(baseLine));
-      }
+      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine));
       var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);

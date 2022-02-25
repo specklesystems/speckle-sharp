@@ -9,6 +9,8 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Colors;
+using Speckle.Core.Models;
 #if (CIVIL2021 || CIVIL2022)
 using Autodesk.Aec.ApplicationServices;
 #endif
@@ -258,6 +260,28 @@ namespace Speckle.ConnectorAutocadCivil
       var weights = Enum.GetValues(typeof(LineWeight)).Cast<int>().ToList();
       int closest = weights.Aggregate((x, y) => Math.Abs(x - hundredthMM) < Math.Abs(y - hundredthMM) ? x : y);
       return (LineWeight)closest;
+    }
+
+    public static void SetStyle(Base styleBase, Entity entity, Dictionary<string, ObjectId> lineTypeDictionary)
+    {
+      var color = styleBase["color"] as int?;
+      if (color == null) color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
+      var lineType = styleBase["linetype"] as string;
+      var lineWidth = styleBase["lineweight"] as double?;
+
+      if (color != null)
+      {
+        var systemColor = System.Drawing.Color.FromArgb((int)color);
+        entity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
+        entity.Transparency = new Transparency(systemColor.A);
+      }
+
+      if (lineWidth != null)
+        entity.LineWeight = GetLineWeight((double)lineWidth);
+
+      if (lineType != null)
+        if (lineTypeDictionary.ContainsKey(lineType))
+          entity.LinetypeId = lineTypeDictionary[lineType];
     }
 
     /// <summary>

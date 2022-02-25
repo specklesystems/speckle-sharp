@@ -16,6 +16,8 @@ namespace Objects.Structural.ETABS.Loading
 
         public WindPressureType WindPressureType {get;set;}
 
-
+    public ETABSWindLoadingFace()
+    {
     }
+  }
 }

@@ -35,7 +35,7 @@ namespace ConnectorGrasshopper.Ops
     protected override Bitmap Icon => Properties.Resources.Sender;
     public override bool Obsolete => true;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override bool CanDisableConversion => false;
     public bool AutoSend { get; set; } = false;
 

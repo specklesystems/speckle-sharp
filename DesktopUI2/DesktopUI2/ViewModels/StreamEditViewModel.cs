@@ -1,16 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
-using Material.Dialog;
 using ReactiveUI;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -290,39 +286,70 @@ namespace DesktopUI2.ViewModels
 
     private async void SendCommand()
     {
-      Progress = new ProgressViewModel();
-      Progress.IsProgressing = true;
-      var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
-      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+      try
       {
-        if (x.Result.GetResult == "cancel")
-          Progress.CancellationTokenSource.Cancel();
+        Progress = new ProgressViewModel();
+        Progress.IsProgressing = true;
+        var dialog = Dialogs.SendReceiveDialog("Sending...", this);
+
+        _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+        {
+          if (x.Result.GetResult == "cancel")
+            Progress.CancellationTokenSource.Cancel();
+        }
+          );
+        await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
+        dialog.GetWindow().Close();
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Tracker.TrackPageview(Tracker.SEND);
+        }
+
+        //TODO: display other dialog if operation failed etc
+        MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+
       }
-        );
-      await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
-      dialog.GetWindow().Close();
-      Progress.IsProgressing = false;
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+      catch (Exception ex)
+      {
+
+      }
     }
 
     private async void ReceiveCommand()
     {
-      Progress = new ProgressViewModel();
-      Progress.IsProgressing = true;
-      var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
-
-      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+      try
       {
-        if (x.Result.GetResult == "cancel")
-          Progress.CancellationTokenSource.Cancel();
-      });
+        Progress = new ProgressViewModel();
+        Progress.IsProgressing = true;
+        var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
-      await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
-      dialog.GetWindow().Close();
-      Progress.IsProgressing = false;
-      //TODO: display other dialog if operation failed etc
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+        _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+        {
+          if (x.Result.GetResult == "cancel")
+            Progress.CancellationTokenSource.Cancel();
+        });
+
+        await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
+        dialog.GetWindow().Close();
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Tracker.TrackPageview(Tracker.SEND);
+        }
+
+        //TODO: display other dialog if operation failed etc
+        MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     private async void OpenSettingsCommand()

@@ -48,8 +48,12 @@ namespace Speckle.ConnectorAutocadCivil.Storage
             var id = speckleDict.GetAt(SpeckleStreamStates);
             if (id != ObjectId.Null)
             {
-              var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
-              streams = JsonConvert.DeserializeObject<List<StreamState>>(record.Data.AsArray()[0].Value as string);
+              try // careful here: entries are length-capped and a serialized streamstate string could've been cut off, resulting in crash on deserialize
+              {
+                var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
+                streams = JsonConvert.DeserializeObject<List<StreamState>>(record.Data.AsArray()[0].Value as string);
+              }
+              catch { }
             }
           }
         }

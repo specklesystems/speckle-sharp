@@ -47,5 +47,9 @@ namespace Objects.Structural.ETABS.Geometry
       this.centerofGravityRightY = centerofGravityRightY;
       this.centerofGravityRightZ = centerofGravityRightZ;
     }
+
+    public ETABSSpandrel()
+    {
+    }
   }
 }

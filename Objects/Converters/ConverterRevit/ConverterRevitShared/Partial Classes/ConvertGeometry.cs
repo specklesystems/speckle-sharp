@@ -575,28 +575,24 @@ namespace Objects.Converter.Revit
         if (IsNonPlanarQuad(points))
         {
           //Non-planar quads will be triangulated as it's more desirable than `TessellatedShapeBuilder.Build`'s attempt to make them planar.
-          //TODO consider triangulating all n > 3 polygons
+          //TODO consider triangulating all n > 3 polygons that are non-planar
           var triPoints = new List<XYZ> { points[0], points[1], points[3] };
-          var face1 = new TessellatedFace(triPoints, ElementId.InvalidElementId);
-          face1.MaterialId = materialId;
+          var face1 = new TessellatedFace(triPoints, materialId);
           tsb.AddFace(face1);
-
-          triPoints = new List<XYZ> { points[1], points[2], points[3] }; ;
-          var face2 = new TessellatedFace(triPoints, ElementId.InvalidElementId);
-          face2.MaterialId = materialId;
+          
+          triPoints = new List<XYZ> { points[1], points[2], points[3] };;
+          var face2 = new TessellatedFace(triPoints, materialId);
           tsb.AddFace(face2);
         }
         else
         {
-          var face = new TessellatedFace(points, ElementId.InvalidElementId);
-          face.MaterialId = materialId;
+          var face = new TessellatedFace(points, materialId);
           tsb.AddFace(face);
         }
 
         i += n + 1;
       }
-
-
+      
       tsb.CloseConnectedFaceSet();
       try
       {
