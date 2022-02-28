@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -249,6 +249,11 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
+      Params.Input
+        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+        .ToList()
+        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
+      );
     }
 
     private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
