@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -44,6 +44,16 @@ namespace ConnectorGrasshopper.Objects
         if (Params.Input.Count == 0)
           return;
         var hasErrors = false;
+        
+        var duplicateKeys = Params.Input
+          .Select(p => p.NickName)
+          .GroupBy(x => x).Count(group => @group.Count<string>() > 1);
+        if (duplicateKeys > 0)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
+          return;
+        }
+        
         var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
         if (Params.Input.Count > 0 && allOptional)
         {
