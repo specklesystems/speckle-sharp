@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
       {
         //no need to apply offset transform
         var analyticalModel = familyInstance.GetAnalyticalModel();
-        if (analyticalModel != null)
+        if (analyticalModel.GetCurve() != null)
         {
           return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
         }
