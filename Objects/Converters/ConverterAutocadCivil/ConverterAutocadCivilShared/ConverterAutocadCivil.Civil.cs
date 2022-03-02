@@ -88,9 +88,15 @@ namespace Objects.Converter.AutocadCivil
     {
       var _alignment = new Alignment();
 
+      // get alignment stations
+      _alignment.startStation = alignment.StartingStation;
+      _alignment.endStation = alignment.EndingStation;
+      var stations = alignment.GetStationSet(CivilDB.StationTypes.All).ToList();
+      List<Station> _stations = stations.Select(o => StationToSpeckle(o)).ToList();
+      if (_stations.Count > 0) _alignment["@stations"] = _stations;
+
       // get the alignment subentity curves
       List<ICurve> curves = new List<ICurve>();
-      var stations = new List<double>();
       for (int i = 0; i < alignment.Entities.Count; i++)
       {
         var entity = alignment.Entities.GetEntityByOrder(i);
@@ -146,12 +152,8 @@ namespace Objects.Converter.AutocadCivil
       }
 
       _alignment.curves = curves;
-      if (alignment.DisplayName != null)
-        _alignment.name = alignment.DisplayName;
-      if (alignment.StartingStation != null)
-        _alignment.startStation = alignment.StartingStation;
-      if (alignment.EndingStation != null)
-        _alignment.endStation = alignment.EndingStation;
+      if (alignment.Name != null)
+        _alignment.name = alignment.Name;
 
       // handle station equations
       var equations = new List<double>();
@@ -177,7 +179,7 @@ namespace Objects.Converter.AutocadCivil
     }
     public CivilDB.Alignment AlignmentToNative(Alignment alignment)
     {
-      var name = alignment.applicationId; // names need to be unique on creation (but not send i guess??)
+      var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
       var layer = Doc.Database.LayerZero;
 
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
@@ -403,7 +405,7 @@ namespace Objects.Converter.AutocadCivil
     {
       var _featureline = new Featureline();
 
-      _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
+      _featureline.curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
       _featureline.name = (featureline.DisplayName != null) ? featureline.DisplayName : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
@@ -537,7 +539,7 @@ namespace Objects.Converter.AutocadCivil
 
       _structure.location = PointToSpeckle(structure.Location, ModelUnits);
       _structure.pipeIds = pipeIds;
-      _structure.displayMesh = SolidToSpeckle(structure.Solid3dBody);
+      _structure.displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody) };
       _structure.units = ModelUnits;
 
       // assign additional structure props
@@ -571,7 +573,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameterOrWidth;
       _pipe.length = pipe.Length3DToInsideEdge;
-      _pipe.displayMesh = SolidToSpeckle(pipe.Solid3dBody);
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody) };
       _pipe.units = ModelUnits;
 
       // assign additional structure props
@@ -596,6 +598,7 @@ namespace Objects.Converter.AutocadCivil
 
     // corridors
     // displaymesh: mesh representation corridor solid
+    // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
     public Base CorridorToSpeckle(CivilDB.Corridor corridor)
     {
       var _corridor = new Base();
@@ -659,7 +662,7 @@ namespace Objects.Converter.AutocadCivil
 
       // create featureline
       var _featureline = new Featureline();
-      _featureline.baseCurve = PolylineToSpeckle(polyline);
+      _featureline.curve = PolylineToSpeckle(polyline);
       _featureline.name = featureline.CodeName;
       _featureline.units = ModelUnits;
       _featureline["isOffset"] = isOffset;

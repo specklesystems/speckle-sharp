@@ -9,7 +9,9 @@ namespace Objects.BuiltElements
 {
   public class Featureline : Base
   {
-    public ICurve baseCurve { get; set; }
+    public ICurve baseCurve { get; set; } // this should probably be deprecated
+
+    public ICurve curve { get; set; }
 
     public string name { get; set; }
 
