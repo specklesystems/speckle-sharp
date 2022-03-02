@@ -300,31 +300,19 @@ namespace Objects.Converter.AutocadCivil
       var unitMidVector = midVector.DivideBy(midVector.Length);
 
       // get midpoint of arc by moving chord mid point the length of the sagitta along mid vector
-      var midPoint = chordMid.Add(unitMidVector.MultiplyBy(sagitta));
-
-      // find arc plane (normal is in clockwise dir)
-      var center3 = new Point3d(arc.CenterPoint.X, arc.CenterPoint.Y, 0);
-      Acad.Plane plane = (arc.Clockwise) ? new Acad.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1)) : new Acad.Plane(center3, Vector3d.ZAxis);
-
-      // calculate start and end angles
-      var startVector = new Vector3d(arc.StartPoint.X - center3.X, arc.StartPoint.Y - center3.Y, 0);
-      var endVector = new Vector3d(arc.EndPoint.X - center3.X, arc.EndPoint.Y - center3.Y, 0);
-      var startAngle = startVector.AngleOnPlane(plane);
-      var endAngle = endVector.AngleOnPlane(plane);
-
-      // calculate total angle. 
-      // TODO: This needs to be improved with more research into autocad .AngleOnPlane() return values (negative angles, etc).
-      var totalAngle = (arc.Clockwise) ? System.Math.Abs(endAngle - startAngle) : System.Math.Abs(endAngle - startAngle);
+      // if greater than 180 >, move in other direction of distance radius + radius - sagitta
+      // in the case of an exactly perfect half circle arc...🤷‍♀️
+      Point2d midPoint = chordMid.Add(unitMidVector.MultiplyBy(sagitta));
+      try
+      {
+        if (arc.GreaterThan180) // sometimes this prop throws an exception??
+          midPoint = chordMid.Add(unitMidVector.Negate().MultiplyBy(2 * arc.Radius - sagitta));
+      }
+      catch { }
 
       // create arc
-      var _arc = new Arc(PlaneToSpeckle(plane), arc.Radius, startAngle, endAngle, totalAngle, ModelUnits);
-      _arc.startPoint = PointToSpeckle(arc.StartPoint);
-      _arc.endPoint = PointToSpeckle(arc.EndPoint);
-      _arc.midPoint = PointToSpeckle(midPoint);
-      _arc.domain = IntervalToSpeckle(new Acad.Interval(0, 1, tolerance));
-      _arc.length = arc.Length;
-
-      return _arc;
+      var _arc = new CircularArc2d(arc.StartPoint, midPoint, arc.EndPoint);
+      return ArcToSpeckle(_arc);
     }
     
     private Spiral AlignmentSpiralToSpeckle(CivilDB.AlignmentSubEntitySpiral spiral, CivilDB.Alignment alignment)
