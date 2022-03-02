@@ -28,6 +28,7 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
+using System;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -176,7 +177,7 @@ namespace Objects.Converter.AutocadCivil
     }
     public CivilDB.Alignment AlignmentToNative(Alignment alignment)
     {
-      var name = alignment.name ?? string.Empty;
+      var name = alignment.applicationId; // names need to be unique on creation (but not send i guess??)
       var layer = Doc.Database.LayerZero;
 
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
@@ -236,18 +237,27 @@ namespace Objects.Converter.AutocadCivil
           }
         }
       }
-#endregion
+      #endregion
 
       // create alignment entity curves
-      var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
-      if (id == ObjectId.Null)
-        return null;
-      var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
-      var entities = _alignment.Entities;
-      foreach (var curve in alignment.curves)
-        AddAlignmentEntity(curve, ref entities);
+      try
+      {
+        var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label); // ⚠ this will throw if name is not unique!!
 
-      return _alignment;
+        if (id == ObjectId.Null)
+          return null;
+        var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+        var entities = _alignment.Entities;
+        foreach (var curve in alignment.curves)
+          AddAlignmentEntity(curve, ref entities);
+
+        return _alignment;
+      }
+      catch (Exception e)
+      {
+        Report.LogConversionError(e);
+        return null; 
+      }
     }
 
 #region helper methods
