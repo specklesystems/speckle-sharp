@@ -1,9 +1,29 @@
+using System.Collections.Generic;
 using Objects.Structural.Analysis;
 using Objects.Structural.Loading;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.Structural.Results;
+
+public class ResultSetGlobal : Result
+{
+  public ResultSetGlobal() { }
+
+  [SchemaInfo(
+    "ResultSetGlobal", 
+    "Creates a Speckle global result set object", 
+    "Structural", 
+    "Results"
+  )]
+  public ResultSetGlobal(List<ResultGlobal> resultsGlobal)
+  {
+    this.resultsGlobal = resultsGlobal;
+  }
+
+  [DetachProperty]
+  public List<ResultGlobal> resultsGlobal { get; set; }
+}
 
 public class ResultGlobal : Result
 {
@@ -29,11 +49,12 @@ public class ResultGlobal : Result
     float reactionXX,
     float reactionYY,
     float reactionZZ,
-    float mode,
+    int mode,
     float frequency,
     float loadFactor,
     float modalStiffness,
     float modalGeoStiffness,
+    float modalMass,
     float effMassX,
     float effMassY,
     float effMassZ,
@@ -60,6 +81,7 @@ public class ResultGlobal : Result
     this.loadFactor = loadFactor;
     this.modalStiffness = modalStiffness;
     this.modalGeoStiffness = modalGeoStiffness;
+    this.modalMass = modalMass;
     this.effMassX = effMassX;
     this.effMassY = effMassY;
     this.effMassZ = effMassZ;
@@ -88,11 +110,12 @@ public class ResultGlobal : Result
     float reactionXX,
     float reactionYY,
     float reactionZZ,
-    float mode,
+    int mode,
     float frequency,
     float loadFactor,
     float modalStiffness,
     float modalGeoStiffness,
+    float modalMass,
     float effMassX,
     float effMassY,
     float effMassZ,
@@ -119,6 +142,7 @@ public class ResultGlobal : Result
     this.loadFactor = loadFactor;
     this.modalStiffness = modalStiffness;
     this.modalGeoStiffness = modalGeoStiffness;
+    this.modalMass = modalMass;
     this.effMassX = effMassX;
     this.effMassY = effMassY;
     this.effMassZ = effMassZ;
@@ -142,11 +166,12 @@ public class ResultGlobal : Result
   public float? reactionXX { get; set; }
   public float? reactionYY { get; set; }
   public float? reactionZZ { get; set; }
-  public float? mode { get; set; }
+  public int? mode { get; set; }
   public float? frequency { get; set; }
   public float? loadFactor { get; set; }
   public float? modalStiffness { get; set; }
   public float? modalGeoStiffness { get; set; }
+  public float? modalMass { get; set; }
   public float? effMassX { get; set; }
   public float? effMassY { get; set; }
   public float? effMassZ { get; set; }

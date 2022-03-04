@@ -17,7 +17,7 @@ public class ResultSetAll : Base
     ResultSet1D results1D,
     ResultSet2D results2D,
     ResultSet3D results3D,
-    ResultGlobal resultsGlobal,
+    ResultSetGlobal resultsGlobal,
     ResultSetNode resultsNode
   )
   {
@@ -38,7 +38,7 @@ public class ResultSetAll : Base
   public ResultSet3D results3D { get; set; } //3d elements results
 
   [DetachProperty]
-  public ResultGlobal resultsGlobal { get; set; } //global results
+  public ResultSetGlobal resultsGlobal { get; set; } //global results
 
   [DetachProperty]
   public ResultSetNode resultsNode { get; set; } //nodal results
