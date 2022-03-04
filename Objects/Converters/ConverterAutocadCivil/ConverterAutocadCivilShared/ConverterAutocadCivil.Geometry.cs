@@ -325,6 +325,22 @@ namespace Objects.Converter.AutocadCivil
     // Spiral
 
     // Polyline
+    private Polyline PolylineToSpeckle(Point3dCollection points, bool closed)
+    {
+      double length = 0;
+      List<Point3d> vertices = new List<Point3d>();
+      foreach (Point3d point in points)
+      {
+        if (vertices.Count != 0) length += point.DistanceTo(vertices.Last());
+        vertices.Add(point);
+      }
+
+      var _polyline = new Polyline(PointsToFlatList(vertices), ModelUnits);
+      _polyline.closed = closed || vertices.First().IsEqualTo(vertices.Last()) ? true : false;
+      _polyline.length = length;
+
+      return _polyline;
+    }
     public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AcadDB.Polylines can have linear or arc segments. This will convert to linear
     {
       List<Point3d> vertices = new List<Point3d>();
