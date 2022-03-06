@@ -67,6 +67,17 @@ namespace Speckle.ConnectorRevit.Entry
 
 
 
+      // one click send
+      var speckleButtonSend = specklePanel.AddItem(new PushButtonData("Send", "Send to Speckle", typeof(App).Assembly.Location, typeof(SpeckleRevitCommandSend).FullName)) as PushButton;
+
+      if (speckleButtonSend != null)
+      {
+        speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send16.png", path);
+        speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send32.png", path);
+        speckleButton2.ToolTip = "Sends your file objects to Speckle";
+        speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
@@ -120,6 +131,14 @@ namespace Speckle.ConnectorRevit.Entry
       SchedulerCommand.Bindings = bindings;
 #endif
 
+
+      //pre build app, so that it's faster to open up
+      var bindings2 = new ConnectorBindingsRevit2(AppInstance);
+      SpeckleRevitCommand2.InitAvalonia();
+      SpeckleRevitCommand2.Bindings = bindings2;
+      SpeckleRevitCommand2.Bindings.RegisterAppEvents();
+
+      SpeckleRevitCommandSend.Bindings = bindings2;
 
     }
 
