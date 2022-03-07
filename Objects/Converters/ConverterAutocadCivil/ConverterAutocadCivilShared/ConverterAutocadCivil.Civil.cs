@@ -462,7 +462,7 @@ namespace Objects.Converter.AutocadCivil
       var _featureline = new Featureline();
 
       _featureline.curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
-      _featureline.name = (featureline.DisplayName != null) ? featureline.DisplayName : "";
+      _featureline.name = (featureline.Name != null) ? featureline.Name : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
 
@@ -659,25 +659,33 @@ namespace Objects.Converter.AutocadCivil
     {
       var _corridor = new Base();
 
-      var baselines = new List<Base>();
-
+      List<Alignment> alignments = new List<Alignment>();
+      List<Featureline> featurelines = new List<Featureline>();
       foreach (var baseline in corridor.Baselines)
       {
-        Base convertedBaseline = new Base();
-
-        /* this is just for construction, not relevant info
+        var type = baseline.BaselineType.ToString();
         if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
         {
-          var featureline = tr.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
-          convertedBaseline = FeatureLineToSpeckle(featureline);
+          var featureline = Trans.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
+          var convertedFeatureline = FeatureLineToSpeckle(featureline);
+          if (convertedFeatureline != null)
+          {
+            convertedFeatureline["baselineType"] = type;
+            featurelines.Add(convertedFeatureline);
+          }
         }
         else
         {
-          var alignment = tr.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
-          convertedBaseline = AlignmentToSpeckle(alignment);
+          var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+          var convertedAlignment = AlignmentToSpeckle(alignment);
+          if (convertedAlignment != null)
+          {
+            convertedAlignment["baselineType"] = type;
+            alignments.Add(convertedAlignment);
+          }
         }
-        */
 
+        /*
         // get the collection of featurelines for this baseline
         var featurelines = new List<Featureline>();
         foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
@@ -687,19 +695,25 @@ namespace Objects.Converter.AutocadCivil
           foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
             foreach (var featureline in featurelineCollection)
               featurelines.Add(GetCorridorFeatureline(featureline, true));
-
         convertedBaseline[@"featurelines"] = featurelines;
-        convertedBaseline["type"] = baseline.BaselineType.ToString();
-        convertedBaseline.applicationId = baseline.baselineGUID.ToString();
-        try { convertedBaseline["stations"] = baseline.SortedStations(); } catch { }
-
-        baselines.Add(convertedBaseline);
+        */
       }
-      
-      _corridor["@baselines"] = baselines;
-      _corridor["name"] = (corridor.DisplayName != null) ? corridor.DisplayName : "";
-      _corridor["description"] = (corridor.Description != null) ? corridor.Description : "";
+
+      // get corridor surfaces as displaymesh
+      List<Mesh> display = new List<Mesh>();
+      foreach (var corridorSurface in corridor.CorridorSurfaces)
+      {
+        var surface = Trans.GetObject(corridorSurface.SurfaceId, OpenMode.ForRead);
+        var mesh = ConvertToSpeckle(surface) as Mesh;
+        if (mesh != null) display.Add(mesh);
+      }
+
+      _corridor["@alignments"] = alignments;
+      _corridor["@featurelines"] = featurelines;
+      if (corridor.Name != null) _corridor["name"] = corridor.Name;
+      if (corridor.Description != null) _corridor["description"] = corridor.Description;
       _corridor["units"] = ModelUnits;
+      _corridor["@displayValue"] = display;
 
       return _corridor;
     }
@@ -710,6 +724,7 @@ namespace Objects.Converter.AutocadCivil
       var collection = new Acad.Point3dCollection();
       foreach (var point in featureline.FeatureLinePoints)
         collection.Add(point.XYZ);
+        
       var polyline = new Polyline3d(Poly3dType.SimplePoly, collection, false);
 
       // create featureline
@@ -718,19 +733,6 @@ namespace Objects.Converter.AutocadCivil
       _featureline.name = featureline.CodeName;
       _featureline.units = ModelUnits;
       _featureline["isOffset"] = isOffset;
-
-      // attach some test curves
-      var ids = featureline.ExportAsPolyline3dCollection();
-      var polys = new List<ICurve>();
-      foreach (ObjectId id in ids)
-      {
-        var poly = Trans.GetObject(id, OpenMode.ForRead) as Polyline3d;
-        var converted = CurveToSpeckle(poly);
-        if (converted != null)
-          polys.Add(converted);
-      }
-
-      _featureline["polys"] = polys;
 
       return _featureline;
     }
