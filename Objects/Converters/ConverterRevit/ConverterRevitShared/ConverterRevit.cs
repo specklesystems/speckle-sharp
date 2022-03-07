@@ -322,6 +322,9 @@ namespace Objects.Converter.Revit
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 
+        case BE.TeklaStructures.TeklaBeam o:
+          return TeklaBeamToNative(o);
+
         case BE.Beam o:
           return BeamToNative(o);
 
