@@ -16,7 +16,6 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Attributes;
 using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
@@ -552,6 +551,9 @@ namespace ConnectorGrasshopper.Ops
           Done();
           return;
         }
+
+        Speckle.Core.Logging.Analytics.TrackEvent(client.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
+
         var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
@@ -780,7 +782,7 @@ namespace ConnectorGrasshopper.Ops
     {
       var equalLength = outputList.Count == Parent?.Params.Output.Count;
       if (!equalLength) return false;
-      
+
       var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
       return diffParams.Count() == 1;
     }
@@ -793,7 +795,7 @@ namespace ConnectorGrasshopper.Ops
 
       Parent.RecordUndoEvent("Creating Outputs");
       if (HasSingleRename())
-      { 
+      {
         var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.NickName));
         var diffOut = outputList
           .Where(name =>
@@ -810,7 +812,7 @@ namespace ConnectorGrasshopper.Ops
         (renameParam as SendReceiveDataParam).Detachable = isDetached;
         return;
       }
-      
+
       // Check what params must be deleted, and do so when safe.
       var remove = Parent.Params.Output.Select((p, i) =>
       {
