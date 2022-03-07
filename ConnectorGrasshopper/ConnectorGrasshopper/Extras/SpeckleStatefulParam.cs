@@ -78,18 +78,12 @@ namespace ConnectorGrasshopper.Extras
       return base.Read(reader);
     }
 
-    public override void AddSource(IGH_Param source)
-    {
-      base.AddSource(source);
-    }
-
     public override void AddSource(IGH_Param source, int index)
     {
-      if ((Control.ModifierKeys & Keys.R) == Keys.R)
-      {
-        Console.WriteLine("shift was pressed while connecting");
-      }
       base.AddSource(source, index);
+      if (KeyWatcher.TabPressed)
+        InheritNickname();
+      
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -122,7 +116,15 @@ namespace ConnectorGrasshopper.Extras
     {
       RecordUndoEvent("Input name change");
       var names = Sources.Select(s => s.NickName).ToList();
-      var fullname = string.Join("|", names);
+      var fullname = string.Join("|", names).Trim();
+
+      if (string.IsNullOrEmpty(fullname))
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not inherit name from parameter '{NickName}': Inherited nickname was empty.");
+        ExpirePreview(true);
+        return;
+      }
+      
       Name = fullname;
       NickName = fullname;
       if (Kind == GH_ParamKind.input || Kind == GH_ParamKind.output)
@@ -139,50 +141,6 @@ namespace ConnectorGrasshopper.Extras
     }
     
     protected new void Menu_AppendExtractParameter(ToolStripDropDown menu) => Menu_AppendItem(menu, "Extract parameter", Menu_ExtractOutputParameterClicked, Recipients.Count == 0);
-    
-    // Decompiled from Grasshopper implementation and modified for output recipient.
-    // If you don't know what this is, don't touch it 👍🏼
-    protected void Menu_ExtractOutputParameterClicked(object sender, EventArgs e)
-    {
-      var ghArchive = new GH_Archive();
-      if (!ghArchive.AppendObject(this, "Parameter"))
-      {
-        Tracing.Assert(new Guid("{96ACE3FC-F716-4b2e-B226-9E2D1F9DA229}"), "Parameter serialization failed.");
-      }
-      else
-      {
-        var ghDocumentObject = Instances.ComponentServer.EmitObject(this.ComponentGuid);
-        if (ghDocumentObject == null)
-          return;
-        var ghParam = (IGH_Param) ghDocumentObject;
-        ghParam.CreateAttributes();
-        if (!ghArchive.ExtractObject(ghParam, "Parameter"))
-        {
-          Tracing.Assert(new Guid("{2EA6E057-E390-4fc5-B9AB-1B74A8A17625}"), "Parameter deserialization failed.");
-        }
-        else
-        {
-          ghParam.NewInstanceGuid();
-          ghParam.Attributes.Selected = false;
-          ghParam.Attributes.Pivot = new PointF(this.Attributes.Pivot.X + 120f, this.Attributes.Pivot.Y);
-          ghParam.Attributes.ExpireLayout();
-          ghParam.MutableNickName = true;
-          if (ghParam.Attributes is GH_FloatingParamAttributes)
-            ((GH_Attributes<IGH_Param>) ghParam.Attributes).PerformLayout();
-          var ghDocument = OnPingDocument();
-          if (ghDocument == null)
-          {
-            Tracing.Assert(new Guid("{D74F80C4-CA72-4dbd-8597-450D27098F55}"), "Document could not be located.");
-          }
-          else
-          {
-            ghDocument.AddObject(ghParam, false);
-            ghParam.AddSource(this);
-            ghParam.ExpireSolution(true);
-          }
-        }
-      }
-    }
     
     protected void Menu_AppendAccessToggle(ToolStripDropDown menu)
     {
@@ -228,5 +186,50 @@ namespace ConnectorGrasshopper.Extras
         "Inherit names",
         (sender, args) => { InheritNickname(); });
     }
+    
+    // Decompiled from Grasshopper implementation and modified for output recipient.
+    // If you don't know what this is, don't touch it 👍🏼
+    protected void Menu_ExtractOutputParameterClicked(object sender, EventArgs e)
+    {
+      var ghArchive = new GH_Archive();
+      if (!ghArchive.AppendObject(this, "Parameter"))
+      {
+        Tracing.Assert(new Guid("{96ACE3FC-F716-4b2e-B226-9E2D1F9DA229}"), "Parameter serialization failed.");
+      }
+      else
+      {
+        var ghDocumentObject = Instances.ComponentServer.EmitObject(this.ComponentGuid);
+        if (ghDocumentObject == null)
+          return;
+        var ghParam = (IGH_Param) ghDocumentObject;
+        ghParam.CreateAttributes();
+        if (!ghArchive.ExtractObject(ghParam, "Parameter"))
+        {
+          Tracing.Assert(new Guid("{2EA6E057-E390-4fc5-B9AB-1B74A8A17625}"), "Parameter deserialization failed.");
+        }
+        else
+        {
+          ghParam.NewInstanceGuid();
+          ghParam.Attributes.Selected = false;
+          ghParam.Attributes.Pivot = new PointF(this.Attributes.Pivot.X + 40f, this.Attributes.Pivot.Y);
+          ghParam.Attributes.ExpireLayout();
+          ghParam.MutableNickName = true;
+          if (ghParam.Attributes is GH_FloatingParamAttributes)
+            ((GH_Attributes<IGH_Param>) ghParam.Attributes).PerformLayout();
+          var ghDocument = OnPingDocument();
+          if (ghDocument == null)
+          {
+            Tracing.Assert(new Guid("{D74F80C4-CA72-4dbd-8597-450D27098F55}"), "Document could not be located.");
+          }
+          else
+          {
+            ghDocument.AddObject(ghParam, false);
+            ghParam.AddSource(this);
+            ghParam.ExpireSolution(true);
+          }
+        }
+      }
+    }
+
   }
 }

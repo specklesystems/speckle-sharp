@@ -29,6 +29,9 @@ namespace ConnectorGrasshopper.Extras
 
   public class GenericAccessParamAttributes : GH_LinkedParamAttributes
   {
+    
+    public bool IsTabPressed { get; set; }
+
     public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
     {
       if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
@@ -52,8 +55,6 @@ namespace ConnectorGrasshopper.Extras
 
     public GenericAccessParamAttributes(IGH_Param param, IGH_Attributes parent) : base(param, parent)
     {
-      GH_Canvas c;
-      GH_CursorServer s;
     }
   }
 }
