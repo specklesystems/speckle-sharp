@@ -10,6 +10,7 @@ using CivilDB = Autodesk.Civil.DatabaseServices;
 using Civil = Autodesk.Civil;
 using Autodesk.AutoCAD.Geometry;
 using Acad = Autodesk.AutoCAD.Geometry;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
@@ -24,10 +25,12 @@ using Mesh = Objects.Geometry.Mesh;
 using Pipe = Objects.BuiltElements.Pipe;
 using Plane = Objects.Geometry.Plane;
 using Polyline = Objects.Geometry.Polyline;
+using Profile = Objects.BuiltElements.Profile;
 using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
+using System;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -64,7 +67,6 @@ namespace Objects.Converter.AutocadCivil
           return SpiralType.Unknown;
       }
     }
-
     public Civil.SpiralType SpiralTypeToNative(SpiralType type)
     {
       switch (type)
@@ -87,9 +89,15 @@ namespace Objects.Converter.AutocadCivil
     {
       var _alignment = new Alignment();
 
+      // get alignment stations
+      _alignment.startStation = alignment.StartingStation;
+      _alignment.endStation = alignment.EndingStation;
+      var stations = alignment.GetStationSet(CivilDB.StationTypes.All).ToList();
+      List<Station> _stations = stations.Select(o => StationToSpeckle(o)).ToList();
+      if (_stations.Count > 0) _alignment["@stations"] = _stations;
+
       // get the alignment subentity curves
       List<ICurve> curves = new List<ICurve>();
-      var stations = new List<double>();
       for (int i = 0; i < alignment.Entities.Count; i++)
       {
         var entity = alignment.Entities.GetEntityByOrder(i);
@@ -137,20 +145,18 @@ namespace Objects.Converter.AutocadCivil
         }
       }
 
+      /* this isn't very accurate, basecurve is usually a polycurve with lines and arcs
       // get display poly
       var poly = alignment.BaseCurve as Autodesk.AutoCAD.DatabaseServices.Polyline;
       using (Polyline2d poly2d = poly.ConvertTo(false))
       {
-        _alignment.displayValue = CurveToSpeckle(poly2d.Spline.ToPolyline()) as Polyline;
+        _alignment.displayValue = CurveToSpeckle(poly) as Polyline;
       }
+      */
 
       _alignment.curves = curves;
-      if (alignment.DisplayName != null)
-        _alignment.name = alignment.DisplayName;
-      if (alignment.StartingStation != null)
-        _alignment.startStation = alignment.StartingStation;
-      if (alignment.EndingStation != null)
-        _alignment.endStation = alignment.EndingStation;
+      if (alignment.Name != null)
+        _alignment.name = alignment.Name;
 
       // handle station equations
       var equations = new List<double>();
@@ -171,12 +177,14 @@ namespace Objects.Converter.AutocadCivil
         _alignment["site"] = alignment.SiteName;
       if (alignment.StyleName != null)
         _alignment["style"] = alignment.StyleName;
+      if (alignment.Description != null)
+        _alignment["description"] = alignment.Description;
 
       return _alignment;
     }
     public CivilDB.Alignment AlignmentToNative(Alignment alignment)
     {
-      var name = alignment.name ?? string.Empty;
+      var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
       var layer = Doc.Database.LayerZero;
 
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
@@ -239,15 +247,24 @@ namespace Objects.Converter.AutocadCivil
 #endregion
 
       // create alignment entity curves
-      var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
-      if (id == ObjectId.Null)
-        return null;
-      var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
-      var entities = _alignment.Entities;
-      foreach (var curve in alignment.curves)
-        AddAlignmentEntity(curve, ref entities);
+      try
+      {
+        var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label); // ⚠ this will throw if name is not unique!!
 
-      return _alignment;
+        if (id == ObjectId.Null)
+          return null;
+        var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+        var entities = _alignment.Entities;
+        foreach (var curve in alignment.curves)
+          AddAlignmentEntity(curve, ref entities);
+
+        return _alignment;
+      }
+      catch (Exception e)
+      {
+        Report.LogConversionError(e);
+        return null; 
+      }
     }
 
 #region helper methods
@@ -300,33 +317,20 @@ namespace Objects.Converter.AutocadCivil
       var unitMidVector = midVector.DivideBy(midVector.Length);
 
       // get midpoint of arc by moving chord mid point the length of the sagitta along mid vector
-      var midPoint = chordMid.Add(unitMidVector.MultiplyBy(sagitta));
-
-      // find arc plane (normal is in clockwise dir)
-      var center3 = new Point3d(arc.CenterPoint.X, arc.CenterPoint.Y, 0);
-      Acad.Plane plane = (arc.Clockwise) ? new Acad.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1)) : new Acad.Plane(center3, Vector3d.ZAxis);
-
-      // calculate start and end angles
-      var startVector = new Vector3d(arc.StartPoint.X - center3.X, arc.StartPoint.Y - center3.Y, 0);
-      var endVector = new Vector3d(arc.EndPoint.X - center3.X, arc.EndPoint.Y - center3.Y, 0);
-      var startAngle = startVector.AngleOnPlane(plane);
-      var endAngle = endVector.AngleOnPlane(plane);
-
-      // calculate total angle. 
-      // TODO: This needs to be improved with more research into autocad .AngleOnPlane() return values (negative angles, etc).
-      var totalAngle = (arc.Clockwise) ? System.Math.Abs(endAngle - startAngle) : System.Math.Abs(endAngle - startAngle);
+      // if greater than 180 >, move in other direction of distance radius + radius - sagitta
+      // in the case of an exactly perfect half circle arc...🤷‍♀️
+      Point2d midPoint = chordMid.Add(unitMidVector.MultiplyBy(sagitta));
+      try
+      {
+        if (arc.GreaterThan180) // sometimes this prop throws an exception??
+          midPoint = chordMid.Add(unitMidVector.Negate().MultiplyBy(2 * arc.Radius - sagitta));
+      }
+      catch { }
 
       // create arc
-      var _arc = new Arc(PlaneToSpeckle(plane), arc.Radius, startAngle, endAngle, totalAngle, ModelUnits);
-      _arc.startPoint = PointToSpeckle(arc.StartPoint);
-      _arc.endPoint = PointToSpeckle(arc.EndPoint);
-      _arc.midPoint = PointToSpeckle(midPoint);
-      _arc.domain = IntervalToSpeckle(new Acad.Interval(0, 1, tolerance));
-      _arc.length = arc.Length;
-
-      return _arc;
-    }
-    
+      var _arc = new CircularArc2d(arc.StartPoint, midPoint, arc.EndPoint);
+      return ArcToSpeckle(_arc);
+    }  
     private Spiral AlignmentSpiralToSpeckle(CivilDB.AlignmentSubEntitySpiral spiral, CivilDB.Alignment alignment)
     {
       var _spiral = new Spiral();
@@ -377,52 +381,145 @@ namespace Objects.Converter.AutocadCivil
 
       return _spiral;
     }
-                        
+
 #endregion
-     
+
     // profiles
-    public Base ProfileToSpeckle(CivilDB.Profile profile)
+    public Profile ProfileToSpeckle(CivilDB.Profile profile)
     {
-      var curve = CurveToSpeckle(profile.BaseCurve, ModelUnits) as Base;
+      // get the profile entity curves
+      List<ICurve> curves = new List<ICurve>();
+      for (int i = 0; i < profile.Entities.Count; i++)
+      {
+        CivilDB.ProfileEntity entity = profile.Entities[i];
+        switch (entity.EntityType)
+        {
+          case CivilDB.ProfileEntityType.Circular:
+            var circular = ProfileArcToSpeckle(entity as CivilDB.ProfileCircular);
+            if (circular != null) curves.Add(circular);
+            break;
+          case CivilDB.ProfileEntityType.Tangent:
+            var tangent = ProfileLineToSpeckle(entity as CivilDB.ProfileTangent);
+            if (tangent != null) curves.Add(tangent);
+            break;
+          case CivilDB.ProfileEntityType.ParabolaSymmetric:
+          case CivilDB.ProfileEntityType.ParabolaAsymmetric:
+          default:
+            var segment = ProfileGenericToSpeckle(entity.StartStation, entity.StartElevation, entity.EndStation, entity.EndElevation);
+            if (segment != null) curves.Add(segment);
+            break;
+        }
+      }
 
-      if (profile.DisplayName != null)
-        curve["name"] = profile.DisplayName;
+      // get points of vertical intersection (PVIs)
+      List<Point> pvisConverted = new List<Point>();
+      var pvis = new Point3dCollection();
+      foreach (CivilDB.ProfilePVI pvi in profile.PVIs)
+      {
+        pvisConverted.Add(PointToSpeckle(new Point2d(pvi.Station, pvi.Elevation)));
+        pvis.Add(new Point3d(pvi.Station, pvi.Elevation, 0));
+      }
+
+      var _profile = new Profile();
+      _profile.name = profile.Name;
+      _profile.curves = curves;
+      _profile.startStation = profile.StartingStation;
+      _profile.endStation = profile.EndingStation;
+      if (pvisConverted.Count > 1) _profile.displayValue = PolylineToSpeckle(pvis, profile.Closed);
+      _profile.units = ModelUnits;
+
+      // add civil3d props if they exist
+      if (profile.StyleName != null)
+        _profile["style"] = profile.StyleName;
       if (profile.Description != null)
-        curve["description"] = profile.Description;
-      if (profile.StartingStation != null)
-        curve["startStation"] = profile.StartingStation;
-      if (profile.EndingStation != null)
-        curve["endStation"] = profile.EndingStation;
-      curve["profileType"] = profile.ProfileType.ToString();
-      curve["offset"] = profile.Offset;
-      curve["units"] = ModelUnits;
+        _profile["description"] = profile.Description;
+      _profile["type"] = profile.ProfileType.ToString();
+      if (pvisConverted.Count > 0) _profile["pvis"] = pvisConverted;
+      try { _profile["offset"] = profile.Offset; } catch { }
 
-      return curve;
+      return _profile;
     }
-
+    private Line ProfileLineToSpeckle(CivilDB.ProfileTangent tangent)
+    {
+      var start = new Point2d(tangent.StartStation, tangent.StartElevation);
+      var end = new Point2d(tangent.EndStation, tangent.EndElevation);
+      return LineToSpeckle(new LineSegment2d(start, end));
+    }
+    private Arc ProfileArcToSpeckle(CivilDB.ProfileCircular circular)
+    {
+      var start = new Point2d(circular.StartStation, circular.StartElevation);
+      var end = new Point2d(circular.EndStation, circular.EndElevation);
+      var pvi = new Point2d(circular.PVIStation, circular.PVIElevation);
+      return ArcToSpeckle(new CircularArc2d(start, pvi, end));
+    }
+    private Line ProfileGenericToSpeckle(double startStation, double startElevation, double endStation, double endElevation) // general approximation of segment as line
+    {
+      var start = new Point2d(startStation, startElevation);
+      var end = new Point2d(endStation, endElevation);
+      return LineToSpeckle(new LineSegment2d(start, end));
+    }
+   
     // featurelines
     public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
     {
+      // get all points
+      List<Point3d> points = new List<Point3d>();
+      var _points = featureline.GetPoints(Civil.FeatureLinePointType.AllPoints);
+      foreach (Point3d point in _points) points.Add(point);
+
+      // get elevation points
+      List<Point3d> ePoints = new List<Point3d>();
+      var _ePoints = featureline.GetPoints(Civil.FeatureLinePointType.ElevationPoint);
+      foreach (Point3d ePoint in _ePoints) ePoints.Add(ePoint);
+
+      // get pi points and indices in all points list
+      List<Point3d> piPoints = new List<Point3d>();
+      var _piPoints = featureline.GetPoints(Civil.FeatureLinePointType.PIPoint);
+      foreach (Point3d piPoint in _piPoints) piPoints.Add(piPoint);
+      List<int> indices = piPoints.Select(o => points.IndexOf(o)).ToList();
+      
+      /*
+      // get bulges at pi point indices
+      int count = (featureline.Closed) ? featureline.PointsCount : featureline.PointsCount - 1;
+      List<double> bulges = new List<double>();
+      for (int i = 0; i < count; i++) bulges.Add(featureline.GetBulge(i));
+      var piBulges = new List<double>();
+      foreach (var index in indices) piBulges.Add(bulges[index]);
+      */
+
+      // create 3d poly
+      var polyline = new Polyline3d(Poly3dType.SimplePoly, _piPoints, false);
+
+      // featureline
       var _featureline = new Featureline();
 
+      _featureline.curve = PolylineToSpeckle(polyline);
       _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
-      _featureline.name = (featureline.DisplayName != null) ? featureline.DisplayName : "";
+      _featureline.name = (featureline.Name != null) ? featureline.Name : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
-
-      List<Point> piPoints = new List<Point>();
-      List<Point> elevationPoints = new List<Point>();
-      
-      foreach (Autodesk.AutoCAD.Geometry.Point3d point in featureline.GetPoints(Autodesk.Civil.FeatureLinePointType.PIPoint))
-        piPoints.Add(PointToSpeckle(point));
-      foreach (Autodesk.AutoCAD.Geometry.Point3d point in featureline.GetPoints(Autodesk.Civil.FeatureLinePointType.ElevationPoint))
-        elevationPoints.Add(PointToSpeckle(point));
-      if (piPoints.Count > 0)
-        _featureline[@"piPoints"] = piPoints;
-      if (elevationPoints.Count > 0)
-        _featureline[@"elevationPoints"] = elevationPoints;
-
       try { _featureline["site"] = featureline.SiteId.ToString(); } catch { }
+
+      List<Point> piPointsConverted = piPoints.Select(o => PointToSpeckle(o)).ToList();
+      _featureline["@piPoints"] = piPointsConverted;
+      List<Point> ePointsConverted = ePoints.Select(o => PointToSpeckle(o)).ToList();
+      _featureline["@elevationPoints"] = ePointsConverted;
+
+      return _featureline;
+    }
+    private Featureline FeaturelineToSpeckle(CivilDB.CorridorFeatureLine featureline)
+    {
+      // construct the 3d polyline
+      var collection = new Acad.Point3dCollection();
+      foreach (var point in featureline.FeatureLinePoints)
+        collection.Add(point.XYZ);
+      var polyline = new Polyline3d(Poly3dType.SimplePoly, collection, false);
+
+      // create featureline
+      var _featureline = new Featureline();
+      _featureline.curve = PolylineToSpeckle(polyline);
+      _featureline.name = featureline.CodeName;
+      _featureline.units = ModelUnits;
 
       return _featureline;
     }
@@ -539,7 +636,7 @@ namespace Objects.Converter.AutocadCivil
 
       _structure.location = PointToSpeckle(structure.Location, ModelUnits);
       _structure.pipeIds = pipeIds;
-      _structure.displayMesh = SolidToSpeckle(structure.Solid3dBody);
+      _structure.displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody) };
       _structure.units = ModelUnits;
 
       // assign additional structure props
@@ -573,7 +670,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameterOrWidth;
       _pipe.length = pipe.Length3DToInsideEdge;
-      _pipe.displayMesh = SolidToSpeckle(pipe.Solid3dBody);
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody) };
       _pipe.units = ModelUnits;
 
       // assign additional structure props
@@ -597,76 +694,86 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // corridors
-    // displaymesh: mesh representation corridor solid
+    // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
     public Base CorridorToSpeckle(CivilDB.Corridor corridor)
     {
       var _corridor = new Base();
 
-      var baselines = new List<Base>();
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      List<Alignment> alignments = new List<Alignment>();
+      List<Profile> profiles = new List<Profile>();
+      List<Featureline> featurelines = new List<Featureline>();
+      foreach (var baseline in corridor.Baselines)
       {
-        foreach (var baseline in corridor.Baselines)
+        /* this is just for construction
+        var type = baseline.BaselineType.ToString();
+        if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
         {
-          Base convertedBaseline = new Base();
-
-          /* this is just for construction, not relevant info
-          if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
+          var featureline = Trans.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
+          var convertedFeatureline = FeatureLineToSpeckle(featureline);
+          if (convertedFeatureline != null)
           {
-            var featureline = tr.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
-            convertedBaseline = FeatureLineToSpeckle(featureline);
+            convertedFeatureline["baselineType"] = type;
+            featurelines.Add(convertedFeatureline);
           }
-          else
-          {
-            var alignment = tr.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
-            convertedBaseline = AlignmentToSpeckle(alignment);
-          }
-          */
-
-          // get the collection of featurelines for this baseline
-          var featurelines = new List<Featureline>();
-          foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
-            foreach (var featureline in mainFeaturelineCollection)
-              featurelines.Add(GetCorridorFeatureline(featureline));
-          foreach (var offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
-            foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
-              foreach (var featureline in featurelineCollection)
-                featurelines.Add(GetCorridorFeatureline(featureline, true));
-
-          convertedBaseline[@"featurelines"] = featurelines;
-          convertedBaseline["type"] = baseline.BaselineType.ToString();
-          convertedBaseline.applicationId = baseline.baselineGUID.ToString();
-          try { convertedBaseline["stations"] = baseline.SortedStations(); } catch { }
-
-          baselines.Add(convertedBaseline);
         }
+        else
+        {
+          var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+          var convertedAlignment = AlignmentToSpeckle(alignment);
+          if (convertedAlignment != null)
+          {
+            convertedAlignment["baselineType"] = type;
+            alignments.Add(convertedAlignment);
+          }
+        }
+        */
 
-        tr.Commit();
+        // get the collection of featurelines for this baseline
+        foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
+          foreach (var featureline in mainFeaturelineCollection)
+            featurelines.Add(FeaturelineToSpeckle(featureline));
+        foreach (var offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
+          foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
+            foreach (var featureline in featurelineCollection)
+              featurelines.Add(FeaturelineToSpeckle(featureline));
+
+        // get alignment
+        try
+        {
+          var alignmentId = baseline.AlignmentId;
+          var alignment = AlignmentToSpeckle(Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment);
+          if (alignment != null) alignments.Add(alignment);
+        }
+        catch { }
+
+        // get profile
+        try
+        {
+          var profileId = baseline.ProfileId;
+          var profile = ProfileToSpeckle(Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile);
+          if (profile != null) profiles.Add(profile);
+        }
+        catch { }
       }
-      
-      _corridor["@baselines"] = baselines;
-      _corridor["name"] = (corridor.DisplayName != null) ? corridor.DisplayName : "";
-      _corridor["description"] = (corridor.Description != null) ? corridor.Description : "";
+
+      // get corridor surfaces
+      List<Mesh> surfaces = new List<Mesh>();
+      foreach (var corridorSurface in corridor.CorridorSurfaces)
+      {
+        var surface = Trans.GetObject(corridorSurface.SurfaceId, OpenMode.ForRead);
+        var mesh = ConvertToSpeckle(surface) as Mesh;
+        if (mesh != null) surfaces.Add(mesh);
+      }
+
+      _corridor["@alignments"] = alignments;
+      _corridor["@profiles"] = profiles;
+      _corridor["@featurelines"] = featurelines;
+      if (corridor.Name != null) _corridor["name"] = corridor.Name;
+      if (corridor.Description != null) _corridor["description"] = corridor.Description;
       _corridor["units"] = ModelUnits;
+      if (surfaces.Count> 0) _corridor["@surfaces"] = surfaces;
 
       return _corridor;
-    }
-
-    private Featureline GetCorridorFeatureline(CivilDB.CorridorFeatureLine featureline = null, bool isOffset = false)
-    {
-      // construct the 3d polyline
-      var collection = new Acad.Point3dCollection();
-      foreach (var point in featureline.FeatureLinePoints)
-        collection.Add(point.XYZ);
-      var polyline = new Polyline3d(Poly3dType.SimplePoly, collection, false);
-
-      // create featureline
-      var _featureline = new Featureline();
-      _featureline.baseCurve = PolylineToSpeckle(polyline);
-      _featureline.name = featureline.CodeName;
-      _featureline.units = ModelUnits;
-      _featureline["isOffset"] = isOffset;
-
-      return _featureline;
     }
   }
 }
