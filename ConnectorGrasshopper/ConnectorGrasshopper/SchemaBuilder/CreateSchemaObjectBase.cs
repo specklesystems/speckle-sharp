@@ -182,6 +182,16 @@ namespace ConnectorGrasshopper
                 break;
               }
             }
+            var baseType = comp.GetType().BaseType;        
+            if (typeof(CreateSchemaObjectBase) == baseType)
+            {
+              var csob = (CreateSchemaObjectBase)comp;
+              if (csob.Seed == Seed)
+              {
+                Seed = GenerateSeed();
+                break;
+              }
+            }
           }
         }
       }
