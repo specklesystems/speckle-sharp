@@ -165,6 +165,7 @@ namespace ConnectorGrasshopper.Objects
       myParam.NickName = myParam.Name;
       myParam.Optional = false;
       myParam.ObjectChanged += (sender, e) => { };
+      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
       return myParam;
     }
 
@@ -175,6 +176,11 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
+      Params.Input
+        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+        .ToList()
+        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
+        );
     }
 
     public Base DoWork(Base @base, Dictionary<string, object> inputData)
