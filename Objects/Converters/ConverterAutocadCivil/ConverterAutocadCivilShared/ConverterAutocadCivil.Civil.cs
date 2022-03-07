@@ -10,6 +10,7 @@ using CivilDB = Autodesk.Civil.DatabaseServices;
 using Civil = Autodesk.Civil;
 using Autodesk.AutoCAD.Geometry;
 using Acad = Autodesk.AutoCAD.Geometry;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
@@ -144,12 +145,14 @@ namespace Objects.Converter.AutocadCivil
         }
       }
 
+      /* this isn't very accurate, basecurve is usually a polycurve with lines and arcs
       // get display poly
       var poly = alignment.BaseCurve as Autodesk.AutoCAD.DatabaseServices.Polyline;
       using (Polyline2d poly2d = poly.ConvertTo(false))
       {
-        _alignment.displayValue = CurveToSpeckle(poly2d.Spline.ToPolyline()) as Polyline;
+        _alignment.displayValue = CurveToSpeckle(poly) as Polyline;
       }
+      */
 
       _alignment.curves = curves;
       if (alignment.Name != null)
@@ -459,26 +462,64 @@ namespace Objects.Converter.AutocadCivil
     // featurelines
     public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
     {
+      // get all points
+      List<Point3d> points = new List<Point3d>();
+      var _points = featureline.GetPoints(Civil.FeatureLinePointType.AllPoints);
+      foreach (Point3d point in _points) points.Add(point);
+
+      // get elevation points
+      List<Point3d> ePoints = new List<Point3d>();
+      var _ePoints = featureline.GetPoints(Civil.FeatureLinePointType.ElevationPoint);
+      foreach (Point3d ePoint in _ePoints) ePoints.Add(ePoint);
+
+      // get pi points and indices in all points list
+      List<Point3d> piPoints = new List<Point3d>();
+      var _piPoints = featureline.GetPoints(Civil.FeatureLinePointType.PIPoint);
+      foreach (Point3d piPoint in _piPoints) piPoints.Add(piPoint);
+      List<int> indices = piPoints.Select(o => points.IndexOf(o)).ToList();
+      
+      /*
+      // get bulges at pi point indices
+      int count = (featureline.Closed) ? featureline.PointsCount : featureline.PointsCount - 1;
+      List<double> bulges = new List<double>();
+      for (int i = 0; i < count; i++) bulges.Add(featureline.GetBulge(i));
+      var piBulges = new List<double>();
+      foreach (var index in indices) piBulges.Add(bulges[index]);
+      */
+
+      // create 3d poly
+      var polyline = new Polyline3d(Poly3dType.SimplePoly, _piPoints, false);
+
+      // featureline
       var _featureline = new Featureline();
 
-      _featureline.curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
+      _featureline.curve = PolylineToSpeckle(polyline);
+      _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
       _featureline.name = (featureline.Name != null) ? featureline.Name : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
-
-      List<Point> piPoints = new List<Point>();
-      List<Point> elevationPoints = new List<Point>();
-      
-      foreach (Autodesk.AutoCAD.Geometry.Point3d point in featureline.GetPoints(Autodesk.Civil.FeatureLinePointType.PIPoint))
-        piPoints.Add(PointToSpeckle(point));
-      foreach (Autodesk.AutoCAD.Geometry.Point3d point in featureline.GetPoints(Autodesk.Civil.FeatureLinePointType.ElevationPoint))
-        elevationPoints.Add(PointToSpeckle(point));
-      if (piPoints.Count > 0)
-        _featureline["@piPoints"] = piPoints;
-      if (elevationPoints.Count > 0)
-        _featureline["@elevationPoints"] = elevationPoints;
-
       try { _featureline["site"] = featureline.SiteId.ToString(); } catch { }
+
+      List<Point> piPointsConverted = piPoints.Select(o => PointToSpeckle(o)).ToList();
+      _featureline["@piPoints"] = piPointsConverted;
+      List<Point> ePointsConverted = ePoints.Select(o => PointToSpeckle(o)).ToList();
+      _featureline["@elevationPoints"] = ePointsConverted;
+
+      return _featureline;
+    }
+    private Featureline FeaturelineToSpeckle(CivilDB.CorridorFeatureLine featureline)
+    {
+      // construct the 3d polyline
+      var collection = new Acad.Point3dCollection();
+      foreach (var point in featureline.FeatureLinePoints)
+        collection.Add(point.XYZ);
+      var polyline = new Polyline3d(Poly3dType.SimplePoly, collection, false);
+
+      // create featureline
+      var _featureline = new Featureline();
+      _featureline.curve = PolylineToSpeckle(polyline);
+      _featureline.name = featureline.CodeName;
+      _featureline.units = ModelUnits;
 
       return _featureline;
     }
@@ -653,16 +694,17 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // corridors
-    // displaymesh: mesh representation corridor solid
     // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
     public Base CorridorToSpeckle(CivilDB.Corridor corridor)
     {
       var _corridor = new Base();
 
       List<Alignment> alignments = new List<Alignment>();
+      List<Profile> profiles = new List<Profile>();
       List<Featureline> featurelines = new List<Featureline>();
       foreach (var baseline in corridor.Baselines)
       {
+        /* this is just for construction
         var type = baseline.BaselineType.ToString();
         if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
         {
@@ -684,57 +726,54 @@ namespace Objects.Converter.AutocadCivil
             alignments.Add(convertedAlignment);
           }
         }
+        */
 
-        /*
         // get the collection of featurelines for this baseline
-        var featurelines = new List<Featureline>();
         foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
           foreach (var featureline in mainFeaturelineCollection)
-            featurelines.Add(GetCorridorFeatureline(featureline));
+            featurelines.Add(FeaturelineToSpeckle(featureline));
         foreach (var offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
           foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
             foreach (var featureline in featurelineCollection)
-              featurelines.Add(GetCorridorFeatureline(featureline, true));
-        convertedBaseline[@"featurelines"] = featurelines;
-        */
+              featurelines.Add(FeaturelineToSpeckle(featureline));
+
+        // get alignment
+        try
+        {
+          var alignmentId = baseline.AlignmentId;
+          var alignment = AlignmentToSpeckle(Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment);
+          if (alignment != null) alignments.Add(alignment);
+        }
+        catch { }
+
+        // get profile
+        try
+        {
+          var profileId = baseline.ProfileId;
+          var profile = ProfileToSpeckle(Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile);
+          if (profile != null) profiles.Add(profile);
+        }
+        catch { }
       }
 
-      // get corridor surfaces as displaymesh
-      List<Mesh> display = new List<Mesh>();
+      // get corridor surfaces
+      List<Mesh> surfaces = new List<Mesh>();
       foreach (var corridorSurface in corridor.CorridorSurfaces)
       {
         var surface = Trans.GetObject(corridorSurface.SurfaceId, OpenMode.ForRead);
         var mesh = ConvertToSpeckle(surface) as Mesh;
-        if (mesh != null) display.Add(mesh);
+        if (mesh != null) surfaces.Add(mesh);
       }
 
       _corridor["@alignments"] = alignments;
+      _corridor["@profiles"] = profiles;
       _corridor["@featurelines"] = featurelines;
       if (corridor.Name != null) _corridor["name"] = corridor.Name;
       if (corridor.Description != null) _corridor["description"] = corridor.Description;
       _corridor["units"] = ModelUnits;
-      _corridor["@displayValue"] = display;
+      if (surfaces.Count> 0) _corridor["@surfaces"] = surfaces;
 
       return _corridor;
-    }
-
-    private Featureline GetCorridorFeatureline(CivilDB.CorridorFeatureLine featureline = null, bool isOffset = false)
-    {
-      // construct the 3d polyline
-      var collection = new Acad.Point3dCollection();
-      foreach (var point in featureline.FeatureLinePoints)
-        collection.Add(point.XYZ);
-        
-      var polyline = new Polyline3d(Poly3dType.SimplePoly, collection, false);
-
-      // create featureline
-      var _featureline = new Featureline();
-      _featureline.curve = PolylineToSpeckle(polyline);
-      _featureline.name = featureline.CodeName;
-      _featureline.units = ModelUnits;
-      _featureline["isOffset"] = isOffset;
-
-      return _featureline;
     }
   }
 }
