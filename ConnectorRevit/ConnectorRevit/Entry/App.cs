@@ -72,11 +72,11 @@ namespace Speckle.ConnectorRevit.Entry
 
       if (speckleButtonSend != null)
       {
-        speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send16.png", path);
-        speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send32.png", path);
-        speckleButton2.ToolTip = "Sends your file objects to Speckle";
-        speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+        speckleButtonSend.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send16.png", path);
+        speckleButtonSend.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send32.png", path);
+        speckleButtonSend.ToolTip = "Sends your file objects to Speckle";
+        speckleButtonSend.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButtonSend.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
