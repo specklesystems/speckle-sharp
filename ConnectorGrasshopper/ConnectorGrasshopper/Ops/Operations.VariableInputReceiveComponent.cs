@@ -730,7 +730,7 @@ namespace ConnectorGrasshopper.Ops
       converter?.SetContextDocument(RhinoDoc.ActiveDoc);
       parent.PrevReceivedData = new Dictionary<string, GH_Structure<IGH_Goo>>();
 
-      if (!parent.ExpandOutput)
+      if (!parent.ExpandOutput || (converter != null && converter.CanConvertToNative(ReceivedObject)))
       {
         var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
         var receiveComponent = (VariableInputReceiveComponent)this.Parent;
@@ -757,8 +757,10 @@ namespace ConnectorGrasshopper.Ops
 
     private List<string> GetOutputList(Base b)
     {
-      if (!((VariableInputReceiveComponent)Parent).ExpandOutput)
+      var receiveComponent = (VariableInputReceiveComponent)Parent;
+      if (!receiveComponent.ExpandOutput || (receiveComponent.Converter != null && receiveComponent.Converter.CanConvertToNative(b)))
         return new List<string> { "Data" };
+
       // Get the full list of output parameters
       var fullProps = new List<string>();
       b?.GetMemberNames().ToList().ForEach(prop =>
