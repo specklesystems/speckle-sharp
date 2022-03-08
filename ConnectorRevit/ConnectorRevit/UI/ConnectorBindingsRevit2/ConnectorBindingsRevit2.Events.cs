@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
@@ -12,8 +9,7 @@ using DesktopUI2.ViewModels;
 using Revit.Async;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
-
-
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -21,17 +17,24 @@ namespace Speckle.ConnectorRevit.UI
   {
     public override async void WriteStreamsToFile(List<StreamState> streams)
     {
-      await RevitTask.RunAsync(
-        app =>
-        {
-          using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
+      try
+      {
+        await RevitTask.RunAsync(
+          app =>
           {
-            t.Start();
-            StreamStateManager2.WriteStreamStateList(CurrentDoc.Document, streams);
-            t.Commit();
-          }
+            using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
+            {
+              t.Start();
+              StreamStateManager2.WriteStreamStateList(CurrentDoc.Document, streams);
+              t.Commit();
+            }
 
-        });
+          }).ConfigureAwait(false);
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     /// <summary>
@@ -46,10 +49,61 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentChanged += Application_DocumentChanged;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
+      RevitApp.Application.DocumentSaved += Application_DocumentSaved;
+      RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
+      RevitApp.Application.FileExported += Application_FileExported;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
+    }
+
+    private void Application_FileExported(object sender, Autodesk.Revit.DB.Events.FileExportedEventArgs e)
+    {
+      SendScheduledStream("export");
+    }
+
+    private void Application_DocumentSynchronizedWithCentral(object sender, Autodesk.Revit.DB.Events.DocumentSynchronizedWithCentralEventArgs e)
+    {
+      SendScheduledStream("sync");
+    }
+
+    private void Application_DocumentSaved(object sender, Autodesk.Revit.DB.Events.DocumentSavedEventArgs e)
+    {
+      SendScheduledStream("save");
+    }
+
+    private async void SendScheduledStream(string slug)
+    {
+      try
+      {
+        var stream = GetStreamsInFile().FirstOrDefault(x => x.SchedulerEnabled && x.SchedulerTrigger == slug);
+        if (stream == null) return;
+
+        var Progress = new ProgressViewModel();
+        Progress.IsProgressing = true;
+        var dialog = Dialogs.SendReceiveDialog("Sending...", this);
+        _ = dialog.Show().ContinueWith(x =>
+        {
+          if (x.Result.GetResult == "cancel")
+            Progress.CancellationTokenSource.Cancel();
+        }
+          );
+        await Task.Run(() => SendStream(stream, Progress));
+        dialog.GetWindow().Close();
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(stream.Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Schedule" } });
+        }
+
+
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
 
@@ -89,7 +143,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         SpeckleRevitCommand2.CreateOrFocusSpeckle();
       }
-      if(UpdateSavedStreams!=null)
+      if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
     }
 

@@ -1,19 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Speckle.ConnectorRevit.Storage;
-using Speckle.ConnectorRevit.UI;
-using Speckle.DesktopUI;
 using Revit.Async;
+using Speckle.ConnectorRevit.UI;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -58,6 +50,17 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
+      var schedulerButton = specklePanel.AddItem(new PushButtonData("Scheduler", "Scheduler", typeof(App).Assembly.Location, typeof(SchedulerCommand).FullName)) as PushButton;
+
+      if (schedulerButton != null)
+      {
+        schedulerButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.chronos16.png", path);
+        schedulerButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.chronos32.png", path);
+        schedulerButton.ToolTip = "Scheduler for the Revit Connector";
+        schedulerButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
       helpPulldown.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help32.png", path);
@@ -93,6 +96,8 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
 
+      SpeckleRevitCommand2.uiapp = AppInstance;
+
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
       // Set up bindings now as they subscribe to some document events and it's better to do it now
@@ -102,10 +107,15 @@ namespace Speckle.ConnectorRevit.Entry
 
       //pre build app, so that it's faster to open up
       SpeckleRevitCommand2.InitAvalonia();
-      SpeckleRevitCommand2.Bindings = new ConnectorBindingsRevit2(AppInstance);
-      SpeckleRevitCommand2.Bindings.RegisterAppEvents();
+      var bindings = new ConnectorBindingsRevit2(AppInstance);
+      bindings.RegisterAppEvents();
+      SpeckleRevitCommand2.Bindings = bindings;
+      SchedulerCommand.Bindings = bindings;
+
 
     }
+
+
 
     public Result OnShutdown(UIControlledApplication application)
     {

@@ -14,12 +14,15 @@
   <!--<Design.DataContext>
     <vm:DesignSavedStreamsViewModel />
   </Design.DataContext>-->
-  <ItemsControl Items="{Binding SavedStreams}">
-    <ItemsControl.ItemTemplate>
-      <DataTemplate>
-        <local:SavedStream />
-      </DataTemplate>
-    </ItemsControl.ItemTemplate>
+  <ScrollViewer>
+    <ItemsControl Items="{Binding SavedStreams}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <local:SavedStream />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
 
-  </ItemsControl>
+    </ItemsControl>
+  </ScrollViewer>
+
 </UserControl>

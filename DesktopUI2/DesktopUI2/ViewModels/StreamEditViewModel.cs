@@ -196,7 +196,7 @@ namespace DesktopUI2.ViewModels
       {
         foreach (var setting in Settings)
         {
-          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
+          var savedSetting = streamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
           if (savedSetting != null)
             setting.Selection = savedSetting.Selection;
         }
@@ -305,7 +305,7 @@ namespace DesktopUI2.ViewModels
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Quick" } });
           Tracker.TrackPageview(Tracker.SEND);
         }
 
@@ -339,8 +339,8 @@ namespace DesktopUI2.ViewModels
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
-          Tracker.TrackPageview(Tracker.SEND);
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "method", "Quick" } });
+          Tracker.TrackPageview(Tracker.RECEIVE);
         }
 
         //TODO: display other dialog if operation failed etc
