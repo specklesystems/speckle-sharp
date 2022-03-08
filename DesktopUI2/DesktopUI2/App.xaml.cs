@@ -18,11 +18,15 @@ namespace DesktopUI2
     {
       if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
       {
-        desktop.MainWindow = new Scheduler
+        desktop.MainWindow = new MainWindow
         {
-          //DataContext = new MainWindowViewModel(),
-          DataContext = new SchedulerViewModel(),
+          DataContext = new MainWindowViewModel(),
         };
+
+        //desktop.MainWindow = new Scheduler
+        //{
+        //  DataContext = new SchedulerViewModel(),
+        //};
       }
 
       base.OnFrameworkInitializationCompleted();
