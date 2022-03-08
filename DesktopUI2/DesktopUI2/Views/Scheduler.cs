@@ -6,7 +6,6 @@ using DesktopUI2.ViewModels;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace DesktopUI2.Views
 {
@@ -32,11 +31,11 @@ namespace DesktopUI2.Views
     public static Scheduler Instance { get; private set; }
 
 
-    protected override void OnClosing(CancelEventArgs e)
-    {
-      this.Hide();
-      e.Cancel = true;
-      base.OnClosing(e);
-    }
+    //protected override void OnClosing(CancelEventArgs e)
+    //{
+    //  this.Hide();
+    //  e.Cancel = true;
+    //  base.OnClosing(e);
+    //}
   }
 }

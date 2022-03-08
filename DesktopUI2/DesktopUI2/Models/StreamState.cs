@@ -61,7 +61,9 @@ namespace DesktopUI2.Models
       }
     }
 
-
+    /// <summary>
+    /// Note: this is not the StreamId, it's a unique identifier for cached streams
+    /// </summary>
     [JsonProperty]
     public string Id { get; private set; }
 
@@ -112,10 +114,17 @@ namespace DesktopUI2.Models
     [JsonProperty]
     public string CommitMessage { get; set; }
 
-    //[JsonProperty]
+    [JsonProperty]
+    public bool SchedulerEnabled { get; set; }
+
+    [JsonProperty]
+    public string SchedulerTrigger { get; set; }
+
+    [JsonProperty]
+    [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter { get; set; }
 
-    public List<ISetting> Settings { get; set; }
+    public List<ISetting> Settings { get; set; } = new List<ISetting>();
 
     //List of uniqueids of the currently selected objects
     //the values are updated only upon sending
@@ -138,6 +147,5 @@ namespace DesktopUI2.Models
     {
 
     }
-
   }
 }

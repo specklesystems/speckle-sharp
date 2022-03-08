@@ -31,12 +31,19 @@
             FontSize="18"
             FontWeight="Bold"
             Foreground="{DynamicResource PrimaryHueMidBrush}"
-            Text="SPECKLE CHRONO" />
+            Text="SPECKLE SCHEDULER" />
           <TextBlock
             FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
             FontSize="18"
             FontWeight="Medium"
             Text="{Binding Title}" />
+
+          <TextBlock
+            Margin="0,0,0,3"
+            VerticalAlignment="Bottom"
+            FontSize="8"
+            Foreground="Gray"
+            Text="beta" />
         </StackPanel>
       </Grid>
     </m:Card>
@@ -45,7 +52,7 @@
       Grid.Row="1"
       Margin="15,0"
       ColumnDefinitions="Auto,*"
-      RowDefinitions="auto, auto, auto, *, auto">
+      RowDefinitions="auto, auto, auto, auto, *, auto">
 
       <m:Card
         Grid.ColumnSpan="2"
@@ -55,6 +62,11 @@
         Classes="Mini">
         <StackPanel>
           <TextBlock Text="Chrono lets you schedule when to automatically send to a stream based on a few triggers." TextWrapping="Wrap" />
+          <TextBlock
+            Margin="0,15,0,0"
+            IsVisible="{Binding HasSavedSenders, Converter={x:Static BoolConverters.Not}}"
+            Text="Please a save a stream form the main Connector UI ⚠."
+            TextWrapping="Wrap" />
         </StackPanel>
       </m:Card>
 
@@ -67,8 +79,8 @@
           VerticalAlignment="Center"
           Foreground="Gray"
           Kind="InfoCircle"
-          ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
-        <TextBlock Text="Stream:" />
+          ToolTip.Tip="If disabled the scheduler is turned off." />
+        <TextBlock Text="Enabled:" />
       </StackPanel>
 
       <StackPanel
@@ -80,19 +92,39 @@
           VerticalAlignment="Center"
           Foreground="Gray"
           Kind="InfoCircle"
+          ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
+        <TextBlock Text="Stream:" />
+      </StackPanel>
+
+      <StackPanel
+        Grid.Row="3"
+        VerticalAlignment="Center"
+        Orientation="Horizontal">
+        <icons:MaterialIcon
+          Margin="0,0,5,0"
+          VerticalAlignment="Center"
+          Foreground="Gray"
+          Kind="InfoCircle"
           ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
         <TextBlock Text="Trigger:" />
       </StackPanel>
 
-      <ComboBox
+      <ToggleSwitch
         Grid.Row="1"
+        Grid.Column="1"
+        Margin="10,10,0,10"
+        IsChecked="{Binding Enabled}"
+        IsEnabled="{Binding HasSavedSenders}" />
+
+      <ComboBox
+        Grid.Row="2"
         Grid.Column="1"
         Margin="10,10,0,10"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
-        Items="{Binding SavedStreams}"
+        Items="{Binding SavedSenders}"
         PlaceholderText="Select a stream"
-        SelectedItem="{Binding SelectedBranch}">
+        SelectedItem="{Binding SelectedStream}">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <Grid ColumnDefinitions="auto,*">
@@ -110,37 +142,29 @@
       </ComboBox>
 
       <ComboBox
-        Grid.Row="2"
+        Grid.Row="3"
         Grid.Column="1"
         Margin="10,10,0,10"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
+        Items="{Binding Triggers}"
         PlaceholderText="Select a trigger"
-        SelectedIndex="0"
-        SelectedItem="{Binding SelectedCommit}">
-        <ComboBoxItem>💾 On Save</ComboBoxItem>
-        <ComboBoxItem>🔁 On Sync to Central</ComboBoxItem>
-
-        <!--<ComboBox.ItemTemplate>
+        SelectedItem="{Binding SelectedTrigger}">
+        <ComboBox.ItemTemplate>
           <DataTemplate>
-            <Grid ColumnDefinitions="auto,auto,auto,*">
+            <Grid ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon
                 Margin="0,0,5,0"
                 Foreground="DarkGray"
-                Kind="SourceCommit" />
+                Kind="{Binding Icon}" />
               <TextBlock
                 Grid.Column="1"
-                Text="{Binding id}"
-                TextTrimming="CharacterEllipsis" />
-              <TextBlock Grid.Column="2" Text=" | " />
-              <TextBlock
-                Grid.Column="3"
-                Text="{Binding message}"
+                Text="{Binding Name}"
                 TextTrimming="CharacterEllipsis" />
             </Grid>
           </DataTemplate>
-        </ComboBox.ItemTemplate>-->
+        </ComboBox.ItemTemplate>
       </ComboBox>
 
 
@@ -162,7 +186,7 @@
       </m:Card>-->
 
       <StackPanel
-        Grid.Row="4"
+        Grid.Row="5"
         Grid.ColumnSpan="2"
         Margin="15"
         HorizontalAlignment="Right"
