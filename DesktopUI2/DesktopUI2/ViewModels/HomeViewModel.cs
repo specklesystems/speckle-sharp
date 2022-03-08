@@ -1,28 +1,23 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Metadata;
+using DesktopUI2.Models;
+using DesktopUI2.Views;
+using Material.Dialog;
+using ReactiveUI;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Metadata;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.Views;
-using DesktopUI2.Views.Windows;
-using Material.Dialog;
-using Material.Dialog.Views;
-using ReactiveUI;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
-using Splat;
 
 namespace DesktopUI2.ViewModels
 {
@@ -153,6 +148,11 @@ namespace DesktopUI2.ViewModels
     //even if the doc has not been saved
     private void SavedStreams_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
+      WriteStreamsToFile();
+    }
+
+    internal void WriteStreamsToFile()
+    {
       Bindings.WriteStreamsToFile(SavedStreams.Select(x => x.StreamState).ToList());
     }
 
@@ -161,7 +161,10 @@ namespace DesktopUI2.ViewModels
       //saved stream has been edited
       var savedState = SavedStreams.FirstOrDefault(x => x.StreamState.Id == streamState.Id);
       if (savedState != null)
+      {
         savedState.StreamState = streamState;
+        WriteStreamsToFile();
+      }
       //it's a new saved stream
       else
       {
