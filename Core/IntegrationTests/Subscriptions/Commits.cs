@@ -31,6 +31,7 @@ namespace TestsIntegration.Subscriptions
       testUserAccount = Fixtures.SeedUser();
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
+      myServerTransport.Api.CompressPayloads = false;
     }
 
     [Test, Order(0)]
