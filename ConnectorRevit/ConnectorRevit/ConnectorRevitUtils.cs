@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
@@ -220,6 +218,7 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Conduit,
       BuiltInCategory.OST_CurtaSystem,
       BuiltInCategory.OST_DataDevices,
+      BuiltInCategory.OST_Doors,
       BuiltInCategory.OST_DuctSystem,
       BuiltInCategory.OST_DuctCurves,
       BuiltInCategory.OST_ElectricalCircuit,
