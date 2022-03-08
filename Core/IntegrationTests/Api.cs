@@ -30,7 +30,9 @@ namespace TestsIntegration
 
       myClient = new Client(firstUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);
+      myServerTransport.Api.CompressPayloads = false;
       otherServerTransport = new ServerTransport(firstUserAccount, null);
+      otherServerTransport.Api.CompressPayloads = false;
     }
 
 
@@ -177,7 +179,9 @@ namespace TestsIntegration
 
       myObject["@Points"] = ptsList;
 
-      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false, disposeTransports: true);
+      bool sendError = false;
+      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false, disposeTransports: true, onErrorAction: (s, e) => { sendError = true; } );
+      Assert.IsFalse(sendError);
 
       var res = await myClient.CommitCreate(new CommitCreateInput
       {

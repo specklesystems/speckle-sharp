@@ -42,6 +42,7 @@ namespace Speckle.Core.Transports
     private Thread SendingThread = null;
     private object SendBufferLock = new object();
     private List<(string, string)> SendBuffer = new List<(string, string)>();
+    private bool ErrorState = false;
 
     public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60)
     {
@@ -127,6 +128,8 @@ namespace Speckle.Core.Transports
     {
       lock (SendBufferLock)
       {
+        if (ErrorState)
+          return;
         SendBuffer.Add((id, serializedObject));
         IsWriteComplete = false;
       }
@@ -144,6 +147,7 @@ namespace Speckle.Core.Transports
       TotalSentBytes = 0;
       SavedObjectCount = 0;
 
+      ErrorState = false;
       ShouldSendThreadRun = true;
       SendingThread = new Thread(new ThreadStart(SendingThreadMain));
       SendingThread.IsBackground = true;
@@ -156,7 +160,7 @@ namespace Speckle.Core.Transports
       {
         lock(SendBufferLock)
         {
-          if (IsWriteComplete)
+          if (IsWriteComplete || ErrorState)
             return;
         }
         await Task.Delay(50);
@@ -252,6 +256,11 @@ namespace Speckle.Core.Transports
         catch(Exception ex)
         {
           OnErrorAction?.Invoke(TransportName, ex);
+          lock (SendBufferLock)
+          {
+            SendBuffer.Clear();
+            ErrorState = true;
+          }
           return;
         }
       }
