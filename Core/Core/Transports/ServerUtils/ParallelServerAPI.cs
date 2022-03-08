@@ -26,6 +26,7 @@ namespace Speckle.Core.Transports.ServerUtils
     private int TimeoutSeconds;
     public CancellationToken CancellationToken { get; set; }
     public int NumThreads { get; set; }
+    public bool CompressPayloads { get; set; } = true;
 
     private object CallbackLock = new object();
     public Action<int, int> OnBatchSent { get; set; }
@@ -89,6 +90,7 @@ namespace Speckle.Core.Transports.ServerUtils
       {
         api.OnBatchSent = (num, size) => { lock (CallbackLock) OnBatchSent(num, size); };
         api.CancellationToken = CancellationToken;
+        api.CompressPayloads = CompressPayloads;
 
         while (true)
         {
