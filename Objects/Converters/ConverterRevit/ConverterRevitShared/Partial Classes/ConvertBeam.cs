@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public List<ApplicationPlaceholderObject> BeamToNative(BuiltElement1D speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       
       if (speckleBeam.baseLine == null)
@@ -108,7 +108,7 @@ namespace Objects.Converter.Revit
 
       var speckleBeam = new RevitBeam();
       speckleBeam.family = symbol.FamilyName;
-      speckleBeam.type = revitBeam.Document.GetElement(revitBeam.GetTypeId()).Name;
+      speckleBeam.profile.name = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
       speckleBeam.displayValue = GetElementMesh(revitBeam);

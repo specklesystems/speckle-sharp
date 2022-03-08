@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
 
       RevitBeam revitBeam = new RevitBeam();
       //This only works for CSIC sections now for sure. Need to test on other sections
-      revitBeam.type = teklaBeam.profile.name.Replace('X', 'x');
+      revitBeam.profile.name = teklaBeam.profile.name.Replace('X', 'x');
       revitBeam.baseLine = teklaBeam.baseLine;
       //Beam beam = new Beam(teklaBeam.baseLine);
       placeholders = BeamToNative(revitBeam);

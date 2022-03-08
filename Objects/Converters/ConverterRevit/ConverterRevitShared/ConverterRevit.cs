@@ -325,14 +325,27 @@ namespace Objects.Converter.Revit
         case BE.TeklaStructures.TeklaBeam o:
           return TeklaBeamToNative(o);
 
-        case BE.Beam o:
-          return BeamToNative(o);
+        //case BE.Beam o:
+        //  return BeamToNative(o);
 
-        case BE.Brace o:
-          return BraceToNative(o);
+        //case BE.Brace o:
+        //  return BraceToNative(o);
 
-        case BE.Column o:
-          return ColumnToNative(o);
+        //case BE.Column o:
+        //  return ColumnToNative(o);
+        case BE.BuiltElement1D o:
+         if(o.ElementType == BE.Element1DType.Beam){
+            return BeamToNative(o);
+             }
+          else if (o.ElementType == BE.Element1DType.Brace)
+          {
+            return BraceToNative(o);
+          }
+          else if (o.ElementType == BE.Element1DType.Column)
+          {
+            return ColumnToNative(o);
+          }
+          return null;
 
 #if REVIT2022
         case BE.Ceiling o:

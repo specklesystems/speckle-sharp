@@ -24,27 +24,27 @@ namespace Objects.Converter.Revit
       XYZ offset2 = VectorToNative(speckleStick.end2Offset);
       List<ApplicationPlaceholderObject> placeholders = new List<ApplicationPlaceholderObject> { };
 
-      switch (speckleStick.type)
-      {
-        case ElementType1D.Beam:
-          RevitBeam revitBeam = new RevitBeam();
-          //This only works for CSIC sections now for sure. Need to test on other sections
-          revitBeam.type = speckleStick.property.name.Replace('X', 'x');
-          revitBeam.baseLine = speckleStick.baseLine;
-          //Beam beam = new Beam(speckleStick.baseLine);
-          placeholders = BeamToNative(revitBeam);
-          DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)placeholders[0].NativeObject;
-          AnalyticalModelStick analyticalModel = (AnalyticalModelStick)nativeRevitBeam.GetAnalyticalModel();
-          analyticalModel.SetReleases(true, Convert.ToBoolean(speckleStick.end1Releases.stiffnessX), Convert.ToBoolean(speckleStick.end1Releases.stiffnessY), Convert.ToBoolean(speckleStick.end1Releases.stiffnessZ), Convert.ToBoolean(speckleStick.end1Releases.stiffnessXX), Convert.ToBoolean(speckleStick.end1Releases.stiffnessYY), Convert.ToBoolean(speckleStick.end1Releases.stiffnessZZ));
-          analyticalModel.SetReleases(false, Convert.ToBoolean(speckleStick.end2Releases.stiffnessX), Convert.ToBoolean(speckleStick.end2Releases.stiffnessY), Convert.ToBoolean(speckleStick.end2Releases.stiffnessZ), Convert.ToBoolean(speckleStick.end2Releases.stiffnessXX), Convert.ToBoolean(speckleStick.end2Releases.stiffnessYY), Convert.ToBoolean(speckleStick.end2Releases.stiffnessZZ));
-          analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
-          analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
-          //analyticalModel.
+switch (speckleStick.type)
+    {
+      case ElementType1D.Beam:
+        RevitBeam revitBeam = new RevitBeam();
+        //This only works for CSIC sections now for sure. Need to test on other sections
+        revitBeam.profile.name = speckleStick.property.name.Replace('X','x');
+        revitBeam.baseLine = speckleStick.baseLine;
+        //Beam beam = new Beam(speckleStick.baseLine);
+        placeholders = BeamToNative(revitBeam);
+        DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)placeholders[0].NativeObject;
+        AnalyticalModelStick analyticalModel =	(AnalyticalModelStick)nativeRevitBeam.GetAnalyticalModel();
+        analyticalModel.SetReleases(true, Convert.ToBoolean(speckleStick.end1Releases.stiffnessX), Convert.ToBoolean(speckleStick.end1Releases.stiffnessY), Convert.ToBoolean(speckleStick.end1Releases.stiffnessZ), Convert.ToBoolean(speckleStick.end1Releases.stiffnessXX), Convert.ToBoolean(speckleStick.end1Releases.stiffnessYY), Convert.ToBoolean(speckleStick.end1Releases.stiffnessZZ));
+        analyticalModel.SetReleases(false, Convert.ToBoolean(speckleStick.end2Releases.stiffnessX), Convert.ToBoolean(speckleStick.end2Releases.stiffnessY), Convert.ToBoolean(speckleStick.end2Releases.stiffnessZ), Convert.ToBoolean(speckleStick.end2Releases.stiffnessXX), Convert.ToBoolean(speckleStick.end2Releases.stiffnessYY), Convert.ToBoolean(speckleStick.end2Releases.stiffnessZZ));
+        analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
+        analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
+//analyticalModel.
           return placeholders;
-        case ElementType1D.Brace:
-          RevitBrace revitBrace = new RevitBrace();
-          revitBrace.type = speckleStick.property.name.Replace('X', 'x');
-          revitBrace.baseLine = speckleStick.baseLine;
+      case ElementType1D.Brace:
+        RevitBrace revitBrace = new RevitBrace();
+        revitBrace.profile.name = speckleStick.property.name.Replace('X', 'x');
+        revitBrace.baseLine = speckleStick.baseLine;
           //Brace brace = new Brace(speckleStick.baseLine);
           placeholders = BraceToNative(revitBrace);
           DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)placeholders[0].NativeObject;
@@ -54,10 +54,10 @@ namespace Objects.Converter.Revit
           analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
           analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
           return placeholders;
-        case ElementType1D.Column:
-          RevitColumn revitColumn = new RevitColumn();
-          revitColumn.type = speckleStick.property.name.Replace('X', 'x');
-          revitColumn.baseLine = speckleStick.baseLine;
+      case ElementType1D.Column:
+        RevitColumn revitColumn = new RevitColumn();
+        revitColumn.profile.name = speckleStick.property.name.Replace('X', 'x');
+        revitColumn.baseLine = speckleStick.baseLine;
           placeholders = ColumnToNative(revitColumn);
           DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)placeholders[0].NativeObject;
           AnalyticalModelColumn analyticalModelCol = (AnalyticalModelColumn)nativeRevitColumn.GetAnalyticalModel();

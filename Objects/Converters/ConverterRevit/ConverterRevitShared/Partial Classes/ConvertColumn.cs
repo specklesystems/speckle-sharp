@@ -13,7 +13,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> ColumnToNative(Column speckleColumn)
+    public List<ApplicationPlaceholderObject> ColumnToNative(BuiltElements.BuiltElement1D speckleColumn)
     {
       if (speckleColumn.baseLine == null)
       {
@@ -201,7 +201,7 @@ namespace Objects.Converter.Revit
 
       var speckleColumn = new RevitColumn();
       speckleColumn.family = symbol.FamilyName;
-      speckleColumn.type = revitColumn.Document.GetElement(revitColumn.GetTypeId()).Name;
+      speckleColumn.profile.name = Doc.GetElement(revitColumn.GetTypeId()).Name;
       speckleColumn.level = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       speckleColumn.topLevel = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
       speckleColumn.baseOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
