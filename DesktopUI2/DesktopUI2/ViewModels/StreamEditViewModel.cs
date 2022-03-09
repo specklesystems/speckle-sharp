@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
@@ -290,17 +290,14 @@ namespace DesktopUI2.ViewModels
       try
       {
         Progress = new ProgressViewModel();
+        Progress.ProgressTitle = "Sending to Speckle 🚀";
         Progress.IsProgressing = true;
-        var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
-        _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
-        {
-          if (x.Result.GetResult == "cancel")
-            Progress.CancellationTokenSource.Cancel();
-        }
-          );
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = Progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.ShowDialog(MainWindow.Instance);
         await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
-        dialog.GetWindow().Close();
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
@@ -324,17 +321,16 @@ namespace DesktopUI2.ViewModels
       try
       {
         Progress = new ProgressViewModel();
+        Progress.ProgressTitle = "Receiving from Speckle 🚀";
         Progress.IsProgressing = true;
-        var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
-        _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
-        {
-          if (x.Result.GetResult == "cancel")
-            Progress.CancellationTokenSource.Cancel();
-        });
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = Progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.ShowDialog(MainWindow.Instance);
 
         await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
-        dialog.GetWindow().Close();
+
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)

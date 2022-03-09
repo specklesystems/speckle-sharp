@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DesktopUI2;
+using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views.Windows;
 using Revit.Async;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
@@ -80,24 +81,22 @@ namespace Speckle.ConnectorRevit.UI
         var stream = GetStreamsInFile().FirstOrDefault(x => x.SchedulerEnabled && x.SchedulerTrigger == slug);
         if (stream == null) return;
 
-        var Progress = new ProgressViewModel();
-        Progress.IsProgressing = true;
-        var dialog = Dialogs.SendReceiveDialog("Sending...", this);
-        _ = dialog.Show().ContinueWith(x =>
-        {
-          if (x.Result.GetResult == "cancel")
-            Progress.CancellationTokenSource.Cancel();
-        }
-          );
-        await Task.Run(() => SendStream(stream, Progress));
-        dialog.GetWindow().Close();
-        Progress.IsProgressing = false;
+        var progress = new ProgressViewModel();
+        progress.ProgressTitle = "Sending to Speckle 🚀";
+        progress.IsProgressing = true;
 
-        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.Show();
+
+        await Task.Run(() => SendStream(stream, progress));
+        progress.IsProgressing = false;
+        dialog.Close();
+        if (!progress.CancellationTokenSource.IsCancellationRequested)
         {
           Analytics.TrackEvent(stream.Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Schedule" } });
         }
-
 
       }
       catch (Exception ex)
