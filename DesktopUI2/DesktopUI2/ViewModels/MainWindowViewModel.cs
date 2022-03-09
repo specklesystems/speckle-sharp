@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive;
-using System.Text;
-using DesktopUI2.Models;
-using DesktopUI2.Views.Pages;
-using Material.Colors;
+﻿using DesktopUI2.Views.Pages;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
-using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Splat;
+using System.Collections.Generic;
+using System.Reactive;
 
 namespace DesktopUI2.ViewModels
 {
@@ -53,9 +46,9 @@ namespace DesktopUI2.ViewModels
 
       Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
 
-      var theme = PaletteHelper.GetTheme();
-      theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
-      PaletteHelper.SetTheme(theme);
+      //var theme = PaletteHelper.GetTheme();
+      //theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
+      //PaletteHelper.SetTheme(theme);
     }
 
     #region theme
