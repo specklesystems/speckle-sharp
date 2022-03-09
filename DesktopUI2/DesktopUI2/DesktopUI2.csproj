@@ -43,6 +43,7 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+    <None Remove="Views\Windows\QuickOpsDialog.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
     <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Playground.xaml">
@@ -125,6 +126,9 @@
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\QuickOpsDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -191,6 +195,9 @@
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\QuickOpsDialog.xaml.cs">
+      <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Report.xaml.cs">
       <DependentUpon>Report.xaml</DependentUpon>
