@@ -22,6 +22,11 @@ namespace DesktopUI2
         {
           DataContext = new MainWindowViewModel(),
         };
+
+        //desktop.MainWindow = new Scheduler
+        //{
+        //  DataContext = new SchedulerViewModel(),
+        //};
       }
 
       base.OnFrameworkInitializationCompleted();
