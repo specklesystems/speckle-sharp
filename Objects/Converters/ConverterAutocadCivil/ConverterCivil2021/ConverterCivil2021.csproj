@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.0.3" />
-    <PackageReference Include="Speckle.Civil3D.API" Version="2021.0.0.3" />
+    <PackageReference Include="Speckle.Civil3D.API" Version="2021.0.1" />
   </ItemGroup>
 
   <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
