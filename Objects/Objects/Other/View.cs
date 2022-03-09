@@ -15,7 +15,6 @@ namespace Objects.Other
     public ViewType viewType { get; set; } = ViewType.Perspective;
     public Transform transform { get; set; } = new Transform();
     public double fov { get; set; }
-    public double? fovX { get; set; }
     public double? fovY { get; set; }
     public double? orthoScale { get; set; }
     public double aspectX { get; set; }
