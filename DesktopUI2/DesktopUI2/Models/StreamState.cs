@@ -134,8 +134,16 @@ namespace DesktopUI2.Models
     [JsonProperty]
     public List<ApplicationPlaceholderObject> ReceivedObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    //TODO: add all required fields?
+    public StreamState(StreamAccountWrapper streamAccountWrapper)
+    {
+      Init(streamAccountWrapper.Account, streamAccountWrapper.Stream);
+    }
     public StreamState(Account account, Stream stream)
+    {
+      Init(account, stream);
+    }
+
+    public void Init(Account account, Stream stream)
     {
       Client = new Client(account);
       StreamId = stream.id;

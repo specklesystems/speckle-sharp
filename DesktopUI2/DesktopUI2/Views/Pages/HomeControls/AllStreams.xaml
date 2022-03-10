@@ -21,75 +21,9 @@
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
   </UserControl.Resources>
-  <Grid Margin="15" RowDefinitions="auto,auto,auto,auto, auto, *">
-    <Grid Grid.Row="0" ColumnDefinitions="auto,*">
-      <StackPanel Orientation="Horizontal">
-        <icons:MaterialIcon
-          Margin="0,0,5,0"
-          VerticalAlignment="Center"
-          Foreground="Gray"
-          Kind="InfoCircle"
-          ToolTip.Tip="You can have multiple Speckle accounts.&#x0a;Select the one to use from the dropdown&#x0a;to load its streams." />
-
-        <TextBlock
-          VerticalAlignment="Center"
-          Text="Account:"
-          TextTrimming="CharacterEllipsis" />
-
-      </StackPanel>
-      <ComboBox
-        Grid.Column="1"
-        Margin="10,0,0,10"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Center"
-        IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
-        Items="{Binding Accounts}"
-        PlaceholderText="Select an account"
-        SelectedItem="{Binding SelectedAccount}">
-        <ComboBox.ItemTemplate>
-          <DataTemplate>
-            <Grid ColumnDefinitions="auto,*,auto,*">
-              <icons:MaterialIcon
-                Margin="0,0,5,0"
-                Foreground="DarkGray"
-                Kind="Account" />
-              <TextBlock
-                Grid.Column="1"
-                Text="{Binding userInfo.email}"
-                TextTrimming="CharacterEllipsis" />
-              <icons:MaterialIcon
-                Grid.Column="2"
-                Margin="10,0,5,0"
-                Foreground="DarkGray"
-                Kind="Server" />
-              <TextBlock
-                Grid.Column="3"
-                Text="{Binding serverInfo.url}"
-                TextTrimming="CharacterEllipsis" />
-            </Grid>
-          </DataTemplate>
-        </ComboBox.ItemTemplate>
-      </ComboBox>
-    </Grid>
-
-
-    <!--<StackPanel
-      Grid.Row="1"
-      Margin="0,10,0,0"
-      Orientation="Horizontal">
-      <icons:MaterialIcon
-        Margin="0,0,5,0"
-        VerticalAlignment="Center"
-        Foreground="Gray"
-        Kind="InfoCircle"
-        ToolTip.Tip="Streams are collections of data inside Speckle.&#x0a;You can see a stream as a folder,&#x0a;a project or a repository.&#x0a;In order to send and receive data or geometry,&#x0a;you first need to select the stream to use." />
-
-      <TextBlock Text="Select a stream to use:" TextTrimming="CharacterEllipsis" />
-
-    </StackPanel>-->
-
+  <Grid Margin="15" RowDefinitions="auto,auto, auto, *">
     <!--  SEARCH STREAMS  -->
-    <Grid Grid.Row="2" Margin="0,10,0,0">
+    <Grid Grid.Row="0" Margin="0">
       <m:Card Padding="0">
         <TextBox
           Margin="0"
@@ -120,26 +54,9 @@
 
 
     <Grid
-      Grid.Row="3"
+      Grid.Row="1"
       Margin="0,10,0,0"
       ColumnDefinitions="*,*">
-
-      <!--<Button
-        Margin="0,0,7,0"
-        HorizontalAlignment="Stretch"
-        Command="{Binding NewStreamCommand}">
-        <Grid ColumnDefinitions="auto,*">
-          <icons:MaterialIcon VerticalAlignment="Center" Kind="Plus" />
-          <TextBlock
-            Grid.Column="1"
-            Margin="8,0"
-            VerticalAlignment="Center"
-            Classes="ButtonText"
-            Text="Create New"
-            TextTrimming="CharacterEllipsis" />
-        </Grid>
-      </Button>-->
-
       <Button
         Margin="0,0,7,0"
         Padding="0"
@@ -173,16 +90,16 @@
             Grid.Column="1"
             Margin="8,0"
             VerticalAlignment="Center"
-            Text="Add from URL"
+            Text="Add by ID or URL"
             TextTrimming="CharacterEllipsis" />
         </Grid>
       </Button>
     </Grid>
-    <Grid Grid.Row="4" Margin="0,10,0,0">
+    <Grid Grid.Row="2" Margin="0,10,0,0">
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding InProgress}" />
     </Grid>
     <m:Card
-      Grid.Row="5"
+      Grid.Row="3"
       Margin="0"
       Padding="0,4">
       <ListBox
@@ -196,18 +113,12 @@
           <Style Selector="ListBoxItem:not(:pointerover) StackPanel#SendReceiveButtons">
             <Setter Property="IsVisible" Value="False" />
           </Style>
-          <!--<Style Selector="ListBoxItem[IsSelected=true]:not(:pointerover) StackPanel#SendReceiveButtons">
-            <Setter Property="IsVisible" Value="True" />
-          </Style>-->
           <Style Selector="ListBoxItem:pointerover StackPanel#SendReceiveButtons">
             <Setter Property="IsVisible" Value="True" />
           </Style>
           <Style Selector="ListBoxItem /template/ Border#selectedBorder">
             <Setter Property="IsVisible" Value="False" />
           </Style>
-          <!--<Style Selector="ListBoxItem /template/ Border#pointerOverBorder">
-            <Setter Property="IsVisible" Value="False" />
-          </Style>-->
           <Style Selector="ListBoxItem /template/ ripple|RippleEffect#Ripple">
             <Setter Property="RippleOpacity" Value="0" />
           </Style>
@@ -216,17 +127,17 @@
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid ColumnDefinitions="*,Auto">
-              <Grid Grid.Column="0" RowDefinitions="auto,auto,auto">
+              <Grid Grid.Column="0" RowDefinitions="auto,auto,auto, auto">
                 <TextBlock
                   Classes="Grotesk"
-                  Text="{Binding name}"
+                  Text="{Binding Stream.name}"
                   TextTrimming="CharacterEllipsis" />
                 <TextBlock
                   Grid.Row="1"
                   Margin="0,3,0,0"
                   Classes="Caption"
                   MaxLines="1"
-                  Text="{Binding description}"
+                  Text="{Binding Stream.description}"
                   TextTrimming="CharacterEllipsis" />
                 <Grid
                   Grid.Row="2"
@@ -234,7 +145,7 @@
                   ColumnDefinitions="auto,auto,*">
                   <TextBlock
                     Classes="Overline"
-                    Text="{Binding id}"
+                    Text="{Binding Stream.id}"
                     TextTrimming="CharacterEllipsis" />
                   <TextBlock
                     Grid.Column="1"
@@ -243,7 +154,31 @@
                   <TextBlock
                     Grid.Column="2"
                     Classes="Overline"
-                    Text="{Binding role, Converter={StaticResource RoleValueConverter}}"
+                    Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
+                    TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <Grid
+                  Grid.Row="3"
+                  Margin="0,3,0,0"
+                  ColumnDefinitions="auto,auto,*"
+                  IsVisible="{Binding $parent[local:HomeView].DataContext.HasMultipleAccounts}">
+                  <Grid.Styles>
+                    <Style Selector="TextBlock">
+                      <Setter Property="Foreground" Value="LightGray" />
+                    </Style>
+                  </Grid.Styles>
+                  <TextBlock
+                    Classes="Overline"
+                    Text="{Binding Account.userInfo.email}"
+                    TextTrimming="CharacterEllipsis" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Classes="Overline"
+                    Text=" | " />
+                  <TextBlock
+                    Grid.Column="2"
+                    Classes="Overline"
+                    Text="{Binding Account.serverInfo.url}"
                     TextTrimming="CharacterEllipsis" />
                 </Grid>
 

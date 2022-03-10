@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Windows
+namespace DesktopUI2.Views.Windows.Dialogs
 {
   public partial class QuickOpsDialog : Window
   {
