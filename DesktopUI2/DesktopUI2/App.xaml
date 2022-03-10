@@ -10,6 +10,7 @@
   </Application.DataTemplates>
   <Application.Styles>
     <StyleInclude Source="avares://Material.Avalonia/Material.Avalonia.Templates.xaml" />
+    <StyleInclude Source="avares://Material.Icons.Avalonia/App.xaml" />
     <StyleInclude Source="/Styles/Styles.xaml" />
   </Application.Styles>
   <Application.Resources>
