@@ -276,9 +276,9 @@ namespace DesktopUI2.ViewModels
         NegativeResult = new DialogResult("retry"),
         Borderless = true,
         MaxWidth = MainWindow.Instance.Width - 40,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
           {
-            new DialogResultButton
+            new DialogButton
             {
               Content = "TRY AGAIN",
               Result = "retry"
@@ -355,17 +355,23 @@ namespace DesktopUI2.ViewModels
               Classes = "Outline",
           }
         },
+        DialogButtons = new[]
+          {
 
-        PositiveButton = new DialogResultButton
-        {
-          Content = "CREATE",
-          Result = "create"
-        },
-        NegativeButton = new DialogResultButton
-        {
-          Content = "CANCEL",
-          Result = "cancel"
-        },
+              new DialogButton
+              {
+                  Content = "CANCEL",
+                  Result = "cancel",
+                  IsNegative = true
+
+              },
+                new DialogButton
+              {
+                  Content = "CREATE",
+                  Result = "create",
+                  IsPositive = true
+              }
+          }
       });
 
 #if DEBUG
@@ -433,16 +439,23 @@ namespace DesktopUI2.ViewModels
               DefaultText = defaultText
           },
         },
-        PositiveButton = new DialogResultButton
-        {
-          Content = "ADD",
-          Result = "add"
-        },
-        NegativeButton = new DialogResultButton
-        {
-          Content = "CANCEL",
-          Result = "cancel"
-        },
+        DialogButtons = new[]
+          {
+
+              new DialogButton
+              {
+                  Content = "CANCEL",
+                  Result = "cancel",
+                  IsNegative = true
+
+              },
+                new DialogButton
+              {
+                  Content = "ADD",
+                  Result = "add",
+                  IsPositive = true
+              },
+          }
       });
 
 #if DEBUG

@@ -5,9 +5,6 @@ using Material.Dialog;
 using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace DesktopUI2
@@ -26,9 +23,9 @@ namespace DesktopUI2
         WindowTitle = header,
         Borderless = true,
         MaxWidth = MainWindow.Instance.Width - 40,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
                 {
-                    new DialogResultButton
+                    new DialogButton
                     {
                         Content = "OK",
                         Result = "ok"
@@ -49,9 +46,9 @@ namespace DesktopUI2
         Borderless = true,
 
         Width = MainWindow.Instance.Width - 20,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
           {
-            new DialogResultButton
+            new DialogButton
             {
               Content = "CANCEL",
               Result = "cancel"
