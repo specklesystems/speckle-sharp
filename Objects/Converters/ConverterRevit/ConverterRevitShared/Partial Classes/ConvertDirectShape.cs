@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Autodesk.Revit.DB;
-using ConverterRevitShared.Revit;
+﻿using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
-using Parameter = Objects.BuiltElements.Revit.Parameter;
 
 namespace Objects.Converter.Revit
 {
@@ -55,12 +52,13 @@ namespace Objects.Converter.Revit
         }
       });
 
-      BuiltInCategory cat;
-      var bic = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
-      BuiltInCategory.TryParse(bic, out cat);
-      var catId = Doc.Settings.Categories.get_Item(cat).Id;
+      BuiltInCategory bic;
+      var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
 
-      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
+      BuiltInCategory.TryParse(bicName, out bic);
+      var cat = Doc.Settings.Categories.get_Item(bic);
+
+      var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
       revitDs.ApplicationId = speckleDs.applicationId;
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(converted);
@@ -110,7 +108,7 @@ namespace Objects.Converter.Revit
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
 
     public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
-    => DirectShapeToNative(new []{mesh}, cat);
+    => DirectShapeToNative(new[] { mesh }, cat);
 
     public ApplicationPlaceholderObject DirectShapeToNative(IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
@@ -132,11 +130,11 @@ namespace Objects.Converter.Revit
         var rMesh = MeshToNative(m);
         converted.AddRange(rMesh);
       }
-      
+
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
 
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
-      revitDs.ApplicationId =applicationId;
+      revitDs.ApplicationId = applicationId;
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(converted);
       revitDs.Name = "Mesh " + applicationId;
@@ -168,12 +166,12 @@ namespace Objects.Converter.Revit
             geometries.Add(MeshToSpeckle(mesh));
             break;
           case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
-            geometries.AddRange(GetMeshesFromSolids(new[] {solid}));
+            geometries.AddRange(GetMeshesFromSolids(new[] { solid }));
             break;
         }
       }
 
-      
+
       var speckleAc = new DirectShape(
         revitAc.Name,
         category,
@@ -190,11 +188,11 @@ namespace Objects.Converter.Revit
             //geo has no display value, we assume it is itself a valid displayValue
             displayValue.Add(geo);
             break;
-          
+
           case Base b:
             displayValue.Add(b);
             break;
-          
+
           case IEnumerable<Base> e:
             displayValue.AddRange(e);
             break;
