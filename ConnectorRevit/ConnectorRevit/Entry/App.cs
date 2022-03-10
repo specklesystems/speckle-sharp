@@ -19,7 +19,7 @@ namespace Speckle.ConnectorRevit.Entry
     public Result OnStartup(UIControlledApplication application)
     {
       //Always initialize RevitTask ahead of time within Revit API context
-      RevitTask.Initialize();
+      RevitTask.Initialize(application);
 
       UICtrlApp = application;
       // Fires an init event, where we can get the UIApp
@@ -106,7 +106,14 @@ namespace Speckle.ConnectorRevit.Entry
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
 
       //pre build app, so that it's faster to open up
-      SpeckleRevitCommand2.InitAvalonia();
+      try
+      {
+        SpeckleRevitCommand2.InitAvalonia();
+      }
+      catch (Exception ex)
+      {
+
+      }
       var bindings = new ConnectorBindingsRevit2(AppInstance);
       bindings.RegisterAppEvents();
       SpeckleRevitCommand2.Bindings = bindings;
