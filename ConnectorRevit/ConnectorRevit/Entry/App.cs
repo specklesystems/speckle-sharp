@@ -68,7 +68,7 @@ namespace Speckle.ConnectorRevit.Entry
 
 
       // one click send
-      var speckleButtonSend = specklePanel.AddItem(new PushButtonData("Send", "Send to Speckle", typeof(App).Assembly.Location, typeof(SpeckleRevitCommandSend).FullName)) as PushButton;
+      var speckleButtonSend = specklePanel.AddItem(new PushButtonData("Send", "Send to Speckle", typeof(App).Assembly.Location, typeof(OneClickSendCommand).FullName)) as PushButton;
 
       if (speckleButtonSend != null)
       {
@@ -126,16 +126,7 @@ namespace Speckle.ConnectorRevit.Entry
       bindings.RegisterAppEvents();
       SpeckleRevitCommand2.Bindings = bindings;
       SchedulerCommand.Bindings = bindings;
-#endif
-
-
-      //pre build app, so that it's faster to open up
-      var bindings2 = new ConnectorBindingsRevit2(AppInstance);
-      SpeckleRevitCommand2.InitAvalonia();
-      SpeckleRevitCommand2.Bindings = bindings2;
-      SpeckleRevitCommand2.Bindings.RegisterAppEvents();
-
-      SpeckleRevitCommandSend.Bindings = bindings2;
+      OneClickSendCommand.Bindings = bindings;
 
     }
 

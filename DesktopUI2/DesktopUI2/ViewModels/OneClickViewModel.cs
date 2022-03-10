@@ -1,0 +1,139 @@
+﻿using Avalonia.Metadata;
+using DesktopUI2.Models;
+using DesktopUI2.Views;
+using ReactiveUI;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace DesktopUI2.ViewModels
+{
+  public class OneClickViewModel : ReactiveObject
+  {
+    List<StreamState> SavedStreams { get; set; } = new List<StreamState>();
+
+    public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
+
+    public bool HasFileStream => FileStream != null;
+
+    private StreamState _fileStream;
+    public StreamState FileStream
+    {
+      get => _fileStream;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _fileStream, value);
+        this.RaisePropertyChanged("HasFileStream");
+      }
+    }
+
+    public OneClickViewModel(ConnectorBindings _bindings, StreamState fileStream = null)
+    {
+      Bindings = _bindings;
+      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+      if (fileStream == null)
+        LoadFileStream();
+      else
+        FileStream = fileStream;
+    }
+
+    private void LoadFileStream()
+    {
+      SavedStreams = Bindings.GetStreamsInFile();
+
+      // get bindings doc name and default account
+      var fileName = Bindings.GetFileName();
+      var account = AccountManager.GetDefaultAccount();
+      var client = new Client(account);
+
+      var fileStream = SavedStreams.Where(o => o.CachedStream.name == fileName && o.Client.Account == account)?.FirstOrDefault();
+      if (fileStream != null)
+      {
+        FileStream = fileStream;
+      }
+      else // try to find stream in account
+      {
+        Stream foundStream = Task.Run(async () => await SearchStreams(client)).Result;
+
+        if (foundStream == null) // create the stream
+        {
+          // create new stream 
+          var description = $"Automatic stream for {fileName}";
+          try
+          {
+            string streamId = Task.Run(async () => await client.StreamCreate(new StreamCreateInput { description = description, name = fileName, isPublic = false })).Result;
+            foundStream = Task.Run(async () => await client.StreamGet(streamId)).Result;
+          }
+          catch (Exception e){ }
+        }
+
+        FileStream = new StreamState(account, foundStream) { BranchName = "main" };
+        SavedStreams.Add(FileStream);
+        Bindings.WriteStreamsToFile(SavedStreams);
+
+        if (HomeViewModel.Instance != null)
+          HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
+      }
+    }
+
+    private async Task<Stream> SearchStreams(Client client)
+    {
+      Stream stream = null;
+      try
+      {
+        var streams = await client.StreamSearch(Bindings.GetFileName());
+        stream = streams.FirstOrDefault();
+      }
+      catch (Exception) { }
+      return stream;
+    }
+
+    public void OneClickSend()
+    {
+      // check if objs are selected and set streamstate filter
+      var filters = Bindings.GetSelectionFilters();
+      var selection = Bindings.GetSelectedObjects();
+      if (selection.Count > 0)
+      {
+        FileStream.Filter = filters.Where(o => o.Slug == "manual").First();
+        FileStream.Filter.Selection = selection;
+        FileStream.CommitMessage = "Sent selection";
+      }
+      else
+      {
+        FileStream.Filter = filters.Where(o => o.Slug == "all").First();
+        FileStream.CommitMessage = "Sent everything";
+      }
+      FileStream.BranchName = "main";
+
+      // set settings
+      if (FileStream.Settings == null || FileStream.Settings.Count == 0)
+      {
+        var settings = Bindings.GetSettings();
+        FileStream.Settings = settings;
+      }
+
+      // send to stream
+      var progress = new ProgressViewModel();
+      Task.Run(async () => await Bindings.SendStream(FileStream, progress)).Wait();
+
+      if (!progress.CancellationTokenSource.IsCancellationRequested)
+      {
+        FileStream.LastUsed = DateTime.Now.ToString();
+        Analytics.TrackEvent(FileStream.Client.Account, Analytics.Events.Send);
+      }
+
+      if (Bindings.UpdateSavedStreams != null)
+        Bindings.UpdateSavedStreams(SavedStreams);
+
+      if (HomeViewModel.Instance != null)
+        HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
+    }
+
+  }
+}
