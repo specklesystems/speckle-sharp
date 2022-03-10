@@ -5,6 +5,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
+using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;

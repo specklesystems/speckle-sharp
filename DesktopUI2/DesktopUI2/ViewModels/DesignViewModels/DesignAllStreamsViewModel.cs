@@ -1,6 +1,8 @@
-﻿using Speckle.Core.Api;
+﻿using DesktopUI2.Models;
+using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DesktopUI2.ViewModels.DesignViewModels
 {
@@ -14,13 +16,13 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     public string SearchQuery { get; set; }
 
-    public List<Stream> Streams { get; set; } = new List<Stream>();
+    public List<StreamAccountWrapper> Streams { get; set; } = new List<StreamAccountWrapper>();
 
     public DesignAllStreamsViewModel()
     {
       var acc = AccountManager.GetDefaultAccount();
       var client = new Client(acc);
-      Streams = client.StreamsGet().Result;
+      Streams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
     }
 
     public void NewStreamCommand()
