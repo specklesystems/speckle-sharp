@@ -243,6 +243,7 @@ namespace DesktopUI2.ViewModels
       var report = new Report();
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
+      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
       report.ShowDialog(MainWindow.Instance);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }

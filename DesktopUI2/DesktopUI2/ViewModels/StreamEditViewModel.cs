@@ -305,8 +305,9 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Quick" } });
           Tracker.TrackPageview(Tracker.SEND);
         }
+        else
+          dialog.Close(); // if user cancelled close automatically
 
-        //TODO: display other dialog if operation failed etc
         MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
 
       }
@@ -338,8 +339,9 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "method", "Quick" } });
           Tracker.TrackPageview(Tracker.RECEIVE);
         }
+        else
+          dialog.Close(); // if user cancelled close automatically
 
-        //TODO: display other dialog if operation failed etc
         MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       }
       catch (Exception ex)

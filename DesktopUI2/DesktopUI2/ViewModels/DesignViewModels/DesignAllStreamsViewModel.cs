@@ -1,8 +1,6 @@
 ﻿using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.ViewModels.DesignViewModels
 {
@@ -10,11 +8,13 @@ namespace DesktopUI2.ViewModels.DesignViewModels
   {
     public bool InProgress { get; set; } = false;
 
-    public Account SelectedAccount { get; set; }= null;
+    public Account SelectedAccount { get; set; } = null;
 
-    public List<Account> Accounts { get; set; }= new List<Account>();
+    public List<Account> Accounts { get; set; } = new List<Account>();
 
-    public List<Stream> Streams { get; set; }  = new List<Stream>();
+    public string SearchQuery { get; set; }
+
+    public List<Stream> Streams { get; set; } = new List<Stream>();
 
     public DesignAllStreamsViewModel()
     {
