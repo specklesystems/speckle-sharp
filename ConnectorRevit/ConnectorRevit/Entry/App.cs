@@ -33,9 +33,9 @@ namespace Speckle.ConnectorRevit.Entry
 
       if (speckleButton != null)
       {
-        speckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
-        speckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        speckleButton.ToolTip = "Speckle Connector for Revit";
+        speckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16_fade.png", path);
+        speckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32_fade.png", path);
+        speckleButton.ToolTip = "Speckle Connector for Revit (old)";
         speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
@@ -102,9 +102,6 @@ namespace Speckle.ConnectorRevit.Entry
       manager.ToolTip = "Manage accounts and connectors. Opens SpeckleManager.";
       manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
       manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-
-
-
 
       return Result.Succeeded;
     }
