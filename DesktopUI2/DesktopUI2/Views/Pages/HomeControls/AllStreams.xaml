@@ -21,7 +21,7 @@
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
   </UserControl.Resources>
-  <Grid Margin="15" RowDefinitions="auto,auto,auto,auto, *, auto">
+  <Grid Margin="15" RowDefinitions="auto,auto,auto,auto, auto, *">
     <Grid Grid.Row="0" ColumnDefinitions="auto,*">
       <StackPanel Orientation="Horizontal">
         <icons:MaterialIcon
@@ -73,7 +73,7 @@
     </Grid>
 
 
-    <StackPanel
+    <!--<StackPanel
       Grid.Row="1"
       Margin="0,10,0,0"
       Orientation="Horizontal">
@@ -86,13 +86,14 @@
 
       <TextBlock Text="Select a stream to use:" TextTrimming="CharacterEllipsis" />
 
-    </StackPanel>
+    </StackPanel>-->
 
     <!--  SEARCH STREAMS  -->
     <Grid Grid.Row="2" Margin="0,15,0,0">
       <m:Card Padding="0">
         <TextBox
-          Margin="5"
+          Margin="0"
+          Padding="0"
           Classes="Solo Small"
           Text="{Binding SearchQuery}"
           Watermark="Search streams">
@@ -116,12 +117,74 @@
       </m:Card>
     </Grid>
 
-    <Grid Grid.Row="3" Margin="0,15,0,0">
+
+
+    <Grid
+      Grid.Row="3"
+      Margin="0,10,0,0"
+      ColumnDefinitions="*,*">
+
+      <!--<Button
+        Margin="0,0,7,0"
+        HorizontalAlignment="Stretch"
+        Command="{Binding NewStreamCommand}">
+        <Grid ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="Plus" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            VerticalAlignment="Center"
+            Classes="ButtonText"
+            Text="Create New"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>-->
+
+      <Button
+        Margin="0,0,7,0"
+        Padding="0"
+        HorizontalAlignment="Stretch"
+        assists:ShadowAssist.ShadowDepth="Depth0"
+        Background="Transparent"
+        Command="{Binding NewStreamCommand}"
+        Foreground="{DynamicResource PrimaryHueMidBrush}">
+        <Grid Margin="0" ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="Plus" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            Padding="0"
+            VerticalAlignment="Center"
+            Text="Create New"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+      <Button
+        Grid.Column="1"
+        Margin="7,0,0,0"
+        HorizontalAlignment="Stretch"
+        assists:ShadowAssist.ShadowDepth="Depth0"
+        Background="Transparent"
+        Command="{Binding AddFromUrlCommand}"
+        Foreground="{DynamicResource PrimaryHueMidBrush}">
+        <Grid ColumnDefinitions="auto,*">
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="Link" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            VerticalAlignment="Center"
+            Text="Add from URL"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+    </Grid>
+    <Grid Grid.Row="4" Margin="0,10,0,0">
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding InProgress}" />
     </Grid>
-
-
-    <m:Card Grid.Row="4" Padding="0,4">
+    <m:Card
+      Grid.Row="5"
+      Margin="0"
+      Padding="0,4">
       <ListBox
         assists:TransitionAssist.DisableTransitions="True"
         Background="Transparent"
@@ -259,42 +322,6 @@
 
       </ListBox>
     </m:Card>
-    <Grid
-      Grid.Row="5"
-      Margin="0,15,0,0"
-      ColumnDefinitions="*,*">
 
-      <Button
-        Margin="0,0,7,0"
-        HorizontalAlignment="Stretch"
-        Command="{Binding NewStreamCommand}">
-        <Grid ColumnDefinitions="auto,*">
-          <icons:MaterialIcon VerticalAlignment="Center" Kind="Plus" />
-          <TextBlock
-            Grid.Column="1"
-            Margin="8,0"
-            VerticalAlignment="Center"
-            Classes="ButtonText"
-            Text="Create New"
-            TextTrimming="CharacterEllipsis" />
-        </Grid>
-      </Button>
-      <Button
-        Grid.Column="1"
-        Margin="7,0,0,0"
-        HorizontalAlignment="Stretch"
-        Command="{Binding AddFromUrlCommand}">
-        <Grid ColumnDefinitions="auto,*">
-          <icons:MaterialIcon VerticalAlignment="Center" Kind="Link" />
-          <TextBlock
-            Grid.Column="1"
-            Margin="8,0"
-            VerticalAlignment="Center"
-            Classes="ButtonText"
-            Text="Add from URL"
-            TextTrimming="CharacterEllipsis" />
-        </Grid>
-      </Button>
-    </Grid>
   </Grid>
 </UserControl>
