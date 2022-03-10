@@ -26,8 +26,10 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling += Initialise;
 
       var specklePanel = application.CreateRibbonPanel("Speckle 2");
-      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 (old)", "Revit Connector (old)", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
       string path = typeof(App).Assembly.Location;
+#if REVIT2019
+      //desctopui 1
+      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 (old)", "Revit Connector (old)", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
 
       if (speckleButton != null)
       {
@@ -37,7 +39,7 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
-
+#else
       //desktopui 2
       var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
@@ -60,6 +62,11 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
+#endif
+
+
+
+
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
