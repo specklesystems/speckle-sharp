@@ -12,6 +12,7 @@ namespace DriverCSharp
   {
     private const string ProgID_SAP2000 = "CSI.SAP2000.API.SapObject";
     private const string ProgID_ETABS = "CSI.ETABS.API.ETABSObject";
+    //private const string ProgID_CSIBridge = "CSI.CSIBridge.API.CSIBridgeObject";
 
     static int Main(string[] args)
     {
@@ -89,7 +90,7 @@ namespace DriverCSharp
       // call Speckle plugin
       try
       {
-        SpeckleConnectorETABS.cPlugin p = new SpeckleConnectorETABS.cPlugin();
+        SpeckleConnectorCSI.cPlugin p = new SpeckleConnectorCSI.cPlugin();
         cPluginCallback cb = new PluginCallback();
 
         // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.

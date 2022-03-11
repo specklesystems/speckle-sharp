@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CSiAPIv1">
-      <HintPath>..\..\..\Projects\SAP2000\SAP2000\bin\x64\Debug-SAP2000\CSiAPIv1.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Computers and Structures\SAP2000 23\CSiAPIv1.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,9 +56,37 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConnectorETABSv18\ConnectorETABSv18.csproj">
-      <Project>{cc1f6133-9dd5-437c-ab23-380ad00267a2}</Project>
-      <Name>ConnectorETABSv18</Name>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{9b52a849-5841-4463-868f-ec4b83b96485}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
+      <Project>{0c1b9ae4-1d21-4c02-bdac-287e9660b5f6}</Project>
+      <Name>DesktopUI2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
+      <Project>{bf1a4f95-acf7-4353-b60a-4d79c2f44651}</Project>
+      <Name>PolygonMesher</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+      <Project>{f6f813fc-153b-49fe-9b33-25152be85ba8}</Project>
+      <Name>Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorCSIBridge\ConnectorCSIBridge.csproj">
+      <Project>{23be6e54-96c1-4373-89f3-e18a1c9807fd}</Project>
+      <Name>ConnectorCSIBridge</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorETABS\ConnectorETABS.csproj">
+      <Project>{81299d15-5788-414d-a962-1a568c251323}</Project>
+      <Name>ConnectorETABS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorSAFE\ConnectorSAFE.csproj">
+      <Project>{9d188843-8841-4a76-a844-efbe8e32ee05}</Project>
+      <Name>ConnectorSAFE</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorSAP2000\ConnectorSAP2000.csproj">
+      <Project>{31e0c098-6813-4571-ab96-a245e0fc1c23}</Project>
+      <Name>ConnectorSAP2000</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

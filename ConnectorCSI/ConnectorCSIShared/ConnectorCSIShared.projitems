@@ -9,5 +9,12 @@
     <Import_RootNamespace>ConnectorCSIShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)cPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.ClientOperations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Recieve.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorCSIUtils.cs" />
   </ItemGroup>
 </Project>
