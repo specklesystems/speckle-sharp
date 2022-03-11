@@ -75,6 +75,17 @@ namespace DesktopUI2.ViewModels
       get => !string.IsNullOrEmpty(Notification);
     }
 
+    private bool _showReport;
+
+    public bool ShowReport
+    {
+      get => _showReport;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _showReport, value);
+      }
+    }
+
     private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{StreamState.BranchName}"; }
 
     public SavedStreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
@@ -179,8 +190,7 @@ namespace DesktopUI2.ViewModels
 
     public async void SendCommand()
     {
-      Notification = "";
-      Progress = new ProgressViewModel();
+      Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
@@ -193,13 +203,12 @@ namespace DesktopUI2.ViewModels
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-        Notification = "Something went wrong, please check the report.";
+        ShowReport = true;
     }
 
     public async void ReceiveCommand()
     {
-      Notification = "";
-      Progress = new ProgressViewModel();
+      Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
       Progress.IsProgressing = false;
@@ -212,7 +221,14 @@ namespace DesktopUI2.ViewModels
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-        Notification = "Something went wrong, please check the report.";
+        ShowReport = true;
+    }
+
+    private void Reset()
+    {
+      Notification = "";
+      ShowReport = false;
+      Progress = new ProgressViewModel();
     }
 
     public void CancelSendOrReceive()
@@ -223,9 +239,11 @@ namespace DesktopUI2.ViewModels
 
     public void OpenReportCommand()
     {
+      ShowReport = true;
       var report = new Report();
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
+      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
       report.ShowDialog(MainWindow.Instance);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }

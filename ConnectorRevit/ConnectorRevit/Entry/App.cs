@@ -19,25 +19,27 @@ namespace Speckle.ConnectorRevit.Entry
     public Result OnStartup(UIControlledApplication application)
     {
       //Always initialize RevitTask ahead of time within Revit API context
-      RevitTask.Initialize();
+      RevitTask.Initialize(application);
 
       UICtrlApp = application;
       // Fires an init event, where we can get the UIApp
       UICtrlApp.Idling += Initialise;
 
       var specklePanel = application.CreateRibbonPanel("Speckle 2");
-      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 (old)", "Revit Connector (old)", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
       string path = typeof(App).Assembly.Location;
+#if REVIT2019
+      //desctopui 1
+      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
 
       if (speckleButton != null)
       {
         speckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
         speckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        speckleButton.ToolTip = "Speckle Connector for Revit (old)";
+        speckleButton.ToolTip = "Speckle Connector for Revit";
         speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
-
+#else
       //desktopui 2
       var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
@@ -60,6 +62,11 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
+#endif
+
+
+
+
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
@@ -95,22 +102,23 @@ namespace Speckle.ConnectorRevit.Entry
     {
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
-
-      SpeckleRevitCommand2.uiapp = AppInstance;
-
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-      // Set up bindings now as they subscribe to some document events and it's better to do it now
+
+#if REVIT2019
+      //DUI1 - Set up bindings now as they subscribe to some document events and it's better to do it now
       SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
-
-      //pre build app, so that it's faster to open up
+#else
+      //DUI2 - pre build app, so that it's faster to open up
+      SpeckleRevitCommand2.uiapp = AppInstance;
       SpeckleRevitCommand2.InitAvalonia();
       var bindings = new ConnectorBindingsRevit2(AppInstance);
       bindings.RegisterAppEvents();
       SpeckleRevitCommand2.Bindings = bindings;
       SchedulerCommand.Bindings = bindings;
+#endif
 
 
     }

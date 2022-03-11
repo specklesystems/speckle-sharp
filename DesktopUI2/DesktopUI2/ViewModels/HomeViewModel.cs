@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -34,13 +34,6 @@ namespace DesktopUI2.ViewModels
     #region bindings
     public ReactiveCommand<string, Unit> RemoveSavedStreamCommand { get; }
 
-    private int _selectedTab;
-    public int SelectedTab
-    {
-      get => _selectedTab;
-      private set => this.RaiseAndSetIfChanged(ref _selectedTab, value);
-    }
-
     private bool _showProgress;
     public bool InProgress
     {
@@ -48,8 +41,8 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _showProgress, value);
     }
 
-    private List<Stream> _streams;
-    public List<Stream> Streams
+    private List<StreamAccountWrapper> _streams;
+    public List<StreamAccountWrapper> Streams
     {
       get => _streams;
       private set => this.RaiseAndSetIfChanged(ref _streams, value);
@@ -96,22 +89,17 @@ namespace DesktopUI2.ViewModels
     public List<Account> Accounts
     {
       get => _accounts;
-      private set => this.RaiseAndSetIfChanged(ref _accounts, value);
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _accounts, value);
+        this.RaisePropertyChanged("HasMultipleAccounts");
+      }
     }
 
-
-    private Account _selectedAccount;
-    public Account SelectedAccount
+    public bool HasMultipleAccounts
     {
-      get => _selectedAccount;
-      set
-      {
-        //the account will be cached, so no need to include it in future operations
-        Analytics.TrackEvent(SelectedAccount, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Select" } });
-        this.RaiseAndSetIfChanged(ref _selectedAccount, value);
-        if (value != null)
-          GetStreams().ConfigureAwait(false); //update streams
-      }
+      get => Accounts.Count > 1;
+
     }
 
     #endregion
@@ -140,7 +128,6 @@ namespace DesktopUI2.ViewModels
       streams.ForEach(x => SavedStreams.Add(new SavedStreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
       this.RaisePropertyChanged("HasSavedStreams");
       SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
-      SelectedTab = SavedStreams.Any() ? 1 : 0;
     }
 
     //write changes to file every time they happen
@@ -173,7 +160,6 @@ namespace DesktopUI2.ViewModels
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
-      SelectedTab = 1;
 
       //for save&send and save&receive
       if (send)
@@ -187,19 +173,25 @@ namespace DesktopUI2.ViewModels
     {
 
       InProgress = true;
-      try
+
+      Streams = new List<StreamAccountWrapper>();
+
+      foreach (var account in Accounts)
       {
-        var client = new Client(SelectedAccount);
-        Streams = await client.StreamsGet();
+        try
+        {
+          var client = new Client(account);
+          Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account)));
+        }
+        catch (Exception e)
+        {
+          Dialogs.ShowDialog($"Could not get streams for {account.userInfo.email} on {account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+        }
       }
-      catch (Exception e)
-      {
-        Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
-      }
-      finally
-      {
-        InProgress = false;
-      }
+      Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+
+      InProgress = false;
+
     }
 
     private async Task SearchStreams()
@@ -212,38 +204,38 @@ namespace DesktopUI2.ViewModels
       if (SearchQuery.Length <= 2)
         return;
       InProgress = true;
-      try
+
+      Streams = new List<StreamAccountWrapper>();
+
+      foreach (var account in Accounts)
       {
-        var client = new Client(SelectedAccount);
-        Streams = await client.StreamSearch(SearchQuery);
+        try
+        {
+          var client = new Client(account);
+          Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account)));
+        }
+        catch (Exception e)
+        {
+
+        }
       }
-      catch (Exception)
-      {
-        // search prob returned no results
-        Streams = new List<Stream>();
-      }
-      finally
-      {
-        InProgress = false;
-      }
+
+      Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+
+      InProgress = false;
+
     }
 
     internal void Init()
     {
       Accounts = AccountManager.GetAccounts().ToList();
+      GetStreams();
 
       if (!Accounts.Any())
       {
         ShowNoAccountPopup();
         return;
       }
-
-      SelectedAccount = AccountManager.GetDefaultAccount();
-
-      ////restore saved streams list
-      //Bindings.SavedStreamsStates.ForEach(x => new SavedStreamViewModel(x, HostScreen, RemoveSavedStreamCommand));
-      ////propagate changes back to bindings
-      //SavedStreams.CollectionChanged += (s, e) => Bindings.SavedStreamsStates = SavedStreams.Select(x => x.StreamState).ToList();
     }
 
     private void RemoveSavedStream(string id)
@@ -253,7 +245,7 @@ namespace DesktopUI2.ViewModels
       {
         SavedStreams.Remove(s);
         Tracker.TrackPageview("stream", "remove");
-        Analytics.TrackEvent(SelectedAccount, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
+        Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
@@ -276,9 +268,9 @@ namespace DesktopUI2.ViewModels
         NegativeResult = new DialogResult("retry"),
         Borderless = true,
         MaxWidth = MainWindow.Instance.Width - 40,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
           {
-            new DialogResultButton
+            new DialogButton
             {
               Content = "TRY AGAIN",
               Result = "retry"
@@ -311,85 +303,47 @@ namespace DesktopUI2.ViewModels
     }
     public void ViewOnlineCommand(object parameter)
     {
-      var stream = parameter as Stream;
-      Process.Start(new ProcessStartInfo($"{SelectedAccount.serverInfo.url.TrimEnd('/')}/streams/{stream.id}") { UseShellExecute = true });
+      var streamAcc = parameter as StreamAccountWrapper;
+      Process.Start(new ProcessStartInfo($"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/streams/{streamAcc.Stream.id}") { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
-      Analytics.TrackEvent(SelectedAccount, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
+      Analytics.TrackEvent(streamAcc.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
     }
 
     public void SendCommand(object parameter)
     {
-      var streamState = new StreamState(SelectedAccount, parameter as Stream);
+      var streamAcc = parameter as StreamAccountWrapper;
+      var streamState = new StreamState(streamAcc);
       OpenStream(streamState);
     }
 
     public void ReceiveCommand(object parameter)
     {
-      var streamState = new StreamState(SelectedAccount, parameter as Stream) { IsReceiver = true };
+      var streamAcc = parameter as StreamAccountWrapper;
+      var streamState = new StreamState(streamAcc) { IsReceiver = true };
       OpenStream(streamState);
     }
 
     public async void NewStreamCommand()
     {
-      var dialog = DialogHelper.CreateTextFieldDialog(new TextFieldDialogBuilderParams()
+      var dialog = new NewStreamDialog(Accounts);
+      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      await dialog.ShowDialog(MainWindow.Instance);
+
+
+
+      if (dialog.Create)
       {
-        ContentHeader = "Create a new Stream",
-        SupportingText = "Create a new Stream by providing a name and description. New Streams are private by default.",
-        WindowTitle = "Create new Stream",
-        StartupLocation = WindowStartupLocation.CenterOwner,
-        Borderless = true,
-        Width = MainWindow.Instance.Width - 40,
-        TextFields = new TextFieldBuilderParams[]
-        {
-          new TextFieldBuilderParams
-          {
-              Classes = "Outline",
-              Label = "Name",
-              HelperText = "* Required",
-              MaxCountChars = 150,
-              Validater = ValidateName
-          },
-           new TextFieldBuilderParams
-          {
-              Label = "Description",
-              Classes = "Outline",
-          }
-        },
-
-        PositiveButton = new DialogResultButton
-        {
-          Content = "CREATE",
-          Result = "create"
-        },
-        NegativeButton = new DialogResultButton
-        {
-          Content = "CANCEL",
-          Result = "cancel"
-        },
-      });
-
-#if DEBUG
-      dialog.GetWindow().AttachDevTools(KeyGesture.Parse("CTRL+R"));
-#endif
-
-      var result = await dialog.ShowDialog(MainWindow.Instance);
-
-      if (result.GetResult == "create")
-      {
-        var name = result.GetFieldsResult()[0].Text;
-        var description = result.GetFieldsResult()[1].Text;
-
         try
         {
-          var client = new Client(SelectedAccount);
-          var streamId = await client.StreamCreate(new StreamCreateInput { description = description, name = name, isPublic = false });
+          var client = new Client(dialog.Account);
+          var streamId = await client.StreamCreate(new StreamCreateInput { description = dialog.Description, name = dialog.StreamName, isPublic = dialog.IsPublic });
           var stream = await client.StreamGet(streamId);
-          var streamState = new StreamState(SelectedAccount, stream);
+          var streamState = new StreamState(dialog.Account, stream);
 
           OpenStream(streamState);
 
           Tracker.TrackPageview(Tracker.STREAM_CREATE);
-          Analytics.TrackEvent(SelectedAccount, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Create" } });
+          Analytics.TrackEvent(dialog.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Create" } });
 
           GetStreams().ConfigureAwait(false); //update streams
         }
@@ -415,49 +369,16 @@ namespace DesktopUI2.ViewModels
       if (Uri.TryCreate(clipboard, UriKind.Absolute, out uri))
         defaultText = clipboard;
 
-      var dialog = DialogHelper.CreateTextFieldDialog(new TextFieldDialogBuilderParams()
+      var dialog = new AddFromUrlDialog();
+      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      await dialog.ShowDialog(MainWindow.Instance);
+
+
+      if (dialog.Add)
       {
-        ContentHeader = "Add stream by URL",
-        SupportingText = "You can use a Stream, Branch, or Commit URL.",
-        WindowTitle = "Add stream by URL",
-        StartupLocation = WindowStartupLocation.CenterOwner,
-        Borderless = true,
-        Width = MainWindow.Instance.Width - 40,
-        TextFields = new TextFieldBuilderParams[]
-        {
-          new TextFieldBuilderParams
-          {
-              Classes = "Outline",
-              Label = "URL",
-              Validater = ValidateUrl,
-              DefaultText = defaultText
-          },
-        },
-        PositiveButton = new DialogResultButton
-        {
-          Content = "ADD",
-          Result = "add"
-        },
-        NegativeButton = new DialogResultButton
-        {
-          Content = "CANCEL",
-          Result = "cancel"
-        },
-      });
-
-#if DEBUG
-      dialog.GetWindow().AttachDevTools(KeyGesture.Parse("CTRL+R"));
-#endif
-
-      var result = await dialog.ShowDialog(MainWindow.Instance);
-
-      if (result.GetResult == "add")
-      {
-        var url = result.GetFieldsResult()[0].Text;
-
         try
         {
-          var sw = new StreamWrapper(url);
+          var sw = new StreamWrapper(dialog.Url);
           var account = await sw.GetAccount();
           var client = new Client(account);
           var stream = await client.StreamGet(sw.StreamId);
@@ -466,7 +387,7 @@ namespace DesktopUI2.ViewModels
           OpenStream(streamState);
 
           Tracker.TrackPageview("stream", "add-from-url");
-          Analytics.TrackEvent(SelectedAccount, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Add From URL" } });
+          Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Add From URL" } });
         }
         catch (Exception e)
         {

@@ -34,8 +34,6 @@
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
     <None Remove="Views\MainWindow.xaml" />
-    <None Remove="Views\Pages\HomeControls\AllStreams.xaml" />
-    <None Remove="Views\Pages\HomeControls\SavedStream.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
@@ -43,6 +41,9 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+    <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
+    <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
+    <None Remove="Views\Windows\QuickOpsDialog.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
     <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Playground.xaml">
@@ -101,12 +102,6 @@
     <AvaloniaXaml Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\HomeControls\AllStreams.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\HomeControls\SavedStream.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\HomeControls\SavedStreams.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -125,6 +120,15 @@
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\AddFromUrlDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\NewStreamDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\QuickOpsDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -136,11 +140,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.8" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.8" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.8" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.8" />
-    <PackageReference Include="Material.Avalonia" Version="2.4.1" />
+    <PackageReference Include="Avalonia" Version="0.10.13" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.13" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0" />
     <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
@@ -162,17 +166,11 @@
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\MainWindow - Copy.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Update="Views\Scheduler.xaml.cs">
+      <DependentUpon>Scheduler.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\HomeControls\AllStreams.xaml.cs">
-      <DependentUpon>AllStreams.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\HomeControls\SavedStream.xaml.cs">
-      <DependentUpon>SavedStream.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\HomeControls\SavedStreams.xaml.cs">
       <DependentUpon>SavedStreams.xaml</DependentUpon>
@@ -191,6 +189,15 @@
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\AddFromUrlDialog.xaml.cs">
+      <DependentUpon>AddFromUrlDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\NewStreamDialog.xaml.cs">
+      <DependentUpon>NewStreamDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\QuickOpsDialog.xaml.cs">
+      <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Report.xaml.cs">
       <DependentUpon>Report.xaml</DependentUpon>
