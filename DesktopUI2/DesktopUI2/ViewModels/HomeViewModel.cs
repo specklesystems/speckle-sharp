@@ -34,13 +34,6 @@ namespace DesktopUI2.ViewModels
     #region bindings
     public ReactiveCommand<string, Unit> RemoveSavedStreamCommand { get; }
 
-    private int _selectedTab;
-    public int SelectedTab
-    {
-      get => _selectedTab;
-      private set => this.RaiseAndSetIfChanged(ref _selectedTab, value);
-    }
-
     private bool _showProgress;
     public bool InProgress
     {
@@ -109,23 +102,6 @@ namespace DesktopUI2.ViewModels
 
     }
 
-
-
-
-    //private Account _selectedAccount;
-    //public Account SelectedAccount
-    //{
-    //  get => _selectedAccount;
-    //  set
-    //  {
-    //    //the account will be cached, so no need to include it in future operations
-    //    Analytics.TrackEvent(SelectedAccount, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Select" } });
-    //    this.RaiseAndSetIfChanged(ref _selectedAccount, value);
-    //    if (value != null)
-    //      GetStreams().ConfigureAwait(false); //update streams
-    //  }
-    //}
-
     #endregion
 
     public HomeViewModel(IScreen screen)
@@ -152,7 +128,6 @@ namespace DesktopUI2.ViewModels
       streams.ForEach(x => SavedStreams.Add(new SavedStreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
       this.RaisePropertyChanged("HasSavedStreams");
       SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
-      SelectedTab = SavedStreams.Any() ? 1 : 0;
     }
 
     //write changes to file every time they happen
@@ -185,7 +160,6 @@ namespace DesktopUI2.ViewModels
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
-      SelectedTab = 1;
 
       //for save&send and save&receive
       if (send)
