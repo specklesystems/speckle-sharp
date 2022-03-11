@@ -2,16 +2,12 @@
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DesktopUI2
@@ -61,9 +57,14 @@ namespace DesktopUI2
       return "Some Random File";
     }
 
-    public override string GetHostAppName()
+    public override string GetHostAppNameVersion()
     {
       return "Desktop";
+    }
+
+    public override string GetHostAppName()
+    {
+      return "dui2";
     }
 
     public override List<string> GetObjectsInView()
@@ -288,8 +289,7 @@ namespace DesktopUI2
         }
         catch (Exception e)
         {
-          //TODO
-          //state.Errors.Add(e);
+          progress.Report.LogOperationError(e);
         }
       }
 

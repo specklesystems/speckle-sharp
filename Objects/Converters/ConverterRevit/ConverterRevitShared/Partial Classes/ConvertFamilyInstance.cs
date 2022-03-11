@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
-      DB.Level level = LevelToNative(speckleFi.level);
+      DB.Level level = ConvertLevelToRevit(speckleFi.level);
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
       //try update existing
@@ -185,7 +185,7 @@ namespace Objects.Converter.Revit
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
       }
 
-      speckleFi.displayMesh = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
+      speckleFi.displayValue = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
@@ -218,7 +218,7 @@ namespace Objects.Converter.Revit
 
       // TODO:
       // revitFi.GetSubelements();
-      //Report.Log($"Converted FamilyInstance {revitFi.Id}");
+      Report.Log($"Converted FamilyInstance {revitFi.Id}");
       return speckleFi;
     }
 

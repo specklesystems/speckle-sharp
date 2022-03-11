@@ -15,6 +15,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
@@ -48,7 +49,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public GeometricModel GeomModel { get; private set; }
     public List<string> civilElementKeys => new List<string> { "Alignment" };
 #endif
-    
+
 #if (OPENBUILDINGS)
     public bool ExportGridLines { get; set; } = true;
 #else
@@ -91,7 +92,10 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppName() => Utils.BentleyAppName;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName;
+
+    public override string GetHostAppName() => Utils.Slug;
+
 
     public override string GetDocumentId()
     {
@@ -168,6 +172,11 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return filterList;
     }
 
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
+    }
+
     //TODO
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
@@ -184,7 +193,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
       var stream = await state.Client.StreamGet(state.StreamId);
       var previouslyReceivedObjects = state.ReceivedObjects;
@@ -242,7 +251,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           streamId = stream?.id,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Utils.BentleyAppName
+          sourceApplication = Utils.VersionedAppName
         });
       }
       catch
@@ -253,7 +262,8 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         return state;
 
       // invoke conversions on the main thread via control
-      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+      int count = 0;
+      var flattenedObjects = FlattenCommitObject(commitObject, converter, ref count);
       List<ApplicationPlaceholderObject> newPlaceholderObjects;
       if (Control.InvokeRequired)
         newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
@@ -341,12 +351,14 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Recurses through the commit object and flattens it
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
+    /// <param name="count"></param>
+    /// <param name="foundConvertibleMember"></param>
     /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter, ref int count, bool foundConvertibleMember = false)
     {
       List<Base> objects = new List<Base>();
 
@@ -355,34 +367,51 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         if (converter.CanConvertToNative(@base))
         {
           objects.Add(@base);
-
           return objects;
         }
         else
         {
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+            count++;
+
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, ref count, foundConvertibleMember);
+            if (nestedObjects.Count > 0)
+            {
+              objects.AddRange(nestedObjects);
+              foundConvertibleMember = true;
+            }
           }
+
+          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
+            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
+
           return objects;
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
+        count = 0;
         foreach (var listObj in list)
-        {
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
+          objects.AddRange(FlattenCommitObject(listObj, converter, ref count));
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
+        count = 0;
         foreach (DictionaryEntry kvp in dict)
-        {
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, ref count));
         return objects;
       }
 
@@ -412,7 +441,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.BentleyAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var streamId = state.StreamId;
       var client = state.Client;
 
@@ -627,7 +656,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         objectId = commitObjId,
         branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-        sourceApplication = Utils.BentleyAppName
+        sourceApplication = Utils.VersionedAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -793,9 +822,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           return selection;
       }
     }
-#endregion
+    #endregion
 
-#region helper methods
+    #region helper methods
     delegate void WriteStateDelegate(DgnFile File, List<StreamState> DocumentStreams);
 
     /// <summary>
@@ -808,6 +837,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       else
         StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
     }
-#endregion
+    #endregion
   }
 }

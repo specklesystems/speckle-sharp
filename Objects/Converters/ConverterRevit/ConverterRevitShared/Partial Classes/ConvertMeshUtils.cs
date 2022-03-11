@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.Other;
 
 using DB = Autodesk.Revit.DB;
 
@@ -11,31 +12,25 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Mesh GetElementMesh(DB.Element element, List<DB.Element> subElements = null)
+    public List<Mesh> GetElementMesh(DB.Element element, List<DB.Element> subElements = null)
     {
-      Mesh mesh = new Mesh();
-
       var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
       if (!allSolids.Any()) //it's a mesh!
       {
         var geom = element.get_Geometry(new Options());
-        mesh = GetMesh(geom);
+        return GetMeshes(geom);
       }
-      else
+
+      if (subElements != null)
       {
-        if (subElements != null)
+        foreach (var sb in subElements)
         {
-          foreach (var sb in subElements)
-          {
-            allSolids.AddRange(GetElementSolids(sb));
-          }
+          allSolids.AddRange(GetElementSolids(sb));
         }
-
-        (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(allSolids);
       }
-
-      mesh.units = ModelUnits;
-      return mesh;
+      
+      return GetMeshesFromSolids(allSolids);
+      
     }
 
     /// <summary>
@@ -45,13 +40,10 @@ namespace Objects.Converter.Revit
     /// <param name="opt">The view options to use</param>
     /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
     /// <returns></returns>
-    public Mesh GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+    public List<Mesh> GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
-      var mesh = new Mesh();
-      mesh.units = ModelUnits;
-
       List<Solid> solids = new List<Solid>();
-
+      
       if (elem is Group g)
       {
         foreach (var id in g.GetMemberIds())
@@ -63,10 +55,8 @@ namespace Objects.Converter.Revit
       }
       else
         solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-
-
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solids);
-      return mesh;
+      
+      return GetMeshesFromSolids(solids);
     }
 
     /// <summary>
@@ -78,25 +68,20 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
-      if (null == elem)
-      {
-        return null;
-      }
-      if (null == opt)
-      {
-        opt = new Options();
-      }
-
       List<Solid> solids = new List<Solid>();
-      GeometryElement gElem = null;
+      
+      if (null == elem) return solids;
+      
+      opt ??= new Options();
+      
+      GeometryElement gElem;
       try
       {
-        if (useOriginGeom4FamilyInstance && elem is Autodesk.Revit.DB.FamilyInstance)
+        if (useOriginGeom4FamilyInstance && elem is DB.FamilyInstance fInst)
         {
           // we transform the geometry to instance coordinate to reflect actual geometry
-          Autodesk.Revit.DB.FamilyInstance fInst = elem as Autodesk.Revit.DB.FamilyInstance;
           gElem = fInst.GetOriginalGeometry(opt);
-          Transform trf = fInst.GetTransform();
+          DB.Transform trf = fInst.GetTransform();
           if (!trf.IsIdentity)
             gElem = gElem.GetTransformed(trf);
         }
@@ -105,16 +90,9 @@ namespace Objects.Converter.Revit
           gElem = elem.get_Geometry(opt);
         }
 
-        if (null == gElem)
-        {
-          return null;
-        }
-        IEnumerator<GeometryObject> gIter = gElem.GetEnumerator();
-        gIter.Reset();
-        while (gIter.MoveNext())
-        {
-          solids.AddRange(GetSolids(gIter.Current));
-        }
+        if (gElem == null ) return solids;
+
+        solids.AddRange(gElem.SelectMany(GetSolids));
       }
       catch (Exception ex)
       {
@@ -123,35 +101,77 @@ namespace Objects.Converter.Revit
       }
       return solids;
     }
-
-    private Mesh GetMesh(GeometryElement geom)
+    
+    private List<Mesh> GetMeshes(GeometryElement geom)
     {
-      var speckleMesh = new Mesh();
+      MeshBuildHelper buildHelper = new MeshBuildHelper();
+
       foreach (var element in geom)
       {
-        if (element is DB.Mesh)
+        if (element is DB.Mesh mesh)
         {
-          var mesh = (DB.Mesh)element;
-
-          foreach (var vert in mesh.Vertices)
-          {
-            var vertex = PointToSpeckle(vert);
-            speckleMesh.vertices.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
-          }
-
-          for (int i = 0; i < mesh.NumTriangles; i++)
-          {
-            var triangle = mesh.get_Triangle(i);
-            var A = triangle.get_Index(0);
-            var B = triangle.get_Index(1);
-            var C = triangle.get_Index(2);
-            speckleMesh.faces.Add(0);
-            speckleMesh.faces.AddRange(new int[] { (int)A, (int)B, (int)C });
-          }
+          var revitMaterial = Doc.GetElement(mesh.MaterialElementId) as Material;
+          Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
+          
+          ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices);
         }
       }
-      speckleMesh.units = ModelUnits;
-      return speckleMesh;
+      
+      return buildHelper.GetAllValidMeshes();
+    }
+    
+    /// <summary>
+    /// Helper class for a single <see cref="Objects.Geometry.Mesh"/> object for each <see cref="DB.Material"/>
+    /// </summary>
+    private class MeshBuildHelper
+    {
+      //Lazy initialised Dictionary of Revit material (hash) -> Speckle material
+      private readonly Dictionary<int, RenderMaterial> materialMap = new Dictionary<int, RenderMaterial>();
+      public RenderMaterial GetOrCreateMaterial(Material revitMaterial)
+      {
+        if (revitMaterial == null) return null;
+        
+        int hash = Hash(revitMaterial); //Key using the hash as we may be given several instances with identical material properties
+        if (materialMap.TryGetValue(hash, out RenderMaterial m))
+        {
+          return m;
+        }
+        var material = RenderMaterialToSpeckle(revitMaterial);
+        materialMap.Add(hash, material);
+        return material;
+      }
+      
+      private static int Hash(Material mat)
+        => mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
+      
+      //Mesh to use for null materials (because dictionary keys can't be null)
+      private Mesh nullMesh;
+      //Lazy initialised Dictionary of revit material (hash) -> Speckle Mesh
+      private readonly Dictionary<int, Mesh> meshMap = new Dictionary<int, Mesh>();
+      public Mesh GetOrCreateMesh(Material mat, string units)
+      {
+        if (mat == null) return nullMesh ??= new Mesh {units = units};
+
+        int materialHash = Hash(mat);
+        if (meshMap.TryGetValue(materialHash, out Mesh m)) return m;
+        
+        var mesh = new Mesh {
+          ["renderMaterial"] = GetOrCreateMaterial(mat),
+          units = units
+        };
+        meshMap.Add(materialHash, mesh);
+        return mesh;
+      }
+
+      public List<Mesh> GetAllMeshes()
+      {
+        List<Mesh> meshes = meshMap.Values.ToList();
+        if(nullMesh != null) meshes.Add(nullMesh);
+        return meshes;
+      }
+      
+      public List<Mesh> GetAllValidMeshes() => GetAllMeshes().FindAll(m => m.vertices.Count > 0 && m.faces.Count > 0);
+      
     }
 
     /// <summary>
@@ -162,30 +182,26 @@ namespace Objects.Converter.Revit
     private List<Solid> GetSolids(GeometryObject gObj)
     {
       List<Solid> solids = new List<Solid>();
-      if (gObj is Solid) // already solid
+
+      void Iterate(GeometryObject geometryObject)
       {
-        Solid solid = gObj as Solid;
-        if (solid.Faces.Size > 0 && Math.Abs(solid.Volume) > 0) // skip invalid solid
-          solids.Add(gObj as Solid);
-      }
-      else if (gObj is GeometryInstance) // find solids from GeometryInstance
-      {
-        IEnumerator<GeometryObject> gIter2 = (gObj as GeometryInstance).GetInstanceGeometry().GetEnumerator();
-        gIter2.Reset();
-        while (gIter2.MoveNext())
+        if (geometryObject is Solid gSolid) // already solid
         {
-          solids.AddRange(GetSolids(gIter2.Current));
+          if (gSolid.Faces.Size > 0 && Math.Abs(gSolid.Volume) > 0) // skip invalid solid
+            solids.Add(gSolid);
+        }
+        else if (geometryObject is GeometryInstance gInstance) // find solids from GeometryInstance
+        {
+          foreach (var g in gInstance.GetInstanceGeometry()) Iterate(g);
+        }
+        else if (geometryObject is GeometryElement gElement) // find solids from GeometryElement
+        {
+          foreach (var g in gElement) Iterate(g);
         }
       }
-      else if (gObj is GeometryElement) // find solids from GeometryElement
-      {
-        IEnumerator<GeometryObject> gIter2 = (gObj as GeometryElement).GetEnumerator();
-        gIter2.Reset();
-        while (gIter2.MoveNext())
-        {
-          solids.AddRange(GetSolids(gIter2.Current));
-        }
-      }
+
+      Iterate(gObj);
+
       return solids;
     }
 
@@ -198,7 +214,6 @@ namespace Objects.Converter.Revit
     {
       var faceArr = new List<int>();
       var vertexArr = new List<double>();
-      var prevVertCount = 0;
 
       if (solids == null) return (faceArr, vertexArr);
 
@@ -206,29 +221,66 @@ namespace Objects.Converter.Revit
       {
         foreach (Face face in solid.Faces)
         {
-          var m = face.Triangulate();
-          var points = m.Vertices;
-
-          foreach (var vert in m.Vertices)
-          {
-            var vertex = PointToSpeckle(vert);
-            vertexArr.AddRange(new double[] { vertex.x, vertex.y, vertex.z });
-          }
-
-          for (int i = 0; i < m.NumTriangles; i++)
-          {
-            var triangle = m.get_Triangle(i);
-
-            faceArr.Add(0); // TRIANGLE flag
-            faceArr.Add((int)triangle.get_Index(0) + prevVertCount);
-            faceArr.Add((int)triangle.get_Index(1) + prevVertCount);
-            faceArr.Add((int)triangle.get_Index(2) + prevVertCount);
-          }
-          prevVertCount += m.Vertices.Count;
+          ConvertMeshData(face.Triangulate(), faceArr, vertexArr);
         }
       }
 
       return (faceArr, vertexArr);
     }
+    
+    /// <summary>
+    /// Given a collection of <paramref name="solids"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
+    /// </summary>
+    /// <param name="solids"></param>
+    /// <returns></returns>
+    public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids)
+    {
+      MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
+
+      foreach (Solid solid in solids)
+      {
+        foreach (Face face in solid.Faces)
+        {
+          Material faceMaterial = Doc.GetElement(face.MaterialElementId) as Material;
+          Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
+          ConvertMeshData(face.Triangulate(), m.faces, m.vertices);
+        }
+      }
+
+      return meshBuildHelper.GetAllValidMeshes();
+    }
+
+
+    /// <summary>
+    /// Given <paramref name="mesh"/>, will convert and add triangle data to <paramref name="faces"/> and <paramref name="vertices"/>
+    /// </summary>
+    /// <param name="mesh">The revit mesh to convert</param>
+    /// <param name="faces">The faces list to add to</param>
+    /// <param name="vertices">The vertices list to add to</param>
+    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices)
+    {
+      int faceIndexOffset = vertices.Count / 3;
+      
+      vertices.Capacity += mesh.Vertices.Count * 3;
+      foreach (var vert in mesh.Vertices)
+      {
+        var (x, y, z) = PointToSpeckle(vert);
+        vertices.Add(x);
+        vertices.Add(y);
+        vertices.Add(z);
+      }
+
+      faces.Capacity += mesh.NumTriangles * 4;
+      for (int i = 0; i < mesh.NumTriangles; i++)
+      {
+        var triangle = mesh.get_Triangle(i);
+
+        faces.Add(0); // TRIANGLE flag
+        faces.Add((int)triangle.get_Index(0) + faceIndexOffset);
+        faces.Add((int)triangle.get_Index(1) + faceIndexOffset);
+        faces.Add((int)triangle.get_Index(2) + faceIndexOffset);
+      }
+    }
+
   }
 }

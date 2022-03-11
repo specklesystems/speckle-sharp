@@ -66,6 +66,7 @@
     <Compile Include="Extras\SendReceiveDataParam.cs" />
     <Compile Include="Extras\Speckle.IGH_Goo.cs" />
     <Compile Include="Extras\SpeckleBaseParam.cs" />
+    <Compile Include="Extras\SpeckleStatefulParam.cs" />
     <Compile Include="Extras\SpeckleStateTag.cs" />
     <Compile Include="Extras\SpeckleStreamParam.cs" />
     <Compile Include="Extras\TreeBuilder.cs" />

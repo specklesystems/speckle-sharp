@@ -1,4 +1,5 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using System;
+using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -11,16 +12,16 @@ using Objects.Primitive;
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, IDisplayMesh, ITransformable<Brep>
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayMesh, IDisplayValue<List<Mesh>>
   {
     public string provenance { get; set; }
     public Box bbox { get; set; }
     public double area { get; set; }
     public double volume { get; set; }
     public string units { get; set; }
-
+    
     [DetachProperty]
-    public Mesh displayMesh { get; set; }
+    public List<Mesh> displayValue { get; set; }
 
     /// <summary>
     /// Gets or sets the list of surfaces in this <see cref="Brep"/> instance.
@@ -231,17 +232,15 @@ namespace Objects.Geometry
       IsClosed = false;
       Orientation = BrepOrientation.None;
     }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="Brep"/> class.
-    /// </summary>
-    /// <param name="provenance"></param>
-    /// <param name="displayValue"></param>
-    /// <param name="applicationId"></param>
-    public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null) : this()
+    
+    public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null)
+      : this(provenance, new List<Mesh>{displayValue}, units, applicationId)
+    { }
+    
+    public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters, string applicationId = null) : this()
     {
       this.provenance = provenance;
-      this.displayMesh = displayValue;
+      this.displayValue = displayValues;
       this.applicationId = applicationId;
       this.units = units;
     }
@@ -314,7 +313,13 @@ namespace Objects.Geometry
     /// <returns></returns>
     public bool TransformTo(Transform transform, out Brep brep)
     {
-      displayMesh.TransformTo(transform, out var mesh);
+      var displayValues = new List<Mesh>(displayValue.Count);
+      foreach (Mesh v in displayValue)
+      {
+        v.TransformTo(transform, out Mesh mesh);
+        displayValues.Add(mesh);
+      }
+
       var surfaces = new List<Surface>(Surfaces.Count);
       foreach ( var srf in Surfaces )
       {
@@ -326,7 +331,7 @@ namespace Objects.Geometry
       {
         provenance = provenance,
         units = units,
-        displayMesh = mesh,
+        displayValue = displayValues,
         Surfaces = surfaces,
         Curve3D = transform.ApplyToCurves(Curve3D, out bool success3D),
         Curve2D = transform.ApplyToCurves(Curve2D, out bool success2D),
@@ -357,6 +362,14 @@ namespace Objects.Geometry
 
       return success2D && success3D;
     }
+    
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> {value};
+    }
+    #endregion
   }
 
   /// <summary>

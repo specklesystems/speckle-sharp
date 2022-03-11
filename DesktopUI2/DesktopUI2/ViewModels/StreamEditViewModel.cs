@@ -1,16 +1,13 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
-using Material.Dialog;
+using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -200,7 +197,7 @@ namespace DesktopUI2.ViewModels
       {
         foreach (var setting in Settings)
         {
-          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
+          var savedSetting = streamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
           if (savedSetting != null)
             setting.Selection = savedSetting.Selection;
         }
@@ -290,39 +287,68 @@ namespace DesktopUI2.ViewModels
 
     private async void SendCommand()
     {
-      Progress = new ProgressViewModel();
-      Progress.IsProgressing = true;
-      var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
-      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+      try
       {
-        if (x.Result.GetResult == "cancel")
-          Progress.CancellationTokenSource.Cancel();
+        Progress = new ProgressViewModel();
+        Progress.ProgressTitle = "Sending to Speckle 🚀";
+        Progress.IsProgressing = true;
+
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = Progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.ShowDialog(MainWindow.Instance);
+        await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Quick" } });
+          Tracker.TrackPageview(Tracker.SEND);
+        }
+        else
+          dialog.Close(); // if user cancelled close automatically
+
+        MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+
       }
-        );
-      await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
-      dialog.GetWindow().Close();
-      Progress.IsProgressing = false;
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+      catch (Exception ex)
+      {
+
+      }
     }
 
     private async void ReceiveCommand()
     {
-      Progress = new ProgressViewModel();
-      Progress.IsProgressing = true;
-      var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
-
-      _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
+      try
       {
-        if (x.Result.GetResult == "cancel")
-          Progress.CancellationTokenSource.Cancel();
-      });
+        Progress = new ProgressViewModel();
+        Progress.ProgressTitle = "Receiving from Speckle 🚀";
+        Progress.IsProgressing = true;
 
-      await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
-      dialog.GetWindow().Close();
-      Progress.IsProgressing = false;
-      //TODO: display other dialog if operation failed etc
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = Progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.ShowDialog(MainWindow.Instance);
+
+        await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
+
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "method", "Quick" } });
+          Tracker.TrackPageview(Tracker.RECEIVE);
+        }
+        else
+          dialog.Close(); // if user cancelled close automatically
+
+        MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     private async void OpenSettingsCommand()

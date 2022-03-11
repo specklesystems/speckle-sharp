@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -79,7 +78,7 @@ namespace Speckle.Core.Api
           streamId = sw.StreamId,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Applications.Other
+          sourceApplication = "Other"
         });
       }
       catch
@@ -116,7 +115,7 @@ namespace Speckle.Core.Api
         onErrorAction, disposeTransports: true);
 
       Tracker.TrackPageview(Tracker.SEND);
-      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Send);
 
       return await client.CommitCreate(
             new CommitCreateInput

@@ -218,7 +218,16 @@ namespace Objects.Converter.AutocadCivil
     public Arc ArcToSpeckle(CircularArc2d arc)
     {
       var interval = arc.GetInterval();
-      var _arc = new Arc(PlaneToSpeckle(new AcadGeo.Plane(new Point3d(arc.Center.X, arc.Center.Y, 0), Vector3d.ZAxis)), arc.Radius, arc.StartAngle, arc.EndAngle, Math.Abs(arc.EndAngle - arc.StartAngle), ModelUnits);
+
+      // find arc plane (normal is in clockwise dir)
+      var center3 = new Point3d(arc.Center.X, arc.Center.Y, 0);
+      AcadGeo.Plane plane = (arc.IsClockWise) ? new AcadGeo.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1)) : new AcadGeo.Plane(center3, Vector3d.ZAxis);
+
+      // calculate total angle. TODO: This needs to be validated across all possible arc orientations
+      var totalAngle = (arc.IsClockWise) ? System.Math.Abs(arc.EndAngle - arc.StartAngle) : System.Math.Abs(arc.EndAngle - arc.StartAngle);
+
+      // create arc
+      var _arc = new Arc(PlaneToSpeckle(plane), arc.Radius, arc.StartAngle, arc.EndAngle, totalAngle, ModelUnits);
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
@@ -316,6 +325,22 @@ namespace Objects.Converter.AutocadCivil
     // Spiral
 
     // Polyline
+    private Polyline PolylineToSpeckle(Point3dCollection points, bool closed)
+    {
+      double length = 0;
+      List<Point3d> vertices = new List<Point3d>();
+      foreach (Point3d point in points)
+      {
+        if (vertices.Count != 0) length += point.DistanceTo(vertices.Last());
+        vertices.Add(point);
+      }
+
+      var _polyline = new Polyline(PointsToFlatList(vertices), ModelUnits);
+      _polyline.closed = closed || vertices.First().IsEqualTo(vertices.Last()) ? true : false;
+      _polyline.length = length;
+
+      return _polyline;
+    }
     public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AcadDB.Polylines can have linear or arc segments. This will convert to linear
     {
       List<Point3d> vertices = new List<Point3d>();

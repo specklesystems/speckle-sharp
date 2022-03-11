@@ -52,13 +52,13 @@ namespace Objects.Converter.MicroStationOpen
   public partial class ConverterMicroStationOpen : ISpeckleConverter
   {
 #if MICROSTATION
-    public static string BentleyAppName = Applications.MicroStation;
+    public static string BentleyAppName = VersionedHostApplications.MicroStation;
 #elif OPENROADS
-    public static string BentleyAppName = Applications.OpenRoads;
+    public static string BentleyAppName = VersionedHostApplications.OpenRoads;
 #elif OPENRAIL
-    public static string BentleyAppName = Applications.OpenRail;
+    public static string BentleyAppName = VersionedHostApplications.OpenRail;
 #elif OPENBUILDINGS
-    public static string BentleyAppName = Applications.OpenBuildings;
+    public static string BentleyAppName = VersionedHostApplications.OpenBuildings;
 #endif
     public string Description => "Default Speckle Kit for MicroStation, OpenRoads, OpenRail and OpenBuildings";
     public string Name => nameof(ConverterMicroStationOpen);
@@ -385,17 +385,6 @@ namespace Objects.Converter.MicroStationOpen
         case Mesh _:
           //case Surface _:
           //case Alignment _:                    ;
-          return true;
-
-        //TODO: This types are not supported in Bentley connectors!
-        case Brep _:
-        case Pointcloud _:
-        case ModelCurve _:
-        case DirectShape _:
-        case View3D _:
-        case BlockDefinition _:
-        case BlockInstance _:
-        case Hatch _:
           return true;
 
         default:

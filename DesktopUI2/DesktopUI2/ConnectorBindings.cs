@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Sentry.Reflection;
-using Speckle.Newtonsoft.Json;
-using DesktopUI2.Models;
+﻿using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using System.Collections.ObjectModel;
+using Sentry.Reflection;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DesktopUI2
 {
@@ -44,6 +39,12 @@ namespace DesktopUI2
     }
 
     #region abstract methods
+
+    /// <summary>
+    /// Gets the current host application name with version.
+    /// </summary>
+    /// <returns></returns>
+    public abstract string GetHostAppNameVersion();
 
     /// <summary>
     /// Gets the current host application name.

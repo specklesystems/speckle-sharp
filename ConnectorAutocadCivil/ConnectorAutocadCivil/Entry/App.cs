@@ -96,10 +96,10 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       if (panel == null)
         return;
       RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
-      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
+      RibbonButton button = CreateButton("Connector " + Utils.AppName + " (old)", "SpeckleOld", panel, null, speckleTip, "logo");
 
       // DUI2
-      RibbonButton button2 = CreateButton("Connector " + Utils.AppName + "New UI (alpha)!", "SpeckleNewUi", panel, null, speckleTip, "logo");
+      RibbonButton button2 = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
@@ -229,10 +229,10 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         if (btn != null)
           switch (commandParameter)
           {
-            case "Speckle":
+            case "SpeckleOld":
               SpeckleAutocadCommand.SpeckleCommand();
               break;
-            case "SpeckleNewUi":
+            case "Speckle":
               SpeckleAutocadCommand2.SpeckleCommand();
               break;
             case "SpeckleCommunity":

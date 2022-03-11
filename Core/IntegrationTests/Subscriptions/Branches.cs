@@ -41,7 +41,7 @@ namespace TestsIntegration.Subscriptions
       client.SubscribeBranchCreated(streamId);
       client.OnBranchCreated += Client_OnBranchCreated;
 
-      Thread.Sleep(1000); //let server catch-up
+      Thread.Sleep(5000); //let server catch-up
 
       var branchInput = new BranchCreateInput
       {

@@ -15,11 +15,9 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Attributes;
 using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
-using Sentry.PlatformAbstractions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -58,8 +56,8 @@ namespace ConnectorGrasshopper.Ops
       BaseWorker = new VariableInputSendComponentWorker(this);
       Attributes = new VariableInputSendComponentAttributes(this);
     }
-    
-    
+
+
     public override bool Write(GH_IWriter writer)
     {
       writer.SetBoolean("UseDefaultCache", UseDefaultCache);
@@ -108,8 +106,8 @@ namespace ConnectorGrasshopper.Ops
         GH_ParamAccess.tree, "");
       pManager.AddParameter(new SendReceiveDataParam
       {
-        Name = "Data", 
-        NickName ="D", 
+        Name = "Data",
+        NickName = "D",
         Description = "The data to send."
       });
       Params.Input[1].Optional = true;
@@ -160,7 +158,7 @@ namespace ConnectorGrasshopper.Ops
 
       base.AppendAdditionalMenuItems(menu);
     }
-    
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -230,7 +228,7 @@ namespace ConnectorGrasshopper.Ops
 
     public bool CanInsertParameter(GH_ParameterSide side, int index)
     {
-      return side == GH_ParameterSide.Input &&  index >= 2;
+      return side == GH_ParameterSide.Input && index >= 2;
     }
 
     public bool CanRemoveParameter(GH_ParameterSide side, int index)
@@ -241,10 +239,10 @@ namespace ConnectorGrasshopper.Ops
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-      
+
       return new SendReceiveDataParam
       {
-        Name = "Data" + uniqueName,
+        Name = uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
         Optional = false
@@ -259,12 +257,36 @@ namespace ConnectorGrasshopper.Ops
     public void VariableParameterMaintenance()
     {
     }
+
+    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document); // This would set the converter already.
+      Params.ParameterChanged += (sender, args) =>
+      {
+        if (args.ParameterSide != GH_ParameterSide.Input) return;
+        switch (args.OriginalArguments.Type)
+        {
+          case GH_ObjectEventType.NickName:
+            // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
+            // Prevents UI from locking too soon while writing new names for inputs.
+            args.Parameter.Name = args.Parameter.NickName;
+            nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
+            break;
+          case GH_ObjectEventType.NickNameAccepted:
+            args.Parameter.Name = args.Parameter.NickName;
+            ExpireSolution(true);
+            break;
+        }
+      };
+    }
   }
 
   public class VariableInputSendComponentWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> DataInput;
-    Dictionary<string,GH_Structure<IGH_Goo>> DataInputs;
+    Dictionary<string, GH_Structure<IGH_Goo>> DataInputs;
     GH_Structure<IGH_Goo> _TransportsInput;
     GH_Structure<GH_String> _MessageInput;
 
@@ -300,7 +322,7 @@ namespace ConnectorGrasshopper.Ops
       for (var i = 2; i < Params.Input.Count; i++)
       {
         DA.GetDataTree(i, out GH_Structure<IGH_Goo> input);
-        DataInputs.Add(Params.Input[i].NickName, input);
+        DataInputs.Add(Params.Input[i].Name, input);
       }
       DA.GetDataTree(0, out _TransportsInput);
       DA.GetDataTree(1, out _MessageInput);
@@ -326,7 +348,7 @@ namespace ConnectorGrasshopper.Ops
           sendComponent.CurrentComponentState = "expired";
           return;
         }
-        
+
         Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
 
         //the active document may have changed
@@ -336,19 +358,19 @@ namespace ConnectorGrasshopper.Ops
         ObjectToSend = new Base();
         int convertedCount = 0;
 
-        foreach(var d in DataInputs)
+        foreach (var d in DataInputs)
         {
           try
           {
             var converted = Utilities.DataTreeToNestedLists(d.Value, sendComponent.Converter, CancellationToken, () =>
             {
-              ReportProgress("Conversion",Math.Round(convertedCount++ / (double) d.Value.DataCount / DataInputs.Count, 2));
+              ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
             });
             var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
             var key = d.Key;
             if (param is SendReceiveDataParam srParam)
             {
-              if (srParam.Detachable && !key.StartsWith("@")) 
+              if (srParam.Detachable && !key.StartsWith("@"))
                 key = "@" + key;
             }
             ObjectToSend[key] = converted;
@@ -356,15 +378,15 @@ namespace ConnectorGrasshopper.Ops
           }
           catch (Exception e)
           {
-            RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, e.Message ));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
             Done();
             return;
           }
         }
-        
-        if ( convertedCount == 0 )
+
+        if (convertedCount == 0)
         {
-          RuntimeMessages.Add(( GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped." ));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
           Done();
           return;
         }
@@ -436,6 +458,8 @@ namespace ConnectorGrasshopper.Ops
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
+
+            Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
           }
           else if (transport is ITransport otherTransport)
           {
@@ -538,7 +562,7 @@ namespace ConnectorGrasshopper.Ops
                 message = message,
                 objectId = BaseId,
                 streamId = ((ServerTransport)transport).StreamId,
-                sourceApplication = Applications.Grasshopper
+                sourceApplication = VersionedHostApplications.Grasshopper
               };
 
               // Check to see if we have a previous commit; if so set it.
@@ -571,7 +595,7 @@ namespace ConnectorGrasshopper.Ops
       }
       catch (Exception e)
       {
-        
+
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));

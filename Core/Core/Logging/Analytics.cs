@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Piwik.Tracker;
 using Speckle.Core.Credentials;
 using Speckle.Newtonsoft.Json;
 
@@ -114,7 +113,7 @@ namespace Speckle.Core.Logging
 
 #if DEBUG
       //only track in prod
-      return;
+      //return;
 #endif
 
       Task.Run(() =>
@@ -122,7 +121,7 @@ namespace Speckle.Core.Logging
 
         try
         {
-          var httpWebRequest = (HttpWebRequest)WebRequest.Create(MixpanelServer + "/track");
+          var httpWebRequest = (HttpWebRequest)WebRequest.Create(MixpanelServer + "/track?ip=1");
           httpWebRequest.ContentType = "application/x-www-form-urlencoded";
           httpWebRequest.Accept = "text/plain";
           httpWebRequest.Method = "POST";
@@ -139,8 +138,8 @@ namespace Speckle.Core.Logging
             { "server_id", hashedServer },
             { "token", MixpanelToken },
             { "hostApp", Setup.HostApplication },
+            { "hostAppVersion", Setup.VersionedHostApplication },
             { "core_version", Assembly.GetExecutingAssembly().GetName().Version.ToString()},
-            { "ip",  GetIp() },
             { "$os",  GetOs() },
             { "type", "action" }
           };
@@ -213,22 +212,6 @@ namespace Speckle.Core.Logging
       if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return "Mac OS X";
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return "Linux";
       return "Unknown";
-    }
-
-    private static string GetIp()
-    {
-      try
-      {
-        string externalIpString = new WebClient().DownloadString("http://icanhazip.com").Replace("\\r\\n", "").Replace("\\n", "").Trim();
-        var externalIp = IPAddress.Parse(externalIpString);
-
-        return externalIp.ToString();
-
-      }
-      catch
-      {
-        return "";
-      }
     }
 
   }

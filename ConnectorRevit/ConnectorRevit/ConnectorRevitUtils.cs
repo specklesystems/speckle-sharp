@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
@@ -13,15 +11,15 @@ namespace Speckle.ConnectorRevit
   public static class ConnectorRevitUtils
   {
 #if REVIT2023
-    public static string RevitAppName = Applications.Revit2023;
+    public static string RevitAppName = VersionedHostApplications.Revit2023;
 #elif REVIT2022
-    public static string RevitAppName = Applications.Revit2022;
+    public static string RevitAppName = VersionedHostApplications.Revit2022;
 #elif REVIT2021
-    public static string RevitAppName = Applications.Revit2021;
+    public static string RevitAppName = VersionedHostApplications.Revit2021;
 #elif REVIT2020
-    public static string RevitAppName = Applications.Revit2020;
+    public static string RevitAppName = VersionedHostApplications.Revit2020;
 #else
-      public static string RevitAppName = Applications.Revit2019;
+    public static string RevitAppName = VersionedHostApplications.Revit2019;
 #endif
 
     private static List<string> _cachedParameters = null;
@@ -220,6 +218,7 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Conduit,
       BuiltInCategory.OST_CurtaSystem,
       BuiltInCategory.OST_DataDevices,
+      BuiltInCategory.OST_Doors,
       BuiltInCategory.OST_DuctSystem,
       BuiltInCategory.OST_DuctCurves,
       BuiltInCategory.OST_ElectricalCircuit,

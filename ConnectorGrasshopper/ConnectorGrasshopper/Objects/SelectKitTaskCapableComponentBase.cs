@@ -23,9 +23,9 @@ namespace ConnectorGrasshopper.Objects
     public ISpeckleKit Kit;
 
     public virtual bool CanDisableConversion => true;
-    
+
     public string SelectedKitName;
-    
+
     public SelectKitTaskCapableComponentBase(string name, string nickname, string description, string category,
       string subCategory) : base(name, nickname, description, category, subCategory)
     {
@@ -80,22 +80,24 @@ namespace ConnectorGrasshopper.Objects
       //base.AppendAdditionalMenuItems(menu);
       try
       {
-        var kits = KitManager.GetKitsWithConvertersForApp(Applications.Rhino6);
+        var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
-        if(CanDisableConversion)
+        if (CanDisableConversion)
           Menu_AppendItem(menu, "Do Not Convert", (s, e) =>
           {
             SelectedKitName = "None";
             SetConverter();
             ExpireSolution(true);
           }, true, Kit == null);
-          
+
         foreach (var kit in kits)
         {
-          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) => { SelectedKitName=kit.Name; SetConverter(); ExpireSolution(true);
-            }, true,
+          Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
+          {
+            SelectedKitName = kit.Name; SetConverter(); ExpireSolution(true);
+          }, true,
             kit.Name == Kit?.Name);
         }
 
@@ -112,10 +114,10 @@ namespace ConnectorGrasshopper.Objects
       if (kitName == Kit?.Name) return;
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       SelectedKitName = Kit.Name;
-      Converter = Kit.LoadConverter(Applications.Rhino6);
+      Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
-        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);        
+        (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
       Message = $"Using the {Kit.Name} Converter";
     }

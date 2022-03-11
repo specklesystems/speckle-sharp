@@ -9,6 +9,8 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Colors;
+using Speckle.Core.Models;
 #if (CIVIL2021 || CIVIL2022)
 using Autodesk.Aec.ApplicationServices;
 #endif
@@ -19,17 +21,21 @@ namespace Speckle.ConnectorAutocadCivil
   {
 
 #if AUTOCAD2021
-    public static string AutocadAppName = Applications.Autocad2021;
-    public static string AppName = "AutoCAD";
+    public static string VersionedAppName = VersionedHostApplications.Autocad2021;
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
 #elif AUTOCAD2022
-public static string AutocadAppName = Applications.Autocad2022;
-    public static string AppName = "AutoCAD";
+    public static string VersionedAppName = VersionedHostApplications.Autocad2022;
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
 #elif CIVIL2021
-    public static string AutocadAppName = Applications.Civil2021;
-    public static string AppName = "Civil 3D";
+    public static string VersionedAppName = VersionedHostApplications.Civil2021;
+    public static string AppName = HostApplications.Civil.Name;
+    public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2022
-    public static string AutocadAppName = Applications.Civil2022;
-    public static string AppName = "Civil 3D";
+    public static string VersionedAppName = VersionedHostApplications.Civil2022;
+    public static string AppName = HostApplications.Civil.Name;
+    public static string Slug = HostApplications.Civil.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
 
@@ -151,7 +157,7 @@ public static string AutocadAppName = Applications.Autocad2022;
     public static bool Visible(this DBObject obj)
     {
       bool isVisible = true;
-      
+
       if (obj is Entity)
       {
         Entity ent = obj as Entity;
@@ -215,7 +221,7 @@ public static string AutocadAppName = Applications.Autocad2022;
     {
       var insUnits = doc.Database.Insunits;
       string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
-      
+
 #if (CIVIL2021 || CIVIL2022)
       if (units == Units.None)
       {
@@ -233,12 +239,12 @@ public static string AutocadAppName = Applications.Autocad2022;
       return units;
     }
 
-  /// <summary>
-  /// Retrieves the handle from an input string
-  /// </summary>
-  /// <param name="str"></param>
-  /// <returns></returns>
-  public static Handle GetHandle(string str)
+    /// <summary>
+    /// Retrieves the handle from an input string
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static Handle GetHandle(string str)
     {
       return new Handle(Convert.ToInt64(str, 16));
     }
@@ -254,6 +260,28 @@ public static string AutocadAppName = Applications.Autocad2022;
       var weights = Enum.GetValues(typeof(LineWeight)).Cast<int>().ToList();
       int closest = weights.Aggregate((x, y) => Math.Abs(x - hundredthMM) < Math.Abs(y - hundredthMM) ? x : y);
       return (LineWeight)closest;
+    }
+
+    public static void SetStyle(Base styleBase, Entity entity, Dictionary<string, ObjectId> lineTypeDictionary)
+    {
+      var color = styleBase["color"] as int?;
+      if (color == null) color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
+      var lineType = styleBase["linetype"] as string;
+      var lineWidth = styleBase["lineweight"] as double?;
+
+      if (color != null)
+      {
+        var systemColor = System.Drawing.Color.FromArgb((int)color);
+        entity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
+        entity.Transparency = new Transparency(systemColor.A);
+      }
+
+      if (lineWidth != null)
+        entity.LineWeight = GetLineWeight((double)lineWidth);
+
+      if (lineType != null)
+        if (lineTypeDictionary.ContainsKey(lineType))
+          entity.LinetypeId = lineTypeDictionary[lineType];
     }
 
     /// <summary>

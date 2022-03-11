@@ -36,7 +36,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
-    public System.Windows.Forms.Control Control; 
+    public System.Windows.Forms.Control Control;
 
     public ConnectorBindingsAutocad2() : base()
     {
@@ -60,10 +60,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppName() => Utils.Slug;
+
+
 
     private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
-    
+
     public override string GetDocumentId()
     {
       string path = GetDocPath(Doc);
@@ -152,7 +155,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       if (converter == null)
         throw new Exception("Could not find any Kit!");
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
@@ -189,23 +192,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
         transport,
         onProgressAction: dict => progress.Update(dict),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
-        onErrorAction: (message, exception) => 
+        onErrorAction: (message, exception) =>
         {
           progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
         );
-      
+
         await state.Client.CommitReceived(new CommitReceivedInput
         {
           streamId = stream?.id,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Utils.AutocadAppName
+          sourceApplication = Utils.VersionedAppName
         });
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         progress.Report.OperationErrors.Add(new Exception($"Could not receive or deserialize commit: {e.Message}"));
       }
@@ -308,28 +311,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 var res = convertedEntity.Append(cleanName);
                 if (res.IsValid)
                 {
-                  // handle display
+                  // handle display - fallback to rendermaterial if no displaystyle exists
                   Base display = obj[@"displayStyle"] as Base;
-                  if (display != null)
-                  {
-                    var color = display["color"] as int?;
-                    var lineType = display["linetype"] as string;
-                    var lineWidth = display["lineweight"] as double?;
-
-                    if (color != null)
-                    {
-                      var systemColor = System.Drawing.Color.FromArgb((int)color);
-                      convertedEntity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-                      convertedEntity.Transparency = new Transparency(systemColor.A);
-                    }
-
-                    if (lineWidth != null)
-                      convertedEntity.LineWeight = Utils.GetLineWeight((double)lineWidth);
-
-                    if (lineType != null)
-                      if (lineTypeDictionary.ContainsKey(lineType))
-                        convertedEntity.LinetypeId = lineTypeDictionary[lineType];
-                  }
+                  if (display == null) display = obj[@"renderMaterial"] as Base;
+                  if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
+                    
                   tr.TransactionManager.QueueForGraphicsFlush();
                 }
                 else
@@ -372,8 +358,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         else
         {
-          int totalMembers = @base.GetDynamicMembers().Count();
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
             count++;
 
@@ -394,7 +388,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
         count = 0;
         foreach (var listObj in list)
@@ -503,7 +497,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var streamId = state.StreamId;
       var client = state.Client;
 
@@ -555,7 +549,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         progress.CancellationTokenSource.Token,
         transports,
         onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (err, exception) => 
+        onErrorAction: (err, exception) =>
         {
           progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
@@ -572,7 +566,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         objectId = commitObjId,
         branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-        sourceApplication = Utils.AutocadAppName
+        sourceApplication = Utils.VersionedAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
@@ -707,7 +701,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
     {
-      if (e.DocumentWindow.Document == null)
+      if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
         return;
 
       var streams = GetStreamsInFile();

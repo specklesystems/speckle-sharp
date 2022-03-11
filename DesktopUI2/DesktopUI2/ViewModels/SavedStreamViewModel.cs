@@ -1,20 +1,16 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Models;
+﻿using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
 using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
-using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -38,7 +34,7 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _menuItems, value);
       }
     }
-    
+
     public string LastUpdated
     {
       get
@@ -77,6 +73,17 @@ namespace DesktopUI2.ViewModels
     public bool ShowNotification
     {
       get => !string.IsNullOrEmpty(Notification);
+    }
+
+    private bool _showReport;
+
+    public bool ShowReport
+    {
+      get => _showReport;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _showReport, value);
+      }
     }
 
     private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{StreamState.BranchName}"; }
@@ -183,29 +190,45 @@ namespace DesktopUI2.ViewModels
 
     public async void SendCommand()
     {
-      Progress = new ProgressViewModel();
+      Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
-      LastUsed = DateTime.Now.ToString();
 
-      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Send);
-      Tracker.TrackPageview(Tracker.SEND);
+      if (!Progress.CancellationTokenSource.IsCancellationRequested)
+      {
+        LastUsed = DateTime.Now.ToString();
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Send);
+        Tracker.TrackPageview(Tracker.SEND);
+      }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-        Notification = "Something went wrong, please check the report.";
+        ShowReport = true;
     }
 
     public async void ReceiveCommand()
     {
-      Progress = new ProgressViewModel();
+      Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
       Progress.IsProgressing = false;
-      LastUsed = DateTime.Now.ToString();
+
+      if (!Progress.CancellationTokenSource.IsCancellationRequested)
+      {
+        LastUsed = DateTime.Now.ToString();
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive);
+        Tracker.TrackPageview(Tracker.RECEIVE);
+      }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-        Notification = "Something went wrong, please check the report.";
+        ShowReport = true;
+    }
+
+    private void Reset()
+    {
+      Notification = "";
+      ShowReport = false;
+      Progress = new ProgressViewModel();
     }
 
     public void CancelSendOrReceive()
@@ -216,9 +239,11 @@ namespace DesktopUI2.ViewModels
 
     public void OpenReportCommand()
     {
+      ShowReport = true;
       var report = new Report();
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
       report.DataContext = Progress;
+      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
       report.ShowDialog(MainWindow.Instance);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }
