@@ -1,0 +1,74 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31624.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABS", "ConnectorETABS\ConnectorETABS.csproj", "{81299D15-5788-414D-A962-1A568C251323}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorSAP2000", "ConnectorSAP2000\ConnectorSAP2000.csproj", "{31E0C098-6813-4571-AB96-A245E0FC1C23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCSIBridge", "ConnectorCSIBridge\ConnectorCSIBridge.csproj", "{23BE6E54-96C1-4373-89F3-E18A1C9807FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorSAFE", "ConnectorSAFE\ConnectorSAFE.csproj", "{9D188843-8841-4A76-A844-EFBE8E32EE05}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSIVersionProjects", "CSIVersionProjects", "{3DA56828-5C39-4872-A5A4-E3E50D9873BC}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorCSIShared", "ConnectorCSIShared\ConnectorCSIShared.shproj", "{61374CD0-E774-4DCD-BFAB-6356B0931283}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{37D16D91-5EF3-4889-9BFD-082CC425CB0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterCSI", "ConverterCSI", "{3F1F3016-10C6-4BB9-8F0F-7E45F2CB2AB8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCSIBridge", "..\Objects\Converters\ConverterCSI\ConverterCSIBridge\ConverterCSIBridge.csproj", "{7572E400-C007-48E4-98FC-614FDEE0B572}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterCSIShared", "..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.shproj", "{5BBDE14E-50F8-4D6E-8E35-747667AD4A09}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{5bbde14e-50f8-4d6e-8e35-747667ad4a09}*SharedItemsImports = 13
+		ConnectorCSIShared\ConnectorCSIShared.projitems*{61374cd0-e774-4dcd-bfab-6356b0931283}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{7572e400-c007-48e4-98fc-614fdee0b572}*SharedItemsImports = 5
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81299D15-5788-414D-A962-1A568C251323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81299D15-5788-414D-A962-1A568C251323}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81299D15-5788-414D-A962-1A568C251323}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81299D15-5788-414D-A962-1A568C251323}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31E0C098-6813-4571-AB96-A245E0FC1C23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31E0C098-6813-4571-AB96-A245E0FC1C23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31E0C098-6813-4571-AB96-A245E0FC1C23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31E0C098-6813-4571-AB96-A245E0FC1C23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23BE6E54-96C1-4373-89F3-E18A1C9807FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23BE6E54-96C1-4373-89F3-E18A1C9807FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23BE6E54-96C1-4373-89F3-E18A1C9807FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23BE6E54-96C1-4373-89F3-E18A1C9807FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D188843-8841-4A76-A844-EFBE8E32EE05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D188843-8841-4A76-A844-EFBE8E32EE05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D188843-8841-4A76-A844-EFBE8E32EE05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D188843-8841-4A76-A844-EFBE8E32EE05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7572E400-C007-48E4-98FC-614FDEE0B572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7572E400-C007-48E4-98FC-614FDEE0B572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7572E400-C007-48E4-98FC-614FDEE0B572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7572E400-C007-48E4-98FC-614FDEE0B572}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{81299D15-5788-414D-A962-1A568C251323} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
+		{31E0C098-6813-4571-AB96-A245E0FC1C23} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
+		{23BE6E54-96C1-4373-89F3-E18A1C9807FD} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
+		{9D188843-8841-4A76-A844-EFBE8E32EE05} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
+		{61374CD0-E774-4DCD-BFAB-6356B0931283} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
+		{3F1F3016-10C6-4BB9-8F0F-7E45F2CB2AB8} = {37D16D91-5EF3-4889-9BFD-082CC425CB0D}
+		{7572E400-C007-48E4-98FC-614FDEE0B572} = {3F1F3016-10C6-4BB9-8F0F-7E45F2CB2AB8}
+		{5BBDE14E-50F8-4D6E-8E35-747667AD4A09} = {3F1F3016-10C6-4BB9-8F0F-7E45F2CB2AB8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {61234D5B-1E5E-4C97-89A1-FA97E4B63D95}
+	EndGlobalSection
+EndGlobal
