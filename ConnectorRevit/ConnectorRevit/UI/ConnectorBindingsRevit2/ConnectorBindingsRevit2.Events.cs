@@ -144,6 +144,8 @@ namespace Speckle.ConnectorRevit.UI
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
+
+      OneClickSendCommand.FileStream = null;
     }
 
 

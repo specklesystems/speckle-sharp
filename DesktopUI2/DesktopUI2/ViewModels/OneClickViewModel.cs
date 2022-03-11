@@ -8,6 +8,7 @@ using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,7 +36,12 @@ namespace DesktopUI2.ViewModels
     public OneClickViewModel(ConnectorBindings _bindings, StreamState fileStream = null)
     {
       Bindings = _bindings;
+      SavedStreams = Bindings.GetStreamsInFile();
+
+      // analytics
       Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+      Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "oneClick", true } });
+
       if (fileStream == null)
         LoadFileStream();
       else
@@ -44,8 +50,6 @@ namespace DesktopUI2.ViewModels
 
     private void LoadFileStream()
     {
-      SavedStreams = Bindings.GetStreamsInFile();
-
       // get bindings doc name and default account
       var fileName = Bindings.GetFileName();
       var account = AccountManager.GetDefaultAccount();
@@ -62,7 +66,6 @@ namespace DesktopUI2.ViewModels
 
         if (foundStream == null) // create the stream
         {
-          // create new stream 
           var description = $"Automatic stream for {fileName}";
           try
           {
@@ -93,7 +96,7 @@ namespace DesktopUI2.ViewModels
       return stream;
     }
 
-    public void OneClickSend()
+    public void Send()
     {
       // check if objs are selected and set streamstate filter
       var filters = Bindings.GetSelectionFilters();
@@ -125,7 +128,6 @@ namespace DesktopUI2.ViewModels
       if (!progress.CancellationTokenSource.IsCancellationRequested)
       {
         FileStream.LastUsed = DateTime.Now.ToString();
-        Analytics.TrackEvent(FileStream.Client.Account, Analytics.Events.Send);
       }
 
       if (Bindings.UpdateSavedStreams != null)
@@ -133,7 +135,13 @@ namespace DesktopUI2.ViewModels
 
       if (HomeViewModel.Instance != null)
         HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
-    }
 
+      // open in browser
+      if (FileStream.PreviousCommitId != null)
+      {
+        string commitUrl = $"{FileStream.ServerUrl.TrimEnd('/')}/streams/{FileStream.StreamId}/commits/{FileStream.PreviousCommitId}";
+        Process.Start(new ProcessStartInfo(commitUrl) { UseShellExecute = true });
+      }
+    }
   }
 }
