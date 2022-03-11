@@ -1,11 +1,5 @@
-﻿using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
-using ReactiveUI;
-using Speckle.Core.Credentials;
-using System;
+﻿using DesktopUI2.Models.Filters;
 using System.Collections.Generic;
-using System.Reactive;
-using System.Text;
 
 namespace DesktopUI2.ViewModels.DesignViewModels
 {
@@ -28,10 +22,10 @@ namespace DesktopUI2.ViewModels.DesignViewModels
           {
             BranchName = "test",
             CommitId = "latest",
-
+            SchedulerEnabled = true,
             IsReceiver = true,
-            //Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
-            SelectedObjectIds = new List<string> { "", "", "" },
+            Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" }
+
           }
         },
          new DesignSavedStreamViewModel()
@@ -42,9 +36,11 @@ namespace DesktopUI2.ViewModels.DesignViewModels
            {
              BranchName = "main",
              IsReceiver = false,
-             //Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
-             SelectedObjectIds = new List<string> { "", "", "" },
-           }
+             Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
+
+           },
+           ShowNotification = false,
+           ShowReport = false
          }
 
       };
@@ -55,9 +51,10 @@ namespace DesktopUI2.ViewModels.DesignViewModels
   {
     public string BranchName { get; set; }
     public string CommitId { get; set; }
+    public string CommitMessage { get; set; }
     public bool IsReceiver { get; set; }
-    //public ListSelectionFilter Filter { get; set; }
-    public List<string> SelectedObjectIds { get; set; }
+    public bool SchedulerEnabled { get; set; }
+    public ListSelectionFilter Filter { get; set; }
     public DesignStreamState()
     {
 
@@ -74,5 +71,36 @@ namespace DesktopUI2.ViewModels.DesignViewModels
   {
     public DesignStreamState StreamState { get; set; }
     public DesignStream Stream { get; set; }
+    public ProgressViewModel Progress { get; set; } = new ProgressViewModel();
+    public string LastUpdated { get; set; } = "Never";
+    public string LastUsed { get; set; } = "Never";
+    public string Notification { get; set; } = "Hello";
+    public bool ShowNotification { get; set; } = true;
+    public bool ShowReport { get; set; } = true;
+    public List<MenuItemViewModel> MenuItems = new List<MenuItemViewModel>();
+    public void ReceiveCommand()
+    {
+
+    }
+
+    public void SendCommand()
+    {
+
+    }
+
+    public void CancelSendOrReceive()
+    {
+
+    }
+
+    public void CloseNotificationCommand()
+    {
+
+    }
+
+    public void OpenReportCommand()
+    {
+
+    }
   }
 }

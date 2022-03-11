@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace DesktopUI2.ViewModels.DesignViewModels
 {
-  public class DesignAllStreamsViewModel
+  public class DesignHomeViewModel
   {
     public bool InProgress { get; set; } = false;
 
@@ -18,11 +18,23 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     public List<StreamAccountWrapper> Streams { get; set; } = new List<StreamAccountWrapper>();
 
-    public DesignAllStreamsViewModel()
+    public List<DesignSavedStreamViewModel> SavedStreams { get; set; }
+
+    public bool HasSavedStreams = true;
+
+    public DesignHomeViewModel()
     {
       var acc = AccountManager.GetDefaultAccount();
       var client = new Client(acc);
       Streams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
+
+      var d = new DesignSavedStreamsViewModel();
+      SavedStreams = d.SavedStreams;
+      //SavedStreams = new List<SavedStreamViewModel>();
+
+      //var streamState = new StreamState(Streams.First());
+      //var savedState = new SavedStreamViewModel(streamState, null, null);
+      //SavedStreams.Add(savedState);
     }
 
     public void NewStreamCommand()
@@ -34,4 +46,6 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     {
     }
   }
+
+
 }
