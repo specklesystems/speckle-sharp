@@ -12,6 +12,7 @@
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
+  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
 
   <!-- <Design.DataContext> -->
@@ -21,63 +22,71 @@
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
   </UserControl.Resources>
-  <Grid RowDefinitions="auto,*">
-    <Grid Margin="15" ColumnDefinitions="auto,*">
-      <m:FloatingButton
-        VerticalAlignment="Center"
-        assists:ShadowAssist.ShadowDepth="0"
-        Background="Transparent"
-        Classes=""
-        Command="{Binding GoBack}"
-        ToolTip.Tip="Back">
-        <Button.Content>
+  <Grid RowDefinitions="auto,*, auto">
+    <Border
+      Margin="0,0,0,7"
+      Padding="0,0,0,15"
+      assists:ShadowAssist.ShadowDepth="Depth2"
+      Background="{DynamicResource MaterialDesignCardBackground}">
+      <Grid Margin="15,15,15,0" ColumnDefinitions="auto,*">
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="0"
+          Background="Transparent"
+          Classes=""
+          Command="{Binding GoBack}"
+          ToolTip.Tip="Back">
+          <Button.Content>
 
-          <Viewbox
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Stretch="Fill">
-            <icons:MaterialIcon
-              Width="24"
-              Height="24"
-              Kind="ChevronLeft" />
-          </Viewbox>
+            <Viewbox
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Stretch="Fill">
+              <icons:MaterialIcon
+                Width="24"
+                Height="24"
+                Kind="ChevronLeft" />
+            </Viewbox>
 
-        </Button.Content>
+          </Button.Content>
 
-      </m:FloatingButton>
-      <Grid
-        Grid.Column="1"
-        Margin="15,0,0,0"
-        RowDefinitions="auto,auto">
-        <TextBlock
-          Classes="Grotesk"
-          FontSize="20"
-          Text="{Binding Stream.name}"
-          TextTrimming="CharacterEllipsis" />
+        </m:FloatingButton>
         <Grid
-          Grid.Row="1"
-          Margin="0,3,0,0"
-          ColumnDefinitions="auto,auto,*">
+          Grid.Column="1"
+          Margin="15,0,0,0"
+          RowDefinitions="auto,auto">
           <TextBlock
-            Classes="Overline"
-            Text="{Binding Stream.id}"
+            Classes="Grotesk"
+            FontSize="20"
+            Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <TextBlock
-            Grid.Column="1"
-            Classes="Overline"
-            Text=" - " />
-          <TextBlock
-            Grid.Column="2"
-            Classes="Overline"
-            Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
-            TextTrimming="CharacterEllipsis" />
+          <Grid
+            Grid.Row="1"
+            Margin="0,3,0,0"
+            ColumnDefinitions="auto,auto,*">
+            <TextBlock
+              Classes="Overline"
+              Text="{Binding Stream.id}"
+              TextTrimming="CharacterEllipsis" />
+            <TextBlock
+              Grid.Column="1"
+              Classes="Overline"
+              Text=" - " />
+            <TextBlock
+              Grid.Column="2"
+              Classes="Overline"
+              Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
+              TextTrimming="CharacterEllipsis" />
+          </Grid>
+
         </Grid>
 
+
       </Grid>
+    </Border>
+    <Border Grid.Row="1" />
 
-
-    </Grid>
-    <TabControl Grid.Row="1" SelectedIndex="{Binding IsReceiver}">
+    <TabControl Grid.Row="2" SelectedIndex="{Binding IsReceiver}" Background="{DynamicResource MaterialDesignCardBackground}">
 
       <TabItem>
         <TabItem.Header>
