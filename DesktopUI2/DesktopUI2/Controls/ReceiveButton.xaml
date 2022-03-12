@@ -14,7 +14,7 @@
       Command="{Binding ReceiveCommand}"
       IsDefault="True"
       IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-      ToolTip.Tip="Receives from this stream">
+      ToolTip.Tip="Receive from this stream">
       <Button.Content>
         <icons:MaterialIcon
           Width="20"

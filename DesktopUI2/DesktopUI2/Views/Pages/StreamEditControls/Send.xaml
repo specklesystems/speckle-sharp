@@ -159,7 +159,7 @@
         IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
         IsReadOnly="{Binding Progress.IsProgressing}"
         Text="{Binding StreamState.CommitMessage}"
-        Watermark="Commit message" />
+        Watermark="Message (optional) " />
       <StackPanel
         Grid.Column="1"
         HorizontalAlignment="Right"

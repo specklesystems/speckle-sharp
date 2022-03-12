@@ -9,15 +9,16 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
-  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
-  d:DesignHeight="550"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="350"
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
 
-  <!-- <Design.DataContext> -->
-  <!--   <viewModels:StreamViewModel /> -->
-  <!-- </Design.DataContext> -->
+  <Design.DataContext>
+    <viewModels:DesignSavedStreamViewModel />
+  </Design.DataContext>
+
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
@@ -84,9 +85,51 @@
 
       </Grid>
     </Border>
-    <Border Grid.Row="1" />
+    <!--  ACTIVITY  -->
 
-    <TabControl Grid.Row="2" SelectedIndex="{Binding IsReceiver}" Background="{DynamicResource MaterialDesignCardBackground}">
+    <Grid Grid.Row="1">
+      <ScrollViewer Name="activityScroller">
+        <ItemsControl Margin="0,0,0,15" Items="{Binding Activity}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid>
+                <m:ColorZone
+                  Grid.Row="3"
+                  Margin="{Binding Margin}"
+                  HorizontalAlignment="{Binding Align}"
+                  assists:ShadowAssist.ShadowDepth="Depth0"
+                  CornerRadius="25"
+                  Mode="Light">
+                  <Grid ColumnDefinitions="auto,*">
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Margin="10,0,0,0"
+                      VerticalAlignment="Center"
+                      Kind="{Binding Icon}"
+                      ToolTip.Tip="Send" />
+                    <TextBlock
+                      Grid.Column="1"
+                      Margin="5,10,10,10"
+                      Text="{Binding Message}"
+                      TextWrapping="Wrap" />
+                  </Grid>
+
+                </m:ColorZone>
+
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+
+        </ItemsControl>
+      </ScrollViewer>
+
+    </Grid>
+    <!--  SEND/RECEIVE  -->
+    <TabControl
+      Grid.Row="2"
+      Background="{DynamicResource MaterialDesignCardBackground}"
+      SelectedIndex="{Binding IsReceiver}">
 
       <TabItem>
         <TabItem.Header>

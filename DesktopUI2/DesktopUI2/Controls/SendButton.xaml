@@ -14,7 +14,7 @@
       Command="{Binding SendCommand}"
       IsDefault="True"
       IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-      ToolTip.Tip="Sends to this stream">
+      ToolTip.Tip="Send to this stream">
       <Button.Content>
         <icons:MaterialIcon
           Width="20"
