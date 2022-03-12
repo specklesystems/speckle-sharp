@@ -19,7 +19,7 @@ namespace DesktopUI2.Models.Filters
     {
       get
       {
-        return "Everything";
+        return "everything";
       }
     }
   }

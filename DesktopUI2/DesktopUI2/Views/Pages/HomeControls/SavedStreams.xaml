@@ -3,6 +3,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Controls"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:local="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
@@ -19,7 +20,7 @@
   <ItemsControl Items="{Binding SavedStreams}">
     <ItemsControl.ItemTemplate>
       <DataTemplate>
-        <Border Margin="10,5">
+        <Border Margin="7,3">
           <Grid ColumnDefinitions="*, auto" RowDefinitions="auto,auto">
 
             <Grid RowDefinitions="Auto,Auto,Auto">
@@ -145,81 +146,10 @@
 
               </Menu>
               <Grid>
-
                 <!--  RECEIVE BTN  -->
-                <m:FloatingButton
-                  VerticalAlignment="Center"
-                  Command="{Binding ReceiveCommand}"
-                  IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-                  IsVisible="{Binding StreamState.IsReceiver}"
-                  ToolTip.Tip="Receive">
-                  <Button.Content>
-                    <icons:MaterialIcon
-                      Width="20"
-                      Height="20"
-                      Foreground="White"
-                      Kind="CubeSend"
-                      ToolTip.Tip="Receive">
-                      <icons:MaterialIcon.RenderTransform>
-                        <TransformGroup>
-                          <RotateTransform Angle="30" />
-                          <ScaleTransform ScaleX="-1" />
-                        </TransformGroup>
-                      </icons:MaterialIcon.RenderTransform>
-                    </icons:MaterialIcon>
-
-                  </Button.Content>
-                </m:FloatingButton>
-
+                <c:ReceiveButton IsVisible="{Binding IsReceiver}" />
                 <!--  SEND BTN  -->
-                <m:FloatingButton
-                  VerticalAlignment="Center"
-                  Command="{Binding SendCommand}"
-                  IsDefault="True"
-                  IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-                  IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
-                  ToolTip.Tip="Send">
-                  <Button.Content>
-                    <icons:MaterialIcon
-                      Width="20"
-                      Height="20"
-                      Foreground="White"
-                      Kind="CubeSend"
-                      ToolTip.Tip="Send">
-                      <icons:MaterialIcon.RenderTransform>
-                        <RotateTransform Angle="-30" />
-                      </icons:MaterialIcon.RenderTransform>
-                    </icons:MaterialIcon>
-
-                  </Button.Content>
-                </m:FloatingButton>
-
-                <Grid>
-                  <ProgressBar
-                    Width="40"
-                    Height="40"
-                    Classes="Circle"
-                    IsIndeterminate="{Binding Progress.IsIndeterminate}"
-                    IsVisible="{Binding Progress.IsProgressing}"
-                    Maximum="{Binding Progress.Max}"
-                    Value="{Binding Progress.Value}" />
-                  <m:FloatingButton
-                    assists:ButtonAssist.HoverColor="Transparent"
-                    assists:ShadowAssist.ShadowDepth="0"
-                    Background="Transparent"
-                    Classes="Mini"
-                    Command="{Binding CancelSendOrReceive}"
-                    IsVisible="{Binding Progress.IsProgressing}"
-                    ToolTip.Tip="Cancel">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="{DynamicResource PrimaryHueDarkBrush}"
-                        Kind="Close" />
-                    </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
+                <c:SendButton IsVisible="{Binding IsReceiver, Converter={x:Static BoolConverters.Not}}" />
               </Grid>
             </StackPanel>
 
@@ -228,7 +158,7 @@
               Grid.ColumnSpan="2"
               RowDefinitions="auto,auto,auto">
               <!--  COMMIT MESSAGE  -->
-              <TextBox
+              <!--<TextBox
                 Margin="0,8,0,0"
                 Classes="Small"
                 Foreground="Gray"
@@ -236,7 +166,7 @@
                 IsReadOnly="{Binding Progress.IsProgressing}"
                 IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
                 Text="{Binding StreamState.CommitMessage}"
-                Watermark="Commit message" />
+                Watermark="Commit message" />-->
               <!--  NOTIFICATION  -->
               <m:ColorZone
                 Grid.Row="1"

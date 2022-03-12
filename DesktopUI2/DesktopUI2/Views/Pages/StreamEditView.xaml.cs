@@ -1,17 +1,18 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
-using ReactiveUI;
 
 namespace DesktopUI2.Views.Pages
 {
-  public class StreamEditView : ReactiveUserControl<StreamEditViewModel>
+  public partial class StreamEditView : ReactiveUserControl<SavedStreamViewModel>
   {
     public StreamEditView()
     {
-      this.WhenActivated(disposables => { });
+      InitializeComponent();
+    }
+
+    private void InitializeComponent()
+    {
       AvaloniaXamlLoader.Load(this);
     }
   }

@@ -18,10 +18,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Controls\ReceiveButton.xaml" />
+    <None Remove="Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\ChipListBox.xaml" />
     <None Remove="Styles\ComboBox.xaml" />
     <None Remove="Styles\Dialog.xaml" />
+    <None Remove="Styles\Expander.xaml" />
     <None Remove="Styles\FloatingButton.xaml" />
     <None Remove="Styles\ListBox.xaml" />
     <None Remove="Styles\MenuItem.xaml" />
@@ -46,6 +49,9 @@
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
     <None Remove="Views\Windows\Settings.xaml" />
+    <AvaloniaResource Include="Styles\Expander.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
     <AvaloniaResource Include="Styles\Playground.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
@@ -83,6 +89,12 @@
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Controls\ReceiveButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Controls\SendButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Styles\MenuItem.xaml" />
     <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -94,6 +106,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Scheduler.xaml">
@@ -112,9 +127,6 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
@@ -154,6 +166,12 @@
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Controls\ReceiveButton.xaml.cs">
+      <DependentUpon>ReceiveButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\SendButton.xaml.cs">
+      <DependentUpon>SendButton.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Filters\AllFilterView.xaml.cs">
       <DependentUpon>AllFilterView.xaml</DependentUpon>
     </Compile>
@@ -165,6 +183,9 @@
     </Compile>
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\StreamEditView.xaml.cs">
+      <DependentUpon>StreamEditView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Scheduler.xaml.cs">
       <DependentUpon>Scheduler.xaml</DependentUpon>
@@ -183,9 +204,6 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditControls\Send.xaml.cs">
       <DependentUpon>Send.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\StreamEditView.xaml.cs">
-      <DependentUpon>StreamEditView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>

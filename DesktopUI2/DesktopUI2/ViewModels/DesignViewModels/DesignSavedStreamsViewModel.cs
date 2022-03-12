@@ -88,7 +88,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     }
 
-    public void CancelSendOrReceive()
+    public void CancelSendOrReceiveCommand()
     {
 
     }

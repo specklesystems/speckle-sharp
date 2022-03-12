@@ -5,6 +5,8 @@ using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
+using Material.Styles.Themes;
+using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -32,6 +34,8 @@ namespace DesktopUI2.ViewModels
     private ConnectorBindings Bindings;
 
     #region bindings
+    public string Title => "for " + Bindings.GetHostAppNameVersion();
+    public string Version => "v" + Bindings.ConnectorVersion;
     public ReactiveCommand<string, Unit> RemoveSavedStreamCommand { get; }
 
     private bool _showProgress;
@@ -55,7 +59,20 @@ namespace DesktopUI2.ViewModels
     public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
     public bool HasStreams => Streams != null && Streams.Any();
 
-    public bool IsSearching => SearchQuery.Length > 2;
+    public string StreamsText
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(SearchQuery))
+          return "ALL YOUR STREAMS:";
+
+        if (SearchQuery.Length <= 2)
+          return "TYPE SOME MORE TO SEARCH...";
+
+        return "SEARCH RESULTS:";
+
+      }
+    }
 
     private string _searchQuery = "";
 
@@ -66,21 +83,21 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
         SearchStreams().ConfigureAwait(false);
-        this.RaisePropertyChanged("IsSearching");
+        this.RaisePropertyChanged("StreamsText");
       }
     }
 
-    //public Stream SelectedStream
-    //{
-    //  set
-    //  {
-    //    if (value != null)
-    //    {
-    //      var streamState = new StreamState(SelectedAccount, value);
-    //      OpenStream(value, streamState);
-    //    }
-    //  }
-    //}
+    public StreamAccountWrapper SelectedStream
+    {
+      set
+      {
+        if (value != null)
+        {
+          var streamState = new StreamState(value);
+          OpenStream(streamState);
+        }
+      }
+    }
 
     private ObservableCollection<SavedStreamViewModel> _savedStreams = new ObservableCollection<SavedStreamViewModel>();
     public ObservableCollection<SavedStreamViewModel> SavedStreams
@@ -439,8 +456,31 @@ namespace DesktopUI2.ViewModels
 
     private void OpenStream(StreamState streamState)
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamEditViewModel(HostScreen, streamState));
+      MainWindowViewModel.RouterInstance.Navigate.Execute(new SavedStreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
     }
+
+    public void ToggleDarkThemeCommand()
+    {
+      var paletteHelper = new PaletteHelper();
+      ITheme theme = paletteHelper.GetTheme();
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+
+
+
+      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
+        theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
+      else
+        theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());
+      paletteHelper.SetTheme(theme);
+    }
+
+
+    public void RefreshCommand()
+    {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
+      Init();
+    }
+
 
   }
 }
