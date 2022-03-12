@@ -45,12 +45,19 @@ namespace DesktopUI2.ViewModels
     public List<StreamAccountWrapper> Streams
     {
       get => _streams;
-      private set => this.RaiseAndSetIfChanged(ref _streams, value);
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _streams, value);
+        this.RaisePropertyChanged("HasStreams");
+      }
     }
 
     public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
+    public bool HasStreams => Streams != null && Streams.Any();
 
-    private string _searchQuery;
+    public bool IsSearching => SearchQuery.Length > 2;
+
+    private string _searchQuery = "";
 
     public string SearchQuery
     {
@@ -59,6 +66,7 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
         SearchStreams().ConfigureAwait(false);
+        this.RaisePropertyChanged("IsSearching");
       }
     }
 
