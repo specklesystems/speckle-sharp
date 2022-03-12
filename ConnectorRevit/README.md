@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This repo holds the Speckle 2.0 Revit Connector. It is currently in ⚠ALPHA⚠ and is a bit rough around the edges -- please use at your own risk! And of course, we'd really appreciate any feedback, comments, suggestions, etc ✨
+This repo holds the Speckle Revit Connector. We'd really appreciate any feedback, comments, suggestions, etc ✨
 
 ## Documentation
 
