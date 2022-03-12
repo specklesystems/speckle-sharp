@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
-using Sentry;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
@@ -49,7 +48,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.user;
       }
@@ -105,7 +104,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<UserSearchData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.userSearch.items;
       }
@@ -247,7 +246,7 @@ namespace Speckle.Core.Api
 
         var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
 
-        if ( res.Errors != null )
+        if (res.Errors != null)
           throw new SpeckleException("Could not get streams", res.Errors);
 
         return res.Data.user.streams.items;
@@ -551,7 +550,7 @@ namespace Speckle.Core.Api
     /// <param name="branchesLimit">Max number of branches to retrieve</param>
     /// <param name="commitsLimit">Max number of commits to retrieve</param>
     /// <returns></returns>
-    public Task<List<Branch>> StreamGetBranches(string streamId,  int branchesLimit = 10, int commitsLimit = 10)
+    public Task<List<Branch>> StreamGetBranches(string streamId, int branchesLimit = 10, int commitsLimit = 10)
     {
       return StreamGetBranches(CancellationToken.None, streamId, branchesLimit, commitsLimit);
     }
@@ -598,17 +597,17 @@ namespace Speckle.Core.Api
                         }}                       
                       }}
                     }}",
-          Variables = new {streamId}
+          Variables = new { streamId }
         };
 
         var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
-        if ( res.Errors != null && res.Errors.Any() )
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.stream.branches.items;
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         throw new SpeckleException(e.Message, e);
       }
@@ -714,7 +713,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.stream.branch;
       }
@@ -858,7 +857,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.stream.commit;
       }
@@ -912,17 +911,17 @@ namespace Speckle.Core.Api
                         }                     
                       }
                     }",
-          Variables = new {streamId, limit}
+          Variables = new { streamId, limit }
         };
 
         var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
-        if ( res.Errors != null && res.Errors.Any() )
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.stream.commits.items;
       }
-      catch ( Exception e )
+      catch (Exception e)
       {
         throw new SpeckleException(e.Message, e);
       }
@@ -959,7 +958,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return (string)res.Data["commitCreate"];
       }
@@ -1000,7 +999,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return (bool)res.Data["commitUpdate"];
       }
@@ -1041,7 +1040,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return (bool)res.Data["commitDelete"];
       }
@@ -1056,7 +1055,7 @@ namespace Speckle.Core.Api
     {
       return CommitReceived(CancellationToken.None, commitReceivedInput);
     }
-    
+
     public async Task<bool> CommitReceived(CancellationToken cancellationToken, CommitReceivedInput commitReceivedInput)
     {
       try
@@ -1073,7 +1072,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return (bool)res.Data["commitReceive"];
       }
@@ -1082,7 +1081,79 @@ namespace Speckle.Core.Api
         throw new SpeckleException(e.Message, e);
       }
     }
-    
+
+    #endregion
+
+    #region activity
+
+    /// <summary>
+    /// Gets the activity of a stream
+    /// </summary>
+    /// <param name="streamId">Id of the stream to get the commits from</param>
+    /// <param name="after">Only show activity after this DateTime</param>
+    /// <param name="before">Only show activity before this DateTime</param>
+    /// <param name="cursor">Time to filter the activity with</param>
+    /// <param name="actionType">Time to filter the activity with</param>
+    /// <param name="limit">Max number of activity items to get</param>
+    /// <returns></returns>
+    public Task<List<ActivityItem>> StreamGetActivity(string streamId, DateTime? after = null, DateTime? before = null, DateTime? cursor = null, string actionType = "", int limit = 10)
+    {
+      return StreamGetActivity(CancellationToken.None, streamId, after, before, cursor, actionType, limit);
+    }
+
+    /// <summary>
+    /// Gets the activity of a stream
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId">Id of the stream to get the commits from</param>
+    /// <param name="after">Only show activity after this DateTime</param>
+    /// <param name="before">Only show activity before this DateTime</param>
+    /// <param name="cursor">Time to filter the activity with</param>
+    /// <param name="actionType">Time to filter the activity with</param>
+    /// <param name="limit">Max number of commits to get</param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<List<ActivityItem>> StreamGetActivity(CancellationToken cancellationToken, string id, DateTime? after = null, DateTime? before = null, DateTime? cursor = null, string actionType = "", int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Stream($id: String!, $before: DateTime,$after: DateTime, $cursor: DateTime, $activity: String) {
+                      stream(id: $id) {
+                        activity (actionType: $activity, after: $after, before: $before, cursor: $cursor) {
+                          totalCount
+                          cursor
+                          items {
+                            actionType
+                            userId
+                            streamId
+                            resourceId
+                            resourceType
+                            time
+                            info
+                            message
+                          }
+                        }                
+                      }
+                    }",
+          Variables = new { id, limit, actionType, after, before, cursor }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        return res.Data.stream.activity.items;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+
     #endregion
 
     #region objects
@@ -1127,7 +1198,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.stream.@object;
       }
@@ -1174,7 +1245,7 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendQueryAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
 
         return res.Data.stream.@object;
       }
