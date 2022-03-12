@@ -378,7 +378,7 @@ namespace ConnectorGrasshopper.Extras
       if (Converter != null && Converter.CanConvertToNative(@base))
       {
         var converted = Converter.ConvertToNative(@base);
-        data.Append(TryConvertItemToNative(converted, Converter));
+        data.Append(TryConvertItemToNative(GH_Convert.ToGoo(converted), Converter));
       }
       // Simple pass the SpeckleBase
       else

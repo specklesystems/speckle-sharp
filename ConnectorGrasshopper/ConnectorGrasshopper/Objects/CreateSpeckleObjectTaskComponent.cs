@@ -44,6 +44,16 @@ namespace ConnectorGrasshopper.Objects
         if (Params.Input.Count == 0)
           return;
         var hasErrors = false;
+        
+        var duplicateKeys = Params.Input
+          .Select(p => p.NickName)
+          .GroupBy(x => x).Count(group => @group.Count<string>() > 1);
+        if (duplicateKeys > 0)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
+          return;
+        }
+        
         var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
         if (Params.Input.Count > 0 && allOptional)
         {
@@ -231,6 +241,7 @@ namespace ConnectorGrasshopper.Objects
       myParam.NickName = myParam.Name;
       myParam.Optional = false;
       myParam.ObjectChanged += (sender, e) => { };
+      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
       return myParam;
     }
 
@@ -238,6 +249,11 @@ namespace ConnectorGrasshopper.Objects
 
     public void VariableParameterMaintenance()
     {
+      Params.Input
+        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+        .ToList()
+        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
+      );
     }
 
     private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();

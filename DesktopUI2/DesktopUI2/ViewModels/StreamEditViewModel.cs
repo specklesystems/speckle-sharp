@@ -1,10 +1,11 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
+using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
@@ -196,7 +197,7 @@ namespace DesktopUI2.ViewModels
       {
         foreach (var setting in Settings)
         {
-          var savedSetting = streamState.Settings.Where(o => o.Slug == setting.Slug).First();
+          var savedSetting = streamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
           if (savedSetting != null)
             setting.Selection = savedSetting.Selection;
         }
@@ -290,26 +291,24 @@ namespace DesktopUI2.ViewModels
       try
       {
         Progress = new ProgressViewModel();
+        Progress.ProgressTitle = "Sending to Speckle 🚀";
         Progress.IsProgressing = true;
-        var dialog = Dialogs.SendReceiveDialog("Sending...", this);
 
-        _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
-        {
-          if (x.Result.GetResult == "cancel")
-            Progress.CancellationTokenSource.Cancel();
-        }
-          );
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = Progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.ShowDialog(MainWindow.Instance);
         await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
-        dialog.GetWindow().Close();
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Quick" } });
           Tracker.TrackPageview(Tracker.SEND);
         }
+        else
+          dialog.Close(); // if user cancelled close automatically
 
-        //TODO: display other dialog if operation failed etc
         MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
 
       }
@@ -324,26 +323,26 @@ namespace DesktopUI2.ViewModels
       try
       {
         Progress = new ProgressViewModel();
+        Progress.ProgressTitle = "Receiving from Speckle 🚀";
         Progress.IsProgressing = true;
-        var dialog = Dialogs.SendReceiveDialog("Receiving...", this);
 
-        _ = dialog.ShowDialog(MainWindow.Instance).ContinueWith(x =>
-        {
-          if (x.Result.GetResult == "cancel")
-            Progress.CancellationTokenSource.Cancel();
-        });
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = Progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.ShowDialog(MainWindow.Instance);
 
         await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
-        dialog.GetWindow().Close();
+
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
-          Tracker.TrackPageview(Tracker.SEND);
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "method", "Quick" } });
+          Tracker.TrackPageview(Tracker.RECEIVE);
         }
+        else
+          dialog.Close(); // if user cancelled close automatically
 
-        //TODO: display other dialog if operation failed etc
         MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
       }
       catch (Exception ex)

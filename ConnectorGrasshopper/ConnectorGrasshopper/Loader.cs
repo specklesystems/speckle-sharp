@@ -2,16 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
-using Eto.Forms;
+using Grasshopper.GUI;
+using Grasshopper.GUI.Canvas;
+using Grasshopper.GUI.Canvas.Interaction;
 using Grasshopper.Kernel;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
 
 namespace ConnectorGrasshopper
 {
+  public static class KeyWatcher {
+    public static bool TabPressed;
+  }
   public class Loader : GH_AssemblyPriority
   {
     public bool MenuHasBeenAdded;
@@ -32,13 +39,23 @@ namespace ConnectorGrasshopper
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.SECONDARY_RIBBON,
         Properties.Resources.speckle_logo);
       Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.SECONDARY_RIBBON, 'S');
-
       return GH_LoadingInstruction.Proceed;
     }
 
     private void CanvasCreatedEvent(GH_DocumentServer server, GH_Document doc)
     {
       AddSpeckleMenu(null, null);
+      Grasshopper.Instances.ActiveCanvas.KeyDown += (s, e) =>
+      {
+        if (e.KeyCode == Keys.Tab && !KeyWatcher.TabPressed)
+          KeyWatcher.TabPressed = true;
+      };
+      
+      Grasshopper.Instances.ActiveCanvas.KeyUp += (s, e) =>
+      {
+        if(KeyWatcher.TabPressed && e.KeyCode == Keys.Tab) 
+          KeyWatcher.TabPressed = false;
+      };
     }
 
     private void HandleKitSelectedEvent(object sender, EventArgs args)

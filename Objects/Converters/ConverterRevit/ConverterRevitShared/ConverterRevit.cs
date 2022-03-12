@@ -165,6 +165,9 @@ namespace Objects.Converter.Revit
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
+        case DB.Electrical.CableTray o:
+          returnObject = CableTrayToSpeckle(o);
+          break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
           returnObject = null;
@@ -390,6 +393,9 @@ namespace Objects.Converter.Revit
         case BE.Wire o:
           return WireToNative(o);
 
+        case BE.CableTray o:
+          return CableTrayToNative(o);
+
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
 
@@ -458,6 +464,7 @@ namespace Objects.Converter.Revit
         DB.Plumbing.Pipe _ => true,
         DB.Plumbing.FlexPipe _ => true,
         DB.Electrical.Wire _ => true,
+        DB.Electrical.CableTray _ => true,
         DB.CurtainGridLine _ => true, //these should be handled by curtain walls
         DB.Architecture.BuildingPad _ => true,
         DB.Architecture.Stairs _ => true,
@@ -536,6 +543,7 @@ namespace Objects.Converter.Revit
         BE.Duct _ => true,
         BE.Pipe _ => true,
         BE.Wire _ => true,
+        BE.CableTray _ => true,
         BE.Revit.RevitRailing _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
