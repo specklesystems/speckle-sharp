@@ -47,6 +47,28 @@
     <Compile Include="cPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{9b52a849-5841-4463-868f-ec4b83b96485}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
+      <Project>{0c1b9ae4-1d21-4c02-bdac-287e9660b5f6}</Project>
+      <Name>DesktopUI2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
+      <Project>{bf1a4f95-acf7-4353-b60a-4d79c2f44651}</Project>
+      <Name>PolygonMesher</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+      <Project>{f6f813fc-153b-49fe-9b33-25152be85ba8}</Project>
+      <Name>Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DriverCSharp\DriverCSharp.csproj">
+      <Project>{c091e499-597d-4077-b83f-08e069091090}</Project>
+      <Name>DriverCSharp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y /S "$(TargetDir)$(AssemblyName).dll" "$(AppData)\Speckle\Kits\Objects\"</PostBuildEvent>

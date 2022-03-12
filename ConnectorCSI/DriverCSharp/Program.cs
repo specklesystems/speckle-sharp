@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CSiAPIv1;
+using SpeckleConnectorCSI;
 
 namespace DriverCSharp
 {
@@ -90,7 +91,7 @@ namespace DriverCSharp
       // call Speckle plugin
       try
       {
-        SpeckleConnectorCSI.cPlugin p = new SpeckleConnectorCSI.cPlugin();
+        cPlugin p = new cPlugin();
         cPluginCallback cb = new PluginCallback();
 
         // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.

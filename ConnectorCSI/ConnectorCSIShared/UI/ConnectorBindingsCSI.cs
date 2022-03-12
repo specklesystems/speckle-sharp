@@ -60,7 +60,7 @@ namespace Speckle.ConnectorCSI.UI
     public override string GetFileName() => Model.GetModelFilename();
 
     public override string GetHostAppNameVersion() => ConnectorCSIUtils.CSIAppName;
-    public override string GetHostAppName() => HostApplications.CSI.Slug;
+    public override string GetHostAppName() => ConnectorCSIUtils.CSISlug;
 
     public override List<string> GetObjectsInView()
     {

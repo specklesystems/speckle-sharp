@@ -12,6 +12,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using CSiAPIv1;
+using Speckle.ConnectorCSI.UI;
 
 using System.Reflection;
 using System.IO;
@@ -28,7 +29,7 @@ namespace SpeckleConnectorCSI
 
     public static Window MainWindow { get; private set; }
 
-    //public static ConnectorBindingsETABS Bindings { get; set; }
+    public static ConnectorBindingsCSI Bindings { get; set; }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
@@ -43,13 +44,6 @@ namespace SpeckleConnectorCSI
       if (MainWindow == null)
       {
         BuildAvaloniaApp().Start(AppMain, null);
-        //var var = AppBuilder.Configure<DesktopUI2.App>()
-        //  .UsePlatformDetect()
-        //  .With(new SkiaOptions {MaxGpuResourceSizeBytes = 8096000});
-        //.With(new Win32PlatformOptions {AllowEglInitialization = true, EnableMultitouch = false});
-        //var.Start(AppMain, null);
-
-
       }
 
       MainWindow.Show();
@@ -58,7 +52,7 @@ namespace SpeckleConnectorCSI
 
     private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel();
+      var viewModel = new MainWindowViewModel(Bindings);
       MainWindow = new MainWindow { DataContext = viewModel };
 
       app.Run(MainWindow);
@@ -67,33 +61,28 @@ namespace SpeckleConnectorCSI
 
     public static void OpenOrFocusSpeckle(cSapModel model)
     {
-      //Bindings = new ConnectorBindingsETABS(model);
+      Bindings = new ConnectorBindingsCSI(model);
       CreateOrFocusSpeckle();
 
 
-      //var processes = Process.GetProcesses();
-      //IntPtr ptr = IntPtr.Zero;
-      //foreach (var process in processes)
-      //{
-      //  if (process.ProcessName.ToLower().Contains("sap2000"))
-      //  {
-      //    ptr = process.MainWindowHandle;
-      //    break;
-      //  }
-      //}
+      var processes = Process.GetProcesses();
+      IntPtr ptr = IntPtr.Zero;
+      foreach (var process in processes)
+      {
+        if (process.ProcessName.ToLower().Contains("sap2000"))
+        {
+          ptr = process.MainWindowHandle;
+          break;
+        }
+      }
 
-      //if (ptr != IntPtr.Zero)
-      //{
-      //  //Application.Current.MainWindow.Closed += SpeckleWindowClosed;
-      //  MainWindow.Closed += SpeckleWindowClosed;
-      //  MainWindow.Closing += SpeckleWindowClosed;
-      //}
-      //}
-      //catch
-      //{
-      //    Bootstrapper = null;
-      //}
+      if (ptr != IntPtr.Zero)
+      {
+        MainWindow.Closed += SpeckleWindowClosed;
+        MainWindow.Closing += SpeckleWindowClosed;
+      }
     }
+
 
     private static void SpeckleWindowClosed(object sender, EventArgs e)
     {
@@ -108,6 +97,7 @@ namespace SpeckleConnectorCSI
         pluginCallback.Finish(0);
       }
     }
+
 
 
     public int Info(ref string Text)
@@ -134,19 +124,7 @@ namespace SpeckleConnectorCSI
     {
       cSapModel model;
       pluginCallback = ISapPlugin;
-      //var name = "System.Numerics.Vectors";
-      //var path = "C:\\Users\\reyno\\Documents\\Speckle\\speckle-sharp\\ConnectorETABS\\ConnectorETABSv18\\bin\\Debug";
-      //string assemblyFile = Path.Combine(path, name + ".dll");
-      //if (File.Exists(assemblyFile)){
-      //  Assembly a = Assembly.LoadFrom(assemblyFile);
-      //  Type type = a.GetType("MyType");
-      //  object instance = Activator.CreateInstance(a);
-      //}
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-      //AppDomain.CurrentDomain.TypeResolve += new ResolveEventHandler(OnAssemblyResolve);
-      //AppDomain.CurrentDomain.ResourceResolve += new ResolveEventHandler(OnAssemblyResolve);
-      //AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-
       model = SapModel;
       AppDomain domain = null;
       try
