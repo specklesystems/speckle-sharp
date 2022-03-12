@@ -13,21 +13,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     {
       SavedStreams = new List<DesignSavedStreamViewModel>
       {
-        new DesignSavedStreamViewModel()
-        {
-
-          Stream = new DesignStream { name = "Sample stream" },
-
-          StreamState = new DesignStreamState()
-          {
-            BranchName = "test",
-            CommitId = "latest",
-            SchedulerEnabled = true,
-            IsReceiver = true,
-            Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" }
-
-          }
-        },
+        new DesignSavedStreamViewModel(),
          new DesignSavedStreamViewModel()
          {
 
@@ -55,6 +41,8 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public bool IsReceiver { get; set; }
     public bool SchedulerEnabled { get; set; }
     public ListSelectionFilter Filter { get; set; }
+    public object Client { get; internal set; }
+
     public DesignStreamState()
     {
 
@@ -64,6 +52,8 @@ namespace DesktopUI2.ViewModels.DesignViewModels
   public class DesignStream
   {
     public string name { get; set; }
+    public string id { get; set; }
+    public string role { get; set; }
   }
 
 
@@ -78,6 +68,35 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public bool ShowNotification { get; set; } = true;
     public bool ShowReport { get; set; } = true;
     public List<MenuItemViewModel> MenuItems = new List<MenuItemViewModel>();
+    public List<ActivityViewModel> Activity { get; set; }
+
+
+    public DesignSavedStreamViewModel()
+    {
+      Stream = new DesignStream { name = "Sample stream x", id = "1324235", role = "owner" };
+
+      StreamState = new DesignStreamState()
+      {
+        BranchName = "test",
+        CommitId = "latest",
+        SchedulerEnabled = true,
+        IsReceiver = true,
+        Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" }
+
+      };
+
+      Activity = new List<ActivityViewModel>() {
+        new ActivityViewModel {
+
+          Margin = new Avalonia.Thickness(50,10,10,0),
+          Icon = "ArrowBottomLeft",
+          Message = "Commit 5aaf00a723 was received by Matteo Cominetti" },
+        new ActivityViewModel {
+              Margin = new Avalonia.Thickness(10,10,50,0),
+          Icon = "ArrowTopRight",
+          Message = "Commit created on branch main: 0ae5a01ad7 (Sent 148 objects from Revit2022.)" } };
+    }
+
     public void ReceiveCommand()
     {
 
@@ -99,6 +118,11 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     }
 
     public void OpenReportCommand()
+    {
+
+    }
+
+    public void GoBack()
     {
 
     }

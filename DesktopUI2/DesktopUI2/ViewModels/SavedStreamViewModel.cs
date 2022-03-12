@@ -4,6 +4,7 @@ using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows;
 using DynamicData;
 using Material.Icons;
@@ -191,6 +192,13 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private List<ActivityViewModel> _activity;
+    public List<ActivityViewModel> Activity
+    {
+      get => _activity;
+      private set => this.RaiseAndSetIfChanged(ref _activity, value);
+    }
+
     private FilterViewModel _selectedFilter;
     public FilterViewModel SelectedFilter
     {
@@ -275,7 +283,8 @@ namespace DesktopUI2.ViewModels
       Settings = Bindings.GetSettings();
 
       IsReceiver = streamState.IsReceiver;
-      GetBranchesAndRestoreState(streamState.Client, streamState);
+      GetBranchesAndRestoreState();
+      GetActivity();
 
       var updateTextTimer = new System.Timers.Timer();
       updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
@@ -326,34 +335,45 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private async void GetBranchesAndRestoreState(Client client, StreamState streamState)
+    private async void GetBranchesAndRestoreState()
     {
-      var branches = await client.StreamGetBranches(Stream.id, 100, 0);
+      var branches = await StreamState.Client.StreamGetBranches(Stream.id, 100, 0);
       Branches = branches;
 
-      var branch = Branches.FirstOrDefault(x => x.name == streamState.BranchName);
+      var branch = Branches.FirstOrDefault(x => x.name == StreamState.BranchName);
       if (branch != null)
         SelectedBranch = branch;
       else
         SelectedBranch = Branches[0];
 
-      if (streamState.Filter != null)
+      if (StreamState.Filter != null)
       {
-        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == streamState.Filter.Slug);
+        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
         if (SelectedFilter != null)
-          SelectedFilter.Filter = streamState.Filter;
+          SelectedFilter.Filter = StreamState.Filter;
       }
-      if (streamState.Settings != null)
+      if (StreamState.Settings != null)
       {
         foreach (var setting in Settings)
         {
-          var savedSetting = streamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
+          var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
           if (savedSetting != null)
             setting.Selection = savedSetting.Selection;
         }
       }
     }
 
+    private async void GetActivity()
+    {
+      var activity = await StreamState.Client.StreamGetActivity(Stream.id);
+      Activity = activity
+        .Where(x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create")
+        .Select(x => new ActivityViewModel(x)).Reverse().ToList();
+      await Task.Delay(200);
+      StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller").ScrollToEnd();
+
+
+    }
     /// <summary>
     /// The model Stream state, generate it on the fly when needed
     /// </summary>
@@ -475,6 +495,7 @@ namespace DesktopUI2.ViewModels
 
       //save the stream as well
       HomeViewModel.Instance.AddSavedStream(GetStreamState());
+      GetActivity();
     }
 
     public async void ReceiveCommand()
@@ -496,6 +517,7 @@ namespace DesktopUI2.ViewModels
 
       //save the stream as well
       HomeViewModel.Instance.AddSavedStream(GetStreamState());
+      GetActivity();
 
     }
 
