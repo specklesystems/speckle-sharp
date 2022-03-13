@@ -1,13 +1,11 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using DesktopUI2.Models.Filters;
-using DesktopUI2.Views.Filters;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace DesktopUI2.ViewModels
 {
@@ -16,15 +14,18 @@ namespace DesktopUI2.ViewModels
     private ConnectorBindings Bindings;
 
     private ISelectionFilter _filter;
-    
-    public ISelectionFilter Filter { get=>_filter;
+
+    public ISelectionFilter Filter
+    {
+      get => _filter;
       set
       {
         this.RaiseAndSetIfChanged(ref _filter, value);
         RestoreSelectedItems();
         this.RaisePropertyChanged("Summary");
-      } 
+      }
     }
+
 
     public UserControl FilterView { get; private set; }
 
@@ -43,6 +44,7 @@ namespace DesktopUI2.ViewModels
 
       Filter = filter;
       FilterView = filter.View;
+
 
       //TODO should clean up this logic a bit
       //maybe have a model, view and viewmodel for each filter
@@ -94,6 +96,10 @@ namespace DesktopUI2.ViewModels
         if (!SelectionModel.SelectedItems.Contains(item))
           SelectionModel.Select(SearchResults.IndexOf(item));
       }
+
+      this.RaisePropertyChanged("PropertyName");
+      this.RaisePropertyChanged("PropertyValue");
+      this.RaisePropertyChanged("PropertyOperator");
     }
 
     public List<string> SearchResults { get; set; } = new List<string>();
@@ -153,7 +159,7 @@ namespace DesktopUI2.ViewModels
         //Globals.Notify("No objects removed.");
         return;
       }
-      
+
       //Globals.Notify($"{Filter.Selection.Count - filtered.Count} objects removed.");
       Filter.Selection = filtered;
       this.RaisePropertyChanged("Summary");
@@ -165,6 +171,41 @@ namespace DesktopUI2.ViewModels
       this.RaisePropertyChanged("Summary");
       //Globals.Notify($"Selection cleared.");
     }
+    #endregion
+
+    #region PROPERTY FILTER
+
+    //not the cleanest way, but it works
+    //should create proper view models for each!
+    public string PropertyName
+    {
+      get => (Filter as PropertySelectionFilter).PropertyName;
+      set
+      {
+        (Filter as PropertySelectionFilter).PropertyName = value;
+        this.RaisePropertyChanged("Summary");
+      }
+    }
+    public string PropertyValue
+    {
+      get => (Filter as PropertySelectionFilter).PropertyValue;
+      set
+      {
+        (Filter as PropertySelectionFilter).PropertyValue = value;
+        this.RaisePropertyChanged("Summary");
+      }
+    }
+    public string PropertyOperator
+    {
+      get => (Filter as PropertySelectionFilter).PropertyOperator;
+      set
+      {
+        (Filter as PropertySelectionFilter).PropertyOperator = value;
+        this.RaisePropertyChanged("Summary");
+      }
+    }
+
+
     #endregion
 
     public bool IsReady()

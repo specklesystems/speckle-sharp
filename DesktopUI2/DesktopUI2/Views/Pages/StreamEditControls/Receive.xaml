@@ -40,7 +40,7 @@
           ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
         <ComboBox
           Grid.Column="1"
-          Margin="5,10,10,10"
+          Margin="5,10,5,10"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           Items="{Binding Branches}"
@@ -71,7 +71,7 @@
           ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
         <ComboBox
           Grid.Column="3"
-          Margin="5,10,10,10"
+          Margin="5,10,0,10"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           IsEnabled="{Binding HasCommits}"

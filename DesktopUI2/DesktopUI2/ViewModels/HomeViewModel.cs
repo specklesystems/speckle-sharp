@@ -99,6 +99,19 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public StreamViewModel SelectedSavedStream
+    {
+      set
+      {
+        if (value != null)
+        {
+          MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(value.StreamState, HostScreen, RemoveSavedStreamCommand));
+          Tracker.TrackPageview("stream", "edit");
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
+        }
+      }
+    }
+
     private ObservableCollection<StreamViewModel> _savedStreams = new ObservableCollection<StreamViewModel>();
     public ObservableCollection<StreamViewModel> SavedStreams
     {

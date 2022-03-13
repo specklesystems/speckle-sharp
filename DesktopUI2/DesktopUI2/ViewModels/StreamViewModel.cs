@@ -302,7 +302,7 @@ namespace DesktopUI2.ViewModels
     {
       var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
       menu.Items = new List<MenuItemViewModel> {
-        new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
+        //new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
         new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox)
@@ -311,7 +311,7 @@ namespace DesktopUI2.ViewModels
       if (customMenues != null)
         menu.Items.AddRange(customMenues.Select(x => new MenuItemViewModel(x, this.StreamState)).ToList());
       //remove is added last
-      menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
+      //menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
       MenuItems.Add(menu);
 
       this.RaisePropertyChanged("MenuItems");
@@ -457,21 +457,25 @@ namespace DesktopUI2.ViewModels
 
     public void EditSavedStreamCommand()
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(this);
+      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(StreamState, HostScreen, RemoveSavedStreamCommand));
       Tracker.TrackPageview("stream", "edit");
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
     }
 
-    public void ViewOnlineSavedStreamCommand()
+    public async void ViewOnlineSavedStreamCommand()
     {
+      //ensure click transition has finished
+      await Task.Delay(100);
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
       Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
     }
 
-    public void CopyStreamURLCommand()
+    public async void CopyStreamURLCommand()
     {
+      //ensure click transition has finished
+      await Task.Delay(100);
       Avalonia.Application.Current.Clipboard.SetTextAsync(Url);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Copy Link" } });
     }
@@ -534,8 +538,10 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancel Send or Receive" } });
     }
 
-    public void OpenReportCommand()
+    public async void OpenReportCommand()
     {
+      //ensure click transition has finished
+      await Task.Delay(1000);
       ShowReport = true;
       var report = new Report();
       report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
@@ -631,6 +637,8 @@ namespace DesktopUI2.ViewModels
     //  }
     //}
 
+
+
     private async void OpenSettingsCommand()
     {
       try
@@ -657,21 +665,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private void SaveSendCommand()
-    {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-      HomeViewModel.Instance.AddSavedStream(GetStreamState(), true);
-      Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" }, { "filter", SelectedFilter.Filter.Name } });
-      Tracker.TrackPageview(Tracker.SEND_ADDED);
-    }
-
-    private void SaveReceiveCommand()
-    {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-      HomeViewModel.Instance.AddSavedStream(GetStreamState(), false, true);
-      Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
-      Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
-    }
 
     [DependsOn(nameof(SelectedBranch))]
     [DependsOn(nameof(SelectedFilter))]
@@ -682,21 +675,7 @@ namespace DesktopUI2.ViewModels
       return IsReady();
     }
 
-    [DependsOn(nameof(SelectedBranch))]
-    [DependsOn(nameof(SelectedFilter))]
-    [DependsOn(nameof(IsReceiver))]
-    private bool CanSaveSendCommand(object parameter)
-    {
-      return IsReady();
-    }
 
-    [DependsOn(nameof(SelectedBranch))]
-    [DependsOn(nameof(SelectedCommit))]
-    [DependsOn(nameof(IsReceiver))]
-    private bool CanSaveReceiveCommand(object parameter)
-    {
-      return IsReady();
-    }
 
     [DependsOn(nameof(SelectedBranch))]
     [DependsOn(nameof(SelectedFilter))]

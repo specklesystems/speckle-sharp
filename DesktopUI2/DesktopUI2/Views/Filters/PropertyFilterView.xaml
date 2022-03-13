@@ -15,17 +15,17 @@
         HorizontalAlignment="Stretch"
         Items="{Binding Filter.Values}"
         PlaceholderText="Select the parameter"
-        SelectedItem="{Binding Filter.PropertyName}" />
+        SelectedItem="{Binding PropertyName}" />
       <ComboBox
         HorizontalAlignment="Stretch"
         Items="{Binding Filter.Operators}"
         PlaceholderText="Select the operator"
-        SelectedItem="{Binding Filter.PropertyOperator}" />
+        SelectedItem="{Binding PropertyOperator}" />
       <TextBox
         Margin="5,0"
         HorizontalAlignment="Stretch"
         assists:TextFieldAssist.Label="Value"
-        Text="{Binding Filter.PropertyValue}"
+        Text="{Binding PropertyValue}"
         Watermark="Value" />
     </StackPanel>
   </Grid>
