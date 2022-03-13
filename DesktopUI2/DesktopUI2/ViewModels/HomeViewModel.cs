@@ -99,8 +99,8 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private ObservableCollection<SavedStreamViewModel> _savedStreams = new ObservableCollection<SavedStreamViewModel>();
-    public ObservableCollection<SavedStreamViewModel> SavedStreams
+    private ObservableCollection<StreamViewModel> _savedStreams = new ObservableCollection<StreamViewModel>();
+    public ObservableCollection<StreamViewModel> SavedStreams
     {
       get => _savedStreams;
       set
@@ -149,8 +149,8 @@ namespace DesktopUI2.ViewModels
     internal void UpdateSavedStreams(List<StreamState> streams)
     {
       SavedStreams.CollectionChanged -= SavedStreams_CollectionChanged;
-      SavedStreams = new ObservableCollection<SavedStreamViewModel>();
-      streams.ForEach(x => SavedStreams.Add(new SavedStreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
+      SavedStreams = new ObservableCollection<StreamViewModel>();
+      streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
       this.RaisePropertyChanged("HasSavedStreams");
       SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
     }
@@ -180,7 +180,7 @@ namespace DesktopUI2.ViewModels
       //it's a new saved stream
       else
       {
-        savedState = new SavedStreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand);
+        savedState = new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand);
         SavedStreams.Add(savedState);
       }
 
@@ -456,7 +456,7 @@ namespace DesktopUI2.ViewModels
 
     private void OpenStream(StreamState streamState)
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(new SavedStreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
+      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
     }
 
     public void ToggleDarkThemeCommand()

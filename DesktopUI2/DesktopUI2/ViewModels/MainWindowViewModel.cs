@@ -33,7 +33,7 @@ namespace DesktopUI2.ViewModels
     {
       Router = new RoutingState();
 
-      Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<SavedStreamViewModel>));
+      Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamViewModel>));
       Locator.CurrentMutable.Register(() => new HomeView(), typeof(IViewFor<HomeViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 

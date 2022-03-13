@@ -20,9 +20,13 @@
     <vm:MainWindowViewModel />
   </Design.DataContext>
 
-  <reactiveUi:RoutedViewHost
-    Grid.Row="1"
-    PageTransition="{x:Null}"
-    Router="{Binding Router}" />
+  <reactiveUi:RoutedViewHost Grid.Row="1" Router="{Binding Router}">
+    <reactiveUi:RoutedViewHost.PageTransition>
+
+
+      <CrossFade Duration="0.15" />
+
+    </reactiveUi:RoutedViewHost.PageTransition>
+  </reactiveUi:RoutedViewHost>
 
 </Window>

@@ -30,34 +30,19 @@
           <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.name, FallbackValue=?}" />
         </StackPanel>
       </Expander.Header>
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="auto, auto, auto, auto">
 
-        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-          <icons:MaterialIcon
-            Margin="0,0,5,0"
-            VerticalAlignment="Center"
-            Foreground="Gray"
-            Kind="InfoCircle"
-            ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
-          <TextBlock Text="Branch:" />
-        </StackPanel>
+      <Grid ColumnDefinitions="auto,*,auto, *" RowDefinitions="auto, auto, auto">
 
-        <StackPanel
-          Grid.Row="1"
+        <!--  SELECT BRANCH  -->
+        <icons:MaterialIcon
+          Margin="0"
           VerticalAlignment="Center"
-          Orientation="Horizontal">
-          <icons:MaterialIcon
-            Margin="0,0,5,0"
-            VerticalAlignment="Center"
-            Foreground="Gray"
-            Kind="InfoCircle"
-            ToolTip.Tip="Each connector offers various&#x0a;ways to send data.&#x0a;Select the filter you want to use." />
-          <TextBlock Text="What to send:" />
-        </StackPanel>
-
+          Foreground="Gray"
+          Kind="InfoCircle"
+          ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
         <ComboBox
           Grid.Column="1"
-          Margin="10,10,0,10"
+          Margin="5,10,5,10"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           Items="{Binding Branches}"
@@ -79,11 +64,18 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
 
+        <!--  SELECT FILTER  -->
+        <icons:MaterialIcon
+          Grid.Column="2"
+          Margin="0"
+          VerticalAlignment="Center"
+          Foreground="Gray"
+          Kind="InfoCircle"
+          ToolTip.Tip="Each connector offers various&#x0a;ways to send data.&#x0a;Select the filter you want to use." />
         <ComboBox
           Name="FilterCombo"
-          Grid.Row="1"
-          Grid.Column="1"
-          Margin="10,10,0,10"
+          Grid.Column="3"
+          Margin="5,10,0,10"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           Items="{Binding AvailableFilters}"
@@ -105,22 +97,21 @@
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
-
+        <!--  FILTER INFO  -->
         <m:Card
-          Grid.Row="2"
-          Grid.ColumnSpan="2"
+          Grid.Row="1"
+          Grid.ColumnSpan="4"
           Margin="0,15"
           VerticalAlignment="Stretch"
           HorizontalContentAlignment="Stretch"
           Classes="Mini">
           <ContentControl Content="{Binding #FilterCombo.SelectedItem.FilterView}" />
         </m:Card>
-
-
+        <!--  ADVANCED SETTINGS  -->
         <Button
-          Grid.Row="3"
-          Grid.ColumnSpan="2"
-          Margin="15"
+          Grid.Row="2"
+          Grid.ColumnSpan="4"
+          Margin="5"
           HorizontalAlignment="Center"
           HorizontalContentAlignment="Center"
           assists:ShadowAssist.ShadowDepth="Depth0"
@@ -146,7 +137,7 @@
 
     <Grid
       Grid.Row="1"
-      Margin="15"
+      Margin="15,5"
       ColumnDefinitions="*,auto">
       <!--  COMMIT MESSAGE  -->
       <TextBox
