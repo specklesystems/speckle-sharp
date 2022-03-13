@@ -26,7 +26,7 @@ using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
 {
-  public class SavedStreamViewModel : ReactiveObject, IRoutableViewModel
+  public class StreamViewModel : ReactiveObject, IRoutableViewModel
   {
 
     public StreamState StreamState { get; set; }
@@ -260,7 +260,7 @@ namespace DesktopUI2.ViewModels
 
     IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
-    public SavedStreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
+    public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
 
     {
       StreamState = streamState;

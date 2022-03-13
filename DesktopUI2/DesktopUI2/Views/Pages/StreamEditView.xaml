@@ -10,174 +10,175 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
-  d:DesignHeight="350"
+  d:DesignHeight="550"
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
-  mc:Ignorable="d">
+  mc:Ignorable="d"
+	>
 
-  <Design.DataContext>
-    <viewModels:DesignSavedStreamViewModel />
-  </Design.DataContext>
+	<Design.DataContext>
+		<viewModels:DesignSavedStreamViewModel />
+	</Design.DataContext>
 
-  <UserControl.Resources>
-    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
-    <conv:RoleValueConverter x:Key="RoleValueConverter" />
-  </UserControl.Resources>
-  <Grid RowDefinitions="auto,*, auto">
-    <Border
+	<UserControl.Resources>
+		<conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+		<conv:RoleValueConverter x:Key="RoleValueConverter" />
+	</UserControl.Resources>
+	<Grid RowDefinitions="auto,*, auto">
+		<Border
       Margin="0,0,0,7"
       Padding="0,0,0,15"
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
-      <Grid Margin="15,15,15,0" ColumnDefinitions="auto,*">
-        <m:FloatingButton
+			<Grid Margin="15,15,15,0" ColumnDefinitions="auto,*">
+				<m:FloatingButton
           VerticalAlignment="Center"
           assists:ShadowAssist.ShadowDepth="0"
           Background="Transparent"
           Classes=""
           Command="{Binding GoBack}"
           ToolTip.Tip="Back">
-          <Button.Content>
+					<Button.Content>
 
-            <Viewbox
+						<Viewbox
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
               Stretch="Fill">
-              <icons:MaterialIcon
+							<icons:MaterialIcon
                 Width="24"
                 Height="24"
                 Kind="ChevronLeft" />
-            </Viewbox>
+						</Viewbox>
 
-          </Button.Content>
+					</Button.Content>
 
-        </m:FloatingButton>
-        <Grid
+				</m:FloatingButton>
+				<Grid
           Grid.Column="1"
           Margin="15,0,0,0"
           RowDefinitions="auto,auto">
-          <TextBlock
+					<TextBlock
             Classes="Grotesk"
             FontSize="20"
             Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <Grid
+					<Grid
             Grid.Row="1"
             Margin="0,3,0,0"
             ColumnDefinitions="auto,auto,*">
-            <TextBlock
+						<TextBlock
               Classes="Overline"
               Text="{Binding Stream.id}"
               TextTrimming="CharacterEllipsis" />
-            <TextBlock
+						<TextBlock
               Grid.Column="1"
               Classes="Overline"
               Text=" - " />
-            <TextBlock
+						<TextBlock
               Grid.Column="2"
               Classes="Overline"
               Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
               TextTrimming="CharacterEllipsis" />
-          </Grid>
+					</Grid>
 
-        </Grid>
+				</Grid>
 
 
-      </Grid>
-    </Border>
-    <!--  ACTIVITY  -->
+			</Grid>
+		</Border>
+		<!--  ACTIVITY  -->
 
-    <Grid Grid.Row="1">
-      <ScrollViewer Name="activityScroller">
-        <ItemsControl Margin="0,0,0,15" Items="{Binding Activity}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Grid>
-                <m:ColorZone
+		<Grid Grid.Row="1">
+			<ScrollViewer Name="activityScroller">
+				<ItemsControl Margin="0,0,0,15" Items="{Binding Activity}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Grid>
+								<m:ColorZone
                   Grid.Row="3"
                   Margin="{Binding Margin}"
                   HorizontalAlignment="{Binding Align}"
                   assists:ShadowAssist.ShadowDepth="Depth0"
                   CornerRadius="25"
                   Mode="Light">
-                  <Grid ColumnDefinitions="auto,*">
-                    <icons:MaterialIcon
+									<Grid ColumnDefinitions="auto,*">
+										<icons:MaterialIcon
                       Width="15"
                       Height="15"
                       Margin="10,0,0,0"
                       VerticalAlignment="Center"
                       Kind="{Binding Icon}"
                       ToolTip.Tip="Send" />
-                    <TextBlock
+										<TextBlock
                       Grid.Column="1"
                       Margin="5,10,10,10"
                       Text="{Binding Message}"
                       TextWrapping="Wrap" />
-                  </Grid>
+									</Grid>
 
-                </m:ColorZone>
+								</m:ColorZone>
 
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
 
-        </ItemsControl>
-      </ScrollViewer>
+				</ItemsControl>
+			</ScrollViewer>
 
-    </Grid>
-    <!--  SEND/RECEIVE  -->
-    <TabControl
+		</Grid>
+		<!--  SEND/RECEIVE  -->
+		<TabControl
       Grid.Row="2"
       Background="{DynamicResource MaterialDesignCardBackground}"
       SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<icons:MaterialIcon
               Width="20"
               Height="20"
               VerticalAlignment="Center"
               Kind="CubeSend"
               ToolTip.Tip="Send">
-              <icons:MaterialIcon.RenderTransform>
-                <RotateTransform Angle="-30" />
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-            <TextBlock
+							<icons:MaterialIcon.RenderTransform>
+								<RotateTransform Angle="-30" />
+							</icons:MaterialIcon.RenderTransform>
+						</icons:MaterialIcon>
+						<TextBlock
               Margin="10,0,0,0"
               VerticalAlignment="Center"
               Text="Send" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Send IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" />
-      </TabItem>
+					</StackPanel>
+				</TabItem.Header>
+				<uc:Send IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" />
+			</TabItem>
 
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<icons:MaterialIcon
               Width="20"
               Height="20"
               Kind="CubeSend"
               ToolTip.Tip="Receive">
-              <icons:MaterialIcon.RenderTransform>
-                <TransformGroup>
-                  <RotateTransform Angle="30" />
-                  <ScaleTransform ScaleX="-1" />
-                </TransformGroup>
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-            <TextBlock
+							<icons:MaterialIcon.RenderTransform>
+								<TransformGroup>
+									<RotateTransform Angle="30" />
+									<ScaleTransform ScaleX="-1" />
+								</TransformGroup>
+							</icons:MaterialIcon.RenderTransform>
+						</icons:MaterialIcon>
+						<TextBlock
               Margin="10,0,0,0"
               VerticalAlignment="Center"
               Text="Receive" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Receive />
-      </TabItem>
-    </TabControl>
+					</StackPanel>
+				</TabItem.Header>
+				<uc:Receive />
+			</TabItem>
+		</TabControl>
 
-  </Grid>
+	</Grid>
 
 </UserControl>

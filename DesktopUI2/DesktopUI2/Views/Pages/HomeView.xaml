@@ -210,6 +210,7 @@
                 Background="Transparent"
                 BorderThickness="0"
                 Classes="NoScroll"
+								
                 IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
                 IsVisible="{Binding HasStreams}"
                 Items="{Binding Streams}"
