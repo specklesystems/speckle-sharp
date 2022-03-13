@@ -186,6 +186,7 @@
           <!--  SAVED STREAMS  -->
           <m:Card
             Grid.Row="4"
+						Padding="0"
             Margin="0,0,0,10"
             IsVisible="{Binding HasSavedStreams}">
             <uc:SavedStreams />
@@ -210,16 +211,15 @@
                 Background="Transparent"
                 BorderThickness="0"
                 Classes="NoScroll"
-								
                 IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
                 IsVisible="{Binding HasStreams}"
                 Items="{Binding Streams}"
                 SelectedItem="{Binding SelectedStream}">
                 <ListBox.Styles>
-                  <Style Selector="ListBoxItem:not(:pointerover) StackPanel#SendReceiveButtons">
+                  <Style Selector="ListBoxItem:not(:pointerover) StackPanel#HoverButtons">
                     <Setter Property="IsVisible" Value="False" />
                   </Style>
-                  <Style Selector="ListBoxItem:pointerover StackPanel#SendReceiveButtons">
+                  <Style Selector="ListBoxItem:pointerover StackPanel#HoverButtons">
                     <Setter Property="IsVisible" Value="True" />
                   </Style>
                   <!--<Style Selector="ListBoxItem /template/ Border#selectedBorder">
@@ -291,7 +291,7 @@
 
                       </Grid>
                       <StackPanel
-                        Name="SendReceiveButtons"
+                        Name="HoverButtons"
                         Grid.Column="1"
                         Margin="0,0,10,0"
                         Orientation="Horizontal"

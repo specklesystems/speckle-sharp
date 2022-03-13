@@ -98,15 +98,12 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
         <!--  FILTER INFO  -->
-        <m:Card
+        <Grid
           Grid.Row="1"
           Grid.ColumnSpan="4"
-          Margin="0,15"
-          VerticalAlignment="Stretch"
-          HorizontalContentAlignment="Stretch"
-          Classes="Mini">
+          Margin="0,15">
           <ContentControl Content="{Binding #FilterCombo.SelectedItem.FilterView}" />
-        </m:Card>
+        </Grid>
         <!--  ADVANCED SETTINGS  -->
         <Button
           Grid.Row="2"
