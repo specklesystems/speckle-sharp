@@ -174,8 +174,8 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       button.ToolTip = tooltip;
       button.HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html");
       button.Size = RibbonItemSize.Large;
-      button.Image = LoadPngImgSource(imageName + "16.png");
-      button.LargeImage = LoadPngImgSource(imageName + "32.png");
+      button.Image = (CommandParameter == "SpeckleOld") ? LoadPngImgSource(imageName + "16_fade.png") : LoadPngImgSource(imageName + "16.png");
+      button.LargeImage = (CommandParameter == "SpeckleOld") ? LoadPngImgSource(imageName + "32_fade.png") : LoadPngImgSource(imageName + "32.png");
 
       // add ribbon button pannel to the ribbon panel source
       if (sourcePanel != null)
