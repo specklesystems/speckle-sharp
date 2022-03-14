@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
-using Objects.Structural.ETABS.Analysis;
+using Objects.Structural.CSI.Analysis;
 using Objects.Structural.Materials;
 using System;
 
-namespace Objects.Structural.ETABS.Properties
+namespace Objects.Structural.CSI.Properties
 {
-  public class ETABSSpringProperty: PropertySpring
+  public class CSISpringProperty: PropertySpring
   {
     public SpringOption springOption { get; set; }
     public string CYs { get; set; }
@@ -19,12 +19,12 @@ namespace Objects.Structural.ETABS.Properties
     public string footing { get; set; }
     public double period { get; set; }
 
-    public ETABSSpringProperty()
+    public CSISpringProperty()
     {
     }
 
-    [SchemaInfo("PointSpring from Link", "Create an ETABS PointSpring from Link", "ETABS", "Properties")]
-    public ETABSSpringProperty( string name, string cYs, double StiffnessX, double StiffnessY, double StiffnessZ, double StiffnessXX, double StiffnezzYY, double StiffnessZZ)
+    [SchemaInfo("PointSpring from Link", "Create an CSI PointSpring from Link", "CSI", "Properties")]
+    public CSISpringProperty( string name, string cYs, double StiffnessX, double StiffnessY, double StiffnessZ, double StiffnessXX, double StiffnezzYY, double StiffnessZZ)
     {
       this.name = name;
       this.springOption = SpringOption.Link;
@@ -37,8 +37,8 @@ namespace Objects.Structural.ETABS.Properties
       CYs = cYs;
     }
 
-    [SchemaInfo("PointSpring from Soil Profile", "Create an ETABS PointSpring from Soil Profile", "ETABS", "Properties")]
-    public ETABSSpringProperty( string name, string soilProfile, string footing, double period)
+    [SchemaInfo("PointSpring from Soil Profile", "Create an CSI PointSpring from Soil Profile", "CSI", "Properties")]
+    public CSISpringProperty( string name, string soilProfile, string footing, double period)
     {
       this.name = name;
       this.springOption = SpringOption.SoilProfileFooting;
@@ -47,17 +47,17 @@ namespace Objects.Structural.ETABS.Properties
       this.period = period;
     }
   }
-  public class ETABSLinearSpring : PropertySpring
+  public class CSILinearSpring : PropertySpring
   {
     public NonLinearOptions LinearOption1{ get; set; }
     public NonLinearOptions LinearOption2 { get; set; }
 
-    public ETABSLinearSpring()
+    public CSILinearSpring()
     {
     }
 
-    [SchemaInfo("LinearSpring", "Create an ETABS LinearSpring", "ETABS", "Properties")]
-    public ETABSLinearSpring(string name,double StiffnessX,double StiffnessY, double StiffnessZ, double StiffnessXX,NonLinearOptions linearOption1, NonLinearOptions linearOption2, string applicationID = null)
+    [SchemaInfo("LinearSpring", "Create an CSI LinearSpring", "CSI", "Properties")]
+    public CSILinearSpring(string name,double StiffnessX,double StiffnessY, double StiffnessZ, double StiffnessXX,NonLinearOptions linearOption1, NonLinearOptions linearOption2, string applicationID = null)
     {
       this.name = name;
       this.stiffnessX = StiffnessX;
@@ -69,16 +69,16 @@ namespace Objects.Structural.ETABS.Properties
       applicationId = applicationID;
     }
   }
-  public class ETABSAreaSpring : PropertySpring 
+  public class CSIAreaSpring : PropertySpring 
   {
     public NonLinearOptions LinearOption3 { get; set; }
 
-    public ETABSAreaSpring()
+    public CSIAreaSpring()
     {
     }
 
-    [SchemaInfo("LinearSpring", "Create an ETABS AreaSpring", "ETABS", "Properties")]
-    public ETABSAreaSpring(string name, double StiffnessX, double StiffnessY, double StiffnessZ,  NonLinearOptions linearOption3, string applicationID = null)
+    [SchemaInfo("LinearSpring", "Create an CSI AreaSpring", "CSI", "Properties")]
+    public CSIAreaSpring(string name, double StiffnessX, double StiffnessY, double StiffnessZ,  NonLinearOptions linearOption3, string applicationID = null)
     {
       this.name = name;
       this.stiffnessX = StiffnessX;

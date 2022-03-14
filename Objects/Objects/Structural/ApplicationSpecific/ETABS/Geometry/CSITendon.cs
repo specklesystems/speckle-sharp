@@ -2,30 +2,30 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.Structural.Geometry;
-using Objects.Structural.ETABS.Properties;
+using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
 using Objects.Structural.Properties;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
-namespace Objects.Structural.ETABS.Geometry
+namespace Objects.Structural.CSI.Geometry
 {
-  public class ETABSTendon : ETABSElement1D
+  public class CSITendon : CSIElement1D
   {
     public Polycurve polycurve { get; set; }
 
     [DetachProperty]
-    public ETABSTendonProperty ETABSTendonProperty { get; set; }
+    public CSITendonProperty CSITendonProperty { get; set; }
 
 
-    public ETABSTendon(string name,Polycurve polycurve, ETABSTendonProperty eTABSTendonProperty)
+    public CSITendon(string name,Polycurve polycurve, CSITendonProperty CSITendonProperty)
     {
       this.name = name;
       this.polycurve = polycurve;
-      ETABSTendonProperty = eTABSTendonProperty;
+      CSITendonProperty = CSITendonProperty;
     }
 
-    public ETABSTendon()
+    public CSITendon()
     {
     }
   }

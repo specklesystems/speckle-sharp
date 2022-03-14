@@ -5,15 +5,15 @@ using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
-using Objects.Structural.ETABS.Analysis;
+using Objects.Structural.CSI.Analysis;
 using Objects.Structural.Materials;
-using Objects.Structural.ETABS.Properties;
+using Objects.Structural.CSI.Properties;
 
-namespace Objects.Structural.ETABS.Properties
+namespace Objects.Structural.CSI.Properties
 {
-  public class ETABSTendonProperty: Property1D
+  public class CSITendonProperty: Property1D
   {
-    public ETABSTendonProperty()
+    public CSITendonProperty()
     {
     }
 

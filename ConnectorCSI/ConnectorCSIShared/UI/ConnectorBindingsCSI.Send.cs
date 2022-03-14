@@ -27,7 +27,8 @@ namespace Speckle.ConnectorCSI.UI
       //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
       //var converter = new ConverterCSI();
-      var converter = kit.LoadConverter(ConnectorCSIUtils.CSIAppName);
+      var appName = GetHostAppVersion(Model);
+      var converter = kit.LoadConverter(appName);
       converter.SetContextDocument(Model);
       Exceptions.Clear();
 
@@ -173,7 +174,7 @@ namespace Speckle.ConnectorCSI.UI
         objectId = objectId,
         branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from CSI.",
-        sourceApplication = ConnectorCSIUtils.CSIAppName
+        sourceApplication = GetHostAppVersion(Model)
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }

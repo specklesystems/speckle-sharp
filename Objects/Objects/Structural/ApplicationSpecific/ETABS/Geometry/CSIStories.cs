@@ -5,21 +5,21 @@ using Objects.Structural.Geometry;
 using System;
 using System.Collections.Generic;
 
-namespace Objects.Structural.ETABS.Analysis
+namespace Objects.Structural.CSI.Analysis
 {
-  public class ETABSStories : Base
+  public class CSIStories : Base
   {
     public double BaseElevation { get; set; }
     public int NumberStories { get; set; }
 
     [DetachProperty]
-    public List<ETABSStorey> etabsStories { get; set; }
+    public List<CSIStorey> CSIStory{ get; set; }
 
-    public ETABSStories() { }
+    public CSIStories() { }
 
 
   }
-  public class ETABSStorey : Storey
+  public class CSIStorey : Storey
   {
     public double storeyHeight { get; set; }
     public bool IsMasterStory { get; set; }
@@ -29,7 +29,7 @@ namespace Objects.Structural.ETABS.Analysis
     public double SpliceHeight { get; set; }
     public int Color { get; set; }
 
-    public ETABSStorey(string name,double elevation,double storeyHeight, bool isMasterStory, string similarToStory, bool spliceAbove, double spliceHeight)
+    public CSIStorey(string name,double elevation,double storeyHeight, bool isMasterStory, string similarToStory, bool spliceAbove, double spliceHeight)
     {
       this.name = name;
       this.elevation = elevation;
@@ -41,7 +41,7 @@ namespace Objects.Structural.ETABS.Analysis
       Color = 0;
     }
 
-    public ETABSStorey()
+    public CSIStorey()
     {
     }
   }

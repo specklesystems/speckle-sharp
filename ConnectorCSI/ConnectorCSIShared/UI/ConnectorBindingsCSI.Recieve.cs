@@ -27,7 +27,7 @@ namespace Speckle.ConnectorCSI.UI
       Exceptions.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorCSIUtils.CSIAppName);
+      var converter = kit.LoadConverter(GetHostAppVersion(Model));
       converter.SetContextDocument(Model);
       //var previouslyRecieveObjects = state.ReceivedObjects;
 
@@ -90,7 +90,7 @@ namespace Speckle.ConnectorCSI.UI
           streamId = stream?.id,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = ConnectorCSIUtils.CSIAppName
+          sourceApplication = GetHostAppVersion(Model)
         });
       }
       catch

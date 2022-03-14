@@ -59,9 +59,23 @@ namespace Speckle.ConnectorCSI.UI
 
     public override string GetFileName() => Model.GetModelFilename();
 
-    public override string GetHostAppNameVersion() => ConnectorCSIUtils.CSIAppName;
-    public override string GetHostAppName() => ConnectorCSIUtils.CSISlug;
-
+    public override string GetHostAppNameVersion() => GetHostAppVersion(Model);
+    public override string GetHostAppName() => GetHostAppName(Model);
+    public string GetHostAppVersion(cSapModel model){
+      var name = "";
+      var ver = "";
+      var type = "";
+      model.GetProgramInfo(ref name, ref ver, ref type);
+      return name;
+    }
+    public string GetHostAppName(cSapModel model)
+    {
+      var name = "";
+      var ver = "";
+      var type = "";
+      model.GetProgramInfo(ref name, ref ver, ref type);
+      return name.ToLower();
+    }
     public override List<string> GetObjectsInView()
     {
       throw new NotImplementedException();

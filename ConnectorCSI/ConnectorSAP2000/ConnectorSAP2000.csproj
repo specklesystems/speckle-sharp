@@ -7,8 +7,8 @@
     <ProjectGuid>{31E0C098-6813-4571-AB96-A245E0FC1C23}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConnectorSAP2000</RootNamespace>
-    <AssemblyName>ConnectorSAP2000</AssemblyName>
+    <RootNamespace>SpeckleConnectorCSI</RootNamespace>
+    <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

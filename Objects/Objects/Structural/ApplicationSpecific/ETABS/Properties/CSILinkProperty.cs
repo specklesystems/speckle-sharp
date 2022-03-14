@@ -5,9 +5,9 @@ using Speckle.Core.Models;
 using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 
-namespace Objects.Structural.ETABS.Properties
+namespace Objects.Structural.CSI.Properties
 {
-  public class ETABSLinkProperty : Property1D
+  public class CSILinkProperty : Property1D
   {
     public double mass { get; set; }
     public double weight { get; set; }
@@ -19,8 +19,8 @@ namespace Objects.Structural.ETABS.Properties
     public double MP3deltaEnd1 { get; set; }
     public double MP3deltaEnd2 { get; set; }
 
-    [SchemaInfo("ETABSLink", "Create an ETABS Link Property", "ETABS", "Properties")]
-    public ETABSLinkProperty(string name, double mass, double weight, double rotationalInertia1, double rotationalInertia2, double rotationalInertia3, double m2PdeltaEnd1, double mP2deltaEnd2, double mP3deltaEnd1, double mP3deltaEnd2)
+    [SchemaInfo("CSILink", "Create an CSI Link Property", "CSI", "Properties")]
+    public CSILinkProperty(string name, double mass, double weight, double rotationalInertia1, double rotationalInertia2, double rotationalInertia3, double m2PdeltaEnd1, double mP2deltaEnd2, double mP3deltaEnd1, double mP3deltaEnd2)
     {
       this.name = name;
       this.mass = mass;
@@ -34,7 +34,7 @@ namespace Objects.Structural.ETABS.Properties
       MP3deltaEnd2 = mP3deltaEnd2;
     }
 
-    public ETABSLinkProperty()
+    public CSILinkProperty()
     {
     }
   }

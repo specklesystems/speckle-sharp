@@ -7,8 +7,8 @@
     <ProjectGuid>{81299D15-5788-414D-A962-1A568C251323}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConnectorETABS</RootNamespace>
-    <AssemblyName>ConnectorETABS</AssemblyName>
+    <RootNamespace>SpeckleConnectorCSI</RootNamespace>
+    <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

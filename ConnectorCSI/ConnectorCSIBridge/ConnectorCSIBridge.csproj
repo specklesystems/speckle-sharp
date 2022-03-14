@@ -8,8 +8,8 @@
     <ProjectGuid>{23BE6E54-96C1-4373-89F3-E18A1C9807FD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConnectorCSIBridge</RootNamespace>
-    <AssemblyName>ConnectorCSIBridge</AssemblyName>
+    <RootNamespace>SpeckleConnectorCSI</RootNamespace>
+    <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

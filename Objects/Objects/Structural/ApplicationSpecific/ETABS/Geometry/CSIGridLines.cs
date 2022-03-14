@@ -4,11 +4,11 @@ using System.Text;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
 
-namespace Objects.Structural.ETABS.Geometry
+namespace Objects.Structural.CSI.Geometry
 {
-  public class ETABSGridLines:Base
+  public class CSIGridLines:Base
   {
-    public ETABSGridLines()
+    public CSIGridLines()
     {
     }
 

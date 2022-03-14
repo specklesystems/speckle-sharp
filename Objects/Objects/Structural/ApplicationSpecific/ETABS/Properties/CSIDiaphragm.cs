@@ -5,21 +5,21 @@ using Speckle.Core.Models;
 using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 
-namespace Objects.Structural.ETABS.Properties
+namespace Objects.Structural.CSI.Properties
 {
-  public class ETABSDiaphragm : Base
+  public class CSIDiaphragm : Base
   {
   public string name { get; set; }
   public bool SemiRigid { get; set; }
 
-    [SchemaInfo("ETABS Diaphragm", "Create an ETABS Diaphragm", "ETABS", "Properties")]
-    public ETABSDiaphragm(string name, bool semiRigid)
+    [SchemaInfo("CSI Diaphragm", "Create an CSI Diaphragm", "CSI", "Properties")]
+    public CSIDiaphragm(string name, bool semiRigid)
     {
       this.name = name;
       SemiRigid = semiRigid;
     }
 
-    public ETABSDiaphragm()
+    public CSIDiaphragm()
     {
     }
   }

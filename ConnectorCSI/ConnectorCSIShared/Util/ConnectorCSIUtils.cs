@@ -11,22 +11,22 @@ namespace Speckle.ConnectorCSI.Util
 {
   public class ConnectorCSIUtils
   {
-#if ETABS
-    public static string CSIAppName = VersionedHostApplications.ETABS;
-    public static string CSISlug = HostApplications.ETABS.Slug;
-#elif SAP2000
-    public static string CSIAppName = VersionedHostApplications.SAP2000;
-        public static string CSISlug = HostApplications.SAP2000.Slug;
-#elif CSIBridge
-    public static string CSIAppName = VersionedHostApplications.CSIBridge;
-        public static string CSISlug = HostApplications.CSIBridge.Slug;
-#elif SAFE
-  public static string CSIAppName = VersionedHostApplications.SAFE;
-          public static string CSISlug = HostApplications.SAFE.Slug;
-#else
-    public static string CSIAppName = VersionedHostApplications.CSI;
-    public static string CSISlug = HostApplications.CSI.Slug;
-#endif
+    //#if ETABS
+    //    public static string CSIAppName = VersionedHostApplications.ETABS;
+    //    public static string CSISlug = HostApplications.ETABS.Slug;
+    //#elif SAP2000
+    //    public static string CSIAppName = VersionedHostApplications.SAP2000;
+    //        public static string CSISlug = HostApplications.SAP2000.Slug;
+    //#elif CSIBridge
+    //    public static string CSIAppName = VersionedHostApplications.CSIBridge;
+    //        public static string CSISlug = HostApplications.CSIBridge.Slug;
+    //#elif SAFE
+    //  public static string CSIAppName = VersionedHostApplications.SAFE;
+    //  public static string CSISlug = HostApplications.SAFE.Slug;
+    //#else
+    //    public static string CSIAppName = VersionedHostApplications.CSI;
+    //    public static string CSISlug = HostApplications.CSI.Slug;
+    //#endif
 
     public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
 

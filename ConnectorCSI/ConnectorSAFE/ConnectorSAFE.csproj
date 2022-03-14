@@ -7,8 +7,8 @@
     <ProjectGuid>{9D188843-8841-4A76-A844-EFBE8E32EE05}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConnectorSAFE</RootNamespace>
-    <AssemblyName>ConnectorSAFE</AssemblyName>
+    <RootNamespace>SpeckleConnectorCSI</RootNamespace>
+    <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

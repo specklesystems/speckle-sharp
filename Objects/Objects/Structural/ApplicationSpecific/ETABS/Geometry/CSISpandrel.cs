@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
 
-namespace Objects.Structural.ETABS.Geometry
+namespace Objects.Structural.CSI.Geometry
 {
-  public class ETABSSpandrel:Base
+  public class CSISpandrel:Base
   {
     public string name { get; set; }
     public bool multistory { get; set; }
@@ -26,7 +26,7 @@ namespace Objects.Structural.ETABS.Geometry
     public double[] centerofGravityRightY { get; set; }
     public double[] centerofGravityRightZ { get; set; }
 
-    public ETABSSpandrel(string name, bool multistory,int numberStories, string[] storyName, int[] numAreaObjs, int[] numLineObjs, double[] length, double[] depthLeft, double[] thickLeft, double[] depthRight, double[] thickRight, string[] matProp, double[] centerofGravityLeftX, double[] centerofGravityLeftY, double[] centerofGravityLeftZ, double[] centerofGravityRightX, double[] centerofGravityRightY, double[] centerofGravityRightZ)
+    public CSISpandrel(string name, bool multistory,int numberStories, string[] storyName, int[] numAreaObjs, int[] numLineObjs, double[] length, double[] depthLeft, double[] thickLeft, double[] depthRight, double[] thickRight, string[] matProp, double[] centerofGravityLeftX, double[] centerofGravityLeftY, double[] centerofGravityLeftZ, double[] centerofGravityRightX, double[] centerofGravityRightY, double[] centerofGravityRightZ)
     {
       this.name = name;
       this.multistory = multistory;
@@ -48,7 +48,7 @@ namespace Objects.Structural.ETABS.Geometry
       this.centerofGravityRightZ = centerofGravityRightZ;
     }
 
-    public ETABSSpandrel()
+    public CSISpandrel()
     {
     }
   }

@@ -13,7 +13,8 @@ namespace DriverCSharp
   {
     private const string ProgID_SAP2000 = "CSI.SAP2000.API.SapObject";
     private const string ProgID_ETABS = "CSI.ETABS.API.ETABSObject";
-    //private const string ProgID_CSIBridge = "CSI.CSIBridge.API.CSIBridgeObject";
+    private const string ProgID_CSIBridge = "CSI.CSIBridge.API.CSIBridgeObject";
+    private const string ProgID_SAFE = "CSI.SAFE.API.SAFEObject";
 
     static int Main(string[] args)
     {
@@ -54,6 +55,8 @@ namespace DriverCSharp
             progID = ProgID_SAP2000;
           else if (string.Compare(arg, "ETABS", true) == 0)
             progID = ProgID_ETABS;
+          else if (string.Compare(arg, "SAFE", true) == 0)
+            progID = ProgID_SAFE;
         }
 
         if (progID != null)

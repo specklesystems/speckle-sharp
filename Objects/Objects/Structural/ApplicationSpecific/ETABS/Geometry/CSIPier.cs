@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
 
-namespace Objects.Structural.ETABS.Geometry
+namespace Objects.Structural.CSI.Geometry
 {
-  public class ETABSPier : Base
+  public class CSIPier : Base
   {
     public string name { get; set; }
     public int numberStories { get; set; }
@@ -25,7 +25,7 @@ namespace Objects.Structural.ETABS.Geometry
     public double[] centerofGravityTopY { get; set; }
     public double[] centerofGravityTopZ { get; set; }
 
-    public ETABSPier(string name, int numberStories, string[] storyName,double[] axisAngle, int[] numAreaObjs, int[] numLineObjs, double[] widthBot, double[] thicknessBot, double[] widthTop, double[] thicknessTop, string[] matProp, double[] centerofGravityBotX, double[] centerofGravityBotY, double[] centerofGravityBotZ, double[] centerofGravityTopX, double[] centerofGravityTopY, double[] centerofGravityTopZ)
+    public CSIPier(string name, int numberStories, string[] storyName,double[] axisAngle, int[] numAreaObjs, int[] numLineObjs, double[] widthBot, double[] thicknessBot, double[] widthTop, double[] thicknessTop, string[] matProp, double[] centerofGravityBotX, double[] centerofGravityBotY, double[] centerofGravityBotZ, double[] centerofGravityTopX, double[] centerofGravityTopY, double[] centerofGravityTopZ)
     {
       this.name = name;
       this.numberStories = numberStories;
@@ -46,7 +46,7 @@ namespace Objects.Structural.ETABS.Geometry
       this.centerofGravityTopZ = centerofGravityTopZ;
     }
 
-    public ETABSPier()
+    public CSIPier()
     {
     }
   }
