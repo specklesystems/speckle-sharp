@@ -1,4 +1,4 @@
-﻿using Grasshopper.Kernel.Types;
+using Grasshopper.Kernel.Types;
 using Objects.Geometry;
 using Objects.Primitive;
 using Objects.Other;
@@ -38,12 +38,14 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh : ISpeckleConverter
   {
-#if RHINO6
+#if RHINO6 && GRASSHOPPER
+    public static string RhinoAppName = VersionedHostApplications.Grasshopper6;
+#elif RHINO7 && GRASSHOPPER
+    public static string RhinoAppName = VersionedHostApplications.Grasshopper7;
+#elif RHINO6
     public static string RhinoAppName = VersionedHostApplications.Rhino6;
-    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #elif RHINO7
     public static string RhinoAppName = VersionedHostApplications.Rhino7;
-    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #endif
 
     public enum MeshSettings
@@ -68,12 +70,7 @@ namespace Objects.Converter.RhinoGh
 
     public IEnumerable<string> GetServicedApplications()
     {
-
-#if RHINO6
-      return new string[] { RhinoAppName, VersionedHostApplications.Grasshopper };
-#elif RHINO7
-      return new string[] {RhinoAppName};
-#endif   
+      return new[] {RhinoAppName};
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();

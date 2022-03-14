@@ -554,7 +554,7 @@ namespace ConnectorGrasshopper.Ops
               streamId = InputWrapper.StreamId,
               commitId = myCommit.id,
               message = myCommit.message,
-              sourceApplication = VersionedHostApplications.Grasshopper
+              sourceApplication = Extras.Utilities.GetVersionedAppName()
             });
           }
           catch

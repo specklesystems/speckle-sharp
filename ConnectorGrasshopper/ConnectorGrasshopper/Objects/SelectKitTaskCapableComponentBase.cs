@@ -80,7 +80,7 @@ namespace ConnectorGrasshopper.Objects
       //base.AppendAdditionalMenuItems(menu);
       try
       {
-        var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
+        var kits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
 
         Menu_AppendSeparator(menu);
         Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
@@ -114,7 +114,7 @@ namespace ConnectorGrasshopper.Objects
       if (kitName == Kit?.Name) return;
       Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
       SelectedKitName = Kit.Name;
-      Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
+      Converter = Kit.LoadConverter(Extras.Utilities.GetVersionedAppName());
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
         (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
