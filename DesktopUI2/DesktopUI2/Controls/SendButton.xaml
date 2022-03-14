@@ -8,22 +8,33 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-30deg)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-45deg)" />
+    </Style>
+  </UserControl.Styles>
   <Grid Margin="4">
     <m:FloatingButton
       VerticalAlignment="Center"
-      Command="{Binding SendCommand}"
+      Command="{Binding SendCommand, FallbackValue={x:Null}}"
       IsDefault="True"
-      IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-      ToolTip.Tip="Send to this stream">
+      IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
+      ToolTip.Tip="Send to this stream and saves it">
       <Button.Content>
         <icons:MaterialIcon
+          Name="send"
           Width="20"
           Height="20"
           Foreground="White"
           Kind="CubeSend">
-          <icons:MaterialIcon.RenderTransform>
-            <RotateTransform Angle="-30" />
-          </icons:MaterialIcon.RenderTransform>
+          <icons:MaterialIcon.Transitions>
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+            </Transitions>
+          </icons:MaterialIcon.Transitions>
         </icons:MaterialIcon>
       </Button.Content>
     </m:FloatingButton>

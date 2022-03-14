@@ -4,6 +4,7 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   Title="Report"
@@ -21,6 +22,10 @@
       <Setter Property="Margin" Value="20,0,20,20" />
       <Setter Property="FontStyle" Value="Italic" />
     </Style>
+    <Style Selector="TextBox.Readonly /template/ m|MaterialUnderline#PART_Underline">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
   </Window.Styles>
 
   <Design.DataContext>
@@ -33,8 +38,10 @@
       Header="Operation Errors ⚠"
       IsVisible="{Binding Report.OperationErrorsCount, Converter={StaticResource EmptyFalseValueConverter}}">
       <TextBox
+        BorderThickness="0"
         Classes="Readonly"
         Foreground="Red"
+        IsReadOnly="True"
         Text="{Binding Report.OperationErrorsString}" />
     </Expander>
 
@@ -44,8 +51,10 @@
       Header="Conversion Errors ⚠"
       IsVisible="{Binding Report.ConversionErrorsCount, Converter={StaticResource EmptyFalseValueConverter}}">
       <TextBox
+        BorderThickness="0"
         Classes="Readonly"
         Foreground="Red"
+        IsReadOnly="True"
         Text="{Binding Report.ConversionErrorsString}" />
     </Expander>
 
@@ -54,7 +63,11 @@
       MaxHeight="300"
       VerticalAlignment="Top"
       Header="Log">
-      <TextBox Classes="Readonly" Text="{Binding Report.ConversionLogString}" />
+      <TextBox
+        BorderThickness="0"
+        Classes="Readonly"
+        IsReadOnly="True"
+        Text="{Binding Report.ConversionLogString}" />
     </Expander>
     <StackPanel
       Grid.Row="3"
