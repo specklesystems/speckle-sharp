@@ -10,7 +10,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
-  d:DesignHeight="550"
+  d:DesignHeight="350"
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
@@ -26,7 +26,7 @@
   <Grid RowDefinitions="auto,*, auto">
     <Border
       Margin="0,0,0,7"
-      Padding="0,0,0,15"
+      Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
       <Grid Margin="15" ColumnDefinitions="auto,*,auto">
@@ -80,9 +80,7 @@
               TextTrimming="CharacterEllipsis" />
           </Grid>
         </Grid>
-        <Menu
-          Grid.Column="2"
-          Items="{Binding MenuItems}">
+        <Menu Grid.Column="2" Items="{Binding MenuItems}">
           <Menu.Styles>
             <Style Selector="MenuItem">
               <Setter Property="Header" Value="{Binding Header}" />
@@ -103,39 +101,131 @@
 
     <Grid Grid.Row="1">
       <ScrollViewer Name="activityScroller">
-        <ItemsControl Margin="0,0,0,15" Items="{Binding Activity}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Grid>
-                <m:ColorZone
-                  Grid.Row="3"
-                  Margin="{Binding Margin}"
-                  HorizontalAlignment="{Binding Align}"
-                  assists:ShadowAssist.ShadowDepth="Depth0"
-                  CornerRadius="25"
-                  Mode="Light">
-                  <Grid ColumnDefinitions="auto,*">
+        <Grid RowDefinitions="*,auto">
+          <ItemsControl Margin="0,0,0,10" Items="{Binding Activity}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid>
+                  <m:ColorZone
+                    Grid.Row="3"
+                    Margin="{Binding Margin}"
+                    HorizontalAlignment="{Binding Align}"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    CornerRadius="25"
+                    Mode="Light">
+                    <Grid ColumnDefinitions="auto,*">
+                      <icons:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        Kind="{Binding Icon}"
+                        ToolTip.Tip="Send" />
+                      <TextBlock
+                        Grid.Column="1"
+                        Margin="5,10,10,10"
+                        Text="{Binding Message}"
+                        TextWrapping="Wrap" />
+                    </Grid>
+
+                  </m:ColorZone>
+
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+          </ItemsControl>
+          <Grid
+            Grid.Row="1"
+            Margin="15,0"
+            RowDefinitions="auto,auto,auto">
+            <!--  COMMIT MESSAGE  -->
+            <!--<TextBox
+                Margin="0,8,0,0"
+                Classes="Small"
+                Foreground="Gray"
+                IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+                IsReadOnly="{Binding Progress.IsProgressing}"
+                IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
+                Text="{Binding StreamState.CommitMessage}"
+                Watermark="Commit message" />-->
+            <!--  NOTIFICATION  -->
+            <m:ColorZone
+              Grid.Row="1"
+              Margin="0,0,0,10"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
+              IsVisible="{Binding ShowNotification}"
+              Mode="PrimaryMid">
+              <Grid ColumnDefinitions="*, auto">
+                <TextBlock
+                  Margin="10,3"
+                  VerticalAlignment="Center"
+                  Classes="Overline"
+                  FontWeight="Medium"
+                  Foreground="White"
+                  Text="{Binding Notification}"
+                  TextWrapping="Wrap" />
+
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding CloseNotificationCommand}"
+                  ToolTip.Tip="Close notification">
+                  <Button.Content>
                     <icons:MaterialIcon
                       Width="15"
                       Height="15"
-                      Margin="10,0,0,0"
-                      VerticalAlignment="Center"
-                      Kind="{Binding Icon}"
-                      ToolTip.Tip="Send" />
-                    <TextBlock
-                      Grid.Column="1"
-                      Margin="5,10,10,10"
-                      Text="{Binding Message}"
-                      TextWrapping="Wrap" />
-                  </Grid>
+                      Foreground="White"
+                      Kind="Close" />
 
-                </m:ColorZone>
-
+                  </Button.Content>
+                </m:FloatingButton>
               </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
+            </m:ColorZone>
+            <!--  REPORT  -->
+            <m:ColorZone
+              Grid.Row="3"
+              Margin="0,0,0,10"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
 
-        </ItemsControl>
+							IsVisible="{Binding ShowReport}"
+              Mode="Accent">
+              <Grid ColumnDefinitions="*, auto">
+                <TextBlock
+                  Margin="10,3"
+                  VerticalAlignment="Center"
+                  Classes="Overline"
+                  FontWeight="Medium"
+                  Foreground="White"
+                  Text="Something went wrong, please check the report"
+                  TextWrapping="Wrap" />
+
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding OpenReportCommand}"
+                  ToolTip.Tip="Open Report">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="TextBox" />
+                  </Button.Content>
+                </m:FloatingButton>
+              </Grid>
+            </m:ColorZone>
+
+
+          </Grid>
+        </Grid>
+
       </ScrollViewer>
 
     </Grid>

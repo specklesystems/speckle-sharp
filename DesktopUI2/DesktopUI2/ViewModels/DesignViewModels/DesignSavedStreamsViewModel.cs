@@ -26,7 +26,8 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
            },
            ShowNotification = false,
-           ShowReport = false
+           ShowReport = false,
+           NoAccess = true,
          }
 
       };
@@ -39,6 +40,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string CommitId { get; set; }
     public string CommitMessage { get; set; }
     public bool IsReceiver { get; set; }
+
     public bool SchedulerEnabled { get; set; }
     public ListSelectionFilter Filter { get; set; }
     public object Client { get; internal set; }
@@ -66,6 +68,8 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string LastUsed { get; set; } = "Never";
     public string Notification { get; set; } = "Hello";
     public bool ShowNotification { get; set; } = true;
+
+    public bool NoAccess { get; set; } = false;
     public bool ShowReport { get; set; } = true;
     public List<MenuItemViewModel> MenuItems = new List<MenuItemViewModel>();
     public List<ActivityViewModel> Activity { get; set; }

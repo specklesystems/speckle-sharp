@@ -103,9 +103,9 @@ namespace DesktopUI2.ViewModels
     {
       set
       {
-        if (value != null)
+        if (value != null && !value.NoAccess)
         {
-          MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(value.StreamState, HostScreen, RemoveSavedStreamCommand));
+          MainWindowViewModel.RouterInstance.Navigate.Execute(value);
           Tracker.TrackPageview("stream", "edit");
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
         }
@@ -283,7 +283,8 @@ namespace DesktopUI2.ViewModels
       {
         SavedStreams.Remove(s);
         Tracker.TrackPageview("stream", "remove");
-        Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
+        if (s.StreamState.Client != null)
+          Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
@@ -407,7 +408,7 @@ namespace DesktopUI2.ViewModels
       if (Uri.TryCreate(clipboard, UriKind.Absolute, out uri))
         defaultText = clipboard;
 
-      var dialog = new AddFromUrlDialog();
+      var dialog = new AddFromUrlDialog(defaultText);
       dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
       await dialog.ShowDialog(MainWindow.Instance);
 
