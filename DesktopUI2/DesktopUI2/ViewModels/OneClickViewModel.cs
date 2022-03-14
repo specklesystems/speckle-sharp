@@ -1,6 +1,8 @@
-﻿using Avalonia.Metadata;
+﻿using Avalonia.Controls;
+using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -37,10 +39,6 @@ namespace DesktopUI2.ViewModels
     {
       Bindings = _bindings;
       SavedStreams = Bindings.GetStreamsInFile();
-
-      // analytics
-      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
-      Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "oneClick", true } });
 
       if (fileStream == null)
         LoadFileStream();
@@ -96,7 +94,7 @@ namespace DesktopUI2.ViewModels
       return stream;
     }
 
-    public void Send()
+    public async void Send()
     {
       // check if objs are selected and set streamstate filter
       var filters = Bindings.GetSelectionFilters();
@@ -122,26 +120,41 @@ namespace DesktopUI2.ViewModels
       }
 
       // send to stream
-      var progress = new ProgressViewModel();
-      Task.Run(async () => await Bindings.SendStream(FileStream, progress)).Wait();
-
-      if (!progress.CancellationTokenSource.IsCancellationRequested)
+      try
       {
-        FileStream.LastUsed = DateTime.Now.ToString();
+        var progress = new ProgressViewModel();
+        progress.ProgressTitle = "Sending to Speckle 🚀";
+        progress.IsProgressing = true;
+
+        var dialog = new QuickOpsDialog();
+        dialog.DataContext = progress;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.Show();
+
+        await Task.Run(() => Bindings.SendStream(FileStream, progress));
+        progress.IsProgressing = false;
+        dialog.Close();
+        if (!progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "oneClick", true } });
+          FileStream.LastUsed = DateTime.Now.ToString();
+
+          // open in browser
+          if (FileStream.PreviousCommitId != null)
+          {
+            string commitUrl = $"{FileStream.ServerUrl.TrimEnd('/')}/streams/{FileStream.StreamId}/commits/{FileStream.PreviousCommitId}";
+            Process.Start(new ProcessStartInfo(commitUrl) { UseShellExecute = true });
+          }
+        }
       }
+      catch (Exception ex)
+      { }
 
       if (Bindings.UpdateSavedStreams != null)
         Bindings.UpdateSavedStreams(SavedStreams);
 
       if (HomeViewModel.Instance != null)
         HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
-
-      // open in browser
-      if (FileStream.PreviousCommitId != null)
-      {
-        string commitUrl = $"{FileStream.ServerUrl.TrimEnd('/')}/streams/{FileStream.StreamId}/commits/{FileStream.PreviousCommitId}";
-        Process.Start(new ProcessStartInfo(commitUrl) { UseShellExecute = true });
-      }
     }
   }
 }

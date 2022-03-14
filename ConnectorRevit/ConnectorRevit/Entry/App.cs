@@ -62,10 +62,6 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
-#endif
-
-
-
 
       // one click send
       var speckleButtonSend = specklePanel.AddItem(new PushButtonData("Send", "Send to Speckle", typeof(App).Assembly.Location, typeof(OneClickSendCommand).FullName)) as PushButton;
@@ -74,10 +70,11 @@ namespace Speckle.ConnectorRevit.Entry
       {
         speckleButtonSend.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send16.png", path);
         speckleButtonSend.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send32.png", path);
-        speckleButtonSend.ToolTip = "Sends your file objects to Speckle";
+        speckleButtonSend.ToolTip = "Sends your selected file objects to Speckle, or the entire model if nothing is selected.";
         speckleButtonSend.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButtonSend.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
+#endif
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
@@ -127,10 +124,9 @@ namespace Speckle.ConnectorRevit.Entry
       SpeckleRevitCommand2.Bindings = bindings;
       SchedulerCommand.Bindings = bindings;
       OneClickSendCommand.Bindings = bindings;
+#endif
 
     }
-
-
 
     public Result OnShutdown(UIControlledApplication application)
     {
