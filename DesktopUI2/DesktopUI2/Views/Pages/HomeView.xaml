@@ -222,12 +222,7 @@
                   <Style Selector="ListBoxItem:pointerover StackPanel#HoverButtons">
                     <Setter Property="IsVisible" Value="True" />
                   </Style>
-                  <!--<Style Selector="ListBoxItem /template/ Border#selectedBorder">
-                  <Setter Property="IsVisible" Value="False" />
-                </Style>
-                <Style Selector="ListBoxItem /template/ ripple|RippleEffect#Ripple">
-                  <Setter Property="RippleOpacity" Value="0" />
-                </Style>-->
+
 
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>

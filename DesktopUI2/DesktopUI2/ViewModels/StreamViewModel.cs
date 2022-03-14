@@ -132,6 +132,9 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => MainWindowViewModel.RouterInstance.NavigateBack;
 
+    //If we don't have access to this stream
+    public bool NoAccess { get; set; } = false;
+
     private bool _isReceiver = false;
     public bool IsReceiver
     {
@@ -235,7 +238,7 @@ namespace DesktopUI2.ViewModels
     public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
-    #endregion
+
 
 
     public string _previewImageUrl = "";
@@ -256,6 +259,8 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _previewImage, value);
     }
 
+    #endregion
+
     private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{StreamState.BranchName}"; }
 
     IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
@@ -264,14 +269,25 @@ namespace DesktopUI2.ViewModels
 
     {
       StreamState = streamState;
+      //use cached stream, then load a fresh one async 
+      //this way we can immediately show stream name and other info and update it later if it changed
       Stream = streamState.CachedStream;
       Client = streamState.Client;
+      IsReceiver = streamState.IsReceiver;
 
       HostScreen = hostScreen;
       RemoveSavedStreamCommand = removeSavedStreamCommand;
 
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
+
+      if (Client == null)
+      {
+        NoAccess = true;
+        Notification = "You do not have access to this Stream.";
+        return;
+      }
+
       GetStream().ConfigureAwait(false);
       GenerateMenuItems();
 
@@ -282,9 +298,9 @@ namespace DesktopUI2.ViewModels
       //get available settings from our bindings
       Settings = Bindings.GetSettings();
 
-      IsReceiver = streamState.IsReceiver;
       GetBranchesAndRestoreState();
       GetActivity();
+
 
       var updateTextTimer = new System.Timers.Timer();
       updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
@@ -321,14 +337,12 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        //use cached stream, then load a fresh one async 
-        Stream = StreamState.CachedStream;
-        Stream = await StreamState.Client.StreamGet(StreamState.StreamId);
+        Stream = await Client.StreamGet(StreamState.StreamId);
         StreamState.CachedStream = Stream;
 
         //subscription
-        StreamState.Client.SubscribeCommitCreated(StreamState.StreamId);
-        StreamState.Client.OnCommitCreated += Client_OnCommitCreated;
+        Client.SubscribeCommitCreated(StreamState.StreamId);
+        Client.OnCommitCreated += Client_OnCommitCreated;
       }
       catch (Exception e)
       {
@@ -337,7 +351,7 @@ namespace DesktopUI2.ViewModels
 
     private async void GetBranchesAndRestoreState()
     {
-      var branches = await StreamState.Client.StreamGetBranches(Stream.id, 100, 0);
+      var branches = await Client.StreamGetBranches(Stream.id, 100, 0);
       Branches = branches;
 
       var branch = Branches.FirstOrDefault(x => x.name == StreamState.BranchName);
@@ -365,19 +379,24 @@ namespace DesktopUI2.ViewModels
 
     private async void GetActivity()
     {
-      var activity = await StreamState.Client.StreamGetActivity(Stream.id);
+      var activity = await Client.StreamGetActivity(Stream.id);
       Activity = activity
         .Where(x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create")
         .Select(x => new ActivityViewModel(x)).Reverse().ToList();
-      await Task.Delay(200);
-      StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller").ScrollToEnd();
-
-
+      if (StreamEditView.Instance != null)
+      {
+        var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
+        if (scroller != null)
+        {
+          await Task.Delay(200);
+          scroller.ScrollToEnd();
+        }
+      }
     }
     /// <summary>
-    /// The model Stream state, generate it on the fly when needed
+    /// Update the model Stream state whenever we send, receive or save a stream
     /// </summary>
-    private StreamState GetStreamState()
+    private void UpdateStreamState()
     {
       StreamState.BranchName = SelectedBranch.name;
       StreamState.IsReceiver = IsReceiver;
@@ -386,7 +405,6 @@ namespace DesktopUI2.ViewModels
       if (!IsReceiver)
         StreamState.Filter = SelectedFilter.Filter;
       StreamState.Settings = Settings.Select(o => o).ToList();
-      return StreamState;
     }
 
     private async void GetCommits()
@@ -409,9 +427,9 @@ namespace DesktopUI2.ViewModels
 
     private async void Client_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo info)
     {
-      var branches = await StreamState.Client.StreamGetBranches(StreamState.StreamId);
+      var branches = await Client.StreamGetBranches(StreamState.StreamId);
 
-      if (!StreamState.IsReceiver) return;
+      if (!IsReceiver) return;
 
       var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
@@ -457,7 +475,7 @@ namespace DesktopUI2.ViewModels
 
     public void EditSavedStreamCommand()
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(StreamState, HostScreen, RemoveSavedStreamCommand));
+      MainWindowViewModel.RouterInstance.Navigate.Execute(this);
       Tracker.TrackPageview("stream", "edit");
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
     }
@@ -482,6 +500,7 @@ namespace DesktopUI2.ViewModels
 
     public async void SendCommand()
     {
+      UpdateStreamState();
       Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
@@ -490,7 +509,7 @@ namespace DesktopUI2.ViewModels
       if (!Progress.CancellationTokenSource.IsCancellationRequested)
       {
         LastUsed = DateTime.Now.ToString();
-        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Send);
+        Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
         Tracker.TrackPageview(Tracker.SEND);
       }
 
@@ -498,12 +517,13 @@ namespace DesktopUI2.ViewModels
         ShowReport = true;
 
       //save the stream as well
-      HomeViewModel.Instance.AddSavedStream(GetStreamState());
+      HomeViewModel.Instance.AddSavedStream(StreamState);
       GetActivity();
     }
 
     public async void ReceiveCommand()
     {
+      UpdateStreamState();
       Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
@@ -520,7 +540,7 @@ namespace DesktopUI2.ViewModels
         ShowReport = true;
 
       //save the stream as well
-      HomeViewModel.Instance.AddSavedStream(GetStreamState());
+      HomeViewModel.Instance.AddSavedStream(StreamState);
       GetActivity();
 
     }
@@ -555,8 +575,9 @@ namespace DesktopUI2.ViewModels
 
     private void SaveCommand()
     {
+      UpdateStreamState();
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-      HomeViewModel.Instance.AddSavedStream(GetStreamState());
+      HomeViewModel.Instance.AddSavedStream(StreamState);
 
       if (IsReceiver)
       {
@@ -695,6 +716,8 @@ namespace DesktopUI2.ViewModels
 
     private bool IsReady()
     {
+      if (NoAccess)
+        return false;
       if (SelectedBranch == null)
         return false;
 

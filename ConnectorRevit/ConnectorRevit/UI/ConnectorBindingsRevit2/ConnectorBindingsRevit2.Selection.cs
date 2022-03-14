@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using ConnectorRevit;
 using DesktopUI2.Models.Filters;
-using Speckle.ConnectorRevit.Storage;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using RevitElement = Autodesk.Revit.DB.Element;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -37,6 +28,7 @@ namespace Speckle.ConnectorRevit.UI
 
       return new List<ISelectionFilter>
       {
+         new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
         new ManualSelectionFilter(),
         new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
         new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
@@ -49,8 +41,8 @@ namespace Speckle.ConnectorRevit.UI
           Icon = "FilterList",
           Values = parameters,
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        },
-        new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
+        }
+
       };
     }
 
