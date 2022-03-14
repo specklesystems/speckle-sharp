@@ -1,4 +1,4 @@
-using Grasshopper.Kernel.Types;
+﻿using Grasshopper.Kernel.Types;
 using Objects.Geometry;
 using Objects.Primitive;
 using Objects.Other;
@@ -669,13 +669,15 @@ case RH.SubD _:
         case RH.Brep _:
         case NurbsSurface _:
           return true;
-        // TODO: This types are not supported in GH!
+        
+#if !GRASSHOPPER
+        // This types are not supported in GH!
         case ViewInfo _:
         case InstanceDefinition _:
         case InstanceObject _:
         case TextEntity _:
           return true;
-
+#endif
         default:
 
           return false;
@@ -706,7 +708,8 @@ case RH.SubD _:
         case Surface _:
           return true;
 
-        //TODO: This types are not supported in GH!
+#if !GRASSHOPPER
+        // This types are not supported in GH!
         case Pointcloud _:
         case DisplayStyle _:
         case ModelCurve _:
@@ -718,6 +721,7 @@ case RH.SubD _:
         case RenderMaterial _:
         case Text _:
           return true;
+#endif
 
         default:
           return false;
