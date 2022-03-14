@@ -19,81 +19,14 @@
   <Design.DataContext>
     <vm:MainWindowViewModel />
   </Design.DataContext>
-  <Grid RowDefinitions="auto, *">
-    <m:Card Padding="10,7" CornerRadius="0">
-      <Grid ColumnDefinitions="auto,*">
-        <StackPanel
-          VerticalAlignment="Bottom"
-          Orientation="Horizontal"
-          Spacing="6">
-          <TextBlock
-            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
-            FontSize="18"
-            FontWeight="Bold"
-            Foreground="{DynamicResource PrimaryHueMidBrush}"
-            Text="SPECKLE" />
-          <TextBlock
-            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
-            FontSize="18"
-            FontWeight="Medium"
-            Text="{Binding Title}" />
 
-          <TextBlock
-            Margin="0,0,0,4"
-            VerticalAlignment="Bottom"
-            FontSize="8"
-            Foreground="Gray"
-            Text="{Binding Version}" />
-        </StackPanel>
+  <reactiveUi:RoutedViewHost Grid.Row="1" Router="{Binding Router}">
+    <reactiveUi:RoutedViewHost.PageTransition>
 
-        <StackPanel
-          Grid.Column="1"
-          HorizontalAlignment="Right"
-          VerticalAlignment="Bottom"
-          Orientation="Horizontal"
-          Spacing="6">
-          <m:FloatingButton
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding ToggleDarkThemeCommand}"
-            ToolTip.Tip="Toggle dark theme">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                assists:ShadowAssist.ShadowDepth="0"
-                Kind="SunMoonStars" />
 
-            </Button.Content>
-          </m:FloatingButton>
-          <m:FloatingButton
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding RefreshCommand}"
-            ToolTip.Tip="Refresh">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                assists:ShadowAssist.ShadowDepth="0"
-                Kind="Refresh" />
+      <CrossFade Duration="0.15" />
 
-            </Button.Content>
-          </m:FloatingButton>
-        </StackPanel>
-      </Grid>
-    </m:Card>
+    </reactiveUi:RoutedViewHost.PageTransition>
+  </reactiveUi:RoutedViewHost>
 
-    <reactiveUi:RoutedViewHost
-      Grid.Row="1"
-      PageTransition="{x:Null}"
-      Router="{Binding Router}" />
-
-  </Grid>
 </Window>

@@ -1,0 +1,30 @@
+﻿
+
+<Styles
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles">
+  <Design.PreviewWith>
+    <StackPanel
+      Width="360"
+      Height="200"
+      Margin="15"
+      Orientation="Vertical">
+      <Expander Header="This is expander! Click me to expand the content." IsExpanded="True">
+        <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
+      </Expander>
+      <Expander Classes="Flat" Header="This is another expander!">
+        <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
+      </Expander>
+    </StackPanel>
+  </Design.PreviewWith>
+  <Style Selector="Expander:up:expanded /template/ m|Card#PART_ExpanderRoot, Expander:down:expanded /template/ m|Card#PART_ExpanderRoot">
+    <Setter Property="Margin" Value="0" />
+  </Style>
+
+  <Style Selector="Expander.Flat /template/ m|Card#PART_ExpanderRoot, Expander.Flat /template/ m|Card#PART_ExpanderRoot">
+    <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+  </Style>
+
+</Styles>

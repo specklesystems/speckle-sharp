@@ -10,17 +10,31 @@ namespace DesktopUI2.Views.Windows.Dialogs
 
     public string Url { get; set; }
     public bool Add = false;
-    public AddFromUrlDialog()
+
+    TextBox UrlField;
+
+    public AddFromUrlDialog(string url)
     {
+      Url = url;
       InitializeComponent();
 #if DEBUG
       this.AttachDevTools();
 #endif
     }
 
+    public AddFromUrlDialog()
+    {
+      InitializeComponent();
+    }
+
     private void InitializeComponent()
     {
       AvaloniaXamlLoader.Load(this);
+      UrlField = this.FindControl<TextBox>("url");
+
+
+      UrlField.Text = Url;
+      UrlField.Focus(); //not working :(
     }
 
     public void Add_Click(object sender, RoutedEventArgs e)

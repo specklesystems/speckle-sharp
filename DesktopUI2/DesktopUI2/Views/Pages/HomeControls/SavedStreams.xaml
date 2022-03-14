@@ -3,11 +3,14 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Controls"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:local="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
   xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   d:DesignHeight="450"
   d:DesignWidth="400"
@@ -15,220 +18,202 @@
   <Design.DataContext>
     <vm:DesignSavedStreamsViewModel />
   </Design.DataContext>
+  <UserControl.Resources>
+    <conv:OpacityValueConverter x:Key="OpacityValueConverter" />
+  </UserControl.Resources>
 
-  <ItemsControl Items="{Binding SavedStreams}">
-    <ItemsControl.ItemTemplate>
+  <ListBox
+    Background="Transparent"
+    BorderThickness="0"
+    Classes="NoScroll"
+    Items="{Binding SavedStreams}"
+    SelectedItem="{Binding SelectedSavedStream}">
+    <ListBox.Styles>
+      <Style Selector="ListBoxItem:not(:pointerover) m|FloatingButton#HoverButtons">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="ListBoxItem:pointerover m|FloatingButton#HoverButtons">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <!--  DISABLE CLICK EFFECT IF NO ACCESS  -->
+      <Style Selector="ListBoxItem /template/ Border#selectedBorder, ListBoxItem /template/ Border#pointerOverBorder">
+        <Setter Property="IsVisible" Value="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" />
+      </Style>
+      <Style Selector="ListBoxItem /template/ ripple|RippleEffect#Ripple">
+        <Setter Property="IsEnabled" Value="{Binding NoAccess}" />
+      </Style>
+      <Style Selector="ListBoxItem">
+        <Setter Property="Opacity" Value="{Binding NoAccess, Converter={StaticResource OpacityValueConverter}}" />
+      </Style>
+
+      <!--<Style Selector="ListBoxItem">
+        <Setter Property="IsEnabled" Value="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" />
+      </Style>-->
+    </ListBox.Styles>
+    <ListBox.ItemTemplate>
       <DataTemplate>
-        <Border Margin="10,5">
-          <Grid ColumnDefinitions="*, auto" RowDefinitions="auto,auto">
-
-            <Grid RowDefinitions="Auto,Auto,Auto">
-              <TextBlock
-                Margin="0,0,0,5"
-                Classes="Grotesk"
-                Text="{Binding Stream.name}"
-                TextTrimming="CharacterEllipsis" />
-              <!--  SENDER  -->
-              <Grid Grid.Row="1" ColumnDefinitions="auto,auto">
-                <Grid
-                  Grid.Column="0"
-                  ColumnDefinitions="auto,auto,auto,auto,*"
-                  IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}">
-                  <icons:MaterialIcon
-                    Margin="0,0,5,0"
-                    Foreground="Gray"
-                    Kind="SourceBranch" />
-                  <TextBlock
-                    Grid.Column="1"
-                    Classes="Caption"
-                    Text="{Binding StreamState.BranchName}"
-                    TextTrimming="CharacterEllipsis" />
-                  <icons:MaterialIcon
-                    Grid.Column="2"
-                    Margin="10,0,5,0"
-                    Foreground="Gray"
-                    Kind="{Binding StreamState.Filter.Icon}" />
-                  <TextBlock
-                    Grid.Column="3"
-                    Classes="Caption"
-                    Text="{Binding StreamState.Filter.Name}"
-                    TextTrimming="CharacterEllipsis" />
-
-                </Grid>
-                <!--  RECEIVER  -->
-                <Grid
-                  Grid.Column="0"
-                  ColumnDefinitions="auto,auto,auto,auto, *"
-                  IsVisible="{Binding StreamState.IsReceiver}">
-                  <icons:MaterialIcon
-                    Margin="0,0,5,0"
-                    Foreground="Gray"
-                    Kind="SourceBranch" />
-                  <TextBlock
-                    Grid.Column="1"
-                    Classes="Caption"
-                    Text="{Binding StreamState.BranchName}"
-                    TextTrimming="CharacterEllipsis" />
-
-                  <icons:MaterialIcon
-                    Grid.Column="2"
-                    Margin="10,0,5,0"
-                    Foreground="Gray"
-                    Kind="SourceCommit" />
-                  <TextBlock
-                    Grid.Column="3"
-                    Classes="Caption"
-                    Text="{Binding StreamState.CommitId}"
-                    TextTrimming="CharacterEllipsis" />
-
-                </Grid>
+        <Grid
+          Margin="4,0"
+          ColumnDefinitions="*, auto"
+          RowDefinitions="auto,auto">
+          <Grid IsEnabled="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" RowDefinitions="Auto,Auto,Auto">
+            <TextBlock
+              Margin="0,0,0,5"
+              Classes="Grotesk"
+              Text="{Binding Stream.name}"
+              TextTrimming="CharacterEllipsis" />
+            <!--  SENDER  -->
+            <Grid Grid.Row="1" ColumnDefinitions="auto,auto">
+              <Grid
+                Grid.Column="0"
+                ColumnDefinitions="auto,auto,auto,auto,*"
+                IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}">
                 <icons:MaterialIcon
+                  Margin="0,0,5,0"
+                  Foreground="Gray"
+                  Kind="SourceBranch" />
+                <TextBlock
                   Grid.Column="1"
+                  Classes="Caption"
+                  Text="{Binding StreamState.BranchName}"
+                  TextTrimming="CharacterEllipsis" />
+                <icons:MaterialIcon
+                  Grid.Column="2"
                   Margin="10,0,5,0"
                   Foreground="Gray"
-                  IsVisible="{Binding StreamState.SchedulerEnabled}"
-                  Kind="ClockCheck"
-                  ToolTip.Tip="Scheduler is enabled on this stream" />
-              </Grid>
-              <!--  DETAILS - visible when not progressing  -->
-              <Grid
-                Grid.Row="2"
-                Margin="0,5,0,0"
-                ColumnDefinitions="auto,auto,*"
-                IsVisible="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}">
+                  Kind="{Binding StreamState.Filter.Icon}" />
                 <TextBlock
-                  Classes="Overline"
-                  Text="{Binding LastUpdated}"
+                  Grid.Column="3"
+                  Classes="Caption"
+                  Text="{Binding StreamState.Filter.Name}"
                   TextTrimming="CharacterEllipsis" />
+
+              </Grid>
+              <!--  RECEIVER  -->
+              <Grid
+                Grid.Column="0"
+                ColumnDefinitions="auto,auto,auto,auto, *"
+                IsVisible="{Binding StreamState.IsReceiver}">
+                <icons:MaterialIcon
+                  Margin="0,0,5,0"
+                  Foreground="Gray"
+                  Kind="SourceBranch" />
                 <TextBlock
                   Grid.Column="1"
-                  Classes="Overline"
-                  Text=" - " />
-                <TextBlock
+                  Classes="Caption"
+                  Text="{Binding StreamState.BranchName}"
+                  TextTrimming="CharacterEllipsis" />
+
+                <icons:MaterialIcon
                   Grid.Column="2"
-                  Classes="Overline"
-                  Text="{Binding LastUsed}"
-                  TextTrimming="CharacterEllipsis" />
-
-              </Grid>
-
-              <!--  DETAILS - visible when progressing  -->
-              <Grid
-                Grid.Row="2"
-                Margin="0,5,0,0"
-                ColumnDefinitions="auto"
-                IsVisible="{Binding Progress.IsProgressing}">
+                  Margin="10,0,5,0"
+                  Foreground="Gray"
+                  Kind="SourceCommit" />
                 <TextBlock
-                  Classes="Overline"
-                  Text="{Binding Progress.ProgressSummary}"
+                  Grid.Column="3"
+                  Classes="Caption"
+                  Text="{Binding StreamState.CommitId}"
                   TextTrimming="CharacterEllipsis" />
+
               </Grid>
+              <icons:MaterialIcon
+                Grid.Column="1"
+                Margin="10,0,5,0"
+                Foreground="Gray"
+                IsVisible="{Binding StreamState.SchedulerEnabled}"
+                Kind="ClockCheck"
+                ToolTip.Tip="Scheduler is enabled on this stream" />
+            </Grid>
+            <!--  DETAILS - visible when not progressing  -->
+            <Grid
+              Grid.Row="2"
+              Margin="0,5,0,0"
+              ColumnDefinitions="auto,auto,*"
+              IsVisible="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}">
+              <TextBlock
+                Classes="Overline"
+                Text="{Binding LastUpdated}"
+                TextTrimming="CharacterEllipsis" />
+              <TextBlock
+                Grid.Column="1"
+                Classes="Overline"
+                Text=" - " />
+              <TextBlock
+                Grid.Column="2"
+                Classes="Overline"
+                Text="{Binding LastUsed}"
+                TextTrimming="CharacterEllipsis" />
 
             </Grid>
 
-            <!--  ACTION BUTTONS  -->
-            <StackPanel
-              Grid.Column="1"
-              Orientation="Horizontal"
-              Spacing="5">
-              <Menu Items="{Binding MenuItems}">
-                <Menu.Styles>
-                  <Style Selector="MenuItem">
-                    <Setter Property="Header" Value="{Binding Header}" />
-                    <Setter Property="Icon" Value="{Binding Icon}" />
-                    <Setter Property="MinWidth" Value="28" />
-                    <Setter Property="Items" Value="{Binding Items}" />
-                    <Setter Property="Command" Value="{Binding Command}" />
-                    <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
-                  </Style>
-                </Menu.Styles>
-
-              </Menu>
-              <Grid>
-
-                <!--  RECEIVE BTN  -->
-                <m:FloatingButton
-                  VerticalAlignment="Center"
-                  Command="{Binding ReceiveCommand}"
-                  IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-                  IsVisible="{Binding StreamState.IsReceiver}"
-                  ToolTip.Tip="Receive">
-                  <Button.Content>
-                    <icons:MaterialIcon
-                      Width="20"
-                      Height="20"
-                      Foreground="White"
-                      Kind="CubeSend"
-                      ToolTip.Tip="Receive">
-                      <icons:MaterialIcon.RenderTransform>
-                        <TransformGroup>
-                          <RotateTransform Angle="30" />
-                          <ScaleTransform ScaleX="-1" />
-                        </TransformGroup>
-                      </icons:MaterialIcon.RenderTransform>
-                    </icons:MaterialIcon>
-
-                  </Button.Content>
-                </m:FloatingButton>
-
-                <!--  SEND BTN  -->
-                <m:FloatingButton
-                  VerticalAlignment="Center"
-                  Command="{Binding SendCommand}"
-                  IsDefault="True"
-                  IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-                  IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
-                  ToolTip.Tip="Send">
-                  <Button.Content>
-                    <icons:MaterialIcon
-                      Width="20"
-                      Height="20"
-                      Foreground="White"
-                      Kind="CubeSend"
-                      ToolTip.Tip="Send">
-                      <icons:MaterialIcon.RenderTransform>
-                        <RotateTransform Angle="-30" />
-                      </icons:MaterialIcon.RenderTransform>
-                    </icons:MaterialIcon>
-
-                  </Button.Content>
-                </m:FloatingButton>
-
-                <Grid>
-                  <ProgressBar
-                    Width="40"
-                    Height="40"
-                    Classes="Circle"
-                    IsIndeterminate="{Binding Progress.IsIndeterminate}"
-                    IsVisible="{Binding Progress.IsProgressing}"
-                    Maximum="{Binding Progress.Max}"
-                    Value="{Binding Progress.Value}" />
-                  <m:FloatingButton
-                    assists:ButtonAssist.HoverColor="Transparent"
-                    assists:ShadowAssist.ShadowDepth="0"
-                    Background="Transparent"
-                    Classes="Mini"
-                    Command="{Binding CancelSendOrReceive}"
-                    IsVisible="{Binding Progress.IsProgressing}"
-                    ToolTip.Tip="Cancel">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="{DynamicResource PrimaryHueDarkBrush}"
-                        Kind="Close" />
-                    </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
-              </Grid>
-            </StackPanel>
-
+            <!--  DETAILS - visible when progressing  -->
             <Grid
-              Grid.Row="1"
-              Grid.ColumnSpan="2"
-              RowDefinitions="auto,auto,auto">
-              <!--  COMMIT MESSAGE  -->
-              <TextBox
+              Grid.Row="2"
+              Margin="0,5,0,0"
+              ColumnDefinitions="auto"
+              IsVisible="{Binding Progress.IsProgressing}">
+              <TextBlock
+                Classes="Overline"
+                Text="{Binding Progress.ProgressSummary}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+
+          </Grid>
+
+          <!--  ACTION BUTTONS  -->
+          <StackPanel
+            Grid.Column="1"
+            Orientation="Horizontal"
+            Spacing="5">
+            <m:FloatingButton
+              Name="HoverButtons"
+              VerticalAlignment="Center"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              Background="Transparent"
+              Classes="Mini"
+              Command="{Binding RemoveSavedStreamCommand}"
+              CommandParameter="{Binding StreamState.Id}"
+              IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+              ToolTip.Tip="Remove this stream">
+              <Button.Content>
+                <icons:MaterialIcon
+                  Width="15"
+                  Height="15"
+                  assists:ShadowAssist.ShadowDepth="0"
+                  Foreground="Gray"
+                  Kind="Delete" />
+
+              </Button.Content>
+            </m:FloatingButton>
+
+            <!--<Menu Name="HoverButtons" Items="{Binding MenuItems}">
+              <Menu.Styles>
+                <Style Selector="MenuItem">
+                  <Setter Property="Header" Value="{Binding Header}" />
+                  <Setter Property="Icon" Value="{Binding Icon}" />
+                  <Setter Property="MinWidth" Value="28" />
+                  <Setter Property="Items" Value="{Binding Items}" />
+                  <Setter Property="Command" Value="{Binding Command}" />
+                  <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+                </Style>
+              </Menu.Styles>
+
+            </Menu>-->
+            <Grid IsEnabled="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}">
+              <!--  RECEIVE BTN  -->
+              <c:ReceiveButton IsVisible="{Binding IsReceiver}" />
+              <!--  SEND BTN  -->
+              <c:SendButton IsVisible="{Binding IsReceiver, Converter={x:Static BoolConverters.Not}}" />
+            </Grid>
+          </StackPanel>
+
+          <Grid
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            IsEnabled="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}"
+            RowDefinitions="auto,auto,auto">
+            <!--  COMMIT MESSAGE  -->
+            <!--<TextBox
                 Margin="0,8,0,0"
                 Classes="Small"
                 Foreground="Gray"
@@ -236,85 +221,87 @@
                 IsReadOnly="{Binding Progress.IsProgressing}"
                 IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
                 Text="{Binding StreamState.CommitMessage}"
-                Watermark="Commit message" />
-              <!--  NOTIFICATION  -->
-              <m:ColorZone
-                Grid.Row="1"
-                Margin="0,10,0,0"
-                CornerRadius="25"
-                IsVisible="{Binding ShowNotification}"
-                Mode="PrimaryMid">
-                <Grid ColumnDefinitions="*, auto">
-                  <TextBlock
-                    Margin="10,3"
-                    VerticalAlignment="Center"
-                    Classes="Overline"
-                    FontWeight="Medium"
-                    Foreground="White"
-                    Text="{Binding Notification}"
-                    TextWrapping="Wrap" />
+                Watermark="Commit message" />-->
+            <!--  NOTIFICATION  -->
+            <m:ColorZone
+              Grid.Row="1"
+              Margin="0,10,0,0"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
+              IsVisible="{Binding ShowNotification}"
+              Mode="PrimaryMid">
+              <Grid ColumnDefinitions="*, auto">
+                <TextBlock
+                  Margin="10,3"
+                  VerticalAlignment="Center"
+                  Classes="Overline"
+                  FontWeight="Medium"
+                  Foreground="White"
+                  Text="{Binding Notification}"
+                  TextWrapping="Wrap" />
 
-                  <m:FloatingButton
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    Classes="Mini"
-                    Command="{Binding CloseNotificationCommand}"
-                    ToolTip.Tip="Close notification">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="White"
-                        Kind="Close" />
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding CloseNotificationCommand}"
+                  ToolTip.Tip="Close notification">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="Close" />
 
-                    </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
-              </m:ColorZone>
-              <!--  REPORT  -->
-              <m:ColorZone
-                Grid.Row="3"
-                Margin="0,10,0,0"
-                CornerRadius="25"
-                IsVisible="{Binding ShowReport}"
-                Mode="Accent">
-                <Grid ColumnDefinitions="*, auto">
-                  <TextBlock
-                    Margin="10,3"
-                    VerticalAlignment="Center"
-                    Classes="Overline"
-                    FontWeight="Medium"
-                    Foreground="White"
-                    Text="Something went wrong, please check the report"
-                    TextWrapping="Wrap" />
+                  </Button.Content>
+                </m:FloatingButton>
+              </Grid>
+            </m:ColorZone>
+            <!--  REPORT  -->
+            <m:ColorZone
+              Grid.Row="3"
+              Margin="0,10,0,0"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
+              IsVisible="{Binding ShowReport}"
+              Mode="Accent">
+              <Grid ColumnDefinitions="*, auto">
+                <TextBlock
+                  Margin="10,3"
+                  VerticalAlignment="Center"
+                  Classes="Overline"
+                  FontWeight="Medium"
+                  Foreground="White"
+                  Text="Something went wrong, please check the report"
+                  TextWrapping="Wrap" />
 
-                  <m:FloatingButton
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    Classes="Mini"
-                    Command="{Binding OpenReportCommand}"
-                    ToolTip.Tip="Open Report">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="White"
-                        Kind="TextBox" />
-                    </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
-              </m:ColorZone>
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding OpenReportCommand}"
+                  ToolTip.Tip="Open Report">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="TextBox" />
+                  </Button.Content>
+                </m:FloatingButton>
+              </Grid>
+            </m:ColorZone>
 
 
-            </Grid>
           </Grid>
-        </Border>
-      </DataTemplate>
-    </ItemsControl.ItemTemplate>
+        </Grid>
 
-  </ItemsControl>
+      </DataTemplate>
+    </ListBox.ItemTemplate>
+
+  </ListBox>
 
 
 </UserControl>

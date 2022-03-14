@@ -87,18 +87,20 @@ namespace DesktopUI2
     {
       return new List<ISelectionFilter>
       {
+        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects and project information." },
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
-        new ListSelectionFilter {Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
+        new ListSelectionFilter {Slug="view",Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
+        new ListSelectionFilter {Slug="cat",Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
         new PropertySelectionFilter
         {
+          Slug="param",
           Name = "Parameter",
           Icon = "FilterList",
           Description = "Filter by element parameters",
           Values = new List<string>() { "Family Name", "Height", "Random Parameter Name" },
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         },
-         new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
+
       };
     }
 

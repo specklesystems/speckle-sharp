@@ -5,6 +5,8 @@ using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
+using Material.Styles.Themes;
+using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -32,6 +34,8 @@ namespace DesktopUI2.ViewModels
     private ConnectorBindings Bindings;
 
     #region bindings
+    public string Title => "for " + Bindings.GetHostAppNameVersion();
+    public string Version => "v" + Bindings.ConnectorVersion;
     public ReactiveCommand<string, Unit> RemoveSavedStreamCommand { get; }
 
     private bool _showProgress;
@@ -45,12 +49,32 @@ namespace DesktopUI2.ViewModels
     public List<StreamAccountWrapper> Streams
     {
       get => _streams;
-      private set => this.RaiseAndSetIfChanged(ref _streams, value);
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _streams, value);
+        this.RaisePropertyChanged("HasStreams");
+      }
     }
 
     public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
+    public bool HasStreams => Streams != null && Streams.Any();
 
-    private string _searchQuery;
+    public string StreamsText
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(SearchQuery))
+          return "ALL YOUR STREAMS:";
+
+        if (SearchQuery.Length <= 2)
+          return "TYPE SOME MORE TO SEARCH...";
+
+        return "SEARCH RESULTS:";
+
+      }
+    }
+
+    private string _searchQuery = "";
 
     public string SearchQuery
     {
@@ -59,23 +83,37 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
         SearchStreams().ConfigureAwait(false);
+        this.RaisePropertyChanged("StreamsText");
       }
     }
 
-    //public Stream SelectedStream
-    //{
-    //  set
-    //  {
-    //    if (value != null)
-    //    {
-    //      var streamState = new StreamState(SelectedAccount, value);
-    //      OpenStream(value, streamState);
-    //    }
-    //  }
-    //}
+    public StreamAccountWrapper SelectedStream
+    {
+      set
+      {
+        if (value != null)
+        {
+          var streamState = new StreamState(value);
+          OpenStream(streamState);
+        }
+      }
+    }
 
-    private ObservableCollection<SavedStreamViewModel> _savedStreams = new ObservableCollection<SavedStreamViewModel>();
-    public ObservableCollection<SavedStreamViewModel> SavedStreams
+    public StreamViewModel SelectedSavedStream
+    {
+      set
+      {
+        if (value != null && !value.NoAccess)
+        {
+          MainWindowViewModel.RouterInstance.Navigate.Execute(value);
+          Tracker.TrackPageview("stream", "edit");
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
+        }
+      }
+    }
+
+    private ObservableCollection<StreamViewModel> _savedStreams = new ObservableCollection<StreamViewModel>();
+    public ObservableCollection<StreamViewModel> SavedStreams
     {
       get => _savedStreams;
       set
@@ -124,8 +162,8 @@ namespace DesktopUI2.ViewModels
     internal void UpdateSavedStreams(List<StreamState> streams)
     {
       SavedStreams.CollectionChanged -= SavedStreams_CollectionChanged;
-      SavedStreams = new ObservableCollection<SavedStreamViewModel>();
-      streams.ForEach(x => SavedStreams.Add(new SavedStreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
+      SavedStreams = new ObservableCollection<StreamViewModel>();
+      streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
       this.RaisePropertyChanged("HasSavedStreams");
       SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
     }
@@ -155,7 +193,7 @@ namespace DesktopUI2.ViewModels
       //it's a new saved stream
       else
       {
-        savedState = new SavedStreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand);
+        savedState = new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand);
         SavedStreams.Add(savedState);
       }
 
@@ -245,7 +283,8 @@ namespace DesktopUI2.ViewModels
       {
         SavedStreams.Remove(s);
         Tracker.TrackPageview("stream", "remove");
-        Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
+        if (s.StreamState.Client != null)
+          Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
@@ -369,7 +408,7 @@ namespace DesktopUI2.ViewModels
       if (Uri.TryCreate(clipboard, UriKind.Absolute, out uri))
         defaultText = clipboard;
 
-      var dialog = new AddFromUrlDialog();
+      var dialog = new AddFromUrlDialog(defaultText);
       dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
       await dialog.ShowDialog(MainWindow.Instance);
 
@@ -431,8 +470,31 @@ namespace DesktopUI2.ViewModels
 
     private void OpenStream(StreamState streamState)
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamEditViewModel(HostScreen, streamState));
+      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
     }
+
+    public void ToggleDarkThemeCommand()
+    {
+      var paletteHelper = new PaletteHelper();
+      ITheme theme = paletteHelper.GetTheme();
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+
+
+
+      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
+        theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
+      else
+        theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());
+      paletteHelper.SetTheme(theme);
+    }
+
+
+    public void RefreshCommand()
+    {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
+      Init();
+    }
+
 
   }
 }

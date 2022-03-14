@@ -25,7 +25,7 @@ namespace DesktopUI2.Models.Filters
         }
         else
         {
-          return "Not set.";
+          return "nothing";
         }
       }
     }
