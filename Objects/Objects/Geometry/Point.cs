@@ -40,6 +40,9 @@ namespace Objects.Geometry
       this.units = units;
     }
 
+    public Point(Vector vector) : this(vector.x, vector.y, vector.z, vector.units, vector.applicationId)
+    {}
+
 
     public double x { get; set; }
 

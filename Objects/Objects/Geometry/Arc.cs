@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
@@ -67,11 +68,17 @@ namespace Objects.Geometry
     public Arc(Point startPoint, Point endPoint, double angleRadians, string units = Units.Meters,
       string applicationId = null)
     {
+      if ( angleRadians > Math.PI * 2 )
+        throw new SpeckleException("Can't create an arc with an angle greater than 2pi");
+      if (startPoint == endPoint)
+        throw new SpeckleException("Can't create an arc where the start and end points are the same");
+
       this.units = units;
       this.startPoint = startPoint;
       this.endPoint = endPoint;
       this.angleRadians = angleRadians;
       this.applicationId = applicationId;
+      plane = new Plane(startPoint, new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0), units);
 
       var chordMidpoint = Point.Midpoint(startPoint, endPoint);
       var chordLength = Point.Distance(startPoint, endPoint);
@@ -81,28 +88,25 @@ namespace Objects.Geometry
       else if ( chordAngle < -Math.PI )
         chordAngle += Math.PI * 2;
       radius = chordLength / Math.Sqrt(2 - 2 * Math.Cos(chordAngle));
-      var radSqr = Math.Pow(( double )radius, 2);
+
       var dir = chordAngle < 0 ? -1 : 1;
-      var circleCentre = new Point
-      {
-        x = chordMidpoint.x + dir * Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
-          ( startPoint.y - endPoint.y ) / chordLength,
-        y = chordMidpoint.y + dir * Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
-          ( startPoint.x - endPoint.x ) / chordLength,
-        z = startPoint.z, units = units
-      };
-      var unitR = chordAngle == angleRadians ?  chordMidpoint - circleCentre : circleCentre - chordMidpoint;
-      unitR /= Point.Distance(circleCentre, chordMidpoint);
-      midPoint = circleCentre + unitR * ( double )radius;
-      startAngle = Math.Tan(( startPoint.y - circleCentre.y ) / ( startPoint.x - circleCentre.x )) * 180 / Math.PI %
-                   360;
+      var centreToChord = Math.Sqrt(Math.Pow(( double )radius, 2) - Math.Pow(chordLength * 0.5, 2));
+      var perp = Vector.CrossProduct(new Vector(endPoint - startPoint), plane.normal);
+      var circleCentre = chordMidpoint + new Point(perp.Unit() * centreToChord * -dir);
+      plane.origin = circleCentre;
+
+      midPoint = angleRadians > Math.PI
+        ? chordMidpoint + new Point(perp.Unit() * ( ( double )radius + centreToChord ) * -dir)
+        : chordMidpoint + new Point(perp.Unit() * ( ( double )radius - centreToChord ) * dir);
+
+      startAngle = Math.Tan(( startPoint.y - circleCentre.y ) / ( startPoint.x - circleCentre.x )) % ( 2 * Math.PI );
       if ( startPoint.x > circleCentre.x && startPoint.y < circleCentre.y )       // Q4
         startAngle *= -1;
       else if ( startPoint.x < circleCentre.x && startPoint.y < circleCentre.y )  // Q3
-        startAngle += 180;
+        startAngle += Math.PI;
       else if ( startPoint.x < circleCentre.x && startPoint.y > circleCentre.y )  // Q2
-        startAngle = 180 - startAngle;
-      endAngle = startAngle + angleRadians * 180 / Math.PI;
+        startAngle = Math.PI - startAngle;
+      endAngle = startAngle + angleRadians;
     }
 
     public List<double> ToList()
