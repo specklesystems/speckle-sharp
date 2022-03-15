@@ -75,14 +75,19 @@ namespace Objects.Geometry
 
       var chordMidpoint = Point.Midpoint(startPoint, endPoint);
       var chordLength = Point.Distance(startPoint, endPoint);
-      var chordAngle =
-      radius = 0.5 * chordLength / Math.Asin(0.5 * ( angleRadians ));
+      var chordAngle = angleRadians;
+      if ( chordAngle > Math.PI)
+        chordAngle -= Math.PI * 2;
+      else if ( chordAngle < -Math.PI )
+        chordAngle += Math.PI * 2;
+      radius = chordLength / Math.Sqrt(2 - 2 * Math.Cos(chordAngle));
       var radSqr = Math.Pow(( double )radius, 2);
+      var dir = chordAngle < 0 ? -1 : 1;
       midPoint = new Point
       {
-        x = chordMidpoint.x + Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
+        x = chordMidpoint.x + dir * Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
           ( startPoint.y - endPoint.y ) / chordLength,
-        y = chordMidpoint.y + Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
+        y = chordMidpoint.y + dir * Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
           ( startPoint.x - endPoint.x ) / chordLength,
         z = startPoint.z, units = units
       };
