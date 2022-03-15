@@ -106,10 +106,12 @@ namespace Objects.Converter.Revit
         length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitDuct)
-      };
+        displayValue = GetElementMesh(revitDuct),
+        };
+        speckleDuct["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitDuct);
 
-      var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
+
+        var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,

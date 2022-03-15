@@ -186,7 +186,8 @@ namespace Objects.Converter.Revit
       }
 
       speckleFi.displayValue = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
-
+      
+      speckleFi["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitFi);
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
       #region sub elements capture

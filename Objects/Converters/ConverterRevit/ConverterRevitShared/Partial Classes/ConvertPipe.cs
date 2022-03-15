@@ -107,6 +107,8 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
+            specklePipe["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
       {
         "RBS_PIPING_SYSTEM_TYPE_PARAM",

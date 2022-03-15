@@ -850,7 +850,8 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public RenderMaterial GetElementRenderMaterial(DB.Element element)
+        #region materials
+        public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element.GetMaterialIds(false).FirstOrDefault();
 
@@ -903,5 +904,76 @@ namespace Objects.Converter.Revit
       return materialId;
     }
     
-  }
+        /// <summary>
+        /// Retrieves the material from assigned system type for mep elements
+        /// </summary>
+        /// <param name="e">Revit element to parse</param>
+        /// <returns></returns>
+        public static RenderMaterial GetMEPSystemMaterial(Element e)
+        {
+            var material = GetMEPDefaultMaterial();
+            ElementId idType = ElementId.InvalidElementId;
+
+            if (e is DB.MEPCurve)
+            {
+                var dt = e as DB.MEPCurve;
+                idType = dt.MEPSystem.GetTypeId();
+            }
+            else if (IsSupportedMEPCategory(e))
+            {
+                MEPModel m = ((DB.FamilyInstance)e).MEPModel;
+
+                if (null != m && null != m.ConnectorManager)
+                {
+                    //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
+                    foreach (Connector item in m.ConnectorManager.Connectors)
+                    {
+                        if (item.MEPSystem != null)
+                        {
+                            idType = item.MEPSystem.GetTypeId();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (idType != ElementId.InvalidElementId)
+            {
+                DB.MEPSystemType mechType = e.Document.GetElement(idType) as DB.MEPSystemType;
+                var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+                material = RenderMaterialToSpeckle(mat);
+            }
+            return material;
+        }
+
+        private static DB.Categories categories = null;
+        private static bool IsSupportedMEPCategory(Element e)
+        {
+            if (categories == null)
+                categories = e.Document.Settings.Categories;
+
+            bool result = false;
+            if(e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeFitting).Id ||
+                e.Category.Id == categories.get_Item(BuiltInCategory.OST_DuctFitting).Id ||
+                e.Category.Id == categories.get_Item(BuiltInCategory.OST_DuctAccessory).Id ||
+                e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeAccessory).Id ||
+                e.Category.Id == categories.get_Item(BuiltInCategory.OST_MechanicalEquipment).Id)
+            {
+                result = true;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// creates a standard material with opacity for MEP elements
+        /// used, if no suitable material is found while fetching the systems type material
+        /// </summary>
+        /// <returns></returns>
+        public static RenderMaterial GetMEPDefaultMaterial()
+        {
+            var material = new RenderMaterial() { opacity = 0.8, diffuse = System.Drawing.Color.Gray.ToArgb() };
+            return material;
+        }
+        #endregion
+    }
 }
