@@ -91,8 +91,14 @@ namespace Objects.Geometry
           ( startPoint.x - endPoint.x ) / chordLength,
         z = startPoint.z, units = units
       };
-      startAngle = Math.Tan(( startPoint.y - midPoint.y ) / ( startPoint.x - midPoint.x )) * 180 / Math.PI;
-      endAngle = Math.Tan(( endPoint.y - midPoint.y ) / ( endPoint.x - midPoint.x )) * 180 / Math.PI;
+      startAngle = Math.Tan(( startPoint.y - midPoint.y ) / ( startPoint.x - midPoint.x )) * 180 / Math.PI % 360;
+      if ( startPoint.x > midPoint.x && startPoint.y < midPoint.y )       // Q4
+        startAngle *= -1;
+      else if ( startPoint.x < midPoint.x && startPoint.y < midPoint.y )  // Q3
+        startAngle += 180;
+      else if ( startPoint.x < midPoint.x && startPoint.y > midPoint.y )  // Q2
+        startAngle = 180 - startAngle;
+      endAngle = startAngle + angleRadians * 180 / Math.PI;
     }
 
     public List<double> ToList()
