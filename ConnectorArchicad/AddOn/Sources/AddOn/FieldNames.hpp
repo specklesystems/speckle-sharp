@@ -52,6 +52,9 @@ namespace  Room
     static const char* NumberFieldName = "number";
     static const char* BasePointFieldName = "basePoint";
     static const char* HeightFieldName = "height";
+    static const char* AreaFieldName = "area";
+    static const char* VolumeFieldName = "volume";
+    static const char* ShapeFieldName = "shape";
 }
 
 namespace Model {

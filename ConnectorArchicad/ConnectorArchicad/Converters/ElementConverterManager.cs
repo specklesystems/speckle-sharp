@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
@@ -114,6 +115,8 @@ namespace Archicad
         return Converters[ typeof(Wall) ];
       if ( elementType.IsSubclassOf(typeof(Ceiling)) )
         return Converters[ typeof(Ceiling) ];
+      if ( elementType.IsSubclassOf(typeof(Room)) )
+        return Converters[ typeof(Room) ];
 
       return DefaultConverter;
     }
@@ -125,6 +128,7 @@ namespace Archicad
         {
           Wall _ => true,
           Ceiling _ => true,
+          Zone _ => true,
           DirectShape _ => true,
           Mesh _ => true,
           _ => false

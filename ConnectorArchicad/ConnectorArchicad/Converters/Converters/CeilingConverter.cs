@@ -34,7 +34,8 @@ namespace Archicad.Converters
         ceiling.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
           .First(e => e.applicationId == ceiling.applicationId)
           .model);
-        ceiling.outline = ceiling.shape.contourPolyline;
+        ceiling.outline = Utils.PolycurveToNative(ceiling.shape.contourPolyline);
+        ceiling["@test_outline"] = Utils.PolycurveToNative(ceiling.shape.contourPolyline);
         ceilings.Add(ceiling);
       }
 
