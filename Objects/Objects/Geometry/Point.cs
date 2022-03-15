@@ -77,10 +77,25 @@ namespace Objects.Geometry
       point1.y + point2.y,
       point1.z + point2.z, point1.units);
 
+    public static Point operator -(Point point1, Point point2) => new Point(
+      point1.x - point2.x,
+      point1.y - point2.y,
+      point1.z - point2.z, point1.units);
+
     public static Point operator *(Point point1, Point point2) => new Point(
       point1.x * point2.x,
       point1.y * point2.y,
       point1.z * point2.z, point1.units);
+
+    public static Point operator *(Point point, double val) => new Point(
+      point.x * val,
+      point.y * val,
+      point.z * val, point.units);
+
+    public static Point operator /(Point point, double val) => new Point(
+      point.x / val,
+      point.y / val,
+      point.z / val, point.units);
 
     public static bool operator ==(Point point1, Point point2) =>
       point1.units == point2.units &&

@@ -76,14 +76,14 @@ namespace Objects.Geometry
       var chordMidpoint = Point.Midpoint(startPoint, endPoint);
       var chordLength = Point.Distance(startPoint, endPoint);
       var chordAngle = angleRadians;
-      if ( chordAngle > Math.PI)
+      if ( chordAngle > Math.PI )
         chordAngle -= Math.PI * 2;
       else if ( chordAngle < -Math.PI )
         chordAngle += Math.PI * 2;
       radius = chordLength / Math.Sqrt(2 - 2 * Math.Cos(chordAngle));
       var radSqr = Math.Pow(( double )radius, 2);
       var dir = chordAngle < 0 ? -1 : 1;
-      midPoint = new Point
+      var circleCentre = new Point
       {
         x = chordMidpoint.x + dir * Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
           ( startPoint.y - endPoint.y ) / chordLength,
@@ -91,12 +91,16 @@ namespace Objects.Geometry
           ( startPoint.x - endPoint.x ) / chordLength,
         z = startPoint.z, units = units
       };
-      startAngle = Math.Tan(( startPoint.y - midPoint.y ) / ( startPoint.x - midPoint.x )) * 180 / Math.PI % 360;
-      if ( startPoint.x > midPoint.x && startPoint.y < midPoint.y )       // Q4
+      var unitR = chordAngle == angleRadians ?  chordMidpoint - circleCentre : circleCentre - chordMidpoint;
+      unitR /= Point.Distance(circleCentre, chordMidpoint);
+      midPoint = circleCentre + unitR * ( double )radius;
+      startAngle = Math.Tan(( startPoint.y - circleCentre.y ) / ( startPoint.x - circleCentre.x )) * 180 / Math.PI %
+                   360;
+      if ( startPoint.x > circleCentre.x && startPoint.y < circleCentre.y )       // Q4
         startAngle *= -1;
-      else if ( startPoint.x < midPoint.x && startPoint.y < midPoint.y )  // Q3
+      else if ( startPoint.x < circleCentre.x && startPoint.y < circleCentre.y )  // Q3
         startAngle += 180;
-      else if ( startPoint.x < midPoint.x && startPoint.y > midPoint.y )  // Q2
+      else if ( startPoint.x < circleCentre.x && startPoint.y > circleCentre.y )  // Q2
         startAngle = 180 - startAngle;
       endAngle = startAngle + angleRadians * 180 / Math.PI;
     }
