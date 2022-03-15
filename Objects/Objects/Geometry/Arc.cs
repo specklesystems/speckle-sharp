@@ -39,9 +39,12 @@ namespace Objects.Geometry
     public double length { get; set; }
     public string units { get; set; }
 
-    public Arc() { }
+    public Arc()
+    {
+    }
 
-    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string units = Units.Meters, string applicationId = null)
+    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians,
+      string units = Units.Meters, string applicationId = null)
     {
       this.plane = plane;
       this.radius = radius;
@@ -50,6 +53,41 @@ namespace Objects.Geometry
       this.angleRadians = angleRadians;
       this.applicationId = applicationId;
       this.units = units;
+    }
+
+    /// <summary>
+    /// Initialise an `Arc` using the arc angle and the start and end points.
+    /// The radius, midpoint, start angle, and end angle will be calculated.
+    /// </summary>
+    /// <param name="startPoint">The start point of the arc</param>
+    /// <param name="endPoint">The end point of the arc</param>
+    /// <param name="angleRadians">The arc angle</param>
+    /// <param name="units">Units (defaults to "m")</param>
+    /// <param name="applicationId">ID given to the arc in the authoring programme (defaults to null)</param>
+    public Arc(Point startPoint, Point endPoint, double angleRadians, string units = Units.Meters,
+      string applicationId = null)
+    {
+      this.units = units;
+      this.startPoint = startPoint;
+      this.endPoint = endPoint;
+      this.angleRadians = angleRadians;
+      this.applicationId = applicationId;
+
+      var chordMidpoint = Point.Midpoint(startPoint, endPoint);
+      var chordLength = Point.Distance(startPoint, endPoint);
+      var chordAngle =
+      radius = 0.5 * chordLength / Math.Asin(0.5 * ( angleRadians ));
+      var radSqr = Math.Pow(( double )radius, 2);
+      midPoint = new Point
+      {
+        x = chordMidpoint.x + Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
+          ( startPoint.y - endPoint.y ) / chordLength,
+        y = chordMidpoint.y + Math.Sqrt(radSqr - Math.Pow(chordLength * 0.5, 2)) *
+          ( startPoint.x - endPoint.x ) / chordLength,
+        z = startPoint.z, units = units
+      };
+      startAngle = Math.Tan(( startPoint.y - midPoint.y ) / ( startPoint.x - midPoint.x )) * 180 / Math.PI;
+      endAngle = Math.Tan(( endPoint.y - midPoint.y ) / ( endPoint.x - midPoint.x )) * 180 / Math.PI;
     }
 
     public List<double> ToList()
@@ -76,16 +114,16 @@ namespace Objects.Geometry
     {
       var arc = new Arc();
 
-      arc.radius = list[2];
-      arc.startAngle = list[3];
-      arc.endAngle = list[4];
-      arc.angleRadians = list[5];
-      arc.domain = new Interval(list[6], list[7]);
-      arc.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      arc.radius = list[ 2 ];
+      arc.startAngle = list[ 3 ];
+      arc.endAngle = list[ 4 ];
+      arc.angleRadians = list[ 5 ];
+      arc.domain = new Interval(list[ 6 ], list[ 7 ]);
+      arc.units = Units.GetUnitFromEncoding(list[ list.Count - 1 ]);
       arc.plane = Plane.FromList(list.GetRange(8, 13));
-      arc.startPoint = Point.FromList(list.GetRange(21,3), arc.units);
-      arc.midPoint = Point.FromList(list.GetRange(24,3), arc.units);
-      arc.endPoint = Point.FromList(list.GetRange(27,3), arc.units);
+      arc.startPoint = Point.FromList(list.GetRange(21, 3), arc.units);
+      arc.midPoint = Point.FromList(list.GetRange(24, 3), arc.units);
+      arc.endPoint = Point.FromList(list.GetRange(27, 3), arc.units);
       arc.plane.units = arc.units;
 
       return arc;
