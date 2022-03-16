@@ -27,8 +27,11 @@ namespace Speckle.ConnectorCSI.UI
       Exceptions.Clear();
 
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(GetHostAppVersion(Model));
+      //var converter = new ConverterCSI();
+      var appName = GetHostAppVersion(Model);
+      var converter = kit.LoadConverter(appName);
       converter.SetContextDocument(Model);
+      Exceptions.Clear();
       //var previouslyRecieveObjects = state.ReceivedObjects;
 
       if (converter == null)

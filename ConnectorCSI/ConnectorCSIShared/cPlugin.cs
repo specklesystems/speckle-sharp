@@ -54,7 +54,8 @@ namespace SpeckleConnectorCSI
     {
       var viewModel = new MainWindowViewModel(Bindings);
       MainWindow = new MainWindow { DataContext = viewModel };
-
+      MainWindow.Closed += SpeckleWindowClosed;
+      MainWindow.Closing += SpeckleWindowClosed;
       app.Run(MainWindow);
       //Task.Run(() => app.Run(MainWindow));
     }
@@ -63,40 +64,16 @@ namespace SpeckleConnectorCSI
     {
       Bindings = new ConnectorBindingsCSI(model);
       CreateOrFocusSpeckle();
-
-
-      var processes = Process.GetProcesses();
-      IntPtr ptr = IntPtr.Zero;
-      foreach (var process in processes)
-      {
-        if (process.ProcessName.ToLower().Contains("sap2000"))
-        {
-          ptr = process.MainWindowHandle;
-          break;
-        }
-      }
-
-      if (ptr != IntPtr.Zero)
-      {
-        MainWindow.Closed += SpeckleWindowClosed;
-        MainWindow.Closing += SpeckleWindowClosed;
-      }
     }
 
 
     private static void SpeckleWindowClosed(object sender, EventArgs e)
     {
       isSpeckleClosed = true;
+      Environment.Exit(0);
       pluginCallback.Finish(0);
     }
 
-    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      if (isSpeckleClosed == true)
-      {
-        pluginCallback.Finish(0);
-      }
-    }
 
 
 
@@ -142,6 +119,9 @@ namespace SpeckleConnectorCSI
 
       try
       {
+        //SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
+        //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
+        //SelectionTimer.Start();
         OpenOrFocusSpeckle(model);
         //var windows = new Button();
         //var reactiveUI = new ReactiveUI.ReactiveObject();
@@ -151,17 +131,17 @@ namespace SpeckleConnectorCSI
         //var mainWindow = new MainWindowViewModel();
         //var app = new AppBuilder();
 
-        SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-        SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-        SelectionTimer.Start();
+
       }
 
       catch (Exception e)
       {
         throw e;
-        //ISapPlugin.Finish(0);
+        ISapPlugin.Finish(0);
         //return;
       }
+
+      return; 
     }
   }
 

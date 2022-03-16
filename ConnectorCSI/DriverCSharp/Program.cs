@@ -13,7 +13,7 @@ namespace DriverCSharp
   {
     private const string ProgID_SAP2000 = "CSI.SAP2000.API.SapObject";
     private const string ProgID_ETABS = "CSI.ETABS.API.ETABSObject";
-    private const string ProgID_CSIBridge = "CSI.CSIBridge.API.CSIBridgeObject";
+    private const string ProgID_CSIBridge = "CSI.CSiBridge.API.CSIBridgeObject";
     private const string ProgID_SAFE = "CSI.SAFE.API.SAFEObject";
 
     static int Main(string[] args)
@@ -57,6 +57,8 @@ namespace DriverCSharp
             progID = ProgID_ETABS;
           else if (string.Compare(arg, "SAFE", true) == 0)
             progID = ProgID_SAFE;
+          else if (string.Compare(arg, "CSiBridge", true) == 0)
+            progID = ProgID_SAFE;
         }
 
         if (progID != null)
@@ -75,8 +77,11 @@ namespace DriverCSharp
 
           if (mySapObject == null)
           {
+          try{ 
             progID = ProgID_ETABS;
             mySapObject = myHelper.GetObject(progID);
+            }
+            catch (Exception ex){ }
           }
         }
       }
@@ -99,6 +104,8 @@ namespace DriverCSharp
 
         // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.
         p.Main(ref mySapModel, ref cb);
+        if(cb.Finished == true)
+        { Environment.Exit(0); }
 
         return cb.ErrorFlag;
       }
