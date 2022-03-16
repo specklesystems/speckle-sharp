@@ -107,11 +107,11 @@ namespace Objects.Converter.Revit
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitDuct),
-        };
-        speckleDuct["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitDuct);
+      };
+      speckleDuct["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitDuct);
 
 
-        var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
+      var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,
@@ -120,6 +120,8 @@ namespace Objects.Converter.Revit
           "RBS_CURVE_HEIGHT_PARAM", "RBS_CURVE_WIDTH_PARAM", "RBS_CURVE_DIAMETER_PARAM", "CURVE_ELEM_LENGTH",
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
+
+      Report.Log($"Converted Duct {revitDuct.Id}");
 
       return speckleDuct;
     }
@@ -149,6 +151,8 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitDuct)
       };
 
+      speckleDuct["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitDuct);
+
       var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
@@ -159,7 +163,7 @@ namespace Objects.Converter.Revit
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
 
-      Report.Log($"Converted Duct {revitDuct.Id}");
+      Report.Log($"Converted FlexDuct {revitDuct.Id}");
 
       return speckleDuct;
     }

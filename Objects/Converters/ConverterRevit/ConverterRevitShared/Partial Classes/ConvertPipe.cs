@@ -144,6 +144,8 @@ namespace Objects.Converter.Revit
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitPipe)
       };
+            
+            specklePipe["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitPipe);
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
       {
@@ -154,8 +156,9 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
+            Report.Log($"Converted FlexPipe {revitPipe.Id}");
 
-      return specklePipe;
+            return specklePipe;
     }
   }
 }
