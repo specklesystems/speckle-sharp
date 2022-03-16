@@ -5,15 +5,15 @@ using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class CreateCeiling : ICommand<IEnumerable<string>>
+  sealed internal class CreateFloor : ICommand<IEnumerable<string>>
   {
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
       [JsonProperty("slabs")]
-      private IEnumerable<Ceiling> Datas { get; }
+      private IEnumerable<Floor> Datas { get; }
 
-      public Parameters(IEnumerable<Ceiling> datas)
+      public Parameters(IEnumerable<Floor> datas)
       {
         Datas = datas;
       }
@@ -26,9 +26,9 @@ namespace Archicad.Communication.Commands
       public IEnumerable<string> ApplicationIds { get; private set; }
     }
 
-    private IEnumerable<Ceiling> Datas { get; }
+    private IEnumerable<Floor> Datas { get; }
 
-    public CreateCeiling(IEnumerable<Ceiling> datas)
+    public CreateFloor(IEnumerable<Floor> datas)
     {
       Datas = datas;
     }

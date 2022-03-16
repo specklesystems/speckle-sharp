@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
@@ -54,6 +55,9 @@ namespace Archicad.Converters
       {
         room.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == room.applicationId).model);
+        room.outline = Utils.PolycurveToNative(room.shape.contourPolyline);
+        if ( room.shape.holePolylines?.Count > 0 )
+          room.voids = new List<ICurve>(room.shape.holePolylines.Select(Utils.PolycurveToNative));
         rooms.Add(room);
       }
 

@@ -5,7 +5,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad
 {
-  public sealed class Ceiling : BuiltElements.Ceiling
+  public sealed class Floor : BuiltElements.Floor
   {
     public ElementShape shape { get; set; }
 
@@ -25,6 +25,6 @@ namespace Objects.BuiltElements.Archicad
 
     public int? buildingMaterialIndex { get; set; }
 
-    public Ceiling() { }
+    public Floor() { }
   }
 }

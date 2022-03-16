@@ -13,6 +13,7 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Ceiling = Objects.BuiltElements.Ceiling;
+using Floor = Objects.BuiltElements.Floor;
 using Wall = Objects.BuiltElements.Wall;
 
 namespace Archicad
@@ -113,8 +114,8 @@ namespace Archicad
         return Converters[ elementType ];
       if ( elementType.IsSubclassOf(typeof(Wall)) )
         return Converters[ typeof(Wall) ];
-      if ( elementType.IsSubclassOf(typeof(Ceiling)) )
-        return Converters[ typeof(Ceiling) ];
+      if ( elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)) )
+        return Converters[ typeof(Floor) ];
       if ( elementType.IsSubclassOf(typeof(Room)) )
         return Converters[ typeof(Room) ];
 
@@ -127,6 +128,7 @@ namespace Archicad
         switch
         {
           Wall _ => true,
+          Floor _ => true,
           Ceiling _ => true,
           Zone _ => true,
           DirectShape _ => true,
