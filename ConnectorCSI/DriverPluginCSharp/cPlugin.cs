@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 using CSiAPIv1;
 
-namespace DriverPluginCSharp
+namespace SpeckleConnector
 {
   public class cPlugin
   {

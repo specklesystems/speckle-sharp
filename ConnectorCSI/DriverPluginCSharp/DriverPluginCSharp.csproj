@@ -7,8 +7,8 @@
     <ProjectGuid>{C59939F6-D383-44E3-A7EF-4E160E3DFB73}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DriverPluginCSharp</RootNamespace>
-    <AssemblyName>DriverPluginCSharp</AssemblyName>
+    <RootNamespace>SpeckleConnector</RootNamespace>
+    <AssemblyName>SpeckleConnector</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
