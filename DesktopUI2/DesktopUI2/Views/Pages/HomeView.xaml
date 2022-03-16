@@ -90,12 +90,31 @@
 
             </Button.Content>
           </m:FloatingButton>
+          <m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding LogOutCommand}"
+            IsVisible="{Binding HasOneAccount}"
+            ToolTip.Tip="Log Out">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                assists:ShadowAssist.ShadowDepth="0"
+                Kind="Logout" />
+
+            </Button.Content>
+          </m:FloatingButton>
         </StackPanel>
       </Grid>
     </m:Card>
     <Grid
       Grid.Row="1"
       Margin="15"
+      IsVisible="{Binding HasAccounts}"
       RowDefinitions="auto,auto, auto,auto, *">
 
       <!--  SEARCH STREAMS  -->
@@ -131,7 +150,7 @@
       <!--  CREATE/ADD STREAMS  -->
       <Grid
         Grid.Row="1"
-        Margin="0,10,0,0"
+        Margin="0,15,0,0"
         ColumnDefinitions="*,*">
         <Button
           Margin="0,0,7,0"
@@ -144,7 +163,7 @@
               Margin="8,0"
               Padding="0"
               VerticalAlignment="Center"
-              Text="Create New"
+              Text="Create new Stream"
               TextTrimming="CharacterEllipsis" />
           </Grid>
         </Button>
@@ -267,7 +286,7 @@
                           Grid.Row="3"
                           Margin="0,3,0,0"
                           ColumnDefinitions="auto,auto,*"
-                          IsVisible="{Binding $parent[local:HomeView].DataContext.HasMultipleAccounts}">
+                          IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
                           <Grid.Styles>
                             <Style Selector="TextBlock">
                               <Setter Property="Foreground" Value="LightGray" />
@@ -369,6 +388,47 @@
 
       </ScrollViewer>
 
+
+    </Grid>
+    <Grid
+      Grid.Row="1"
+      Margin="15"
+      IsVisible="{Binding HasAccounts, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
+      <m:Card
+        Margin="10"
+        Padding="30"
+        VerticalAlignment="Top">
+        <StackPanel Orientation="Vertical">
+
+
+          <TextBlock TextAlignment="Center">
+            👋 Hello and welcome!&#10;&#10;Please log in to use this connector:
+          </TextBlock>
+          <Button
+            Margin="15,40,15,15"
+            Command="{Binding ManagerLoginCommand}"
+            Content="Log In using Manager"
+            IsEnabled="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
+            ToolTip.Tip="Manager is the reccomended way to log in and install Connectors" />
+          <TextBlock TextAlignment="Center">
+            or
+          </TextBlock>
+          <Button
+            Margin="15"
+            Command="{Binding LoginCommand}"
+            Content="Log In directly"
+            IsVisible="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
+            ToolTip.Tip="Direct log in is currently only supported on our XYZ server" />
+          <StackPanel IsVisible="{Binding IsLoggingIn, FallbackValue=False}" Orientation="Vertical">
+            <TextBlock Margin="15" TextAlignment="Center">
+              ☝ Please follow the instructions in your browser.
+            </TextBlock>
+            <ProgressBar Classes="Circle" IsIndeterminate="True" />
+          </StackPanel>
+
+        </StackPanel>
+
+      </m:Card>
 
     </Grid>
   </Grid>

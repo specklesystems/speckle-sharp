@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -213,7 +212,8 @@ namespace Speckle.Core.Transports
         }
       }
 
-      OnProgressAction(TransportName, saved);
+      if (OnProgressAction != null)
+        OnProgressAction(TransportName, saved);
 
       if (CancellationToken.IsCancellationRequested)
       {

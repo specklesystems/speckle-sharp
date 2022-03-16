@@ -4,7 +4,6 @@ using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
-using Material.Dialog;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
@@ -16,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
@@ -43,6 +43,13 @@ namespace DesktopUI2.ViewModels
     {
       get => _showProgress;
       private set => this.RaiseAndSetIfChanged(ref _showProgress, value);
+    }
+
+    private bool _isLoggingIn;
+    public bool IsLoggingIn
+    {
+      get => _isLoggingIn;
+      private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
     }
 
     private List<StreamAccountWrapper> _streams;
@@ -131,14 +138,19 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _accounts, value);
-        this.RaisePropertyChanged("HasMultipleAccounts");
+        this.RaisePropertyChanged("HasOneAccount");
+        this.RaisePropertyChanged("HasAccounts");
       }
     }
 
-    public bool HasMultipleAccounts
+    public bool HasOneAccount
     {
-      get => Accounts.Count > 1;
+      get => Accounts.Count == 1;
+    }
 
+    public bool HasAccounts
+    {
+      get => Accounts != null && Accounts.Any();
     }
 
     #endregion
@@ -204,6 +216,8 @@ namespace DesktopUI2.ViewModels
 
     private async Task GetStreams()
     {
+      if (!HasAccounts)
+        return;
 
       InProgress = true;
 
@@ -263,12 +277,6 @@ namespace DesktopUI2.ViewModels
     {
       Accounts = AccountManager.GetAccounts().ToList();
       GetStreams();
-
-      if (!Accounts.Any())
-      {
-        ShowNoAccountPopup();
-        return;
-      }
     }
 
     private void RemoveSavedStream(string id)
@@ -285,49 +293,52 @@ namespace DesktopUI2.ViewModels
       this.RaisePropertyChanged("HasSavedStreams");
     }
 
-    private async void ShowNoAccountPopup()
+
+    public async void LogOutCommand()
     {
-      var btn = new Button()
-      {
-        Content = "Launch Manager...",
-        Margin = new Avalonia.Thickness(20)
-      };
-      btn.Click += LaunchManagerBtnClick;
-      await DialogHelper.CreateCustomDialog(new CustomDialogBuilderParams()
-      {
-        ContentHeader = "No account found!",
-        WindowTitle = "No account found!",
-        DialogHeaderIcon = Material.Dialog.Icons.DialogIconKind.Error,
-        StartupLocation = WindowStartupLocation.CenterOwner,
-        NegativeResult = new DialogResult("retry"),
-        Borderless = true,
-        MaxWidth = MainWindow.Instance.Width - 40,
-        DialogButtons = new DialogButton[]
-          {
-            new DialogButton
-            {
-              Content = "TRY AGAIN",
-              Result = "retry"
-            },
 
-          },
-        Content = btn
-      }).ShowDialog(MainWindow.Instance);
-
+      AccountManager.LogOut();
       Init();
     }
 
-    private void LaunchManagerBtnClick(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void ManagerLoginCommand()
     {
+      string path = "";
+
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+
       if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
       {
-        Process.Start(@"/Applications/SpeckleManager.app");
+        path = @"/Applications/SpeckleManager.app";
       }
 
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
-        Process.Start(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe"));
+        path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe");
       }
+
+      if (File.Exists(path))
+        Process.Start(path);
+
+      else
+      {
+        Process.Start(new ProcessStartInfo($"https://speckle-releases.netlify.app/") { UseShellExecute = true });
+      }
+
+    }
+    public async void LoginCommand()
+    {
+      IsLoggingIn = true;
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
+      try
+      {
+        await AccountManager.LogIn();
+      }
+      catch { }
+
+      await Task.Delay(1000);
+      IsLoggingIn = false;
+      Init();
 
     }
 
