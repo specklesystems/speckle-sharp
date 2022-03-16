@@ -12,6 +12,8 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     public Account SelectedAccount { get; set; } = null;
 
+    public bool HasAccounts { get; set; } = true;
+
     public List<Account> Accounts { get; set; } = new List<Account>();
 
     public string SearchQuery { get; set; }
@@ -25,6 +27,8 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public DesignHomeViewModel()
     {
       var acc = AccountManager.GetDefaultAccount();
+      if (acc == null)
+        return;
       var client = new Client(acc);
       Streams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
 
@@ -45,6 +49,22 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public void AddFromUrlCommand()
     {
     }
+
+    public void LogInCommand()
+    {
+    }
+
+    public void ToggleDarkThemeCommand()
+    {
+    }
+
+    public void RefreshCommand()
+    {
+    }
+
+    public void ClearSearchCommand() { }
+    public void ManagerLoginCommand() { }
+    public void DirectLoginCommand() { }
   }
 
 
