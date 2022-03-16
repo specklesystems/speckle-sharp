@@ -6,7 +6,6 @@ using Autodesk.Revit.DB;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-
 using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
 using Speckle.ConnectorRevit.Entry;
@@ -145,8 +144,6 @@ namespace Speckle.ConnectorRevit.UI
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
-
-      OneClickSendCommand.FileStream = null;
     }
 
 

@@ -177,31 +177,36 @@
         Padding="0,0,13,5"
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
         <StackPanel Margin="5" Orientation="Vertical">
-          <TextBlock
-            Margin="0,0,0,10"
-            Classes="Overline"
-            Foreground="Gray"
-            IsVisible="{Binding HasSavedStreams}"
-            Text="SAVED STREAMS:" />
           <!--  SAVED STREAMS  -->
-          <m:Card
-            Grid.Row="4"
-						Padding="0"
-            Margin="0,0,0,10"
-            IsVisible="{Binding HasSavedStreams}">
+          <Expander IsExpanded="True" IsVisible="{Binding HasSavedStreams}">
+            <Expander.Header>
+              <TextBlock
+                Margin="-8,0,0,0"
+                Classes="Overline"
+                Foreground="Gray"
+                IsVisible="{Binding HasSavedStreams}"
+                Text="SAVED STREAMS:" />
+            </Expander.Header>
             <uc:SavedStreams />
-          </m:Card>
-          <!--  ALL STREAMS  -->
-          <TextBlock
-            Margin="0,0,0,10"
-            Classes="Overline"
-            Foreground="Gray"
-            Text="{Binding StreamsText}" />
+          </Expander>
+
+
           <m:Card
             Grid.Row="4"
-            Padding="0"
-            IsVisible="{Binding InProgress, Converter={x:Static BoolConverters.Not}}">
-            <Grid>
+            Margin="0,0,0,10"
+            Padding="0" />
+          <!--  ALL STREAMS  -->
+
+          <Expander IsExpanded="True">
+            <Expander.Header>
+              <TextBlock
+                Margin="-8,0,0,0"
+                Padding="0"
+                Classes="Overline"
+                Foreground="Gray"
+                Text="{Binding StreamsText, FallbackValue='ALL STREAMS:'}" />
+            </Expander.Header>
+            <Grid IsVisible="{Binding InProgress, Converter={x:Static BoolConverters.Not}}">
               <TextBlock
                 Margin="15"
                 IsVisible="{Binding HasStreams, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
@@ -358,8 +363,8 @@
 
               </ListBox>
             </Grid>
+          </Expander>
 
-          </m:Card>
         </StackPanel>
 
       </ScrollViewer>

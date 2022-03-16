@@ -39,9 +39,9 @@
       <Style Selector="ListBoxItem /template/ Border#selectedBorder, ListBoxItem /template/ Border#pointerOverBorder">
         <Setter Property="IsVisible" Value="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" />
       </Style>
-      <Style Selector="ListBoxItem /template/ ripple|RippleEffect#Ripple">
-        <Setter Property="IsEnabled" Value="{Binding NoAccess}" />
-      </Style>
+      <!--<Style Selector="ListBoxItem /template/ ripple|RippleEffect#Ripple">
+        <Setter Property="IsEnabled" Value="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" />
+      </Style>-->
       <Style Selector="ListBoxItem">
         <Setter Property="Opacity" Value="{Binding NoAccess, Converter={StaticResource OpacityValueConverter}}" />
       </Style>

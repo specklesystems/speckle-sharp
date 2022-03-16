@@ -105,6 +105,7 @@ namespace DesktopUI2.ViewModels
       {
         if (value != null && !value.NoAccess)
         {
+          value.UpdateHost(HostScreen);
           MainWindowViewModel.RouterInstance.Navigate.Execute(value);
           Tracker.TrackPageview("stream", "edit");
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
@@ -181,30 +182,24 @@ namespace DesktopUI2.ViewModels
       Bindings.WriteStreamsToFile(SavedStreams.Select(x => x.StreamState).ToList());
     }
 
-    internal void AddSavedStream(StreamState streamState, bool send = false, bool receive = false)
+    internal void AddSavedStream(StreamViewModel stream)
     {
       //saved stream has been edited
-      var savedState = SavedStreams.FirstOrDefault(x => x.StreamState.Id == streamState.Id);
-      if (savedState != null)
+      var savedStream = SavedStreams.FirstOrDefault(x => x.StreamState.Id == stream.StreamState.Id);
+      if (savedStream != null)
       {
-        savedState.StreamState = streamState;
+        savedStream = stream;
         WriteStreamsToFile();
       }
       //it's a new saved stream
       else
       {
-        savedState = new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand);
-        SavedStreams.Add(savedState);
+        SavedStreams.Add(stream);
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
 
-      //for save&send and save&receive
-      if (send)
-        savedState.SendCommand();
 
-      if (receive)
-        savedState.ReceiveCommand();
     }
 
     private async Task GetStreams()

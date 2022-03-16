@@ -14,24 +14,26 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Gets the current user.
     /// </summary>
+    /// <param name="id">If provided, retrieves th user with this user Id</param>
     /// <returns></returns>
-    public Task<User> UserGet()
+    public Task<User> UserGet(string id = "")
     {
-      return UserGet(CancellationToken.None);
+      return UserGet(CancellationToken.None, id);
     }
 
     /// <summary>
     /// Gets the current user.
     /// </summary>
+    /// <param name="id">If provided, retrieves th user with this user Id</param>
     /// <returns></returns>
-    public async Task<User> UserGet(CancellationToken cancellationToken)
+    public async Task<User> UserGet(CancellationToken cancellationToken, string id = "")
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"query User {
-                      user{
+          Query = @"query User($id: String) {
+                      user(id: $id){
                         id,
                         email,
                         name,
@@ -43,6 +45,11 @@ namespace Speckle.Core.Api
                         role,
                       }
                     }"
+        ,
+          Variables = new
+          {
+            id
+          }
         };
 
         var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);

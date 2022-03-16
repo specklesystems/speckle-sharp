@@ -22,6 +22,7 @@
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
+    <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
   </UserControl.Resources>
   <Grid RowDefinitions="auto,*, auto">
     <Border
@@ -98,7 +99,10 @@
       </Grid>
     </Border>
     <!--  ACTIVITY  -->
-
+    <!--
+      NOTE FORMATTED TEXT IS COMING TO AVALONIA !
+      https://github.com/AvaloniaUI/Avalonia/pull/6953
+    -->
     <Grid Grid.Row="1">
       <ScrollViewer Name="activityScroller">
         <Grid RowDefinitions="*,auto">
@@ -112,7 +116,8 @@
                     HorizontalAlignment="{Binding Align}"
                     assists:ShadowAssist.ShadowDepth="Depth0"
                     CornerRadius="25"
-                    Mode="Light">
+                    Mode="Light"
+                    Opacity="{Binding Message, Converter={StaticResource StringOpacityValueConverter}}">
                     <Grid ColumnDefinitions="auto,*">
                       <icons:MaterialIcon
                         Width="15"
@@ -191,8 +196,7 @@
               Margin="0,0,0,10"
               assists:ShadowAssist.ShadowDepth="Depth0"
               CornerRadius="25"
-
-							IsVisible="{Binding ShowReport}"
+              IsVisible="{Binding ShowReport}"
               Mode="Accent">
               <Grid ColumnDefinitions="*, auto">
                 <TextBlock

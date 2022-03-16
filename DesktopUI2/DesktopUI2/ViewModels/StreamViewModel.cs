@@ -30,7 +30,7 @@ namespace DesktopUI2.ViewModels
   {
 
     public StreamState StreamState { get; set; }
-    private IScreen HostScreen { get; }
+    private IScreen HostScreen { get; set; }
 
     private ConnectorBindings Bindings;
 
@@ -265,6 +265,10 @@ namespace DesktopUI2.ViewModels
 
     IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
+    public void UpdateHost(IScreen hostScreen)
+    {
+      HostScreen = hostScreen;
+    }
     public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
 
     {
@@ -379,20 +383,31 @@ namespace DesktopUI2.ViewModels
 
     private async void GetActivity()
     {
-      var activity = await Client.StreamGetActivity(Stream.id);
-      Activity = activity
+
+      var filteredActivity = (await Client.StreamGetActivity(Stream.id))
         .Where(x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create")
-        .Select(x => new ActivityViewModel(x)).Reverse().ToList();
+        .Reverse().ToList();
+      var activity = new List<ActivityViewModel>();
+      foreach (var a in filteredActivity)
+      {
+        var avm = new ActivityViewModel();
+        await avm.Init(a, Client);
+        activity.Add(avm);
+
+      }
+      Activity = activity;
+
       if (StreamEditView.Instance != null)
       {
         var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
         if (scroller != null)
         {
-          await Task.Delay(200);
+          await Task.Delay(100);
           scroller.ScrollToEnd();
         }
       }
     }
+
     /// <summary>
     /// Update the model Stream state whenever we send, receive or save a stream
     /// </summary>
@@ -501,6 +516,9 @@ namespace DesktopUI2.ViewModels
     public async void SendCommand()
     {
       UpdateStreamState();
+      //save the stream as well
+      HomeViewModel.Instance.AddSavedStream(this);
+
       Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.SendStream(StreamState, Progress));
@@ -516,14 +534,15 @@ namespace DesktopUI2.ViewModels
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         ShowReport = true;
 
-      //save the stream as well
-      HomeViewModel.Instance.AddSavedStream(StreamState);
       GetActivity();
     }
 
     public async void ReceiveCommand()
     {
       UpdateStreamState();
+      //save the stream as well
+      HomeViewModel.Instance.AddSavedStream(this);
+
       Reset();
       Progress.IsProgressing = true;
       await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
@@ -539,8 +558,7 @@ namespace DesktopUI2.ViewModels
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
         ShowReport = true;
 
-      //save the stream as well
-      HomeViewModel.Instance.AddSavedStream(StreamState);
+
       GetActivity();
 
     }
@@ -577,7 +595,7 @@ namespace DesktopUI2.ViewModels
     {
       UpdateStreamState();
       MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-      HomeViewModel.Instance.AddSavedStream(StreamState);
+      HomeViewModel.Instance.AddSavedStream(this);
 
       if (IsReceiver)
       {

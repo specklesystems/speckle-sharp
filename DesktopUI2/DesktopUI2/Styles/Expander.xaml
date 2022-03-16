@@ -23,6 +23,18 @@
     <Setter Property="Margin" Value="0" />
   </Style>
 
+
+  <Style Selector="Expander:not(.notransitions) /template/ m|Card#PART_ExpanderRoot">
+    <Setter Property="Transitions" Value="{x:Null}">
+      <!--<Transitions>
+        <ThicknessTransition
+          Easing="CubicEaseOut"
+          Property="Margin"
+          Duration="0.25" />
+      </Transitions>-->
+    </Setter>
+  </Style>
+
   <Style Selector="Expander.Flat /template/ m|Card#PART_ExpanderRoot, Expander.Flat /template/ m|Card#PART_ExpanderRoot">
     <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
   </Style>
