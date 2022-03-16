@@ -1,4 +1,5 @@
 ﻿#if (CIVIL2021 || CIVIL2022)
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,7 +31,6 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
-using System;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -650,7 +650,7 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // pipes
-    // TODO: add pressurepipes and pressure fittings when they become supported by C3D api
+    // TODO: add pressure fittings
     public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
     {
       // get the pipe curve
@@ -673,9 +673,9 @@ namespace Objects.Converter.AutocadCivil
       _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody) };
       _pipe.units = ModelUnits;
 
-      // assign additional structure props
-      _pipe["name"] = (pipe.DisplayName != null) ? pipe.DisplayName : "";
-      _pipe["description"] = (pipe.DisplayName != null) ? pipe.Description : "";
+      // assign additional pipe props
+      if (pipe.Name != null) _pipe["name"] = pipe.Name;
+      if (pipe.Description != null) _pipe["description"] = pipe.Description;
       try { _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch { }
       try { _pipe["slope"] = pipe.Slope; } catch { }
       try { _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch { }
@@ -688,7 +688,41 @@ namespace Objects.Converter.AutocadCivil
       try { _pipe["startStructure"] = pipe.StartStructureId.ToString(); } catch { }
       try { _pipe["endStructure"] = pipe.EndStructureId.ToString(); } catch { }
 
-      // add start and end structure ids
+      return _pipe;
+    }
+    public Pipe PipeToSpeckle(CivilDB.PressurePipe pipe)
+    {
+      // get the pipe curve
+      ICurve curve = null;
+      switch (pipe.BaseCurve)
+      {
+        case AcadDB.Line o:
+          var line = new Acad.LineSegment3d(pipe.StartPoint, pipe.EndPoint);
+          curve = LineToSpeckle(line);
+          break;
+        default:
+          curve = CurveToSpeckle(pipe.Spline);
+          break;
+      }
+
+      var _pipe = new Pipe();
+      _pipe.baseCurve = curve;
+      _pipe.diameter = pipe.InnerDiameter;
+      _pipe.length = pipe.Length3DCenterToCenter;
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Get3dBody()) };
+      _pipe.units = ModelUnits;
+
+      // assign additional pipe props
+      if (pipe.Name != null) _pipe["name"] = pipe.Name;
+      _pipe["description"] = (pipe.Description != null) ? pipe.Description : "";
+      _pipe["isPressurePipe"] = true;
+      try { _pipe["partType"] = pipe.PartType.ToString(); } catch { }
+      try { _pipe["slope"] = pipe.Slope; } catch { }
+      try { _pipe["network"] = pipe.NetworkName; } catch { }
+      try { _pipe["startOffset"] = pipe.StartOffset; } catch { }
+      try { _pipe["endOffset"] = pipe.EndOffset; } catch { }
+      try { _pipe["startStation"] = pipe.StartStation; } catch { }
+      try { _pipe["endStation"] = pipe.EndStation; } catch { }
 
       return _pipe;
     }

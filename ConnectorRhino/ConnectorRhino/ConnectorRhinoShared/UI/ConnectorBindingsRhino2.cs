@@ -176,18 +176,19 @@ namespace SpeckleRhino
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
 
-      string referencedObject = null;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
+      Commit commit = null;
       if (state.CommitId == "latest")
       {
         var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        commit = res.commits.items.FirstOrDefault();
       }
       else
       {
         var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-        referencedObject = res.referencedObject;
+        commit = res;
       }
+      string referencedObject = commit.referencedObject;
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
@@ -221,7 +222,7 @@ namespace SpeckleRhino
       conversionProgressDict["Conversion"] = 0;
 
       // get commit layer name 
-      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, state.CommitId);
+      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
 
       // give converter a way to access the base commit layer name
       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
@@ -284,7 +285,7 @@ namespace SpeckleRhino
 
             // get bake layer name
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-            string rhLayerName = $"{layer}{Layer.PathSeparator}{objLayerName}";
+            string rhLayerName = (objLayerName.StartsWith($"{layer}{Layer.PathSeparator}")) ? objLayerName : $"{layer}{Layer.PathSeparator}{objLayerName}";
 
             var nestedObjects = FlattenCommitObject(@base[prop], converter, rhLayerName, state, ref count, foundConvertibleMember);
             if (nestedObjects.Count > 0)
