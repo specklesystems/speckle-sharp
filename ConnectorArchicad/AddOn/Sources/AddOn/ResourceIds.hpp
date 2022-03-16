@@ -15,5 +15,6 @@
 #define CreateDirectShapesCommandName 			"CreateDirectShapes";
 #define CreateWallCommandName					"CreateWall";
 #define CreateSlabCommandName					"CreateSlab";
+#define CreateZoneCommandName                   "CreateZone";
 
 #endif

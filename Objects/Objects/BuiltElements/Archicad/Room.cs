@@ -5,7 +5,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad
 {
-  public class Zone : BuiltElements.Room
+  public class Room : BuiltElements.Room
   {
     public int? floorIndex { get; set; }
 
@@ -13,6 +13,6 @@ namespace Objects.BuiltElements.Archicad
 
     public ElementShape shape { get; set; }
 
-    public Zone() { }
+    public Room() { }
   }
 }

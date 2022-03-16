@@ -10,7 +10,7 @@ static const char* FloorIndexFieldName = "floorIndex";
 
 static const char* WallsFieldName = "walls";
 static const char* SlabsFieldName = "slabs";
-static const char* RoomsFieldName = "rooms";
+static const char* ZonesFieldName = "zones";
 static const char* ModelsFieldName = "models";
 
 

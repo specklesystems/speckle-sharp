@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
 using Objects;
+using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
@@ -17,23 +18,27 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var rooms = new List<Objects.BuiltElements.Archicad.Zone>();
-      foreach (var el in elements)
+      var rooms = new List<Objects.BuiltElements.Archicad.Room>();
+      foreach ( var el in elements )
       {
-        switch (el)
+        switch ( el )
         {
-          case Objects.BuiltElements.Archicad.Zone archiRoom:
+          case Objects.BuiltElements.Archicad.Room archiRoom:
             rooms.Add(archiRoom);
             break;
           case Objects.BuiltElements.Room room:
+            rooms.Add(new Objects.BuiltElements.Archicad.Room
             {
-              break;
-            }
+              shape = Utils.PolycurvesToElementShape(room.outline, room.voids),
+              name = room.name,
+              number = room.number,
+              basePoint = Utils.ScaleToNative(room.basePoint)
+            });
+            break;
         }
       }
 
-      // var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token);
-      var result = new List<string>();
+      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token);
 
       return result is null ? new List<string>() : result.ToList();
     }
@@ -42,22 +47,24 @@ namespace Archicad.Converters
       CancellationToken token)
     {
       var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.Zone> data =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
+      IEnumerable<Objects.BuiltElements.Archicad.Room> data =
+        await AsyncCommandProcessor.Execute(
+          new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
           token);
-      if (data is null)
+      if ( data is null )
       {
         return new List<Base>();
       }
 
       List<Base> rooms = new List<Base>();
-      foreach (Objects.BuiltElements.Archicad.Zone room in data)
+      foreach ( Objects.BuiltElements.Archicad.Room room in data )
       {
         room.displayValue =
-          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == room.applicationId).model);
-        room.outline = Utils.PolycurveToNative(room.shape.contourPolyline);
+          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == room.applicationId)
+            .model);
+        room.outline = Utils.PolycurveToSpeckle(room.shape.contourPolyline);
         if ( room.shape.holePolylines?.Count > 0 )
-          room.voids = new List<ICurve>(room.shape.holePolylines.Select(Utils.PolycurveToNative));
+          room.voids = new List<ICurve>(room.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
         rooms.Add(room);
       }
 

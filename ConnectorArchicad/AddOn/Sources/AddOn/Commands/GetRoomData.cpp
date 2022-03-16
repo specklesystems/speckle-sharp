@@ -67,7 +67,7 @@ namespace AddOnCommands
         });
 
         GS::ObjectState result;
-        const auto& listAdder = result.AddList<GS::ObjectState>(RoomsFieldName);
+        const auto& listAdder = result.AddList<GS::ObjectState>(ZonesFieldName);
         for (const API_Guid& guid : elementGuids)
         {
             // element and memo 
