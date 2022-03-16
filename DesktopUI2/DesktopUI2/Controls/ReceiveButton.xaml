@@ -8,26 +8,35 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#receive">
+      <Setter Property="RenderTransform" Value="rotate(30deg) scaleX(-1)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#receive">
+      <Setter Property="RenderTransform" Value="rotate(15deg) scaleX(-1)" />
+    </Style>
+  </UserControl.Styles>
   <Grid Margin="4">
     <m:FloatingButton
       VerticalAlignment="Center"
       Command="{Binding ReceiveCommand}"
       IsDefault="True"
       IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-      ToolTip.Tip="Receive from this stream">
+      ToolTip.Tip="Receive from this stream and saves it">
       <Button.Content>
         <icons:MaterialIcon
+          Name="receive"
           Width="20"
           Height="20"
           Foreground="White"
           Kind="CubeSend"
           ToolTip.Tip="Receive">
-          <icons:MaterialIcon.RenderTransform>
-            <TransformGroup>
-              <RotateTransform Angle="30" />
-              <ScaleTransform ScaleX="-1" />
-            </TransformGroup>
-          </icons:MaterialIcon.RenderTransform>
+          <icons:MaterialIcon.Transitions>
+            <Transitions>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+            </Transitions>
+          </icons:MaterialIcon.Transitions>
+
         </icons:MaterialIcon>
 
       </Button.Content>

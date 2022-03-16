@@ -12,7 +12,7 @@
   xmlns:vm="using:DesktopUI2.ViewModels"
   Title="{Binding TitleFull}"
   Width="400"
-  Height="650"
+  Height="750"
   Icon="/Assets/icon.ico"
   mc:Ignorable="d">
 
