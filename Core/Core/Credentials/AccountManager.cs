@@ -256,8 +256,8 @@ namespace Speckle.Core.Credentials
 
         var body = new
         {
-          appId = "sdm",
-          appSecret = "sdm",
+          appId = "sca",
+          appSecret = "sca",
           accessCode = accessCode,
           challenge = challenge,
         };
