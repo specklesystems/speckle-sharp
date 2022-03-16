@@ -1538,6 +1538,7 @@ namespace Objects.Converter.AutocadCivil
             mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
           else if (region != null)
             mesh.bbox = BoxToSpeckle(region.GeometricExtents);
+          if (solid != null) mesh.volume = solid.MassProperties.Volume;
         }
       }
 

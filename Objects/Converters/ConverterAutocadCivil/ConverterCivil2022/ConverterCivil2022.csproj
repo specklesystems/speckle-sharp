@@ -42,6 +42,12 @@
     <PackageReference Include="Speckle.Civil3D.API" Version="2022.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="AecPropDataMgd">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2022\ACA\AecPropDataMgd.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
 
 </Project>
