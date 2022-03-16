@@ -98,7 +98,7 @@ namespace Utility {
 		const GS::Array<API_StoryType> stories = GetStoryItems();
 
 		for (const auto& story : stories) {
-			if (story.floorId == floorNumber) {
+			if (story.index == floorNumber) {
 				return story.level;
 			}
 		}
