@@ -62,7 +62,7 @@ namespace Objects.Geometry
       return new List<double>() { x, y, z };
     }
 
-    public static Vector FromList(List<double> list, string units) => new Vector(list[ 0 ], list[ 1 ], list[ 2 ]);
+    public static Vector FromList(List<double> list, string units) => new Vector(list[ 0 ], list[ 1 ], list[ 2 ], units);
 
     public double x { get; set; }
 
@@ -92,14 +92,14 @@ namespace Objects.Geometry
       vector1.z - vector2.z, vector1.units);
 
     /// <summary>
-    ///     Gets the Euclidean length of this vector.
+    /// Gets the Euclidean length of this vector.
     /// </summary>
     /// <returns>Length of the vector.</returns>
     public double Length => Math.Sqrt(DotProduct(this, this));
 
     /// <summary>
-    ///     Gets the scalar product (dot product) of two given vectors
-    ///     Dot product = u1*v1 + u2*v2 + u3*v3.
+    /// Gets the scalar product (dot product) of two given vectors
+    /// Dot product = u1*v1 + u2*v2 + u3*v3.
     /// </summary>
     /// <param name="u">First vector.</param>
     /// <param name="v">Second vector.</param>
@@ -107,6 +107,13 @@ namespace Objects.Geometry
     public static double DotProduct(Vector u, Vector v) =>
       u.x * v.x + u.y * v.y + u.z * v.z;
 
+    /// <summary>
+    /// Computes the vector product (cross product) of two given vectors
+    /// Cross product = { u2 * v3 - u3 * v2; u3 * v1 - u1 * v3; u1 * v2 - u2 * v1 }.
+    /// </summary>
+    /// <param name="u">First vector.</param>
+    /// <param name="v">Second vector.</param>
+    /// <returns>Vector result of the cross product.</returns>
     public static Vector CrossProduct(Vector u, Vector v)
     {
       var x = u.y * v.z - u.z * v.y;
@@ -117,7 +124,7 @@ namespace Objects.Geometry
     }
 
     /// <summary>
-    ///     Divides this vector by it's euclidean length.
+    /// Divides this vector by it's euclidean length.
     /// </summary>
     public void Unitize()
     {
@@ -128,7 +135,7 @@ namespace Objects.Geometry
     }
 
     /// <summary>
-    ///     Returns a normalized copy of this vector.
+    /// Returns a normalized copy of this vector.
     /// </summary>
     /// <returns>A copy of this vector unitized.</returns>
     public Vector Unit()
