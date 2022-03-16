@@ -42,6 +42,8 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public List<Mesh> GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
+            List<Mesh> meshes = new List<Mesh>();
+
       List<Solid> solids = new List<Solid>();
       
       if (elem is Group g)
@@ -55,18 +57,68 @@ namespace Objects.Converter.Revit
       }
       else
         solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-      
-      return GetMeshesFromSolids(solids);
+
+            if (solids.Count > 0)
+                meshes.AddRange(GetMeshesFromSolids(solids));
+            else
+                meshes.AddRange(GetElementMeshes(elem, opt, useOriginGeom4FamilyInstance));
+
+      return meshes;
     }
 
-    /// <summary>
-    /// Gets all the solids from an element (digs into them too!). see: https://forums.autodesk.com/t5/revit-api-forum/getting-beam-column-and-wall-geometry/td-p/8138893
-    /// </summary>
-    /// <param name="elem"></param>
-    /// <param name="opt"></param>
-    /// <param name="useOriginGeom4FamilyInstance"></param>
-    /// <returns></returns>
-    public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+        /// <summary>
+        /// retrieve the meshes of revit elements like fabrication parts or other stuff, which isn't based on solids
+        /// </summary>
+        /// <param name="elem"></param>
+        /// <param name="opt"></param>
+        /// <param name="useOriginGeom4FamilyInstance"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private List<Mesh> GetElementMeshes(Element elem, Options opt, bool useOriginGeom4FamilyInstance)
+        {
+            List<Mesh> meshes = new List<Mesh>();
+
+            if (null == elem) return meshes;
+
+            opt ??= new Options();
+
+            GeometryElement gElem;
+
+            try
+            {
+                if (useOriginGeom4FamilyInstance && elem is DB.FamilyInstance fInst)
+                {
+                    // we transform the geometry to instance coordinate to reflect actual geometry
+                    gElem = fInst.GetOriginalGeometry(opt);
+                    DB.Transform trf = fInst.GetTransform();
+                    if (!trf.IsIdentity)
+                        gElem = gElem.GetTransformed(trf);
+                }
+                else
+                {
+                    gElem = elem.get_Geometry(opt);
+                }
+
+                if (gElem == null) return meshes;
+
+                meshes.AddRange(GetMeshesRecursive(gElem));
+            }
+            catch (Exception ex)
+            {
+                // In Revit, sometime get the geometry will failed.
+                string error = ex.Message;
+            }
+            return meshes;
+        }
+
+        /// <summary>
+        /// Gets all the solids from an element (digs into them too!). see: https://forums.autodesk.com/t5/revit-api-forum/getting-beam-column-and-wall-geometry/td-p/8138893
+        /// </summary>
+        /// <param name="elem"></param>
+        /// <param name="opt"></param>
+        /// <param name="useOriginGeom4FamilyInstance"></param>
+        /// <returns></returns>
+        public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
       List<Solid> solids = new List<Solid>();
       
@@ -92,7 +144,7 @@ namespace Objects.Converter.Revit
 
         if (gElem == null ) return solids;
 
-        solids.AddRange(gElem.SelectMany(GetSolids));
+        solids.AddRange(gElem.SelectMany(GetSolidsRecursive));
       }
       catch (Exception ex)
       {
@@ -179,7 +231,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="gObj"></param>
     /// <returns></returns>
-    private List<Solid> GetSolids(GeometryObject gObj)
+    private List<Solid> GetSolidsRecursive(GeometryObject gObj)
     {
       List<Solid> solids = new List<Solid>();
 
@@ -205,12 +257,40 @@ namespace Objects.Converter.Revit
       return solids;
     }
 
-    /// <summary>
-    /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh.
-    /// </summary>
-    /// <param name="solids"></param>
-    /// <returns></returns>
-    public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids)
+        private List<Mesh> GetMeshesRecursive(GeometryObject gObj)
+        {
+            List<Mesh> meshes = new List<Mesh>();
+
+            void Iterate(GeometryObject geometryObject, GeometryElement parent)
+            {
+                if (geometryObject is DB.Mesh gMesh) // already mesh
+                {
+                    if (gMesh.Vertices.Count > 0 ) // skip invalid meshes                        
+                        meshes.AddRange(GetMeshes(parent));
+                }
+                else if (geometryObject is GeometryInstance gInstance) // find solids from GeometryInstance
+                {
+                    foreach (var g in gInstance.GetInstanceGeometry()) 
+                        Iterate(g, gInstance.GetInstanceGeometry());
+                }
+                else if (geometryObject is GeometryElement gElement) // find solids from GeometryElement
+                {
+                    
+                    foreach (var g in gElement) Iterate(g, gElement);
+                }
+            }
+
+            Iterate(gObj, null);
+
+            return meshes;
+        }
+
+        /// <summary>
+        /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh.
+        /// </summary>
+        /// <param name="solids"></param>
+        /// <returns></returns>
+        public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids)
     {
       var faceArr = new List<int>();
       var vertexArr = new List<double>();

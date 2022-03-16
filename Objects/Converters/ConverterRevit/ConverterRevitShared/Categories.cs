@@ -108,7 +108,12 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_Cornices,
       BuiltInCategory.OST_Walls,
       BuiltInCategory.OST_Windows,
-      BuiltInCategory.OST_Wire
+      BuiltInCategory.OST_Wire,
+      BuiltInCategory.OST_FabricationDuctwork,
+      BuiltInCategory.OST_FabricationPipework,
+      BuiltInCategory.OST_FabricationHangers,
+      BuiltInCategory.OST_FabricationContainment,
+      BuiltInCategory.OST_FabricationServiceElements
   };
 
     public static RevitCategory GetSchemaBuilderCategoryFromBuiltIn(string builtInCategory)
