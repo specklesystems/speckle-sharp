@@ -40,7 +40,7 @@ namespace Objects.Converter.AutocadCivil
     // tolerance for geometry:
     public double tolerance = 0.000;
 
-    #region Convenience methods
+#region Convenience methods
     public List<double> PointsToFlatList(IEnumerable<Point3d> points)
     {
       return points.SelectMany(p => new double[] { p.X, p.Y, p.Z }).ToList();
@@ -49,7 +49,7 @@ namespace Objects.Converter.AutocadCivil
     {
       return points.SelectMany(p => new double[] { p.X, p.Y, 0 }).ToList();
     }
-    #endregion
+#endregion
 
     // Points
     public Point PointToSpeckle(Point3d point, string units = null)
@@ -1473,71 +1473,91 @@ namespace Objects.Converter.AutocadCivil
     private Mesh GetMeshFromSolidOrSurface(Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
     {
       Mesh mesh = null;
+      double volume = 0;
+      double area = 0;
 
       AcadBRep.Brep brep = null;
+      Box bbox = null;
       if (solid != null)
+      {
         brep = new AcadBRep.Brep(solid);
+        volume = solid.MassProperties.Volume;
+        area = solid.Area;
+        bbox = BoxToSpeckle(solid.GeometricExtents);
+      }
       else if (surface != null)
+      {
         brep = new AcadBRep.Brep(surface);
+        area = surface.GetArea();
+        bbox = BoxToSpeckle(surface.GeometricExtents);
+      }
       else if (region != null)
+      {
         brep = new AcadBRep.Brep(region);
+        area = region.Area;
+        bbox = BoxToSpeckle(region.GeometricExtents);
+      }
 
       if (brep != null)
       {
-        using (var control = new AcadBRep.Mesh2dControl())
+        try
         {
-          // These settings may need adjusting
-          control.MaxSubdivisions = 10000;
-
-          // output mesh vars
-          var _vertices = new List<Point3d>();
-          var faces = new List<int>();
-
-          // create mesh filterS
-          using (var filter = new AcadBRep.Mesh2dFilter())
+          using (var control = new AcadBRep.Mesh2dControl())
           {
-            filter.Insert(brep, control);
-            using (var m = new AcadBRep.Mesh2d(filter))
-            {
-              foreach (var e in m.Element2ds)
-              {
-                // get vertices
-                var faceIndices = new List<int>();
-                foreach (var n in e.Nodes)
-                {
-                  if (!_vertices.Contains(n.Point))
-                  {
-                    faceIndices.Add(_vertices.Count);
-                    _vertices.Add(n.Point);
-                  }
-                  else
-                  {
-                    faceIndices.Add(_vertices.IndexOf(n.Point));
-                  }
-                  n.Dispose();
-                }
+            // These settings may need adjusting
+            control.MaxSubdivisions = 10000;
 
-                // get faces
-                if (e.Nodes.Count() == 3)
-                  faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
-                else if (e.Nodes.Count() == 4)
-                  faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
-                e.Dispose();
+            // output mesh vars
+            var _vertices = new List<Point3d>();
+            var faces = new List<int>();
+
+            // create mesh filters
+            using (var filter = new AcadBRep.Mesh2dFilter())
+            {
+              filter.Insert(brep, control);
+              using (var m = new AcadBRep.Mesh2d(filter))
+              {
+                foreach (var e in m.Element2ds)
+                {
+                  // get vertices
+                  var faceIndices = new List<int>();
+                  foreach (var n in e.Nodes)
+                  {
+                    if (!_vertices.Contains(n.Point))
+                    {
+                      faceIndices.Add(_vertices.Count);
+                      _vertices.Add(n.Point);
+                    }
+                    else
+                    {
+                      faceIndices.Add(_vertices.IndexOf(n.Point));
+                    }
+                    n.Dispose();
+                  }
+
+                  // get faces
+                  if (e.Nodes.Count() == 3)
+                    faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+                  else if (e.Nodes.Count() == 4)
+                    faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+                  e.Dispose();
+                }
               }
             }
-          }
-          brep.Dispose();
+            brep.Dispose();
 
-          // create speckle mesh
-          var vertices = PointsToFlatList(_vertices);
-          mesh = new Mesh(vertices, faces);
-          mesh.units = ModelUnits;
-          if (solid != null)
-            mesh.bbox = BoxToSpeckle(solid.GeometricExtents);
-          else if (surface != null)
-            mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
-          else if (region != null)
-            mesh.bbox = BoxToSpeckle(region.GeometricExtents);
+            // create speckle mesh
+            var vertices = PointsToFlatList(_vertices);
+            mesh = new Mesh(vertices, faces);
+            mesh.units = ModelUnits;
+            mesh.bbox = bbox;
+            mesh.area = area;
+            mesh.volume = volume;
+          }
+        }
+        catch(Exception e)
+        {
+          Report.LogConversionError(e);
         }
       }
 
