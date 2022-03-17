@@ -656,6 +656,10 @@ workflows:
             - build-deploy-connector-rhino
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
+            - build-deploy-connector-etabs
+            - build-deploy-connector-sap2000
+            - build-deploy-connector-safe
+            - build-deploy-connector-csibridge
             - build-deploy-connector-microstation
             - build-deploy-connector-openbuildings
             - build-deploy-connector-openrail
