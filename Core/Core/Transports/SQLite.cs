@@ -354,6 +354,28 @@ namespace Speckle.Core.Transports
       }
     }
 
+    /// <summary>
+    /// Updates an object.
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <param name="serializedObject"></param>
+    public void UpdateObject(string hash, string serializedObject)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+
+      using (var c = new SQLiteConnection(ConnectionString))
+      {
+        c.Open();
+        using (var command = new SQLiteCommand(c))
+        {
+          command.CommandText = $"REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
+          command.Parameters.AddWithValue("@hash", hash);
+          command.Parameters.AddWithValue("@content", serializedObject);
+          command.ExecuteNonQuery();
+        }
+      }
+    }
+
     public override string ToString()
     {
       return $"Sqlite Transport @{RootPath}";
