@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -27,8 +28,37 @@ namespace Speckle.Core.Credentials
     /// <summary>
     /// The Default Server URL for authentication
     /// </summary>
-    //private const string ServerUrl = "http://localhost:3000";
-    private const string ServerUrl = "https://speckle.xyz";
+
+    private static string _serverUrl = null;
+    private static string ServerUrl
+    {
+      get
+      {
+        if (_serverUrl == null)
+        {
+          var local = Environment.SpecialFolder.ApplicationData;
+          var system = Environment.SpecialFolder.CommonApplicationData;
+
+          var folder = Assembly.GetAssembly(typeof(AccountManager)).Location.Contains("ProgramData") ? system : local;
+
+          var customServerFile = Path.Combine(Environment.GetFolderPath(folder), "Speckle", "server");
+          if (File.Exists(customServerFile))
+          {
+            var customUrl = File.ReadAllText(customServerFile);
+            Uri url = null;
+            Uri.TryCreate(customUrl, UriKind.Absolute, out url);
+            if (url != null)
+              _serverUrl = customUrl.TrimEnd(new[] { '/' });
+          }
+
+          if (_serverUrl == null)
+            _serverUrl = "https://speckle.xyz";
+        }
+
+        return _serverUrl;
+      }
+
+    }
 
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
 
@@ -181,7 +211,7 @@ namespace Speckle.Core.Credentials
 
       var accessCode = "";
       var challenge = GenerateChallenge();
-      Process.Start(new ProcessStartInfo($"{ServerUrl}/authn/verify/sdm/{challenge}") { UseShellExecute = true });
+      Process.Start(new ProcessStartInfo($"{ServerUrl}/authn/verify/sca/{challenge}") { UseShellExecute = true });
 
       await Task.Run(() =>
       {
@@ -194,7 +224,8 @@ namespace Speckle.Core.Credentials
 
         // Create a listener.
         HttpListener listener = new HttpListener();
-
+        listener.TimeoutManager.IdleConnection = TimeSpan.FromMinutes(2);
+        listener.TimeoutManager.HeaderWait = TimeSpan.FromMinutes(2);
         listener.Prefixes.Add("http://localhost:29363/");
 
         listener.Start();
