@@ -57,7 +57,7 @@ parameters:
   run_connector_autocadcivil:
     type: boolean
     default: false
-  run_connector_etabs:
+  run_connector_csi:
     type: boolean
     default: false
   run_connector_microstation:
@@ -85,7 +85,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorRevit/.*", "param_name": "run_connector_revit"},
             {"regex": "ConnectorRhino/.*", "param_name": "run_connector_rhino"},
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
-            {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"},
+            {"regex": "ConnectorCSI/.*", "param_name": "run_connector_csi"},
             {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"},
             {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"}
           ]'
@@ -327,13 +327,14 @@ workflows:
           dllname: SpeckleConnectorCivil.dll
   
   # ETABS Connector - Build/Test
-  connector_etabs:
-    when: << pipeline.parameters.run_connector_etabs>>
-    jobs:
-      - build-connector: 
-          name: build-connector-etabs
-          slnname: ConnectorETABS
-          dllname: SpeckleConnectorETABS.dll
+  # connector_etabs:
+  #   when: << pipeline.parameters.run_connector_etabs>>
+  #   jobs:
+  #     - build-connector: 
+  #         name: build-connector-etabs
+  #         slnname: ConnectorETABS
+  #         dllname: SpeckleConnectorETABS.dll
+
 
   # MicroStation Connector - Build/Test
   connector_microstation:
@@ -352,6 +353,15 @@ workflows:
           name: build-connector-teklastructures
           slnname: ConnectorTeklaStructures
           dllname: SpeckleConnectorTeklaStructures.dll
+
+  # CSI Connectors - Build/Test
+  connector_csi:
+    when: << pipeline.parameters.run_connector_csi>>
+    jobs:
+      - build-connector: 
+          name: build-connector-csi
+          slnname: ConnectorCSI
+          dllname: SpeckleConnectorCSI.dll
   nuget:
     jobs:
       # CORE Nuget Publish        
@@ -393,7 +403,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT BOTTOM --        
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -485,20 +495,20 @@ workflows:
             tags:
               only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
             
-      # ETABS Build&Deploy
-      - build-connector:
-          name: build-deploy-connector-etabs
-          slnname: ConnectorETABS
-          dllname: SpeckleConnectorETABS.dll
-          slug: etabs
-          installer: true
-          requires: 
-            - get-ci-tools
-          filters:
-            branches:
-              ignore: /.*/ # For testing only! /ci\/.*/
-            tags:
-              only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      # # ETABS Build&Deploy
+      # - build-connector:
+      #     name: build-deploy-connector-etabs
+      #     slnname: ConnectorETABS
+      #     dllname: SpeckleConnectorETABS.dll
+      #     slug: etabs
+      #     installer: true
+      #     requires: 
+      #       - get-ci-tools
+      #     filters:
+      #       branches:
+      #         ignore: /.*/ # For testing only! /ci\/.*/
+      #       tags:
+      #         only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # MICROSTATION Build&Deploy
       - build-connector:
@@ -574,6 +584,67 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(teklastructures|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      
+      # ETABS Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-etabs
+          slnname: ConnectorCSI
+          dllname: SpeckleConnectorCSI.dll
+          slug: etabs
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(etabs|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # SAP2000 Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-sap2000
+          slnname: ConnectorCSI
+          dllname: SpeckleConnectorCSI.dll
+          slug: sap2000
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(sap2000|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      
+      # SAFE Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-safe
+          slnname: ConnectorCSI
+          dllname: SpeckleConnectorCSI.dll
+          slug: safe
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(safe|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      # CSIBridge Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-csibridge
+          slnname: ConnectorCSI
+          dllname: SpeckleConnectorCSI.dll
+          slug: csibridge
+          installer: true
+          requires: 
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(csibridge|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      
      
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
@@ -586,11 +657,15 @@ workflows:
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
             - build-deploy-connector-etabs
+            - build-deploy-connector-sap2000
+            - build-deploy-connector-safe
+            - build-deploy-connector-csibridge
             - build-deploy-connector-microstation
             - build-deploy-connector-openbuildings
             - build-deploy-connector-openrail
             - build-deploy-connector-openroads
             - build-deploy-connector-teklastructures
+
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT ~380  --    
-              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|etabs|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|dynamo|revit|grasshopper|rhino|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/

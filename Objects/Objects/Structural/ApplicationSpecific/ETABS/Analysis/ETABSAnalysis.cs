@@ -6,13 +6,13 @@ using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
 
-namespace Objects.Structural.ETABS.Analysis
+namespace Objects.Structural.CSI.Analysis
 {
-    public class ETABSAnalysis : Base
+    public class CSIAnalysis : Base
     {
         public ActiveDOFs activeDOFs { get; set; }
         public FloorMeshSettings floorMeshSettings { get; set; }
-        public ETABSAnalysis() { }
+        public CSIAnalysis() { }
     }
 
     public class ActiveDOFs : Base
