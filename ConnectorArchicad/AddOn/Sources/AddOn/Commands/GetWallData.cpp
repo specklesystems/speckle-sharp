@@ -29,8 +29,11 @@ namespace AddOnCommands
     if (abs(wall.angle) > EPS)
       os.Add(Wall::ArcAngleFieldName, wall.angle);
 
-    // The height of the wall
+    // The parameters of the wall
     os.Add(Wall::HeightFieldName, wall.height);
+    os.Add(Wall::BaseOffsetFieldName, wall.bottomOffset);
+    os.Add(Wall::TopOffsetFieldName, wall.topOffset);
+    os.Add(Wall::FlippedFieldName, wall.flipped);
 
     // The structure type of the wall (basic, composite or profiled)
     os.Add(Wall::StructureFieldName, structureTypeNames.Get(wall.modelElemStructureType));

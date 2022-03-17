@@ -50,8 +50,8 @@ namespace AddOnCommands {
     // The shape of the slab
     Objects::ElementShape slabShape;
 
-    if (os.Contains(Slab::ShapeFieldName)) {
-      os.Get(Slab::ShapeFieldName, slabShape);
+    if (os.Contains(ShapeFieldName)) {
+      os.Get(ShapeFieldName, slabShape);
       element.slab.poly.nSubPolys = slabShape.SubpolyCount();
       element.slab.poly.nCoords = slabShape.VertexCount();
       element.slab.poly.nArcs = slabShape.ArcCount();

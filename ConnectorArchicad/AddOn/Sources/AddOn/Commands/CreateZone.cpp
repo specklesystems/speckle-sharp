@@ -49,9 +49,9 @@ namespace AddOnCommands
     // The shape of the zone
     Objects::ElementShape zoneShape;
 
-    if (os.Contains(Room::ShapeFieldName))
+    if (os.Contains(ShapeFieldName))
     {
-      os.Get(Room::ShapeFieldName, zoneShape);
+      os.Get(ShapeFieldName, zoneShape);
       element.zone.poly.nSubPolys = zoneShape.SubpolyCount();
       element.zone.poly.nCoords = zoneShape.VertexCount();
       element.zone.poly.nArcs = zoneShape.ArcCount();

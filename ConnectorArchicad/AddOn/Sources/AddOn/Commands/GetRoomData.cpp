@@ -7,12 +7,9 @@
 #include "RealNumber.h"
 #include "FieldNames.hpp"
 #include "Polyline.hpp"
-#include "TypeNameTables.hpp"
 
 namespace AddOnCommands
 {
-    std::wstring_convert<std::codecvt<char16_t,char,std::mbstate_t>,char16_t> convert;
-    
     static GS::ObjectState SerializeRoomType(const API_ZoneType& zone, const API_ElementMemo& memo, const API_ElementQuantity& quantity)
     {
         GS::ObjectState os;
@@ -30,7 +27,7 @@ namespace AddOnCommands
         // The base point of the room
         double level = Utility::GetStoryLevel(zone.head.floorInd) + zone.roomBaseLev;
         os.Add(Room::BasePointFieldName, Objects::Point3D(0, 0, level));
-        os.Add(Room::ShapeFieldName, Objects::ElementShape(zone.poly, memo, level));
+        os.Add(ShapeFieldName, Objects::ElementShape(zone.poly, memo, level));
         
         // double polyCoords [zone.poly.nCoords*3];
         //

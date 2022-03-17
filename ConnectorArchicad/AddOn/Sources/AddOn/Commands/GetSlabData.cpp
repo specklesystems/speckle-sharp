@@ -22,7 +22,7 @@ namespace AddOnCommands {
 
 		// The shape of the slab
 		double level = Utility::GetStoryLevel(slab.head.floorInd) + slab.level;
-		os.Add(Slab::ShapeFieldName, Objects::ElementShape(slab.poly, memo, level));
+		os.Add(ShapeFieldName, Objects::ElementShape(slab.poly, memo, level));
 
 		// The structure type of the slab (basic or composite)
 		os.Add(Slab::StructureFieldName, structureTypeNames.Get(slab.modelElemStructureType));
