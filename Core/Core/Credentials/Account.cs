@@ -21,7 +21,7 @@ namespace Speckle.Core.Credentials
 
           if (serverInfo == null || userInfo == null)
             throw new SpeckleException("Incomplete account info: cannot generate id.", level: Sentry.SentryLevel.Error);
-          _id = Speckle.Core.Models.Utilities.hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5);
+          _id = Speckle.Core.Models.Utilities.hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5).ToUpper();
 
         }
         return _id;
