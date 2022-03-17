@@ -227,7 +227,6 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
           DisplayStyle style = DisplayStyleToSpeckle(obj as Entity);
           if (style != null)
             @base["displayStyle"] = style;
-
           break;
 
         case Acad.Geometry.Point3d o:

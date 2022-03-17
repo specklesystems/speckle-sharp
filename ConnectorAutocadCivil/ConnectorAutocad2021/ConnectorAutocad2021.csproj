@@ -68,7 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
-      <Version>0.10.8</Version>
+      <Version>0.10.13</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Desktop">
       <Version>0.10.13</Version>

@@ -1,16 +1,14 @@
 ﻿using DesktopUI2.Views.Pages;
-using Material.Styles.Themes;
-using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using Splat;
-using System.Collections.Generic;
 using System.Reactive;
 
 namespace DesktopUI2.ViewModels
 {
   public class MainWindowViewModel : ViewModelBase, IScreen
   {
+    public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
     public RoutingState Router { get; private set; }
 
     public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
@@ -19,9 +17,7 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    public string Title => "for " + Bindings.GetHostAppNameVersion();
-    public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
-    public string Version => "v" + Bindings.ConnectorVersion;
+
     public MainWindowViewModel(ConnectorBindings _bindings)
     {
       Bindings = _bindings;
@@ -37,7 +33,7 @@ namespace DesktopUI2.ViewModels
     {
       Router = new RoutingState();
 
-      Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamEditViewModel>));
+      Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamViewModel>));
       Locator.CurrentMutable.Register(() => new HomeView(), typeof(IViewFor<HomeViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 
@@ -46,45 +42,15 @@ namespace DesktopUI2.ViewModels
 
       Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
 
-      //var theme = PaletteHelper.GetTheme();
-      //theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
-      //PaletteHelper.SetTheme(theme);
+      Router.PropertyChanged += Router_PropertyChanged;
     }
 
-    #region theme
-    private static PaletteHelper m_paletteHelper;
-    private static PaletteHelper PaletteHelper
+    private void Router_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-      get
-      {
-        if (m_paletteHelper is null)
-          m_paletteHelper = new PaletteHelper();
-        return m_paletteHelper;
-      }
-    }
-
-    public void ToggleDarkThemeCommand()
-    {
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
-
-      var theme = PaletteHelper.GetTheme();
-
-      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
-        theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
-      else
-        theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());
-      PaletteHelper.SetTheme(theme);
+      throw new System.NotImplementedException();
     }
 
 
-    public void RefreshCommand()
-    {
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
-      HomeViewModel.Instance.Init();
-    }
-
-
-    #endregion
 
   }
 }

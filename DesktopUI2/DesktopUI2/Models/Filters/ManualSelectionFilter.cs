@@ -23,11 +23,12 @@ namespace DesktopUI2.Models.Filters
       {
         if (Selection.Count != 0)
         {
-          return Selection.Count + " objects selected.";
+          var s = Selection.Count == 1 ? "" : "s";
+          return $"{Selection.Count} object{s}";
         }
         else
         {
-          return "Nothing selected.";
+          return "nothing";
         }
       }
     }

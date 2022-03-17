@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Text;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Transports;
 
 namespace TestsIntegration
 {

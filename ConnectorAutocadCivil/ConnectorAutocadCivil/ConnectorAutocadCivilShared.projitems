@@ -19,20 +19,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo16.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\docs16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\docs32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\forum16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\forum32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\help16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\help32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo16_fade.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32_fade.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\tutorials16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\tutorials32.png" />
   </ItemGroup>

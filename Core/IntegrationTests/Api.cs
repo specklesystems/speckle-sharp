@@ -180,7 +180,7 @@ namespace TestsIntegration
       myObject["@Points"] = ptsList;
 
       bool sendError = false;
-      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false, disposeTransports: true, onErrorAction: (s, e) => { sendError = true; } );
+      objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, false, disposeTransports: true, onErrorAction: (s, e) => { sendError = true; });
       Assert.IsFalse(sendError);
 
       var res = await myClient.CommitCreate(new CommitCreateInput
@@ -258,11 +258,11 @@ namespace TestsIntegration
     [Test, Order(47)]
     public async Task CommitReceived()
     {
-      var res = await myClient.CommitReceived(new CommitReceivedInput { commitId = commitId, streamId = streamId, sourceApplication = "sharp-tests", message = "The test message"});
-      
+      var res = await myClient.CommitReceived(new CommitReceivedInput { commitId = commitId, streamId = streamId, sourceApplication = "sharp-tests", message = "The test message" });
+
       Assert.IsTrue(res);
     }
-    
+
     [Test, Order(48)]
     public async Task CommitDelete()
     {
@@ -270,8 +270,9 @@ namespace TestsIntegration
       );
       Assert.IsTrue(res);
     }
-    
+
     #endregion
+
 
     [Test, Order(49)]
     public async Task BranchUpdate()
@@ -294,6 +295,18 @@ namespace TestsIntegration
       Assert.IsTrue(res);
     }
 
+    #endregion
+
+    #region activity
+
+    [Test, Order(51)]
+    public async Task StreamGetActivity()
+    {
+      var res = await myClient.StreamGetActivity(streamId);
+
+      Assert.NotNull(res);
+      //Assert.AreEqual(commitId, res[0].);
+    }
     #endregion
 
     #region send/receive bare

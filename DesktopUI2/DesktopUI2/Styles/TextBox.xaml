@@ -26,15 +26,15 @@
           Commit Text
         </TextBox>
 
-        <TextBox Classes="Readonly">
+        <TextBox Classes="Filled Dense">
           I am read only
         </TextBox>
 
 
         <TextBox
           Padding="0"
+          Background="Red"
           Classes="Solo Small"
-					Background="Red"
           Text="{Binding SearchQuery}"
           Watermark="Search streams">
           <TextBox.InnerRightContent>
@@ -58,5 +58,15 @@
   <Style Selector="TextBlock.Subtitle1#watermark">
     <Setter Property="FontSize" Value="13.0" />
   </Style>
+
+  <Style Selector="TextBox.Filled /template/ Panel#PART_TextRoot">
+    <Setter Property="Margin" Value="0" />
+  </Style>
+
+  <Style Selector="TextBox.Filled /template/ Border#PART_RootBorder">
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
+
+
 
 </Styles>

@@ -19,18 +19,21 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\help16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\help32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16_fade.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo32_fade.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\send16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\send32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\OneClickSendCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SchedulerCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
