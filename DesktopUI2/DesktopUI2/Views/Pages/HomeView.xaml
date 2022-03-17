@@ -90,24 +90,84 @@
 
             </Button.Content>
           </m:FloatingButton>
-          <m:FloatingButton
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding LogOutCommand}"
-            IsVisible="{Binding HasOneAccount}"
-            ToolTip.Tip="Log Out">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                assists:ShadowAssist.ShadowDepth="0"
-                Kind="Logout" />
 
-            </Button.Content>
-          </m:FloatingButton>
+          <!--  ACCOUNT MENU  -->
+          <Menu
+            VerticalAlignment="Center"
+            IsVisible="{Binding HasOneAccount}"
+            ToolTip.Tip="Account">
+            <MenuItem Padding="0">
+              <MenuItem.Header>
+                <Image
+                  Width="28"
+                  Height="28"
+                  Source="{Binding Accounts[0].AvatarImage}">
+
+                  <Image.Clip>
+                    <EllipseGeometry Rect="0,0,28,28" />
+                  </Image.Clip>
+                </Image>
+              </MenuItem.Header>
+              <MenuItem
+                Command="{Binding OpenProfileCommand}"
+                CommandParameter="{Binding Accounts[0].Account}"
+                Header="{Binding Accounts[0].Name}"
+                Icon="{icons:MaterialIconExt Account}" />
+              <Separator />
+              <MenuItem
+                Command="{Binding LaunchManagerCommand}"
+                Header="Add Accounts in Manager"
+                Icon="{icons:MaterialIconExt Settings}" />
+              <MenuItem
+                Command="{Binding LogOutCommand}"
+                Header="Log Out"
+                Icon="{icons:MaterialIconExt Logout}" />
+            </MenuItem>
+          </Menu>
+
+          <Menu
+            VerticalAlignment="Center"
+            IsVisible="{Binding HasMultipleAccounts}"
+            ToolTip.Tip="Accounts">
+            <MenuItem
+              Width="30"
+              Height="30"
+              Header="{icons:MaterialIconExt AccountMultiple}">
+
+              <MenuItem
+                Header="Accounts"
+                Icon="{icons:MaterialIconExt AccountMultiple}"
+                Items="{Binding Accounts}">
+                <MenuItem.Styles>
+                  <Style Selector="MenuItem">
+                    <Setter Property="Header" Value="{Binding FullAccountName}" />
+                    <Setter Property="Icon" Value="{Binding Icon}">
+                      <Setter.Value>
+                        <Template>
+                          <Image
+                            Width="20"
+                            Height="20"
+                            Source="{Binding AvatarImage}">
+
+                            <Image.Clip>
+                              <EllipseGeometry Rect="0,0,20,20" />
+                            </Image.Clip>
+                          </Image>
+                        </Template>
+                      </Setter.Value>
+                    </Setter>
+                    <Setter Property="Command" Value="{Binding OpenProfileCommand}" />
+                    <Setter Property="CommandParameter" Value="{Binding Account}" />
+                  </Style>
+                </MenuItem.Styles>
+              </MenuItem>
+              <MenuItem
+                Command="{Binding LaunchManagerCommand}"
+                Header="Manage Accounts in Manager"
+                Icon="{icons:MaterialIconExt Settings}" />
+
+            </MenuItem>
+          </Menu>
         </StackPanel>
       </Grid>
     </m:Card>
@@ -406,7 +466,7 @@
           </TextBlock>
           <Button
             Margin="15,40,15,15"
-            Command="{Binding ManagerLoginCommand}"
+            Command="{Binding LaunchManagerCommand}"
             Content="Log In using Manager"
             IsEnabled="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
             ToolTip.Tip="Manager is the reccomended way to log in and install Connectors" />

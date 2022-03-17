@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
@@ -131,21 +132,33 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private List<Account> _accounts;
-    public List<Account> Accounts
+    private List<AccountViewModel> _accounts;
+    public List<AccountViewModel> Accounts
     {
       get => _accounts;
       private set
       {
         this.RaiseAndSetIfChanged(ref _accounts, value);
         this.RaisePropertyChanged("HasOneAccount");
+        this.RaisePropertyChanged("HasMultipleAccounts");
         this.RaisePropertyChanged("HasAccounts");
+        this.RaisePropertyChanged("Avatar");
       }
+    }
+
+    public Bitmap Avatar
+    {
+      get => HasAccounts ? Accounts[0].AvatarImage : null;
     }
 
     public bool HasOneAccount
     {
       get => Accounts.Count == 1;
+    }
+
+    public bool HasMultipleAccounts
+    {
+      get => Accounts.Count > 1;
     }
 
     public bool HasAccounts
@@ -227,12 +240,12 @@ namespace DesktopUI2.ViewModels
       {
         try
         {
-          var client = new Client(account);
-          Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account)));
+          var client = new Client(account.Account);
+          Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
         }
         catch (Exception e)
         {
-          Dialogs.ShowDialog($"Could not get streams for {account.userInfo.email} on {account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Dialogs.ShowDialog($"Could not get streams for {account.Account.userInfo.email} on {account.Account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
       Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
@@ -258,8 +271,8 @@ namespace DesktopUI2.ViewModels
       {
         try
         {
-          var client = new Client(account);
-          Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account)));
+          var client = new Client(account.Account);
+          Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
         }
         catch (Exception e)
         {
@@ -273,10 +286,15 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    internal void Init()
+    internal async void Init()
     {
-      Accounts = AccountManager.GetAccounts().ToList();
+      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+
       GetStreams();
+
+      //first show cached accounts, then refresh them
+      await AccountManager.UpdateAccounts();
+      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
     }
 
     private void RemoveSavedStream(string id)
@@ -297,11 +315,16 @@ namespace DesktopUI2.ViewModels
     public async void LogOutCommand()
     {
 
-      AccountManager.LogOut();
+      AccountManager.RemoveAccount(Accounts[0].Account.id);
       Init();
     }
 
-    public void ManagerLoginCommand()
+    public void OpenProfileCommand(Account account)
+    {
+      Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
+    }
+
+    public void LaunchManagerCommand()
     {
       string path = "";
 
@@ -332,7 +355,7 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
       try
       {
-        await AccountManager.LogIn();
+        await AccountManager.AddAccount();
       }
       catch { }
 
