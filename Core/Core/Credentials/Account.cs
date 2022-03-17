@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Credentials
 {
 
   public class Account : IEquatable<Account>
   {
-    [JsonIgnore]
     public string id
     {
       get
