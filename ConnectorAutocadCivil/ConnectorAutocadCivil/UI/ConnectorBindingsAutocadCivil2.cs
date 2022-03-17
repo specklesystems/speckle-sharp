@@ -606,7 +606,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           // get the db object from id
           Handle hn = Utils.GetHandle(autocadObjectHandle);
-          DBObject obj = hn.GetObject(out string type, out string layer);
+          DBObject obj = hn.GetObject(tr, out string type, out string layer);
 
           if (obj == null)
           {
@@ -634,6 +634,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
           foreach (var key in obj.ExtensionDictionary)
             converted[key] = obj.ExtensionDictionary.GetUserString(key);
           */
+
+#if CIVIL2021 || CIVIL2022
+          // add property sets if this is Civil3D
+          var propertySets = obj.GetPropertySets(tr);
+          if (propertySets.Count > 0)
+            converted["propertySets"] = propertySets;
+#endif
 
           if (obj is BlockReference)
             containerName = "Blocks";
@@ -686,10 +693,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return selection;
     }
+#endregion
 
-    #endregion
-
-    #region events
+#region events
     public void RegisterAppEvents()
     {
       //// GLOBAL EVENT HANDLERS
@@ -731,6 +737,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         UpdateSavedStreams(streams);
       }
     }
-    #endregion
+#endregion
   }
 }

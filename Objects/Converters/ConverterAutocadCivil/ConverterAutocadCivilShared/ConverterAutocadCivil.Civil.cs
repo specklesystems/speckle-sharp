@@ -31,7 +31,6 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
-using Autodesk.Aec.PropertyData.DatabaseServices;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -180,9 +179,6 @@ namespace Objects.Converter.AutocadCivil
         _alignment["style"] = alignment.StyleName;
       if (alignment.Description != null)
         _alignment["description"] = alignment.Description;
-      var propertySets = GetPropertySet(alignment);
-      if (propertySets.Count > 0)
-        _alignment["propertySets"] = propertySets;
 
       return _alignment;
     }
@@ -440,9 +436,6 @@ namespace Objects.Converter.AutocadCivil
       _profile["type"] = profile.ProfileType.ToString();
       if (pvisConverted.Count > 0) _profile["pvis"] = pvisConverted;
       try { _profile["offset"] = profile.Offset; } catch { }
-      var propertySets = GetPropertySet(profile);
-      if (propertySets.Count > 0)
-        _profile["propertySets"] = propertySets;
 
       return _profile;
     }
@@ -511,9 +504,6 @@ namespace Objects.Converter.AutocadCivil
       _featureline["@piPoints"] = piPointsConverted;
       List<Point> ePointsConverted = ePoints.Select(o => PointToSpeckle(o)).ToList();
       _featureline["@elevationPoints"] = ePointsConverted;
-      var propertySets = GetPropertySet(featureline);
-      if (propertySets.Count > 0)
-        _featureline["propertySets"] = propertySets;
 
       return _featureline;
     }
@@ -583,9 +573,6 @@ namespace Objects.Converter.AutocadCivil
       mesh["description"] = surface.Description;
       }
       catch{}
-      var propertySets = GetPropertySet(surface);
-      if (propertySets.Count > 0)
-        mesh["propertySets"] = propertySets;
 
       return mesh;
     }
@@ -658,9 +645,6 @@ namespace Objects.Converter.AutocadCivil
       try{ _structure["grate"] = structure.Grate; } catch{ }
       try{ _structure["station"] = structure.Station; } catch{ }
       try{ _structure["network"] = structure.NetworkName; } catch{ }
-      var propertySets = GetPropertySet(structure);
-      if (propertySets.Count > 0)
-        _structure["propertySets"] = propertySets;
 
       return _structure;
     }
@@ -703,9 +687,6 @@ namespace Objects.Converter.AutocadCivil
       try { _pipe["endStation"] = pipe.EndStation; } catch { }
       try { _pipe["startStructure"] = pipe.StartStructureId.ToString(); } catch { }
       try { _pipe["endStructure"] = pipe.EndStructureId.ToString(); } catch { }
-      var propertySets = GetPropertySet(pipe);
-      if (propertySets.Count > 0)
-        _pipe["propertySets"] = propertySets;
 
       return _pipe;
     }
@@ -742,9 +723,6 @@ namespace Objects.Converter.AutocadCivil
       try { _pipe["endOffset"] = pipe.EndOffset; } catch { }
       try { _pipe["startStation"] = pipe.StartStation; } catch { }
       try { _pipe["endStation"] = pipe.EndStation; } catch { }
-      var propertySets = GetPropertySet(pipe);
-      if (propertySets.Count > 0)
-        _pipe["propertySets"] = propertySets;
 
       return _pipe;
     }
@@ -828,47 +806,9 @@ namespace Objects.Converter.AutocadCivil
       if (corridor.Description != null) _corridor["description"] = corridor.Description;
       _corridor["units"] = ModelUnits;
       if (surfaces.Count> 0) _corridor["@surfaces"] = surfaces;
-      var propertySets = GetPropertySet(corridor);
-      if (propertySets.Count > 0)
-        _corridor["propertySets"] = propertySets;
 
       return _corridor;
     }
-
-    #region helper methods
-    private List<Dictionary<string, object>> GetPropertySet(DBObject obj)
-    {
-      var sets = new List<Dictionary<string, object>>();
-      ObjectIdCollection propertySets = PropertyDataServices.GetPropertySets(obj);
-      if (propertySets == null) return sets;
-
-      foreach (ObjectId id in propertySets)
-      {
-        var setDictionary  = new Dictionary<string, object>();
-
-        PropertySet propertySet = (PropertySet)Trans.GetObject(id, OpenMode.ForRead);
-        PropertySetDefinition setDef = (PropertySetDefinition)Trans.GetObject(propertySet.PropertySetDefinition, OpenMode.ForRead);
-
-        PropertyDefinitionCollection propDef = setDef.Definitions;
-        var propDefs = new List<PropertyDefinition>();
-        foreach (PropertyDefinition def in propDef) propDefs.Add(def);
-
-        foreach (PropertySetData data in propertySet.PropertySetData)
-        {
-          PropertyDefinition def = propDefs.Where(o => o.Id == data.Id).FirstOrDefault();
-          if (def != null)
-            setDictionary.Add(def.Name, data.GetData());
-          else
-            setDictionary.Add(data.FieldBucketId, data.GetData());
-        }
-
-        if (setDictionary.Count > 0)
-          sets.Add(setDictionary);
-
-      }
-      return sets;
-    }
-    #endregion
   }
 }
 #endif
