@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
@@ -25,12 +26,13 @@ namespace Archicad.Converters
             walls.Add(archiWall);
             break;
           case Objects.BuiltElements.Wall wall:
-          {
             var baseLine = ( Line )wall.baseLine;
-            walls.Add(new Objects.BuiltElements.Archicad.Wall(Utils.ScaleToNative(baseLine.start),
-              Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units)));
+            var newWall = new Objects.BuiltElements.Archicad.Wall(Utils.ScaleToNative(baseLine.start),
+              Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
+            if ( el is RevitWall revitWall )
+              newWall.flipped = revitWall.flipped;
+            walls.Add(newWall);
             break;
-          }
         }
       }
 

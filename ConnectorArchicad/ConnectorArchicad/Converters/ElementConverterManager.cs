@@ -58,7 +58,8 @@ namespace Archicad
       foreach ( var (key, value)in elementTypeTable )
       {
         var converter = GetConverterForElement(ElementTypeProvider.GetTypeByName(key));
-        var bases = await converter.ConvertToSpeckle(rawModels.Where(model => value.Contains(model.applicationId)), token);
+        var bases = await converter.ConvertToSpeckle(
+          rawModels.Where(model => value.Contains(model.applicationId)), token);
         if ( bases.Count > 0 )
           converted[ key ] = bases;
       }
@@ -159,6 +160,14 @@ namespace Archicad
         {
           foreach ( var prop in @base.GetDynamicMembers() )
             objects.AddRange(FlattenCommitObject(@base[ prop ]));
+
+          var specialKeys = @base.GetMembers();
+          if ( specialKeys.ContainsKey("displayValue") )
+            objects.AddRange(FlattenCommitObject(specialKeys[ "displayValue" ]));
+          else if ( specialKeys.ContainsKey("displayMesh") )   // to be depreciated
+            objects.AddRange(FlattenCommitObject(specialKeys[ "displayMesh" ]));
+          if ( specialKeys.ContainsKey("elements") ) // for built elements like roofs, walls, and floors.
+            objects.AddRange(FlattenCommitObject(specialKeys[ "elements" ]));
 
           return objects;
         }

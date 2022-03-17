@@ -10,7 +10,6 @@
 
 namespace AddOnCommands
 {
-
   static GSErrCode CreateNewWall(API_Element& wall)
   {
     return ACAPI_Element_Create(&wall, nullptr);
@@ -42,18 +41,15 @@ namespace AddOnCommands
     // The start and end points of the wall
     Objects::Point3D startPoint;
     if (os.Contains(Wall::StartPointFieldName))
-    {
       os.Get(Wall::StartPointFieldName, startPoint);
-      element.wall.begC = startPoint.ToAPI_Coord();
-    }
+    element.wall.begC = startPoint.ToAPI_Coord();
+
     Objects::Point3D endPoint;
     if (os.Contains(Wall::EndPointFieldName))
-    {
       os.Get(Wall::EndPointFieldName, endPoint);
-      element.wall.endC = endPoint.ToAPI_Coord();
-    }
+    element.wall.endC = endPoint.ToAPI_Coord();
 
-    // The floor index and bottom offest of the wall
+    // The floor index and bottom offset of the wall
     if (os.Contains(FloorIndexFieldName))
     {
       os.Get(FloorIndexFieldName, element.header.floorInd);
@@ -66,17 +62,20 @@ namespace AddOnCommands
 
     // The arc angle of the wall
     if (os.Contains(Wall::ArcAngleFieldName))
-    {
       os.Get(Wall::ArcAngleFieldName, element.wall.angle);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, angle);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, angle);
 
     // The height of the wall
     if (os.Contains(Wall::HeightFieldName))
-    {
-      os.Get(Wall::HeightFieldName, element.wall.height);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, height);
-    }
+      if (!os.Contains(FloorIndexFieldName)) // TODO: rethink a better way to check for this 
+        element.wall.relativeTopStory = 0; // unlink top story
+    os.Get(Wall::HeightFieldName, element.wall.height);
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, height);
+
+    if (os.Contains(Wall::FlippedFieldName))
+      os.Get(Wall::FlippedFieldName, element.wall.flipped);
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, flipped);
+
 
     // The profile type of the wall
     short profileType = 0;
@@ -155,53 +154,39 @@ namespace AddOnCommands
     // The composite index of the wall
     if (os.Contains(Wall::CompositeIndexFieldName) &&
       element.wall.modelElemStructureType == API_CompositeStructure)
-    {
       os.Get(Wall::CompositeIndexFieldName, element.wall.composite);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, composite);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, composite);
 
     // The profile index of the wall
     if (os.Contains(Wall::ProfileIndexFieldName) &&
       element.wall.modelElemStructureType == API_ProfileStructure)
-    {
       os.Get(Wall::ProfileIndexFieldName, element.wall.profileAttr);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, profileAttr);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, profileAttr);
 
     // The thickness of the wall
     if (os.Contains(Wall::ThicknessFieldName))
-    {
       os.Get(Wall::ThicknessFieldName, element.wall.thickness);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, thickness);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, thickness);
 
     // The first thickness of the trapezoid wall
     if (os.Contains(Wall::FirstThicknessFieldName))
-    {
       os.Get(Wall::FirstThicknessFieldName, element.wall.thickness);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, thickness);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, thickness);
 
     // The second thickness of the trapezoid wall
     if (os.Contains(Wall::SecondThicknessFieldName))
-    {
       os.Get(Wall::SecondThicknessFieldName, element.wall.thickness1);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, thickness1);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, thickness1);
 
     // The outside slant angle of the wall
     if (os.Contains(Wall::OutsideSlantAngleFieldName))
-    {
       os.Get(Wall::OutsideSlantAngleFieldName, element.wall.slantAlpha);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, slantAlpha);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, slantAlpha);
 
     // The inside slant angle of the wall
     if (os.Contains(Wall::InsideSlantAngleFieldName))
-    {
       os.Get(Wall::InsideSlantAngleFieldName, element.wall.slantBeta);
-      ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, slantBeta);
-    }
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, slantBeta);
 
     return NoError;
   }
@@ -221,38 +206,36 @@ namespace AddOnCommands
     const auto& listAdder = result.AddList<GS::UniString>(ApplicationIdsFieldName);
 
     ACAPI_CallUndoableCommand("CreateSpeckleWall", [&]() -> GSErrCode
+    {
+      for (const GS::ObjectState& wallOs : walls)
       {
-        for (const GS::ObjectState& wallOs : walls)
+        API_Element wall{};
+        API_Element wallMask{};
+
+        GSErrCode err = GetWallFromObjectState(wallOs, wall, wallMask);
+        if (err != NoError)
+          continue;
+
+        bool wallExists = Utility::ElementExists(wall.header.guid);
+        if (wallExists)
         {
-
-          API_Element wall{};
-          API_Element wallMask{};
-
-          GSErrCode err = GetWallFromObjectState(wallOs, wall, wallMask);
-          if (err != NoError)
-            continue;
-
-          bool wallExists = Utility::ElementExists(wall.header.guid);
-          if (wallExists)
-          {
-            err = ModifyExistingWall(wall, wallMask);
-          }
-          else
-          {
-            err = CreateNewWall(wall);
-          }
-
-          if (err == NoError)
-          {
-            GS::UniString elemId = APIGuidToString(wall.header.guid);
-            listAdder(elemId);
-          }
+          err = ModifyExistingWall(wall, wallMask);
+        }
+        else
+        {
+          err = CreateNewWall(wall);
         }
 
-        return NoError;
-      });
+        if (err == NoError)
+        {
+          GS::UniString elemId = APIGuidToString(wall.header.guid);
+          listAdder(elemId);
+        }
+      }
+
+      return NoError;
+    });
 
     return result;
   }
-
 }

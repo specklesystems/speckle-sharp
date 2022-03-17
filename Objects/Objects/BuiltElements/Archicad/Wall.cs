@@ -8,9 +8,9 @@ namespace Objects.BuiltElements.Archicad
 {
 	public sealed class Wall : BuiltElements.Wall
 	{
-    public int? floorIndex { get; set; }
+		public int? floorIndex { get; set; }
 
-    public Point startPoint { get; set; }
+		public Point startPoint { get; set; }
 
 		public Point endPoint { get; set; }
 
@@ -32,13 +32,20 @@ namespace Objects.BuiltElements.Archicad
 
 		public int? profileIndex { get; set; }
 
+		public double baseOffset { get; set; }
+
+		public double? topOffset { get; set; }
+
+		public bool flipped { get; set; }
+
 		public Wall() { }
 
-		public Wall(Point startPoint, Point endPoint, double height)
+		public Wall(Point startPoint, Point endPoint, double height, bool flipped = false)
 		{
 			this.startPoint = startPoint;
 			this.endPoint = endPoint;
 			this.height = height;
+			this.flipped = flipped;
 		}
 	}
 }
