@@ -335,6 +335,7 @@ namespace Speckle.Core.Credentials
 
       account.serverInfo.url = server;
 
+      //if the account already exists it will not be added again
       AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
     }
 

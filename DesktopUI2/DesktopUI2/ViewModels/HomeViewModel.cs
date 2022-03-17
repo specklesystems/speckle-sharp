@@ -352,16 +352,35 @@ namespace DesktopUI2.ViewModels
     public async void LoginCommand()
     {
       IsLoggingIn = true;
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
-      try
-      {
-        await AccountManager.AddAccount();
-      }
-      catch { }
 
-      await Task.Delay(1000);
+
+      var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
+      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      await dialog.ShowDialog(MainWindow.Instance);
+
+      if (dialog.Add)
+      {
+        Uri u;
+        if (!Uri.TryCreate(dialog.Url, UriKind.Absolute, out u))
+          Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
+        else
+        {
+          try
+          {
+            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
+
+            await AccountManager.AddAccount(dialog.Url);
+            await Task.Delay(1000);
+            Init();
+          }
+          catch (Exception e)
+          {
+            Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          }
+        }
+      }
+
       IsLoggingIn = false;
-      Init();
 
     }
 
