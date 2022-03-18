@@ -25,7 +25,7 @@ namespace DesktopUI2.ViewModels
     public async Task Init(ActivityItem item, Client client)
     {
       var user = "Someone";
-      if (HomeViewModel.Instance.Accounts.Any(x => x.userInfo.id == item.userId))
+      if (HomeViewModel.Instance.Accounts.Any(x => x.Account.userInfo.id == item.userId))
         user = "You";
       else
       {

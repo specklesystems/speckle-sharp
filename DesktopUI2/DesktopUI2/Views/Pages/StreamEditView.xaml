@@ -10,7 +10,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
-  d:DesignHeight="350"
+  d:DesignHeight="550"
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
@@ -155,6 +155,7 @@
                 Text="{Binding StreamState.CommitMessage}"
                 Watermark="Commit message" />-->
             <!--  NOTIFICATION  -->
+            <!--  NOTIFICATION  -->
             <m:ColorZone
               Grid.Row="1"
               Margin="0,0,0,10"
@@ -163,15 +164,28 @@
               IsVisible="{Binding ShowNotification}"
               Mode="PrimaryMid">
               <Grid ColumnDefinitions="*, auto">
-                <TextBlock
-                  Margin="10,3"
+                <Button
+                  Margin="0,0,3,0"
                   VerticalAlignment="Center"
-                  Classes="Overline"
-                  FontWeight="Medium"
-                  Foreground="White"
-                  Text="{Binding Notification}"
-                  TextWrapping="Wrap" />
-
+                  assists:ButtonAssist.CornerRadius="25,0,0,25"
+                  Classes="Flat"
+                  Command="{Binding LaunchNotificationCommand}"
+                  ToolTip.Tip="View online">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                      VerticalAlignment="Center"
+                      Classes="Overline"
+                      FontWeight="Medium"
+                      Foreground="White"
+                      Text="{Binding Notification}"
+                      TextWrapping="Wrap" />
+                    <icons:MaterialIcon
+                      Margin="5,0"
+                      VerticalAlignment="Center"
+                      Foreground="White"
+                      Kind="ExternalLink" />
+                  </StackPanel>
+                </Button>
                 <m:FloatingButton
                   Grid.Column="1"
                   VerticalAlignment="Center"
@@ -198,29 +212,45 @@
               CornerRadius="25"
               IsVisible="{Binding ShowReport}"
               Mode="Accent">
-              <Grid ColumnDefinitions="*, auto">
-                <TextBlock
-                  Margin="10,3"
-                  VerticalAlignment="Center"
-                  Classes="Overline"
-                  FontWeight="Medium"
-                  Foreground="White"
-                  Text="Something went wrong, please check the report"
-                  TextWrapping="Wrap" />
 
+              <Grid ColumnDefinitions="*, auto">
+                <Button
+                  Margin="0,0,3,0"
+                  VerticalAlignment="Center"
+                  assists:ButtonAssist.CornerRadius="25,0,0,25"
+                  Classes="Flat"
+                  Command="{Binding OpenReportCommand}"
+                  ToolTip.Tip="Open Report">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                      VerticalAlignment="Center"
+                      Classes="Overline"
+                      FontWeight="Medium"
+                      Foreground="White"
+                      Text="Some elements have warnings, please check the report"
+                      TextWrapping="Wrap" />
+                    <icons:MaterialIcon
+                      Margin="5,0"
+                      VerticalAlignment="Center"
+                      Foreground="White"
+                      Kind="TextBox" />
+                  </StackPanel>
+
+                </Button>
                 <m:FloatingButton
                   Grid.Column="1"
                   VerticalAlignment="Center"
                   Background="Transparent"
                   Classes="Mini"
-                  Command="{Binding OpenReportCommand}"
-                  ToolTip.Tip="Open Report">
+                  Command="{Binding CloseReportNotificationCommand}"
+                  ToolTip.Tip="Close notification">
                   <Button.Content>
                     <icons:MaterialIcon
                       Width="15"
                       Height="15"
                       Foreground="White"
-                      Kind="TextBox" />
+                      Kind="Close" />
+
                   </Button.Content>
                 </m:FloatingButton>
               </Grid>

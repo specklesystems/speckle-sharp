@@ -106,6 +106,8 @@ namespace DesktopUI2.ViewModels
 
     private void SaveCommand()
     {
+      //updating the list of streams, in case stuff has changes in the mian DUI
+      SavedStreams = Bindings.GetStreamsInFile();
       foreach (var stream in SavedStreams)
       {
         if (stream.Id == SelectedStream.Id && Enabled)

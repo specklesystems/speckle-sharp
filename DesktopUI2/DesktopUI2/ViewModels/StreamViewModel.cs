@@ -85,6 +85,8 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public string NotificationUrl { get; set; }
+
     private string _notification;
     public string Notification
     {
@@ -289,6 +291,7 @@ namespace DesktopUI2.ViewModels
       {
         NoAccess = true;
         Notification = "You do not have access to this Stream.";
+        NotificationUrl = $"{streamState.ServerUrl}/streams/{streamState.StreamId}";
         return;
       }
 
@@ -402,7 +405,7 @@ namespace DesktopUI2.ViewModels
         var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
         if (scroller != null)
         {
-          await Task.Delay(100);
+          await Task.Delay(250);
           scroller.ScrollToEnd();
         }
       }
@@ -449,7 +452,8 @@ namespace DesktopUI2.ViewModels
       var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
 
-      Notification = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
+      Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
+      NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
     }
 
 
@@ -486,6 +490,20 @@ namespace DesktopUI2.ViewModels
     public void CloseNotificationCommand()
     {
       Notification = "";
+      NotificationUrl = "";
+    }
+
+    public void CloseReportNotificationCommand()
+    {
+      ShowReport = false;
+    }
+
+
+    public void LaunchNotificationCommand()
+    {
+      Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
+
+      CloseNotificationCommand();
     }
 
     public void EditSavedStreamCommand()
@@ -529,6 +547,9 @@ namespace DesktopUI2.ViewModels
         LastUsed = DateTime.Now.ToString();
         Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
         Tracker.TrackPageview(Tracker.SEND);
+
+        Notification = $"Sent successfully!";
+        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}";
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
@@ -566,6 +587,7 @@ namespace DesktopUI2.ViewModels
     private void Reset()
     {
       Notification = "";
+      NotificationUrl = "";
       ShowReport = false;
       Progress = new ProgressViewModel();
     }

@@ -44,6 +44,7 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+    <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
@@ -132,6 +133,9 @@
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\AddFromUrlDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -207,6 +211,9 @@
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
+      <DependentUpon>AddAccountDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\AddFromUrlDialog.xaml.cs">
       <DependentUpon>AddFromUrlDialog.xaml</DependentUpon>

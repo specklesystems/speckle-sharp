@@ -1,29 +1,36 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Credentials
 {
 
   public class Account : IEquatable<Account>
   {
-    [JsonIgnore]
+    private string _id { get; set; } = null;
     public string id
     {
       get
       {
-        if (serverInfo == null || userInfo == null)
-          throw new SpeckleException("Incomplete account info: cannot generate id.", level: Sentry.SentryLevel.Error);
-        return Speckle.Core.Models.Utilities.hashString(serverInfo.url + userInfo.email);
+        if (_id == null)
+        {
+
+          if (serverInfo == null || userInfo == null)
+            throw new SpeckleException("Incomplete account info: cannot generate id.", level: Sentry.SentryLevel.Error);
+          _id = Speckle.Core.Models.Utilities.hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5).ToUpper();
+
+        }
+        return _id;
+      }
+      set
+      {
+        _id = value;
       }
     }
-
     public string token { get; set; }
 
     public string refreshToken { get; set; }
@@ -37,6 +44,7 @@ namespace Speckle.Core.Credentials
     public Account() { }
 
     #region public methods
+
     public async Task<UserInfo> Validate()
     {
       using var httpClient = new HttpClient();

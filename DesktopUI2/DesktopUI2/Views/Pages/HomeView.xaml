@@ -22,7 +22,39 @@
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
   </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="MenuItem.Profile">
+      <Setter Property="Header">
+        <Setter.Value>
+          <Template>
+            <Grid RowDefinitions="auto,auto">
+              <TextBlock Text="{Binding FullAccountName}" />
+              <TextBlock
+                Grid.Row="1"
+                Classes="Overline"
+                Text="{Binding FullServerName}" />
+            </Grid>
+          </Template>
+        </Setter.Value>
 
+      </Setter>
+      <Setter Property="Icon">
+        <Setter.Value>
+          <Template>
+            <Image
+              Width="20"
+              Height="20"
+              Source="{Binding AvatarImage}">
+
+              <Image.Clip>
+                <EllipseGeometry Rect="0,0,20,20" />
+              </Image.Clip>
+            </Image>
+          </Template>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
     <m:Card Padding="10,7" CornerRadius="0">
       <Grid ColumnDefinitions="auto,*">
@@ -90,24 +122,89 @@
 
             </Button.Content>
           </m:FloatingButton>
-          <m:FloatingButton
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding LogOutCommand}"
-            IsVisible="{Binding HasOneAccount}"
-            ToolTip.Tip="Log Out">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                assists:ShadowAssist.ShadowDepth="0"
-                Kind="Logout" />
 
-            </Button.Content>
-          </m:FloatingButton>
+          <!--  ACCOUNT MENU  -->
+          <Menu
+            VerticalAlignment="Center"
+            IsVisible="{Binding HasOneAccount}"
+            ToolTip.Tip="Account">
+            <MenuItem Padding="0">
+              <MenuItem.Header>
+                <Image
+                  Width="28"
+                  Height="28"
+                  Source="{Binding Accounts[0].AvatarImage}">
+
+                  <Image.Clip>
+                    <EllipseGeometry Rect="0,0,28,28" />
+                  </Image.Clip>
+                </Image>
+              </MenuItem.Header>
+              <MenuItem
+                Classes="Profile"
+                Command="{Binding $parent[local:HomeView].DataContext.OpenProfileCommand}"
+                CommandParameter="{Binding Account}"
+                DataContext="{Binding Accounts[0]}" />
+              <Separator />
+              <MenuItem
+                Command="{Binding AddAccountCommand}"
+                Header="Add another account"
+                Icon="{icons:MaterialIconExt AccountPlus}" />
+              <MenuItem
+                Command="{Binding LaunchManagerCommand}"
+                Header="Manage accounts in Manager"
+                Icon="{icons:MaterialIconExt AccountCog}" />
+              <MenuItem
+                Command="{Binding RemoveAccountCommand}"
+                CommandParameter="{Binding Account}"
+                Header="Log Out"
+                Icon="{icons:MaterialIconExt Logout}" />
+            </MenuItem>
+          </Menu>
+
+          <!--  MULTIPLE ACCOUNTS MENU  -->
+          <Menu
+            VerticalAlignment="Center"
+            IsVisible="{Binding HasMultipleAccounts}"
+            ToolTip.Tip="Accounts">
+            <MenuItem
+              Width="30"
+              Height="30"
+              Header="{icons:MaterialIconExt AccountMultiple}">
+
+              <MenuItem
+                Header="Accounts"
+                Icon="{icons:MaterialIconExt AccountMultiple}"
+                Items="{Binding Accounts}">
+                <MenuItem.DataTemplates>
+                  <DataTemplate>
+                    <MenuItem Classes="Profile">
+                      <MenuItem
+                        Command="{Binding $parent[local:HomeView].DataContext.OpenProfileCommand}"
+                        CommandParameter="{Binding Account}"
+                        Header="View online"
+                        Icon="{icons:MaterialIconExt Link}" />
+                      <MenuItem
+                        Command="{Binding $parent[local:HomeView].DataContext.RemoveAccountCommand}"
+                        CommandParameter="{Binding Account}"
+                        Header="Remove account"
+                        Icon="{icons:MaterialIconExt AccountMinus}" />
+                    </MenuItem>
+                  </DataTemplate>
+
+                </MenuItem.DataTemplates>
+              </MenuItem>
+              <MenuItem
+                Command="{Binding $parent[local:HomeView].DataContext.AddAccountCommand}"
+                Header="Add another account"
+                Icon="{icons:MaterialIconExt AccountPlus}" />
+              <MenuItem
+                Command="{Binding $parent[local:HomeView].DataContext.LaunchManagerCommand}"
+                Header="Manage accounts in Manager"
+                Icon="{icons:MaterialIconExt AccountCog}" />
+
+            </MenuItem>
+          </Menu>
         </StackPanel>
       </Grid>
     </m:Card>
@@ -406,7 +503,7 @@
           </TextBlock>
           <Button
             Margin="15,40,15,15"
-            Command="{Binding ManagerLoginCommand}"
+            Command="{Binding LaunchManagerCommand}"
             Content="Log In using Manager"
             IsEnabled="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
             ToolTip.Tip="Manager is the reccomended way to log in and install Connectors" />
@@ -415,7 +512,7 @@
           </TextBlock>
           <Button
             Margin="15"
-            Command="{Binding LoginCommand}"
+            Command="{Binding AddAccountCommand}"
             Content="Log In directly"
             IsVisible="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
             ToolTip.Tip="Direct log in is currently only supported on our XYZ server" />

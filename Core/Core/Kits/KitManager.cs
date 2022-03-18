@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -13,7 +11,33 @@ namespace Speckle.Core.Kits
 
   public static class KitManager
   {
-    public static string KitsFolder { get; private set; } = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
+
+    private static string _kitsFolder = null;
+    /// <summary>
+    /// Local installations store kits in C:\Users\USERNAME\AppData\Roaming\Speckle\Kits
+    /// Admin/System-wide installations in C:\ProgramData\Speckle\Kits
+    /// </summary>
+    public static string KitsFolder
+    {
+      get
+      {
+        if (_kitsFolder != null)
+          return _kitsFolder;
+
+        var local = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
+        var system = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "Speckle", "Kits");
+
+        if (Assembly.GetAssembly(typeof(KitManager)).Location.Contains("ProgramData"))
+          return system;
+
+        return local;
+
+      }
+      set
+      {
+        _kitsFolder = value;
+      }
+    }
 
     public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
 
@@ -99,7 +123,7 @@ namespace Speckle.Core.Kits
     /// <param name="kitFolderLocation"></param>
     public static void Initialize(string kitFolderLocation)
     {
-      if (_initialized)throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!", level : Sentry.SentryLevel.Warning);
+      if (_initialized) throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!", level: Sentry.SentryLevel.Warning);
 
       KitsFolder = kitFolderLocation;
       Load();
@@ -123,7 +147,7 @@ namespace Speckle.Core.Kits
 
       GetLoadedSpeckleReferencingAssemblies();
       LoadSpeckleReferencingAssemblies();
-      
+
       _AvailableTypes = _SpeckleKits
         .Where(kit => kit.Value != null)
         .SelectMany(kit => kit.Value.Types).ToList();
@@ -141,7 +165,7 @@ namespace Speckle.Core.Kits
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
             {
               var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-              if(speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
             }
           }
         }
@@ -173,7 +197,7 @@ namespace Speckle.Core.Kits
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
             {
               var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-              if(speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
             }
           }
         }

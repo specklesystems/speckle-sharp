@@ -7,7 +7,7 @@ namespace DesktopUI2.Models.Filters
   public class AllSelectionFilter : ISelectionFilter
   {
 
-    public string Type => typeof(ListSelectionFilter).ToString();
+    public string Type => typeof(AllSelectionFilter).ToString();
     public string Name { get; set; }
     public string Slug { get; set; }
     public string Icon { get; set; }
