@@ -14,7 +14,12 @@ namespace DesktopUI2.ViewModels
 
     public string FullAccountName
     {
-      get { return $"{Name} ({Account.userInfo.email}) | {Account.serverInfo.name} ({Account.serverInfo.url})"; }
+      get { return $"{Name} ({Account.userInfo.email})"; }
+    }
+
+    public string FullServerName
+    {
+      get { return $"{Account.serverInfo.name} ({Account.serverInfo.url})"; }
     }
 
 

@@ -53,7 +53,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     {
     }
 
-    public void LogInCommand()
+    public void AddAccountCommand()
     {
     }
 
@@ -67,7 +67,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     public void ClearSearchCommand() { }
     public void LaunchManagerCommand() { }
-    public void DirectLoginCommand() { }
+    public void DirectAddAccountCommand() { }
 
     public void OpenProfileCommand(Account account) { }
   }

@@ -312,10 +312,10 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    public async void LogOutCommand()
+    public async void RemoveAccountCommand(Account account)
     {
 
-      AccountManager.RemoveAccount(Accounts[0].Account.id);
+      AccountManager.RemoveAccount(account.id);
       Init();
     }
 
@@ -349,7 +349,7 @@ namespace DesktopUI2.ViewModels
       }
 
     }
-    public async void LoginCommand()
+    public async void AddAccountCommand()
     {
       IsLoggingIn = true;
 
