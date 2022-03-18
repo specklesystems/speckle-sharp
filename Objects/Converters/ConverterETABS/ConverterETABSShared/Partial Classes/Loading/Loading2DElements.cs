@@ -12,7 +12,6 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-
     Dictionary<string, LoadFace> LoadStoringArea = new Dictionary<string, LoadFace>();
     Dictionary<string, List<Base>> AreaStoring = new Dictionary<string, List<Base>>();
     int counterAreaLoadUniform = 0;
@@ -21,19 +20,26 @@ namespace Objects.Converter.ETABS
     {
       foreach (Element2D element in loadFace.elements)
       {
+        string elementName = null;
+        if (element.name != null) { elementName = element.name; }
+        else { elementName = element.id; }
         if (loadFace.loadType == FaceLoadType.Constant)
         {
+
+
           switch (loadFace.direction)
           {
-            case LoadDirection2D.X:
 
-              Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 4);
+
+            case LoadDirection2D.X:
+             
+              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 4);
               break;
             case LoadDirection2D.Y:
-              Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 5);
+              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 5);
               break;
             case LoadDirection2D.Z:
-              Model.AreaObj.SetLoadUniform(element.name, loadFace.loadCase.name, loadFace.values[0], 6);
+              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 6);
               break;
           }
         }
@@ -52,16 +58,12 @@ namespace Objects.Converter.ETABS
           case Structural.ETABS.Analysis.WindPressureType.other:
             Model.AreaObj.SetLoadWindPressure(element.name, windLoadingFace.loadCase.name, 2, windLoadingFace.Cp);
             break;
-
         }
-
       }
     }
 
     Base LoadFaceToSpeckle(string name, int areaNumber)
     {
-
-
       int numberItems = 0;
       string[] areaName = null;
       string[] loadPat = null;
@@ -193,7 +195,6 @@ namespace Objects.Converter.ETABS
           counterAreaLoadWind = 0;
         }
       }
-
       var speckleBase = new Base();
       return speckleBase;
     }

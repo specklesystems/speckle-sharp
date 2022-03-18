@@ -80,15 +80,15 @@ namespace Speckle.Core.Api
     public string streamId { get; set; }
     public string id { get; set; }
   }
-  
-  public class CommitReceivedInput 
+
+  public class CommitReceivedInput
   {
-    public string streamId { get; set;}
-    public string commitId { get; set;}
-    public string sourceApplication { get; set;}
-    public string message { get; set;}
+    public string streamId { get; set; }
+    public string commitId { get; set; }
+    public string sourceApplication { get; set; }
+    public string message { get; set; }
   }
-  
+
   #endregion
 
   public class Stream
@@ -120,6 +120,8 @@ namespace Speckle.Core.Api
     /// </summary>
     public Commits commits { get; set; }
 
+    public Activity activity { get; set; }
+
     public SpeckleObject @object { get; set; }
 
     public override string ToString()
@@ -144,14 +146,14 @@ namespace Speckle.Core.Api
   public class Branches
   {
     public int totalCount { get; set; }
-    public DateTime cursor { get; set; }
+    public string cursor { get; set; }
     public List<Branch> items { get; set; }
   }
 
   public class Commits
   {
     public int totalCount { get; set; }
-    public object cursor { get; set; }
+    public string cursor { get; set; }
     public List<Commit> items { get; set; }
   }
 
@@ -174,6 +176,40 @@ namespace Speckle.Core.Api
     {
       return $"Commit ({message} | {id})";
     }
+  }
+
+  public class Activity
+  {
+    public int totalCount { get; set; }
+    public DateTime cursor { get; set; }
+    public List<ActivityItem> items { get; set; }
+  }
+
+  public class ActivityItem
+  {
+    public string actionType { get; set; }
+    public string userId { get; set; }
+    public string streamId { get; set; }
+    public string resourceId { get; set; }
+    public string resourceType { get; set; }
+    public string time { get; set; }
+    public Info info { get; set; }
+    public string message { get; set; }
+  }
+
+  public class Info
+  {
+    public string message { get; set; }
+    public string sourceApplication { get; set; }
+
+    public InfoCommit commit { get; set; }
+  }
+
+  public class InfoCommit
+  {
+    public string message { get; set; }
+    public string sourceApplication { get; set; }
+    public string branchName { get; set; }
   }
 
   public class SpeckleObject
@@ -201,7 +237,7 @@ namespace Speckle.Core.Api
   public class Streams
   {
     public int totalCount { get; set; }
-    public DateTime cursor { get; set; }
+    public string cursor { get; set; }
     public List<Stream> items { get; set; }
   }
 
@@ -238,7 +274,7 @@ namespace Speckle.Core.Api
 
   public class UserSearch
   {
-    public DateTime cursor { get; set; }
+    public string cursor { get; set; }
     public List<User> items { get; set; }
   }
 

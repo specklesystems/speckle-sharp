@@ -1,7 +1,7 @@
 ﻿using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using System;
@@ -40,7 +40,8 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
-      Tracker.TrackPageview("transports", "send_to_transport");
+      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send To Transports" } });
+      Logging.Tracker.TrackPageview("transports", "send_to_transport");
 
       List<ITransport> transports = new List<ITransport>();
       DA.GetDataList(0, transports);
@@ -55,7 +56,7 @@ namespace ConnectorGrasshopper.Transports
       }
 
       var freshTransports = new List<ITransport>();
-      foreach(var tr in transports)
+      foreach (var tr in transports)
       {
         if (tr is ICloneable cloneable) freshTransports.Add(cloneable.Clone() as ITransport);
         else freshTransports.Add(tr);
@@ -65,12 +66,6 @@ namespace ConnectorGrasshopper.Transports
       var res = Task.Run(async () => await Speckle.Core.Api.Operations.Send(obj.Value, transports, false, disposeTransports: true)).Result;
       DA.SetData(0, res);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 
   public class ReceiveFromTransport : GH_Component
@@ -101,8 +96,9 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you've inputed only one transport and a flat list of object ids.");
         return;
       }
-      
-      Tracker.TrackPageview("transports", "receive_from_transport");
+
+      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive From Transports" } });
+      Logging.Tracker.TrackPageview("transports", "receive_from_transport");
 
       List<string> ids = new List<string>();
       DA.GetDataList(1, ids);
@@ -112,18 +108,18 @@ namespace ConnectorGrasshopper.Transports
 
       var transport = transportGoo.GetType().GetProperty("Value").GetValue(transportGoo) as ITransport;
 
-      if(transport == null)
+      if (transport == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Transport is null.");
       }
 
-      if(transport is ICloneable disposedTwin)
+      if (transport is ICloneable disposedTwin)
       {
         transport = disposedTwin.Clone() as ITransport;
       }
 
       List<Base> results = new List<Base>();
-      foreach(var id in ids)
+      foreach (var id in ids)
       {
         var res = Task.Run(async () => await Operations.Receive(id, null, transport, disposeTransports: true)).Result;
         results.Add(res);
@@ -131,11 +127,5 @@ namespace ConnectorGrasshopper.Transports
 
       DA.SetDataList(0, results);
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 }

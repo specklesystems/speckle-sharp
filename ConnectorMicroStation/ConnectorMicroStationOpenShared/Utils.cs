@@ -15,17 +15,21 @@ namespace Speckle.ConnectorMicroStationOpen
   public static class Utils
   {
 #if MICROSTATION
-    public static string BentleyAppName = Applications.MicroStation;
-    public static string AppName = "MicroStation";
+    public static string VersionedAppName = VersionedHostApplications.MicroStation;
+    public static string AppName = HostApplications.MicroStation.Name;
+    public static string Slug = HostApplications.MicroStation.Slug;
 #elif OPENROADS
-    public static string BentleyAppName = Applications.OpenRoads;
-    public static string AppName = "OpenRoads";
+    public static string VersionedAppName = VersionedHostApplications.OpenRoads;
+    public static string AppName = HostApplications.OpenRoads.Name;
+    public static string Slug = HostApplications.OpenRoads.Slug;
 #elif OPENRAIL
-    public static string BentleyAppName = Applications.OpenRail;
-    public static string AppName = "OpenRail";
+    public static string VersionedAppName = VersionedHostApplications.OpenRail;
+    public static string AppName = HostApplications.OpenRail.Name;
+    public static string Slug = HostApplications.OpenRail.Slug;
 #elif OPENBUILDINGS
-    public static string BentleyAppName = Applications.OpenBuildings;
-    public static string AppName = "OpenBuildings";
+    public static string VersionedAppName = VersionedHostApplications.OpenBuildings;
+    public static string AppName = HostApplications.OpenBuildings.Name;
+    public static string Slug = HostApplications.OpenBuildings.Slug;
 #endif
 
     /// <summary>

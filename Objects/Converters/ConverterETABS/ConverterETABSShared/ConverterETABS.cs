@@ -19,11 +19,11 @@ namespace Objects.Converter.ETABS
   public partial class ConverterETABS : ISpeckleConverter
   {
 #if ETABSV18
-    public static string ETABSAppName = Applications.ETABSv18;
+    public static string ETABSAppName = VersionedHostApplications.ETABSv18;
 #elif ETABSV19
-    public static string ETABSAppName = Applications.ETABSv19;
+    public static string ETABSAppName = VersionedHostApplications.ETABSv19;
 #else
-        public static string ETABSAppName = Applications.ETABS;
+        public static string ETABSAppName = VersionedHostApplications.ETABS;
 #endif
     public string Description => "Default Speckle Kit for ETABS";
 
@@ -81,7 +81,7 @@ namespace Objects.Converter.ETABS
         //case osg.node o:
         //    return pointtonative(o);
         case OSG.Node o:
-          return PointToNative(o);
+          return PointToNative((ETABSNode)o);
           Report.Log($"Created Node {o.id}");
         case Geometry.Line o:
           return LineToNative(o);
@@ -90,7 +90,7 @@ namespace Objects.Converter.ETABS
           return FrameToNative(o);
           Report.Log($"Created Element1D {o.id}");
         case OSG.Element2D o:
-          return AreaToNative((ETABSElement2D)o);
+          return AreaToNative(o);
           Report.Log($"Created Element2D {o.id}");
         case Model o:
           return ModelToNative(o);
@@ -153,13 +153,35 @@ namespace Objects.Converter.ETABS
           returnObject = BraceToSpeckle(name);
           Report.Log($"Created Brace");
           break;
+        case "Link":
+          returnObject = LinkToSpeckle(name);
+          Report.Log($"Created Link");
+          break;
         case "ElementsCount":
           returnObject = ModelElementsCountToSpeckle();
           break;
-
-        //case "Link":
-        //    returnObject = LinkToSpeckle(name);
-        //    break;
+        case "Spandrel":
+          returnObject = SpandrelToSpeckle(name);
+          Report.Log($"Created Spandrel");
+          break;
+        case "Pier":
+          returnObject = PierToSpeckle(name);
+          Report.Log($"Created Pier");
+          break;
+        case "Grids":
+          returnObject = gridLinesToSpeckle(name);
+          Report.Log($"Created Grids");
+          break;
+        case "Tendon":
+          returnObject = ETABSTendonToSpeckle(name);
+          Report.Log($"Created Tendons");
+          break;
+        //case "Diaphragm":
+        //  returnObject = diaphragmToSpeckle(name);
+        //  Report.Log($"Created Diaphragm");
+        case "Links":
+          returnObject = LinkToSpeckle(name);
+          break;
         //case "LoadCase":
         //    returnObject = LoadCaseToSpeckle(name);
         //    break;
@@ -277,6 +299,11 @@ namespace Objects.Converter.ETABS
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects)
     {
       throw new NotImplementedException();
+    }
+
+    public void SetConverterSettings(object settings)
+    {
+      throw new NotImplementedException("This converter does not have any settings.");
     }
   }
 }

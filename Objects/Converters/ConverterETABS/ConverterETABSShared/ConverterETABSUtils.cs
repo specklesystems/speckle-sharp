@@ -201,6 +201,17 @@ namespace Objects.Converter.ETABS
       return restraints;
     }
 
+    public double[] PartialRestraintToNative(Restraint restraint){
+      double[] partialFix = new double[6];
+      partialFix[0] = restraint.stiffnessX;
+      partialFix[1] = restraint.stiffnessY;
+      partialFix[2] = restraint.stiffnessZ;
+      partialFix[3] = restraint.stiffnessXX;
+      partialFix[4] = restraint.stiffnessYY;
+      partialFix[5] = restraint.stiffnessZZ;
+      return partialFix;
+    }
+
     public Restraint RestraintToSpeckle(bool[] releases)
     {
       var code = new List<string>() { "R", "R", "R", "R", "R", "R" }; // default to free
@@ -249,6 +260,12 @@ namespace Objects.Converter.ETABS
       Beam,
       Floor,
       Wall,
+      Tendon,
+      Links,
+      Spandrel,
+      Pier,
+      Grids,
+      //Diaphragm,
       BeamLoading,
       ColumnLoading,
       BraceLoading,

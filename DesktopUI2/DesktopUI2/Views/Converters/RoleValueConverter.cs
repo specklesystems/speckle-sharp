@@ -1,7 +1,5 @@
 ﻿using Avalonia.Data.Converters;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.Views.Converters
 {
@@ -10,6 +8,8 @@ namespace DesktopUI2.Views.Converters
   {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
+      if (value == null)
+        return "public stream";
       return value.ToString().Replace("stream:", "");
     }
 

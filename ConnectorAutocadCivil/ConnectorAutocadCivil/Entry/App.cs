@@ -40,12 +40,13 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         //the below should fix it! This affects Avalonia and Material 
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-        // set up bindings and subscribe to doument events
+        // set up bindings and subscribe to document events
         SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
         SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
 
         // for DUI2
         SpeckleAutocadCommand2.Bindings = new ConnectorBindingsAutocad2();
+        SpeckleAutocadCommand2.Bindings.RegisterAppEvents();
       }
       catch(System.Exception e)
       {
@@ -95,10 +96,10 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       if (panel == null)
         return;
       RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
-      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
+      RibbonButton button = CreateButton("Connector " + Utils.AppName + " (old)", "SpeckleOld", panel, null, speckleTip, "logo");
 
       // DUI2
-      RibbonButton button2 = CreateButton("Connector " + Utils.AppName + "New UI (alpha)!", "SpeckleNewUi", panel, null, speckleTip, "logo");
+      RibbonButton button2 = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
@@ -117,7 +118,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, communityTip, "forum");
       RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, tutorialsTip, "tutorials");
       RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, docsTip, "docs");
-      
     }
 
     public void Terminate()
@@ -174,8 +174,8 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       button.ToolTip = tooltip;
       button.HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html");
       button.Size = RibbonItemSize.Large;
-      button.Image = LoadPngImgSource(imageName + "16.png");
-      button.LargeImage = LoadPngImgSource(imageName + "32.png");
+      button.Image = (CommandParameter == "SpeckleOld") ? LoadPngImgSource(imageName + "16_fade.png") : LoadPngImgSource(imageName + "16.png");
+      button.LargeImage = (CommandParameter == "SpeckleOld") ? LoadPngImgSource(imageName + "32_fade.png") : LoadPngImgSource(imageName + "32.png");
 
       // add ribbon button pannel to the ribbon panel source
       if (sourcePanel != null)
@@ -184,7 +184,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         button.CommandParameter = CommandParameter;
         button.CommandHandler = new ButtonCommandHandler(CommandParameter);
         sourcePanel.Items.Add(button);
-
       }
       else if (sourceButton != null)
       {
@@ -230,10 +229,10 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         if (btn != null)
           switch (commandParameter)
           {
-            case "Speckle":
+            case "SpeckleOld":
               SpeckleAutocadCommand.SpeckleCommand();
               break;
-            case "SpeckleNewUi":
+            case "Speckle":
               SpeckleAutocadCommand2.SpeckleCommand();
               break;
             case "SpeckleCommunity":

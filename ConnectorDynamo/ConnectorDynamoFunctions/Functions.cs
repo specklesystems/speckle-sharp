@@ -70,6 +70,7 @@ namespace Speckle.ConnectorDynamo.Functions
               CommitId = res
             };
           commitWrappers.Add(wrapper.ToString());
+          Analytics.TrackEvent(client.Account, Analytics.Events.Send);
         }
         catch (Exception ex)
         {
@@ -169,7 +170,7 @@ namespace Speckle.ConnectorDynamo.Functions
           streamId = stream.StreamId,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Applications.DynamoRevit
+          sourceApplication = VersionedHostApplications.DynamoRevit
         }).Wait();
       }
       catch
@@ -182,6 +183,8 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
+
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }

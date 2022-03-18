@@ -14,12 +14,11 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Transports;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
 
-using AcadApp = Autodesk.AutoCAD.ApplicationServices;
-using AcadDb = Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
@@ -32,12 +31,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
 {
   public partial class ConnectorBindingsAutocad2 : ConnectorBindings
   {
-    public Document Doc => Application.DocumentManager.MdiActiveDocument;
+    public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
-    public System.Windows.Forms.Control Control; 
+    public System.Windows.Forms.Control Control;
 
     public ConnectorBindingsAutocad2() : base()
     {
@@ -61,10 +60,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppName() => Utils.AutocadAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppName() => Utils.Slug;
+
+
 
     private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
-    
+
     public override string GetDocumentId()
     {
       string path = GetDocPath(Doc);
@@ -131,6 +133,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
       };
     }
 
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>();
+    }
+
     //TODO
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
@@ -148,7 +155,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       if (converter == null)
         throw new Exception("Could not find any Kit!");
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
@@ -156,9 +163,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       if (Doc == null)
       {
@@ -178,51 +183,49 @@ namespace Speckle.ConnectorAutocadCivil.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
-
-      var commitObject = await Operations.Receive(
+      Base commitObject = null;
+      try
+      {
+        commitObject = await Operations.Receive(
         referencedObject,
         progress.CancellationTokenSource.Token,
         transport,
         onProgressAction: dict => progress.Update(dict),
         onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
-        onErrorAction: (message, exception) => 
+        onErrorAction: (message, exception) =>
         {
           progress.Report.LogOperationError(exception);
           progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
         );
-      
-      try
-      {
+
         await state.Client.CommitReceived(new CommitReceivedInput
         {
           streamId = stream?.id,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = Utils.AutocadAppName
+          sourceApplication = Utils.VersionedAppName
         });
       }
-      catch
+      catch (Exception e)
       {
-        // Do nothing!
+        progress.Report.OperationErrors.Add(new Exception($"Could not receive or deserialize commit: {e.Message}"));
       }
-      if (progress.Report.OperationErrorsCount != 0)
-      {
+      if (progress.Report.OperationErrorsCount != 0 || commitObject == null)
         return state;
-      }
 
       // invoke conversions on the main thread via control
       if (Control.InvokeRequired)
-        Control.Invoke(new ConversionDelegate(ConvertCommit), new object[] { commitObject, converter, state, progress, stream, commit.id });
+        Control.Invoke(new ReceivingDelegate(ConvertReceiveCommit), new object[] { commitObject, converter, state, progress, stream, commit.id });
       else
-        ConvertCommit(commitObject, converter, state, progress, stream, commit.id);
+        ConvertReceiveCommit(commitObject, converter, state, progress, stream, commit.id);
 
       return state;
     }
 
-    delegate void ConversionDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id);
-    private void ConvertCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id)
+    delegate void ReceivingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id);
+    private void ConvertReceiveCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id)
     {
       using (DocumentLock l = Doc.LockDocument())
       {
@@ -248,7 +251,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var commitPrefix = DesktopUI.Utils.Formatting.CommitInfo(stream.name, state.BranchName, id);
 
           // give converter a way to access the commit info
-          Doc.UserData.Add("commit", commitPrefix);
+          if (Doc.UserData.ContainsKey("commit"))
+            Doc.UserData["commit"] = commitPrefix;
+          else
+            Doc.UserData.Add("commit", commitPrefix);
 
           // delete existing commit layers
           try
@@ -282,7 +288,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
             // create the object's bake layer if it doesn't already exist
             (Base obj, string layerName) = commitObj;
 
-            var converted = converter.ConvertToNative(obj);
+            object converted = null;
+            try
+            {
+              converted = converter.ConvertToNative(obj);
+            }
+            catch (Exception e)
+            {
+              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}: {e.Message}"));
+              continue;
+            }
             var convertedEntity = converted as Entity;
 
             if (convertedEntity != null)
@@ -296,28 +311,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 var res = convertedEntity.Append(cleanName);
                 if (res.IsValid)
                 {
-                  // handle display
+                  // handle display - fallback to rendermaterial if no displaystyle exists
                   Base display = obj[@"displayStyle"] as Base;
-                  if (display != null)
-                  {
-                    var color = display["color"] as int?;
-                    var lineType = display["linetype"] as string;
-                    var lineWidth = display["lineweight"] as double?;
-
-                    if (color != null)
-                    {
-                      var systemColor = System.Drawing.Color.FromArgb((int)color);
-                      convertedEntity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-                      convertedEntity.Transparency = new Transparency(systemColor.A);
-                    }
-
-                    if (lineWidth != null)
-                      convertedEntity.LineWeight = Utils.GetLineWeight((double)lineWidth);
-
-                    if (lineType != null)
-                      if (lineTypeDictionary.ContainsKey(lineType))
-                        convertedEntity.LinetypeId = lineTypeDictionary[lineType];
-                  }
+                  if (display == null) display = obj[@"renderMaterial"] as Base;
+                  if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
+                    
                   tr.TransactionManager.QueueForGraphicsFlush();
                 }
                 else
@@ -360,8 +358,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
         else
         {
-          int totalMembers = @base.GetDynamicMembers().Count();
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
             count++;
 
@@ -382,7 +388,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
         count = 0;
         foreach (var listObj in list)
@@ -488,18 +494,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
-
     public override async Task SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.AutocadAppName);
+      var converter = kit.LoadConverter(Utils.VersionedAppName);
       var streamId = state.StreamId;
       var client = state.Client;
 
       if (state.Filter != null)
-      {
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
-      }
 
       // remove deleted object ids
       var deletedElements = new List<string>();
@@ -515,31 +518,95 @@ namespace Speckle.ConnectorAutocadCivil.UI
         return;
       }
 
-      var commitObj = new Base();
+      var commitObject = new Base();
+      commitObject["units"] = Utils.GetUnits(Doc); // TODO: check whether commits base needs units attached
 
-      var units = Units.GetUnitsFromString(Doc.Database.Insunits.ToString());
-      commitObj["units"] = units;
-
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
       int convertedCount = 0;
 
-      bool renamedlayers = false;
+      // invoke conversions on the main thread via control
+      if (Control.InvokeRequired)
+        Control.Invoke(new Action(() => ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount)), new object[] { });
+      else
+        ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount);
 
+      progress.Report.Merge(converter.Report);
+
+      if (convertedCount == 0)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+        return;
+      }
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return;
+
+      Execute.PostToUIThread(() => progress.Max = convertedCount);
+
+      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
+
+      var commitObjId = await Operations.Send(
+        commitObject,
+        progress.CancellationTokenSource.Token,
+        transports,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (err, exception) =>
+        {
+          progress.Report.LogOperationError(exception);
+          progress.CancellationTokenSource.Cancel();
+        },
+        disposeTransports: true
+        );
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return;
+
+      var actualCommit = new CommitCreateInput
+      {
+        streamId = streamId,
+        objectId = commitObjId,
+        branchName = state.BranchName,
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+        sourceApplication = Utils.VersionedAppName
+      };
+
+      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+
+      try
+      {
+        var commitId = await client.CommitCreate(actualCommit);
+        state.PreviousCommitId = commitId;
+      }
+      catch (Exception e)
+      {
+        progress.Report.LogOperationError(e);
+      }
+    }
+
+    delegate void SendingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount);
+    private void ConvertSendCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount)
+    {
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
         converter.SetContextDocument(Doc);
 
+        var conversionProgressDict = new ConcurrentDictionary<string, int>();
+        conversionProgressDict["Conversion"] = 0;
+        Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+
+        bool renamedlayers = false;
+
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          {
+            tr.Commit();
             return;
+          }
 
           // get the db object from id
           Handle hn = Utils.GetHandle(autocadObjectHandle);
-          DBObject obj = hn.GetObject(out string type, out string layer);
+          DBObject obj = hn.GetObject(tr, out string type, out string layer);
 
           if (obj == null)
           {
@@ -565,10 +632,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           /* TODO: adding the extension dictionary / xdata per object 
           foreach (var key in obj.ExtensionDictionary)
-          {
             converted[key] = obj.ExtensionDictionary.GetUserString(key);
-          }
           */
+
+#if CIVIL2021 || CIVIL2022
+          // add property sets if this is Civil3D
+          var propertySets = obj.GetPropertySets(tr);
+          if (propertySets.Count > 0)
+            converted["propertySets"] = propertySets;
+#endif
 
           if (obj is BlockReference)
             containerName = "Blocks";
@@ -581,9 +653,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
               renamedlayers = true;
           }
 
-          if (commitObj[$"@{containerName}"] == null)
-            commitObj[$"@{containerName}"] = new List<Base>();
-          ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
+          if (commitObject[$"@{containerName}"] == null)
+            commitObject[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
@@ -592,64 +664,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           convertedCount++;
         }
+
+        if (renamedlayers)
+          progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
+
         tr.Commit();
-      }
-
-      progress.Report.Merge(converter.Report);
-
-      if (convertedCount == 0)
-      {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
-      }
-
-      if (renamedlayers)
-        progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
-
-      Execute.PostToUIThread(() => progress.Max = convertedCount);
-
-      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
-
-      var commitObjId = await Operations.Send(
-        commitObj,
-        progress.CancellationTokenSource.Token,
-        transports,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (err, exception) => 
-        {
-          progress.Report.LogOperationError(exception);
-          progress.CancellationTokenSource.Cancel();
-        },
-        disposeTransports: true
-        );
-
-      if (progress.Report.OperationErrorsCount != 0)
-      {
-        return;
-      }
-
-      var actualCommit = new CommitCreateInput
-      {
-        streamId = streamId,
-        objectId = commitObjId,
-        branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
-        sourceApplication = Utils.AutocadAppName
-      };
-
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
-
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
       }
     }
 
@@ -674,10 +693,26 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return selection;
     }
+#endregion
 
-    #endregion
+#region events
+    public void RegisterAppEvents()
+    {
+      //// GLOBAL EVENT HANDLERS
+      Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
+      Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
+      Doc.BeginDocumentClose += Application_DocumentClosed;
+    }
 
-    #region events
+    //checks whether to refresh the stream list in case the user changes active view and selects a different document
+    private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
+    {
+      if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
+        return;
+
+      var streams = GetStreamsInFile();
+      UpdateSavedStreams(streams);
+    }
 
     private void Application_DocumentClosed(object sender, DocumentBeginCloseEventArgs e)
     {
@@ -692,12 +727,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
     private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
     {
       // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+      if (e.Document == null)
+        return;
+
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
+      {
         SpeckleAutocadCommand2.CreateOrFocusSpeckle();
-
-      UpdateSavedStreams(streams);
+        UpdateSavedStreams(streams);
+      }
     }
-    #endregion
+#endregion
   }
 }

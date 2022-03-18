@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
         new ApplicationPlaceholderObject
           {applicationId = speckleRebar.applicationId, ApplicationGeneratedId = rebar.UniqueId, NativeObject = rebar}
       };
-      //Report.Log($"Created Rebar {rebar.Id}");
+      Report.Log($"Created Rebar {rebar.Id}");
       return placeholders;
     }
 

@@ -2,14 +2,71 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.Structural.Analysis;
+using ETABSv1;
 
 namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    public object UnitsToNative()
+    public void UnitsToNative(ModelUnits units)
     {
-      return null;
+      var force = eForce.NotApplicable;
+      var length = eLength.NotApplicable;
+      var temp = eTemperature.NotApplicable;
+
+      switch(units.force){
+        case "N":
+          force = eForce.N;
+          break;
+        case "kip":
+          force = eForce.kip;
+          break;
+        case "kN":
+          force = eForce.kN;
+          break;
+        case "lb":
+          force = eForce.lb;
+          break;
+        case "tf":
+          force = eForce.tonf;
+          break;
+        default:
+          force = eForce.NotApplicable;
+          break;
+      }
+      switch(units.length){
+        case "m":
+          length = eLength.m;
+          break;
+        case "in":
+          length = eLength.inch;
+          break;
+        case "cm":
+          length = eLength.cm;
+          break;
+        case "mm":
+          length = eLength.mm;
+          break;
+        case "ft":
+          length = eLength.ft;
+          break;
+        default:
+          length = eLength.NotApplicable;
+          break;
+      }
+      switch(units.temperature){
+        case "C":
+          temp = eTemperature.C;
+          break;
+        case "F":
+          temp = eTemperature.F;
+          break;
+        default:
+          temp = eTemperature.NotApplicable;
+          break;
+      }
+      Model.SetPresentUnits_2(force, length, temp);
+      return;
     }
     public ModelUnits UnitsToSpeckle()
     {

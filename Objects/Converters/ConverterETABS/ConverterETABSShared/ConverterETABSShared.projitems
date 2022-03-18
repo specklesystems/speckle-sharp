@@ -18,7 +18,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertBraces.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertColumn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertGridLines.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertLine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertLinks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertPier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertSpandrel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertTendon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading1DElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading2DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\LoadingNode.cs" />
@@ -36,6 +41,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelUnits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertDiaphragm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertLinkProperty.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertSpring.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Properties\ConvertTendonProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConverrtResultGlobal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultNodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResults.cs" />

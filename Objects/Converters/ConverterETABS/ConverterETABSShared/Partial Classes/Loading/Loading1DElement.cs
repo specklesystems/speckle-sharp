@@ -112,7 +112,9 @@ namespace Objects.Converter.ETABS
       }
       foreach (Element1D element in loadBeam.elements)
       {
-        Model.FrameObj.SetLoadDistributed(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]);
+      if(element.name != null) { Model.FrameObj.SetLoadDistributed(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]); }
+      else{ Model.FrameObj.SetLoadDistributed(element.id, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]); }
+
       }
     }
     void LoadPointFrameToSpeckle(LoadBeam loadBeam)
@@ -212,7 +214,9 @@ namespace Objects.Converter.ETABS
       }
       foreach (Element1D element in loadBeam.elements)
       {
-        Model.FrameObj.SetLoadPoint(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]);
+        if (element.name != null) { Model.FrameObj.SetLoadPoint(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]); }
+        else{ Model.FrameObj.SetLoadPoint(element.id, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]); }
+
       }
     }
     Base LoadFrameToSpeckle(string name, int frameNumber)

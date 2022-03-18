@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Speckle.Newtonsoft.Json;
+﻿using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using ReactiveUI;
-using DesktopUI2.Models.Filters;
+using Speckle.Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DesktopUI2.Models
 {
@@ -44,10 +40,30 @@ namespace DesktopUI2.Models
       }
     }
 
+    private Stream cachedStream;
+
     [JsonProperty]
-    public Stream CachedStream { get; set; }
+    public Stream CachedStream
+    {
+      get
+      {
+        return cachedStream;
+      }
 
+      set
+      {
+        var stream = value;
+        if (stream != null)
+        {
+          stream.collaborators = new List<Collaborator>();
+        }
+        cachedStream = stream;
+      }
+    }
 
+    /// <summary>
+    /// Note: this is not the StreamId, it's a unique identifier for cached streams
+    /// </summary>
     [JsonProperty]
     public string Id { get; private set; }
 
@@ -98,8 +114,17 @@ namespace DesktopUI2.Models
     [JsonProperty]
     public string CommitMessage { get; set; }
 
-    //[JsonProperty]
+    [JsonProperty]
+    public bool SchedulerEnabled { get; set; }
+
+    [JsonProperty]
+    public string SchedulerTrigger { get; set; }
+
+    [JsonProperty]
+    [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter { get; set; }
+
+    public List<ISetting> Settings { get; set; } = new List<ISetting>();
 
     //List of uniqueids of the currently selected objects
     //the values are updated only upon sending
@@ -109,8 +134,16 @@ namespace DesktopUI2.Models
     [JsonProperty]
     public List<ApplicationPlaceholderObject> ReceivedObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
-    //TODO: add all required fields?
+    public StreamState(StreamAccountWrapper streamAccountWrapper)
+    {
+      Init(streamAccountWrapper.Account, streamAccountWrapper.Stream);
+    }
     public StreamState(Account account, Stream stream)
+    {
+      Init(account, stream);
+    }
+
+    public void Init(Account account, Stream stream)
     {
       Client = new Client(account);
       StreamId = stream.id;
@@ -122,6 +155,5 @@ namespace DesktopUI2.Models
     {
 
     }
-
   }
 }

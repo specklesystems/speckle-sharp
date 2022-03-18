@@ -1,8 +1,6 @@
 ﻿using Avalonia.Controls;
 using DesktopUI2.Views.Filters;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.Models.Filters
 {
@@ -14,7 +12,6 @@ namespace DesktopUI2.Models.Filters
     public string Slug { get; set; } = "manual";
     public string Icon { get; set; } = "Mouse";
     public string Description { get; set; } = "Manually select model elements.";
-
     public List<string> Values { get; set; }
     public List<string> Selection { get; set; } = new List<string>();
 
@@ -26,11 +23,12 @@ namespace DesktopUI2.Models.Filters
       {
         if (Selection.Count != 0)
         {
-          return Selection.Count + " objects selected.";
+          var s = Selection.Count == 1 ? "" : "s";
+          return $"{Selection.Count} object{s}";
         }
         else
         {
-          return "Nothing selected.";
+          return "nothing";
         }
       }
     }

@@ -14,7 +14,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -22,7 +22,9 @@ namespace ConnectorGrasshopper
 {
   public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.GetTabVisibility(Category)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
 
     protected ConstructorInfo SelectedConstructor;
     private bool readFailed;
@@ -56,11 +58,11 @@ namespace ConnectorGrasshopper
       catch (Exception e)
       {
       }
-      
+
       var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
       objectItem.Checked = !UseSchemaTag;
       objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
-      
+
       var tagItem = schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam?.Name ?? "geometry"} with {Name} attached") as ToolStripMenuItem;
       tagItem.Checked = UseSchemaTag;
       tagItem.Enabled = mainParam != null;
@@ -162,7 +164,7 @@ namespace ConnectorGrasshopper
 
       if (!UserSetSchemaTag)
         UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
-      
+
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
@@ -175,6 +177,16 @@ namespace ConnectorGrasshopper
             if (comp is CreateSchemaObject scb)
             {
               if (scb.Seed == Seed)
+              {
+                Seed = GenerateSeed();
+                break;
+              }
+            }
+            var baseType = comp.GetType().BaseType;        
+            if (typeof(CreateSchemaObjectBase) == baseType)
+            {
+              var csob = (CreateSchemaObjectBase)comp;
+              if (csob.Seed == Seed)
               {
                 Seed = GenerateSeed();
                 break;
@@ -326,9 +338,12 @@ namespace ConnectorGrasshopper
         return;
       }
 
-      if(DA.Iteration == 0)
-        Tracker.TrackPageview("objects", "create", "schema");
-      
+      if (DA.Iteration == 0)
+      {
+        Logging.Tracker.TrackPageview("objects", "create", "schema");
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Grasshopper BIM" }, { "node", Name } });
+      }
+
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
 
       List<object> cParamsValues = new List<object>();
@@ -380,9 +395,9 @@ namespace ConnectorGrasshopper
       {
         schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
         ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
-        if(((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
+        if (((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
           ((Base)schemaObject)["units"] = units;
-      } 
+      }
       catch (Exception e)
       {
 
@@ -406,8 +421,8 @@ namespace ConnectorGrasshopper
 
           commitObj = ((Base)mainSchemaObj).ShallowCopy();
           commitObj["@SpeckleSchema"] = schemaObject;
-          if(commitObj["units"]==null || commitObj["units"] == "")
-          commitObj["units"] = units;
+          if (commitObj["units"] == null || commitObj["units"] == "")
+            commitObj["units"] = units;
         }
         catch (Exception e)
         {
@@ -549,7 +564,7 @@ namespace ConnectorGrasshopper
       }
 
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
-      throw new SpeckleException($"Could not covert object to {type}");
+      throw new Logging.SpeckleException($"Could not covert object to {type}");
     }
 
     //keep public so it can be picked by reflection

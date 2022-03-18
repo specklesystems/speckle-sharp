@@ -1,13 +1,11 @@
 ﻿using Avalonia.Controls;
-using System;
+using Speckle.Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.Models.Filters
 {
   public interface ISelectionFilter
   {
-
     /// <summary>
     /// User friendly name displayed in the UI
     /// </summary>
@@ -17,7 +15,6 @@ namespace DesktopUI2.Models.Filters
     /// MaterialDesignIcon use the demo app from the MaterialDesignInXamlToolkit to get the correct name
     /// </summary>
     string Icon { get; set; }
-
 
     /// <summary>
     /// Internal filter name 
@@ -47,6 +44,7 @@ namespace DesktopUI2.Models.Filters
     /// <summary>
     /// View associated to this filter type
     /// </summary>    
+    [JsonIgnore]
     UserControl View { get; set; }
   }
 }

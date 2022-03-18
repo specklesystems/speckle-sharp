@@ -27,17 +27,9 @@ namespace Objects.Converter.Revit
       var speckleRevitBeam = speckleBeam as RevitBeam;
 
       if (speckleRevitBeam != null)
-      {
-        if(level  != null)
-        {
-          level = GetLevelByName(speckleRevitBeam.level.name);
-        }
-      }
+        level = GetLevelByName(speckleRevitBeam.level.name);
 
-      if (level == null)
-      {
-        level = LevelToNative(LevelFromCurve(baseLine));
-      }
+      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine));
       var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
@@ -107,16 +99,18 @@ namespace Objects.Converter.Revit
         Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
         return RevitElementToSpeckle(revitBeam);
       }
+      var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
       var speckleBeam = new RevitBeam();
+      speckleBeam.family = symbol.FamilyName;
       speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-      speckleBeam.displayMesh = GetElementMesh(revitBeam);
+      speckleBeam.displayValue = GetElementMesh(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
-      //Report.Log($"Converted Beam {revitBeam.Id}");
+      Report.Log($"Converted Beam {revitBeam.Id}");
       return speckleBeam;
     }
   }

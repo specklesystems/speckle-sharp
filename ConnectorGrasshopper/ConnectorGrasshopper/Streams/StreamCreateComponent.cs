@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -68,8 +69,8 @@ namespace ConnectorGrasshopper.Streams
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another stream, please use a new component.");
         return;
       }
-      
-      Tracker.TrackPageview(Tracker.STREAM_CREATE);
+
+      Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_CREATE);
 
       string userId = null;
       Account account = null;
@@ -102,6 +103,8 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
+      Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
+
       Task.Run(async () =>
       {
         var client = new Client(account);
@@ -129,11 +132,5 @@ namespace ConnectorGrasshopper.Streams
         }
       });
     }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
-    }
-
   }
 }

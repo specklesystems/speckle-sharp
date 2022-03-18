@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This repo holds the Speckle 2.0 Revit Connector. It is currently in ⚠ALPHA⚠ and is a bit rough around the edges -- please use at your own risk! And of course, we'd really appreciate any feedback, comments, suggestions, etc ✨
+This repo holds the Speckle Revit Connector. We'd really appreciate any feedback, comments, suggestions, etc ✨
 
 ## Documentation
 
@@ -16,7 +16,7 @@ Comprehensive developer and user documentation can be found in our:
 
 ### Requirements
 
-- Revit 2019, 2020, or 2021
+- Revit 2019 or above
 - A Speckle Server running (more on this below)
 - Speckle Manager (more on this below)
 
@@ -32,7 +32,7 @@ If you're facing any errors, make sure Postgres and Redis are up and running.
 
 The connector itself doesn't have features to manage your Speckle accounts. This functionality has been delegated to the Speckle Manager desktop app.
 
-You can install an alpha version of it from: [here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe)
+You can install it from: https://speckle-releases.netlify.app/
 
 After installing it, you can use it to add/create an account on the Server.
 
@@ -50,23 +50,6 @@ Fire it up 🔥
 
 ![quick-revit-demo](https://user-images.githubusercontent.com/7717434/97557677-fe95f880-19d2-11eb-8ad3-439f7ad63015.gif)
 
-### Features
-
-Add a new stream:
-
-![add-stream](https://user-images.githubusercontent.com/7717434/97726487-2bc3d300-1ac7-11eb-849e-7aed2d21ec76.gif)
-
-Get fancy with some filters:
-
-![add-with-filters](https://user-images.githubusercontent.com/7717434/97726494-2e262d00-1ac7-11eb-8a55-8a7939c8f378.gif)
-
-Search for and add an existing stream from the server:
-
-![receive-stream](https://user-images.githubusercontent.com/7717434/97726530-3716fe80-1ac7-11eb-9732-19117b5cef27.gif)
-
-Update a stream and edit collaborators:
-
-![update-stream](https://user-images.githubusercontent.com/7717434/97726509-31211d80-1ac7-11eb-945e-67d1ca29c16d.gif)
 
 ## Contributing
 

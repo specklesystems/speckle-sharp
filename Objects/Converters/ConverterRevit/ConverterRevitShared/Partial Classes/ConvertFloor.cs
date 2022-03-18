@@ -29,14 +29,14 @@ namespace Objects.Converter.Revit
       DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
-        level = LevelToNative(speckleRevitFloor.level);
+        level = ConvertLevelToRevit(speckleRevitFloor.level);
         structural = speckleRevitFloor.structural;
         slope = speckleRevitFloor.slope;
         slopeDirection = (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
       }
       else
       {
-        level = LevelToNative(LevelFromCurve(outline.get_Item(0)));
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
       }
 
       var floorType = GetElementType<FloorType>(speckleFloor);
@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
 
       var hostedElements = SetHostedElements(speckleFloor, revitFloor);
       placeholders.AddRange(hostedElements);
-      //Report.Log($"Created Floor {revitFloor.Id}");
+      Report.Log($"Created Floor {revitFloor.Id}");
       return placeholders;
     }
 
@@ -104,10 +104,10 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
 
-      speckleFloor.displayMesh = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleFloor, revitFloor);
-      //Report.Log($"Converted Floor {revitFloor.Id}");
+      Report.Log($"Converted Floor {revitFloor.Id}");
       return speckleFloor;
     }
 

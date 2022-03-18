@@ -1,7 +1,8 @@
 ﻿using Grasshopper.Kernel;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace ConnectorGrasshopper.Transports
@@ -35,9 +36,12 @@ namespace ConnectorGrasshopper.Transports
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Cannot create multiple transports at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another transport, please use a new component.");
         return;
       }
-      
-      if(DA.Iteration == 0)
-        Tracker.TrackPageview("transports", "memory");
+
+      if (DA.Iteration == 0)
+      {
+        Logging.Tracker.TrackPageview("transports", "memory");
+        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
+      }
 
       string name = null;
       DA.GetData(0, ref name);
@@ -46,11 +50,6 @@ namespace ConnectorGrasshopper.Transports
       myTransport.TransportName = name == null ? "Gh Memory Transport" : name;
 
       DA.SetData(0, myTransport);
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
     }
   }
 }

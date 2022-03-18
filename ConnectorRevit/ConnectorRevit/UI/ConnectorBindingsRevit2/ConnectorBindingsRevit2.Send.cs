@@ -32,13 +32,17 @@ namespace Speckle.ConnectorRevit.UI
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
 
+      // set converter settings as tuples (setting slug, setting selection)
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
+
       var streamId = state.StreamId;
       var client = state.Client;
 
       var selectedObjects = GetSelectionFilterObjects(state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
-
-
 
       if (!selectedObjects.Any())
       {
@@ -62,9 +66,7 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           if (revitElement == null)
-          {
             continue;
-          }
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
@@ -73,9 +75,7 @@ namespace Speckle.ConnectorRevit.UI
           }
 
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          {
             return;
-          }
 
           var conversionResult = converter.ConvertToSpeckle(revitElement);
 
@@ -93,9 +93,8 @@ namespace Speckle.ConnectorRevit.UI
           {
             var category = $"@{revitElement.Category.Name}";
             if (commitObject[category] == null)
-            {
               commitObject[category] = new List<Base>();
-            }
+
              ((List<Base>)commitObject[category]).Add(conversionResult);
           }
 
@@ -104,12 +103,9 @@ namespace Speckle.ConnectorRevit.UI
         {
           progress.Report.LogConversionError(e);
         }
-
       }
 
-
       progress.Report.Merge(converter.Report);
-
 
       if (convertedCount == 0)
       {
@@ -118,9 +114,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return;
-      }
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
@@ -138,14 +132,10 @@ namespace Speckle.ConnectorRevit.UI
         );
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return;
-      }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return;
-      }
 
       var actualCommit = new CommitCreateInput()
       {

@@ -1,16 +1,13 @@
 ﻿using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DesktopUI2
@@ -18,7 +15,6 @@ namespace DesktopUI2
   public class DummyBindings : ConnectorBindings
   {
     Random rnd = new Random();
-
 
     public override string GetActiveViewName()
     {
@@ -61,9 +57,14 @@ namespace DesktopUI2
       return "Some Random File";
     }
 
-    public override string GetHostAppName()
+    public override string GetHostAppNameVersion()
     {
       return "Desktop";
+    }
+
+    public override string GetHostAppName()
+    {
+      return "dui2";
     }
 
     public override List<string> GetObjectsInView()
@@ -77,9 +78,8 @@ namespace DesktopUI2
       var nums = rnd.Next(1000);
       var strs = new List<string>();
       for (int i = 0; i < nums; i++)
-      {
         strs.Add($"Object-{i}");
-      }
+
       return strs;
     }
 
@@ -87,18 +87,28 @@ namespace DesktopUI2
     {
       return new List<ISelectionFilter>
       {
+        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects and project information." },
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
-        new ListSelectionFilter {Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
+        new ListSelectionFilter {Slug="view",Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
+        new ListSelectionFilter {Slug="cat",Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
         new PropertySelectionFilter
         {
+          Slug="param",
           Name = "Parameter",
           Icon = "FilterList",
           Description = "Filter by element parameters",
           Values = new List<string>() { "Family Name", "Height", "Random Parameter Name" },
           Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         },
-         new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project information." }
+
+      };
+    }
+
+    public override List<ISetting> GetSettings()
+    {
+      return new List<ISetting>
+      {
+        new ListBoxSetting {Name = "Reference Point", Icon = "mdiCrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} }
       };
     }
 
@@ -228,20 +238,13 @@ namespace DesktopUI2
 
       #endregion
 
-
       foreach (var stream in testStreams)
-      {
         collection.Add(new StreamState(AccountManager.GetDefaultAccount(), stream));
-      }
 
       collection[0].SelectedObjectIds.Add("random_obj");
 
       return collection;
     }
-
-
-
-
 
     public override void SelectClientObjects(string args)
     {
@@ -259,9 +262,7 @@ namespace DesktopUI2
       for (int i = 1; i < 100; i += 10)
       {
         if (progress.CancellationTokenSource.IsCancellationRequested)
-        {
           return state;
-        }
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
@@ -290,8 +291,7 @@ namespace DesktopUI2
         }
         catch (Exception e)
         {
-          //TODO
-          //state.Errors.Add(e);
+          progress.Report.LogOperationError(e);
         }
       }
 

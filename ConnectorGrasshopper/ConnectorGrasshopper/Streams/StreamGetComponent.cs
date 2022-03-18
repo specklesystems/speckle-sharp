@@ -8,7 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -82,8 +82,8 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
-        if(DA.Iteration == 0)
-          Tracker.TrackPageview(Tracker.STREAM_GET);
+        if (DA.Iteration == 0)
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_GET);
 
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
@@ -96,22 +96,18 @@ namespace ConnectorGrasshopper.Streams
         {
           try
           {
-            //Exists?
-            var client = new Client(account);
-            var result = await client.StreamGet(idWrapper.StreamId);
-            stream = new StreamWrapper(result.id, account.userInfo.id, account.serverInfo.url);
-            stream.BranchName = idWrapper.BranchName;
-            stream.ObjectId = idWrapper.ObjectId;
-            stream.CommitId = idWrapper.CommitId;
+            var acc = idWrapper.GetAccount().Result;
+            stream = idWrapper;
+            Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
           }
           catch (Exception e)
           {
             stream = null;
-            error = e;
+            error = e.InnerException ?? e;
           }
           finally
           {
-            Rhino.RhinoApp.InvokeOnUiThread((Action) delegate { ExpireSolution(true); });
+            Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
           }
         });
       }
@@ -152,11 +148,6 @@ namespace ConnectorGrasshopper.Streams
     {
       // TODO: Add validation!
       return true;
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
     }
   }
 }

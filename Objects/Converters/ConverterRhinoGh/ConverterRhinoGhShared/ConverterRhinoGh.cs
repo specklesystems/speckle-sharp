@@ -39,13 +39,21 @@ namespace Objects.Converter.RhinoGh
   public partial class ConverterRhinoGh : ISpeckleConverter
   {
 #if RHINO6
-    public static string RhinoAppName = Applications.Rhino6;
-    public static string GrasshopperAppName = Applications.Grasshopper;
+    public static string RhinoAppName = VersionedHostApplications.Rhino6;
+    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #elif RHINO7
-    public static string RhinoAppName = Applications.Rhino7;
-    public static string GrasshopperAppName = Applications.Grasshopper;
+    public static string RhinoAppName = VersionedHostApplications.Rhino7;
+    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #endif
 
+    public enum MeshSettings
+    {
+      Default,
+      CurrentDoc
+    }
+
+    public MeshSettings SelectedMeshSettings = MeshSettings.Default;
+    
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
@@ -62,7 +70,7 @@ namespace Objects.Converter.RhinoGh
     {
 
 #if RHINO6
-      return new string[] { RhinoAppName, Applications.Grasshopper };
+      return new string[] { RhinoAppName, VersionedHostApplications.Grasshopper };
 #elif RHINO7
       return new string[] {RhinoAppName};
 #endif   
@@ -77,6 +85,11 @@ namespace Objects.Converter.RhinoGh
     public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetConverterSettings(object settings)
+    {
+      var s = (MeshSettings)settings;
+      SelectedMeshSettings = s;
+    }
 
     public void SetContextDocument(object doc)
     {
@@ -96,8 +109,8 @@ namespace Objects.Converter.RhinoGh
       Base schema = null;
       if (@object is RhinoObject ro)
       {
-        material = GetMaterial(ro);
-        style = GetStyle(ro);
+        material = RenderMaterialToSpeckle(ro.GetMaterial(true));
+        style = DisplayStyleToSpeckle(ro.Attributes);
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
            schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
@@ -545,8 +558,8 @@ namespace Objects.Converter.RhinoGh
           var b = BrepToNative(o);
           if (b == null)
           {
-            rhinoObj = (o.displayMesh != null) ? MeshToNative(o.displayMesh) : null;
-            Report.Log($"Created Brep {o.id} as Mesh");
+            rhinoObj = o.displayValue?.Select(MeshToNative).ToArray();
+            Report.Log($"Created Brep {o.id} as Meshes");
           }
           else
           {
@@ -554,6 +567,7 @@ namespace Objects.Converter.RhinoGh
             Report.Log($"Created Brep {o.id}");
           }
           break;
+
         case Surface o:
           rhinoObj = SurfaceToNative(o);
           Report.Log($"Created Surface {o.id}");
@@ -576,14 +590,10 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case DirectShape o:
-          if (o.displayMesh != null)
-          {
-            rhinoObj = MeshToNative(o.displayMesh);
-            Report.Log($"Created DirectShape {o.id}");
-          }
-          Report.Log($"Skipping DirectShape {o.id} because it has no displayMesh");
+          rhinoObj = DirectShapeToNative(o);
+          Report.Log($"Created DirectShape {o.id}");
           break;
-
+        
         case View3D o:
           rhinoObj = ViewToNative(o);
           Report.Log($"Created View3D {o.id}");
@@ -602,6 +612,14 @@ namespace Objects.Converter.RhinoGh
         case Text o:
           rhinoObj = TextToNative(o);
           Report.Log($"Created Text {o.id}");
+          break;
+
+        case DisplayStyle o:
+          rhinoObj = DisplayStyleToNative(o);
+          break;
+        
+        case RenderMaterial o:
+          rhinoObj = RenderMaterialToNative(o);
           break;
 
         default:
@@ -693,12 +711,14 @@ case RH.SubD _:
 
         //TODO: This types are not supported in GH!
         case Pointcloud _:
+        case DisplayStyle _:
         case ModelCurve _:
         case DirectShape _:
         case View3D _:
         case BlockDefinition _:
         case BlockInstance _:
         case Alignment _:
+        case RenderMaterial _:
         case Text _:
           return true;
 

@@ -4,11 +4,11 @@ using DesktopUI2.Views;
 using Material.Dialog;
 using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
+using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace DesktopUI2
 {
@@ -26,9 +26,9 @@ namespace DesktopUI2
         WindowTitle = header,
         Borderless = true,
         MaxWidth = MainWindow.Instance.Width - 40,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
                 {
-                    new DialogResultButton
+                    new DialogButton
                     {
                         Content = "OK",
                         Result = "ok"
@@ -49,9 +49,9 @@ namespace DesktopUI2
         Borderless = true,
 
         Width = MainWindow.Instance.Width - 20,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
           {
-            new DialogResultButton
+            new DialogButton
             {
               Content = "CANCEL",
               Result = "cancel"
@@ -111,6 +111,26 @@ namespace DesktopUI2
       string formatted = $"{stream}[ {branch} @ {commitId} ]";
       string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
       return clean;
+    }
+
+
+  }
+
+  public static class ApiUtils
+  {
+    private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+
+    public static async Task<User> GetUser(string userId, Client client)
+    {
+      if (CachedUsers.ContainsKey(userId))
+        return CachedUsers[userId];
+
+      User user = await client.UserGet(userId);
+
+      if (user != null)
+        CachedUsers[userId] = user;
+
+      return user;
     }
   }
 }

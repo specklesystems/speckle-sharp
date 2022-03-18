@@ -12,6 +12,7 @@ using Objects.Structural.Loading;
 using Objects.Structural.ETABS.Loading;
 using Speckle.Core.Models;
 using Objects.Structural.ETABS.Geometry;
+using Objects.Structural.ETABS.Analysis;
 using System.Linq;
 using ETABSv1;
 
@@ -19,17 +20,10 @@ namespace Objects.Converter.ETABS
 {
   public partial class ConverterETABS
   {
-    object ModelToNative(Model model)
+    public object ModelToNative(Model model)
     {
-      var Element1D = new Element1D();
-      var Property1D = new Property1D();
-      var Loading1D = new LoadBeam();
-      var Loading2D = new LoadFace();
-      var LoadingNode = new LoadNode();
-      var LoadGravity = new LoadGravity();
-      var Loading2DWind = new ETABSWindLoadingFace();
-      var GSAProperty = new GSAProperty1D();
-      var GSAElement1D = new GSAMember1D();
+      if(model.specs != null) { ModelInfoToNative(model.specs); }
+
       if (model.materials != null)
       {
         foreach (Material material in model.materials)
@@ -42,17 +36,36 @@ namespace Objects.Converter.ETABS
       {
         foreach (var property in model.properties)
         {
-          if (property.GetType().ToString() == Property1D.GetType().ToString())
-          {
-            Property1DToNative((Property1D)property);
-          }
-          else if (property.GetType().Equals(GSAProperty.GetType()))
+          if (property is GSAProperty1D)
           {
             break;
           }
-          else
+          else if (property is ETABSSpringProperty){
+            SpringPropertyToNative((ETABSSpringProperty)property);
+          }
+          else if (property is ETABSLinearSpring){
+            LinearSpringPropertyToNative((ETABSLinearSpring)property);
+          }
+          else if(property is ETABSAreaSpring){
+            AreaSpringPropertyToNative((ETABSAreaSpring)property);
+          }
+          else if (property is ETABSLinkProperty)
+          {
+            LinkPropertyToNative((ETABSLinkProperty)property);
+          }
+          else if (property is ETABSTendonProperty){
+            break;
+          }
+          else if (property is  ETABSProperty2D)
           {
             Property2DToNative((ETABSProperty2D)property);
+          }
+          else if (property is ETABSDiaphragm){
+            diaphragmToNative((ETABSDiaphragm)property);
+          }
+          else if (property is Property1D)
+          {
+            Property1DToNative((Property1D)property);
           }
         }
       }
@@ -60,28 +73,26 @@ namespace Objects.Converter.ETABS
       if (model.elements != null)
       {
         foreach (var element in model.elements)
-        {
+        { 
 
-          if (element.GetType().ToString() == Element1D.GetType().ToString())
+          if (element is Element1D && !(element is ETABSTendon))
           {
-            FrameToNative((Element1D)element);
+            var ETABSelement = (Element1D)element;
+            if(ETABSelement.type == ElementType1D.Link){
+              LinkToNative((ETABSElement1D)(element));
+            }
+            else{
+              FrameToNative((Element1D)element);
+            }
           }
-          else if (element.GetType().Equals(GSAElement1D.GetType()))
-          {
-            FrameToNative((Element1D)element);
-          }
-          else
-          {
-            AreaToNative((ETABSElement2D)element);
-          }
-        }
-      }
 
-      if (model.nodes != null)
-      {
-        foreach (Node node in model.nodes)
-        {
-          PointToNative(node);
+          else if (element is Element2D)
+          {
+            AreaToNative((Element2D)element);
+          }
+          else if (element is ETABSStories){
+            StoriesToNative((ETABSStories)element);
+          }
         }
       }
 
@@ -98,22 +109,22 @@ namespace Objects.Converter.ETABS
         foreach (var load in model.loads)
         {
           //import loadpatterns in first
-          if (load.GetType().Equals(LoadGravity.GetType()))
+          if (load is LoadGravity)
           {
             LoadPatternToNative((LoadGravity)load);
           }
         }
         foreach (var load in model.loads)
         {
-          if (load.GetType().Equals(Loading2D.GetType()))
+          if (load is LoadFace)
           {
             LoadFaceToNative((LoadFace)load);
           }
-          else if (load.GetType().Equals(Loading2DWind.GetType()))
+          else if (load is ETABSWindLoadingFace)
           {
             LoadFaceToNative((ETABSWindLoadingFace)load);
           }
-          else if (load.GetType().Equals(Loading1D.GetType()))
+          else if (load is LoadBeam)
           {
             var loading1D = (LoadBeam)load;
             if (loading1D.loadType == BeamLoadType.Uniform)
@@ -139,7 +150,7 @@ namespace Objects.Converter.ETABS
       ElementsCount.applicationId = count.ToString();
       return ElementsCount;
     }
-    Model ModelToSpeckle()
+    public Model ModelToSpeckle()
     {
       var model = new Model();
       model.specs = ModelInfoToSpeckle();
@@ -151,12 +162,70 @@ namespace Objects.Converter.ETABS
       model.loads = new List<Base> { };
       int number = 0;
       string[] properties1D = { };
+
+      //var stories = StoriesToSpeckle();
+      ////Should stories belong here ? not sure 
+      //model.elements.Add(stories);
+
+
+      //Properties are sent by default whether you want them to be sent or not. Easier this way to manage information about the model
       Model.PropFrame.GetNameList(ref number, ref properties1D);
       properties1D.ToList();
       foreach (string property1D in properties1D)
       {
         var speckleProperty1D = Property1DToSpeckle(property1D);
         model.properties.Add(speckleProperty1D);
+      }
+
+      string[] springPointProperties = { };
+      Model.PropPointSpring.GetNameList(ref number, ref springPointProperties);
+      springPointProperties.ToList();
+      foreach(string propertySpring in springPointProperties){
+        var specklePropertyPointSpring = SpringPropertyToSpeckle(propertySpring);
+        model.properties.Add(specklePropertyPointSpring);
+      }
+
+      string[] springLineProperties = { };
+      Model.PropLineSpring.GetNameList(ref number, ref springLineProperties);
+      springLineProperties.ToList();
+      foreach (string propertyLine in springLineProperties)
+      {
+        var specklePropertyLineSpring = LinearSpringToSpeckle(propertyLine);
+        model.properties.Add(specklePropertyLineSpring);
+      }
+
+      string[] springAreaProperties = { };
+      Model.PropAreaSpring.GetNameList(ref number, ref springAreaProperties);
+      springAreaProperties.ToList();
+      foreach (string propertyArea in springAreaProperties)
+      {
+        var specklePropertyAreaSpring = AreaSpringToSpeckle(propertyArea);
+        model.properties.Add(specklePropertyAreaSpring);
+      }
+      string[] LinkProperties = { };
+      Model.PropLink.GetNameList(ref number, ref LinkProperties);
+      LinkProperties.ToList();
+      foreach(string propertyLink in LinkProperties){
+        var specklePropertyLink = LinkPropertyToSpeckle(propertyLink);
+        model.properties.Add(specklePropertyLink);
+      }
+
+      string[] TendonProperties = { };
+      Model.PropTendon.GetNameList(ref number, ref TendonProperties);
+      TendonProperties.ToList();
+      foreach (string propertyTendon in TendonProperties)
+      {
+        var specklePropertyTendon = TendonPropToSpeckle(propertyTendon);
+        model.properties.Add(specklePropertyTendon);
+      }
+
+      string[] DiaphragmProperties = { };
+      Model.Diaphragm.GetNameList(ref number, ref DiaphragmProperties);
+      DiaphragmProperties.ToList();
+      foreach (string propertyDiaphragm in DiaphragmProperties)
+      {
+        var specklePropertyDiaphragm =diaphragmToSpeckle(propertyDiaphragm);
+        model.properties.Add(specklePropertyDiaphragm);
       }
 
       string[] properties2D = { };

@@ -1,19 +1,23 @@
 ﻿using Objects.Geometry;
+using Objects.Structural.Materials;
+using Objects.Structural.Properties.Profiles;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
-  public class Beam : Base, IDisplayMesh
+  public class Beam : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
   {
     public ICurve baseLine { get; set; }
-
+    
     [DetachProperty]
-    public Mesh displayMesh { get; set; }
+    public List<Mesh> displayValue { get; set; }
 
     public string units { get; set; }
 
@@ -24,6 +28,14 @@ namespace Objects.BuiltElements
     {
       this.baseLine = baseLine;
     }
+    
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> {value};
+    }
+    #endregion
   }
 }
 
@@ -49,4 +61,51 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
     }
   }
+}
+
+namespace Objects.BuiltElements.TeklaStructures
+{
+    public class TeklaBeam : Beam
+    {
+        public string name { get; set; }
+        [DetachProperty]
+        public SectionProfile profile { get; set; }
+        [DetachProperty]
+        public Material material { get; set; }
+        public string finish { get; set; }
+        public string classNumber { get; set; }
+        public Vector alignmentVector { get; set; } // This can be set to get proper rotation if coming from an application that doesn't have positioning
+        public TeklaPosition position { get; set; }
+        public Base userProperties { get; set; }
+
+        [DetachProperty]
+        public Base rebars { get; set; }
+
+        public TeklaBeamType TeklaBeamType { get; set; }
+
+        public TeklaBeam() { }
+
+        [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]
+        public TeklaBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, Material material) 
+        {
+            this.baseLine = baseLine;
+            this.profile = profile;
+            this.material = material;
+        }
+    }
+    public class SpiralBeam : TeklaBeam {
+    public SpiralBeam()
+    {
+    }
+
+    public Point startPoint { get; set; }
+    public Point rotationAxisPt1 { get; set; }
+    public Point rotationAxisPt2 { get; set; }
+    public double totalRise { get; set; }
+    public double rotationAngle { get; set; }
+    public double twistAngleStart { get; set; }
+    public double twistAngleEnd { get; set; }
+
+   
+    }
 }

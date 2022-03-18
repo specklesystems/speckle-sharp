@@ -54,12 +54,16 @@ namespace Speckle.ConnectorDynamo.Functions
           //Exists?
           Core.Api.Stream res = Task.Run(async () => await client.StreamGet(s.StreamId)).Result;
           s.UserId = accountToUse.userInfo.id;
+
+          Analytics.TrackEvent(accountToUse, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
         }
       }
       catch (Exception ex)
       {
         Utils.HandleApiExeption(ex);
       }
+
+
 
       if (streams.Count() == 1)
         return streams[0];
@@ -79,6 +83,7 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       Tracker.TrackPageview(Tracker.STREAM_UPDATE);
 
+
       if (stream == null)
       {
         return null;
@@ -94,7 +99,15 @@ namespace Speckle.ConnectorDynamo.Functions
       if (name == null && description == null && isPublic == null)
         return null;
 
-      var account = Task.Run(async () => await wrapper.GetAccount()).Result;
+      Core.Credentials.Account account = null;
+      try
+      {
+        account = Task.Run(async () => await wrapper.GetAccount()).Result;
+      }
+      catch (Exception e)
+      {
+        throw e.InnerException ?? e;
+      }
 
       var client = new Client(account);
 
@@ -108,6 +121,8 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (isPublic != null)
         input.isPublic = (bool)isPublic;
+
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
 
       try
       {
@@ -144,6 +159,7 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       Tracker.TrackPageview(Tracker.STREAM_DETAILS);
 
+
       var streams = Utils.InputToStream(stream);
 
       if (!streams.Any())
@@ -156,7 +172,16 @@ namespace Speckle.ConnectorDynamo.Functions
 
       foreach (var streamWrapper in streams)
       {
-        var account = Task.Run(async () => await streamWrapper.GetAccount()).Result;
+        Core.Credentials.Account account;
+
+        try
+        {
+          account = Task.Run(async () => await streamWrapper.GetAccount()).Result;
+        }
+        catch (Exception e)
+        {
+          throw e.InnerException ?? e;
+        }
 
         var client = new Client(account);
 
@@ -180,8 +205,10 @@ namespace Speckle.ConnectorDynamo.Functions
           Utils.HandleApiExeption(ex);
           return details;
         }
-
+        Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
       }
+
+
 
       if (details.Count() == 1)
         return details[0];
@@ -221,7 +248,10 @@ namespace Speckle.ConnectorDynamo.Functions
         Utils.HandleApiExeption(ex);
       }
 
+      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
+
       return streamWrappers;
+
     }
   }
 }
