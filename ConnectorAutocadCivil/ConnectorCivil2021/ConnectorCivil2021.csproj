@@ -71,7 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
-      <Version>0.10.8</Version>
+      <Version>0.10.13</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Desktop">
       <Version>0.10.13</Version>
@@ -88,7 +88,7 @@
       <Version>2021.0.0.3</Version>
     </PackageReference>
     <PackageReference Include="Speckle.Civil3D.API">
-      <Version>2021.0.1</Version>
+      <Version>2021.0.2</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />

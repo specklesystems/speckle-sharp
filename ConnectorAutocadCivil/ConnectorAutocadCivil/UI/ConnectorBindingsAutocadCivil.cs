@@ -581,7 +581,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           // get the db object from id
           AcadDb.Handle hn = Utils.GetHandle(autocadObjectHandle);
-          AcadDb.DBObject obj = hn.GetObject(out string type, out string layer);
+          AcadDb.DBObject obj = hn.GetObject(tr, out string type, out string layer);
 
           if (obj == null)
           {
