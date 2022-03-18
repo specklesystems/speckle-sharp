@@ -219,7 +219,9 @@ namespace DesktopUI2.ViewModels
       //it's a new saved stream
       else
       {
+        //triggers => SavedStreams_CollectionChanged
         SavedStreams.Add(stream);
+
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
