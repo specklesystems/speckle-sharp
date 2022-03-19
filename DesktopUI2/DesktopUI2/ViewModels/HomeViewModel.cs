@@ -318,12 +318,14 @@ namespace DesktopUI2.ViewModels
     {
 
       AccountManager.RemoveAccount(account.id);
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
       Init();
     }
 
     public void OpenProfileCommand(Account account)
     {
       Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
     }
 
     public void LaunchManagerCommand()
@@ -369,7 +371,7 @@ namespace DesktopUI2.ViewModels
         {
           try
           {
-            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
+            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
 
             await AccountManager.AddAccount(dialog.Url);
             await Task.Delay(1000);

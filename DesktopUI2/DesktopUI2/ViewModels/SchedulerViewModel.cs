@@ -121,6 +121,8 @@ namespace DesktopUI2.ViewModels
 
       Bindings.WriteStreamsToFile(SavedStreams.ToList());
 
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Scheduler Set" } });
+
 
       if (HomeViewModel.Instance != null)
         HomeViewModel.Instance.UpdateSavedStreams(SavedStreams.ToList());

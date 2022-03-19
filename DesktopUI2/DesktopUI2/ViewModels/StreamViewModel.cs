@@ -491,16 +491,20 @@ namespace DesktopUI2.ViewModels
     {
       Notification = "";
       NotificationUrl = "";
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
     public void CloseReportNotificationCommand()
     {
       ShowReport = false;
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Report Dismiss" } });
     }
 
 
     public void LaunchNotificationCommand()
     {
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
+
       Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
       CloseNotificationCommand();
@@ -713,7 +717,7 @@ namespace DesktopUI2.ViewModels
         var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
         settingsWindow.DataContext = settingsPageViewModel;
         settingsWindow.Title = $"Settings for {Stream.name}";
-
+        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
         var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
 
         if (saveResult != null && (bool)saveResult)
