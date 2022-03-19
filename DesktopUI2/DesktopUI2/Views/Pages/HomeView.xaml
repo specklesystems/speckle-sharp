@@ -53,6 +53,7 @@
           </Template>
         </Setter.Value>
       </Setter>
+
     </Style>
   </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
@@ -101,6 +102,7 @@
                 Width="15"
                 Height="15"
                 assists:ShadowAssist.ShadowDepth="0"
+                Foreground="{DynamicResource MaterialDesignBody}"
                 Kind="SunMoonStars" />
 
             </Button.Content>
@@ -118,8 +120,8 @@
                 Width="15"
                 Height="15"
                 assists:ShadowAssist.ShadowDepth="0"
+                Foreground="{DynamicResource MaterialDesignBody}"
                 Kind="Refresh" />
-
             </Button.Content>
           </m:FloatingButton>
 
@@ -294,7 +296,10 @@
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
         <StackPanel Margin="5" Orientation="Vertical">
           <!--  SAVED STREAMS  -->
-          <Expander IsExpanded="True" IsVisible="{Binding HasSavedStreams}">
+          <Expander
+            Margin="0,7,0,0"
+            IsExpanded="True"
+            IsVisible="{Binding HasSavedStreams}">
             <Expander.Header>
               <TextBlock
                 Margin="-8,0,0,0"
@@ -307,13 +312,9 @@
           </Expander>
 
 
-          <m:Card
-            Grid.Row="4"
-            Margin="0,0,0,10"
-            Padding="0" />
           <!--  ALL STREAMS  -->
 
-          <Expander IsExpanded="True">
+          <Expander Margin="0,10,0,0" IsExpanded="True">
             <Expander.Header>
               <TextBlock
                 Margin="-8,0,0,0"
@@ -420,7 +421,7 @@
                           Classes="Mini"
                           Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
                           CommandParameter="{Binding}"
-                          ToolTip.Tip="View Online">
+                          ToolTip.Tip="View online">
                           <Button.Content>
                             <icons:MaterialIcon
                               Width="15"

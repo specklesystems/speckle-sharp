@@ -14,7 +14,7 @@
       <Expander Header="This is expander! Click me to expand the content." IsExpanded="True">
         <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
       </Expander>
-      <Expander Classes="Flat" Header="This is another expander!">
+      <Expander Classes="Flat Transparent" Header="This is another expander!">
         <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
       </Expander>
     </StackPanel>
@@ -35,8 +35,12 @@
     </Setter>
   </Style>
 
-  <Style Selector="Expander.Flat /template/ m|Card#PART_ExpanderRoot, Expander.Flat /template/ m|Card#PART_ExpanderRoot">
+  <Style Selector="Expander.Flat /template/ m|Card#PART_ExpanderRoot">
     <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+  </Style>
+
+  <Style Selector="Expander.Transparent /template/ m|Card#PART_ExpanderRoot">
+    <Setter Property="Background" Value="Transparent" />
   </Style>
 
 </Styles>

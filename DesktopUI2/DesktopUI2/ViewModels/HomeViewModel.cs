@@ -179,6 +179,11 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
       this.RaisePropertyChanged("SavedStreams");
       Init();
+
+
+      var config = ConfigManager.Load();
+      ChangeTheme(config.DarkTheme);
+
     }
 
     /// <summary>
@@ -527,13 +532,25 @@ namespace DesktopUI2.ViewModels
 
     public void ToggleDarkThemeCommand()
     {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
       var paletteHelper = new PaletteHelper();
       ITheme theme = paletteHelper.GetTheme();
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+      var isDark = theme.GetBaseTheme() == BaseThemeMode.Dark;
 
+      ChangeTheme(isDark);
 
+      var config = ConfigManager.Load();
+      config.DarkTheme = isDark;
+      ConfigManager.Save(config);
 
-      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
+    }
+
+    private void ChangeTheme(bool isDark)
+    {
+      var paletteHelper = new PaletteHelper();
+      var theme = paletteHelper.GetTheme();
+
+      if (isDark)
         theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
       else
         theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());
