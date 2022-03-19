@@ -16,6 +16,7 @@ namespace Speckle.ConnectorRevit.UI
       var categories = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
+      var worksets = new List<string>();
       var projectInfo = new List<string> { "Project Info", "Levels", "Views 2D", "Views 3D", "Families & Types" };
 
       if (CurrentDoc != null)
@@ -24,16 +25,17 @@ namespace Speckle.ConnectorRevit.UI
         categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
         parameters = ConnectorRevitUtils.GetParameterNames(CurrentDoc.Document);
         views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
+        worksets = ConnectorRevitUtils.GetWorksets(CurrentDoc.Document);
       }
 
-      return new List<ISelectionFilter>
+      var filters = new List<ISelectionFilter>
       {
          new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all objects belonging to the selected categories"},
+        new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
         new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
         new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
-        new PropertySelectionFilter
+          new PropertySelectionFilter
         {
           Slug="param",
           Name = "Parameter",
@@ -44,6 +46,11 @@ namespace Speckle.ConnectorRevit.UI
         }
 
       };
+      if (worksets.Any())
+        filters.Insert(4, new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
+
+
+      return filters;
     }
 
     public override List<string> GetSelectedObjects()
@@ -155,6 +162,22 @@ namespace Speckle.ConnectorRevit.UI
             selection.AddRange(doc.SupportedTypes());
 
           return selection;
+
+        case "workset":
+          var worksetFilter = filter as ListSelectionFilter;
+          var worksets = new FilteredWorksetCollector(doc).Where(x => worksetFilter.Selection.Contains(x.Name)).Select(x => x.Id).ToList();
+          var collector = new FilteredElementCollector(doc);
+          var elementWorksetFilters = new List<ElementFilter>();
+
+          foreach (var w in worksets)
+          {
+            elementWorksetFilters.Add(new ElementWorksetFilter(w));
+          }
+
+          var worksetLogicalFilter = new LogicalOrFilter(elementWorksetFilters);
+          var elements = collector.WherePasses(worksetLogicalFilter).ToElements().ToList();
+
+          return elements;
 
         case "param":
           try
