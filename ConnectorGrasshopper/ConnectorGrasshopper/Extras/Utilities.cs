@@ -12,20 +12,28 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Rhino.Geometry;
 using System.Threading;
+using Rhino;
 
 namespace ConnectorGrasshopper.Extras
 {
   public static class Utilities
   {
+    public static string GetVersionedAppName()
+    {
+      var version = VersionedHostApplications.Grasshopper6;
+      if (RhinoApp.Version.Major == 7)
+        version = VersionedHostApplications.Grasshopper7;
+      return version;
+    }
     public static ISpeckleConverter GetDefaultConverter()
     {
       var n = SpeckleGHSettings.SelectedKitName;
       try
       {
-        var defKit = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6).FirstOrDefault(kit => kit != null && kit.Name == n);
-        var converter = defKit.LoadConverter(VersionedHostApplications.Rhino6);
+        var defKit = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName()).FirstOrDefault(kit => kit != null && kit.Name == n);
+        var converter = defKit.LoadConverter(Extras.Utilities.GetVersionedAppName());
         converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        converter.SetContextDocument(RhinoDoc.ActiveDoc);
         return converter;
       }
       catch

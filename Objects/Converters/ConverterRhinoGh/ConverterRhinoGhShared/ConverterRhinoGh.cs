@@ -38,12 +38,14 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh : ISpeckleConverter
   {
-#if RHINO6
+#if RHINO6 && GRASSHOPPER
+    public static string RhinoAppName = VersionedHostApplications.Grasshopper6;
+#elif RHINO7 && GRASSHOPPER
+    public static string RhinoAppName = VersionedHostApplications.Grasshopper7;
+#elif RHINO6
     public static string RhinoAppName = VersionedHostApplications.Rhino6;
-    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #elif RHINO7
     public static string RhinoAppName = VersionedHostApplications.Rhino7;
-    public static string GrasshopperAppName = VersionedHostApplications.Grasshopper;
 #endif
 
     public enum MeshSettings
@@ -68,12 +70,7 @@ namespace Objects.Converter.RhinoGh
 
     public IEnumerable<string> GetServicedApplications()
     {
-
-#if RHINO6
-      return new string[] { RhinoAppName, VersionedHostApplications.Grasshopper };
-#elif RHINO7
-      return new string[] {RhinoAppName};
-#endif   
+      return new[] {RhinoAppName};
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -672,13 +669,15 @@ case RH.SubD _:
         case RH.Brep _:
         case NurbsSurface _:
           return true;
-        // TODO: This types are not supported in GH!
+        
+#if !GRASSHOPPER
+        // This types are not supported in GH!
         case ViewInfo _:
         case InstanceDefinition _:
         case InstanceObject _:
         case TextEntity _:
           return true;
-
+#endif
         default:
 
           return false;
@@ -709,7 +708,8 @@ case RH.SubD _:
         case Surface _:
           return true;
 
-        //TODO: This types are not supported in GH!
+#if !GRASSHOPPER
+        // This types are not supported in GH!
         case Pointcloud _:
         case DisplayStyle _:
         case ModelCurve _:
@@ -721,6 +721,7 @@ case RH.SubD _:
         case RenderMaterial _:
         case Text _:
           return true;
+#endif
 
         default:
           return false;
