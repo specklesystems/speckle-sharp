@@ -1,7 +1,5 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -9,7 +7,6 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,7 +67,7 @@ namespace DesktopUI2.ViewModels
             string streamId = Task.Run(async () => await client.StreamCreate(new StreamCreateInput { description = description, name = fileName, isPublic = false })).Result;
             foundStream = Task.Run(async () => await client.StreamGet(streamId)).Result;
           }
-          catch (Exception e){ }
+          catch (Exception e) { }
         }
 
         FileStream = new StreamState(account, foundStream) { BranchName = "main" };
@@ -136,7 +133,7 @@ namespace DesktopUI2.ViewModels
         dialog.Close();
         if (!progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "oneClick", true } });
+          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "method", "OneClick" } });
           FileStream.LastUsed = DateTime.Now.ToString();
 
           // open in browser
