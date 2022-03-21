@@ -241,7 +241,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $env:Path +="C:\Program Files\CMake\bin"
       - run: 
           name: install devkit
-          command: Expand-Archive -Path ./project/ConnectorArchicad/AddOn/Support.zip
+          command: |
+            cd project/ConnectorArchicad/AddOn
+            Expand-Archive -Path Support.zip
       - run:
           name: build AddOn
           command: |
