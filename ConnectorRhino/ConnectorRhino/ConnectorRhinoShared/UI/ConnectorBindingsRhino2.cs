@@ -431,7 +431,7 @@ namespace SpeckleRhino
 
     #region sending
 
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.RhinoAppName);
@@ -449,7 +449,7 @@ namespace SpeckleRhino
       if (state.SelectedObjectIds.Count == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
-        return;
+        return null;
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -460,7 +460,7 @@ namespace SpeckleRhino
       foreach (var applicationId in state.SelectedObjectIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return;
+          return null;
 
         Base converted = null;
         string containerName = string.Empty;
@@ -553,14 +553,14 @@ namespace SpeckleRhino
       if (objCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
+        return null;
       }
 
       if (renamedlayers)
         progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
+        return null;
 
       progress.Max = objCount;
 
@@ -583,10 +583,10 @@ namespace SpeckleRhino
         );
 
       if (progress.Report.OperationErrorsCount != 0)
-        return;
+        return null;
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
+        return null;
 
       var actualCommit = new CommitCreateInput
       {
@@ -603,11 +603,13 @@ namespace SpeckleRhino
       {
         var commitId = await client.CommitCreate(actualCommit);
         state.PreviousCommitId = commitId;
+        return commitId;
       }
       catch (Exception e)
       {
         progress.Report.LogOperationError(e);
       }
+      return null;
 
       //return state;
     }

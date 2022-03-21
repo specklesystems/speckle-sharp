@@ -491,16 +491,20 @@ namespace DesktopUI2.ViewModels
     {
       Notification = "";
       NotificationUrl = "";
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
     public void CloseReportNotificationCommand()
     {
       ShowReport = false;
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Report Dismiss" } });
     }
 
 
     public void LaunchNotificationCommand()
     {
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
+
       Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
       CloseNotificationCommand();
@@ -539,7 +543,7 @@ namespace DesktopUI2.ViewModels
 
       Reset();
       Progress.IsProgressing = true;
-      await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
 
       if (!Progress.CancellationTokenSource.IsCancellationRequested)
@@ -548,8 +552,8 @@ namespace DesktopUI2.ViewModels
         Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
         Tracker.TrackPageview(Tracker.SEND);
 
-        Notification = $"Sent successfully!";
-        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}";
+        Notification = $"Sent successfully, view online";
+        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
@@ -713,7 +717,7 @@ namespace DesktopUI2.ViewModels
         var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
         settingsWindow.DataContext = settingsPageViewModel;
         settingsWindow.Title = $"Settings for {Stream.name}";
-
+        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
         var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
 
         if (saveResult != null && (bool)saveResult)

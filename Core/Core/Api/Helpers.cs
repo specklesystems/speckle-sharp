@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
@@ -128,6 +131,46 @@ namespace Speckle.Core.Api
               totalChildrenCount = totalChildrenCount,
             });
 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="slug">The connector slug eg. revit, rhino, etc</param>
+    /// <returns></returns>
+    public static async Task<bool> IsConnectorUpdateAvailable(string slug)
+    {
+#if DEBUG
+      //when debugging the version is not correct, so don't bother
+      return false;
+#endif
+
+      try
+      {
+        var latestUrl = $"https://releases.speckle.dev/installers/{slug}/latest.yml";
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(latestUrl);
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+        Version latestVersion = null;
+
+        using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+        using (System.IO.Stream stream = response.GetResponseStream())
+        using (StreamReader reader = new StreamReader(stream))
+        {
+          var res = await reader.ReadToEndAsync();
+          latestVersion = new Version(res.Replace("version:", "").Trim());
+        }
+
+        var currentVersion = Assembly.GetAssembly(typeof(Helpers)).GetName().Version;
+
+        if (latestVersion > currentVersion)
+          return true;
+      }
+      catch (Exception ex)
+      {
+        new SpeckleException($"Could not check for connector updates: {slug}", ex, true, SentryLevel.Warning);
+      }
+
+      return false;
     }
   }
 }

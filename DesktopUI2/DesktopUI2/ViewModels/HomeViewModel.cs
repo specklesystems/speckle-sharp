@@ -53,6 +53,14 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
     }
 
+
+    private bool _hasUpdate;
+    public bool HasUpdate
+    {
+      get => _hasUpdate;
+      private set => this.RaiseAndSetIfChanged(ref _hasUpdate, value);
+    }
+
     private List<StreamAccountWrapper> _streams;
     public List<StreamAccountWrapper> Streams
     {
@@ -179,6 +187,11 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
       this.RaisePropertyChanged("SavedStreams");
       Init();
+
+
+      var config = ConfigManager.Load();
+      ChangeTheme(config.DarkTheme);
+
     }
 
     /// <summary>
@@ -297,6 +310,9 @@ namespace DesktopUI2.ViewModels
       //first show cached accounts, then refresh them
       await AccountManager.UpdateAccounts();
       Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+
+
+      HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
     }
 
     private void RemoveSavedStream(string id)
@@ -318,12 +334,14 @@ namespace DesktopUI2.ViewModels
     {
 
       AccountManager.RemoveAccount(account.id);
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
       Init();
     }
 
     public void OpenProfileCommand(Account account)
     {
       Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
     }
 
     public void LaunchManagerCommand()
@@ -369,7 +387,7 @@ namespace DesktopUI2.ViewModels
         {
           try
           {
-            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
+            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
 
             await AccountManager.AddAccount(dialog.Url);
             await Task.Delay(1000);
@@ -525,13 +543,25 @@ namespace DesktopUI2.ViewModels
 
     public void ToggleDarkThemeCommand()
     {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
       var paletteHelper = new PaletteHelper();
       ITheme theme = paletteHelper.GetTheme();
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+      var isDark = theme.GetBaseTheme() == BaseThemeMode.Dark;
 
+      ChangeTheme(isDark);
 
+      var config = ConfigManager.Load();
+      config.DarkTheme = isDark;
+      ConfigManager.Save(config);
 
-      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
+    }
+
+    private void ChangeTheme(bool isDark)
+    {
+      var paletteHelper = new PaletteHelper();
+      var theme = paletteHelper.GetTheme();
+
+      if (isDark)
         theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
       else
         theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());

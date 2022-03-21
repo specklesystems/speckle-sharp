@@ -298,7 +298,7 @@ namespace DesktopUI2
       return state;
     }
 
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       // Let's fake some progress barsssss
       progress.Report.Log("Starting fake sending");
@@ -314,7 +314,7 @@ namespace DesktopUI2
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
           progress.Report.Log("Fake sending was cancelled");
-          return;
+          return null;
         }
 
         progress.Report.Log("Done fake task " + i);
@@ -339,6 +339,7 @@ namespace DesktopUI2
           //state.Errors.Add(e);
         }
       }
+      return "";
     }
 
     public override void WriteStreamsToFile(List<StreamState> streams)
