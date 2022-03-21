@@ -231,8 +231,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       name: win/default
       shell: powershell.exe
     steps:
+      - checkout
       - run:
           command: echo "testing Archicad"
+      - run:
+          name: install cmake
+          command: choco install cmake
+      - run: 
+          name: install devkit
+          command: Expand-Archive -Path ./project/ConnectorArchicad/AddOn/Support.zip
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
@@ -398,6 +405,8 @@ workflows:
     jobs:
       - setup-archicad-dev
       - build-connector: 
+          requires: 
+            - setup-archicad-dev
           name: build-connector-archicad
           slnname: ConnectorArchicad
           dllname: ConnectorArchicad.dll
