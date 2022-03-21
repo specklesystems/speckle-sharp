@@ -275,50 +275,74 @@ namespace Speckle.Core.Credentials
       var challenge = GenerateChallenge();
       Process.Start(new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true });
 
-      await Task.Run(() =>
+      HttpListener listener = new HttpListener();
+
+      //does nothing?
+      var timeout = TimeSpan.FromMinutes(2);
+      listener.TimeoutManager.HeaderWait = timeout;
+      listener.TimeoutManager.EntityBody = timeout;
+      listener.TimeoutManager.IdleConnection = timeout;
+
+      var task = Task.Run(() =>
       {
-        if (!HttpListener.IsSupported)
+        try
         {
-          Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
-          return;
+          if (!HttpListener.IsSupported)
+          {
+            Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
+            return;
+          }
+
+
+          listener = new HttpListener();
+          listener.Prefixes.Add("http://localhost:29363/");
+
+          listener.Start();
+          Console.WriteLine("Listening...");
+          // Note: The GetContext method blocks while waiting for a request.
+          HttpListenerContext context = listener.GetContext();
+          HttpListenerRequest request = context.Request;
+          HttpListenerResponse response = context.Response;
+
+          accessCode = request.QueryString["access_code"];
+          var message = "";
+          if (accessCode != null)
+          {
+            message = "Yay!<br/><br/>You can close this window now.<script>window.close();</script>";
+          }
+          else
+          {
+            message = "Oups, something went wrong...!";
+          }
+
+          var responseString = $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
+
+          byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+          response.ContentLength64 = buffer.Length;
+          System.IO.Stream output = response.OutputStream;
+          output.Write(buffer, 0, buffer.Length);
+          output.Close();
+          listener.Stop();
+
         }
-
-
-        HttpListener listener = new HttpListener();
-        //TOTO: not working!
-        listener.TimeoutManager.IdleConnection = TimeSpan.FromMinutes(2);
-        listener.TimeoutManager.HeaderWait = TimeSpan.FromMinutes(2);
-        listener.Prefixes.Add("http://localhost:29363/");
-
-        listener.Start();
-        Console.WriteLine("Listening...");
-        // Note: The GetContext method blocks while waiting for a request.
-        HttpListenerContext context = listener.GetContext();
-        HttpListenerRequest request = context.Request;
-        HttpListenerResponse response = context.Response;
-
-        accessCode = request.QueryString["access_code"];
-        var message = "";
-        if (accessCode != null)
+        catch (Exception ex)
         {
-          message = "Yay!<br/><br/>You can close this window now.<script>window.close();</script>";
+
         }
-        else
-        {
-          message = "Oups, something went wrong...!";
-        }
-
-        var responseString = $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
-
-        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-        response.ContentLength64 = buffer.Length;
-        System.IO.Stream output = response.OutputStream;
-        output.Write(buffer, 0, buffer.Length);
-        output.Close();
-        listener.Stop();
-
-
       });
+
+      //Timeout
+      if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
+      {
+        // task completed within timeout
+      }
+      else
+      {
+        // nada
+      }
+
+      if (string.IsNullOrEmpty(accessCode))
+        return;
 
       var tokenResponse = (await GetToken(accessCode, challenge, server));
 

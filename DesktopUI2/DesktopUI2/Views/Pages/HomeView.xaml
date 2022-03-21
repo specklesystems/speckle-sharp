@@ -158,7 +158,7 @@
                 Icon="{icons:MaterialIconExt AccountCog}" />
               <MenuItem
                 Command="{Binding RemoveAccountCommand}"
-                CommandParameter="{Binding Account}"
+                CommandParameter="{Binding Accounts[0].Account}"
                 Header="Log Out"
                 Icon="{icons:MaterialIconExt Logout}" />
             </MenuItem>
