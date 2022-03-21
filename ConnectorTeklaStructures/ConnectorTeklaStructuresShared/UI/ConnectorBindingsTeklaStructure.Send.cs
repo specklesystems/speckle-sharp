@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Concurrent;
-using Speckle.Core.Api;
-using SCT = Speckle.Core.Transports;
-using Stylet;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using DesktopUI2;
+﻿using DesktopUI2;
 using DesktopUI2.Models;
-using Speckle.Core.Models;
+using DesktopUI2.ViewModels;
+using Speckle.ConnectorTeklaStructures.Util;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.ConnectorTeklaStructures.Util;
+using Speckle.Core.Models;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
-using DesktopUI2.ViewModels;
 using Tekla.Structures.Model;
+using SCT = Speckle.Core.Transports;
 
 
 
@@ -24,7 +22,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
   {
     #region sending
 
-    public override async System.Threading.Tasks.Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
@@ -49,7 +47,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       if (totalObjectCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
-        return;
+        return null;
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -66,7 +64,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
-          return;
+          return null;
         }
 
         Base converted = null;
@@ -118,12 +116,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
       if (objCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
+        return null;
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
-        return;
+        return null;
       }
 
       var streamId = state.StreamId;
@@ -148,7 +146,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       if (progress.Report.OperationErrorsCount != 0)
       {
         //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
-        return;
+        return null;
       }
 
       var actualCommit = new CommitCreateInput
@@ -168,7 +166,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
         //await state.RefreshStream();
         state.PreviousCommitId = commitId;
-
+        return commitId;
         //PersistAndUpdateStreamInFile(state);
         //RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
       }
@@ -177,7 +175,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
         //Globals.Notify($"Failed to create commit.\n{e.Message}");
         progress.Report.LogOperationError(e);
       }
-
+      return null;
       //return state;
     }
 

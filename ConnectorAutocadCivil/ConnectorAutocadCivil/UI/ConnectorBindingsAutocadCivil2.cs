@@ -1,31 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.Collections;
-
-using Speckle.Newtonsoft.Json;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Speckle.Core.Api;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Colors;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
-using Speckle.Core.Transports;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
-
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Colors;
-
-using Stylet;
-using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Stylet;
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -315,7 +310,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   Base display = obj[@"displayStyle"] as Base;
                   if (display == null) display = obj[@"renderMaterial"] as Base;
                   if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
-                    
+
                   tr.TransactionManager.QueueForGraphicsFlush();
                 }
                 else
@@ -494,7 +489,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.VersionedAppName);
@@ -515,7 +510,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (state.SelectedObjectIds.Count == 0)
       {
         progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
-        return;
+        return null;
       }
 
       var commitObject = new Base();
@@ -534,11 +529,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (convertedCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
+        return null;
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
+        return null;
 
       Execute.PostToUIThread(() => progress.Max = convertedCount);
 
@@ -558,7 +553,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         );
 
       if (progress.Report.OperationErrorsCount != 0)
-        return;
+        return null;
 
       var actualCommit = new CommitCreateInput
       {
@@ -575,11 +570,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         var commitId = await client.CommitCreate(actualCommit);
         state.PreviousCommitId = commitId;
+        return commitId;
       }
       catch (Exception e)
       {
         progress.Report.LogOperationError(e);
       }
+      return null;
     }
 
     delegate void SendingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount);
@@ -693,9 +690,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return selection;
     }
-#endregion
+    #endregion
 
-#region events
+    #region events
     public void RegisterAppEvents()
     {
       //// GLOBAL EVENT HANDLERS
@@ -737,6 +734,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         UpdateSavedStreams(streams);
       }
     }
-#endregion
+    #endregion
   }
 }
