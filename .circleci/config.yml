@@ -66,6 +66,9 @@ parameters:
   run_connector_teklastructures:
     type: boolean
     default: false
+  run_connector_archicad:
+    type: boolean
+    default: false
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   
@@ -87,7 +90,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
             {"regex": "ConnectorETABS/.*", "param_name": "run_connector_etabs"},
             {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"},
-            {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"}
+            {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"},
+            {"regex": "ConnectorArchicad/.*", "param_name": "run_connector_archicad"}
           ]'
           base-branch: 'main'
   
@@ -221,6 +225,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           root: ./
           paths:
             - speckle-sharp-ci-tools/Installers
+
+  setup-archicad-dev: # get Archicad dev kit
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - run:
+          command: echo "testing Archicad"
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
@@ -379,6 +391,16 @@ workflows:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
               only: /^(desktopui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/ 
+
+  # Archicad Connector - Build/Test
+  connector_archicad:
+    when: << pipeline.parameters.run_connector_archicad>>
+    jobs:
+      - setup-archicad-dev
+      - build-connector: 
+          name: build-connector-archicad
+          slnname: ConnectorArchicad
+          dllname: ConnectorArchicad.dll
 
   # Makes installers based on which tag is provided
   # Tag has to be provided in the format "appname/1.0.0"
