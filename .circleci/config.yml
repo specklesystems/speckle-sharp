@@ -232,8 +232,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       shell: powershell.exe
     steps:
       - checkout
-      - run:
-          command: echo "testing Archicad"
+      - attach_workspace:
+          at: ./
       - run:
           name: install cmake
           command: |
@@ -242,14 +242,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: 
           name: install devkit
           command: |
-            cd project/ConnectorArchicad/AddOn
-            Expand-Archive -Path Support.zip
+            cd speckle-sharp-ci-tools/Resources
+            Expand-Archive -Path Archicad25DevKit.zip
       - run:
           name: build AddOn
           command: |
             cd project/ConnectorArchicad/AddOn
             mkdir Build
-            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="./Support"
+            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../../speckle-sharp-ci-tools/Resources/Archicad25DevKit"
             msbuild "Speckle Connector.sln" /p:Configuration=Release
       - persist_to_workspace:
           root: ./
@@ -418,7 +418,10 @@ workflows:
   connector_archicad:
     when: << pipeline.parameters.run_connector_archicad>>
     jobs:
-      - setup-archicad-dev
+      - get-ci-tools
+      - setup-archicad-dev:
+          requires:  
+            - get-ci-tools
       - build-connector: 
           requires: 
             - setup-archicad-dev
