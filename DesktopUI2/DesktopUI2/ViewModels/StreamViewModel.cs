@@ -543,7 +543,7 @@ namespace DesktopUI2.ViewModels
 
       Reset();
       Progress.IsProgressing = true;
-      await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
 
       if (!Progress.CancellationTokenSource.IsCancellationRequested)
@@ -552,8 +552,8 @@ namespace DesktopUI2.ViewModels
         Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
         Tracker.TrackPageview(Tracker.SEND);
 
-        Notification = $"Sent successfully!";
-        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}";
+        Notification = $"Sent successfully, view online";
+        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)

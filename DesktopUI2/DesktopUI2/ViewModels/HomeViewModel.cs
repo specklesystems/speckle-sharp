@@ -53,6 +53,14 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
     }
 
+
+    private bool _hasUpdate;
+    public bool HasUpdate
+    {
+      get => _hasUpdate;
+      private set => this.RaiseAndSetIfChanged(ref _hasUpdate, value);
+    }
+
     private List<StreamAccountWrapper> _streams;
     public List<StreamAccountWrapper> Streams
     {
@@ -302,6 +310,9 @@ namespace DesktopUI2.ViewModels
       //first show cached accounts, then refresh them
       await AccountManager.UpdateAccounts();
       Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+
+
+      HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
     }
 
     private void RemoveSavedStream(string id)
