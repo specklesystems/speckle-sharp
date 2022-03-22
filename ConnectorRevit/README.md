@@ -29,7 +29,7 @@ You can log in to your account:
 - from Manager, available at https://speckle-releases.netlify.app/
 - or, if using our latest release, you can also log in directly from the Revit connector
 
-![image](https://user-images.githubusercontent.com/2679513/159452876-4553da6e-4e67-43fa-923a-2621df66888c.png)
+![login](https://user-images.githubusercontent.com/2679513/159454529-6b85eb3b-e964-4b39-87ba-286799771e3d.gif)
 
 
 ### Debugging
