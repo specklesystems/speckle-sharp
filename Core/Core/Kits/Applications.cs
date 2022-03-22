@@ -163,7 +163,8 @@ namespace Speckle.Core.Kits
   {
     public const string Rhino6 = "Rhino6";
     public const string Rhino7 = "Rhino7";
-    public const string Grasshopper = "Grasshopper";
+    public const string Grasshopper6 = "Grasshopper6";
+    public const string Grasshopper7 = "Grasshopper7";
     public const string Revit2019 = "Revit2019";
     public const string Revit2020 = "Revit2020";
     public const string Revit2021 = "Revit2021";

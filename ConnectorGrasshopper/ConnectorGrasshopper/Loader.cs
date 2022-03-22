@@ -5,6 +5,7 @@ using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
 using Grasshopper.Kernel;
+using Rhino;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
@@ -26,7 +27,12 @@ namespace ConnectorGrasshopper
 
     public override GH_LoadingInstruction PriorityLoad()
     {
-      Setup.Init(VersionedHostApplications.Grasshopper, HostApplications.Grasshopper.Slug);
+      var version = VersionedHostApplications.Grasshopper6;
+      if (RhinoApp.Version.Major == 7)
+        version = VersionedHostApplications.Grasshopper7;
+      
+      Setup.Init(version, HostApplications.Grasshopper.Slug);
+
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
         Properties.Resources.speckle_logo);
@@ -83,7 +89,7 @@ namespace ConnectorGrasshopper
 
       try
       {
-        loadedKits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
+        loadedKits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
 
         var kitItems = new List<ToolStripItem>();
         loadedKits.ToList().ForEach(kit =>
