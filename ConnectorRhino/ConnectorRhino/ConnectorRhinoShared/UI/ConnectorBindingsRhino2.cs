@@ -129,10 +129,11 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
-        new ManualSelectionFilter(),
+        new AllSelectionFilter { Slug="all", Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects and project info." },
         new ListSelectionFilter {Slug="layer", Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
         new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information as views to the stream"},
-        new AllSelectionFilter { Slug="all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project info." }
+        new ManualSelectionFilter()
+
       };
     }
 

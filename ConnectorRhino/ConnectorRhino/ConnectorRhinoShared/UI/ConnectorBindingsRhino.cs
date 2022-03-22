@@ -1,14 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
-using Rhino;
-using Rhino.DocObjects;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
-using Stylet;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,8 +7,18 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
+using Rhino;
+using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Speckle.DesktopUI;
+using Speckle.DesktopUI.Utils;
+using Speckle.Newtonsoft.Json;
+using Stylet;
 using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 
 namespace SpeckleRhino
@@ -162,9 +162,10 @@ namespace SpeckleRhino
 
       return new List<ISelectionFilter>()
       {
+        new AllSelectionFilter { Slug="all", Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects and project info." },
         new ListSelectionFilter {Slug="layer", Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
         new ListSelectionFilter {Slug="project-info", Name = "P. Info", Icon = "Information", Values = projectInfo, Description="Adds the selected project information as views to the stream"},
-        new AllSelectionFilter { Slug="all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects and project info." }
+
       };
     }
 
@@ -385,13 +386,13 @@ namespace SpeckleRhino
       }
 
       var convertedList = new List<object>();
-      
+
       //Iteratively flatten any lists
       void FlattenConvertedObject(object item)
       {
         if (item is IList list)
         {
-          foreach(object child in list)
+          foreach (object child in list)
             FlattenConvertedObject(child);
         }
         else
@@ -419,23 +420,23 @@ namespace SpeckleRhino
           continue;
         }
 
-        var attributes = new ObjectAttributes {LayerIndex = bakeLayer.Index};
+        var attributes = new ObjectAttributes { LayerIndex = bakeLayer.Index };
 
         // handle display
         if (obj[@"displayStyle"] is Base display)
         {
-          var color = display[ "color" ] as int?;
-          var lineStyle = display[ "linetype" ] as string;
-          var lineWidth = display[ "lineweight" ] as double?;
+          var color = display["color"] as int?;
+          var lineStyle = display["linetype"] as string;
+          var lineWidth = display["lineweight"] as double?;
 
           if (color != null)
           {
             attributes.ColorSource = ObjectColorSource.ColorFromObject;
-            attributes.ObjectColor = System.Drawing.Color.FromArgb((int) color);
+            attributes.ObjectColor = System.Drawing.Color.FromArgb((int)color);
           }
 
           if (lineWidth != null)
-            attributes.PlotWeight = (double) lineWidth;
+            attributes.PlotWeight = (double)lineWidth;
           if (lineStyle != null)
           {
             var ls = Doc.Linetypes.FindName(lineStyle);
@@ -462,20 +463,20 @@ namespace SpeckleRhino
         // handle user strings
         if (obj[UserStrings] is Dictionary<string, object> userStrings)
           foreach (var key in userStrings.Keys)
-            attributes.SetUserString(key, userStrings[ key ].ToString());
+            attributes.SetUserString(key, userStrings[key].ToString());
 
         // handle user dictionaries
         if (obj[UserDictionary] is Dictionary<string, object> dict)
           ParseDictionaryToArchivable(attributes.UserDictionary, dict);
 
         Guid id = Doc.Objects.Add(convertedRH, attributes);
-        
+
         if (id == Guid.Empty)
         {
           state.Errors.Add(new Exception($"Failed to bake object {obj.id} of type {obj.speckle_type}."));
           continue;
         }
-        
+
         if (obj[@"renderMaterial"] is Base render)
         {
           var convertedMaterial = converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
@@ -536,11 +537,11 @@ namespace SpeckleRhino
         // applicationId can either be doc obj guid or name of view
         RhinoObject obj = null;
         int viewIndex = -1;
-        try 
+        try
         {
           obj = Doc.Objects.FindId(new Guid(applicationId)); // try get geom object
         }
-        catch 
+        catch
         {
           viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
         }
