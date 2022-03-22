@@ -546,7 +546,7 @@ workflows:
       - build-connector-mac:
           name: build-deploy-connector-grasshopper-mac
           slnname: ConnectorGrasshopper
-          projname: SpeckleGH
+          projname: ConnectorGrasshopper
           installername: SpeckleGhInstall
           installer: true
           slug: grasshopper-mac
