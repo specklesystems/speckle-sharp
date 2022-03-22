@@ -31,7 +31,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
     public System.Windows.Forms.Control Control;
-
     public ConnectorBindingsAutocad() : base()
     {
       Control = new System.Windows.Forms.Control();

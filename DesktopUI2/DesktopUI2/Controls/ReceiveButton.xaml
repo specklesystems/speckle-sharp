@@ -56,7 +56,7 @@
         assists:ShadowAssist.ShadowDepth="0"
         Background="Transparent"
         Classes="Mini"
-        Command="{Binding CancelReceiveOrReceiveCommand}"
+        Command="{Binding CancelSendOrReceiveCommand}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
         ToolTip.Tip="Cancel">
         <Button.Content>
