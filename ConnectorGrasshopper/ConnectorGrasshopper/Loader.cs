@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
-using Grasshopper.GUI;
-using Grasshopper.GUI.Canvas;
-using Grasshopper.GUI.Canvas.Interaction;
 using Grasshopper.Kernel;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
 
 namespace ConnectorGrasshopper
 {
-  public static class KeyWatcher {
+  public static class KeyWatcher
+  {
     public static bool TabPressed;
   }
   public class Loader : GH_AssemblyPriority
@@ -31,7 +26,7 @@ namespace ConnectorGrasshopper
 
     public override GH_LoadingInstruction PriorityLoad()
     {
-      Setup.Init(VersionedHostApplications.Grasshopper, HostApplications.Grasshopper.Name);
+      Setup.Init(VersionedHostApplications.Grasshopper, HostApplications.Grasshopper.Slug);
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
         Properties.Resources.speckle_logo);
@@ -50,10 +45,10 @@ namespace ConnectorGrasshopper
         if (e.KeyCode == Keys.Tab && !KeyWatcher.TabPressed)
           KeyWatcher.TabPressed = true;
       };
-      
+
       Grasshopper.Instances.ActiveCanvas.KeyUp += (s, e) =>
       {
-        if(KeyWatcher.TabPressed && e.KeyCode == Keys.Tab) 
+        if (KeyWatcher.TabPressed && e.KeyCode == Keys.Tab)
           KeyWatcher.TabPressed = false;
       };
     }

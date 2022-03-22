@@ -1,31 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.Collections;
-
-
-using Speckle.Newtonsoft.Json;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Speckle.Core.Api;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
-using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
-using Speckle.Core.Transports;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Colors;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
-
-using AcadApp = Autodesk.AutoCAD.ApplicationServices;
-using AcadDb = Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Colors;
-
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Speckle.DesktopUI;
+using Speckle.DesktopUI.Utils;
+using Speckle.Newtonsoft.Json;
 using Stylet;
-using Autodesk.AutoCAD.DatabaseServices;
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AcadDb = Autodesk.AutoCAD.DatabaseServices;
+using ProgressReport = Speckle.DesktopUI.Utils.ProgressReport;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -41,7 +35,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
-    public System.Windows.Forms.Control Control; 
+    public System.Windows.Forms.Control Control;
     public ConnectorBindingsAutocad() : base()
     {
       Control = new System.Windows.Forms.Control();
@@ -90,7 +84,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var objs = new List<string>();
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
-        BlockTableRecord modelSpace = Doc.Database.GetModelSpace(); 
+        BlockTableRecord modelSpace = Doc.Database.GetModelSpace();
         foreach (ObjectId id in modelSpace)
         {
           var dbObj = tr.GetObject(id, OpenMode.ForRead);
@@ -144,8 +138,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       return new List<ISelectionFilter>()
       {
+         new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." },
          new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-         new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+
       };
     }
 
@@ -217,7 +212,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onErrorAction: (message, exception) => { Exceptions.Add(exception); },
         disposeTransports: true
         );
-      
+
       try
       {
         await state.Client.CommitReceived(new CommitReceivedInput
@@ -532,7 +527,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.VersionedAppName);
-      
+
       var streamId = state.Stream.id;
       var client = state.Client;
 
