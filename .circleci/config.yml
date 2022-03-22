@@ -238,9 +238,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: install cmake
           command: |
             choco install cmake
-            $env:Path +="C:\Program Files\CMake\bin"
       - run: 
-          name: install devkit
+          name: extract devkit
           command: |
             cd speckle-sharp-ci-tools/Resources
             Expand-Archive -Path Archicad25DevKit.zip
@@ -255,7 +254,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - persist_to_workspace:
           root: ./
           paths:
-            - project/ConnectorArchicad/AddOn/Build
+            - ConnectorArchicad/AddOn/Build
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
