@@ -147,8 +147,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - checkout
       - run: 
+          name: Restore Objects
+          command: nuget restore Objects/Objects.sln
+      - run: 
           name: Build Objects
-          command: dotnet build Objects/Objects.sln -c Release /p:IsDesktopBuild=false -v q
+          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
 
   build-desktopui:
     executor:

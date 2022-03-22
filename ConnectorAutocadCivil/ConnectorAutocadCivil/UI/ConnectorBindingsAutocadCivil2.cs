@@ -701,7 +701,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
     {
-      if (e.DocumentWindow.Document == null)
+      if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
         return;
 
       var streams = GetStreamsInFile();

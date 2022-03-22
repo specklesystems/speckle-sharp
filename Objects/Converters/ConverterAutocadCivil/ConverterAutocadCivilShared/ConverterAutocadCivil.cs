@@ -209,6 +209,10 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               @base = PipeToSpeckle(o);
               Report.Log($"Converted Pipe");
               break;
+            case CivilDB.PressurePipe o:
+              @base = PipeToSpeckle(o);
+              Report.Log($"Converted Pressure Pipe");
+              break;
             case CivilDB.Profile o:
               @base = ProfileToSpeckle(o);
               Report.Log($"Converted Profile as Base");
@@ -449,6 +453,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             case CivilDB.Structure _:
             case CivilDB.Alignment _:
             case CivilDB.Pipe _:
+            case CivilDB.PressurePipe _:
             case CivilDB.Profile _:
             case CivilDB.TinSurface _:
               return true;

@@ -55,6 +55,7 @@
           <m:FloatingButton
             Grid.Column="1"
             VerticalAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
             Background="Transparent"
             Classes="Mini"
             Command="{Binding ToggleDarkThemeCommand}"
@@ -71,6 +72,7 @@
           <m:FloatingButton
             Grid.Column="1"
             VerticalAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
             Background="Transparent"
             Classes="Mini"
             Command="{Binding RefreshCommand}"

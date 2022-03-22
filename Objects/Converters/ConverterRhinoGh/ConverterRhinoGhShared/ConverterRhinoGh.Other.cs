@@ -138,7 +138,7 @@ namespace Objects.Converter.RhinoGh
     }
     private HatchPattern FindDefaultPattern(string patternName)
     {
-      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties().Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase)).ToList()?.First();
+      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties()?.Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase))?.ToList().FirstOrDefault();
       if (defaultPattern != null)
         return defaultPattern.GetValue(this, null) as HatchPattern;
       else

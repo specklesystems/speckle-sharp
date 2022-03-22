@@ -51,6 +51,7 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_Conduit,
       BuiltInCategory.OST_CurtaSystem,
       BuiltInCategory.OST_DataDevices,
+      BuiltInCategory.OST_Doors,
       BuiltInCategory.OST_DuctSystem,
       BuiltInCategory.OST_DuctCurves,
       BuiltInCategory.OST_ElectricalCircuit,
