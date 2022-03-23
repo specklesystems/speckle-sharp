@@ -722,9 +722,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (e.Document == null)
         return;
 
-      // transfer old dui streamstates - deprecate this line after a few releases
-      SpeckleStreamManager.TransferOldSpeckleStreams();
-
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {

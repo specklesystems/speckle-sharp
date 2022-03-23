@@ -24,9 +24,6 @@ namespace Speckle.ConnectorAutocadCivil.Storage
     readonly static string SpeckleExtensionDictionary = "Speckle";
     readonly static string SpeckleStreamStates = "StreamStates";
 
-    // This is used to transfer old DUI saved streams to DUI2. Deprecate after a few releases
-    readonly static string SpeckleExtensionDictionaryOld = "SpeckleStreams";
-
     /// <summary>
     /// Returns all the speckle stream states present in the current document.
     /// </summary>
@@ -55,7 +52,8 @@ namespace Speckle.ConnectorAutocadCivil.Storage
                 var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
                 streams = JsonConvert.DeserializeObject<List<StreamState>>(record.Data.AsArray()[0].Value as string);
               }
-              catch { }
+              catch (Exception e)
+              { }
             }
           }
         }
@@ -99,45 +97,6 @@ namespace Speckle.ConnectorAutocadCivil.Storage
           tr.AddNewlyCreatedDBObject(xRec, true);
           tr.Commit();
         }
-      }
-    }
-
-    // This is used to transfer old DUI saved streams to DUI2. Deprecate after a few releases
-    public static void TransferOldSpeckleStreams()
-    {
-      Document Doc = Application.DocumentManager.MdiActiveDocument;
-
-      if (Doc == null)
-        return;
-
-      List<string> oldSavedStreams = new List<string>();
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-      {
-        var NOD = (DBDictionary)tr.GetObject(Doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
-        if (NOD.Contains(SpeckleExtensionDictionaryOld))
-        {
-          var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionaryOld), OpenMode.ForWrite) as DBDictionary;
-          if (speckleDict != null && speckleDict.Count > 0)
-          {
-            // get old streams and add to list
-            foreach (DBDictionaryEntry entry in speckleDict)
-            {
-              var value = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord;
-              oldSavedStreams.Add(value.Data.AsArray()[0].Value as string);
-            }
-          }
-          NOD.Remove(SpeckleExtensionDictionaryOld); // removes old stream dictionary from doc
-        }
-        tr.Commit();
-      }
-
-      if (oldSavedStreams.Count > 0)
-      {
-        // add old streams to new streamstate dictionary
-        var oldStreams = oldSavedStreams.Select(s => JsonConvert.DeserializeObject<StreamState>(s)).ToList();
-        var currentStreams = ReadState(Doc);
-        currentStreams.AddRange(oldStreams);
-        WriteStreamStateList(Doc, currentStreams);
       }
     }
   }
