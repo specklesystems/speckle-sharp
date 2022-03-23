@@ -723,11 +723,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
         return;
 
       var streams = GetStreamsInFile();
-      if (streams != null && streams.Count != 0)
-      {
+      UpdateSavedStreams(streams);
+      if (streams.Count > 0)
         SpeckleAutocadCommand.CreateOrFocusSpeckle();
-        UpdateSavedStreams(streams);
-      }
+      
     }
     #endregion
   }

@@ -62,11 +62,9 @@ namespace SpeckleRhino
         return;
 
       var streams = GetStreamsInFile();
-      if (streams != null && streams.Count != 0)
-      {
+      UpdateSavedStreams(streams);
+      if (streams.Count > 0)
         SpeckleCommand.CreateOrFocusSpeckle();
-        UpdateSavedStreams(streams);
-      }
     }
 
     #region Local streams I/O with local file
