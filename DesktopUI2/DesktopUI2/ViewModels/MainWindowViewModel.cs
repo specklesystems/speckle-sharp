@@ -51,6 +51,12 @@ namespace DesktopUI2.ViewModels
     }
 
 
+    public static void GoHome()
+    {
+      if (RouterInstance != null && HomeViewModel.Instance != null)
+        RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+    }
+
 
   }
 }
