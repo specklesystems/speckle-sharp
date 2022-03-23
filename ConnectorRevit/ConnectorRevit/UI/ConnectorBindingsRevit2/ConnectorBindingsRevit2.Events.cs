@@ -116,6 +116,8 @@ namespace Speckle.ConnectorRevit.UI
       var streams = GetStreamsInFile();
       UpdateSavedStreams(streams);
 
+      MainWindowViewModel.GoHome();
+
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
@@ -129,6 +131,7 @@ namespace Speckle.ConnectorRevit.UI
       if (SpeckleRevitCommand2.MainWindow != null)
         SpeckleRevitCommand2.MainWindow.Hide();
 
+      MainWindowViewModel.GoHome();
     }
 
     // this method is triggered when there are changes in the active document
@@ -144,6 +147,9 @@ namespace Speckle.ConnectorRevit.UI
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
+
+      //exit "stream view" when changing documents
+      MainWindowViewModel.GoHome();
     }
 
 
