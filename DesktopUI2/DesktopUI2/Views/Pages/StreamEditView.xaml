@@ -269,7 +269,8 @@
       Background="{DynamicResource MaterialDesignCardBackground}"
       SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem>
+      <TabItem IsEnabled
+							 ="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
@@ -288,7 +289,7 @@
               Text="Send" />
           </StackPanel>
         </TabItem.Header>
-        <uc:Send IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" />
+        <uc:Send />
       </TabItem>
 
       <TabItem>

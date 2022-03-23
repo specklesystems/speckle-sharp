@@ -281,6 +281,12 @@ namespace DesktopUI2.ViewModels
       Client = streamState.Client;
       IsReceiver = streamState.IsReceiver;
 
+      //default to receive mode if no permission to send
+      if (Stream.role == null || Stream.role == "stream:reviewer")
+      {
+        IsReceiver = true;
+      }
+
       HostScreen = hostScreen;
       RemoveSavedStreamCommand = removeSavedStreamCommand;
 
@@ -432,7 +438,11 @@ namespace DesktopUI2.ViewModels
         var branch = await Client.BranchGet(Stream.id, SelectedBranch.name, 100);
         branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
         Commits = branch.commits.items;
-        SelectedCommit = Commits[0];
+        var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
+        if (commit != null)
+          SelectedCommit = commit;
+        else
+          SelectedCommit = Commits[0];
       }
       else
       {
