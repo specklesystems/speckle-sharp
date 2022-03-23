@@ -281,6 +281,12 @@ namespace DesktopUI2.ViewModels
       Client = streamState.Client;
       IsReceiver = streamState.IsReceiver;
 
+      //default to receive mode if no permission to send
+      if (Stream.role == null || Stream.role == "stream:reviewer")
+      {
+        IsReceiver = true;
+      }
+
       HostScreen = hostScreen;
       RemoveSavedStreamCommand = removeSavedStreamCommand;
 
