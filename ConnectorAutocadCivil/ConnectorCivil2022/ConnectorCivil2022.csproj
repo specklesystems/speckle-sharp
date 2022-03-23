@@ -42,6 +42,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -88,10 +90,6 @@
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
       <Project>{eab21473-7013-431c-b526-fb5ba657ae2f}</Project>
       <Name>DesktopUI2</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
-      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
-      <Name>DesktopUI</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
