@@ -41,6 +41,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
         // DUI2
+        SpeckleAutocadCommand.InitAvalonia();
         SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
         SpeckleAutocadCommand.Bindings.RegisterAppEvents();
       }

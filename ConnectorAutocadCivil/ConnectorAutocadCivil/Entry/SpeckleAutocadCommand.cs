@@ -24,7 +24,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
     const int GWL_HWNDPARENT = -8;
     #endregion
-
+    private static Avalonia.Application AvaloniaApp { get; set; }
     public static Window MainWindow { get; private set; }
 
     public static ConnectorBindingsAutocad Bindings { get; set; }
@@ -45,10 +45,21 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       CreateOrFocusSpeckle();
     }
 
+    public static void InitAvalonia()
+    {
+      BuildAvaloniaApp().Start(AppMain, null);
+    }
+
     public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
-        BuildAvaloniaApp().Start(AppMain, null);
+      {
+        var viewModel = new MainWindowViewModel(Bindings);
+        MainWindow = new MainWindow
+        {
+          DataContext = viewModel
+        };
+      }
 
       MainWindow.Show();
       MainWindow.Activate();
@@ -63,13 +74,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
 
     private static void AppMain(Avalonia.Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel(Bindings);
-      MainWindow = new MainWindow
-      {
-        DataContext = viewModel
-      };
-
-      Task.Run(() => app.Run(MainWindow));
+      AvaloniaApp = app;
     }
 
     [CommandMethod("SpeckleCommunity", CommandFlags.ActionMacro)]
