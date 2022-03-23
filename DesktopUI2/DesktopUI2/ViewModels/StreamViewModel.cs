@@ -432,7 +432,11 @@ namespace DesktopUI2.ViewModels
         var branch = await Client.BranchGet(Stream.id, SelectedBranch.name, 100);
         branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
         Commits = branch.commits.items;
-        SelectedCommit = Commits[0];
+        var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
+        if (commit != null)
+          SelectedCommit = commit;
+        else
+          SelectedCommit = Commits[0];
       }
       else
       {

@@ -490,6 +490,17 @@ namespace DesktopUI2.ViewModels
           var client = new Client(account);
           var stream = await client.StreamGet(sw.StreamId);
           var streamState = new StreamState(account, stream);
+          streamState.BranchName = sw.BranchName;
+
+          //it's a commit URL, let's pull the right branch name
+          if (sw.CommitId != null)
+          {
+            streamState.IsReceiver = true;
+            streamState.CommitId = sw.CommitId;
+
+            var commit = await client.CommitGet(sw.StreamId, sw.CommitId);
+            streamState.BranchName = commit.branchName;
+          }
 
           OpenStream(streamState);
 
