@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;

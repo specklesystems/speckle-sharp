@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
