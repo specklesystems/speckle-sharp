@@ -14,38 +14,44 @@ namespace DesktopUI2.Models.Filters
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-      var jsonObject = JObject.Load(reader);
-      var filer = default(ISelectionFilter);
 
+      ISelectionFilter filter = default(ISelectionFilter);
 
+      JObject jsonObject = null;
+      try
+      {
+        jsonObject = JObject.Load(reader);
+      }
+      catch
+      {
+        return filter;
+      }
 
       var type = jsonObject.Value<string>("Type");
 
-
       if (type == typeof(AllSelectionFilter).ToString())
       {
-        filer = new AllSelectionFilter();
+        filter = new AllSelectionFilter();
       }
       else if (type == typeof(ListSelectionFilter).ToString())
       {
-        filer = new ListSelectionFilter();
+        filter = new ListSelectionFilter();
       }
       else if (type == typeof(ManualSelectionFilter).ToString())
       {
-        filer = new ManualSelectionFilter();
+        filter = new ManualSelectionFilter();
       }
       else if (type == typeof(PropertySelectionFilter).ToString())
       {
-        filer = new PropertySelectionFilter();
+        filter = new PropertySelectionFilter();
       }
       else
       {
         throw new SpeckleException($"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.FilerUtils.cs");
       }
 
-
-      serializer.Populate(jsonObject.CreateReader(), filer);
-      return filer;
+      serializer.Populate(jsonObject.CreateReader(), filter);
+      return filter;
 
     }
 
