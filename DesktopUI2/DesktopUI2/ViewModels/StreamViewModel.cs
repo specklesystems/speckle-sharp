@@ -747,7 +747,7 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(IsReceiver))]
     private bool CanSaveCommand(object parameter)
     {
-      return IsReady();
+      return true;
     }
 
 
