@@ -231,7 +231,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     parameters:
       slnname:
         type: string
-      dllname:
+      projname:
         type: string
         default: ""
       slug:
@@ -261,7 +261,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
+            msbuild << parameters.slnname >>/<< parameters.projname >>.sln /r /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
             CHANNEL="latest"
             if [[ $CIRCLE_TAG == *-beta ]]; then CHANNEL=beta; fi
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
@@ -286,28 +286,31 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Zip Connector files
           command: |
-            cd << parameters.slnname >>/<< parameters.slnname >>/bin/
-            zip -r <<parameters.dllname>>.zip ./
+            cd << parameters.slnname >>/<< parameters.projname >>/bin/
+            zip -r <<parameters.slug>>.zip ./
       # Create installer
       - run:
           name: Copy files to installer
           command: |
             mkdir -p speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles/
             cp Objects.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
-            cp << parameters.slnname >>/<< parameters.slnname >>/bin/<<parameters.dllname>>.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+            cp << parameters.slnname >>/<< parameters.projname >>/bin/<<parameters.slug>>.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       - run:
           name: Build Mac installer
-          command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:PublishSingleFile=true /p:PublishReadyToRun=false
+          command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release
       - run:
           name: Zip installer
           command: |
-            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/publish
+            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/
             zip -r <<parameters.slug>>.zip ./
       - store_artifacts:
-          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/publish/<<parameters.slug>>.zip
+          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip
       - run:
           name: Copy to installer location
-          command: cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>.zip
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
+            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
       - persist_to_workspace:
           root: ./
           paths:
@@ -379,6 +382,8 @@ workflows:
       - build-connector-mac:
           name: build-connector-grasshopper-mac
           slnname: ConnectorGrasshopper
+          projname: ConnectorGrasshopper
+
   # Rhino connector - Build/Test
   connector_rhino:
     when: << pipeline.parameters.run_connector_rhino >>
@@ -541,7 +546,7 @@ workflows:
       - build-connector-mac:
           name: build-deploy-connector-grasshopper-mac
           slnname: ConnectorGrasshopper
-          dllname: SpeckleGH
+          projname: ConnectorGrasshopper
           installername: SpeckleGhInstall
           installer: true
           slug: grasshopper-mac
