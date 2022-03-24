@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
+using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -169,7 +167,7 @@ namespace Objects.Converter.Revit
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
       var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
 
-      var symbol = Doc.GetElement(revitFi.GetTypeId()) as FamilySymbol;
+      var symbol = revitFi.Document.GetElement(revitFi.GetTypeId()) as FamilySymbol;
 
       var speckleFi = new BuiltElements.Revit.FamilyInstance();
       speckleFi.basePoint = basePoint;
@@ -196,7 +194,7 @@ namespace Objects.Converter.Revit
 
       foreach (var elemId in subElementIds)
       {
-        var subElem = Doc.GetElement(elemId);
+        var subElem = revitFi.Document.GetElement(elemId);
         if (CanConvertToSpeckle(subElem))
         {
           var obj = ConvertToSpeckle(subElem);
@@ -232,7 +230,7 @@ namespace Objects.Converter.Revit
       var subElements = new List<DB.Element>();
       foreach (var id in familyInstance.GetSubComponentIds())
       {
-        var element = Doc.GetElement(id);
+        var element = familyInstance.Document.GetElement(id);
         subElements.Add(element);
         if (element is Autodesk.Revit.DB.FamilyInstance)
         {

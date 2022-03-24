@@ -212,10 +212,11 @@ namespace DesktopUI2.ViewModels
       {
         //trigger change when any property in the child model view changes
         //used for the CanSave etc button bindings
-        value.PropertyChanged += (s, eo) =>
-        {
-          this.RaisePropertyChanged("SelectedFilter");
-        };
+        if (value != null)
+          value.PropertyChanged += (s, eo) =>
+          {
+            this.RaisePropertyChanged("SelectedFilter");
+          };
         this.RaiseAndSetIfChanged(ref _selectedFilter, value);
       }
     }
@@ -267,9 +268,11 @@ namespace DesktopUI2.ViewModels
 
     IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
-    public void UpdateHost(IScreen hostScreen)
+    public void UpdateVisualParentAndInit(IScreen hostScreen)
     {
       HostScreen = hostScreen;
+      //refresh stream, branches, filters etc
+      Init();
     }
     public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
 
@@ -301,6 +304,16 @@ namespace DesktopUI2.ViewModels
         return;
       }
 
+      Init();
+
+      var updateTextTimer = new System.Timers.Timer();
+      updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
+      updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
+      updateTextTimer.Enabled = true;
+    }
+
+    private void Init()
+    {
       GetStream().ConfigureAwait(false);
       GenerateMenuItems();
 
@@ -314,11 +327,6 @@ namespace DesktopUI2.ViewModels
       GetBranchesAndRestoreState();
       GetActivity();
 
-
-      var updateTextTimer = new System.Timers.Timer();
-      updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
-      updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
-      updateTextTimer.Enabled = true;
     }
 
     private void UpdateTextTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -747,7 +755,7 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(IsReceiver))]
     private bool CanSaveCommand(object parameter)
     {
-      return IsReady();
+      return true;
     }
 
 

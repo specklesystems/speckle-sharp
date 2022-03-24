@@ -13,7 +13,7 @@ namespace Objects.Converter.Revit
     //a ToNative method might come later on!
     private RevitStair StairToSpeckle(Stairs revitStair)
     {
-      var stairType = Doc.GetElement(revitStair.GetTypeId()) as StairsType;
+      var stairType = revitStair.Document.GetElement(revitStair.GetTypeId()) as StairsType;
       var speckleStair = new RevitStair();
       speckleStair.family = stairType.FamilyName;
       speckleStair.type = stairType.Name;
@@ -28,9 +28,9 @@ namespace Objects.Converter.Revit
       speckleStair.height = ScaleToSpeckle(revitStair.Height);
       speckleStair.numberOfStories = revitStair.NumberOfStories;
 
-      speckleStair.runs = revitStair.GetStairsRuns().Select(x => StairRunToSpeckle(Doc.GetElement(x) as StairsRun)).ToList();
-      speckleStair.landings = revitStair.GetStairsLandings().Select(x => StairLandingToSpeckle(Doc.GetElement(x) as StairsLanding)).ToList();
-      speckleStair.supports = revitStair.GetStairsSupports().Select(x => StairSupportToSpeckle(Doc.GetElement(x))).ToList();
+      speckleStair.runs = revitStair.GetStairsRuns().Select(x => StairRunToSpeckle(revitStair.Document.GetElement(x) as StairsRun)).ToList();
+      speckleStair.landings = revitStair.GetStairsLandings().Select(x => StairLandingToSpeckle(revitStair.Document.GetElement(x) as StairsLanding)).ToList();
+      speckleStair.supports = revitStair.GetStairsSupports().Select(x => StairSupportToSpeckle(revitStair.Document.GetElement(x))).ToList();
 
       GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
 
@@ -42,7 +42,7 @@ namespace Objects.Converter.Revit
 
     private RevitStairRun StairRunToSpeckle(StairsRun revitStairRun)
     {
-      var stairType = Doc.GetElement(revitStairRun.GetTypeId()) as StairsRunType;
+      var stairType = revitStairRun.Document.GetElement(revitStairRun.GetTypeId()) as StairsRunType;
       var run = new RevitStairRun();
       run.family = stairType.FamilyName;
       run.type = stairType.Name;
@@ -67,7 +67,7 @@ namespace Objects.Converter.Revit
 
     private RevitStairLanding StairLandingToSpeckle(StairsLanding revitStairLanding)
     {
-      var stairType = Doc.GetElement(revitStairLanding.GetTypeId()) as StairsLandingType;
+      var stairType = revitStairLanding.Document.GetElement(revitStairLanding.GetTypeId()) as StairsLandingType;
       var landing = new RevitStairLanding();
       landing.family = stairType.FamilyName;
       landing.type = stairType.Name;
@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
 
     private RevitStairSupport StairSupportToSpeckle(Element revitStairSupport)
     {
-      var stairType = Doc.GetElement(revitStairSupport.GetTypeId()) as ElementType;
+      var stairType = revitStairSupport.Document.GetElement(revitStairSupport.GetTypeId()) as ElementType;
       var support = new RevitStairSupport();
       support.family = stairType.FamilyName;
       support.type = stairType.Name;

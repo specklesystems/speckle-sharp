@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var profiles = GetProfiles(revitPad);
 
       var specklePad = new BuildingPad();
-      specklePad.type = Doc.GetElement(revitPad.GetTypeId()).Name;
+      specklePad.type = revitPad.Document.GetElement(revitPad.GetTypeId()).Name;
       specklePad.outline = profiles[0];
       if (profiles.Count > 1)
       {

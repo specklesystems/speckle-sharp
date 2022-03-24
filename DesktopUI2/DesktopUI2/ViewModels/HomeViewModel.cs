@@ -121,7 +121,7 @@ namespace DesktopUI2.ViewModels
       {
         if (value != null && !value.NoAccess)
         {
-          value.UpdateHost(HostScreen);
+          value.UpdateVisualParentAndInit(HostScreen);
           MainWindowViewModel.RouterInstance.Navigate.Execute(value);
           Tracker.TrackPageview("stream", "edit");
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });

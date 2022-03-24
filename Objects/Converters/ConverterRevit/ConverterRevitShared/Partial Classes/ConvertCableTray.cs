@@ -4,7 +4,6 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 
@@ -64,7 +63,7 @@ namespace Objects.Converter.Revit
       {
         throw new Speckle.Core.Logging.SpeckleException("Only line based CableTrays are currently supported.");
       }
-      var cableTrayType = Doc.GetElement(revitCableTray.GetTypeId()) as CableTrayType;
+      var cableTrayType = revitCableTray.Document.GetElement(revitCableTray.GetTypeId()) as CableTrayType;
 
       // SPECKLE CABLETRAY
       var speckleCableTray = new RevitCableTray
