@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Speckle.Core.Models;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 
@@ -178,7 +176,7 @@ namespace Objects.Converter.Revit
             break;
           }
       }
-      var elementType = Doc.GetElement(revitRoof.GetTypeId()) as ElementType;
+      var elementType = revitRoof.Document.GetElement(revitRoof.GetTypeId()) as ElementType;
       speckleRoof.type = elementType.Name;
       speckleRoof.family = elementType.FamilyName;
 

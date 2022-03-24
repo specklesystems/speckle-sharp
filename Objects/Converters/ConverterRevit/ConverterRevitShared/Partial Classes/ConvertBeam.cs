@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -103,7 +102,7 @@ namespace Objects.Converter.Revit
 
       var speckleBeam = new RevitBeam();
       speckleBeam.family = symbol.FamilyName;
-      speckleBeam.type = Doc.GetElement(revitBeam.GetTypeId()).Name;
+      speckleBeam.type = revitBeam.Document.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
       speckleBeam.displayValue = GetElementMesh(revitBeam);

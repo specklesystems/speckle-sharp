@@ -10,7 +10,6 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
-    //TODO: store these string values in something more solid to avoid typos?
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var categories = new List<string>();
@@ -77,6 +76,22 @@ namespace Speckle.ConnectorRevit.UI
       return elementIds;
     }
 
+    private List<Document> GetLinkedDocuments()
+    {
+      var docs = new List<Document>();
+      //TODO: is the name the most safe way to look for it?
+      var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document).OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(RevitLinkType)).ToElements().Cast<RevitLinkType>().Select(x => x.Name.Replace(".rvt", ""));
+      foreach (Document revitDoc in RevitApp.Application.Documents)
+      {
+        if (revitDoc.IsLinked && linkedRVTs.Contains(revitDoc.Title))
+        {
+          docs.Add(revitDoc);
+        }
+      }
+
+      return docs;
+    }
+
     /// <summary>
     /// Given the filter in use by a stream returns the document elements that match it.
     /// </summary>
@@ -84,145 +99,181 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns></returns>
     private List<Element> GetSelectionFilterObjects(ISelectionFilter filter)
     {
-      var doc = CurrentDoc.Document;
+      var currentDoc = CurrentDoc.Document;
+      var allDocs = GetLinkedDocuments();
+      allDocs.Add(currentDoc);
 
       var selection = new List<Element>();
-
-      switch (filter.Slug)
+      try
       {
-        case "manual":
-          return filter.Selection.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
 
-        case "all":
-          selection.AddRange(doc.SupportedElements()); // includes levels
-          selection.Add(doc.ProjectInformation);
-          selection.AddRange(doc.Views2D());
-          selection.AddRange(doc.Views3D());
-          selection.AddRange(doc.SupportedTypes());
-          return selection;
+        switch (filter.Slug)
+        {
 
-        case "category":
-          var catFilter = filter as ListSelectionFilter;
-          var bics = new List<BuiltInCategory>();
-          var categories = ConnectorRevitUtils.GetCategories(doc);
-          IList<ElementFilter> elementFilters = new List<ElementFilter>();
+          case "manual":
+            selection = filter.Selection.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
+            var linkedFiles = selection.Where(x => x is RevitLinkInstance).Cast<RevitLinkInstance>().ToList();
 
-          foreach (var cat in catFilter.Selection)
-          {
-            elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
-          }
-
-          var categoryFilter = new LogicalOrFilter(elementFilters);
-
-          selection = new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
-            .WherePasses(categoryFilter).ToList();
-          return selection;
-
-        case "view":
-          var viewFilter = filter as ListSelectionFilter;
-
-          var views = new FilteredElementCollector(doc)
-            .WhereElementIsNotElementType()
-            .OfClass(typeof(View))
-            .Where(x => viewFilter.Selection.Contains(x.Name));
-
-          foreach (var view in views)
-          {
-            var ids = selection.Select(x => x.UniqueId);
-
-            var viewElements = new FilteredElementCollector(doc, view.Id)
-              .WhereElementIsNotElementType()
-              .WhereElementIsViewIndependent()
-              //.Where(x => x.IsPhysicalElement())
-              .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
-              .ToList();
-
-            selection.AddRange(viewElements);
-          }
-          return selection;
-
-        case "project-info":
-          var projectInfoFilter = filter as ListSelectionFilter;
-
-          if (projectInfoFilter.Selection.Contains("Project Info"))
-            selection.Add(doc.ProjectInformation);
-
-          if (projectInfoFilter.Selection.Contains("Views 2D"))
-            selection.AddRange(doc.Views2D());
-
-          if (projectInfoFilter.Selection.Contains("Views 3D"))
-            selection.AddRange(doc.Views3D());
-
-          if (projectInfoFilter.Selection.Contains("Levels"))
-            selection.AddRange(doc.Levels());
-
-          if (projectInfoFilter.Selection.Contains("Families & Types"))
-            selection.AddRange(doc.SupportedTypes());
-
-          return selection;
-
-        case "workset":
-          var worksetFilter = filter as ListSelectionFilter;
-          var worksets = new FilteredWorksetCollector(doc).Where(x => worksetFilter.Selection.Contains(x.Name)).Select(x => x.Id).ToList();
-          var collector = new FilteredElementCollector(doc);
-          var elementWorksetFilters = new List<ElementFilter>();
-
-          foreach (var w in worksets)
-          {
-            elementWorksetFilters.Add(new ElementWorksetFilter(w));
-          }
-
-          var worksetLogicalFilter = new LogicalOrFilter(elementWorksetFilters);
-          var elements = collector.WherePasses(worksetLogicalFilter).ToElements().ToList();
-
-          return elements;
-
-        case "param":
-          try
-          {
-            var propFilter = filter as PropertySelectionFilter;
-            var query = new FilteredElementCollector(doc)
-              .WhereElementIsNotElementType()
-              .WhereElementIsNotElementType()
-              .WhereElementIsViewIndependent()
-              .Where(x => x.IsPhysicalElement())
-              .Where(fi => fi.LookupParameter(propFilter.PropertyName) != null);
-
-            propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
-
-            switch (propFilter.PropertyOperator)
+            foreach (var linkedFile in linkedFiles)
             {
-              case "equals":
-                query = query.Where(fi =>
-                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
-                break;
-              case "contains":
-                query = query.Where(fi =>
-                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
-                break;
-              case "is greater than":
-                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                            fi.LookupParameter(propFilter.PropertyName)) >
-                                          double.Parse(propFilter.PropertyValue));
-                break;
-              case "is less than":
-                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                            fi.LookupParameter(propFilter.PropertyName)) <
-                                          double.Parse(propFilter.PropertyValue));
-                break;
+              var match = allDocs.FirstOrDefault(x => x.Title == linkedFile.Name.Split(new string[] { ".rvt" }, StringSplitOptions.None)[0]);
+              if (match != null)
+                selection.AddRange(match.SupportedElements());
             }
 
-            selection = query.ToList();
-          }
-          catch (Exception e)
-          {
-            Log.CaptureException(e);
-          }
-          return selection;
+            return selection;
+
+          case "all":
+            //add these only for the current doc
+            selection.Add(currentDoc.ProjectInformation);
+            selection.AddRange(currentDoc.Views2D());
+            selection.AddRange(currentDoc.Views3D());
+
+            //and these for every linked doc
+            foreach (var doc in allDocs)
+            {
+              selection.AddRange(doc.SupportedElements()); // includes levels
+              selection.AddRange(doc.SupportedTypes());
+            }
+
+            return selection;
+
+          case "category":
+            var catFilter = filter as ListSelectionFilter;
+            var bics = new List<BuiltInCategory>();
+            var categories = ConnectorRevitUtils.GetCategories(currentDoc);
+            IList<ElementFilter> elementFilters = new List<ElementFilter>();
+
+            foreach (var cat in catFilter.Selection)
+            {
+              elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
+            }
+
+            var categoryFilter = new LogicalOrFilter(elementFilters);
+            foreach (var doc in allDocs)
+            {
+              selection.AddRange(new FilteredElementCollector(doc)
+             .WhereElementIsNotElementType()
+             .WhereElementIsViewIndependent()
+             .WherePasses(categoryFilter).ToList());
+            }
+
+            return selection;
+
+          case "view":
+            var viewFilter = filter as ListSelectionFilter;
+
+            var views = new FilteredElementCollector(currentDoc)
+              .WhereElementIsNotElementType()
+              .OfClass(typeof(View))
+              .Where(x => viewFilter.Selection.Contains(x.Name));
+
+            foreach (var view in views)
+            {
+              var ids = selection.Select(x => x.UniqueId);
+
+              foreach (var doc in allDocs)
+              {
+                selection.AddRange(new FilteredElementCollector(doc, view.Id)
+                .WhereElementIsNotElementType()
+                .WhereElementIsViewIndependent()
+                //.Where(x => x.IsPhysicalElement())
+                .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
+                .ToList());
+              }
+            }
+            return selection;
+
+          case "project-info":
+            var projectInfoFilter = filter as ListSelectionFilter;
+
+            if (projectInfoFilter.Selection.Contains("Project Info"))
+              selection.Add(currentDoc.ProjectInformation);
+
+            if (projectInfoFilter.Selection.Contains("Views 2D"))
+              selection.AddRange(currentDoc.Views2D());
+
+            if (projectInfoFilter.Selection.Contains("Views 3D"))
+              selection.AddRange(currentDoc.Views3D());
+
+            if (projectInfoFilter.Selection.Contains("Levels"))
+              selection.AddRange(currentDoc.Levels());
+
+            if (projectInfoFilter.Selection.Contains("Families & Types"))
+              selection.AddRange(currentDoc.SupportedTypes());
+
+            return selection;
+
+          case "workset":
+            var worksetFilter = filter as ListSelectionFilter;
+            var worksets = new FilteredWorksetCollector(currentDoc).Where(x => worksetFilter.Selection.Contains(x.Name)).Select(x => x.Id).ToList();
+            foreach (var doc in allDocs)
+            {
+              var collector = new FilteredElementCollector(doc);
+              var elementWorksetFilters = new List<ElementFilter>();
+
+              foreach (var w in worksets)
+              {
+                elementWorksetFilters.Add(new ElementWorksetFilter(w));
+              }
+
+              var worksetLogicalFilter = new LogicalOrFilter(elementWorksetFilters);
+              selection.AddRange(collector.WherePasses(worksetLogicalFilter).ToElements().ToList());
+            }
+            return selection;
+
+          case "param":
+            try
+            {
+              foreach (var doc in allDocs)
+              {
+                var propFilter = filter as PropertySelectionFilter;
+                var query = new FilteredElementCollector(doc)
+                  .WhereElementIsNotElementType()
+                  .WhereElementIsNotElementType()
+                  .WhereElementIsViewIndependent()
+                  .Where(x => x.IsPhysicalElement())
+                  .Where(fi => fi.LookupParameter(propFilter.PropertyName) != null);
+
+                propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
+
+                switch (propFilter.PropertyOperator)
+                {
+                  case "equals":
+                    query = query.Where(fi =>
+                      GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
+                    break;
+                  case "contains":
+                    query = query.Where(fi =>
+                      GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
+                    break;
+                  case "is greater than":
+                    query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
+                                                fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                                                fi.LookupParameter(propFilter.PropertyName)) >
+                                              double.Parse(propFilter.PropertyValue));
+                    break;
+                  case "is less than":
+                    query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
+                                                fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                                                fi.LookupParameter(propFilter.PropertyName)) <
+                                              double.Parse(propFilter.PropertyValue));
+                    break;
+                }
+
+                selection.AddRange(query.ToList());
+              }
+            }
+            catch (Exception e)
+            {
+              Log.CaptureException(e);
+            }
+            return selection;
+        }
+      }
+      catch (Exception e)
+      {
+
       }
 
       return selection;

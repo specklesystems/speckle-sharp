@@ -1,8 +1,8 @@
-﻿using System;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
+using System;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
       {
         //no need to apply offset transform
         var analyticalModel = familyInstance.GetAnalyticalModel();
-        if (analyticalModel.GetCurve() != null)
+        if (analyticalModel != null && analyticalModel.GetCurve() != null)
         {
           return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
         }

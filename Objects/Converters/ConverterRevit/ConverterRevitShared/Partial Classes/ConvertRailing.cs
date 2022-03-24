@@ -75,7 +75,7 @@ namespace Objects.Converter.Revit
     private RevitRailing RailingToSpeckle(Railing revitRailing)
     {
 
-      var railingType = Doc.GetElement(revitRailing.GetTypeId()) as RailingType;
+      var railingType = revitRailing.Document.GetElement(revitRailing.GetTypeId()) as RailingType;
       var speckleRailing = new RevitRailing();
       //speckleRailing.family = railingType.FamilyName;
       speckleRailing.type = railingType.Name;
