@@ -50,7 +50,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       BuildAvaloniaApp().Start(AppMain, null);
     }
 
-    public static void CreateOrFocusSpeckle()
+    public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
       if (MainWindow == null)
       {
@@ -61,15 +61,22 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         };
       }
 
-      MainWindow.Show();
-      MainWindow.Activate();
-
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      try
       {
-        var parentHwnd = Application.MainWindow.Handle;
-        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+        if (showWindow)
+        {
+          MainWindow.Show();
+          MainWindow.Activate();
+
+          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+          {
+            var parentHwnd = Application.MainWindow.Handle;
+            var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+            SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+          }
+        }
       }
+      catch { }
     }
 
     private static void AppMain(Avalonia.Application app, string[] args)

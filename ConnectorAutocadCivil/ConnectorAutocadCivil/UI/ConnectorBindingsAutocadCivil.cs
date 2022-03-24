@@ -54,12 +54,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     #region boilerplate
     public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    
     public override string GetHostAppName() => Utils.Slug;
 
-
-
     private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
-
+   
     public override string GetDocumentId()
     {
       string path = GetDocPath(Doc);
@@ -69,7 +68,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override string GetDocumentLocation() => GetDocPath(Doc);
 
-    public override string GetFileName() => Doc?.Name;
+    public override string GetFileName() => (Doc != null) ? System.IO.Path.GetFileName(Doc.Name) : string.Empty;
 
     public override string GetActiveViewName() => "Entire Document";
 
@@ -612,20 +611,22 @@ namespace Speckle.ConnectorAutocadCivil.UI
             continue;
           }
 
-          // convert obj
-          Base converted = null;
-          string containerName = string.Empty;
-          converted = converter.ConvertToSpeckle(obj);
-          if (converted == null)
+          try
           {
-            progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
-            continue;
-          }
+            // convert obj
+            Base converted = null;
+            string containerName = string.Empty;
+            converted = converter.ConvertToSpeckle(obj);
+            if (converted == null)
+            {
+              progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+              continue;
+            }
 
-          /* TODO: adding the extension dictionary / xdata per object 
-          foreach (var key in obj.ExtensionDictionary)
-            converted[key] = obj.ExtensionDictionary.GetUserString(key);
-          */
+            /* TODO: adding the extension dictionary / xdata per object 
+            foreach (var key in obj.ExtensionDictionary)
+              converted[key] = obj.ExtensionDictionary.GetUserString(key);
+            */
 
 #if CIVIL2021 || CIVIL2022
           // add property sets if this is Civil3D
@@ -634,26 +635,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
             converted["propertySets"] = propertySets;
 #endif
 
-          if (obj is BlockReference)
-            containerName = "Blocks";
-          else
-          {
-            // remove invalid chars from layer name
-            string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-            containerName = cleanLayerName;
-            if (!cleanLayerName.Equals(layer))
-              renamedlayers = true;
+            if (obj is BlockReference)
+              containerName = "Blocks";
+            else
+            {
+              // remove invalid chars from layer name
+              string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
+              containerName = cleanLayerName;
+              if (!cleanLayerName.Equals(layer))
+                renamedlayers = true;
+            }
+
+            if (commitObject[$"@{containerName}"] == null)
+              commitObject[$"@{containerName}"] = new List<Base>();
+            ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
+
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
+
+            converted.applicationId = autocadObjectHandle;
           }
-
-          if (commitObject[$"@{containerName}"] == null)
-            commitObject[$"@{containerName}"] = new List<Base>();
-          ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
-
-          conversionProgressDict["Conversion"]++;
-          progress.Update(conversionProgressDict);
-
-          converted.applicationId = autocadObjectHandle;
-
+          catch (Exception e)
+          {
+            progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}: {e.Message}"));
+          }
           convertedCount++;
         }
 
@@ -699,34 +704,53 @@ namespace Speckle.ConnectorAutocadCivil.UI
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
     {
-      if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
-        return;
+      try
+      {
+        if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
+          return;
 
-      var streams = GetStreamsInFile();
-      UpdateSavedStreams(streams);
+        var streams = GetStreamsInFile();
+        UpdateSavedStreams(streams);
+
+        MainWindowViewModel.GoHome();
+      }
+      catch { }
     }
 
     private void Application_DocumentClosed(object sender, DocumentBeginCloseEventArgs e)
     {
-      // Triggered just after a request is received to close a drawing.
-      if (Doc != null)
-        return;
+      try
+      {
+        // Triggered just after a request is received to close a drawing.
+        if (Doc != null)
+          return;
 
-      if (SpeckleAutocadCommand.MainWindow != null)
-        SpeckleAutocadCommand.MainWindow.Hide();
+        if (SpeckleAutocadCommand.MainWindow != null)
+          SpeckleAutocadCommand.MainWindow.Hide();
+
+        MainWindowViewModel.GoHome();
+      }
+      catch { }
     }
 
     private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
     {
-      // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
-      if (e.Document == null)
-        return;
+      try
+      {
+        // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+        if (e.Document == null)
+          return;
 
-      var streams = GetStreamsInFile();
-      UpdateSavedStreams(streams);
-      if (streams.Count > 0)
-        SpeckleAutocadCommand.CreateOrFocusSpeckle();
-      
+        var streams = GetStreamsInFile();
+        if (streams.Count > 0)
+          SpeckleAutocadCommand.CreateOrFocusSpeckle();
+
+        if (UpdateSavedStreams != null)
+          UpdateSavedStreams(streams);
+
+        MainWindowViewModel.GoHome();
+      }
+      catch { }
     }
     #endregion
   }
