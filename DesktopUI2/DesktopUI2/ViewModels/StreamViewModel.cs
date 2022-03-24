@@ -264,7 +264,28 @@ namespace DesktopUI2.ViewModels
 
     #endregion
 
-    private string Url { get => $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{StreamState.BranchName}"; }
+    private string Url
+    {
+      get
+      {
+        //sender
+        if (!IsReceiver)
+        {
+          if (SelectedBranch != null && SelectedBranch.name != "main")
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.name}";
+        }
+        //receiver
+        else
+        {
+          if (SelectedCommit != null)
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
+          if (SelectedBranch != null)
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.name}";
+        }
+        return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
+
+      }
+    }
 
     IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
@@ -413,15 +434,23 @@ namespace DesktopUI2.ViewModels
 
       }
       Activity = activity;
+      ScrollToBottom();
 
+    }
+
+    private async void ScrollToBottom()
+    {
       if (StreamEditView.Instance != null)
       {
-        var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
-        if (scroller != null)
+        await Task.Delay(250);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
-          await Task.Delay(250);
-          scroller.ScrollToEnd();
-        }
+          var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
+          if (scroller != null)
+          {
+            scroller.ScrollToEnd();
+          }
+        });
       }
     }
 
@@ -472,6 +501,7 @@ namespace DesktopUI2.ViewModels
 
       Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
       NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
+      ScrollToBottom();
     }
 
 
