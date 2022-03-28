@@ -109,8 +109,13 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitDuct),
       };
       
-      speckleDuct["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitDuct);
-        
+      var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
+
+      foreach (var mesh in speckleDuct.displayValue)
+      {
+        if (material != null)
+          mesh["renderMaterial"] = material;
+      }
 
       var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
 
@@ -152,9 +157,15 @@ namespace Objects.Converter.Revit
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitDuct)
       };
-
-      speckleDuct["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitDuct);
       
+      var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
+
+      foreach (var mesh in speckleDuct.displayValue)
+      {
+        if (material != null)
+          mesh["renderMaterial"] = material;
+      }
+
       var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 

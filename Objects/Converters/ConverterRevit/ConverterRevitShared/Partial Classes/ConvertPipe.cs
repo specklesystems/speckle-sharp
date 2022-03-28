@@ -107,9 +107,16 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
-      specklePipe["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+      var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+
+      foreach (var mesh in specklePipe.displayValue)
+      {
+        if (material != null)
+          mesh["renderMaterial"] = material;
+      }
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
+
       {
         "RBS_PIPING_SYSTEM_TYPE_PARAM",
         "RBS_SYSTEM_CLASSIFICATION_PARAM",
@@ -144,8 +151,14 @@ namespace Objects.Converter.Revit
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitPipe)
       };
-            
-            specklePipe["renderMaterial"] = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+
+      var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+
+      foreach (var mesh in specklePipe.displayValue)
+      {
+          if (material != null)
+              mesh["renderMaterial"] = material;
+      }
 
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
       {

@@ -956,8 +956,8 @@ namespace Objects.Converter.Revit
             if(e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeFitting).Id ||
                 e.Category.Id == categories.get_Item(BuiltInCategory.OST_DuctFitting).Id ||
                 e.Category.Id == categories.get_Item(BuiltInCategory.OST_DuctAccessory).Id ||
-                e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeAccessory).Id ||
-                e.Category.Id == categories.get_Item(BuiltInCategory.OST_MechanicalEquipment).Id)
+                e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeAccessory).Id)
+                //e.Category.Id == categories.get_Item(BuiltInCategory.OST_MechanicalEquipment).Id)
             {
                 result = true;
             }
