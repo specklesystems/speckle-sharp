@@ -424,6 +424,11 @@ workflows:
   # connector_etabs:
   #   when: << pipeline.parameters.run_connector_etabs>>
   #   jobs:
+  #     - build-connector: 
+  #         name: build-connector-etabs
+  #         slnname: ConnectorETABS
+  #         dllname: SpeckleConnectorETABS.dll
+
   #     - build-connector:
   #         name: build-connector-etabs
   #         slnname: ConnectorETABS
@@ -607,7 +612,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # # ETABS Build&Deploy
       # - build-connector:
       #     name: build-deploy-connector-etabs
@@ -697,7 +701,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(teklastructures|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # ETABS Build&Deploy
       - build-connector:
           name: build-deploy-connector-etabs
@@ -727,7 +730,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(sap2000|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # SAFE Build&Deploy
       - build-connector:
           name: build-deploy-connector-safe
@@ -757,7 +759,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(csibridge|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
           requires:
