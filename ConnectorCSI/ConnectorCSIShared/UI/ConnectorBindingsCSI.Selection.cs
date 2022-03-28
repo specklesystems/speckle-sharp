@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using DesktopUI2;
-using DesktopUI2.Models;
+﻿using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.ConnectorCSI.Util;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Speckle.ConnectorCSI.UI
@@ -51,7 +50,8 @@ namespace Speckle.ConnectorCSI.UI
 
       return new List<ISelectionFilter>()
             {
-            new ManualSelectionFilter(),
+            new AllSelectionFilter {Slug="all",  Name = "Everything",
+                Icon = "CubeScan", Description = "Selects all document objects." },
             new ListSelectionFilter {Slug="type", Name = "Categories",
                 Icon = "Category", Values = objectTypes,
                 Description="Adds all objects belonging to the selected types"},
@@ -64,13 +64,12 @@ namespace Speckle.ConnectorCSI.UI
         //  Values = objectNames,
         //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         //},
-            new AllSelectionFilter {Slug="all",  Name = "All",
-                Icon = "CubeScan", Description = "Selects all document objects." },
-
+            
 
             new ListSelectionFilter { Slug = "group", Name = "Group",
             Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
             };
+      new ManualSelectionFilter(),
     }
 
     public override void SelectClientObjects(string args)

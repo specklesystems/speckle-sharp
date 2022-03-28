@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
 
       foreach (var elemId in hostedElementIds)
       {
-        var element = Doc.GetElement(elemId);
+        var element = host.Document.GetElement(elemId);
         var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
 
         if (isSelectedInContextObjects == -1)
@@ -189,7 +189,7 @@ namespace Objects.Converter.Revit
     }
     private Dictionary<string, Parameter> GetTypeParams(DB.Element element)
     {
-      var elementType = Doc.GetElement(element.GetTypeId());
+      var elementType = element.Document.GetElement(element.GetTypeId());
 
       if (elementType == null || elementType.Parameters == null)
       {
@@ -689,7 +689,7 @@ namespace Objects.Converter.Revit
 #endif
             var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
-          } 
+          }
           break;
         default:
           break;
@@ -860,13 +860,13 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var revitMaterial = Doc.GetElement(matId) as Material;
+      var revitMaterial = element.Document.GetElement(matId) as Material;
       return RenderMaterialToSpeckle(revitMaterial);
     }
-    
+
     public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
     {
-      if ( revitMaterial == null )
+      if (revitMaterial == null)
         return null;
       RenderMaterial material = new RenderMaterial()
       {
@@ -879,7 +879,7 @@ namespace Objects.Converter.Revit
 
       return material;
     }
-    
+
     public ElementId RenderMaterialToNative(RenderMaterial speckleMaterial)
     {
       if (speckleMaterial == null) return ElementId.InvalidElementId;
@@ -891,17 +891,17 @@ namespace Objects.Converter.Revit
         .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
 
       if (existing != null) return existing.Id;
-      
+
       // Create new material
       ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
       Material mat = Doc.GetElement(materialId) as Material;
-    
+
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
       mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
       mat.Transparency = (int)((1d - speckleMaterial.opacity) * 100d);
-      
+
       return materialId;
     }
-    
+
   }
 }

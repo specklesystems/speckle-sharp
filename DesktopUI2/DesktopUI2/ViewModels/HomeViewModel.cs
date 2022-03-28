@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
@@ -50,6 +51,14 @@ namespace DesktopUI2.ViewModels
     {
       get => _isLoggingIn;
       private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
+    }
+
+
+    private bool _hasUpdate;
+    public bool HasUpdate
+    {
+      get => _hasUpdate;
+      private set => this.RaiseAndSetIfChanged(ref _hasUpdate, value);
     }
 
     private List<StreamAccountWrapper> _streams;
@@ -112,7 +121,7 @@ namespace DesktopUI2.ViewModels
       {
         if (value != null && !value.NoAccess)
         {
-          value.UpdateHost(HostScreen);
+          value.UpdateVisualParentAndInit(HostScreen);
           MainWindowViewModel.RouterInstance.Navigate.Execute(value);
           Tracker.TrackPageview("stream", "edit");
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
@@ -131,21 +140,33 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private List<Account> _accounts;
-    public List<Account> Accounts
+    private List<AccountViewModel> _accounts;
+    public List<AccountViewModel> Accounts
     {
       get => _accounts;
       private set
       {
         this.RaiseAndSetIfChanged(ref _accounts, value);
         this.RaisePropertyChanged("HasOneAccount");
+        this.RaisePropertyChanged("HasMultipleAccounts");
         this.RaisePropertyChanged("HasAccounts");
+        this.RaisePropertyChanged("Avatar");
       }
+    }
+
+    public Bitmap Avatar
+    {
+      get => HasAccounts ? Accounts[0].AvatarImage : null;
     }
 
     public bool HasOneAccount
     {
       get => Accounts.Count == 1;
+    }
+
+    public bool HasMultipleAccounts
+    {
+      get => Accounts.Count > 1;
     }
 
     public bool HasAccounts
@@ -166,6 +187,11 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
       this.RaisePropertyChanged("SavedStreams");
       Init();
+
+
+      var config = ConfigManager.Load();
+      ChangeTheme(config.DarkTheme);
+
     }
 
     /// <summary>
@@ -206,7 +232,9 @@ namespace DesktopUI2.ViewModels
       //it's a new saved stream
       else
       {
+        //triggers => SavedStreams_CollectionChanged
         SavedStreams.Add(stream);
+
       }
 
       this.RaisePropertyChanged("HasSavedStreams");
@@ -227,12 +255,12 @@ namespace DesktopUI2.ViewModels
       {
         try
         {
-          var client = new Client(account);
-          Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account)));
+          var client = new Client(account.Account);
+          Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
         }
         catch (Exception e)
         {
-          Dialogs.ShowDialog($"Could not get streams for {account.userInfo.email} on {account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Dialogs.ShowDialog($"Could not get streams for {account.Account.userInfo.email} on {account.Account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
       Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
@@ -258,8 +286,8 @@ namespace DesktopUI2.ViewModels
       {
         try
         {
-          var client = new Client(account);
-          Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account)));
+          var client = new Client(account.Account);
+          Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
         }
         catch (Exception e)
         {
@@ -273,10 +301,18 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    internal void Init()
+    internal async void Init()
     {
-      Accounts = AccountManager.GetAccounts().ToList();
+      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+
       GetStreams();
+
+      //first show cached accounts, then refresh them
+      await AccountManager.UpdateAccounts();
+      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+
+
+      HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
     }
 
     private void RemoveSavedStream(string id)
@@ -294,14 +330,21 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    public async void LogOutCommand()
+    public async void RemoveAccountCommand(Account account)
     {
 
-      AccountManager.LogOut();
+      AccountManager.RemoveAccount(account.id);
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
       Init();
     }
 
-    public void ManagerLoginCommand()
+    public void OpenProfileCommand(Account account)
+    {
+      Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
+    }
+
+    public void LaunchManagerCommand()
     {
       string path = "";
 
@@ -326,19 +369,38 @@ namespace DesktopUI2.ViewModels
       }
 
     }
-    public async void LoginCommand()
+    public async void AddAccountCommand()
     {
       IsLoggingIn = true;
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Log In" } });
-      try
-      {
-        await AccountManager.LogIn();
-      }
-      catch { }
 
-      await Task.Delay(1000);
+
+      var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
+      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      await dialog.ShowDialog(MainWindow.Instance);
+
+      if (dialog.Add)
+      {
+        Uri u;
+        if (!Uri.TryCreate(dialog.Url, UriKind.Absolute, out u))
+          Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
+        else
+        {
+          try
+          {
+            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+
+            await AccountManager.AddAccount(dialog.Url);
+            await Task.Delay(1000);
+            Init();
+          }
+          catch (Exception e)
+          {
+            Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          }
+        }
+      }
+
       IsLoggingIn = false;
-      Init();
 
     }
 
@@ -428,6 +490,17 @@ namespace DesktopUI2.ViewModels
           var client = new Client(account);
           var stream = await client.StreamGet(sw.StreamId);
           var streamState = new StreamState(account, stream);
+          streamState.BranchName = sw.BranchName;
+
+          //it's a commit URL, let's pull the right branch name
+          if (sw.CommitId != null)
+          {
+            streamState.IsReceiver = true;
+            streamState.CommitId = sw.CommitId;
+
+            var commit = await client.CommitGet(sw.StreamId, sw.CommitId);
+            streamState.BranchName = commit.branchName;
+          }
 
           OpenStream(streamState);
 
@@ -481,13 +554,25 @@ namespace DesktopUI2.ViewModels
 
     public void ToggleDarkThemeCommand()
     {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
       var paletteHelper = new PaletteHelper();
       ITheme theme = paletteHelper.GetTheme();
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
+      var isDark = theme.GetBaseTheme() == BaseThemeMode.Dark;
 
+      ChangeTheme(isDark);
 
+      var config = ConfigManager.Load();
+      config.DarkTheme = isDark;
+      ConfigManager.Save(config);
 
-      if (theme.GetBaseTheme() == BaseThemeMode.Dark)
+    }
+
+    private void ChangeTheme(bool isDark)
+    {
+      var paletteHelper = new PaletteHelper();
+      var theme = paletteHelper.GetTheme();
+
+      if (isDark)
         theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
       else
         theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());

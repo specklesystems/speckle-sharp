@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
       var profiles = GetProfiles(revitCeiling);
 
       var speckleCeiling = new RevitCeiling();
-      speckleCeiling.type = Doc.GetElement(revitCeiling.GetTypeId()).Name;
+      speckleCeiling.type = revitCeiling.Document.GetElement(revitCeiling.GetTypeId()).Name;
       speckleCeiling.outline = profiles[0];
       if (profiles.Count > 1)
       {

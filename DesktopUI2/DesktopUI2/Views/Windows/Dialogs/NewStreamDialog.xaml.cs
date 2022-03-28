@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using DesktopUI2.ViewModels;
 using Speckle.Core.Credentials;
 using System.Collections.Generic;
 
@@ -17,7 +18,7 @@ namespace DesktopUI2.Views.Windows.Dialogs
 
     public NewStreamDialog() { }
 
-    public NewStreamDialog(List<Account> accounts)
+    public NewStreamDialog(List<AccountViewModel> accounts)
     {
       InitializeComponent();
 #if DEBUG
@@ -37,7 +38,7 @@ namespace DesktopUI2.Views.Windows.Dialogs
     {
       var isPublic = this.FindControl<ToggleSwitch>("isPublic").IsChecked;
       //too lazy to create a view model for this or properly style the Dialogs
-      Account = this.FindControl<ComboBox>("accounts").SelectedItem as Account;
+      Account = (this.FindControl<ComboBox>("accounts").SelectedItem as AccountViewModel).Account;
       StreamName = this.FindControl<TextBox>("name").Text;
       Description = this.FindControl<TextBox>("description").Text;
       IsPublic = isPublic.HasValue ? isPublic.Value : false;

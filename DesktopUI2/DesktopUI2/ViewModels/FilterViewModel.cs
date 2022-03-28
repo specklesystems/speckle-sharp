@@ -26,8 +26,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
-    public UserControl FilterView { get; private set; }
+    public UserControl FilterView { get; set; }
 
     public SelectionModel<string> SelectionModel { get; }
 

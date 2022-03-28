@@ -12,18 +12,6 @@
   HasSystemDecorations="False"
   SizeToContent="Height"
   mc:Ignorable="d">
-  <Window.Styles>
-
-    <Style Selector="ToggleSwitch[IsChecked=true]">
-      <Setter Property="Content" Value="Public stream" />
-    </Style>
-
-    <Style Selector="ToggleSwitch[IsChecked=false]">
-      <Setter Property="Content" Value="Private stream" />
-    </Style>
-
-
-  </Window.Styles>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"

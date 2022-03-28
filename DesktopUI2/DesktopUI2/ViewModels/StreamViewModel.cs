@@ -85,6 +85,8 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public string NotificationUrl { get; set; }
+
     private string _notification;
     public string Notification
     {
@@ -210,10 +212,11 @@ namespace DesktopUI2.ViewModels
       {
         //trigger change when any property in the child model view changes
         //used for the CanSave etc button bindings
-        value.PropertyChanged += (s, eo) =>
-        {
-          this.RaisePropertyChanged("SelectedFilter");
-        };
+        if (value != null)
+          value.PropertyChanged += (s, eo) =>
+          {
+            this.RaisePropertyChanged("SelectedFilter");
+          };
         this.RaiseAndSetIfChanged(ref _selectedFilter, value);
       }
     }
@@ -265,9 +268,11 @@ namespace DesktopUI2.ViewModels
 
     IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
-    public void UpdateHost(IScreen hostScreen)
+    public void UpdateVisualParentAndInit(IScreen hostScreen)
     {
       HostScreen = hostScreen;
+      //refresh stream, branches, filters etc
+      Init();
     }
     public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
 
@@ -279,6 +284,12 @@ namespace DesktopUI2.ViewModels
       Client = streamState.Client;
       IsReceiver = streamState.IsReceiver;
 
+      //default to receive mode if no permission to send
+      if (Stream.role == null || Stream.role == "stream:reviewer")
+      {
+        IsReceiver = true;
+      }
+
       HostScreen = hostScreen;
       RemoveSavedStreamCommand = removeSavedStreamCommand;
 
@@ -289,9 +300,20 @@ namespace DesktopUI2.ViewModels
       {
         NoAccess = true;
         Notification = "You do not have access to this Stream.";
+        NotificationUrl = $"{streamState.ServerUrl}/streams/{streamState.StreamId}";
         return;
       }
 
+      Init();
+
+      var updateTextTimer = new System.Timers.Timer();
+      updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
+      updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
+      updateTextTimer.Enabled = true;
+    }
+
+    private void Init()
+    {
       GetStream().ConfigureAwait(false);
       GenerateMenuItems();
 
@@ -305,11 +327,6 @@ namespace DesktopUI2.ViewModels
       GetBranchesAndRestoreState();
       GetActivity();
 
-
-      var updateTextTimer = new System.Timers.Timer();
-      updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
-      updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
-      updateTextTimer.Enabled = true;
     }
 
     private void UpdateTextTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -402,7 +419,7 @@ namespace DesktopUI2.ViewModels
         var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
         if (scroller != null)
         {
-          await Task.Delay(100);
+          await Task.Delay(250);
           scroller.ScrollToEnd();
         }
       }
@@ -429,7 +446,11 @@ namespace DesktopUI2.ViewModels
         var branch = await Client.BranchGet(Stream.id, SelectedBranch.name, 100);
         branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
         Commits = branch.commits.items;
-        SelectedCommit = Commits[0];
+        var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
+        if (commit != null)
+          SelectedCommit = commit;
+        else
+          SelectedCommit = Commits[0];
       }
       else
       {
@@ -449,7 +470,8 @@ namespace DesktopUI2.ViewModels
       var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
       var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
 
-      Notification = $"{cinfo.authorName} sent new data on branch {info.branchName}: {info.message}";
+      Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
+      NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
     }
 
 
@@ -486,6 +508,24 @@ namespace DesktopUI2.ViewModels
     public void CloseNotificationCommand()
     {
       Notification = "";
+      NotificationUrl = "";
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
+    }
+
+    public void CloseReportNotificationCommand()
+    {
+      ShowReport = false;
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Report Dismiss" } });
+    }
+
+
+    public void LaunchNotificationCommand()
+    {
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
+
+      Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
+
+      CloseNotificationCommand();
     }
 
     public void EditSavedStreamCommand()
@@ -521,7 +561,7 @@ namespace DesktopUI2.ViewModels
 
       Reset();
       Progress.IsProgressing = true;
-      await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
       Progress.IsProgressing = false;
 
       if (!Progress.CancellationTokenSource.IsCancellationRequested)
@@ -529,6 +569,9 @@ namespace DesktopUI2.ViewModels
         LastUsed = DateTime.Now.ToString();
         Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
         Tracker.TrackPageview(Tracker.SEND);
+
+        Notification = $"Sent successfully, view online";
+        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
@@ -566,6 +609,7 @@ namespace DesktopUI2.ViewModels
     private void Reset()
     {
       Notification = "";
+      NotificationUrl = "";
       ShowReport = false;
       Progress = new ProgressViewModel();
     }
@@ -691,7 +735,7 @@ namespace DesktopUI2.ViewModels
         var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
         settingsWindow.DataContext = settingsPageViewModel;
         settingsWindow.Title = $"Settings for {Stream.name}";
-
+        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
         var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
 
         if (saveResult != null && (bool)saveResult)
@@ -711,7 +755,7 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(IsReceiver))]
     private bool CanSaveCommand(object parameter)
     {
-      return IsReady();
+      return true;
     }
 
 

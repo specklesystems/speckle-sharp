@@ -163,10 +163,10 @@ namespace Objects.Converter.Revit
         switch (obj)
         {
           case DB.Mesh mesh:
-            geometries.Add(MeshToSpeckle(mesh));
+            geometries.Add(MeshToSpeckle(mesh, revitAc.Document));
             break;
           case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
-            geometries.AddRange(GetMeshesFromSolids(new[] { solid }));
+            geometries.AddRange(GetMeshesFromSolids(new[] { solid }, revitAc.Document));
             break;
         }
       }

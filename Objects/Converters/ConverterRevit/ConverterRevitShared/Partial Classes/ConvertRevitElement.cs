@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using System;
 
 namespace Objects.Converter.Revit
 {
@@ -11,7 +9,7 @@ namespace Objects.Converter.Revit
 
     public RevitElement RevitElementToSpeckle(Element revitElement)
     {
-      var symbol = Doc.GetElement(revitElement.GetTypeId()) as FamilySymbol;
+      var symbol = revitElement.Document.GetElement(revitElement.GetTypeId()) as FamilySymbol;
 
       RevitElement speckleElement = new RevitElement();
       if (symbol != null)

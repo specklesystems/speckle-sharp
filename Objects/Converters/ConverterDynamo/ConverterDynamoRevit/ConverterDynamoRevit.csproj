@@ -6,7 +6,7 @@
     <Version>2.0.0</Version>
     <AssemblyName>Objects.Converter.DynamoRevit</AssemblyName>
     <Configurations>Debug;Release</Configurations>
-    <DefineConstants>$(DefineConstants);REVIT</DefineConstants>
+    <DefineConstants>$(DefineConstants);REVIT;REVIT2020;REVIT2019</DefineConstants>
     <PackageId>Speckle.Objects.Converter.DynamoRevit</PackageId>
     <Authors>Speckle</Authors>
     <Company>Speckle</Company>

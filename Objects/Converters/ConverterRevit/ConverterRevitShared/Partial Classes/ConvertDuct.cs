@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitDuct)
       };
 
-      var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
+      var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,
@@ -147,7 +147,7 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitDuct)
       };
 
-      var typeElem = Doc.GetElement(revitDuct.MEPSystem.GetTypeId());
+      var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,

@@ -9,14 +9,12 @@
     <Import_RootNamespace>ConnectorAutoCADShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\OneClickCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\docs16.png" />
@@ -29,6 +27,8 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo16_fade.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\logo32_fade.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\send16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\send32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\tutorials16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\tutorials32.png" />
   </ItemGroup>

@@ -32,7 +32,7 @@ Following instructions on how to get started debugging and contributing to this 
 
 #### Dependencies
 
-All dependencies exist either on this repo (such as `Core`, `Objects`, etc...) or are installed via NuGet. 
+All dependencies exist either on this repo (such as `Core`, `Objects`, etc...) or are installed via NuGet.
 
 Worth mentioning is the use of our own asyncronous grasshopper component, which you can find here:
 
@@ -117,3 +117,5 @@ The Speckle Community hangs out on [the forum](https://discourse.speckle.works),
 ## License
 
 Unless otherwise described, the code in this repository is licensed under the Apache-2.0 License. Please note that some modules, extensions or code herein might be otherwise licensed. This is indicated either in the root of the containing folder under a different license file, or in the respective file's header. If you have any questions, don't hesitate to get in touch with us via [email](mailto:hello@speckle.systems).
+
+<!-- Fake change to force CI to run -->
