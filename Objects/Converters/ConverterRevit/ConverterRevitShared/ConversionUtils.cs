@@ -913,17 +913,16 @@ namespace Objects.Converter.Revit
         {
             var material = GetMEPDefaultMaterial();
             ElementId idType = ElementId.InvalidElementId;
-
-            if (e is DB.MEPCurve)
+            
+            if (e is DB.MEPCurve dt)
             {
-                var dt = e as DB.MEPCurve;
-                idType = dt.MEPSystem.GetTypeId();
+              idType = dt.MEPSystem.GetTypeId();
             }
             else if (IsSupportedMEPCategory(e))
             {
                 MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-
-                if (null != m && null != m.ConnectorManager)
+                
+                if (m != null && m.ConnectorManager != null)
                 {
                     //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
                     foreach (Connector item in m.ConnectorManager.Connectors)
@@ -945,23 +944,21 @@ namespace Objects.Converter.Revit
             }
             return material;
         }
-
-        private static DB.Categories categories = null;
+            
         private static bool IsSupportedMEPCategory(Element e)
         {
-            if (categories == null)
-                categories = e.Document.Settings.Categories;
+          var categories = e.Document.Settings.Categories;
 
-            bool result = false;
-            if(e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeFitting).Id ||
-                e.Category.Id == categories.get_Item(BuiltInCategory.OST_DuctFitting).Id ||
-                e.Category.Id == categories.get_Item(BuiltInCategory.OST_DuctAccessory).Id ||
-                e.Category.Id == categories.get_Item(BuiltInCategory.OST_PipeAccessory).Id)
-                //e.Category.Id == categories.get_Item(BuiltInCategory.OST_MechanicalEquipment).Id)
-            {
-                result = true;
-            }
-            return result;
+          var supportedCategories = new[]
+          {
+            BuiltInCategory.OST_PipeFitting,
+            BuiltInCategory.OST_DuctFitting,
+            BuiltInCategory.OST_DuctAccessory,
+            BuiltInCategory.OST_PipeAccessory,
+            //BuiltInCategory.OST_MechanicalEquipment,
+          };
+          
+          return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
         }
 
         /// <summary>
