@@ -40,21 +40,21 @@ namespace DesktopUI2.ViewModels
 
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
-
+      
       Filter = filter;
       FilterView = filter.View;
-
 
       //TODO should clean up this logic a bit
       //maybe have a model, view and viewmodel for each filter
       if (filter is ListSelectionFilter l)
+      {
         _valuesList = SearchResults = new List<string>(l.Values);
+      }
 
       FilterView.DataContext = this;
     }
 
     #region LIST FILTER
-
     void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
       if (!isSearching)
@@ -90,11 +90,18 @@ namespace DesktopUI2.ViewModels
     // restore them as the query is cleared
     public void RestoreSelectedItems()
     {
+      var itemsToRemove = new List<string>();
+
       foreach (var item in Filter.Selection)
       {
+        if (!_valuesList.Contains(item))
+          itemsToRemove.Add(item);
         if (!SelectionModel.SelectedItems.Contains(item))
           SelectionModel.Select(SearchResults.IndexOf(item));
       }
+
+      foreach (var itemToRemove in itemsToRemove)
+        Filter.Selection.Remove(itemToRemove);
 
       this.RaisePropertyChanged("PropertyName");
       this.RaisePropertyChanged("PropertyValue");
