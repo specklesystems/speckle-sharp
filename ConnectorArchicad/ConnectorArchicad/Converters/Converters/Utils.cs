@@ -5,6 +5,7 @@ using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Archicad.Converters
 {
@@ -94,7 +95,7 @@ namespace Archicad.Converters
       {
         Line line => LineToNative(line),
         Arc arc => ArcToNative(arc),
-        _ => null
+        _ => throw new SpeckleException("Archicad Element Shapes can only be created with Lines or Arcs.")
       };
     }
 
