@@ -35,11 +35,11 @@ namespace Speckle.Core.Kits
     public const string ETABSv19 = "ETABSv19";
     public const string TeklaStructures2021 = "TeklaStructures2021";
     public const string TeklaStructures2020 = "TeklaStructures2020";
+    public const string Archicad = "Archicad";
     public const string Script = "Script";
     public const string Other = "Other";
     public const string All = "All";
   }
-
 
   /// <summary>
   /// List of Host Applications - their slugs should match our ghost tags and ci/cd slugs
@@ -199,8 +199,5 @@ namespace Speckle.Core.Kits
     public const string Other = "Other";
     public const string All = "All";
   }
-
-
-
 
 }

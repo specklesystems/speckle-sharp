@@ -67,6 +67,9 @@ parameters:
   run_connector_teklastructures:
     type: boolean
     default: false
+  run_connector_archicad:
+    type: boolean
+    default: false
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   selective-ci: # The job that selects which job to run
@@ -87,9 +90,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorAutocadCivil/.*", "param_name": "run_connector_autocadcivil"},
             {"regex": "ConnectorCSI/.*", "param_name": "run_connector_csi"},
             {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"},
-            {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"}]'
-          base-branch: "main"
-
+            {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"},
+            {"regex": "ConnectorArchicad/.*", "param_name": "run_connector_archicad"}
+          ]'
+          base-branch: 'main'
+  
   build-core:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
       name: win/default
@@ -190,7 +195,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         default: false
     steps:
       - checkout
-      - run:
+      - attach_workspace:
+          at: ./
+      - run: 
           name: Restore << parameters.slnname >>
           command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
       - run:
@@ -212,8 +219,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             circleci-agent step halt 
             Write-Host "Job stopped gracefully"
             } else { Write-Host "Job continuing" }
-      - attach_workspace:
-          at: ./
       - run: # Creates the inno installer
           name: InnoSetup
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
@@ -328,6 +333,37 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           paths:
             - speckle-sharp-ci-tools
 
+
+  setup-archicad-dev: # get Archicad dev kit
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: install cmake
+          command: |
+            choco install cmake
+      - run: 
+          name: extract devkit
+          command: |
+            cd speckle-sharp-ci-tools/Resources
+            Expand-Archive -Path Archicad25DevKit.zip
+      - run:
+          name: build AddOn
+          command: |
+            cd ConnectorArchicad/AddOn
+            mkdir Build
+            $env:Path +="C:\Program Files\CMake\bin"
+            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit"
+            msbuild "Build/Speckle Connector.sln" /p:Configuration=Release
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ConnectorArchicad/AddOn/Build
+
   deploy: # Uploads all installers found to S3
     docker:
       - image: cimg/base:2021.01
@@ -424,6 +460,11 @@ workflows:
   # connector_etabs:
   #   when: << pipeline.parameters.run_connector_etabs>>
   #   jobs:
+  #     - build-connector: 
+  #         name: build-connector-etabs
+  #         slnname: ConnectorETABS
+  #         dllname: SpeckleConnectorETABS.dll
+
   #     - build-connector:
   #         name: build-connector-etabs
   #         slnname: ConnectorETABS
@@ -485,6 +526,21 @@ workflows:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
               only: /^(desktopui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
+
+  # Archicad Connector - Build/Test
+  connector_archicad:
+    when: << pipeline.parameters.run_connector_archicad>>
+    jobs:
+      - get-ci-tools
+      - setup-archicad-dev:
+          requires:  
+            - get-ci-tools
+      - build-connector: 
+          requires: 
+            - setup-archicad-dev
+          name: build-connector-archicad
+          slnname: ConnectorArchicad
+          dllname: ConnectorArchicad.dll
 
   # Makes installers based on which tag is provided
   # Tag has to be provided in the format "appname/1.0.0"
@@ -607,7 +663,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(autocadcivil|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # # ETABS Build&Deploy
       # - build-connector:
       #     name: build-deploy-connector-etabs
@@ -697,7 +752,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(teklastructures|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # ETABS Build&Deploy
       - build-connector:
           name: build-deploy-connector-etabs
@@ -727,7 +781,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(sap2000|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # SAFE Build&Deploy
       - build-connector:
           name: build-deploy-connector-safe
@@ -757,7 +810,6 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(csibridge|csi|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
-
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
           requires:

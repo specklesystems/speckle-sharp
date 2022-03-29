@@ -65,11 +65,11 @@ namespace Speckle.ConnectorCSI.UI
         //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
         //},
             
-
+            new ManualSelectionFilter(),
             new ListSelectionFilter { Slug = "group", Name = "Group",
             Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
             };
-      new ManualSelectionFilter(),
+            
     }
 
     public override void SelectClientObjects(string args)

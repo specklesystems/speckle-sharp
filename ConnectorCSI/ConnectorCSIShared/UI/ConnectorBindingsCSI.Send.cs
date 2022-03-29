@@ -5,14 +5,14 @@ using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+using Speckle.ConnectorCSI.Util;
 using System.Linq;
 using System.Threading.Tasks;
 using SCT = Speckle.Core.Transports;
-
+using Speckle.Core.Models;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System;
 
 namespace Speckle.ConnectorCSI.UI
 {

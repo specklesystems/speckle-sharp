@@ -185,6 +185,16 @@ namespace Objects.Converter.Revit
 
       speckleFi.displayValue = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
+      var material = ConverterRevit.GetMEPSystemMaterial(revitFi);
+
+      if (material != null)
+      {
+        foreach (var mesh in speckleFi.displayValue)
+        {
+          mesh["renderMaterial"] = material;
+        }
+      }
+
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
       #region sub elements capture

@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
@@ -39,9 +40,12 @@ namespace Objects.Geometry
     public double length { get; set; }
     public string units { get; set; }
 
-    public Arc() { }
+    public Arc()
+    {
+    }
 
-    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians, string units = Units.Meters, string applicationId = null)
+    public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians,
+      string units = Units.Meters, string applicationId = null)
     {
       this.plane = plane;
       this.radius = radius;
@@ -50,6 +54,68 @@ namespace Objects.Geometry
       this.angleRadians = angleRadians;
       this.applicationId = applicationId;
       this.units = units;
+    }
+
+    /// <summary>
+    /// Initialise an `Arc` using the arc angle and the start and end points.
+    /// The radius, midpoint, start angle, and end angle will be calculated.
+    /// For now, this assumes 2D arcs on the XY plane
+    /// </summary>
+    /// <param name="startPoint">The start point of the arc</param>
+    /// <param name="endPoint">The end point of the arc</param>
+    /// <param name="angleRadians">The arc angle</param>
+    /// <param name="units">Units (defaults to "m")</param>
+    /// <param name="applicationId">ID given to the arc in the authoring programme (defaults to null)</param>
+    public Arc(Point startPoint, Point endPoint, double angleRadians, string units = Units.Meters,
+      string applicationId = null)
+    {
+      // don't be annoying
+      if ( angleRadians > Math.PI * 2 )
+        throw new SpeckleException("Can't create an arc with an angle greater than 2pi");
+      if (startPoint == endPoint)
+        throw new SpeckleException("Can't create an arc where the start and end points are the same");
+
+      this.units = units;
+      this.startPoint = startPoint;
+      this.endPoint = endPoint;
+      this.angleRadians = angleRadians;
+      this.applicationId = applicationId;
+      // TODO: 3D arcs
+      plane = new Plane(startPoint, new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0), units);
+
+      // find chord and chord angle which may differ from the arc angle
+      var chordMidpoint = Point.Midpoint(startPoint, endPoint);
+      var chordLength = Point.Distance(startPoint, endPoint);
+      var chordAngle = angleRadians;
+      if ( chordAngle > Math.PI )
+        chordAngle -= Math.PI * 2;
+      else if ( chordAngle < -Math.PI )
+        chordAngle += Math.PI * 2;
+      // use the law of cosines for an isosceles triangle to get the radius
+      radius = chordLength / Math.Sqrt(2 - 2 * Math.Cos(chordAngle));
+
+      // find the chord vector then calculate the perpendicular vector which points to the centre
+      // which can be used to find the circle centre point
+      var dir = chordAngle < 0 ? -1 : 1;
+      var centreToChord = Math.Sqrt(Math.Pow(( double )radius, 2) - Math.Pow(chordLength * 0.5, 2));
+      var perp = Vector.CrossProduct(new Vector(endPoint - startPoint), plane.normal);
+      var circleCentre = chordMidpoint + new Point(perp.Unit() * centreToChord * -dir);
+      plane.origin = circleCentre;
+
+      // use the perpendicular vector in the other direction (from the centre to the arc) to find the arc midpoint
+      midPoint = angleRadians > Math.PI
+        ? chordMidpoint + new Point(perp.Unit() * ( ( double )radius + centreToChord ) * -dir)
+        : chordMidpoint + new Point(perp.Unit() * ( ( double )radius - centreToChord ) * dir);
+
+      // find the start angle using trig (correcting for quadrant position) and add the arc angle to get the end angle
+      startAngle = Math.Tan(( startPoint.y - circleCentre.y ) / ( startPoint.x - circleCentre.x )) % ( 2 * Math.PI );
+      if ( startPoint.x > circleCentre.x && startPoint.y < circleCentre.y )       // Q4
+        startAngle *= -1;
+      else if ( startPoint.x < circleCentre.x && startPoint.y < circleCentre.y )  // Q3
+        startAngle += Math.PI;
+      else if ( startPoint.x < circleCentre.x && startPoint.y > circleCentre.y )  // Q2
+        startAngle = Math.PI - startAngle;
+      endAngle = startAngle + angleRadians;
     }
 
     public List<double> ToList()
@@ -76,16 +142,16 @@ namespace Objects.Geometry
     {
       var arc = new Arc();
 
-      arc.radius = list[2];
-      arc.startAngle = list[3];
-      arc.endAngle = list[4];
-      arc.angleRadians = list[5];
-      arc.domain = new Interval(list[6], list[7]);
-      arc.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+      arc.radius = list[ 2 ];
+      arc.startAngle = list[ 3 ];
+      arc.endAngle = list[ 4 ];
+      arc.angleRadians = list[ 5 ];
+      arc.domain = new Interval(list[ 6 ], list[ 7 ]);
+      arc.units = Units.GetUnitFromEncoding(list[ list.Count - 1 ]);
       arc.plane = Plane.FromList(list.GetRange(8, 13));
-      arc.startPoint = Point.FromList(list.GetRange(21,3), arc.units);
-      arc.midPoint = Point.FromList(list.GetRange(24,3), arc.units);
-      arc.endPoint = Point.FromList(list.GetRange(27,3), arc.units);
+      arc.startPoint = Point.FromList(list.GetRange(21, 3), arc.units);
+      arc.midPoint = Point.FromList(list.GetRange(24, 3), arc.units);
+      arc.endPoint = Point.FromList(list.GetRange(27, 3), arc.units);
       arc.plane.units = arc.units;
 
       return arc;
