@@ -208,10 +208,10 @@ namespace DesktopUI2.ViewModels
       SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
     }
 
-    internal void UpdateSelectedStreamFilters()
+    internal void UpdateSelectedStream()
     {
       if (SelectedSavedStream != null)
-        SelectedSavedStream.GetFiltersAndRestore();
+        SelectedSavedStream.GetBranchesAndRestoreState();
     }
 
     //write changes to file every time they happen

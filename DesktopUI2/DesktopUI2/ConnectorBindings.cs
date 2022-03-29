@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace DesktopUI2
 {
   public delegate void UpdateSavedStreams(List<StreamState> streams);
-  public delegate void UpdateSelectedStreamFilters();
+  public delegate void UpdateSelectedStream();
 
   public abstract class ConnectorBindings
   {
@@ -26,7 +26,7 @@ namespace DesktopUI2
     #region delegates
 
     public UpdateSavedStreams UpdateSavedStreams;
-    public UpdateSelectedStreamFilters UpdateSelectedStreamFilters;
+    public UpdateSelectedStream UpdateSelectedStream;
 
     #endregion
 

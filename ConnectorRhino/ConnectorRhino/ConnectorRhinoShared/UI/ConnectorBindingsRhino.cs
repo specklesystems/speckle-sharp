@@ -71,8 +71,8 @@ namespace SpeckleRhino
 
     private void RhinoDoc_LayerChange(object sender, Rhino.DocObjects.Tables.LayerTableEventArgs e)
     {
-      if (UpdateSelectedStreamFilters != null)
-        UpdateSelectedStreamFilters();
+      if (UpdateSelectedStream != null)
+        UpdateSelectedStream();
     }
 
     #region Local streams I/O with local file

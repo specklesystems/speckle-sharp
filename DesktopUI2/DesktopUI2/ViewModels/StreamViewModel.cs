@@ -309,9 +309,7 @@ namespace DesktopUI2.ViewModels
       GetStream().ConfigureAwait(false);
       GenerateMenuItems();
 
-      GetBranchesAndRestore();
-      GetFiltersAndRestore();
-      GetSettingsAndRestore();
+      GetBranchesAndRestoreState();
       GetActivity();
     }
 
@@ -356,8 +354,15 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private async void GetBranchesAndRestore()
+    internal async void GetBranchesAndRestoreState()
     {
+      //get available settings from our bindings
+      Settings = Bindings.GetSettings();
+
+      //get available filters from our bindings
+      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
+      SelectedFilter = AvailableFilters[0];
+
       var branches = await Client.StreamGetBranches(Stream.id, 100, 0);
       Branches = branches;
 
@@ -366,13 +371,13 @@ namespace DesktopUI2.ViewModels
         SelectedBranch = branch;
       else
         SelectedBranch = Branches[0];
-    }
 
-    private void GetSettingsAndRestore()
-    {
-      //get available settings from our bindings
-      Settings = Bindings.GetSettings();
-
+      if (StreamState.Filter != null)
+      {
+        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
+        if (SelectedFilter != null)
+          SelectedFilter.Filter = StreamState.Filter;
+      }
       if (StreamState.Settings != null)
       {
         foreach (var setting in Settings)
@@ -381,19 +386,6 @@ namespace DesktopUI2.ViewModels
           if (savedSetting != null)
             setting.Selection = savedSetting.Selection;
         }
-      }
-    }
-    internal void GetFiltersAndRestore()
-    {
-      //get available filters from our bindings
-      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
-      SelectedFilter = AvailableFilters[0];
-
-      if (StreamState.Filter != null)
-      {
-        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
-        if (SelectedFilter != null)
-          SelectedFilter.Filter = StreamState.Filter;
       }
     }
 
