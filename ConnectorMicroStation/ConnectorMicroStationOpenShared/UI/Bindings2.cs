@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Concurrent;
@@ -20,8 +19,6 @@ using DesktopUI2.Models.Settings;
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.MstnPlatformNET;
-using Bentley.DgnPlatformNET.DgnEC;
-using Speckle.ConnectorMicroStationOpen.Entry;
 using Speckle.ConnectorMicroStationOpen.Storage;
 using Speckle.Core.Logging;
 
@@ -159,6 +156,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
 
       var filterList = new List<ISelectionFilter>();
+      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." });
       filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
       filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
 
@@ -167,7 +165,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
 #endif
 
-      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
+
 
       return filterList;
     }
@@ -262,7 +260,8 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         return state;
 
       // invoke conversions on the main thread via control
-      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+      int count = 0;
+      var flattenedObjects = FlattenCommitObject(commitObject, converter, ref count);
       List<ApplicationPlaceholderObject> newPlaceholderObjects;
       if (Control.InvokeRequired)
         newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
@@ -350,12 +349,14 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Recurses through the commit object and flattens it
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
+    /// <param name="count"></param>
+    /// <param name="foundConvertibleMember"></param>
     /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter, ref int count, bool foundConvertibleMember = false)
     {
       List<Base> objects = new List<Base>();
 
@@ -364,34 +365,51 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         if (converter.CanConvertToNative(@base))
         {
           objects.Add(@base);
-
           return objects;
         }
         else
         {
-          foreach (var prop in @base.GetDynamicMembers())
+          List<string> props = @base.GetDynamicMembers().ToList();
+          if (@base.GetMembers().ContainsKey("displayValue"))
+            props.Add("displayValue");
+          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
+            props.Add("displayMesh");
+          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+            props.Add("elements");
+          int totalMembers = props.Count;
+
+          foreach (var prop in props)
           {
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+            count++;
+
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, ref count, foundConvertibleMember);
+            if (nestedObjects.Count > 0)
+            {
+              objects.AddRange(nestedObjects);
+              foundConvertibleMember = true;
+            }
           }
+
+          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
+            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
+
           return objects;
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IReadOnlyList<object> list)
       {
+        count = 0;
         foreach (var listObj in list)
-        {
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
+          objects.AddRange(FlattenCommitObject(listObj, converter, ref count));
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
+        count = 0;
         foreach (DictionaryEntry kvp in dict)
-        {
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, ref count));
         return objects;
       }
 
@@ -418,7 +436,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region sending
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.VersionedAppName);
@@ -443,7 +461,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
       {
         progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
-        return;
+        return null;
       }
 
       var commitObj = new Base();
@@ -509,7 +527,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       foreach (var obj in objs)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return;
+          return null;
 
         if (obj == null)
         {
@@ -602,16 +620,16 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       progress.Report.Merge(converter.Report);
 
       if (progress.Report.OperationErrorsCount != 0)
-        return;
+        return null;
 
       if (convertedCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
+        return null;
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
+        return null;
 
       Execute.PostToUIThread(() => progress.Max = convertedCount);
 
@@ -645,11 +663,13 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       {
         var commitId = await client.CommitCreate(actualCommit);
         state.PreviousCommitId = commitId;
+        return commitId;
       }
       catch (Exception e)
       {
         progress.Report.LogOperationError(e);
       }
+      return null;
     }
 
 #if (OPENROADS || OPENRAIL)

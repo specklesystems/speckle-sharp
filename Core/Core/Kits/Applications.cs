@@ -125,6 +125,28 @@ namespace Speckle.Core.Kits
       public const string Slug = "etabs";
     }
 
+    public static class SAP2000
+    {
+      public const string Name = "SAP2000";
+      public const string Slug = "sap2000";
+    }
+    public static class CSIBridge
+    {
+      public const string Name = "CSIBridge";
+      public const string Slug = "csibridge";
+    }
+    public static class SAFE
+    {
+      public const string Name = "SAFE";
+      public const string Slug = "safe";
+    }
+
+    public static class CSI
+    {
+      public const string Name = "CSI";
+      public const string Slug = "csi";
+    }
+
     public static class TeklaStructures
     {
       public const string Name = "Tekla Structures";
@@ -141,7 +163,8 @@ namespace Speckle.Core.Kits
   {
     public const string Rhino6 = "Rhino6";
     public const string Rhino7 = "Rhino7";
-    public const string Grasshopper = "Grasshopper";
+    public const string Grasshopper6 = "Grasshopper6";
+    public const string Grasshopper7 = "Grasshopper7";
     public const string Revit2019 = "Revit2019";
     public const string Revit2020 = "Revit2020";
     public const string Revit2021 = "Revit2021";
@@ -165,8 +188,11 @@ namespace Speckle.Core.Kits
     public const string OpenRoads = "OpenRoads";
     public const string OpenRail = "OpenRail";
     public const string OpenBuildings = "OpenBuildings";
-    public const string ETABSv18 = "ETABSv18";
-    public const string ETABSv19 = "ETABSv19";
+    public const string ETABS = "ETABS";
+    public const string SAP2000 = "SAP2000";
+    public const string CSIBridge = "CSIBridge";
+    public const string SAFE = "SAFE";
+    public const string CSI = "CSI";
     public const string TeklaStructures2021 = "TeklaStructures2021";
     public const string TeklaStructures2020 = "TeklaStructures2020";
     public const string Script = "Script";

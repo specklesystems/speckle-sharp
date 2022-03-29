@@ -1,0 +1,63 @@
+<Window
+  x:Class="DesktopUI2.Views.Windows.Dialogs.QuickOpsDialog"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Title="QuickOpsDialog"
+  Width="450"
+  assists:ShadowAssist.ShadowDepth="10"
+  Background="{DynamicResource PrimaryHueMidBrush}"
+  HasSystemDecorations="False"
+  SizeToContent="Height"
+  mc:Ignorable="d">
+  <Grid RowDefinitions="auto, auto, auto, auto">
+    <TextBlock
+      Margin="15,15,15,0"
+      Classes="Subtitle1"
+      Foreground="White"
+      Text="{Binding ProgressTitle, FallbackValue='Operation X'}"
+      TextTrimming="CharacterEllipsis" />
+    <ProgressBar
+      Grid.Row="1"
+      Margin="15,15,15,0"
+      IsIndeterminate="{Binding IsIndeterminate, FallbackValue=True}"
+      IsVisible="{Binding IsProgressing}"
+      Maximum="{Binding Max}"
+      Value="{Binding Value}" />
+    <TextBlock
+      Grid.Row="2"
+      Margin="15,15,15,0"
+      Foreground="White"
+      Text="{Binding ProgressSummary, FallbackValue='Operation in progress...'}"
+      TextTrimming="CharacterEllipsis" />
+    <StackPanel
+      Grid.Row="3"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal">
+      <Button
+        Margin="0,0,10,0"
+        Classes="Outline"
+        Command="{Binding CancelCommand}"
+        Content="Cancel"
+        Foreground="White"
+        IsVisible="{Binding IsProgressing}" />
+      <Button
+        Margin="0,0,10,0"
+        Classes="Outline"
+        Command="{Binding OpenReportCommand}"
+        Content="Open Report"
+        Foreground="White"
+        IsVisible="{Binding IsProgressing, Converter={x:Static BoolConverters.Not}}" />
+      <Button
+        Margin="0,0,10,0"
+        Background="White"
+        Click="Close_Click"
+        Content="Close"
+        Foreground="{DynamicResource PrimaryHueMidBrush}"
+        IsEnabled="{Binding IsProgressing, Converter={x:Static BoolConverters.Not}}" />
+    </StackPanel>
+  </Grid>
+</Window>

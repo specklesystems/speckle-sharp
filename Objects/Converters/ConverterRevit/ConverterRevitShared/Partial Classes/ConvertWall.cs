@@ -51,12 +51,8 @@ namespace Objects.Converter.Revit
       //is structural update
       TrySetParam(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT, structural);
 
-
       if (revitWall.WallType.Name != wallType.Name)
-      {
-
         revitWall.ChangeTypeId(wallType.Id);
-      }
 
       if (isUpdate)
       {
@@ -151,7 +147,7 @@ namespace Objects.Converter.Revit
       {
         if (revitWall.IsStackedWall)
         {
-          var wallMembers = revitWall.GetStackedWallMemberIds().Select(id => (Wall)Doc.GetElement(id));
+          var wallMembers = revitWall.GetStackedWallMemberIds().Select(id => (Wall)revitWall.Document.GetElement(id));
           speckleWall.elements = new List<Base>();
           foreach (var wall in wallMembers)
             speckleWall.elements.Add(WallToSpeckle(wall));
@@ -205,15 +201,15 @@ namespace Objects.Converter.Revit
       var solidMullions = new List<Solid>();
       foreach (ElementId panelId in grid.GetPanelIds())
       {
-        solidPanels.AddRange(GetElementSolids(Doc.GetElement(panelId)));
+        solidPanels.AddRange(GetElementSolids(wall.Document.GetElement(panelId)));
       }
       foreach (ElementId mullionId in grid.GetMullionIds())
       {
-        solidMullions.AddRange(GetElementSolids(Doc.GetElement(mullionId)));
+        solidMullions.AddRange(GetElementSolids(wall.Document.GetElement(mullionId)));
       }
 
-      var meshPanels = GetMeshesFromSolids(solidPanels);
-      var meshMullions = GetMeshesFromSolids(solidMullions);
+      var meshPanels = GetMeshesFromSolids(solidPanels, wall.Document);
+      var meshMullions = GetMeshesFromSolids(solidMullions, wall.Document);
 
       return (meshPanels, meshMullions);
     }

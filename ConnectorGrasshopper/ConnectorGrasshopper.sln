@@ -20,11 +20,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino6", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj", "{4902152D-64BC-4DF0-A588-61EC7BE93AF0}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRhinoGhShared", "..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.shproj", "{B74CB8C1-187B-46A6-B20B-92B8C129F3EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino7", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino7\ConverterRhino7.csproj", "{E6D4A1FA-D208-4170-88B7-6C4AF08BEB37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper6", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper6\ConverterGrasshopper6.csproj", "{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper7", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{D0783323-D28A-4A2B-9F4E-3534275D3909}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -57,14 +57,14 @@ Global
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4902152D-64BC-4DF0-A588-61EC7BE93AF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4902152D-64BC-4DF0-A588-61EC7BE93AF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4902152D-64BC-4DF0-A588-61EC7BE93AF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4902152D-64BC-4DF0-A588-61EC7BE93AF0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6D4A1FA-D208-4170-88B7-6C4AF08BEB37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6D4A1FA-D208-4170-88B7-6C4AF08BEB37}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6D4A1FA-D208-4170-88B7-6C4AF08BEB37}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6D4A1FA-D208-4170-88B7-6C4AF08BEB37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,9 +73,9 @@ Global
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 		{8F16A9A1-DC5F-4800-821C-336E6CCF8F9C} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 		{9103058A-0D20-49AA-B053-01548DD66D16} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
-		{4902152D-64BC-4DF0-A588-61EC7BE93AF0} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
-		{E6D4A1FA-D208-4170-88B7-6C4AF08BEB37} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
+		{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
+		{D0783323-D28A-4A2B-9F4E-3534275D3909} = {CCD06981-ACB2-4B1C-9953-00976F1E535D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3196A316-D590-4D60-8363-3A2FB801A6DC}

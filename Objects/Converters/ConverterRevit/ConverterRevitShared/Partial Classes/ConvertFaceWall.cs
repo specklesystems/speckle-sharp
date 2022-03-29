@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
@@ -112,7 +111,7 @@ namespace Objects.Converter.Revit
 
     private Reference GetFaceRef(Element e)
     {
-      Options geomOption = Doc.Application.Create.NewGeometryOptions();
+      Options geomOption = e.Document.Application.Create.NewGeometryOptions();
       geomOption.ComputeReferences = true;
       geomOption.IncludeNonVisibleObjects = true;
       geomOption.DetailLevel = ViewDetailLevel.Fine;
@@ -126,7 +125,7 @@ namespace Objects.Converter.Revit
         {
           foreach (Face geomFace in geomSolid.Faces)
           {
-            if (FaceWall.IsValidFaceReferenceForFaceWall(Doc, geomFace.Reference))
+            if (FaceWall.IsValidFaceReferenceForFaceWall(e.Document, geomFace.Reference))
             {
               return geomFace.Reference;
             }

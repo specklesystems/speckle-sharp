@@ -24,7 +24,7 @@
   <StackPanel Margin="0,4" Spacing="10">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
 
-    <Button
+    <!--<Button
       assists:ButtonAssist.CornerRadius="16"
       BorderBrush="Green"
       Classes="Outline"
@@ -35,7 +35,7 @@
         <icons:MaterialIcon Kind="AddCircle" />
         <TextBlock Classes="ButtonText" Text="SET SELECTION" />
       </StackPanel>
-    </Button>
+    </Button>-->
 
     <Button
       Classes="Outline"
@@ -47,7 +47,7 @@
       </StackPanel>
     </Button>
 
-    <Button
+    <!--<Button
       BorderBrush="IndianRed"
       Classes="Outline"
       Command="{Binding RemoveObjectSelection}"
@@ -57,7 +57,7 @@
         <icons:MaterialIcon Kind="MinusCircle" />
         <TextBlock Classes="ButtonText" Text="REMOVE SELECTION" />
       </StackPanel>
-    </Button>
+    </Button>-->
 
     <Button
       BorderBrush="OrangeRed"

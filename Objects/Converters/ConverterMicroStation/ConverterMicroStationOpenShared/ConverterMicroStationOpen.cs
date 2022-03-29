@@ -387,17 +387,6 @@ namespace Objects.Converter.MicroStationOpen
           //case Alignment _:                    ;
           return true;
 
-        //TODO: This types are not supported in Bentley connectors!
-        case Brep _:
-        case Pointcloud _:
-        case ModelCurve _:
-        case DirectShape _:
-        case View3D _:
-        case BlockDefinition _:
-        case BlockInstance _:
-        case Hatch _:
-          return true;
-
         default:
           return false;
       }

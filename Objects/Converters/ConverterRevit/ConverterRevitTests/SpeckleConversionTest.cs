@@ -192,8 +192,10 @@ namespace ConverterRevitTests
       Assert.NotNull(spkElem["parameters"]);
       Assert.NotNull(spkElem["elementId"]);
 
+      var elemAsFam = elem as FamilyInstance;
       // HACK: This is not reliable or acceptable as a testing strategy.
-      if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct || AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(elem as FamilyInstance)))
+      if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct ||
+            elemAsFam != null && AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(elem as FamilyInstance) ))
         Assert.Equal(elem.Name, spkElem["type"]);
 
       //Assert.NotNull(spkElem.baseGeometry);

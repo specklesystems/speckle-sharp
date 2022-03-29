@@ -1,40 +1,25 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using DesktopUI2.Views;
+using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
+using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace DesktopUI2
 {
   public static class Dialogs
   {
-    public static async void ShowDialog(string header, string message, DialogIconKind icon)
+    public static async void ShowDialog(string title, string message, DialogIconKind icon)
     {
-      var result = await DialogHelper.CreateAlertDialog(new AlertDialogBuilderParams()
-      {
-        ContentHeader = header,
-        SupportingText = message,
-        DialogHeaderIcon = icon,
-        StartupLocation = WindowStartupLocation.CenterOwner,
-        NegativeResult = new DialogResult("ok"),
-        WindowTitle = header,
-        Borderless = true,
-        MaxWidth = MainWindow.Instance.Width - 40,
-        DialogButtons = new DialogResultButton[]
-                {
-                    new DialogResultButton
-                    {
-                        Content = "OK",
-                        Result = "ok"
-                    }
-                },
-      }).ShowDialog(MainWindow.Instance);
+      Dialog d = new Dialog(title, message, icon);
+      d.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      await d.ShowDialog(MainWindow.Instance);
     }
 
     public static IDialogWindow<DialogResult> SendReceiveDialog(string header, object dataContext)
@@ -49,9 +34,9 @@ namespace DesktopUI2
         Borderless = true,
 
         Width = MainWindow.Instance.Width - 20,
-        DialogButtons = new DialogResultButton[]
+        DialogButtons = new DialogButton[]
           {
-            new DialogResultButton
+            new DialogButton
             {
               Content = "CANCEL",
               Result = "cancel"
@@ -111,6 +96,26 @@ namespace DesktopUI2
       string formatted = $"{stream}[ {branch} @ {commitId} ]";
       string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
       return clean;
+    }
+
+
+  }
+
+  public static class ApiUtils
+  {
+    private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+
+    public static async Task<User> GetUser(string userId, Client client)
+    {
+      if (CachedUsers.ContainsKey(userId))
+        return CachedUsers[userId];
+
+      User user = await client.UserGet(userId);
+
+      if (user != null)
+        CachedUsers[userId] = user;
+
+      return user;
     }
   }
 }

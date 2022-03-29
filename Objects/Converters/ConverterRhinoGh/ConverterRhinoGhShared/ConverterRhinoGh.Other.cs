@@ -138,7 +138,7 @@ namespace Objects.Converter.RhinoGh
     }
     private HatchPattern FindDefaultPattern(string patternName)
     {
-      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties().Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase)).ToList()?.First();
+      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties()?.Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase))?.ToList().FirstOrDefault();
       if (defaultPattern != null)
         return defaultPattern.GetValue(this, null) as HatchPattern;
       else
@@ -218,10 +218,23 @@ namespace Objects.Converter.RhinoGh
           int index = 1;
           if (layerName != null)
             GetLayer(Doc, layerName, out index, true);
-          var attribute = new ObjectAttributes()
+
+          var attribute = new ObjectAttributes();
+          if (geo[@"displayStyle"] is Base display)
           {
-            LayerIndex = index
-          };
+            if (ConvertToNative(display) is ObjectAttributes displayAttribute)
+              attribute = displayAttribute;
+          }
+          else if (geo[@"renderMaterial"] is Base renderMaterial)
+          {
+            if (renderMaterial["diffuse"] is int color)
+            {
+              attribute.ColorSource = ObjectColorSource.ColorFromObject;
+              attribute.ObjectColor = Color.FromArgb(color);
+            }
+          }
+          attribute.LayerIndex = index;
+
           geometry.AddRange(converted);
           attributes.Add(attribute);
         }

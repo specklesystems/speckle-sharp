@@ -1,0 +1,210 @@
+<Window
+  x:Class="DesktopUI2.Views.Scheduler"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:vm="using:DesktopUI2.ViewModels"
+  Title="{Binding TitleFull}"
+  Width="400"
+  Icon="/Assets/icon.ico"
+  SizeToContent="Height"
+  mc:Ignorable="d">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+  <Grid RowDefinitions="auto, *">
+    <m:Card Padding="10,7" CornerRadius="0">
+      <Grid ColumnDefinitions="auto,*">
+        <StackPanel
+          VerticalAlignment="Bottom"
+          Orientation="Horizontal"
+          Spacing="6">
+          <TextBlock
+            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            FontSize="18"
+            FontWeight="Bold"
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            Text="SPECKLE SCHEDULER" />
+          <TextBlock
+            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            FontSize="18"
+            FontWeight="Medium"
+            Text="{Binding Title}" />
+
+          <TextBlock
+            Margin="0,0,0,3"
+            VerticalAlignment="Bottom"
+            FontSize="8"
+            Foreground="Gray"
+            Text="beta" />
+        </StackPanel>
+      </Grid>
+    </m:Card>
+
+    <Grid
+      Grid.Row="1"
+      Margin="15,0"
+      ColumnDefinitions="Auto,*"
+      RowDefinitions="auto, auto, auto, auto, *, auto">
+
+      <m:Card
+        Grid.ColumnSpan="2"
+        Margin="0,15"
+        VerticalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Classes="Mini">
+        <StackPanel>
+          <TextBlock Text="Chrono lets you schedule when to automatically send to a stream based on a few triggers." TextWrapping="Wrap" />
+          <TextBlock
+            Margin="0,15,0,0"
+            IsVisible="{Binding HasSavedSenders, Converter={x:Static BoolConverters.Not}}"
+            Text="Please a save a stream form the main Connector UI ⚠."
+            TextWrapping="Wrap" />
+        </StackPanel>
+      </m:Card>
+
+      <StackPanel
+        Grid.Row="1"
+        VerticalAlignment="Center"
+        Orientation="Horizontal">
+        <icons:MaterialIcon
+          Margin="0,0,5,0"
+          VerticalAlignment="Center"
+          Foreground="Gray"
+          Kind="InfoCircle"
+          ToolTip.Tip="If disabled the scheduler is turned off." />
+        <TextBlock Text="Enabled:" />
+      </StackPanel>
+
+      <StackPanel
+        Grid.Row="2"
+        VerticalAlignment="Center"
+        Orientation="Horizontal">
+        <icons:MaterialIcon
+          Margin="0,0,5,0"
+          VerticalAlignment="Center"
+          Foreground="Gray"
+          Kind="InfoCircle"
+          ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
+        <TextBlock Text="Stream:" />
+      </StackPanel>
+
+      <StackPanel
+        Grid.Row="3"
+        VerticalAlignment="Center"
+        Orientation="Horizontal">
+        <icons:MaterialIcon
+          Margin="0,0,5,0"
+          VerticalAlignment="Center"
+          Foreground="Gray"
+          Kind="InfoCircle"
+          ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
+        <TextBlock Text="Trigger:" />
+      </StackPanel>
+
+      <ToggleSwitch
+        Grid.Row="1"
+        Grid.Column="1"
+        Margin="10,10,0,10"
+        IsChecked="{Binding Enabled}"
+        IsEnabled="{Binding HasSavedSenders}" />
+
+      <ComboBox
+        Grid.Row="2"
+        Grid.Column="1"
+        Margin="10,10,0,10"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        Items="{Binding SavedSenders}"
+        PlaceholderText="Select a stream"
+        SelectedItem="{Binding SelectedStream}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="auto,*">
+              <icons:MaterialIcon
+                Margin="0,0,5,0"
+                Foreground="DarkGray"
+                Kind="CubeOutline" />
+              <TextBlock
+                Grid.Column="1"
+                Text="{Binding CachedStream.name}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+
+      <ComboBox
+        Grid.Row="3"
+        Grid.Column="1"
+        Margin="10,10,0,10"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        Items="{Binding Triggers}"
+        PlaceholderText="Select a trigger"
+        SelectedItem="{Binding SelectedTrigger}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="auto,*">
+
+              <icons:MaterialIcon
+                Margin="0,0,5,0"
+                Foreground="DarkGray"
+                Kind="{Binding Icon}" />
+              <TextBlock
+                Grid.Column="1"
+                Text="{Binding Name}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+
+
+      <!--<m:Card
+        Grid.Row="3"
+        Grid.ColumnSpan="2"
+        Margin="0,15"
+        VerticalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Classes="Mini">
+        <StackPanel>
+          <TextBlock
+            IsVisible="{Binding HasCommits, Converter={x:Static BoolConverters.Not}}"
+            Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
+            TextWrapping="Wrap" />
+
+          <Image Source="{Binding PreviewImage}" />
+        </StackPanel>
+      </m:Card>-->
+
+      <StackPanel
+        Grid.Row="5"
+        Grid.ColumnSpan="2"
+        Margin="15"
+        HorizontalAlignment="Right"
+        Orientation="Horizontal"
+        Spacing="10">
+
+
+        <Button
+          Command="{Binding SaveCommand}"
+          Content="Save"
+          ToolTip.Tip="Save this sender to the file without receiving" />
+        <!--<Button
+        Command="{Binding SaveReceiveCommand}"
+        Content="Receive &amp; Save"
+        Foreground="White"
+        ToolTip.Tip="Receive from Speckle and save this receiver to the file" />-->
+      </StackPanel>
+    </Grid>
+
+  </Grid>
+</Window>

@@ -107,6 +107,16 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
+      var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+      
+      if (material != null)
+      {
+        foreach (var mesh in specklePipe.displayValue)
+        {
+          mesh["renderMaterial"] = material;
+        }
+      }
+
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
       {
         "RBS_PIPING_SYSTEM_TYPE_PARAM",
@@ -143,6 +153,16 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
+      var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
+      
+      if (material != null)
+      {
+        foreach (var mesh in specklePipe.displayValue)
+        {
+          mesh["renderMaterial"] = material;
+        }
+      }
+
       GetAllRevitParamsAndIds(specklePipe, revitPipe, new List<string>
       {
         "RBS_SYSTEM_CLASSIFICATION_PARAM",
@@ -152,6 +172,8 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
+      
+      Report.Log($"Converted FlexPipe {revitPipe.Id}");
 
       return specklePipe;
     }

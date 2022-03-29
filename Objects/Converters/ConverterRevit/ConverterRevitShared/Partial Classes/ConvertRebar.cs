@@ -1,15 +1,12 @@
 ﻿using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Rebar = Objects.BuiltElements.Rebar;
-using Line = Objects.Geometry.Line;
-using Arc = Objects.Geometry.Arc;
-using Polyline = Objects.Geometry.Polyline;
 using Polycurve = Objects.Geometry.Polycurve;
+using Polyline = Objects.Geometry.Polyline;
+using Rebar = Objects.BuiltElements.Rebar;
 
 namespace Objects.Converter.Revit
 {
@@ -145,7 +142,7 @@ namespace Objects.Converter.Revit
 
       var speckleRebar = new RevitRebar();
       speckleRebar.host = revitRebar.GetHostId().ToString();
-      speckleRebar.type = Doc.GetElement(revitRebar.GetTypeId()).Name;
+      speckleRebar.type = revitRebar.Document.GetElement(revitRebar.GetTypeId()).Name;
       speckleRebar.curves = curves;
       speckleRebar.shapes = revitRebar.GetAllRebarShapeIds().Select(o => o.ToString()).ToList(); // freeform rebar with bent workshop has multiple shapes
       speckleRebar.volume = revitRebar.Volume;

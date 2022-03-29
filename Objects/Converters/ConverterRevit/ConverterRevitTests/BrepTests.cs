@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
-using Xunit;
-using Xunit.Abstractions;
 using Objects.Geometry;
 using Speckle.Core.Api;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
+using Xunit.Abstractions;
 using xUnitRevitUtils;
 
 namespace ConverterRevitTests
 {
-  public class BrepFixture: SpeckleConversionFixture
+  public class BrepFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Brep.rvt");
 
@@ -19,7 +19,7 @@ namespace ConverterRevitTests
 
     public override string NewFile => Globals.GetTestModel("Brep_ToNative.rvt");
   }
-  
+
   public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>
   {
     private readonly ITestOutputHelper _testOutputHelper;
@@ -29,7 +29,7 @@ namespace ConverterRevitTests
       _testOutputHelper = testOutputHelper;
       this.fixture = fixture;
     }
-    
+
     [Theory]
     [Trait("Brep", "ToNative")]
     [InlineData(@"Brep-Cube.json")]
@@ -48,22 +48,22 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-Plane.json")]
     public void BrepToNative(string fileName)
     {
-    
+
       // Read and obtain `base` object.
       var contents = System.IO.File.ReadAllText(Globals.GetTestModel(fileName));
       var converter = new ConverterRevit();
       var @base = Operations.Deserialize(contents);
-      
+
       // You read the wrong file, OOOPS!!
       if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
-      
+
       xru.RunInTransaction(() =>
       {
         converter.SetContextDocument(fixture.NewDoc);
         native = converter.BrepToDirectShape(brep);
-      }, fixture.NewDoc ).Wait();
-      
+      }, fixture.NewDoc).Wait();
+
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }
 
@@ -73,7 +73,7 @@ namespace ConverterRevitTests
     {
       throw new NotImplementedException();
     }
-    
+
     [Fact]
     [Trait("Brep", "Selection")]
     public void BrepSelectionToNative()
@@ -81,16 +81,16 @@ namespace ConverterRevitTests
       var converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
 
-      if(!(fixture.Selection[0] is DirectShape ds))
+      if (!(fixture.Selection[0] is DirectShape ds))
         throw new Exception("Selected object was not a direct shape.");
       var geo = ds.get_Geometry(new Options());
-      if(!(geo.First() is Solid solid))
+      if (!(geo.First() is Solid solid))
         throw new Exception("DS was not composed of a solid.");
-      var converted = converter.BrepToSpeckle(solid);
+      var converted = converter.BrepToSpeckle(solid, fixture.NewDoc);
       var nativeconverted = converter.BrepToNative(converted);
       Assert.NotNull(nativeconverted);
     }
-    
+
   }
 
 }

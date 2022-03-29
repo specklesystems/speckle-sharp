@@ -9,77 +9,268 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
-  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
+  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
 
-  <!-- <Design.DataContext> -->
-  <!--   <viewModels:StreamViewModel /> -->
-  <!-- </Design.DataContext> -->
+  <Design.DataContext>
+    <viewModels:DesignSavedStreamViewModel />
+  </Design.DataContext>
+
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
+    <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
   </UserControl.Resources>
-  <Grid RowDefinitions="auto,*">
-    <Grid Margin="15" ColumnDefinitions="auto,*">
-      <m:FloatingButton
-        VerticalAlignment="Center"
-        assists:ShadowAssist.ShadowDepth="0"
-        Background="Transparent"
-        Classes=""
-        Command="{Binding GoBack}"
-        ToolTip.Tip="Back">
-        <Button.Content>
+  <Grid RowDefinitions="auto,*, auto">
+    <Border
+      Margin="0,0,0,7"
+      Padding="0"
+      assists:ShadowAssist.ShadowDepth="Depth2"
+      Background="{DynamicResource MaterialDesignCardBackground}">
+      <Grid Margin="15" ColumnDefinitions="auto,*,auto">
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="0"
+          Background="Transparent"
+          Classes=""
+          Command="{Binding GoBack}"
+          ToolTip.Tip="Back">
+          <Button.Content>
 
-          <Viewbox
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Stretch="Fill">
-            <icons:MaterialIcon
-              Width="24"
-              Height="24"
-              Kind="ChevronLeft" />
-          </Viewbox>
+            <Viewbox
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Stretch="Fill">
+              <icons:MaterialIcon
+                Width="24"
+                Height="24"
+                Kind="ChevronLeft" />
+            </Viewbox>
 
-        </Button.Content>
+          </Button.Content>
 
-      </m:FloatingButton>
-      <Grid
-        Grid.Column="1"
-        Margin="15,0,0,0"
-        RowDefinitions="auto,auto">
-        <TextBlock
-          Classes="Grotesk"
-          FontSize="20"
-          Text="{Binding Stream.name}"
-          TextTrimming="CharacterEllipsis" />
+        </m:FloatingButton>
         <Grid
-          Grid.Row="1"
-          Margin="0,3,0,0"
-          ColumnDefinitions="auto,auto,*">
+          Grid.Column="1"
+          Margin="15,0,0,0"
+          RowDefinitions="auto,auto">
           <TextBlock
-            Classes="Overline"
-            Text="{Binding Stream.id}"
+            Classes="Grotesk"
+            FontSize="20"
+            Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <TextBlock
-            Grid.Column="1"
-            Classes="Overline"
-            Text=" - " />
-          <TextBlock
-            Grid.Column="2"
-            Classes="Overline"
-            Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
-            TextTrimming="CharacterEllipsis" />
+          <Grid
+            Grid.Row="1"
+            Margin="0,3,0,0"
+            ColumnDefinitions="auto,auto,*">
+            <TextBlock
+              Classes="Overline"
+              Text="{Binding Stream.id}"
+              TextTrimming="CharacterEllipsis" />
+            <TextBlock
+              Grid.Column="1"
+              Classes="Overline"
+              Text=" - " />
+            <TextBlock
+              Grid.Column="2"
+              Classes="Overline"
+              Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
+              TextTrimming="CharacterEllipsis" />
+          </Grid>
         </Grid>
+        <Menu Grid.Column="2" Items="{Binding MenuItems}">
+          <Menu.Styles>
+            <Style Selector="MenuItem">
+              <Setter Property="Header" Value="{Binding Header}" />
+              <Setter Property="Icon" Value="{Binding Icon}" />
+              <Setter Property="MinWidth" Value="28" />
+              <Setter Property="Items" Value="{Binding Items}" />
+              <Setter Property="Command" Value="{Binding Command}" />
+              <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+            </Style>
+          </Menu.Styles>
+
+        </Menu>
+
 
       </Grid>
+    </Border>
+    <!--  ACTIVITY  -->
+    <!--
+      NOTE FORMATTED TEXT IS COMING TO AVALONIA !
+      https://github.com/AvaloniaUI/Avalonia/pull/6953
+    -->
+    <Grid Grid.Row="1">
+      <ScrollViewer Name="activityScroller">
+        <Grid RowDefinitions="*,auto">
+          <ItemsControl Margin="0,0,0,10" Items="{Binding Activity}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid>
+                  <m:ColorZone
+                    Grid.Row="3"
+                    Margin="{Binding Margin}"
+                    HorizontalAlignment="{Binding Align}"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    CornerRadius="25"
+                    Mode="Light"
+                    Opacity="{Binding Message, Converter={StaticResource StringOpacityValueConverter}}">
+                    <Grid ColumnDefinitions="auto,*">
+                      <icons:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        Kind="{Binding Icon}"
+                        ToolTip.Tip="Send" />
+                      <TextBlock
+                        Grid.Column="1"
+                        Margin="5,10,10,10"
+                        Text="{Binding Message}"
+                        TextWrapping="Wrap" />
+                    </Grid>
 
+                  </m:ColorZone>
+
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+          </ItemsControl>
+          <Grid
+            Grid.Row="1"
+            Margin="15,0"
+            RowDefinitions="auto,auto,auto">
+            <!--  COMMIT MESSAGE  -->
+            <!--<TextBox
+                Margin="0,8,0,0"
+                Classes="Small"
+                Foreground="Gray"
+                IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+                IsReadOnly="{Binding Progress.IsProgressing}"
+                IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}"
+                Text="{Binding StreamState.CommitMessage}"
+                Watermark="Commit message" />-->
+            <!--  NOTIFICATION  -->
+            <!--  NOTIFICATION  -->
+            <m:ColorZone
+              Grid.Row="1"
+              Margin="0,0,0,10"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
+              IsVisible="{Binding ShowNotification}"
+              Mode="PrimaryMid">
+              <Grid ColumnDefinitions="*, auto">
+                <Button
+                  Margin="0,0,3,0"
+                  VerticalAlignment="Center"
+                  assists:ButtonAssist.CornerRadius="25,0,0,25"
+                  Classes="Flat"
+                  Command="{Binding LaunchNotificationCommand}"
+                  ToolTip.Tip="View online">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                      VerticalAlignment="Center"
+                      Classes="Overline"
+                      FontWeight="Medium"
+                      Foreground="White"
+                      Text="{Binding Notification}"
+                      TextWrapping="Wrap" />
+                    <icons:MaterialIcon
+                      Margin="5,0"
+                      VerticalAlignment="Center"
+                      Foreground="White"
+                      Kind="ExternalLink" />
+                  </StackPanel>
+                </Button>
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding CloseNotificationCommand}"
+                  ToolTip.Tip="Close notification">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="Close" />
+
+                  </Button.Content>
+                </m:FloatingButton>
+              </Grid>
+            </m:ColorZone>
+            <!--  REPORT  -->
+            <m:ColorZone
+              Grid.Row="3"
+              Margin="0,0,0,10"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
+              IsVisible="{Binding ShowReport}"
+              Mode="Accent">
+
+              <Grid ColumnDefinitions="*, auto">
+                <Button
+                  Margin="0,0,3,0"
+                  VerticalAlignment="Center"
+                  assists:ButtonAssist.CornerRadius="25,0,0,25"
+                  Classes="Flat"
+                  Command="{Binding OpenReportCommand}"
+                  ToolTip.Tip="Open Report">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                      VerticalAlignment="Center"
+                      Classes="Overline"
+                      FontWeight="Medium"
+                      Foreground="White"
+                      Text="Some elements have warnings, please check the report"
+                      TextWrapping="Wrap" />
+                    <icons:MaterialIcon
+                      Margin="5,0"
+                      VerticalAlignment="Center"
+                      Foreground="White"
+                      Kind="TextBox" />
+                  </StackPanel>
+
+                </Button>
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding CloseReportNotificationCommand}"
+                  ToolTip.Tip="Close notification">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      Foreground="White"
+                      Kind="Close" />
+
+                  </Button.Content>
+                </m:FloatingButton>
+              </Grid>
+            </m:ColorZone>
+
+
+          </Grid>
+        </Grid>
+
+      </ScrollViewer>
 
     </Grid>
-    <TabControl Grid.Row="1" SelectedIndex="{Binding IsReceiver}">
+    <!--  SEND/RECEIVE  -->
+    <TabControl
+      Grid.Row="2"
+      Background="{DynamicResource MaterialDesignCardBackground}"
+      SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem>
+      <TabItem IsEnabled
+							 ="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
@@ -98,7 +289,7 @@
               Text="Send" />
           </StackPanel>
         </TabItem.Header>
-        <uc:Send IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" />
+        <uc:Send />
       </TabItem>
 
       <TabItem>

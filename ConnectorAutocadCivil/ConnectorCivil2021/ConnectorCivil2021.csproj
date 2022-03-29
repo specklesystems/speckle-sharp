@@ -42,6 +42,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -64,20 +66,16 @@
       <Project>{eab21473-7013-431c-b526-fb5ba657ae2f}</Project>
       <Name>DesktopUI2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
-      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
-      <Name>DesktopUI</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
-      <Version>0.10.8</Version>
+      <Version>0.10.13</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.8</Version>
+      <Version>0.10.13</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.8</Version>
+      <Version>0.10.13</Version>
     </PackageReference>
     <PackageReference Include="MSBuild.AssemblyVersion">
       <Version>1.3.0</Version>
@@ -88,7 +86,7 @@
       <Version>2021.0.0.3</Version>
     </PackageReference>
     <PackageReference Include="Speckle.Civil3D.API">
-      <Version>2021.0.0.3</Version>
+      <Version>2021.0.2</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
