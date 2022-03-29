@@ -216,7 +216,6 @@
             <MenuItem
               Width="30"
               Height="30"
-       
               Foreground="Red"
               Header="{icons:MaterialIconExt Notifications}">
               <MenuItem
@@ -345,7 +344,8 @@
               <TextBlock
                 Margin="15"
                 IsVisible="{Binding HasStreams, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
-                Text="No streams found 😅!&#x0a;You can create a new one or add a public stream by ID or URL."
+                Text="No streams found 😅&#x0a;&#x0a;You can create a new one or add a public stream by ID or URL."
+                TextAlignment="Center"
                 TextWrapping="Wrap" />
               <ListBox
                 Background="Transparent"

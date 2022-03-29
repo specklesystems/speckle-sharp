@@ -519,7 +519,8 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        throw new Speckle.Core.Logging.SpeckleException($"{element.id}: Could not find any type symbol to use for family {nameof(T)}.");
+        var name = string.IsNullOrEmpty(element["category"].ToString()) ? typeof(T).Name : element["category"].ToString();
+        throw new Speckle.Core.Logging.SpeckleException($"Could not find any family to use for category {name}.");
       }
 
       var family = element["family"] as string;
