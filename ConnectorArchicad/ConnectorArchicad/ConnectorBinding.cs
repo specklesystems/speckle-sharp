@@ -101,11 +101,11 @@ namespace Archicad.Launcher
 
     public override void SelectClientObjects(string args) { }
 
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       if (state.Filter is null)
       {
-        return;
+        return null;
       }
 
       state.SelectedObjectIds = state.Filter.Selection;
@@ -113,8 +113,10 @@ namespace Archicad.Launcher
       var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
       if (commitObject is not null)
       {
-        await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
+        return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
       }
+
+      return null;
     }
 
     public override void WriteStreamsToFile(List<StreamState> streams) { }

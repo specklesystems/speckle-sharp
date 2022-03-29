@@ -184,7 +184,7 @@ namespace AddOnCommands {
 			return {};
 		}
 
-		const Modeler::Model3DPtr model = sight->GetMainModelPtr();;
+		const Modeler::Model3DPtr model = sight->GetMainModelPtr();
 		if (model == nullptr) {
 			return {};
 		}
