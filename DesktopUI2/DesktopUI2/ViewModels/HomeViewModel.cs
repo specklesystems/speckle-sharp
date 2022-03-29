@@ -312,9 +312,13 @@ namespace DesktopUI2.ViewModels
 
       GetStreams();
 
-      //first show cached accounts, then refresh them
-      await AccountManager.UpdateAccounts();
-      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+      try
+      {
+        //first show cached accounts, then refresh them
+        await AccountManager.UpdateAccounts();
+        Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+      }
+      catch { }
 
 
       HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
