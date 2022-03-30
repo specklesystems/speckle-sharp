@@ -1523,15 +1523,8 @@ namespace Objects.Converter.AutocadCivil
                   var faceIndices = new List<int>();
                   foreach (var n in e.Nodes)
                   {
-                    if (!_vertices.Contains(n.Point))
-                    {
-                      faceIndices.Add(_vertices.Count);
-                      _vertices.Add(n.Point);
-                    }
-                    else
-                    {
-                      faceIndices.Add(_vertices.IndexOf(n.Point));
-                    }
+                    faceIndices.Add(_vertices.Count);
+                    _vertices.Add(n.Point);
                     n.Dispose();
                   }
 
