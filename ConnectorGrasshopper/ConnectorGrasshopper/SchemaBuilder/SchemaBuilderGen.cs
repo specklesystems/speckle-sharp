@@ -1306,6 +1306,19 @@ public class NodeSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class OpeningSchemaComponent: CreateSchemaObjectBase {
+     
+    public OpeningSchemaComponent(): base("Opening", "Opening", "Creates a Speckle opening", "Speckle 2 BIM", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("087f847f-6f51-3cc9-5b7d-2cce478b46f4");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Opening.ctor(Objects.ICurve)","Objects.BuiltElements.Opening");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class ParameterSchemaComponent: CreateSchemaObjectBase {
      
     public ParameterSchemaComponent(): base("Parameter", "Parameter", "A Revit instance parameter to set on an element", "Speckle 2 Revit", "Families") { }

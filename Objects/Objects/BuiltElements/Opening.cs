@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
 
     public Opening() { }
 
-    //[SchemaInfo("Opening", "Creates a Speckle opening")]
+    [SchemaInfo("Arch Opening", "Creates a Speckle opening", "BIM", "Architecture")]
     public Opening(ICurve outline)
     {
       this.outline = outline;
