@@ -8,6 +8,7 @@ using Grasshopper.Kernel;
 using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
+using Grasshopper.Kernel.Types;
 
 namespace ConnectorGrasshopper.Objects
 {
@@ -158,16 +159,18 @@ namespace ConnectorGrasshopper.Objects
         {
           var value = inputData[key];
 
-
           if (value is List<object> list)
           {
+
             // Value is a list of items, iterate and convert.
             List<object> converted = null;
             try
             {
+
               converted = list.Select(item =>
               {
-                return Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
+                var result = Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
+                return result;
               }).ToList();
             }
             catch (Exception e)

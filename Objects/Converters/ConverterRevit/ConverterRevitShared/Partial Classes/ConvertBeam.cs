@@ -12,6 +12,7 @@ namespace Objects.Converter.Revit
   {
     public List<ApplicationPlaceholderObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
+      
       if (speckleBeam.baseLine == null)
       {
         throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
@@ -26,7 +27,12 @@ namespace Objects.Converter.Revit
       var speckleRevitBeam = speckleBeam as RevitBeam;
 
       if (speckleRevitBeam != null)
-        level = GetLevelByName(speckleRevitBeam.level.name);
+      {
+        if (level != null)
+        {
+          level = GetLevelByName(speckleRevitBeam.level.name);
+        }
+      }
 
       level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine));
       var isUpdate = false;

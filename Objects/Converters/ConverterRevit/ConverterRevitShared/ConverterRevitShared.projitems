@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProfileWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStructuralModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTeklaObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFreeformElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
