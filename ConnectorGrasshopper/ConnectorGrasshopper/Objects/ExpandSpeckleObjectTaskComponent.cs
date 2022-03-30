@@ -93,6 +93,16 @@ namespace ConnectorGrasshopper.Objects
             var obj = result[key];
             switch (obj)
             {
+              case IGH_Structure structure:
+                var path = DA.ParameterTargetPath(indexOfOutputParam);
+                structure.Paths.ToList().ForEach(p => {
+                  var indices = path.Indices.ToList();
+                  indices.AddRange(p.Indices);
+                  var newPath = new GH_Path(indices.ToArray());
+                  p.Indices = indices.ToArray();
+                });
+                DA.SetDataTree(indexOfOutputParam, structure);
+                break;
               case IList list:
                 DA.SetDataList(indexOfOutputParam, list);
                 break;
@@ -290,7 +300,15 @@ namespace ConnectorGrasshopper.Objects
           case null:
             outputDict[prop.Key] = null;
             break;
-          case System.Collections.IList list:
+          case IList list:
+            var items = list as List<object>;
+            if( items.Where(l => l is IList).Any())
+            {
+              // Nested lists need to be converted into trees :)
+              var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null };
+              outputDict[prop.Key] = treeBuilder.Build(list);
+              break;
+            }
             var result = new List<IGH_Goo>();
             foreach (var x in list)
             {

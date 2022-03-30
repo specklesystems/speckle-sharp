@@ -386,12 +386,12 @@ namespace ConnectorGrasshopper.Extras
       if (Converter != null && Converter.CanConvertToNative(@base))
       {
         var converted = Converter.ConvertToNative(@base);
-        data.Append(TryConvertItemToNative(GH_Convert.ToGoo(converted), Converter));
+        data.Append(GH_Convert.ToGoo(converted));
       }
       // Simple pass the SpeckleBase
       else
       {
-        onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
+        if(onError != null) onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
         data.Append(new GH_SpeckleBase(@base));
       }
       return data;

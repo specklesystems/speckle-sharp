@@ -137,7 +137,7 @@ namespace ConnectorGrasshopper.Ops
           return;
         }
 
-        data = Utilities.ConvertToTree(Converter, @base);
+        data = Utilities.ConvertToTree(Converter, @base, Parent.AddRuntimeMessage);
       }
       catch (Exception e)
       {
