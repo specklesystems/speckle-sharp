@@ -331,7 +331,7 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-        var data = Extras.Utilities.ConvertToTree(Converter, @base);
+        var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage);
 
         DA.SetDataTree(0, data);
       }
