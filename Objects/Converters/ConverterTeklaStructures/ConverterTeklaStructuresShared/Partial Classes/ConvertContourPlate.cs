@@ -26,13 +26,13 @@ namespace Objects.Converter.TeklaStructures
         var contour = (TeklaContourPlate)area;
 
         ContourPlate.Profile.ProfileString = contour.profile.name;
-                //ContourPlate.Contour.ContourPoints = countourPoints;
+        //ContourPlate.Contour.ContourPoints = countourPoints;
         ContourPlate.Material.MaterialString = contour.material.name;
-                foreach (var cp in contour.contour)
-                {
-                    ContourPlate.AddContourPoint(ToTeklaContourPoint(cp));
-                }
-                SetPartProperties(ContourPlate, contour);
+        foreach (var cp in contour.contour)
+        {
+          ContourPlate.AddContourPoint(ToTeklaContourPoint(cp));
+        }
+        SetPartProperties(ContourPlate, contour);
       }
       ContourPlate.Insert();
       //Model.CommitChanges();
@@ -48,7 +48,7 @@ namespace Objects.Converter.TeklaStructures
       specklePlate.finish = plate.Finish;
       specklePlate.classNumber = plate.Class;
       specklePlate.position = GetPositioning(plate.Position);
-            
+
       //Polygon teklaPolygon = null;
 
       // Get general outline for other programs
@@ -56,17 +56,17 @@ namespace Objects.Converter.TeklaStructures
       //if (teklaPolygon != null)
       //  specklePlate.outline = ToSpecklePolyline(teklaPolygon);
 
-            // Getting polycurve now works with new nuget packages
-            var teklaPolycurve = plate.GetContourPolycurve();
-            specklePlate.outline = ToSpecklePolycurve(teklaPolycurve);
+      // Getting polycurve now works with new nuget packages
+      var teklaPolycurve = plate.GetContourPolycurve();
+      specklePlate.outline = ToSpecklePolycurve(teklaPolycurve);
 
-            // Get contour for ToNative Tekla conversion
-            specklePlate.contour = new List<TeklaContourPoint>();
-            var cPts = plate.Contour.ContourPoints.Cast<ContourPoint>();
-            foreach (ContourPoint pt in cPts)
-            {
-                specklePlate.contour.Add(ToSpeckleContourPoint(pt));
-            }
+      // Get contour for ToNative Tekla conversion
+      specklePlate.contour = new List<TeklaContourPoint>();
+      var cPts = plate.Contour.ContourPoints.Cast<ContourPoint>();
+      foreach (ContourPoint pt in cPts)
+      {
+        specklePlate.contour.Add(ToSpeckleContourPoint(pt));
+      }
 
       GetAllUserProperties(specklePlate, plate);
 
@@ -77,7 +77,7 @@ namespace Objects.Converter.TeklaStructures
       {
         foreach (var rebar in rebars)
         {
-          if (rebar is RebarGroup) {specklePlate.rebars = RebarGroupToSpeckle((RebarGroup)rebar); }
+          if (rebar is RebarGroup) { specklePlate.rebars = RebarGroupToSpeckle((RebarGroup)rebar); }
 
         }
       }
@@ -105,28 +105,28 @@ namespace Objects.Converter.TeklaStructures
       if (teklaPolygon != null)
         specklePlate.outline = ToSpecklePolyline(teklaPolygon);
 
-            // Get contour for ToNative Tekla conversion
-            specklePlate.contour = new List<TeklaContourPoint>();
-            var cPts = plate.Contour.ContourPoints.Cast<ContourPoint>();
-            foreach (ContourPoint pt in cPts)
-            {
-                specklePlate.contour.Add(ToSpeckleContourPoint(pt));
-            }
+      // Get contour for ToNative Tekla conversion
+      specklePlate.contour = new List<TeklaContourPoint>();
+      var cPts = plate.Contour.ContourPoints.Cast<ContourPoint>();
+      foreach (ContourPoint pt in cPts)
+      {
+        specklePlate.contour.Add(ToSpeckleContourPoint(pt));
+      }
 
-            var units = GetUnitsFromModel();
+      var units = GetUnitsFromModel();
       specklePlate.applicationId = plate.Identifier.GUID.ToString();
       specklePlate["units"] = units;
       return specklePlate;
     }
-        public void SetPartProperties(Part part, TeklaContourPlate teklaPlate)
-        {
-            part.Material.MaterialString = teklaPlate.material.name;
-            part.Profile.ProfileString = teklaPlate.profile.name;
-            part.Class = teklaPlate.classNumber;
-            part.Finish = teklaPlate.finish;
-            part.Name = teklaPlate.name;
-            part.Position = SetPositioning(teklaPlate.position);
-        }
+    public void SetPartProperties(Part part, TeklaContourPlate teklaPlate)
+    {
+      part.Material.MaterialString = teklaPlate.material.name;
+      part.Profile.ProfileString = teklaPlate.profile.name;
+      part.Class = teklaPlate.classNumber;
+      part.Finish = teklaPlate.finish;
+      part.Name = teklaPlate.name;
+      part.Position = SetPositioning(teklaPlate.position);
     }
+  }
 
 }
