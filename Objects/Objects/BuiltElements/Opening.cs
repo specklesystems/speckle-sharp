@@ -45,6 +45,13 @@ namespace Objects.BuiltElements.Revit
     public RevitWall host { get; set; }
 
     public RevitWallOpening() { }
+    
+    [SchemaInfo("Revit Wall Opening", "Creates a Speckle Wall opening for revit", "BIM", "Architecture")]
+    public RevitWallOpening(ICurve outline , RevitWall host = null)
+    {
+      this.outline = outline;
+      this.host = host;
+    }
   }
 
   public class RevitShaft : RevitOpening
