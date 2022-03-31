@@ -850,9 +850,9 @@ namespace Objects.Converter.Revit
           return WallLocationLine.FinishFaceInterior;
       }
     }
-
-        #region materials
-        public RenderMaterial GetElementRenderMaterial(DB.Element element)
+    
+    #region materials
+    public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element.GetMaterialIds(false).FirstOrDefault();
 
@@ -905,73 +905,63 @@ namespace Objects.Converter.Revit
       return materialId;
     }
     
-        /// <summary>
-        /// Retrieves the material from assigned system type for mep elements
-        /// </summary>
-        /// <param name="e">Revit element to parse</param>
-        /// <returns></returns>
-        public static RenderMaterial GetMEPSystemMaterial(Element e)
-        {
-            var material = GetMEPDefaultMaterial();
-            ElementId idType = ElementId.InvalidElementId;
+    /// <summary>
+    /// Retrieves the material from assigned system type for mep elements
+    /// </summary>
+    /// <param name="e">Revit element to parse</param>
+    /// <returns></returns>
+    public static RenderMaterial GetMEPSystemMaterial(Element e)
+    {
+      RenderMaterial material = null;
+      ElementId idType = ElementId.InvalidElementId;
             
-            if (e is DB.MEPCurve dt)
-            {
-              idType = dt.MEPSystem.GetTypeId();
-            }
-            else if (IsSupportedMEPCategory(e))
-            {
-                MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-                
-                if (m != null && m.ConnectorManager != null)
-                {
-                    //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
-                    foreach (Connector item in m.ConnectorManager.Connectors)
-                    {
-                        if (item.MEPSystem != null)
-                        {
-                            idType = item.MEPSystem.GetTypeId();
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (idType != ElementId.InvalidElementId)
-            {
-                DB.MEPSystemType mechType = e.Document.GetElement(idType) as DB.MEPSystemType;
-                var mat = e.Document.GetElement(mechType.MaterialId) as Material;
-                material = RenderMaterialToSpeckle(mat);
-            }
-            return material;
-        }
-            
-        private static bool IsSupportedMEPCategory(Element e)
-        {
-          var categories = e.Document.Settings.Categories;
-
-          var supportedCategories = new[]
-          {
-            BuiltInCategory.OST_PipeFitting,
-            BuiltInCategory.OST_DuctFitting,
-            BuiltInCategory.OST_DuctAccessory,
-            BuiltInCategory.OST_PipeAccessory,
-            //BuiltInCategory.OST_MechanicalEquipment,
-          };
+      if (e is DB.MEPCurve dt)
+      {
+        idType = dt.MEPSystem.GetTypeId();
+      }
+      else if (IsSupportedMEPCategory(e))
+      {
+          MEPModel m = ((DB.FamilyInstance)e).MEPModel;
           
-          return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
-        }
+          if (m != null && m.ConnectorManager != null)
+          {
+            //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
+            foreach (Connector item in m.ConnectorManager.Connectors)
+            {
+              if (item.MEPSystem != null)
+              {
+                idType = item.MEPSystem.GetTypeId();
+                break;
+              }
+            }
+          }
+      }
 
-        /// <summary>
-        /// creates a standard material with opacity for MEP elements
-        /// used, if no suitable material is found while fetching the systems type material
-        /// </summary>
-        /// <returns></returns>
-        public static RenderMaterial GetMEPDefaultMaterial()
-        {
-            var material = new RenderMaterial() { opacity = 0.8, diffuse = System.Drawing.Color.Gray.ToArgb() };
-            return material;
-        }
-        #endregion
+      if (idType != ElementId.InvalidElementId)
+      {
+          DB.MEPSystemType mechType = e.Document.GetElement(idType) as DB.MEPSystemType;
+          var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+          material = RenderMaterialToSpeckle(mat);
+      }
+      return material;
     }
+            
+    private static bool IsSupportedMEPCategory(Element e)
+    {
+      var categories = e.Document.Settings.Categories;
+
+      var supportedCategories = new[]
+      {
+        BuiltInCategory.OST_PipeFitting,
+        BuiltInCategory.OST_DuctFitting,
+        BuiltInCategory.OST_DuctAccessory,
+        BuiltInCategory.OST_PipeAccessory,
+        //BuiltInCategory.OST_MechanicalEquipment,
+      };
+      
+      return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
+    }
+    
+    #endregion
+  }
 }
