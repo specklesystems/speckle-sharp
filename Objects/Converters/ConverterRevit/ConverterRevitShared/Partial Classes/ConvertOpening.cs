@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
             Element existingElement;
             try
             {
-              existingElement = Doc.GetElement(rwo.elementId);
+              existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
             }
             catch (Exception e)
             {
