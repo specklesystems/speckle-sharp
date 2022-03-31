@@ -326,6 +326,7 @@ namespace DesktopUI2.ViewModels
       }
 
       Init();
+      GenerateMenuItems();
 
       var updateTextTimer = new System.Timers.Timer();
       updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
@@ -336,7 +337,6 @@ namespace DesktopUI2.ViewModels
     private void Init()
     {
       GetStream().ConfigureAwait(false);
-      GenerateMenuItems();
 
       //get available filters from our bindings
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
