@@ -41,6 +41,7 @@ namespace DesktopUI2.ViewModels
       Router.Navigate.Execute(new HomeViewModel(this));
 
       Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
+      Bindings.UpdateSelectedStream = HomeViewModel.Instance.UpdateSelectedStream;
 
       Router.PropertyChanged += Router_PropertyChanged;
     }
@@ -50,13 +51,11 @@ namespace DesktopUI2.ViewModels
       throw new System.NotImplementedException();
     }
 
-
     public static void GoHome()
     {
       if (RouterInstance != null && HomeViewModel.Instance != null)
         RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
-
 
   }
 }

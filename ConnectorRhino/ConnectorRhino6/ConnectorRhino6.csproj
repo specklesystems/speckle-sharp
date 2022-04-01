@@ -51,10 +51,6 @@
       <Project>{f7d586e0-5452-428d-b704-3ff142de248b}</Project>
       <Name>DesktopUI2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
-      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
-      <Name>DesktopUI</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
