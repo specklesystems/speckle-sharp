@@ -129,7 +129,6 @@ namespace DesktopUI2.ViewModels
           _selectedSavedStream = value;
         }
       }
-      get { return _selectedSavedStream; }
     }
 
     private ObservableCollection<StreamViewModel> _savedStreams = new ObservableCollection<StreamViewModel>();
@@ -210,8 +209,8 @@ namespace DesktopUI2.ViewModels
 
     internal void UpdateSelectedStream()
     {
-      if (SelectedSavedStream != null)
-        SelectedSavedStream.GetBranchesAndRestoreState();
+      if (_selectedSavedStream != null)
+        _selectedSavedStream.GetBranchesAndRestoreState();
     }
 
     //write changes to file every time they happen
