@@ -318,6 +318,7 @@ namespace DesktopUI2.ViewModels
       }
 
       Init();
+      GenerateMenuItems();
 
       var updateTextTimer = new System.Timers.Timer();
       updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
@@ -328,7 +329,6 @@ namespace DesktopUI2.ViewModels
     private void Init()
     {
       GetStream().ConfigureAwait(false);
-      GenerateMenuItems();
 
       GetBranchesAndRestoreState();
       GetActivity();

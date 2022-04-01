@@ -235,17 +235,41 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids, Document d)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
-
+      
+      var MeshMap = new Dictionary<Mesh, List<DB.Mesh>>();
       foreach (Solid solid in solids)
       {
         foreach (Face face in solid.Faces)
         {
           Material faceMaterial = d.GetElement(face.MaterialElementId) as Material;
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
-          ConvertMeshData(face.Triangulate(), m.faces, m.vertices);
+          if(!MeshMap.ContainsKey(m))
+          {
+            MeshMap.Add(m, new List<DB.Mesh>());
+          }
+          MeshMap[m].Add(face.Triangulate());
         }
       }
 
+      foreach(var meshData in MeshMap)
+      {
+        //It's cheaper to resize lists manually, since we would otherwise be resizing a lot!
+        int numberOfVertices = 0;
+        int numberOfFaces = 0;
+        foreach (DB.Mesh mesh in meshData.Value)
+        {
+          numberOfVertices += mesh.Vertices.Count * 3;
+          numberOfFaces += mesh.NumTriangles * 4;
+        }
+
+        meshData.Key.faces.Capacity = numberOfFaces;
+        meshData.Key.vertices.Capacity = numberOfVertices;
+        foreach (DB.Mesh mesh in meshData.Value)
+        {
+          ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices);
+        }
+      }
+      
       return meshBuildHelper.GetAllValidMeshes();
     }
 
@@ -260,7 +284,6 @@ namespace Objects.Converter.Revit
     {
       int faceIndexOffset = vertices.Count / 3;
 
-      vertices.Capacity += mesh.Vertices.Count * 3;
       foreach (var vert in mesh.Vertices)
       {
         var (x, y, z) = PointToSpeckle(vert);
@@ -269,7 +292,6 @@ namespace Objects.Converter.Revit
         vertices.Add(z);
       }
 
-      faces.Capacity += mesh.NumTriangles * 4;
       for (int i = 0; i < mesh.NumTriangles; i++)
       {
         var triangle = mesh.get_Triangle(i);

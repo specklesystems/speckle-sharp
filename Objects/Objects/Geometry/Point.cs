@@ -101,16 +101,14 @@ namespace Objects.Geometry
       point.z / val, point.units);
 
     public static bool operator ==(Point point1, Point point2) =>
+      !(point1 is null) &&
+      !(point2 is null) &&
       point1.units == point2.units &&
       point1.x == point2.x &&
       point1.y == point2.y &&
       point1.z == point2.z;
 
-    public static bool operator !=(Point point1, Point point2) =>
-      point1.units != point2.units &&
-      point1.x != point2.x &&
-      point1.y != point2.y &&
-      point1.z != point2.z;
+    public static bool operator !=(Point point1, Point point2) => !(point1 == point2);
 
     public static Point Midpoint(Point point1, Point point2) => new Point(
       0.5 * ( point1.x + point2.x ),
