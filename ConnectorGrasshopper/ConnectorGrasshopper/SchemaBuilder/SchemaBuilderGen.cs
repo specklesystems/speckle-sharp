@@ -1306,6 +1306,19 @@ public class NodeSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class OpeningSchemaComponent: CreateSchemaObjectBase {
+     
+    public OpeningSchemaComponent(): base("Arch Opening", "Arch Opening", "Creates a Speckle opening", "Speckle 2 BIM", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("087f847f-6f51-3cc9-5b7d-2cce478b46f4");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Opening.ctor(Objects.ICurve)","Objects.BuiltElements.Opening");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class ParameterSchemaComponent: CreateSchemaObjectBase {
      
     public ParameterSchemaComponent(): base("Parameter", "Parameter", "A Revit instance parameter to set on an element", "Speckle 2 Revit", "Families") { }
@@ -2068,6 +2081,19 @@ public class RevitWall1SchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitWall.ctor(System.String,System.String,Objects.ICurve,Objects.BuiltElements.Level,System.Double,System.Double,System.Double,System.Boolean,System.Boolean,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.BuiltElements.Revit.RevitWall");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitWallOpeningSchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitWallOpeningSchemaComponent(): base("Revit Wall Opening", "Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Speckle 2 BIM", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("a1bd278d-fab5-0034-7aba-807b66122022");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitWallOpening.ctor(Objects.ICurve,Objects.BuiltElements.Revit.RevitWall)","Objects.BuiltElements.Revit.RevitWallOpening");
         base.AddedToDocument(document);
     }
 }
