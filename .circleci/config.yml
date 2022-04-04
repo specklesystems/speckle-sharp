@@ -843,6 +843,7 @@ workflows:
             - build-deploy-connector-grasshopper
             - build-deploy-connector-grasshopper-mac
             - build-deploy-connector-rhino
+            - build-deploy-connector-rhino-mac
             - build-deploy-connector-autocad
             - build-deploy-connector-civil3d
             - build-deploy-connector-etabs
