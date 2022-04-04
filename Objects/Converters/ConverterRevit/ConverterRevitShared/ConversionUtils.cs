@@ -912,38 +912,46 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static RenderMaterial GetMEPSystemMaterial(Element e)
     {
-      RenderMaterial material = null;
       ElementId idType = ElementId.InvalidElementId;
             
       if (e is DB.MEPCurve dt)
       {
-        idType = dt.MEPSystem.GetTypeId();
+        var system = dt.MEPSystem;
+        if (system != null)
+        {
+          idType = system.GetTypeId();
+        }
       }
       else if (IsSupportedMEPCategory(e))
       {
-          MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-          
-          if (m != null && m.ConnectorManager != null)
+        MEPModel m = ((DB.FamilyInstance)e).MEPModel;
+        
+        if (m != null && m.ConnectorManager != null)
+        {
+          //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
+          foreach (Connector item in m.ConnectorManager.Connectors)
           {
-            //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
-            foreach (Connector item in m.ConnectorManager.Connectors)
+            var system = item.MEPSystem;
+            if (system != null)
             {
-              if (item.MEPSystem != null)
-              {
-                idType = item.MEPSystem.GetTypeId();
-                break;
-              }
+              idType = system.GetTypeId();
+              break;
             }
           }
+        }
       }
 
-      if (idType != ElementId.InvalidElementId)
+      if (idType == ElementId.InvalidElementId) return null;
+
+      if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-          DB.MEPSystemType mechType = e.Document.GetElement(idType) as DB.MEPSystemType;
-          var mat = e.Document.GetElement(mechType.MaterialId) as Material;
-          material = RenderMaterialToSpeckle(mat);
+        var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+        RenderMaterial material = RenderMaterialToSpeckle(mat);
+
+        return material;
       }
-      return material;
+
+      return null;
     }
             
     private static bool IsSupportedMEPCategory(Element e)

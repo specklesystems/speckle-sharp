@@ -611,6 +611,11 @@ namespace Objects.Converter.RhinoGh
           Report.Log($"Created Text {o.id}");
           break;
 
+        case Objects.Structural.Geometry.Element1D o:
+          rhinoObj = element1DToNative(o);
+          Report.Log($"Created Element1D with line {o.id}");
+          break;
+
         case DisplayStyle o:
           rhinoObj = DisplayStyleToNative(o);
           break;
@@ -706,6 +711,7 @@ case RH.SubD _:
         case Mesh _:
         case Brep _:
         case Surface _:
+        case Structural.Geometry.Element1D _:
           return true;
 
 #if !GRASSHOPPER
