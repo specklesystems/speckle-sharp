@@ -302,7 +302,7 @@ namespace ConnectorGrasshopper.Objects
             break;
           case IList list:
             var items = list as List<object>;
-            if( items.Where(l => l is IList).Any())
+            if(items != null && items.Where(l => l is IList).Any())
             {
               // Nested lists need to be converted into trees :)
               var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null };

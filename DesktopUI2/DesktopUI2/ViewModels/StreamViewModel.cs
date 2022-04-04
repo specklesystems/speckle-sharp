@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
@@ -129,9 +130,6 @@ namespace DesktopUI2.ViewModels
 
     private Client Client { get; }
 
-
-
-
     public ReactiveCommand<Unit, Unit> GoBack => MainWindowViewModel.RouterInstance.NavigateBack;
 
     //If we don't have access to this stream
@@ -146,8 +144,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _isReceiver, value);
       }
     }
-
-
 
     private Branch _selectedBranch;
     public Branch SelectedBranch
@@ -241,9 +237,6 @@ namespace DesktopUI2.ViewModels
     public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
     public bool HasCommits => Commits != null && Commits.Any();
 
-
-
-
     public string _previewImageUrl = "";
     public string PreviewImageUrl
     {
@@ -296,7 +289,6 @@ namespace DesktopUI2.ViewModels
       Init();
     }
     public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
-
     {
       StreamState = streamState;
       //use cached stream, then load a fresh one async 
@@ -338,16 +330,8 @@ namespace DesktopUI2.ViewModels
     {
       GetStream().ConfigureAwait(false);
 
-      //get available filters from our bindings
-      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
-      SelectedFilter = AvailableFilters[0];
-
-      //get available settings from our bindings
-      Settings = Bindings.GetSettings();
-
       GetBranchesAndRestoreState();
       GetActivity();
-
     }
 
     private void UpdateTextTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -391,8 +375,15 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private async void GetBranchesAndRestoreState()
+    internal async void GetBranchesAndRestoreState()
     {
+      //get available settings from our bindings
+      Settings = Bindings.GetSettings();
+
+      //get available filters from our bindings
+      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
+      SelectedFilter = AvailableFilters[0];
+
       var branches = await Client.StreamGetBranches(Stream.id, 100, 0);
       Branches = branches;
 
@@ -489,7 +480,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
     private async void Client_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo info)
     {
       var branches = await Client.StreamGetBranches(StreamState.StreamId);
@@ -503,7 +493,6 @@ namespace DesktopUI2.ViewModels
       NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
       ScrollToBottom();
     }
-
 
     public void DownloadImage(string url)
     {

@@ -40,6 +40,7 @@ namespace SpeckleRhino
     public ConnectorBindingsRhino()
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+      RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange;
 
       SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
@@ -62,9 +63,16 @@ namespace SpeckleRhino
         return;
 
       var streams = GetStreamsInFile();
-      UpdateSavedStreams(streams);
+      if (UpdateSavedStreams != null)
+        UpdateSavedStreams(streams);
       if (streams.Count > 0)
         SpeckleCommand.CreateOrFocusSpeckle();
+    }
+
+    private void RhinoDoc_LayerChange(object sender, Rhino.DocObjects.Tables.LayerTableEventArgs e)
+    {
+      if (UpdateSelectedStream != null)
+        UpdateSelectedStream();
     }
 
     #region Local streams I/O with local file
@@ -131,7 +139,6 @@ namespace SpeckleRhino
         new ListSelectionFilter {Slug="layer", Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
         new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information as views to the stream"},
         new ManualSelectionFilter()
-
       };
     }
 
@@ -221,7 +228,7 @@ namespace SpeckleRhino
       conversionProgressDict["Conversion"] = 0;
 
       // get commit layer name 
-      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
 
       // give converter a way to access the base commit layer name
       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
@@ -319,7 +326,6 @@ namespace SpeckleRhino
 
       return objects;
     }
-
 
     // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
