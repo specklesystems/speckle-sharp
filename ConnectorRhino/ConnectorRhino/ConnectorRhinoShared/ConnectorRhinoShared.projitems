@@ -15,5 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\RhinoViewModel.cs" />
   </ItemGroup>
 </Project>

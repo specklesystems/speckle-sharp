@@ -266,7 +266,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
-            msbuild << parameters.slnname >>/<< parameters.projname >>.sln /r /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
             CHANNEL="latest"
             if [[ $CIRCLE_TAG == *-beta ]]; then CHANNEL=beta; fi
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
@@ -428,6 +428,10 @@ workflows:
           name: build-connector-rhino
           slnname: ConnectorRhino
           dllname: SpeckleConnectorRhino.rhp
+      - build-connector-mac:
+          name: build-connector-rhino-mac
+          slnname: ConnectorRhino
+          projname: ConnectorRhino7
 
   # Dynamo connector - Build/Test
   connector_dynamo:
@@ -633,6 +637,26 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(rhino|rhinogh|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+
+      - build-connector-mac:
+          name: build-deploy-connector-rhino-mac
+          slnname: ConnectorRhino
+          projname: ConnectorRhino7
+          installername: SpeckleRhinoInstall
+          installer: true
+          slug: rhino-mac
+          requires:
+            - get-ci-tools
+          converter-files: "
+            Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+            Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+            Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+            "
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(rhino|rhino-mac|rhinogh|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
 
       # AUTOCAD Build&Deploy
       - build-connector:
