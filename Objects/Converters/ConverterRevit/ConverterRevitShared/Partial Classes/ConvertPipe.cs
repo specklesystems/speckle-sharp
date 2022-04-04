@@ -108,7 +108,6 @@ namespace Objects.Converter.Revit
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
-      
       if (material != null)
       {
         foreach (var mesh in specklePipe.displayValue)
@@ -153,6 +152,7 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
+      
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
       
       if (material != null)
