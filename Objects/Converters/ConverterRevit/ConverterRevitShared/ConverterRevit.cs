@@ -219,12 +219,21 @@ namespace Objects.Converter.Revit
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
           break;
+#if REVIT2023
+        case DB.Structure.AnalyticalMember o:
+          returnObject = AnalyticalStickToSpeckle(o);
+          break;
+        case DB.Structure.AnalyticalPanel o:
+          returnObject = AnalyticalSurfaceToSpeckle(o);
+          break;
+#else
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
           break;
         case DB.Structure.AnalyticalModelSurface o:
           returnObject = AnalyticalSurfaceToSpeckle(o);
           break;
+#endif
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
           var el = @object as Element;
@@ -479,8 +488,13 @@ namespace Objects.Converter.Revit
         DB.ElementType _ => true,
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
+#if !REVIT2023
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
+#else
+        DB.Structure.AnalyticalMember _ => true,
+        DB.Structure.AnalyticalPanel _ => true,
+#endif
         DB.Structure.BoundaryConditions _ => true,
         _ => (@object as Element).IsElementSupported()
       };

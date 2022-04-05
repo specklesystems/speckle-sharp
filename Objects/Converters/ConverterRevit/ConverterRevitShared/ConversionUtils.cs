@@ -257,6 +257,13 @@ namespace Objects.Converter.Revit
           }
           break;
         case StorageType.Integer:
+#if REVIT2023
+
+          if (rp.Definition.GetDataType() == SpecTypeId.Boolean.YesNo)
+            sp.value = Convert.ToBoolean(rp.AsInteger());
+          else
+            sp.value = rp.AsInteger();
+#else
           switch (rp.Definition.ParameterType)
           {
             case ParameterType.YesNo:
@@ -266,6 +273,7 @@ namespace Objects.Converter.Revit
               sp.value = rp.AsInteger();
               break;
           }
+#endif
           break;
         case StorageType.String:
           sp.value = rp.AsString();
@@ -850,7 +858,7 @@ namespace Objects.Converter.Revit
           return WallLocationLine.FinishFaceInterior;
       }
     }
-    
+
     #region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
@@ -904,7 +912,7 @@ namespace Objects.Converter.Revit
 
       return materialId;
     }
-    
+
     /// <summary>
     /// Retrieves the material from assigned system type for mep elements
     /// </summary>
@@ -913,7 +921,7 @@ namespace Objects.Converter.Revit
     public static RenderMaterial GetMEPSystemMaterial(Element e)
     {
       ElementId idType = ElementId.InvalidElementId;
-            
+
       if (e is DB.MEPCurve dt)
       {
         var system = dt.MEPSystem;
@@ -925,7 +933,7 @@ namespace Objects.Converter.Revit
       else if (IsSupportedMEPCategory(e))
       {
         MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-        
+
         if (m != null && m.ConnectorManager != null)
         {
           //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
@@ -953,7 +961,7 @@ namespace Objects.Converter.Revit
 
       return null;
     }
-            
+
     private static bool IsSupportedMEPCategory(Element e)
     {
       var categories = e.Document.Settings.Categories;
@@ -966,10 +974,10 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_PipeAccessory,
         //BuiltInCategory.OST_MechanicalEquipment,
       };
-      
+
       return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
     }
-    
+
     #endregion
   }
 }

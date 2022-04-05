@@ -62,6 +62,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     private Base TryGetLocationAsCurve(FamilyInstance familyInstance)
     {
+#if !REVIT2023
       if (familyInstance.CanHaveAnalyticalModel())
       {
         //no need to apply offset transform
@@ -71,6 +72,19 @@ namespace Objects.Converter.Revit
           return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
         }
       }
+#else
+      var manager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+
+      if (manager.HasAssociation(familyInstance.Id))
+      {
+        var analyticalModel = Doc.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(familyInstance.Id)) as AnalyticalMember;
+        //no need to apply offset transform
+        if (analyticalModel != null && analyticalModel.GetCurve() != null)
+        {
+          return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
+        }
+      }
+#endif
       var point = PointToSpeckle((familyInstance.Location as LocationPoint).Point);
       try
       {
