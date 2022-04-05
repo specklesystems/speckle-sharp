@@ -91,10 +91,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             {"regex": "ConnectorCSI/.*", "param_name": "run_connector_csi"},
             {"regex": "ConnectorMicroStation/.*", "param_name": "run_connector_microstation"},
             {"regex": "ConnectorTeklaStructures/.*", "param_name": "run_connector_teklastructures"},
-            {"regex": "ConnectorArchicad/.*", "param_name": "run_connector_archicad"}
-          ]'
-          base-branch: 'main'
-  
+            {"regex": "ConnectorArchicad/.*", "param_name": "run_connector_archicad"}]'
+          base-branch: "main"
+
   build-core:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
       name: win/default
@@ -197,7 +196,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - checkout
       - attach_workspace:
           at: ./
-      - run: 
+      - run:
           name: Restore << parameters.slnname >>
           command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
       - run:
@@ -333,7 +332,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           paths:
             - speckle-sharp-ci-tools
 
-
   setup-archicad-dev: # get Archicad dev kit
     executor:
       name: win/default
@@ -346,7 +344,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: install cmake
           command: |
             choco install cmake
-      - run: 
+      - run:
           name: extract devkit
           command: |
             cd speckle-sharp-ci-tools/Resources
@@ -464,7 +462,7 @@ workflows:
   # connector_etabs:
   #   when: << pipeline.parameters.run_connector_etabs>>
   #   jobs:
-  #     - build-connector: 
+  #     - build-connector:
   #         name: build-connector-etabs
   #         slnname: ConnectorETABS
   #         dllname: SpeckleConnectorETABS.dll
@@ -537,10 +535,10 @@ workflows:
     jobs:
       - get-ci-tools
       - setup-archicad-dev:
-          requires:  
+          requires:
             - get-ci-tools
-      - build-connector: 
-          requires: 
+      - build-connector:
+          requires:
             - setup-archicad-dev
           name: build-connector-archicad
           slnname: ConnectorArchicad
