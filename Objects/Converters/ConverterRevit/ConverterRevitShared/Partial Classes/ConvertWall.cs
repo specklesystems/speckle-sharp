@@ -12,9 +12,9 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
 
-    public List<ApplicationPlaceholderObject> WallToNative(BuiltElements.Wall speckleWall)
+    public List<ApplicationPlaceholderObject> WallToNative(BuiltElements.BuiltElement2D speckleWall)
     {
-      if (speckleWall.baseLine == null)
+      if (speckleWall.outline == null)
       {
         throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleWall.applicationId}. Only line based Walls are currently supported.");
       }

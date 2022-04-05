@@ -13,7 +13,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> RoofToNative(Roof speckleRoof)
+    public List<ApplicationPlaceholderObject> RoofToNative(BuiltElement2D speckleRoof)
     {
       if (speckleRoof.outline == null)
       {
@@ -139,7 +139,7 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    private Roof RoofToSpeckle(DB.RoofBase revitRoof)
+    private BuiltElement2D RoofToSpeckle(DB.RoofBase revitRoof)
     {
       var profiles = GetProfiles(revitRoof);
 

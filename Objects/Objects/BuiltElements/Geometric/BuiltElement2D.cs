@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using Speckle.Newtonsoft.Json;
 
+
+
 namespace Objects.BuiltElements
 {
   public class BuiltElement2D : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
@@ -28,11 +30,12 @@ namespace Objects.BuiltElements
     public BuiltElement2D() { }
 
     [SchemaInfo("BuiltElement2D", "Creates a Speckle BuiltElement2D", "BIM", "Architecture")]
-    public BuiltElement2D([SchemaMainParam] ICurve outline, List<ICurve> voids = null,
+    public BuiltElement2D([SchemaMainParam] ICurve outline, Element2DType element2DType,List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this BuiltElement2D might have")] List<Base> elements = null)
     {
       this.outline = outline;
       this.voids = voids;
+      this.element2DType = element2DType;
       this.elements = elements;
     }
 
@@ -199,7 +202,7 @@ namespace Objects.BuiltElements.Revit
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitWall : Wall
+  public class RevitWall : BuiltElement2D
   {
     public string family { get; set; }
     public string type { get; set; }
@@ -211,6 +214,8 @@ namespace Objects.BuiltElements.Revit
     public Level topLevel { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
+
+    public double height { get; set; }
 
     public RevitWall() { }
 
@@ -237,7 +242,7 @@ namespace Objects.BuiltElements.Revit
     {
       this.family = family;
       this.type = type;
-      this.baseLine = baseLine;
+      this.outline = baseLine;
       this.baseOffset = baseOffset;
       this.topOffset = topOffset;
       this.flipped = flipped;
@@ -246,6 +251,7 @@ namespace Objects.BuiltElements.Revit
       this.topLevel = topLevel;
       this.elements = elements;
       this.parameters = parameters.ToBase();
+      this.element2DType = Element2DType.Wall;
     }
 
     /// <summary>
@@ -271,7 +277,7 @@ namespace Objects.BuiltElements.Revit
     {
       this.family = family;
       this.type = type;
-      this.baseLine = baseLine;
+      this.outline = baseLine;
       this.height = height;
       this.baseOffset = baseOffset;
       this.topOffset = topOffset;
@@ -280,10 +286,11 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.elements = elements;
       this.parameters = parameters.ToBase();
+      this.element2DType = Element2DType.Wall;
     }
   }
 
-  public class RevitFaceWall : Wall
+  public class RevitFaceWall : BuiltElement2D
   {
     public string family { get; set; }
     public string type { get; set; }
@@ -309,10 +316,11 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.elements = elements;
       this.parameters = parameters.ToBase();
+      this.element2DType = Element2DType.Wall;
     }
   }
 
-  public class RevitProfileWall : Wall
+  public class RevitProfileWall : BuiltElement2D
   {
     public string family { get; set; }
     public string type { get; set; }
@@ -340,6 +348,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.elements = elements;
       this.parameters = parameters.ToBase();
+      this.element2DType = Element2DType.Wall;
     }
   }
 

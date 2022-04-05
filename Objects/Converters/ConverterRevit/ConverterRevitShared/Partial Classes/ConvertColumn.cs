@@ -4,7 +4,6 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using Column = Objects.BuiltElements.Column;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;

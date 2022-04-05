@@ -6,7 +6,7 @@ using System;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
-using Wall = Objects.BuiltElements.Wall;
+
 
 namespace Objects.Converter.Revit
 {

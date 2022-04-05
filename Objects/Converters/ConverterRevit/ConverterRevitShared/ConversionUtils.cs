@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
-using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 
@@ -572,21 +571,21 @@ namespace Objects.Converter.Revit
     {
       switch (element)
       {
-        case BuiltElements.Wall _:
-          return new ElementMulticategoryFilter(Categories.wallCategories);
-        case Column _:
-          return new ElementMulticategoryFilter(Categories.columnCategories);
-        case Beam _:
-        case Brace _:
-          return new ElementMulticategoryFilter(Categories.beamCategories);
+        //case BuiltElements.Wall _:
+        //  return new ElementMulticategoryFilter(Categories.wallCategories);
+        //case Column _:
+        //  return new ElementMulticategoryFilter(Categories.columnCategories);
+        //case Beam _:
+        //case Brace _:
+        //  return new ElementMulticategoryFilter(Categories.beamCategories);
         case Duct _:
           return new ElementMulticategoryFilter(Categories.ductCategories);
-        case Floor _:
-          return new ElementMulticategoryFilter(Categories.floorCategories);
+        //case Floor _:
+        //  return new ElementMulticategoryFilter(Categories.floorCategories);
         case Pipe _:
           return new ElementMulticategoryFilter(Categories.pipeCategories);
-        case Roof _:
-          return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
+        //case Roof _:
+        //  return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
         default:
           ElementFilter filter = null;
           if (element["category"] != null)

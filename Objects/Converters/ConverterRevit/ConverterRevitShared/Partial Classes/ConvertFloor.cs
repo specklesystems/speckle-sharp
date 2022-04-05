@@ -11,7 +11,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> FloorToNative(BuiltElements.Floor speckleFloor)
+    public List<ApplicationPlaceholderObject> FloorToNative(BuiltElements.BuiltElement2D speckleFloor)
     {
       if (speckleFloor.outline == null)
       {

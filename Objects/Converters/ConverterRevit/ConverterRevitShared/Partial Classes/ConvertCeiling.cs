@@ -5,7 +5,6 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ceiling = Objects.BuiltElements.Ceiling;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
