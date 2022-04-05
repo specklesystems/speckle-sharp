@@ -40,7 +40,7 @@ namespace DesktopUI2.ViewModels
 
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
-      
+
       Filter = filter;
       FilterView = filter.View;
 
@@ -92,16 +92,19 @@ namespace DesktopUI2.ViewModels
     {
       var itemsToRemove = new List<string>();
 
-      foreach (var item in Filter.Selection)
+      if (Filter.Type == typeof(ListSelectionFilter).ToString())
       {
-        if (!_valuesList.Contains(item))
-          itemsToRemove.Add(item);
-        if (!SelectionModel.SelectedItems.Contains(item))
-          SelectionModel.Select(SearchResults.IndexOf(item));
-      }
+        foreach (var item in Filter.Selection)
+        {
+          if (!_valuesList.Contains(item))
+            itemsToRemove.Add(item);
+          if (!SelectionModel.SelectedItems.Contains(item))
+            SelectionModel.Select(SearchResults.IndexOf(item));
+        }
 
-      foreach (var itemToRemove in itemsToRemove)
-        Filter.Selection.Remove(itemToRemove);
+        foreach (var itemToRemove in itemsToRemove)
+          Filter.Selection.Remove(itemToRemove);
+      }
 
       this.RaisePropertyChanged("PropertyName");
       this.RaisePropertyChanged("PropertyValue");
@@ -109,7 +112,7 @@ namespace DesktopUI2.ViewModels
     }
 
     public List<string> SearchResults { get; set; } = new List<string>();
-    private List<string> _valuesList { get; }
+    private List<string> _valuesList { get; } = new List<string>();
 
     #endregion
 
