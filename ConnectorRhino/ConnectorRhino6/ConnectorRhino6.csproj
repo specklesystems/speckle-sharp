@@ -40,7 +40,7 @@
     <PackageReference Include="RhinoWindows" Version="6.28.20199.17141">
     </PackageReference>
     <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework">
-      <Version>1.0.115</Version>
+      <Version>1.0.115.5</Version>
     </PackageReference>
     <PackageReference Include="System.Data.SQLite.Core">
       <Version>1.0.115.5</Version>
@@ -52,10 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Properties\" />
   </ItemGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
