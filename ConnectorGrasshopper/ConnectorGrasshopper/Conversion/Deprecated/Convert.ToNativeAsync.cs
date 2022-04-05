@@ -9,7 +9,6 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
 using Logging = Speckle.Core.Logging;
-using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
@@ -129,7 +128,6 @@ namespace ConnectorGrasshopper.Conversion
 
       if (DA.Iteration == 0)
       {
-        Logging.Tracker.TrackPageview(Logging.Tracker.CONVERT_TONATIVE);
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
       }
 

@@ -96,7 +96,6 @@ namespace ConnectorGrasshopper.Conversion
       if (CancellationToken.IsCancellationRequested) return;
       if (DA.Iteration == 0)
       {
-        Logging.Tracker.TrackPageview(Logging.Tracker.DESERIALIZE);
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Deserialize" } });
       }
 

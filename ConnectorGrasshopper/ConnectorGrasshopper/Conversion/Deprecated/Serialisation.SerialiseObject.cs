@@ -8,7 +8,6 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Logging = Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -107,7 +106,6 @@ namespace ConnectorGrasshopper.Conversion
       if (DA.Iteration == 0)
       {
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Serialize" } });
-        Logging.Tracker.TrackPageview(Logging.Tracker.SERIALIZE);
       }
 
       GH_Structure<GH_SpeckleBase> _objects;

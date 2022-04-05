@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -11,8 +10,8 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -119,7 +118,6 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        Logging.Tracker.TrackPageview(Logging.Tracker.RECEIVE_LOCAL);
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;

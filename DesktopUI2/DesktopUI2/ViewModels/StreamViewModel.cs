@@ -2,7 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
@@ -550,7 +549,6 @@ namespace DesktopUI2.ViewModels
     public void EditSavedStreamCommand()
     {
       MainWindowViewModel.RouterInstance.Navigate.Execute(this);
-      Tracker.TrackPageview("stream", "edit");
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
     }
 
@@ -560,7 +558,6 @@ namespace DesktopUI2.ViewModels
       await Task.Delay(100);
       //to open urls in .net core must set UseShellExecute = true
       Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
-      Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
     }
 
@@ -587,7 +584,6 @@ namespace DesktopUI2.ViewModels
       {
         LastUsed = DateTime.Now.ToString();
         Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
-        Tracker.TrackPageview(Tracker.SEND);
 
         Notification = $"Sent successfully, view online";
         NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
@@ -614,7 +610,6 @@ namespace DesktopUI2.ViewModels
       {
         LastUsed = DateTime.Now.ToString();
         Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive);
-        Tracker.TrackPageview(Tracker.RECEIVE);
       }
 
       if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
@@ -662,13 +657,11 @@ namespace DesktopUI2.ViewModels
 
       if (IsReceiver)
       {
-        Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
         Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
       }
 
       else
       {
-        Tracker.TrackPageview(Tracker.SEND_ADDED);
         Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
       }
     }

@@ -5,10 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
-using Grasshopper.Kernel.Types;
 
 namespace ConnectorGrasshopper.Objects
 {
@@ -45,7 +44,7 @@ namespace ConnectorGrasshopper.Objects
         if (Params.Input.Count == 0)
           return;
         var hasErrors = false;
-        
+
         var duplicateKeys = Params.Input
           .Select(p => p.NickName)
           .GroupBy(x => x).Count(group => @group.Count<string>() > 1);
@@ -54,7 +53,7 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
           return;
         }
-        
+
         var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
         if (Params.Input.Count > 0 && allOptional)
         {
@@ -65,7 +64,6 @@ namespace ConnectorGrasshopper.Objects
         if (DA.Iteration == 0)
         {
           Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object" } });
-          Logging.Tracker.TrackPageview("objects", "create", "variableinput");
         }
 
 

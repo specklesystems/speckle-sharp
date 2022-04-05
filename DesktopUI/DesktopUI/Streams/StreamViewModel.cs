@@ -3,7 +3,6 @@ using System.Threading;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -92,7 +91,9 @@ namespace Speckle.DesktopUI.Streams
         var client = StreamState.Client;
         await client.StreamUpdate(new StreamUpdateInput
         {
-          id = StreamState.Stream.id, name = _StreamName, description = _StreamDescription
+          id = StreamState.Stream.id,
+          name = _StreamName,
+          description = _StreamDescription
         });
 
         Globals.HostBindings.PersistAndUpdateStreamInFile(StreamState);
@@ -116,7 +117,6 @@ namespace Speckle.DesktopUI.Streams
 
     public void RemoveStream()
     {
-      Tracker.TrackPageview("stream", "remove");
       _bindings.RemoveStreamFromFile(StreamState.Stream.id);
       _events.Publish(new StreamRemovedEvent() { StreamId = StreamState.Stream.id });
       RequestClose();
@@ -124,7 +124,6 @@ namespace Speckle.DesktopUI.Streams
 
     public async void DeleteStream()
     {
-      Tracker.TrackPageview("stream", "delete");
       var deleted = await _repo.DeleteStream(StreamState);
       if (!deleted)
       {
@@ -139,12 +138,12 @@ namespace Speckle.DesktopUI.Streams
 
     public async void RemoveCollaborator(Collaborator collaborator)
     {
-      Tracker.TrackPageview("stream", "remove-collaborator");
       try
       {
         await StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput()
         {
-          streamId = StreamState.Stream.id, userId = collaborator.id
+          streamId = StreamState.Stream.id,
+          userId = collaborator.id
         });
       }
       catch (Exception e)
@@ -166,7 +165,6 @@ namespace Speckle.DesktopUI.Streams
 
     public void OpenStreamInWeb(StreamState state)
     {
-      Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
@@ -187,7 +185,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void Handle(StreamUpdatedEvent message)
     {
-      if (message.StreamId != StreamState.Stream.id)return;
+      if (message.StreamId != StreamState.Stream.id) return;
       await StreamState.RefreshStream();
     }
   }

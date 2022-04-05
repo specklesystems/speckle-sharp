@@ -70,7 +70,6 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_CREATE);
 
       string userId = null;
       Account account = null;
