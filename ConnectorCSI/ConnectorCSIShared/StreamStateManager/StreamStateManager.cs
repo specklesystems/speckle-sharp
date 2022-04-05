@@ -1,12 +1,9 @@
-﻿using System;
-using Speckle.ConnectorCSI.Util;
-using System.Collections.Generic;
-using Speckle.Core.Logging;
+﻿using CSiAPIv1;
 using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using CSiAPIv1;
 
 namespace ConnectorCSI.Storage
 {
@@ -15,7 +12,6 @@ namespace ConnectorCSI.Storage
     private static string _speckleFilePath;
     public static List<StreamState> ReadState(cSapModel model)
     {
-      Tracker.TrackPageview(Tracker.DESERIALIZE);
       var strings = ReadSpeckleFile(model);
       if (strings == "")
       {
@@ -23,7 +19,6 @@ namespace ConnectorCSI.Storage
       }
       try
       {
-        Tracker.TrackPageview(Tracker.DESERIALIZE);
         return JsonConvert.DeserializeObject<List<StreamState>>(strings);
       }
       catch
@@ -48,7 +43,6 @@ namespace ConnectorCSI.Storage
         {
           streamWriter.Write(JsonConvert.SerializeObject(streamStates) as string);
           streamWriter.Flush();
-          Tracker.TrackPageview(Tracker.SERIALIZE);
         }
       }
       catch { }

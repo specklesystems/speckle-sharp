@@ -7,7 +7,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -93,7 +92,6 @@ namespace Speckle.DesktopUI.Streams
 
     public void ShowStreamInfo(StreamState state)
     {
-      Tracker.TrackPageview(Tracker.STREAM_DETAILS);
       var item = _streamViewModelFactory.CreateStreamViewModel();
       item.StreamState = state;
       ((RootViewModel)Parent).GoToStreamViewPage(item);
@@ -112,7 +110,7 @@ namespace Speckle.DesktopUI.Streams
 
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
       var res = await DialogHost.Show(view, "RootDialogHost");
-      if (res == null)return;
+      if (res == null) return;
       args.RootStreamState.SwitchBranch((Branch)res);
     }
 
@@ -126,7 +124,6 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ShowStreamUpdateObjectsDialog(StreamState state)
     {
-      Tracker.TrackPageview("stream", "dialog-update");
       var viewmodel = _dialogFactory.StreamUpdateObjectsDialogView();
       viewmodel.SetState(state);
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
@@ -136,7 +133,7 @@ namespace Speckle.DesktopUI.Streams
 
     public async void Send(StreamState state)
     {
-      if ( state.CommitExpanderChecked )
+      if (state.CommitExpanderChecked)
         state.Send();
       else
         state.CommitExpanderChecked = true;
@@ -158,7 +155,6 @@ namespace Speckle.DesktopUI.Streams
 
     public async void ShowStreamCreateDialog()
     {
-      Tracker.TrackPageview("stream", "dialog-add");
       var viewmodel = _dialogFactory.CreateStreamCreateDialog();
       viewmodel.StreamIds = StreamList.Select(s => s.Stream.id).ToList();
       var view = _viewManager.CreateAndBindViewForModelIfNecessary(viewmodel);
@@ -168,7 +164,6 @@ namespace Speckle.DesktopUI.Streams
 
     public void RemoveDisabledStream(StreamState state)
     {
-      Tracker.TrackPageview("stream", "remove", "no-account-found");
       RemoveStream(state.Stream.id);
     }
 
@@ -181,13 +176,11 @@ namespace Speckle.DesktopUI.Streams
 
     public void OpenStreamInWeb(StreamState state)
     {
-      Tracker.TrackPageview(Tracker.STREAM_VIEW);
       Link.OpenInBrowser($"{state.ServerUrl}/streams/{state.Stream.id}");
     }
 
     public void CopyStreamUrl(StreamState state)
     {
-      Tracker.TrackPageview("stream", "copy-link");
       Clipboard.SetDataObject($"{state.ServerUrl}/streams/{state.Stream.id}");
       // notification might actually be annoying? idk commenting out for now
       // _bindings.RaiseNotification($"Copied URL for {state.Stream.name} to clipboard");
@@ -281,7 +274,7 @@ namespace Speckle.DesktopUI.Streams
     {
       var uiElement = sender as UIElement;
 
-      if ( uiElement == null ) return;
+      if (uiElement == null) return;
       bool IsEnabled = e.NewValue is bool value && value;
 
       if (IsEnabled)
@@ -297,7 +290,7 @@ namespace Speckle.DesktopUI.Streams
       }
       else
       {
-        if (uiElement is ButtonBase btn )
+        if (uiElement is ButtonBase btn)
         {
           btn.Click -= OnMouseLeftButtonUp;
         }
@@ -312,7 +305,7 @@ namespace Speckle.DesktopUI.Streams
     {
       Debug.Print("OnMouseLeftButtonUp");
       var fe = sender as FrameworkElement;
-      if ( fe == null ) return;
+      if (fe == null) return;
       // if we use binding in our context menu, then it's DataContext won't be set when we show the menu on left click
       // (it seems setting DataContext for ContextMenu is hardcoded in WPF when user right clicks on a control, although I'm not sure)
       // so we have to set up ContextMenu.DataContext manually here

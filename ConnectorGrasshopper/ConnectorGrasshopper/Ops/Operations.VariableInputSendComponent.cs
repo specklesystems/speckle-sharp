@@ -20,7 +20,6 @@ using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -348,8 +347,6 @@ namespace ConnectorGrasshopper.Ops
           sendComponent.CurrentComponentState = "expired";
           return;
         }
-
-        Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
 
         //the active document may have changed
         sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);

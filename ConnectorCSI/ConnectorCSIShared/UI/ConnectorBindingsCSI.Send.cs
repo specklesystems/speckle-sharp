@@ -5,14 +5,13 @@ using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.ConnectorCSI.Util;
+using Speckle.Core.Models;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SCT = Speckle.Core.Transports;
-using Speckle.Core.Models;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -78,7 +77,6 @@ namespace Speckle.ConnectorCSI.UI
           continue;
         }
 
-        Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
 
         var typeAndName = ConnectorCSIUtils.ObjectIDsTypesAndNames
             .Where(pair => pair.Key == applicationId)

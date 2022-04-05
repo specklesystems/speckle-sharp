@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
@@ -133,7 +131,6 @@ namespace Speckle.DesktopUI.Streams
     public async void UpdateStreamObjects()
     {
       UpdateButtonLoading = true;
-      Tracker.TrackPageview("stream", "objects-changed");
       var filter = SelectedFilterTab.Filter;
 
       filter.Selection = SelectedFilterTab.SelectedListItems.ToList();
@@ -148,7 +145,6 @@ namespace Speckle.DesktopUI.Streams
     public void UpdateFromSelection()
     {
       UpdateButtonLoading = true;
-      Tracker.TrackPageview("stream", "from-selection");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.SelectedListItems.Clear();
       SelectedFilterTab.Filter.Selection = Bindings.GetSelectedObjects();
@@ -158,7 +154,6 @@ namespace Speckle.DesktopUI.Streams
 
     public void UpdateFromView()
     {
-      Tracker.TrackPageview("stream", "from-view");
       SelectedFilterTab = FilterTabs.First(tab => tab.Filter.Name == "Selection");
       SelectedFilterTab.Filter.Selection = ActiveViewObjects;
 
@@ -174,7 +169,6 @@ namespace Speckle.DesktopUI.Streams
       }
 
       if (!Collaborators.Any()) return;
-      Tracker.TrackPageview("stream", "collaborators");
       var success = 0;
       foreach (var collaborator in Collaborators)
       {
@@ -210,7 +204,6 @@ namespace Speckle.DesktopUI.Streams
 
     public async void RemoveCollaborator(Collaborator collaborator)
     {
-      Tracker.TrackPageview("stream", "collaborators");
       try
       {
         var res = await StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput()

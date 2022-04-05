@@ -8,8 +8,8 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
@@ -56,7 +56,6 @@ namespace ConnectorGrasshopper.Objects
         if (DA.Iteration == 0)
         {
           Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Expand Object" } });
-          Logging.Tracker.TrackPageview("objects", "expand");
         }
 
 
@@ -95,7 +94,8 @@ namespace ConnectorGrasshopper.Objects
             {
               case IGH_Structure structure:
                 var path = DA.ParameterTargetPath(indexOfOutputParam);
-                structure.Paths.ToList().ForEach(p => {
+                structure.Paths.ToList().ForEach(p =>
+                {
                   var indices = path.Indices.ToList();
                   indices.AddRange(p.Indices);
                   var newPath = new GH_Path(indices.ToArray());
@@ -161,7 +161,7 @@ namespace ConnectorGrasshopper.Objects
     {
       var equalLength = outputList.Count == Params.Output.Count;
       if (!equalLength) return false;
-      
+
       var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
       return diffParams.Count() == 1;
     }
@@ -174,7 +174,7 @@ namespace ConnectorGrasshopper.Objects
 
       // Check for single param rename, if so, just rename it and go on.
       if (HasSingleRename())
-      { 
+      {
         var diffParams = Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
         var diffOut = outputList
           .Where(name =>
@@ -302,7 +302,7 @@ namespace ConnectorGrasshopper.Objects
             break;
           case IList list:
             var items = list as List<object>;
-            if(items != null && items.Where(l => l is IList).Any())
+            if (items != null && items.Where(l => l is IList).Any())
             {
               // Nested lists need to be converted into trees :)
               var treeBuilder = new TreeBuilder(Converter) { ConvertToNative = Converter != null };

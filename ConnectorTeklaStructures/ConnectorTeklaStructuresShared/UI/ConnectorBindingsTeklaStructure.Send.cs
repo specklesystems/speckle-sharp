@@ -81,8 +81,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
           continue;
         }
 
-        Tracker.TrackPageview(Tracker.CONVERT_TOSPECKLE);
-
         //var typeAndName = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
         //    .Where(pair => pair.Key == applicationId)
         //    .Select(pair => pair.Value).FirstOrDefault();

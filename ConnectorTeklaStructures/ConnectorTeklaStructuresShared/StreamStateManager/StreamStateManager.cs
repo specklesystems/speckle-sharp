@@ -1,9 +1,6 @@
-﻿using System;
-using Speckle.ConnectorTeklaStructures.Util;
-using System.Collections.Generic;
-using Speckle.Core.Logging;
-using DesktopUI2.Models;
+﻿using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Tekla.Structures.Model;
@@ -15,7 +12,6 @@ namespace ConnectorTeklaStructures.Storage
     private static string _speckleFilePath;
     public static List<StreamState> ReadState(Model model)
     {
-      Tracker.TrackPageview(Tracker.DESERIALIZE);
       var strings = ReadSpeckleFile(model);
       if (strings == "")
       {
@@ -23,7 +19,6 @@ namespace ConnectorTeklaStructures.Storage
       }
       try
       {
-        Tracker.TrackPageview(Tracker.DESERIALIZE);
         return JsonConvert.DeserializeObject<List<StreamState>>(strings);
       }
       catch
@@ -48,7 +43,6 @@ namespace ConnectorTeklaStructures.Storage
         {
           streamWriter.Write(JsonConvert.SerializeObject(streamStates) as string);
           streamWriter.Flush();
-          Tracker.TrackPageview(Tracker.SERIALIZE);
         }
       }
       catch { }

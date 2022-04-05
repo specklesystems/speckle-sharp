@@ -1,25 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using GrasshopperAsyncComponent;
 using Rhino;
-using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Transports;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Ops
 {
@@ -259,7 +254,6 @@ namespace ConnectorGrasshopper.Ops
 
       if (InPreSolve)
       {
-        Logging.Tracker.TrackPageview("receive", "sync");
 
         var task = Task.Run(async () =>
         {

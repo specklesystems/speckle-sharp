@@ -16,8 +16,8 @@ using Grasshopper.Kernel.Special;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Utilities = ConnectorGrasshopper.Extras.Utilities;
 using Logging = Speckle.Core.Logging;
+using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper
 {
@@ -354,7 +354,6 @@ namespace ConnectorGrasshopper
 
       if (DA.Iteration == 0)
       {
-        Tracker.TrackPageview("objects", "create", "variableinput");
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Schema Object" }, { "node", Name } });
       }
 
@@ -487,7 +486,7 @@ namespace ConnectorGrasshopper
 
       var listElementType = t.GetElementType();
       var list = (IList)Array.CreateInstance(listElementType, values.Count);
-      for (int i=0; i< values.Count; i++)
+      for (int i = 0; i < values.Count; i++)
       {
         list[i] = (ConvertType(listElementType, values[i], param.Name));
       }

@@ -21,10 +21,9 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -47,7 +46,7 @@ namespace ConnectorGrasshopper.Ops
 
     public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
     public override bool Obsolete => true;
-    
+
     public string CurrentComponentState { get; set; } = "needs_input";
 
     public override GH_Exposure Exposure => GH_Exposure.hidden;
@@ -456,7 +455,6 @@ namespace ConnectorGrasshopper.Ops
       var receiveComponent = ((ReceiveComponent)Parent);
       try
       {
-        Logging.Tracker.TrackPageview("receive", receiveComponent.AutoReceive ? "auto" : "manual");
 
 
         InternalProgressAction = dict =>

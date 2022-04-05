@@ -62,7 +62,6 @@ namespace Speckle.Core.Api
         objectId = branch.commits.items[0].referencedObject;
       }
 
-      Tracker.TrackPageview(Tracker.RECEIVE);
       Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
 
       var receiveRes = await Operations.Receive(
@@ -117,7 +116,6 @@ namespace Speckle.Core.Api
         onProgressAction,
         onErrorAction, disposeTransports: true);
 
-      Tracker.TrackPageview(Tracker.SEND);
       Analytics.TrackEvent(client.Account, Analytics.Events.Send);
 
       return await client.CommitCreate(
