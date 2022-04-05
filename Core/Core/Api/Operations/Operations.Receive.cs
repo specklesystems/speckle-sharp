@@ -117,7 +117,8 @@ namespace Speckle.Core.Api
           catch ( Exception e )
           {
             if ( serializerV2.OnErrorAction == null ) throw;
-            serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", e);
+            serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", new SpeckleException(
+              $"A deserialization error has occurred: {e.Message}", e));
             return null;
           }
         }
