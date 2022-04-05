@@ -44,6 +44,9 @@ namespace DesktopUI2.ViewModels
       Bindings.UpdateSelectedStream = HomeViewModel.Instance.UpdateSelectedStream;
 
       Router.PropertyChanged += Router_PropertyChanged;
+      //var theme = PaletteHelper.GetTheme();
+      //theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
+      //PaletteHelper.SetTheme(theme);
     }
 
     private void Router_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
