@@ -112,11 +112,12 @@
                 <Grid>
                   <m:ColorZone
                     Grid.Row="3"
+										
                     Margin="{Binding Margin}"
                     HorizontalAlignment="{Binding Align}"
                     assists:ShadowAssist.ShadowDepth="Depth0"
                     CornerRadius="25"
-                    Mode="Light"
+                    Mode="Standard"
                     Opacity="{Binding Message, Converter={StaticResource StringOpacityValueConverter}}">
                     <Grid ColumnDefinitions="auto,*">
                       <icons:MaterialIcon
