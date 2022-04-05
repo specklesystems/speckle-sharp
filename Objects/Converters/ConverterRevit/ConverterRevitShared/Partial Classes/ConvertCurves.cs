@@ -100,6 +100,10 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
+        if (e.Message.Contains("lies outside")) // this happens if curves are very far from origin
+        {
+          Report.LogConversionError(e); return null;
+        }
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
         return ModelCurvesFromEnumerator(CurveToNative(((Geometry.Curve)speckleLine).displayValue).GetEnumerator(),
           speckleLine);
