@@ -12,6 +12,8 @@ using Avalonia.ReactiveUI;
 
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
+using System.IO;
+using DesktopUI2;
 
 namespace SpeckleRhino
 {
@@ -43,12 +45,18 @@ namespace SpeckleRhino
       BuildAvaloniaApp().Start(AppMain, null);
     }
 
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
+    public static AppBuilder BuildAvaloniaApp()
+    {
+      return AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
-      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+      .With(new X11PlatformOptions { UseGpu = false })
+      .With(new AvaloniaNativePlatformOptions{ UseGpu = false, UseDeferredRendering = true })
+      .With(new MacOSPlatformOptions { ShowInDock = false, DisableDefaultApplicationMenuItems = true, DisableNativeMenus = true })
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
       .LogToTrace()
       .UseReactiveUI();
+    }
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
@@ -70,12 +78,12 @@ namespace SpeckleRhino
       MainWindow.Show();
       MainWindow.Activate();
 
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      {
-        var parentHwnd = RhinoApp.MainWindowHandle();
-        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-      }
+      //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      //{
+      //  var parentHwnd = RhinoApp.MainWindowHandle();
+      //  var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+      //  SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      //}
     }
 
     private static void AppMain(Application app, string[] args)

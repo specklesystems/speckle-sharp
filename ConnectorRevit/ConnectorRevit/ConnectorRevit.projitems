@@ -65,4 +65,10 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\chronos16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\chronos32.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\oneclick16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\oneclick32.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\scheduler16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\scheduler32.png" />
+  </ItemGroup>
 </Project>
