@@ -1,11 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using Objects.Other;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Objects.Other;
-
 using DB = Autodesk.Revit.DB;
-
 using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
@@ -18,7 +16,7 @@ namespace Objects.Converter.Revit
       if (!allSolids.Any()) //it's a mesh!
       {
         var geom = element.get_Geometry(new Options());
-        return GetMeshes(geom);
+        return GetMeshes(geom, element.Document);
       }
 
       if (subElements != null)
@@ -28,9 +26,9 @@ namespace Objects.Converter.Revit
           allSolids.AddRange(GetElementSolids(sb));
         }
       }
-      
-      return GetMeshesFromSolids(allSolids);
-      
+
+      return GetMeshesFromSolids(allSolids, element.Document);
+
     }
 
     /// <summary>
@@ -43,20 +41,20 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
       List<Solid> solids = new List<Solid>();
-      
+
       if (elem is Group g)
       {
         foreach (var id in g.GetMemberIds())
         {
-          var subSolids = GetElementSolids(Doc.GetElement(id), opt, useOriginGeom4FamilyInstance);
+          var subSolids = GetElementSolids(elem.Document.GetElement(id), opt, useOriginGeom4FamilyInstance);
           if (subSolids != null && subSolids.Any())
             solids.AddRange(subSolids);
         }
       }
       else
         solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-      
-      return GetMeshesFromSolids(solids);
+
+      return GetMeshesFromSolids(solids, elem.Document);
     }
 
     /// <summary>
@@ -69,11 +67,11 @@ namespace Objects.Converter.Revit
     public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
     {
       List<Solid> solids = new List<Solid>();
-      
+
       if (null == elem) return solids;
-      
+
       opt ??= new Options();
-      
+
       GeometryElement gElem;
       try
       {
@@ -90,7 +88,7 @@ namespace Objects.Converter.Revit
           gElem = elem.get_Geometry(opt);
         }
 
-        if (gElem == null ) return solids;
+        if (gElem == null) return solids;
 
         solids.AddRange(gElem.SelectMany(GetSolids));
       }
@@ -101,8 +99,8 @@ namespace Objects.Converter.Revit
       }
       return solids;
     }
-    
-    private List<Mesh> GetMeshes(GeometryElement geom)
+
+    private List<Mesh> GetMeshes(GeometryElement geom, Document d)
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
 
@@ -110,16 +108,16 @@ namespace Objects.Converter.Revit
       {
         if (element is DB.Mesh mesh)
         {
-          var revitMaterial = Doc.GetElement(mesh.MaterialElementId) as Material;
+          var revitMaterial = d.GetElement(mesh.MaterialElementId) as Material;
           Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
-          
+
           ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices);
         }
       }
-      
+
       return buildHelper.GetAllValidMeshes();
     }
-    
+
     /// <summary>
     /// Helper class for a single <see cref="Objects.Geometry.Mesh"/> object for each <see cref="DB.Material"/>
     /// </summary>
@@ -130,7 +128,7 @@ namespace Objects.Converter.Revit
       public RenderMaterial GetOrCreateMaterial(Material revitMaterial)
       {
         if (revitMaterial == null) return null;
-        
+
         int hash = Hash(revitMaterial); //Key using the hash as we may be given several instances with identical material properties
         if (materialMap.TryGetValue(hash, out RenderMaterial m))
         {
@@ -140,22 +138,23 @@ namespace Objects.Converter.Revit
         materialMap.Add(hash, material);
         return material;
       }
-      
+
       private static int Hash(Material mat)
         => mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
-      
+
       //Mesh to use for null materials (because dictionary keys can't be null)
       private Mesh nullMesh;
       //Lazy initialised Dictionary of revit material (hash) -> Speckle Mesh
       private readonly Dictionary<int, Mesh> meshMap = new Dictionary<int, Mesh>();
       public Mesh GetOrCreateMesh(Material mat, string units)
       {
-        if (mat == null) return nullMesh ??= new Mesh {units = units};
+        if (mat == null) return nullMesh ??= new Mesh { units = units };
 
         int materialHash = Hash(mat);
         if (meshMap.TryGetValue(materialHash, out Mesh m)) return m;
-        
-        var mesh = new Mesh {
+
+        var mesh = new Mesh
+        {
           ["renderMaterial"] = GetOrCreateMaterial(mat),
           units = units
         };
@@ -166,12 +165,12 @@ namespace Objects.Converter.Revit
       public List<Mesh> GetAllMeshes()
       {
         List<Mesh> meshes = meshMap.Values.ToList();
-        if(nullMesh != null) meshes.Add(nullMesh);
+        if (nullMesh != null) meshes.Add(nullMesh);
         return meshes;
       }
-      
+
       public List<Mesh> GetAllValidMeshes() => GetAllMeshes().FindAll(m => m.vertices.Count > 0 && m.faces.Count > 0);
-      
+
     }
 
     /// <summary>
@@ -227,13 +226,13 @@ namespace Objects.Converter.Revit
 
       return (faceArr, vertexArr);
     }
-    
+
     /// <summary>
     /// Given a collection of <paramref name="solids"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
     /// </summary>
     /// <param name="solids"></param>
     /// <returns></returns>
-    public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids)
+    public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids, Document d)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
 
@@ -241,7 +240,7 @@ namespace Objects.Converter.Revit
       {
         foreach (Face face in solid.Faces)
         {
-          Material faceMaterial = Doc.GetElement(face.MaterialElementId) as Material;
+          Material faceMaterial = d.GetElement(face.MaterialElementId) as Material;
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
           ConvertMeshData(face.Triangulate(), m.faces, m.vertices);
         }
@@ -260,7 +259,7 @@ namespace Objects.Converter.Revit
     private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices)
     {
       int faceIndexOffset = vertices.Count / 3;
-      
+
       vertices.Capacity += mesh.Vertices.Count * 3;
       foreach (var vert in mesh.Vertices)
       {

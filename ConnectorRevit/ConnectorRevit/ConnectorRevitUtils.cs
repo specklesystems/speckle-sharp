@@ -122,6 +122,11 @@ namespace Speckle.ConnectorRevit
       return GetCategories(doc).Keys.OrderBy(x => x).ToList();
     }
 
+    public static List<string> GetWorksets(Document doc)
+    {
+      return new FilteredWorksetCollector(doc).Where(x => x.Kind == WorksetKind.UserWorkset).Select(x => x.Name).ToList();
+    }
+
     private async static Task<List<string>> GetParameterNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)

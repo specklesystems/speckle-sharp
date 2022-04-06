@@ -608,7 +608,7 @@ namespace ConnectorGrasshopper.Ops
               streamId = InputWrapper.StreamId,
               commitId = myCommit.id,
               message = myCommit.message,
-              sourceApplication = VersionedHostApplications.Grasshopper
+              sourceApplication = Extras.Utilities.GetVersionedAppName()
             });
           }
           catch
@@ -746,7 +746,7 @@ namespace ConnectorGrasshopper.Ops
         var prop = ReceivedObject[name];
         var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null };
         var data = treeBuilder.Build(prop);
-        var param = Parent.Params.Output.FindIndex(p => p.NickName == name || p.NickName == name.Substring(1));
+        var param = Parent.Params.Output.FindIndex(p => p.Name == name || p.Name == name.Substring(1));
         var ighP = Parent.Params.Output[param];
         if (ighP is SendReceiveDataParam srParam)
         {
@@ -778,14 +778,14 @@ namespace ConnectorGrasshopper.Ops
 
     private bool OutputMismatch() =>
       outputList.Count != Parent.Params.Output.Count
-      || outputList.Where((t, i) => Parent.Params.Output[i].NickName != t).Any();
+      || outputList.Where((t, i) => Parent.Params.Output[i].Name != t).Any();
 
     private bool HasSingleRename()
     {
       var equalLength = outputList.Count == Parent?.Params.Output.Count;
       if (!equalLength) return false;
-
-      var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName));
+      
+      var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name));
       return diffParams.Count() == 1;
     }
     private void AutoCreateOutputs(Base @base)
@@ -797,11 +797,11 @@ namespace ConnectorGrasshopper.Ops
 
       Parent.RecordUndoEvent("Creating Outputs");
       if (HasSingleRename())
-      {
-        var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.NickName));
+      { 
+        var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.Name));
         var diffOut = outputList
           .Where(name =>
-            !Parent.Params.Output.Select(p => p.NickName)
+            !Parent.Params.Output.Select(p => p.Name)
               .Contains(name));
 
         var newName = diffOut.First();

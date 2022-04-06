@@ -43,7 +43,7 @@ namespace Speckle.ConnectorRevit.Entry
       return Result.Succeeded;
     }
 
-    public static void CreateOrFocusSpeckle()
+    public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
       if (MainWindow == null)
       {
@@ -52,20 +52,21 @@ namespace Speckle.ConnectorRevit.Entry
         {
           DataContext = viewModel
         };
-
       }
 
       try
       {
-
-        MainWindow.Show();
-        MainWindow.Activate();
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (showWindow)
         {
-          var parentHwnd = uiapp.MainWindowHandle;
-          var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-          SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+          MainWindow.Show();
+          MainWindow.Activate();
+
+          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+          {
+            var parentHwnd = uiapp.MainWindowHandle;
+            var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+            SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+          }
         }
       }
       catch (Exception ex)

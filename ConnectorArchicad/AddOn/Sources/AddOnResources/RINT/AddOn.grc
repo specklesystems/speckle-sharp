@@ -1,0 +1,11 @@
+#include "ResourceIds.hpp"
+
+'STR#' ID_ADDON_INFO "Add-on Name and Description" {
+/* [  1] */		"Speckle Connector AddOn"
+/* [  2] */		"Speckle Connector AddOn Description..."
+}
+
+'STR#' ID_ADDON_MENU "Strings for the Menu" {
+/* [  1] */		"Speckle Connector... ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
+}
+

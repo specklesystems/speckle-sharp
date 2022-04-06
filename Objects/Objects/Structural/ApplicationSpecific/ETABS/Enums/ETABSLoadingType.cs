@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects.Structural.ETABS.Analysis
+namespace Objects.Structural.CSI.Analysis
 {
     public enum WindPressureType
     {

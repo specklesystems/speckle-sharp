@@ -13,6 +13,7 @@ using Autodesk.AutoCAD.Colors;
 using Speckle.Core.Models;
 #if (CIVIL2021 || CIVIL2022)
 using Autodesk.Aec.ApplicationServices;
+using Autodesk.Aec.PropertyData.DatabaseServices;
 #endif
 
 namespace Speckle.ConnectorAutocadCivil
@@ -122,7 +123,7 @@ namespace Speckle.ConnectorAutocadCivil
     /// <param name="type">Object class dxf name</param>
     /// <param name="layer">Object layer name</param>
     /// <returns></returns>
-    public static DBObject GetObject(this Handle handle, out string type, out string layer)
+    public static DBObject GetObject(this Handle handle, Transaction tr, out string type, out string layer)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
       DBObject obj = null;
@@ -134,16 +135,12 @@ namespace Speckle.ConnectorAutocadCivil
       if (!id.IsErased && !id.IsNull)
       {
         // get the db object from id
-        using (Transaction tr = Doc.TransactionManager.StartTransaction())
+        obj = tr.GetObject(id, OpenMode.ForRead);
+        if (obj != null)
         {
-          obj = tr.GetObject(id, OpenMode.ForRead);
-          if (obj != null)
-          {
-            Entity objEntity = obj as Entity;
-            type = id.ObjectClass.DxfName;
-            layer = objEntity.Layer;
-          }
-          tr.Commit();
+          Entity objEntity = obj as Entity;
+          type = id.ObjectClass.DxfName;
+          layer = objEntity.Layer;
         }
       }
       return obj;
@@ -187,6 +184,85 @@ namespace Speckle.ConnectorAutocadCivil
       return isVisible;
     }
 
+#if CIVIL2021 || CIVIL2022
+    /// <summary>
+    /// Get the property sets of  DBObject
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public static List<Dictionary<string, object>> GetPropertySets(this DBObject obj, Transaction tr)
+    {
+      var sets = new List<Dictionary<string, object>>();
+      ObjectIdCollection propertySets = null;
+      try
+      {
+        propertySets = PropertyDataServices.GetPropertySets(obj);
+      }
+      catch (Exception e) 
+      { }
+      if (propertySets == null) return sets;
+
+      foreach (ObjectId id in propertySets)
+      {
+        var setDictionary = new Dictionary<string, object>();
+
+        PropertySet propertySet = (PropertySet)tr.GetObject(id, OpenMode.ForRead);
+        PropertySetDefinition setDef = (PropertySetDefinition)tr.GetObject(propertySet.PropertySetDefinition, OpenMode.ForRead);
+
+        PropertyDefinitionCollection propDef = setDef.Definitions;
+        var propDefs = new Dictionary<int, PropertyDefinition>();
+        foreach (PropertyDefinition def in propDef) propDefs.Add(def.Id, def);
+
+        foreach (PropertySetData data in propertySet.PropertySetData)
+        {
+          if (propDefs.ContainsKey(data.Id))
+            setDictionary.Add(propDefs[data.Id].Name, data.GetData());
+          else
+            setDictionary.Add(data.FieldBucketId, data.GetData());
+        }
+
+        if (setDictionary.Count > 0)
+          sets.Add(CleanDictionary(setDictionary));
+      }
+      return sets;
+    }
+
+    // Handles object types from property set dictionaries
+    private static Dictionary<string, object> CleanDictionary(Dictionary<string, object> dict)
+    {
+      var target = new Dictionary<string, object>();
+      foreach (var key in dict.Keys)
+      {
+        var obj = dict[key];
+        switch (obj)
+        {
+          case double _:
+          case bool _:
+          case int _:
+          case string _:
+          case IEnumerable<double> _:
+          case IEnumerable<bool> _:
+          case IEnumerable<int> _:
+          case IEnumerable<string> _:
+            target[key] = obj;
+            continue;
+
+          case long o:
+            target[key] = Convert.ToDouble(o);
+            continue;
+
+          case ObjectId o:
+            target[key] = o.ToString();
+            continue;
+
+          default:
+            continue;
+        }
+      }
+      return target;
+    }
+#endif
+
     /// <summary>
     /// Gets the handles of all visible document objects that can be converted to Speckle
     /// </summary>
@@ -210,7 +286,7 @@ namespace Speckle.ConnectorAutocadCivil
       }
       return objs;
     }
-    #endregion
+#endregion
 
     /// <summary>
     /// Retrieves the document's units.

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Opening = Objects.BuiltElements.Opening;
 
 namespace Objects.Converter.Revit
 {
@@ -92,7 +89,7 @@ namespace Objects.Converter.Revit
       var profiles = GetProfiles(revitFloor);
 
       var speckleFloor = new RevitFloor();
-      speckleFloor.type = Doc.GetElement(revitFloor.GetTypeId()).Name;
+      speckleFloor.type = revitFloor.Document.GetElement(revitFloor.GetTypeId()).Name;
       speckleFloor.outline = profiles[0];
       if (profiles.Count > 1)
       {

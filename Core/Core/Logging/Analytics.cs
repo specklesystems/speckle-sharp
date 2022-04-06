@@ -95,8 +95,9 @@ namespace Speckle.Core.Logging
     public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null)
     {
       if (account == null)
-        return;
-      TrackEvent(account.userInfo.email, account.serverInfo.url, eventName, customProperties);
+        TrackEvent("unknown", "https://speckle.xyz/", eventName, customProperties);
+      else
+        TrackEvent(account.userInfo.email, account.serverInfo.url, eventName, customProperties);
     }
 
     /// <summary>
@@ -113,7 +114,7 @@ namespace Speckle.Core.Logging
 
 #if DEBUG
       //only track in prod
-      //return;
+      return;
 #endif
 
       Task.Run(() =>

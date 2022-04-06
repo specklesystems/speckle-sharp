@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This repo holds the Speckle 2.0 Revit Connector. It is currently in ⚠ALPHA⚠ and is a bit rough around the edges -- please use at your own risk! And of course, we'd really appreciate any feedback, comments, suggestions, etc ✨
+This repo holds the Speckle Revit Connector. We'd really appreciate any feedback, comments, suggestions, etc ✨
 
 ## Documentation
 
@@ -16,57 +16,44 @@ Comprehensive developer and user documentation can be found in our:
 
 ### Requirements
 
-- Revit 2019, 2020, or 2021
-- A Speckle Server running (more on this below)
-- Speckle Manager (more on this below)
+- Revit 2019 or above
+- Visual Studio 2019 or above (or similar IDE)
+- A Speckle account (you can make one at https://speckle.xyz/)
 
 ### Getting Started
 
-#### Server
-
-In order to test Speckle in all its glory, you'll need a server running. You can run a local one by simply following the instructions in the [Server Repo](https://github.com/specklesystems/Server)
-
-If you're facing any errors, make sure Postgres and Redis are up and running.
-
 #### Accounts
 
-The connector itself doesn't have features to manage your Speckle accounts. This functionality has been delegated to the Speckle Manager desktop app.
+To use Speckle, you'll need a Speckle account. This can be in our XYZ server, in a local server or anywhere else.
+You can log in to your account:
+- from Manager, available at https://speckle-releases.netlify.app/
+- or, if using our latest release, you can also log in directly from the Revit connector
 
-You can install an alpha version of it from: [here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe)
+![login](https://user-images.githubusercontent.com/2679513/159454529-6b85eb3b-e964-4b39-87ba-286799771e3d.gif)
 
-After installing it, you can use it to add/create an account on the Server.
 
 ### Debugging
 
-In your IDE, you can select which Revit version you want to run. If you're having SQLite issues when building, make doubly sure that you're on x64.
+In your IDE, select the version of the Revit project you want to debug:
 
-![select debug version in IDE](https://user-images.githubusercontent.com/7717434/97556712-b9bd9200-19d1-11eb-9b4b-8c25832547bd.png)
+![image](https://user-images.githubusercontent.com/2679513/159453238-c4ef1203-0ab5-4193-83a2-7a4a0ba0506e.png)
 
-The button to launch the connector should now appear in the Add-Ins ribbon. You're ready to go!
+Ensure the right Start action is set:
+![image](https://user-images.githubusercontent.com/2679513/159453340-5055cf3d-6db8-4e80-8374-9d73d2b04427.png)
 
-![speckle button on ribbon menu](https://user-images.githubusercontent.com/7717434/97557082-381a3400-19d2-11eb-8d10-13039d5ee7be.png)
+And then you can click debug. The post build actions will copy all necessary files, so next you just need to launch the connector:
 
-Fire it up 🔥
+![revit-launch](https://user-images.githubusercontent.com/2679513/159453862-2efd62b4-a881-4967-ace1-5298a40ffd0a.gif)
 
-![quick-revit-demo](https://user-images.githubusercontent.com/7717434/97557677-fe95f880-19d2-11eb-8ad3-439f7ad63015.gif)
+If you're having SQLite issues when building, make doubly sure that you're on x64.
 
-### Features
+#### Conversions
 
-Add a new stream:
+All the conversion routines are in the converter project:
 
-![add-stream](https://user-images.githubusercontent.com/7717434/97726487-2bc3d300-1ac7-11eb-849e-7aed2d21ec76.gif)
+![image](https://user-images.githubusercontent.com/2679513/159454133-999cc8ed-2568-4780-8a33-5aee628428dc.png)
 
-Get fancy with some filters:
-
-![add-with-filters](https://user-images.githubusercontent.com/7717434/97726494-2e262d00-1ac7-11eb-8a55-8a7939c8f378.gif)
-
-Search for and add an existing stream from the server:
-
-![receive-stream](https://user-images.githubusercontent.com/7717434/97726530-3716fe80-1ac7-11eb-9732-19117b5cef27.gif)
-
-Update a stream and edit collaborators:
-
-![update-stream](https://user-images.githubusercontent.com/7717434/97726509-31211d80-1ac7-11eb-945e-67d1ca29c16d.gif)
+You might need to debug the Converter project instead of the Connector one if your IDE doesn't reach the breakpoints correctly.
 
 ## Contributing
 

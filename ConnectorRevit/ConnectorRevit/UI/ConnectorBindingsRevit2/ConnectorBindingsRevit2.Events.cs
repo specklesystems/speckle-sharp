@@ -6,7 +6,7 @@ using Autodesk.Revit.DB;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using DesktopUI2.Views.Windows;
+using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
@@ -47,7 +47,8 @@ namespace Speckle.ConnectorRevit.UI
 
       //// GLOBAL EVENT HANDLERS
       RevitApp.ViewActivated += RevitApp_ViewActivated;
-      RevitApp.Application.DocumentChanged += Application_DocumentChanged;
+      //RevitApp.Application.DocumentChanged += Application_DocumentChanged;
+      RevitApp.Application.DocumentCreated += Application_DocumentCreated;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Application.DocumentSaved += Application_DocumentSaved;
@@ -116,6 +117,8 @@ namespace Speckle.ConnectorRevit.UI
       var streams = GetStreamsInFile();
       UpdateSavedStreams(streams);
 
+      MainWindowViewModel.GoHome();
+
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
@@ -129,11 +132,22 @@ namespace Speckle.ConnectorRevit.UI
       if (SpeckleRevitCommand2.MainWindow != null)
         SpeckleRevitCommand2.MainWindow.Hide();
 
+      //clear saved streams if closig a doc
+      if (UpdateSavedStreams != null)
+        UpdateSavedStreams(new List<StreamState>());
+
+      MainWindowViewModel.GoHome();
     }
 
     // this method is triggered when there are changes in the active document
     private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
     { }
+    private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
+    {
+      //clear saved streams if opening a new doc
+      if (UpdateSavedStreams != null)
+        UpdateSavedStreams(new List<StreamState>());
+    }
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
@@ -144,6 +158,9 @@ namespace Speckle.ConnectorRevit.UI
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
+
+      //exit "stream view" when changing documents
+      MainWindowViewModel.GoHome();
     }
 
 

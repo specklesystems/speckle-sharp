@@ -1,61 +1,86 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.ReactiveUI;
+
+using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
 
 namespace SpeckleRhino
 {
   public class SpeckleCommand : Command
   {
+    #region Avalonia parent window
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+    const int GWL_HWNDPARENT = -8;
+    #endregion
+
     public static SpeckleCommand Instance { get; private set; }
 
-    public override string EnglishName => "SpeckleOld";
+    public override string EnglishName => "Speckle";
 
-    public static Bootstrapper Bootstrapper { get; set; }
+    public static Window MainWindow { get; private set; }
+
+    public static ConnectorBindingsRhino Bindings { get; set; } = new ConnectorBindingsRhino();
+
+    private static Avalonia.Application AvaloniaApp { get; set; }
 
     public SpeckleCommand()
     {
       Instance = this;
     }
 
+    public static void InitAvalonia()
+    {
+      BuildAvaloniaApp().Start(AppMain, null);
+    }
+
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
+      .UsePlatformDetect()
+      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+      .LogToTrace()
+      .UseReactiveUI();
+
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      StartOrShowPanel();
+      CreateOrFocusSpeckle();
       return Result.Success;
     }
 
-    internal void StartOrShowPanel()
+    public static void CreateOrFocusSpeckle()
     {
-      if (Bootstrapper != null)
+      if (MainWindow == null)
       {
-        Bootstrapper.ShowRootView();
-        return;
+        var viewModel = new MainWindowViewModel(Bindings);
+        MainWindow = new MainWindow
+        {
+          DataContext = viewModel
+        };
       }
 
-      Bootstrapper = new Bootstrapper()
-      {
-        Bindings = new ConnectorBindingsRhino()
-      };
+      MainWindow.Show();
+      MainWindow.Activate();
 
-      if (Application.Current == null)
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
-        new Application();
+        var parentHwnd = RhinoApp.MainWindowHandle();
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
       }
+    }
 
-      if ( Application.Current != null )
-        new StyletAppLoader() {Bootstrapper = Bootstrapper};
-      else
-        new App(Bootstrapper);
-
-      Bootstrapper.Start(Application.Current);
-      Bootstrapper.SetParent(RhinoApp.MainWindowHandle());
+    private static void AppMain(Application app, string[] args)
+    {
+      AvaloniaApp = app;
     }
   }
 }

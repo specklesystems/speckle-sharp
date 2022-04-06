@@ -1,16 +1,25 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
-    <Border
+    <StackPanel
       Width="360"
       Height="200"
-      Padding="20">
+      Margin="15"
+      Orientation="Vertical">
       <Button
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
         Content="Hello!" />
-    </Border>
+      <Button
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Classes="Flat"
+        Content="Hello!" />
+    </StackPanel>
   </Design.PreviewWith>
   <Style Selector="Button">
     <Setter Property="Foreground" Value="White" />
+  </Style>
+  <Style Selector="Button.Flat">
+    <Setter Property="TextBlock.FontWeight" Value="Light" />
   </Style>
 </Styles>

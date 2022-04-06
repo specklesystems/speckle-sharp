@@ -106,7 +106,7 @@ namespace DesktopUI2
     /// Pushes a client's stream
     /// </summary>
     /// <param name="state"></param>
-    public abstract Task SendStream(StreamState state, ProgressViewModel progress);
+    public abstract Task<string> SendStream(StreamState state, ProgressViewModel progress);
 
     /// <summary>
     /// Receives stream data from the server

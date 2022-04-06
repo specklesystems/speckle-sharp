@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "ConnectorArchicad.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "ArchiCAD 25 in Demo Mode",
+      "type": "shell",
+      "command": "'ARCHICAD 25.app'/Contents/MacOS/ARCHICAD -demo",
+      "windows": {
+        "command": "'C:/Program Files/GRAPHISOFT/ARCHICAD 25/ARCHICAD.exe' -DEMO"
+      },
+      "problemMatcher": []
+    },
+  ]
+}

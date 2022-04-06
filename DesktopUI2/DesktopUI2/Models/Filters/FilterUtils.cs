@@ -1,7 +1,7 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.Models.Filters
 {
@@ -14,9 +14,45 @@ namespace DesktopUI2.Models.Filters
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-      var filter = serializer.Deserialize<ListSelectionFilter>(reader) ?? (ISelectionFilter)serializer.Deserialize<PropertySelectionFilter>(reader);
 
+      ISelectionFilter filter = default(ISelectionFilter);
+
+      JObject jsonObject = null;
+      try
+      {
+        jsonObject = JObject.Load(reader);
+      }
+      catch
+      {
+        return filter;
+      }
+
+      var type = jsonObject.Value<string>("Type");
+
+      if (type == typeof(AllSelectionFilter).ToString())
+      {
+        filter = new AllSelectionFilter();
+      }
+      else if (type == typeof(ListSelectionFilter).ToString())
+      {
+        filter = new ListSelectionFilter();
+      }
+      else if (type == typeof(ManualSelectionFilter).ToString())
+      {
+        filter = new ManualSelectionFilter();
+      }
+      else if (type == typeof(PropertySelectionFilter).ToString())
+      {
+        filter = new PropertySelectionFilter();
+      }
+      else
+      {
+        throw new SpeckleException($"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.FilerUtils.cs");
+      }
+
+      serializer.Populate(jsonObject.CreateReader(), filter);
       return filter;
+
     }
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

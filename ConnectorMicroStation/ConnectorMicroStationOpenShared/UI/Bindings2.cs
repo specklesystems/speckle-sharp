@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Concurrent;
@@ -20,8 +19,6 @@ using DesktopUI2.Models.Settings;
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.MstnPlatformNET;
-using Bentley.DgnPlatformNET.DgnEC;
-using Speckle.ConnectorMicroStationOpen.Entry;
 using Speckle.ConnectorMicroStationOpen.Storage;
 using Speckle.Core.Logging;
 
@@ -159,6 +156,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
 
       var filterList = new List<ISelectionFilter>();
+      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." });
       filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
       filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
 
@@ -167,7 +165,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
 #endif
 
-      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
+
 
       return filterList;
     }
@@ -438,7 +436,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region sending
-    public override async Task SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.VersionedAppName);
@@ -463,7 +461,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
       {
         progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
-        return;
+        return null;
       }
 
       var commitObj = new Base();
@@ -529,7 +527,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       foreach (var obj in objs)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return;
+          return null;
 
         if (obj == null)
         {
@@ -622,16 +620,16 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       progress.Report.Merge(converter.Report);
 
       if (progress.Report.OperationErrorsCount != 0)
-        return;
+        return null;
 
       if (convertedCount == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return;
+        return null;
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return;
+        return null;
 
       Execute.PostToUIThread(() => progress.Max = convertedCount);
 
@@ -665,11 +663,13 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       {
         var commitId = await client.CommitCreate(actualCommit);
         state.PreviousCommitId = commitId;
+        return commitId;
       }
       catch (Exception e)
       {
         progress.Report.LogOperationError(e);
       }
+      return null;
     }
 
 #if (OPENROADS || OPENRAIL)

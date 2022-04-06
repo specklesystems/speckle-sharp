@@ -115,7 +115,7 @@ namespace Objects.Converter.TeklaStructures
       Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
       speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-
+      speckleBeam.baseLine.length = Math.Sqrt(Math.Pow((startPoint.X - endPoint.X),2)+ Math.Pow((startPoint.Y - endPoint.Y), 2)+ Math.Pow((startPoint.Z - endPoint.Z), 2));
       speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);
       var beamCS = beam.GetCoordinateSystem();
@@ -124,7 +124,15 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.finish = beam.Finish;
       speckleBeam.classNumber = beam.Class;
       speckleBeam.name = beam.Name;
+      speckleBeam.applicationId = beam.Identifier.GUID.ToString();
       speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
+      var vol = new double();
+      var area = new double();
+      beam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      speckleBeam.volume = vol;
+      beam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      speckleBeam.area = area;
+      
       var rebars = beam.GetReinforcements();
       if (rebars != null)
       {
@@ -168,6 +176,13 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.name = beam.Name;
       speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
       speckleBeam.applicationId = beam.Identifier.GUID.ToString();
+      var vol = new double();
+      var area = new double();
+      beam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      speckleBeam.volume = vol;
+      beam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      speckleBeam.area = area;
+
       speckleBeam["units"] = units;
 
       return speckleBeam;
