@@ -1,0 +1,85 @@
+﻿<Window
+  x:Class="DesktopUI2.Views.Share"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:vm="using:DesktopUI2.ViewModels.DesignViewModels"
+  Title="{Binding TitleFull}"
+  Width="400"
+  Icon="/Assets/icon.ico"
+  SizeToContent="Height"
+  mc:Ignorable="d">
+
+  <Design.DataContext>
+    <vm:DesignShareViewModel />
+  </Design.DataContext>
+
+  <Grid Margin="15" RowDefinitions="auto, auto, auto, auto, *, auto">
+    <TextBlock
+      Margin="10"
+      Text="Share this model with anyone, anywhere 🌍"
+      TextWrapping="Wrap" />
+    <!--  SEARCH STREAMS  -->
+    <Grid Grid.Row="1" Margin="0">
+      <m:Card Padding="0">
+        <TextBox
+          Margin="0"
+          Padding="0"
+          Classes="Solo Small"
+          Text="{Binding SearchQuery}"
+          Watermark="Search streams">
+          <TextBox.InnerRightContent>
+            <Button
+              Width="{Binding $self.Bounds.Height}"
+              Padding="4"
+              Classes="Flat"
+              Command="{Binding ClearSearchCommand}"
+              Content="{icons:MaterialIconExt CloseCircle,
+                                              Size=15}" />
+          </TextBox.InnerRightContent>
+          <TextBox.InnerLeftContent>
+            <icons:MaterialIcon
+              Width="15"
+              Height="15"
+              Margin="4,0,0,0"
+              Kind="Search" />
+          </TextBox.InnerLeftContent>
+        </TextBox>
+      </m:Card>
+    </Grid>
+    <m:Card
+      Grid.Row="2"
+      Margin="0,15"
+      VerticalAlignment="Stretch"
+      HorizontalContentAlignment="Stretch"
+      Classes="Mini">
+      <StackPanel />
+    </m:Card>
+
+
+
+    <StackPanel
+      Grid.Row="5"
+      Grid.ColumnSpan="2"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal"
+      Spacing="10">
+
+
+      <Button Content="Share" ToolTip.Tip="Save this sender to the file without receiving" />
+      <!--<Button
+        Command="{Binding SaveReceiveCommand}"
+        Content="Receive &amp; Save"
+        Foreground="White"
+        ToolTip.Tip="Receive from Speckle and save this receiver to the file" />-->
+    </StackPanel>
+  </Grid>
+
+</Window>

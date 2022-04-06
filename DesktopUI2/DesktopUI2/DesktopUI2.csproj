@@ -44,6 +44,7 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+    <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
@@ -113,9 +114,6 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Scheduler.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -131,7 +129,13 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Scheduler.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Share.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">
@@ -198,6 +202,9 @@
     <Compile Update="Views\Scheduler.xaml.cs">
       <DependentUpon>Scheduler.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Scheduler.xaml.cs">
+      <DependentUpon>Scheduler.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -215,6 +222,9 @@
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Share.xaml.cs">
+      <DependentUpon>Share.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
       <DependentUpon>AddAccountDialog.xaml</DependentUpon>
