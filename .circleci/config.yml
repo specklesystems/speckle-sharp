@@ -204,11 +204,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0" } else { $env:CIRCLE_TAG }
             $semver = if($tag.Contains('/')) {$tag.Split("/")[1] } else { $tag }
-            $ver = $semver.replace("-beta","")
+            $ver = if($semver.Contains('-'')) {$semver.Split("-")[0] } else { $semver }
+            $channel = if($semver.Contains('-'')) {$semver.Split("-")[1] } else { "latest" }
             $version = "$($ver).$($env:CIRCLE_BUILD_NUM)"
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$version
-            $channel = "latest"
-            if($env:CIRCLE_TAG -like "*-beta") { $channel = "beta" }    
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$version  
             if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
       - run:
           name: Deploy?
@@ -554,7 +553,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT BOTTOM --
-              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -569,7 +568,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(dynamo|revitdynamo|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(dynamo|revitdynamo|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # REVIT Build&Deploy
       - build-connector:
@@ -584,7 +583,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(revit|revitdynamo|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(revit|revitdynamo|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # GRASSHOPPER Build&Deploy
       - build-connector:
@@ -599,7 +598,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(grasshopper|rhinogh|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(grasshopper|rhinogh|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       - build-connector-mac:
           name: build-deploy-connector-grasshopper-mac
@@ -619,7 +618,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(grasshopper|grasshopper-mac|rhinogh|all|mac)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(grasshopper|grasshopper-mac|rhinogh|all|mac)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # RHINO Build&Deploy
       - build-connector:
@@ -634,7 +633,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(rhino|rhinogh|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(rhino|rhinogh|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       - build-connector-mac:
           name: build-deploy-connector-rhino-mac
@@ -654,7 +653,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(rhino|rhino-mac|rhinogh|all|mac)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(rhino|rhino-mac|rhinogh|all|mac)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # AUTOCAD Build&Deploy
       - build-connector:
@@ -669,7 +668,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(autocadcivil|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(autocadcivil|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # CIVIL 3D Build&Deploy
       - build-connector:
@@ -684,7 +683,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(autocadcivil|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(autocadcivil|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
       # # ETABS Build&Deploy
       # - build-connector:
       #     name: build-deploy-connector-etabs
@@ -698,7 +697,7 @@ workflows:
       #       branches:
       #         ignore: /.*/ # For testing only! /ci\/.*/
       #       tags:
-      #         only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+      #         only: /^(etabs|all)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # MICROSTATION Build&Deploy
       - build-connector:
@@ -713,7 +712,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(microstation|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(microstation|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # OPENBUILDINGS Build&Deploy
       - build-connector:
@@ -728,7 +727,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(openbuildings|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(openbuildings|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # OPENRAIL Build&Deploy
       - build-connector:
@@ -743,7 +742,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(openrail|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(openrail|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # OPENROADS Build&Deploy
       - build-connector:
@@ -758,7 +757,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(openroads|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(openroads|bentley|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # TeklaStructures Build&Deploy
       - build-connector:
@@ -773,7 +772,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(teklastructures|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(teklastructures|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
       # ETABS Build&Deploy
       - build-connector:
           name: build-deploy-connector-etabs
@@ -787,7 +786,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(etabs|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(etabs|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # SAP2000 Build&Deploy
       - build-connector:
@@ -802,7 +801,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(sap2000|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(sap2000|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
       # SAFE Build&Deploy
       - build-connector:
           name: build-deploy-connector-safe
@@ -816,7 +815,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(safe|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(safe|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # CSIBridge Build&Deploy
       - build-connector:
@@ -831,7 +830,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
-              only: /^(csibridge|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(csibridge|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
           requires:
@@ -856,4 +855,4 @@ workflows:
 
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT ~380  --
-              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta)?$/
+              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
