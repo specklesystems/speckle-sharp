@@ -23,6 +23,8 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public List<Base> elements { get; set; }
 
+    //To do add:Section Property 2D here from structural objects ? ; 
+
     public string units { get; set; }
 
     public Element2DType element2DType { get; set; }

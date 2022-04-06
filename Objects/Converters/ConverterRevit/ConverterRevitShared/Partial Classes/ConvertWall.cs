@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       var wallType = GetElementType<WallType>(speckleWall);
       Level level = null;
       var structural = false;
-      var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
+      var baseCurve = CurveToNative(speckleWall.outline).get_Item(0);
 
       if (speckleWall is RevitWall speckleRevitWall)
       {
@@ -87,7 +87,8 @@ namespace Objects.Converter.Revit
         }
         else
         {
-          TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
+          //TO DO: need to rewrite method here 
+          //TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
         }
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, spklRevitWall.baseOffset, speckleWall.units);
@@ -96,7 +97,8 @@ namespace Objects.Converter.Revit
       }
       else // Set wall unconnected height.
       {
-        TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
+        //TO DO: General support for General Wall with outline. 
+        //TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
       }
 
       SetInstanceParameters(revitWall, speckleWall);
@@ -133,7 +135,7 @@ namespace Objects.Converter.Revit
       RevitWall speckleWall = new RevitWall();
       speckleWall.family = revitWall.WallType.FamilyName.ToString();
       speckleWall.type = revitWall.WallType.Name;
-      speckleWall.baseLine = (ICurve)baseGeometry;
+      speckleWall.outline = (ICurve)baseGeometry;
       speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);
       speckleWall.topLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE);
       speckleWall.height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM);

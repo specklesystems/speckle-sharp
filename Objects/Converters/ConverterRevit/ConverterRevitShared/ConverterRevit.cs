@@ -334,9 +334,10 @@ namespace Objects.Converter.Revit
         //case BE.Column o:
         //  return ColumnToNative(o);
         case BE.BuiltElement1D o:
-         if(o.ElementType == BE.Element1DType.Beam){
+          if (o.ElementType == BE.Element1DType.Beam)
+          {
             return BeamToNative(o);
-             }
+          }
           else if (o.ElementType == BE.Element1DType.Brace)
           {
             return BraceToNative(o);
@@ -347,10 +348,33 @@ namespace Objects.Converter.Revit
           }
           return null;
 
+
+        case BER.RevitProfileWall o:
+          return ProfileWallToNative(o);
+
+        case BER.RevitFaceWall o:
+          return FaceWallToNative(o);
+
+        case BE.BuiltElement2D o:
+         if(o.element2DType == BE.Element2DType.Floor){
+            return FloorToNative(o);
+         }
+         else if (o.element2DType == BE.Element2DType.Roof){
+            return RoofToNative(o);
+         }
+         else if (o.element2DType == BE.Element2DType.Wall){
+            return WallToNative(o);
+         }
+         else if(o.element2DType == BE.Element2DType.Ceiling){
 #if REVIT2022
-        case BE.Ceiling o:
-          return CeilingToNative(o);
-#endif
+            return CeilingToNative(o);
+         #endif
+         }
+          return null;
+//#if REVIT2022
+//        case BE.Ceiling o:
+//          return CeilingToNative(o);
+//#endif
 
         case BERC.DetailCurve o:
           return DetailCurveToNative(o);
@@ -364,8 +388,8 @@ namespace Objects.Converter.Revit
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
-        case BE.Floor o:
-          return FloorToNative(o);
+        //case BE.Floor o:
+        //  return FloorToNative(o);
 
         case BE.Level o:
           return LevelToNative(o);
@@ -382,20 +406,15 @@ namespace Objects.Converter.Revit
         case BERC.SpaceSeparationLine o:
           return SpaceSeparationLineToNative(o);
 
-        case BE.Roof o:
-          return RoofToNative(o);
+        //case BE.Roof o:
+        //  return RoofToNative(o);
 
         case BE.Topography o:
           return TopographyToNative(o);
 
-        case BER.RevitProfileWall o:
-          return ProfileWallToNative(o);
 
-        case BER.RevitFaceWall o:
-          return FaceWallToNative(o);
-
-        case BE.Wall o:
-          return WallToNative(o);
+        //case BE.Wall o:
+        //  return WallToNative(o);
 
         case BE.Duct o:
           return DuctToNative(o);
@@ -532,27 +551,30 @@ namespace Objects.Converter.Revit
         BE.Alignment _ => true,
         //built elems
         BER.AdaptiveComponent _ => true,
-        BE.Beam _ => true,
-        BE.Brace _ => true,
-        BE.Column _ => true,
+        //BE.Beam _ => true,
+        //BE.Brace _ => true,
+        //BE.Column _ => true,
 #if REVIT2022
-        BE.Ceiling _ => true,
+        //BE.Ceiling _ => true,
 #endif
         BERC.DetailCurve _ => true,
         BER.DirectShape _ => true,
         BER.FreeformElement _ => true,
         BER.FamilyInstance _ => true,
-        BE.Floor _ => true,
+        BER.RevitFaceWall _ => true,
+        BER.RevitProfileWall _ => true,
+        BE.BuiltElement1D _ => true,
+        BE.BuiltElement2D _ => true,
+        //BE.Floor _ => true,
         BE.Level _ => true,
         BERC.ModelCurve _ => true,
         BE.Opening _ => true,
         BERC.RoomBoundaryLine _ => true,
         BERC.SpaceSeparationLine _ => true,
-        BE.Roof _ => true,
+        //BE.Roof _ => true,
         BE.Topography _ => true,
-        BER.RevitFaceWall _ => true,
-        BER.RevitProfileWall _ => true,
-        BE.Wall _ => true,
+
+        //BE.Wall _ => true,
         BE.Duct _ => true,
         BE.Pipe _ => true,
         BE.Wire _ => true,

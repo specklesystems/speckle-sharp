@@ -112,24 +112,36 @@ namespace Objects.Converter.Revit
       //reapply revit's offset
       var offset = elem["baseOffset"] as double?;
 
-      if (elem is Column)
-      {
-        //revit vertical columns can only be POINT based
-        if (!(bool)elem["isSlanted"] || IsVertical(curve))
-        {
-          var baseLine = elem["baseLine"] as Line;
-          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double)offset, ModelUnits);
 
-          return PointToNative(point);
+      if (elem is BuiltElement1D)
+      {
+
+        BuiltElement1D builtElement1D = (BuiltElement1D)elem;
+        if (builtElement1D.ElementType == Element1DType.Column)
+        {
+          //revit vertical columns can only be POINT based
+          if (!(bool)elem["isSlanted"] || IsVertical(curve))
+          {
+            var baseLine = elem["baseLine"] as Line;
+            var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double)offset, ModelUnits);
+
+            return PointToNative(point);
+          }
         }
+
       }
       //undo offset transform
-      else if (elem is Wall w)
+      else if (elem is BuiltElement2D)
       {
-        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseLine)["units"] as string);
-        XYZ vector = new XYZ(0, 0, -revitOffset);
-        Transform tf = Transform.CreateTranslation(vector);
-        curve = curve.CreateTransformed(tf);
+        BuiltElement2D builtElement2D = (BuiltElement2D)elem;
+        if (builtElement2D.element2DType == Element2DType.Wall)
+        {
+          var revitOffset = ScaleToNative((double)offset, ((Base)builtElement2D.outline)["units"] as string);
+          XYZ vector = new XYZ(0, 0, -revitOffset);
+          Transform tf = Transform.CreateTranslation(vector);
+          curve = curve.CreateTransformed(tf);
+        }
+
       }
 
       return curve;

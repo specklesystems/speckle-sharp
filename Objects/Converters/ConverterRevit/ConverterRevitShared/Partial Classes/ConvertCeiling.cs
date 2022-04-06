@@ -1,6 +1,7 @@
 ﻿
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using Objects.BuiltElements;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace Objects.Converter.Revit
     }
 
 #if REVIT2022
-    public List<ApplicationPlaceholderObject> CeilingToNative(Ceiling speckleCeiling)
+    public List<ApplicationPlaceholderObject> CeilingToNative(BuiltElement2D speckleCeiling)
     {
       if (speckleCeiling.outline == null)
       {

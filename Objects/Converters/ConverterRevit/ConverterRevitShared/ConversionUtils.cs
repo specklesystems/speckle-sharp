@@ -552,8 +552,12 @@ namespace Objects.Converter.Revit
       }
       if (match == null) // okay, try something!
       {
-        if (element is BuiltElements.Wall) // specifies the basic wall sub type as default
-          match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
+        if (element is BuiltElement2D) // specifies the basic wall sub type as default
+        {
+          BuiltElement2D builtElement2D = (BuiltElement2D)element;
+          if(builtElement2D.element2DType == Element2DType.Wall)
+            match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
+        }
         if (match == null)
           match = types.First();
         Report.Log($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
