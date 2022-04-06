@@ -119,7 +119,7 @@ namespace Speckle.Core.Api
             if ( serializerV2.OnErrorAction == null ) throw;
             serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", new SpeckleException(
               $"A deserialization error has occurred: {e.Message}", e));
-            return null;
+            localRes = null;
           }
         }
 
@@ -160,7 +160,7 @@ namespace Speckle.Core.Api
         {
           if ( serializerV2.OnErrorAction == null ) throw;
           serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", e);
-          return null;
+          res = null;
         }
       }
 
