@@ -4,6 +4,7 @@
     <ProjectGuid>{BDEC781D-F322-49B0-8001-2CA66C182174}</ProjectGuid>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
     <TargetFramework>net472</TargetFramework>
+    <TargetExt>.gha</TargetExt>
     <AssemblyTitle>ConnectorGrasshopper</AssemblyTitle>
     <Product>ConnectorGrasshopper</Product>
     <Copyright>Copyright ©  2020</Copyright>
@@ -75,11 +76,5 @@
   
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(AppData)\Grasshopper\Libraries\SpeckleGrasshopper2" />
-  </Target>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="Copy &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(TargetDir)$(AssemblyName).gha&quot;" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' '$(TargetDir)$(AssemblyName).gha'" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Linux'))" Command="cp '$(TargetDir)$(AssemblyName).dll' '$(TargetDir)$(AssemblyName).gha'" />
   </Target>
 </Project>
