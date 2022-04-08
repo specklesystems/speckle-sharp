@@ -10,7 +10,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
-    public class Space : Base, IHasArea, IHasVolume, IDisplayMesh, IDisplayValue<List<Mesh>>
+    public class BuiltElement3D : Base, IHasArea, IHasVolume, IDisplayMesh, IDisplayValue<List<Mesh>>
     {
         public string name { get; set; }
         public string number { get; set; }
@@ -32,10 +32,10 @@ namespace Objects.BuiltElements
         public List<Mesh> displayValue { get; set; }
         
         public string units { get; set; }
-        public Space() { }
+        public BuiltElement3D() { }
 
         [SchemaInfo("Space", "Creates a Speckle space", "BIM", "MEP")]
-        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level)
+        public BuiltElement3D(string name, string number, [SchemaMainParam] Point basePoint, Level level)
         {
             this.name = name;
             this.number = number;
@@ -44,7 +44,7 @@ namespace Objects.BuiltElements
         }
 
         [SchemaInfo("Space with top level and offset parameters", "Creates a Speckle space with the specified top level and offsets", "BIM", "MEP")]
-        public Space(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level topLevel, double topOffset, double baseOffset)
+        public BuiltElement3D(string name, string number, [SchemaMainParam] Point basePoint, Level level, Level topLevel, double topOffset, double baseOffset)
         {
             this.name = name;
             this.number = number;
@@ -54,9 +54,45 @@ namespace Objects.BuiltElements
             this.topOffset = topOffset;
             this.baseOffset = baseOffset;
         }
-        
-        #region Obsolete Members
-        [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+
+    /// <summary>
+    /// SchemaBuilder constructor for a Room
+    /// </summary>
+    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    [SchemaInfo("Room", "Creates a Speckle room", "BIM", "Architecture")]
+    public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint)
+    {
+      this.name = name;
+      this.number = number;
+      this.level = level;
+      this.basePoint = basePoint;
+    }
+
+    /// <summary>
+    /// SchemaBuilder constructor for a Room
+    /// </summary>
+    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    [SchemaInfo("RevitRoom", "Creates a Revit room with parameters", "Revit", "Architecture")]
+    public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint, List<Parameter> parameters = null)
+    {
+      this.name = name;
+      this.number = number;
+      this.level = level;
+      this.basePoint = basePoint;
+      this["parameters"] = parameters.ToBase();
+    }
+
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh
+    {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> { value };
+    }
+    #endregion
+
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
         public Mesh displayMesh {
             get => displayValue?.FirstOrDefault();
             set => displayValue = new List<Mesh> {value};

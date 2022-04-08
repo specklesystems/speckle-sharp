@@ -11,7 +11,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> SpaceToNative(Space speckleSpace)
+    public List<ApplicationPlaceholderObject> SpaceToNative(BuiltElement3D speckleSpace)
     {
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
       var level = ConvertLevelToRevit(speckleSpace.level);
@@ -88,11 +88,11 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    public BuiltElements.Space SpaceToSpeckle(DB.Space revitSpace)
+    public BuiltElements.BuiltElement3D SpaceToSpeckle(DB.Space revitSpace)
     {
       var profiles = GetProfiles(revitSpace);
 
-      var speckleSpace = new Space();
+      var speckleSpace = new BuiltElement3D();
       speckleSpace.name = revitSpace.Name;
       speckleSpace.number = revitSpace.Number;
       speckleSpace.basePoint = (Point)LocationToSpeckle(revitSpace);

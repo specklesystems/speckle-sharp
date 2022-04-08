@@ -438,7 +438,7 @@ namespace Objects.Converter.Revit
         case BE.GridLine o:
           return GridLineToNative(o);
 
-        case BE.Space o:
+        case BE.BuiltElement3D o:
           return SpaceToNative(o);
         //Structural 
         case STR.Geometry.Element1D o:
@@ -576,7 +576,7 @@ namespace Objects.Converter.Revit
         BE.View3D _ => true,
         BE.Room _ => true,
         BE.GridLine _ => true,
-        BE.Space _ => true,
+        BE.BuiltElement3D _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,

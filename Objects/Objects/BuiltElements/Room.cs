@@ -28,40 +28,6 @@ namespace Objects.BuiltElements
 
     public Room() { }
 
-    /// <summary>
-    /// SchemaBuilder constructor for a Room
-    /// </summary>
-    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
-    [SchemaInfo("Room", "Creates a Speckle room", "BIM", "Architecture")]
-    public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint)
-    {
-      this.name = name;
-      this.number = number;
-      this.level = level;
-      this.basePoint = basePoint;
-    }
 
-    /// <summary>
-    /// SchemaBuilder constructor for a Room
-    /// </summary>
-    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
-    [SchemaInfo("RevitRoom", "Creates a Revit room with parameters", "Revit", "Architecture")]
-    public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint, List<Parameter> parameters = null)
-    {
-      this.name = name;
-      this.number = number;
-      this.level = level;
-      this.basePoint = basePoint;
-      this["parameters"] = parameters.ToBase();
-    }
-
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-    #endregion
   }
 }

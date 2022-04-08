@@ -14,6 +14,7 @@ namespace Objects.BuiltElements
 {
   public class BuiltElement2D : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
   {
+  //SHOULD WALL BE HERE ? 
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
 
@@ -23,7 +24,7 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public List<Base> elements { get; set; }
 
-    //To do add:Section Property 2D here from structural objects ? ; 
+    //To do add:Section Property 2D here from structural objects ?; 
 
     public string units { get; set; }
 
