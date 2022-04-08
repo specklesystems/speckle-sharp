@@ -11,7 +11,7 @@ using Plane = Objects.Geometry.Plane;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Objects.Structural.Analysis;
-using Objects.Structural.CSI.Geometry;
+using Objects.Structural.ETABS.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -32,8 +32,8 @@ namespace Objects.Converter.Revit
         {
           try
           {
-            if(element is CSIElement1D){
-              var Application = AnalyticalStickToNative((CSIElement1D)element);
+            if(element is ETABSElement1D){
+              var Application = AnalyticalStickToNative((ETABSElement1D)element);
               placeholderObjects.Concat(Application);
             }
             else { var Application = AnalyticalStickToNative((Element1D)element);
@@ -50,9 +50,9 @@ namespace Objects.Converter.Revit
         {
           try
           {
-            if (element is CSIElement2D)
+            if (element is ETABSElement2D)
             {
-              var Application = AnalyticalSurfaceToNative((CSIElement2D)element);
+              var Application = AnalyticalSurfaceToNative((ETABSElement2D)element);
               placeholderObjects.Concat(Application);
             }
             else

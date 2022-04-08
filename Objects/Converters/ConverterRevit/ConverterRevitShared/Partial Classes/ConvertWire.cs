@@ -1,12 +1,12 @@
-﻿using Autodesk.Revit.DB;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
+using DB = Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using Curve = Objects.Geometry.Curve;
-using DB = Autodesk.Revit.DB;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -100,7 +100,7 @@ namespace Objects.Converter.Revit
       // geometry
       var start = ((LocationCurve)revitWire.Location).Curve.GetEndPoint(0);
       speckleWire.segments = new List<ICurve>();
-      var view = (View)revitWire.Document.GetElement(revitWire.OwnerViewId);
+      var view = (View)Doc.GetElement(revitWire.OwnerViewId);
       var segmentList = revitWire.get_Geometry(new Options { View = view }).ToList();
       foreach (var segment in segmentList)
         // transform and convert the geometry segments

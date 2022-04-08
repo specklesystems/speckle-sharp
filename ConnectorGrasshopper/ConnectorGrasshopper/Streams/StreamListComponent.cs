@@ -54,7 +54,8 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         string userId = null;
         var limit = 10;
-
+        if (DA.Iteration == 0)
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_LIST);
 
         DA.GetData(0, ref userId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.

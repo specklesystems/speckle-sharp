@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;

@@ -14,14 +14,14 @@ namespace SpeckleRhino
 
     private List<string> ExistingStreams = new List<string>(); // property for tracking stream data during copy and import operations
 
-    private static string SpeckleKey = "speckle2";
+    private static string SpeckleKey = "speckle";
 
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
       RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
-      SpeckleCommand.InitAvalonia();
+      // RhinoApp.Idle += RhinoApp_Idle;
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -42,7 +42,7 @@ namespace SpeckleRhino
 
       var bindings = new ConnectorBindingsRhino();
       if (bindings.GetStreamsInFile().Count > 0)
-        SpeckleCommand.CreateOrFocusSpeckle();
+        SpeckleCommand.Instance.StartOrShowPanel();
     }
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)

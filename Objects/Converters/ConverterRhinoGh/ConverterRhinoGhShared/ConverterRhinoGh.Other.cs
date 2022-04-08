@@ -21,7 +21,6 @@ using Text = Objects.Other.Text;
 using RH = Rhino.DocObjects;
 using RenderMaterial = Objects.Other.RenderMaterial;
 using Rhino;
-using Rhino.Render;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -67,71 +66,36 @@ namespace Objects.Converter.RhinoGh
         existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
       if (existing != null)
         return existing;
-
-      Rhino.Render.RenderMaterial rm;
-//#if RHINO6
+      
       var rhinoMaterial = new Material
       {
         Name = speckleName,
         DiffuseColor = Color.FromArgb(speckleMaterial.diffuse),
         EmissionColor = Color.FromArgb(speckleMaterial.emissive),
-        Transparency = 1 - speckleMaterial.opacity
+        Transparency = 1 - speckleMaterial.opacity,
+        Reflectivity = speckleMaterial.metalness
       };
-      rm = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
-//#else
-      //TODO Convert materials as PhysicallyBasedMaterial 
-      // var pbrRenderMaterial = RenderContentType.NewContentFromTypeId(ContentUuids.PhysicallyBasedMaterialType, Doc) as Rhino.Render.RenderMaterial;
-      // RH.Material simulatedMaterial = pbrRenderMaterial.SimulatedMaterial(RenderTexture.TextureGeneration.Allow);
-      // RH.PhysicallyBasedMaterial pbr = simulatedMaterial.PhysicallyBased;
-      //
-      // pbr.BaseColor = ARBGToColor4f(speckleMaterial.diffuse);
-      // pbr.Emission = ARBGToColor4f(speckleMaterial.emissive);
-      // pbr.Opacity = speckleMaterial.opacity;
-      // pbr.Metallic = speckleMaterial.metalness;
-      // pbr.Roughness = speckleMaterial.roughness;
-      //
-      // rm = Rhino.Render.RenderMaterial.FromMaterial(pbr.Material, Doc);
-      // rm.Name = speckleName;
-//#endif
       
-      Doc.RenderMaterials.Add(rm);
+      var renderMaterial = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
+      Doc.RenderMaterials.Add(renderMaterial);
 
-      return rm;
+      return renderMaterial;
     }
     public RenderMaterial RenderMaterialToSpeckle(Material material)
     {
       var renderMaterial = new RenderMaterial();
       if (material == null) return renderMaterial;
 
-      renderMaterial.name = material.Name ?? "default"; // default rhino material has no name or id
-#if RHINO6
-      
+      renderMaterial.name = (material.Name == null) ? "default" : material.Name; // default rhino material has no name or id
       renderMaterial.diffuse = material.DiffuseColor.ToArgb();
       renderMaterial.emissive = material.EmissionColor.ToArgb();
       renderMaterial.opacity = 1 - material.Transparency;
-      
+      renderMaterial.metalness = material.Reflectivity;
+
       // for some reason some default material transparency props are 1 when they shouldn't be - use this hack for now
       if ((renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem")) && renderMaterial.opacity == 0)
         renderMaterial.opacity = 0.3;
-#else
-      Material matToUse = material;
-      if(!material.IsPhysicallyBased)
-      {
-        matToUse = new Material();
-        matToUse.CopyFrom(material);
-        matToUse.ToPhysicallyBased();
-      }
-      using (var rm = Rhino.Render.RenderMaterial.FromMaterial(matToUse, null))
-      {
-        RH.PhysicallyBasedMaterial pbrMaterial = rm.ConvertToPhysicallyBased(RenderTexture.TextureGeneration.Allow);
-        renderMaterial.diffuse = pbrMaterial.BaseColor.AsSystemColor().ToArgb();
-        renderMaterial.emissive = pbrMaterial.Emission.AsSystemColor().ToArgb();
-        renderMaterial.opacity = pbrMaterial.Opacity;
-        renderMaterial.metalness = pbrMaterial.Metallic;
-        renderMaterial.roughness = pbrMaterial.Roughness;
-      }
-#endif
-      
+
       return renderMaterial;
     }
 
@@ -174,7 +138,7 @@ namespace Objects.Converter.RhinoGh
     }
     private HatchPattern FindDefaultPattern(string patternName)
     {
-      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties()?.Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase))?.ToList().FirstOrDefault();
+      var defaultPattern = typeof(HatchPattern.Defaults).GetProperties().Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase)).ToList()?.First();
       if (defaultPattern != null)
         return defaultPattern.GetValue(this, null) as HatchPattern;
       else
@@ -398,12 +362,6 @@ namespace Objects.Converter.RhinoGh
         _text.TextVerticalAlignment = Enum.TryParse(text["verticalAlignment"] as string, out TextVerticalAlignment vertical) ? vertical : TextVerticalAlignment.Middle;
 
       return _text;
-    }
-
-    public Color4f ARBGToColor4f(int argb)
-    {
-      var systemColor = Color.FromArgb(argb);
-      return Color4f.FromArgb(systemColor.A, systemColor.R, systemColor.G, systemColor.B);
     }
   }
 }

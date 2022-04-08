@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
-using Speckle.Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace DesktopUI2.Models.Filters
 {
@@ -44,7 +45,6 @@ namespace DesktopUI2.Models.Filters
     /// <summary>
     /// View associated to this filter type
     /// </summary>    
-    [JsonIgnore]
     UserControl View { get; set; }
   }
 }

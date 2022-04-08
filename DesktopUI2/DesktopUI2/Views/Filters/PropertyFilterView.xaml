@@ -14,19 +14,19 @@
       <ComboBox
         HorizontalAlignment="Stretch"
         Items="{Binding Filter.Values}"
-        PlaceholderText="Select the parameter"
-        SelectedItem="{Binding PropertyName}" />
+        PlaceholderText="Parameter"
+        SelectedItem="{Binding Filter.PropertyName}" />
       <ComboBox
         HorizontalAlignment="Stretch"
         Items="{Binding Filter.Operators}"
-        PlaceholderText="Select the operator"
-        SelectedItem="{Binding PropertyOperator}" />
+        PlaceholderText="Operator"
+        SelectedItem="{Binding Filter.PropertyOperator}" />
       <TextBox
         Margin="5,0"
         HorizontalAlignment="Stretch"
         assists:TextFieldAssist.Label="Value"
-        Text="{Binding PropertyValue}"
-        Watermark="Value" />
+        Text="{Binding Filter.PropertyValue}"
+        UseFloatingWatermark="True" />
     </StackPanel>
   </Grid>
 </UserControl>

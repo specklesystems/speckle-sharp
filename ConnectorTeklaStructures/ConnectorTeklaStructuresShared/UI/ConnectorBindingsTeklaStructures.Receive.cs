@@ -1,18 +1,19 @@
-﻿using DesktopUI2;
+﻿using System;
+using System.Threading.Tasks;
+using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
-using Speckle.ConnectorTeklaStructures.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Speckle.ConnectorTeklaStructures.Util;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Models.Settings;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
@@ -26,6 +27,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
     #region receiving
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      Tracker.TrackPageview(Tracker.RECEIVE);
       Exceptions.Clear();
 
       var kit = KitManager.GetDefaultKit();
@@ -42,6 +44,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
 
 
+      Tracker.TrackPageview(Tracker.STREAM_GET);
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -161,6 +164,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
     {
       try
       {
+        Tracker.TrackPageview(Tracker.CONVERT_TONATIVE);
         converter.ConvertToNative(obj);
       }
       catch (Exception e)

@@ -210,6 +210,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     public Receive()
     {
+      Tracker.TrackPageview(Tracker.RECEIVE_ADDED);
 
       AddInputs();
       AddOutputs();
@@ -255,6 +256,11 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       //if already receiving, stop and start again
       if (Transmitting)
         CancelReceive();
+
+      if (AutoUpdate)
+        Tracker.TrackPageview(Tracker.RECEIVE_AUTO);
+      else
+        Tracker.TrackPageview(Tracker.RECEIVE_MANUAL);
 
       Transmitting = true;
       Message = "Receiving...";

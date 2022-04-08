@@ -1,11 +1,6 @@
-﻿namespace Speckle.Core.Credentials
+﻿using System;
+namespace Speckle.Core.Credentials
 {
-
-  public class UserServerInfoResponse
-  {
-    public UserInfo user { get; set; }
-    public ServerInfo serverInfo { get; set; }
-  }
   public class UserInfoResponse
   {
     public UserInfo user { get; set; }
@@ -17,7 +12,6 @@
     public string name { get; set; }
     public string email { get; set; }
     public string company { get; set; }
-    public string avatar { get; set; }
   }
 
   public class ServerInfoResponse

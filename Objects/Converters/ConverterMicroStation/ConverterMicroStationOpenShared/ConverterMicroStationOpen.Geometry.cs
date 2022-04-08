@@ -1378,43 +1378,56 @@ namespace Objects.Converter.MicroStationOpen
       var _vertices = meshData.Point.ToArray();
 
       // get faces
-      var faces = new List<int>();
-      
-      var _pointIndex = meshData.PointIndex.ToList();
+      var _faces = new List<int[]>();
       var _faceIndices = new List<int>();
+      var _pointIndex = meshData.PointIndex.ToList();
       for (int i = 0; i < _pointIndex.Count(); i++)
       {
-        if (_pointIndex[i] != 0) // index of 0 is face loop pad/terminator
-          _faceIndices.Add(_pointIndex[i] - 1);
+        var index = _pointIndex.ElementAt(i);
+
+        // index of 0 is face loop pad/terminator
+        if (index != 0)
+          _faceIndices.Add(index - 1);
         else
         {
-          switch (_faceIndices.Count())
+          if (_faceIndices.Count() == 4)
           {
-            case 3:
-              _faceIndices.Insert(0, 0);
-              break;
-            case 4:
-              _faceIndices.Insert(0, 1);
-              break;
-            default:
-              _faceIndices.Insert(0, _faceIndices.Count());
-              break;
+            _faceIndices.Insert(0, 1);
           }
-          faces.AddRange(_faceIndices);
-          _faceIndices.Clear();
+          else if (_faceIndices.Count() == 3)
+          {
+            _faceIndices.Insert(0, 0);
+          }
+          else if (_faceIndices.Count() % 3 == 0) // split ngon to tris
+          {
+            var _nFaceIndices = new List<int>();
+
+            for (int j = 0; j < _faceIndices.Count(); j += 3)
+            {
+              var _subIndices = _faceIndices.GetRange(j, Math.Min(3, _faceIndices.Count() - j));
+              _subIndices.Insert(0, 0);
+              _nFaceIndices.AddRange(_subIndices);
+            }
+
+            _faceIndices = _nFaceIndices;
+          }
+          else { return null; }
+          var faceIndices = _faceIndices.ToArray();
+          _faces.Add(faceIndices);
+          _faceIndices = new List<int>();
         }
       }
+      _faces.ToArray();
 
       // create speckle mesh
       var vertices = PointsToFlatList(_vertices);
+      var faces = _faces.SelectMany(o => o).ToList();
 
-      /*
-      List<int> _colorIndex = meshData.ColorIndex.ToList();
+      //var _colours = meshData.ColorIndex;
       var defaultColour = System.Drawing.Color.FromArgb(255, 100, 100, 100);
       var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToList();
-      */
 
-      var _mesh = new Mesh(vertices, faces);
+      var _mesh = new Mesh(vertices, faces, colors);
       _mesh.units = u;
 
       meshData.ComputePrincipalAreaMoments(out double area, out DPoint3d centoid, out DMatrix3d axes, out DVector3d moments);
@@ -1438,15 +1451,24 @@ namespace Objects.Converter.MicroStationOpen
       int j = 0;
       while (j < mesh.faces.Count)
       {
-        int n = mesh.faces[j];
-        if (n < 3) n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+        var face = mesh.faces[j];
 
-        List<DPoint3d> faceVertices = mesh.faces.GetRange(j + 1, n).Select(x => vertices[x]).ToList();
+        List<DPoint3d> faceVertices;
+        if (face == 0) // tris
+        {
+          faceVertices = new List<DPoint3d> { vertices[mesh.faces[j + 1]], vertices[mesh.faces[j + 2]], vertices[mesh.faces[j + 3]] };
+          j += 4;
+        }
+        else // quads
+        {
+          faceVertices = new List<DPoint3d> { vertices[mesh.faces[j + 1]], vertices[mesh.faces[j + 2]], vertices[mesh.faces[j + 3]], vertices[mesh.faces[j + 4]] };
+          j += 5;
+        }
 
         if (faceVertices.Count > 0)
+        {
           meshData.AddPolygon(faceVertices, new List<DVector3d>(), new List<DPoint2d>());
-
-        j += n + 1;
+        }
       }
 
       var _mesh = new MeshHeaderElement(Model, null, meshData);

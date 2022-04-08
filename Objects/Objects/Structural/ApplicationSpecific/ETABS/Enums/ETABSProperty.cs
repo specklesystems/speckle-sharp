@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects.Structural.CSI.Properties
+namespace Objects.Structural.ETABS.Properties
 {
   public enum DiaphragmOption{
   Disconnect,

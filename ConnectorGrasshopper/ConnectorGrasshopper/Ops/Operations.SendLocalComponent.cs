@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 using ConnectorGrasshopper.Objects;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -8,8 +10,8 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Logging = Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -55,6 +57,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Parent.Message = "Sending...";
+        Logging.Tracker.TrackPageview(Logging.Tracker.SEND_LOCAL);
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
 
         var converter = (Parent as SendLocalComponent)?.Converter;

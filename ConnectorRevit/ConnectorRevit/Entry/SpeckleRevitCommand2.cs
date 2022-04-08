@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorRevit.UI;
+using Stylet.Xaml;
+using Application = Autodesk.Revit.ApplicationServices.Application;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -21,7 +25,7 @@ namespace Speckle.ConnectorRevit.Entry
     public static Window MainWindow { get; private set; }
     public static ConnectorBindingsRevit2 Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
-    internal static UIApplication uiapp;
+    private static UIApplication uiapp;
 
     public static void InitAvalonia()
     {
@@ -43,7 +47,11 @@ namespace Speckle.ConnectorRevit.Entry
       return Result.Succeeded;
     }
 
-    public static void CreateOrFocusSpeckle(bool showWindow = true)
+    private void MainWindow_StateChanged(object sender, EventArgs e)
+    {
+    }
+
+    public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
       {
@@ -52,25 +60,18 @@ namespace Speckle.ConnectorRevit.Entry
         {
           DataContext = viewModel
         };
+
+        Task.Run(() => AvaloniaApp.Run(MainWindow));
       }
 
-      try
-      {
-        if (showWindow)
-        {
-          MainWindow.Show();
-          MainWindow.Activate();
+      MainWindow.Show();
+      MainWindow.Activate();
 
-          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-          {
-            var parentHwnd = uiapp.MainWindowHandle;
-            var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-            SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-          }
-        }
-      }
-      catch (Exception ex)
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
+        var parentHwnd = uiapp.MainWindowHandle;
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
       }
     }
 
@@ -78,6 +79,7 @@ namespace Speckle.ConnectorRevit.Entry
     {
       AvaloniaApp = app;
     }
+
   }
 
 }

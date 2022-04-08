@@ -1,12 +1,11 @@
-﻿using DesktopUI2.Views;
-using DesktopUI2.Views.Windows;
-using ReactiveUI;
-using Speckle.Core.Logging;
+﻿using ReactiveUI;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Web;
 
@@ -34,19 +33,8 @@ namespace DesktopUI2.ViewModels
         }
         //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
         ProgressSummary += $"Total: {Max}";
-
         _progressDict = value;
         this.RaiseAndSetIfChanged(ref _progressDict, value);
-      }
-    }
-
-    private string _progressTitle;
-    public string ProgressTitle
-    {
-      get => _progressTitle;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _progressTitle, value);
       }
     }
 
@@ -92,8 +80,6 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _isProgressing, value);
-        if (!IsProgressing && Value != 0)
-          ProgressSummary = "Done!";
       }
     }
 
@@ -121,21 +107,6 @@ namespace DesktopUI2.ViewModels
       }
       var safeReport = HttpUtility.UrlEncode(report);
       Process.Start(new ProcessStartInfo($"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help") { UseShellExecute = true });
-    }
-
-    public void CancelCommand()
-    {
-      CancellationTokenSource.Cancel();
-    }
-
-    public void OpenReportCommand()
-    {
-      var report = new Report();
-      report.Title = $"Report";
-      report.DataContext = this;
-      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
-      report.ShowDialog(MainWindow.Instance);
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }
   }
 }

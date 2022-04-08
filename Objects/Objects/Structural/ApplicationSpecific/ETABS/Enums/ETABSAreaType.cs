@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects.Structural.CSI.Analysis
+namespace Objects.Structural.ETABS.Analysis
 {
-    public enum CSIPropertyType2D
+    public enum ETABSPropertyType2D
     {
         Deck,
         Slab,

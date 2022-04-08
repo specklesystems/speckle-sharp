@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Autodesk.DesignScript.Runtime;
@@ -35,6 +36,7 @@ namespace Speckle.ConnectorDynamo.Functions
         Utils.HandleApiExeption(new WarningException("Provided account was invalid."));
       }
 
+      Tracker.TrackPageview(Tracker.ACCOUNT_DETAILS);
       Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
 
       return new Dictionary<string, object>

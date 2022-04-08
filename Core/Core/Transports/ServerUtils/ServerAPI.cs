@@ -19,20 +19,16 @@ namespace Speckle.Core.Transports.ServerUtils
     private int BATCH_SIZE_HAS_OBJECTS = 100000;
     private int BATCH_SIZE_GET_OBJECTS = 10000;
     private int MAX_OBJECT_SIZE = 10_000_000;
-    private int MAX_MULTIPART_COUNT = 5;
-    private int MAX_MULTIPART_SIZE = 10_000_000;
+    private int MAX_MULTIPART_COUNT = 50;
+    private int MAX_MULTIPART_SIZE = 1_000_000;
     private int MAX_REQUEST_SIZE = 50_000_000;
 
     private int DOWNLOAD_BATCH_SIZE = 1000;
-    private int RETRY_COUNT = 3;
-    private HashSet<int> RETRY_CODES = new HashSet<int>() { 408, 502, 503, 504 };
-    private int RetriedCount { get; set; } = 0;
 
     private HttpClient Client;
     private string BaseUri;
     public CancellationToken CancellationToken { get; set; }
     public bool CompressPayloads { get; set; } = true;
-
 
     /// <summary>
     /// Callback when sending batches. Parameters: object count, total bytes sent
@@ -76,10 +72,8 @@ namespace Speckle.Core.Transports.ServerUtils
       };
 
       HttpResponseMessage rootHttpResponse = null;
-      while (ShouldRetry(rootHttpResponse))
-        rootHttpResponse = await Client.SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
+      rootHttpResponse = await Client.SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
       rootHttpResponse.EnsureSuccessStatusCode();
-
       String rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync();
       return rootObjectStr;
     }
@@ -128,9 +122,9 @@ namespace Speckle.Core.Transports.ServerUtils
       childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
       childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
-      HttpResponseMessage childrenHttpResponse = null;
-      while (ShouldRetry(childrenHttpResponse))
-        childrenHttpResponse = await Client.SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+      HttpResponseMessage childrenHttpResponse = await Client.SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+
+
       childrenHttpResponse.EnsureSuccessStatusCode();
 
       Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
@@ -194,9 +188,7 @@ namespace Speckle.Core.Transports.ServerUtils
       var payload = new Dictionary<string, string>() { { "objects", objectsPostParameter } };
       string serializedPayload = JsonConvert.SerializeObject(payload);
       var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
-      HttpResponseMessage response = null;
-      while (ShouldRetry(response))
-        response = await Client.PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken);
+      var response = await Client.PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken);
       response.EnsureSuccessStatusCode();
 
       var hasObjectsJson = await response.Content.ReadAsStringAsync();
@@ -321,9 +313,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
       }
       message.Content = multipart;
-      HttpResponseMessage response = null;
-      while(ShouldRetry(response))
-        response = await Client.SendAsync(message, CancellationToken);
+      var response = await Client.SendAsync(message, CancellationToken);
       response.EnsureSuccessStatusCode();
 
       // // TODO: remove
@@ -333,18 +323,6 @@ namespace Speckle.Core.Transports.ServerUtils
       //   totalObjCount += ttt.Count;
       // }
       // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
-    }
-
-    private bool ShouldRetry(HttpResponseMessage serverResponse)
-    {
-      if (serverResponse == null)
-        return true;
-      if (!RETRY_CODES.Contains((int)serverResponse.StatusCode))
-        return false;
-      if (RetriedCount >= RETRY_COUNT)
-        return false;
-      RetriedCount += 1;
-      return true;
     }
 
     public void Dispose()

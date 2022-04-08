@@ -20,10 +20,8 @@ namespace Speckle.Core.Logging
       HostApplication = hostApplication;
       VersionedHostApplication = versionedHostApplication;
 
-      #if !NETSTANDARD1_5_OR_GREATER
       //needed by older .net frameworks, eg Revit 2019
       ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-      #endif
 
 
       Log.Initialize();

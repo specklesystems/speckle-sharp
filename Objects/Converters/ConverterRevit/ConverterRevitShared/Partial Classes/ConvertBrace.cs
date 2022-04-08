@@ -21,7 +21,6 @@ namespace Objects.Converter.Revit
           level = rb.level,
           family = rb.family,
           parameters = rb.parameters,
-          applicationId = rb.applicationId,
         };
 
         return BeamToNative(speckleBeam, StructuralType.Brace);
@@ -30,7 +29,6 @@ namespace Objects.Converter.Revit
       {
         var speckleBeam = new BuiltElement1D();
         speckleBeam.baseLine = speckleBrace.baseLine;
-        speckleBeam.applicationId = speckleBrace.applicationId;
         return BeamToNative(speckleBeam, StructuralType.Brace);
       }
     }

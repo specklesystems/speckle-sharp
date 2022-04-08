@@ -56,17 +56,20 @@ namespace Speckle.Core.Models
 
     static string md5(string input)
     {
-      using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+      using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
       {
-        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input.ToLowerInvariant());
-        byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < hashBytes.Length; i++)
+        new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize(ms, input);
+        using (MD5 md5 = MD5.Create())
         {
-          sb.Append(hashBytes[i].ToString("X2"));
+          var hash = md5.ComputeHash(ms.ToArray());
+          StringBuilder sb = new StringBuilder();
+          foreach (byte b in hash)
+          {
+            sb.Append(b.ToString("X2"));
+          }
+
+          return sb.ToString().ToLower();
         }
-        return sb.ToString().ToLower();
       }
     }
 

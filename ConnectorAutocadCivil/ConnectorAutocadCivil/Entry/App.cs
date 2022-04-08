@@ -40,12 +40,13 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         //the below should fix it! This affects Avalonia and Material 
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-        // DUI2
-        SpeckleAutocadCommand.InitAvalonia();
-        var bindings = new ConnectorBindingsAutocad();
-        bindings.RegisterAppEvents();
-        SpeckleAutocadCommand.Bindings = bindings;
-        OneClickCommand.Bindings = bindings;
+        // set up bindings and subscribe to document events
+        SpeckleAutocadCommand.Bindings = new ConnectorBindingsAutocad();
+        SpeckleAutocadCommand.Bindings.SetExecutorAndInit();
+
+        // for DUI2
+        SpeckleAutocadCommand2.Bindings = new ConnectorBindingsAutocad2();
+        SpeckleAutocadCommand2.Bindings.RegisterAppEvents();
       }
       catch(System.Exception e)
       {
@@ -95,9 +96,10 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       if (panel == null)
         return;
       RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
-      RibbonToolTip oneClickTip = CreateToolTip("Send", "Sends your selected objects to your account's document stream. If nothing is selected, sends everything in the document.");
-      RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
-      RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
+      RibbonButton button = CreateButton("Connector " + Utils.AppName + " (old)", "SpeckleOld", panel, null, speckleTip, "logo");
+
+      // DUI2
+      RibbonButton button2 = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
 
       // help and resources buttons
       RibbonSplitButton helpButton = new RibbonSplitButton();
@@ -227,20 +229,20 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         if (btn != null)
           switch (commandParameter)
           {
-            case "Speckle":
+            case "SpeckleOld":
               SpeckleAutocadCommand.SpeckleCommand();
               break;
-            case "SpeckleSend":
-              OneClickCommand.SendCommand();
+            case "Speckle":
+              SpeckleAutocadCommand2.SpeckleCommand();
               break;
             case "SpeckleCommunity":
-              SpeckleAutocadCommand.SpeckleCommunity();
+              SpeckleAutocadCommand2.SpeckleCommunity();
               break;
             case "SpeckleTutorials":
-              SpeckleAutocadCommand.SpeckleTutorials();
+              SpeckleAutocadCommand2.SpeckleTutorials();
               break;
             case "SpeckleDocs":
-              SpeckleAutocadCommand.SpeckleDocs();
+              SpeckleAutocadCommand2.SpeckleDocs();
               break;
           }
       }

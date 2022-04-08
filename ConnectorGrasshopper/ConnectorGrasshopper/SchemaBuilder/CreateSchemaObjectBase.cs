@@ -9,12 +9,13 @@ using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopperUtils;
 using GH_IO.Serialization;
+using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Logging = Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper
@@ -181,16 +182,6 @@ namespace ConnectorGrasshopper
                 break;
               }
             }
-            var baseType = comp.GetType().BaseType;
-            if (typeof(CreateSchemaObjectBase) == baseType)
-            {
-              var csob = (CreateSchemaObjectBase)comp;
-              if (csob.Seed == Seed)
-              {
-                Seed = GenerateSeed();
-                break;
-              }
-            }
           }
         }
       }
@@ -339,6 +330,7 @@ namespace ConnectorGrasshopper
 
       if (DA.Iteration == 0)
       {
+        Logging.Tracker.TrackPageview("objects", "create", "schema");
         Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Grasshopper BIM" }, { "node", Name } });
       }
 

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
@@ -122,11 +124,6 @@ namespace Speckle.ConnectorRevit
       return GetCategories(doc).Keys.OrderBy(x => x).ToList();
     }
 
-    public static List<string> GetWorksets(Document doc)
-    {
-      return new FilteredWorksetCollector(doc).Where(x => x.Kind == WorksetKind.UserWorkset).Select(x => x.Name).ToList();
-    }
-
     private async static Task<List<string>> GetParameterNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)
@@ -223,7 +220,6 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Conduit,
       BuiltInCategory.OST_CurtaSystem,
       BuiltInCategory.OST_DataDevices,
-      BuiltInCategory.OST_Doors,
       BuiltInCategory.OST_DuctSystem,
       BuiltInCategory.OST_DuctCurves,
       BuiltInCategory.OST_ElectricalCircuit,

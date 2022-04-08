@@ -177,6 +177,7 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// </summary>
     public Send()
     {
+      Tracker.TrackPageview(Tracker.SEND_ADDED);
 
       AddInputs();
       AddOutputs();
@@ -226,6 +227,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       if (Transmitting)
         CancelSend();
 
+      Tracker.TrackPageview(Tracker.SEND_MANUAL);
 
       Transmitting = true;
       Message = "Converting...";

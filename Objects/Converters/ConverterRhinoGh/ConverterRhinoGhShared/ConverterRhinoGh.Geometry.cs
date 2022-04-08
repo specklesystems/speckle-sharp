@@ -433,7 +433,7 @@ namespace Objects.Converter.RhinoGh
         try
         {
           //let the converter pick the best type of curve
-          myPolyc.Append((RH.Curve)ConvertToNative((Base)segment));
+          myPolyc.AppendSegment((RH.Curve)ConvertToNative((Base)segment));
         }
         catch
         { }

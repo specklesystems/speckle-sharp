@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Concurrent;
@@ -18,6 +19,7 @@ using Speckle.ConnectorMicroStationOpen.Storage;
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.MstnPlatformNET;
+using Bentley.DgnPlatformNET.DgnEC;
 using Bentley.ECObjects.Schema;
 
 #if (OPENBUILDINGS)
@@ -164,7 +166,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       var elementTypes = new List<string> { "Arc", "Ellipse", "Line", "Spline", "Line String", "Complex Chain", "Shape", "Complex Shape", "Mesh" };
 
       var filterList = new List<ISelectionFilter>();
-      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." });
       filterList.Add(new ListSelectionFilter { Slug = "level", Name = "Levels", Icon = "LayersTriple", Description = "Selects objects based on their level.", Values = levels });
       filterList.Add(new ListSelectionFilter { Slug = "elementType", Name = "Element Types", Icon = "Category", Description = "Selects objects based on their element type.", Values = elementTypes });
 
@@ -173,7 +174,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
 #endif
 
-
+      filterList.Add(new AllSelectionFilter { Slug = "all", Name = "All", Icon = "CubeScan", Description = "Selects all document objects." });
 
       return filterList;
     }
@@ -208,7 +209,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         else
         {
           schema = StreamStateManager.StreamStateListSchema.GetSchema();
-          if (schema == null) schema = StreamStateManager.StreamStateListSchema.AddSchema();
+          if (schema == null) schema = StreamStateManager.StreamStateListSchema.AddSchema(); 
           DocumentStreams = StreamStateManager.ReadState(schema);
         }
       }
@@ -519,7 +520,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       if (state.Filter != null)
       {
         if (Control.InvokeRequired)
-          state.SelectedObjectIds = (List<string>)Control.Invoke(new GetObjectsFromFilterDelegate(GetObjectsFromFilter), new object[] { state.Filter, converter });
+          state.SelectedObjectIds  = (List<string>)Control.Invoke(new GetObjectsFromFilterDelegate(GetObjectsFromFilter), new object[] { state.Filter, converter });
         else
           state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
       }
@@ -695,7 +696,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         {
           converted[key] = obj.ExtensionDictionary.GetUserString(key);
         }
-        */
+        */      
 
         if (commitObj[$"@{containerName}"] == null)
           commitObj[$"@{containerName}"] = new List<Base>();

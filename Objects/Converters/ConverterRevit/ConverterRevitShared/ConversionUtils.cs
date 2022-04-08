@@ -1,14 +1,14 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Level = Objects.BuiltElements.Level;
@@ -61,7 +61,7 @@ namespace Objects.Converter.Revit
 
       foreach (var elemId in hostedElementIds)
       {
-        var element = host.Document.GetElement(elemId);
+        var element = Doc.GetElement(elemId);
         var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
 
         if (isSelectedInContextObjects == -1)
@@ -188,7 +188,7 @@ namespace Objects.Converter.Revit
     }
     private Dictionary<string, Parameter> GetTypeParams(DB.Element element)
     {
-      var elementType = element.Document.GetElement(element.GetTypeId());
+      var elementType = Doc.GetElement(element.GetTypeId());
 
       if (elementType == null || elementType.Parameters == null)
       {
@@ -518,8 +518,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        var name = string.IsNullOrEmpty(element["category"].ToString()) ? typeof(T).Name : element["category"].ToString();
-        throw new Speckle.Core.Logging.SpeckleException($"Could not find any family to use for category {name}.");
+        throw new Speckle.Core.Logging.SpeckleException($"{element.id}: Could not find any type symbol to use for family {nameof(T)}.");
       }
 
       var family = element["family"] as string;
@@ -853,8 +852,7 @@ namespace Objects.Converter.Revit
           return WallLocationLine.FinishFaceInterior;
       }
     }
-    
-    #region materials
+
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element.GetMaterialIds(false).FirstOrDefault();
@@ -865,7 +863,7 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var revitMaterial = element.Document.GetElement(matId) as Material;
+      var revitMaterial = Doc.GetElement(matId) as Material;
       return RenderMaterialToSpeckle(revitMaterial);
     }
 
@@ -907,72 +905,6 @@ namespace Objects.Converter.Revit
 
       return materialId;
     }
-    
-    /// <summary>
-    /// Retrieves the material from assigned system type for mep elements
-    /// </summary>
-    /// <param name="e">Revit element to parse</param>
-    /// <returns></returns>
-    public static RenderMaterial GetMEPSystemMaterial(Element e)
-    {
-      ElementId idType = ElementId.InvalidElementId;
-            
-      if (e is DB.MEPCurve dt)
-      {
-        var system = dt.MEPSystem;
-        if (system != null)
-        {
-          idType = system.GetTypeId();
-        }
-      }
-      else if (IsSupportedMEPCategory(e))
-      {
-        MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-        
-        if (m != null && m.ConnectorManager != null)
-        {
-          //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
-          foreach (Connector item in m.ConnectorManager.Connectors)
-          {
-            var system = item.MEPSystem;
-            if (system != null)
-            {
-              idType = system.GetTypeId();
-              break;
-            }
-          }
-        }
-      }
 
-      if (idType == ElementId.InvalidElementId) return null;
-
-      if (e.Document.GetElement(idType) is MEPSystemType mechType)
-      {
-        var mat = e.Document.GetElement(mechType.MaterialId) as Material;
-        RenderMaterial material = RenderMaterialToSpeckle(mat);
-
-        return material;
-      }
-
-      return null;
-    }
-            
-    private static bool IsSupportedMEPCategory(Element e)
-    {
-      var categories = e.Document.Settings.Categories;
-
-      var supportedCategories = new[]
-      {
-        BuiltInCategory.OST_PipeFitting,
-        BuiltInCategory.OST_DuctFitting,
-        BuiltInCategory.OST_DuctAccessory,
-        BuiltInCategory.OST_PipeAccessory,
-        //BuiltInCategory.OST_MechanicalEquipment,
-      };
-      
-      return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
-    }
-    
-    #endregion
   }
 }

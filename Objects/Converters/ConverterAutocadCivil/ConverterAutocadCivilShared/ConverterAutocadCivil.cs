@@ -209,10 +209,6 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               @base = PipeToSpeckle(o);
               Report.Log($"Converted Pipe");
               break;
-            case CivilDB.PressurePipe o:
-              @base = PipeToSpeckle(o);
-              Report.Log($"Converted Pressure Pipe");
-              break;
             case CivilDB.Profile o:
               @base = ProfileToSpeckle(o);
               Report.Log($"Converted Profile as Base");
@@ -227,6 +223,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
           DisplayStyle style = DisplayStyleToSpeckle(obj as Entity);
           if (style != null)
             @base["displayStyle"] = style;
+
           break;
 
         case Acad.Geometry.Point3d o:
@@ -327,15 +324,11 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
           break;
 
         case Polycurve o:
-          bool convertAsSpline = (o.segments.Where(s => !(s is Line) && !(s is Arc)).Count() > 0) ? true : false;
-          if (!convertAsSpline) convertAsSpline = IsPolycurvePlanar(o) ? false : true;
-          if (convertAsSpline)
+          var splineSegments = o.segments.Where(s => s is Curve);
+          if (splineSegments.Count() > 0)
           {
             acadObj = PolycurveSplineToNativeDB(o);
-            if (acadObj == null)
-              Report.Log($"Created Polycurve {o.id} as individual segments");
-            else
-              Report.Log($"Created Polycurve {o.id} as Spline");
+            Report.Log($"Created Polycurve {o.id} as Spline");
             break;
           }
           else
@@ -456,7 +449,6 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             case CivilDB.Structure _:
             case CivilDB.Alignment _:
             case CivilDB.Pipe _:
-            case CivilDB.PressurePipe _:
             case CivilDB.Profile _:
             case CivilDB.TinSurface _:
               return true;

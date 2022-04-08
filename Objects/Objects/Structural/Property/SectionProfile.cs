@@ -12,13 +12,12 @@ namespace Objects.Structural.Properties.Profiles
         public string name { get; set; }
         public ShapeType shapeType { get; set; }
         public double area { get; set; }
-        //Moment of inertia about the Major axis
         public double Iyy { get; set; }
         public double Izz { get; set; }
         public double J { get; set; }
         public double Ky { get; set; }
         public double Kz { get; set; }
-        public double weight { get; set; } //section weight, ex. kg/m weight is defined in materials though more ? rather than section profile.
+        public double weight { get; set; } //section weight, ex. kg/m
         public string units { get; set; }
         public SectionProfile() { }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -67,7 +68,8 @@ namespace ConnectorGrasshopper.Streams
           return;
         }
 
-
+        if (DA.Iteration == 0)
+          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_DETAILS);
 
         Message = "Fetching";
 

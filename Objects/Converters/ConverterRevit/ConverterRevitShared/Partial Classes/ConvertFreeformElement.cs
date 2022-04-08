@@ -1,13 +1,13 @@
-﻿using Autodesk.Revit.DB;
-using ConverterRevitShared.Revit;
-using Objects.Geometry;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using ConverterRevitShared.Revit;
+using Objects.Geometry;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
@@ -44,9 +44,7 @@ namespace Objects.Converter.Revit
         }
 
 
-
-
-      var tempPath = CreateFreeformElementFamily(solids, freeformElement.id, freeformElement);
+      var tempPath = CreateFreeformElementFamily(solids, freeformElement.id);
       Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
       symbol.Activate();
@@ -69,9 +67,9 @@ namespace Objects.Converter.Revit
         NativeObject = freeform
       };
     }
+    
 
-
-    public List<ApplicationPlaceholderObject> FreeformElementToNativeFamily(Brep brep, Category cat = null)
+    public List<ApplicationPlaceholderObject> FreeformElementToNativeFamily(Brep brep)
     {
       var solids = new List<DB.Solid>();
       try
@@ -90,8 +88,6 @@ namespace Objects.Converter.Revit
       foreach (var s in solids)
       {
         var form = DB.FreeFormElement.Create(Doc, s);
-        if (cat != null)
-          form.Subcategory = cat;
         applicationPlaceholders.Add(new ApplicationPlaceholderObject
         {
           ApplicationGeneratedId = form.UniqueId,
@@ -121,7 +117,6 @@ namespace Objects.Converter.Revit
       foreach (var s in solids)
       {
         var form = DB.FreeFormElement.Create(Doc, s);
-
         applicationPlaceholders.Add(new ApplicationPlaceholderObject
         {
           ApplicationGeneratedId = form.UniqueId,
@@ -141,7 +136,7 @@ namespace Objects.Converter.Revit
         .SelectMany(m => MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort))
         .Select(m => m as DB.Solid);
     }
-
+    
     private ApplicationPlaceholderObject FreeformElementToNative(Brep brep)
     {
       var solids = new List<DB.Solid>();
@@ -162,7 +157,6 @@ namespace Objects.Converter.Revit
 
 
       var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
-
       SetInstanceParameters(freeform, brep);
       Report.Log($"Created FreeformElement {freeform.Id}");
       return new ApplicationPlaceholderObject
@@ -173,7 +167,7 @@ namespace Objects.Converter.Revit
       };
     }
 
-    private string CreateFreeformElementFamily(List<DB.Solid> solids, string name, Objects.BuiltElements.Revit.FreeformElement freeformElement = null)
+    private string CreateFreeformElementFamily(List<DB.Solid> solids, string name)
     {
       // FreeformElements can only be created in a family context.
       // so we create a temporary family to hold it.
@@ -185,47 +179,18 @@ namespace Objects.Converter.Revit
       }
 
       var famDoc = Doc.Application.NewFamilyDocument(templatePath);
-
-
-
-
       using (DB.Transaction t = new DB.Transaction(famDoc, "Create Freeform Elements"))
       {
         t.Start();
 
-        Category cat = null;
-        if (freeformElement != null)
-        {
-          //subcategory
-          BuiltInCategory bic;
-          if (!string.IsNullOrEmpty(freeformElement.subcategory))
-          {
-            //by default free form elements are always generic models
-            //otherwise we'd need to supply base files for each category..?
-            var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(BuiltElements.Revit.RevitCategory.GenericModels);
-            BuiltInCategory.TryParse(bicName, out bic);
-            cat = famDoc.Settings.Categories.get_Item(bic);
-            if (cat.SubCategories.Contains(freeformElement.subcategory))
-            {
-              cat = cat.SubCategories.get_Item(freeformElement.subcategory);
-            }
-            else
-            {
-              cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
-            }
-          }
-
-        }
-
         foreach (var s in solids)
         {
-
-          var f = DB.FreeFormElement.Create(famDoc, s);
-          f.Subcategory = cat;
+          DB.FreeFormElement.Create(famDoc, s);
         }
 
         t.Commit();
       }
+
       var famName = "SpeckleFreeform_" + name;
       string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
       var so = new DB.SaveAsOptions();

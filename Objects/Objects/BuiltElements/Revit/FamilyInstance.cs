@@ -19,7 +19,6 @@ namespace Objects.BuiltElements.Revit
     public double rotation { get; set; }
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
-    public bool mirrored { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
@@ -45,7 +44,6 @@ namespace Objects.BuiltElements.Revit
       this.rotation = rotation;
       this.facingFlipped = facingFlipped;
       this.handFlipped = handFlipped;
-      this.mirrored = false;
       this.parameters = parameters.ToBase();
     }
     
