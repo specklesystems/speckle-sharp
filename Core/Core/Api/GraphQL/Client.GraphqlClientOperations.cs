@@ -381,6 +381,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Updates a stream.
     /// </summary>
+    /// <param name="cancellationToken"></param>
     /// <param name="streamInput">Note: the id field needs to be a valid stream id.</param>
     /// <returns>The stream's id.</returns>
     public async Task<bool> StreamUpdate(CancellationToken cancellationToken, StreamUpdateInput streamInput)
@@ -422,6 +423,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Deletes a stream.
     /// </summary>
+    /// <param name="cancellationToken"></param>
     /// <param name="id">Id of the stream to be deleted</param>
     /// <returns></returns>
     public async Task<bool> StreamDelete(CancellationToken cancellationToken, string id)
@@ -454,9 +456,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Grants permissions to a user on a given stream.
     /// </summary>
-    /// <param name="streamId">Id of the stream to grant permissions to</param>
-    /// <param name="userId">Id of the user to grant permissions to</param>
-    /// <param name="role">Role to give the user on this stream</param>
+    /// <param name="permissionInput"></param>
     /// <returns></returns>
     public Task<bool> StreamGrantPermission(StreamGrantPermissionInput permissionInput)
     {
@@ -466,9 +466,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Grants permissions to a user on a given stream.
     /// </summary>
-    /// <param name="streamId">Id of the stream to grant permissions to</param>
-    /// <param name="userId">Id of the user to grant permissions to</param>
-    /// <param name="role">Role to give the user on this stream</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="permissionInput"></param>
     /// <returns></returns>
     public async Task<bool> StreamGrantPermission(CancellationToken cancellationToken, StreamGrantPermissionInput permissionInput)
     {
@@ -503,8 +502,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Revokes permissions of a user on a given stream.
     /// </summary>
-    /// <param name="streamId">Id of the stream to revoke permissions from</param>
-    /// <param name="userId">Id of the user to revoke permissions from</param>
+    /// <param name="permissionInput"></param>
     /// <returns></returns>
     public Task<bool> StreamRevokePermission(StreamRevokePermissionInput permissionInput)
     {
@@ -514,8 +512,8 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Revokes permissions of a user on a given stream.
     /// </summary>
-    /// <param name="streamId">Id of the stream to revoke permissions from</param>
-    /// <param name="userId">Id of the user to revoke permissions from</param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="permissionInput"></param>
     /// <returns></returns>
     public async Task<bool> StreamRevokePermission(CancellationToken cancellationToken, StreamRevokePermissionInput permissionInput)
     {
@@ -539,6 +537,52 @@ namespace Speckle.Core.Api
           throw new SpeckleException("Could not revoke permission", res.Errors);
 
         return (bool)res.Data["streamRevokePermission"];
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    /// <summary>
+    /// Sends an email invite to join a stream and assigns them a collaborator role.
+    /// </summary>
+    /// <param name="streamCreateInput"></param>
+    /// <returns></returns>
+    public Task<bool> StreamInviteCreate(StreamInviteCreateInput streamCreateInput)
+    {
+      return StreamInviteCreate(CancellationToken.None, streamCreateInput);
+    }
+
+    /// <summary>
+    /// Sends an email invite to join a stream and assigns them a collaborator role.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamCreateInput"></param>
+    /// <returns></returns>
+    public async Task<bool> StreamInviteCreate(CancellationToken cancellationToken, StreamInviteCreateInput streamCreateInput)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query =
+          @"
+          mutation streamInviteCreate($input: StreamInviteCreateInput!) {
+            streamInviteCreate(input: $input)
+          }",
+          Variables = new
+          {
+            input = streamCreateInput
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          throw new SpeckleException("Could not create stream invite", res.Errors);
+
+        return (bool)res.Data["streamCreateInput"];
       }
       catch (Exception e)
       {
