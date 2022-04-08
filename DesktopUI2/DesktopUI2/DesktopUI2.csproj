@@ -39,6 +39,8 @@
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
+    <None Remove="Views\Pages\ShareControls\Sending.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
@@ -109,6 +111,12 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\AddCollaborators.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
@@ -195,6 +203,12 @@
     </Compile>
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\ShareControls\AddCollaborators.xaml.cs">
+      <DependentUpon>AddCollaborators.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\ShareControls\Sending.xaml.cs">
+      <DependentUpon>Sending.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>

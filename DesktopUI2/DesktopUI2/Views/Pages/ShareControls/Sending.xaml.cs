@@ -1,22 +1,14 @@
-using Avalonia;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels.Share;
 
-namespace DesktopUI2.Views
+namespace DesktopUI2.Views.Pages.ShareControls
 {
-  public partial class Share : ReactiveWindow<ShareViewModel>
+  public partial class Sending : ReactiveUserControl<SendingViewModel>
   {
-
-    public Share()
+    public Sending()
     {
       InitializeComponent();
-#if DEBUG
-      this.AttachDevTools(KeyGesture.Parse("CTRL+R"));
-#endif
-
-
     }
 
     private void InitializeComponent()

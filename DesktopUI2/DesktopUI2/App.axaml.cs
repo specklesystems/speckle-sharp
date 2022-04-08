@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using DesktopUI2.ViewModels;
+using DesktopUI2.ViewModels.Share;
 using DesktopUI2.Views;
 
 namespace DesktopUI2

@@ -9,9 +9,6 @@
   d:DesignHeight="450"
   d:DesignWidth="800"
   mc:Ignorable="d">
-  <UserControl.Styles>
-    <StyleInclude Source="/Styles/ChipListBox.xaml" />
-  </UserControl.Styles>
   <Grid RowDefinitions="auto,auto,*,auto,auto">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
 
@@ -47,6 +44,7 @@
       <ListBox
         x:Name="ItemsListBox"
         Margin="0,0,0,8"
+        Classes="Chip"
         Items="{Binding SearchResults}"
         Selection="{Binding SelectionModel}"
         SelectionMode="Multiple, Toggle" />
