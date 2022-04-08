@@ -107,6 +107,14 @@ namespace ConnectorGrasshopper.Streams
       else
       {
         Message = "Done";
+        int limit = 10;
+        DA.GetData(1, ref limit); // Has default value so will never be empty.
+
+        if (limit > 50)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+        }
+        
         if (streams != null)
         {
           DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
