@@ -766,13 +766,18 @@ namespace Objects.Converter.Dynamo
           faces.Add(ig);
           i += 4;
         }
-        else
+        else if (mesh.faces[i] == 1)
         {
           // quad
           var ig = IndexGroup.ByIndices((uint)mesh.faces[i + 1], (uint)mesh.faces[i + 2], (uint)mesh.faces[i + 3],
             (uint)mesh.faces[i + 4]);
           faces.Add(ig);
           i += 5;
+        }
+        else
+        {
+          // Ngon!
+          return null;
         }
       }
 
