@@ -582,7 +582,7 @@ namespace Speckle.Core.Api
         if (res.Errors != null)
           throw new SpeckleException("Could not create stream invite", res.Errors);
 
-        return (bool)res.Data["streamCreateInput"];
+        return (bool)res.Data["streamInviteCreate"];
       }
       catch (Exception e)
       {
