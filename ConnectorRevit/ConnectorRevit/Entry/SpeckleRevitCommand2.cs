@@ -77,6 +77,7 @@ namespace Speckle.ConnectorRevit.Entry
     private static void AppMain(Avalonia.Application app, string[] args)
     {
       AvaloniaApp = app;
+      
     }
   }
 
