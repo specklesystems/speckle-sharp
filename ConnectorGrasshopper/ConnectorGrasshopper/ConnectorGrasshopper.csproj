@@ -31,6 +31,10 @@
 
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="6.32.20340.21001" IncludeAssets="compile;build" />
+    <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="RhinoCommon" Version="6.32.20340.21001" IncludeAssets="compile;build" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
