@@ -88,7 +88,7 @@ namespace Objects.Converter.Revit
         family = revitWire.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM).AsValueString(),
         type = revitWire.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM).AsValueString(),
         wiringType = revitWire.get_Parameter(BuiltInParameter.RBS_ELEC_WIRE_TYPE).AsValueString(),
-        level = ConvertAndCacheLevel(revitWire.ReferenceLevel.Id)
+        level = ConvertAndCacheLevel(revitWire.ReferenceLevel.Id, revitWire.Document)
       };
 
       // construction geometry for creating the wire on receive (doesn't match geometry points 🙃)

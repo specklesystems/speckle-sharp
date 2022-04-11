@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
         Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
         return RevitElementToSpeckle(revitBeam);
       }
-      var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
+      var symbol = revitBeam.Document.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
       var speckleBeam = new RevitBeam();
       speckleBeam.family = symbol.FamilyName;
