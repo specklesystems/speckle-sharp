@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConnectorGrasshopper7")]
+[assembly: AssemblyTitle("ConnectorGrasshopper")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ConnectorGrasshopper7")]
+[assembly: AssemblyProduct("ConnectorGrasshopper")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("bdec781d-f322-49b0-8001-2ca66c182174")]
+[assembly: Guid("6474521B-E905-4952-8F18-6FF9F3A45013")]
 
 // Version information for an assembly consists of the following four values:
 //
