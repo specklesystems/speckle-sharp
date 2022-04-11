@@ -1520,8 +1520,14 @@ namespace Objects.Converter.AutocadCivil
       if (solid != null)
       {
         brep = new AcadBRep.Brep(solid);
-        volume = solid.MassProperties.Volume;
-        area = solid.Area;
+        try
+        {
+          area = solid.Area;
+          volume = solid.MassProperties.Volume;
+        }
+        catch (Exception e)
+        { };
+        
         bbox = BoxToSpeckle(solid.GeometricExtents);
       }
       else if (surface != null)

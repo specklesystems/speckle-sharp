@@ -650,7 +650,7 @@ namespace DesktopUI2.ViewModels
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
         Progress.IsProgressing = false;
 
-        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        if (!Progress.CancellationTokenSource.IsCancellationRequested && commitId != null)
         {
           LastUsed = DateTime.Now.ToString();
           Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
