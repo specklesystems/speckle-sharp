@@ -608,8 +608,9 @@ namespace DesktopUI2.ViewModels
     public void LaunchNotificationCommand()
     {
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
-
-      Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
+      
+      if (!string.IsNullOrEmpty(NotificationUrl))
+        Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
       CloseNotificationCommand();
     }
@@ -642,10 +643,11 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        //save the stream as well
-        HomeViewModel.Instance.AddSavedStream(this);
+        
+        HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
 
         Reset();
+
         Progress.IsProgressing = true;
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
         Progress.IsProgressing = false;
@@ -658,11 +660,16 @@ namespace DesktopUI2.ViewModels
           Notification = $"Sent successfully, view online";
           NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
         }
+        else
+        {
+          Notification = "Nothing sent!";
+        }
 
         if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
           ShowReport = true;
-
+          
         GetActivity();
+        
       }
       catch (Exception ex)
       {
@@ -712,7 +719,10 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceiveCommand()
     {
       Progress.CancellationTokenSource.Cancel();
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancel Send or Receive" } });
+      Reset();
+      string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
+      Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
     }
 
     public async void OpenReportCommand()
@@ -734,8 +744,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
-
 
     private void SaveCommand()
     {
