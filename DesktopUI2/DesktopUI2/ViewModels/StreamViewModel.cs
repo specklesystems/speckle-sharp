@@ -647,6 +647,7 @@ namespace DesktopUI2.ViewModels
         HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
 
         Reset();
+
         Progress.IsProgressing = true;
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
         Progress.IsProgressing = false;
@@ -659,15 +660,14 @@ namespace DesktopUI2.ViewModels
           Notification = $"Sent successfully, view online";
           NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
         }
-
         else
         {
-          Notification = $"Nothing sent!";
+          Notification = "Nothing sent!";
         }
 
         if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
           ShowReport = true;
-
+          
         GetActivity();
         
       }
@@ -719,10 +719,10 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceiveCommand()
     {
       Progress.CancellationTokenSource.Cancel();
+      Reset();
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
       Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
-      Reset();
     }
 
     public async void OpenReportCommand()
@@ -744,8 +744,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
-
 
     private void SaveCommand()
     {
