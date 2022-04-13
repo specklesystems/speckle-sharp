@@ -699,7 +699,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Doc.BeginDocumentClose += Application_DocumentClosed;
 
       var layers = Application.UIBindings.Collections.Layers;
-      layers.ItemsChanged += Application_LayerChanged;
+      layers.CollectionChanged += Application_LayerChanged;
     }
 
     private void Application_LayerChanged(object sender, EventArgs e)
