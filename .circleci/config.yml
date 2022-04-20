@@ -833,6 +833,14 @@ workflows:
               only: /^(csibridge|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # Archicad Build&Deploy
+      - setup-archicad-dev:
+          requires:
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(archicad|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
       - build-connector:
           name: build-deploy-connector-archicad
           slnname: ConnectorArchicad
