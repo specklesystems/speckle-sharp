@@ -22,6 +22,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="BuiltElements\Archived\**" />
+    <EmbeddedResource Remove="BuiltElements\Archived\**" />
+    <None Remove="BuiltElements\Archived\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
@@ -34,7 +39,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="BuiltElements\Archived\" />
+    <Folder Include="BuiltElements\Archive\Enums\" />
+    <Folder Include="DefaultBuildingObjectKit\ApplicationSpecific\ArchiCad\" />
+    <Folder Include="DefaultBuildingObjectKit\ApplicationSpecific\Revit\" />
+    <Folder Include="DefaultBuildingObjectKit\ApplicationSpecific\TeklaStructures\" />
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
