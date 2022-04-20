@@ -9,6 +9,7 @@
     <RhinoMacLauncher>/Applications/Rhinoceros.app</RhinoMacLauncher>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AssemblyName>SpeckleConnectorRhino</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
