@@ -831,6 +831,23 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(csibridge|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+
+      # Archicad Build&Deploy
+      - build-connector:
+          name: build-deploy-connector-archicad
+          slnname: ConnectorArchicad
+          dllname: ConnectorArchicad.dll
+          slug: archicad
+          installer: true
+          requires:
+            - get-ci-tools
+            - setup-archicad-dev
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(archicad|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
           requires:
