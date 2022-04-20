@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <Version>1.0</Version>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
@@ -15,21 +15,15 @@
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\**\*" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="RhinoCommon" Version="6.28.20199.17141" IncludeAssets="compile;build" />
-    <!-- <PackageReference Include="Avalonia" Version="0.10.999-cibuild0017846-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0017846-beta" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0017846-beta" /> -->
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.13">
-    </PackageReference>
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.13">
-    </PackageReference>
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13">
-    </PackageReference>
+    <PackageReference Include="Avalonia" Version="0.10.13" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
     <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -55,7 +49,7 @@
     <Folder Include="Properties" />
   </ItemGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
     <StartArguments></StartArguments>
     <StartAction>Program</StartAction>
   </PropertyGroup>

@@ -14,6 +14,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using System.IO;
 using DesktopUI2;
+using System.Threading;
 
 namespace SpeckleRhino
 {
@@ -32,6 +33,8 @@ namespace SpeckleRhino
     public static Window MainWindow { get; private set; }
 
     public static ConnectorBindingsRhino Bindings { get; set; } = new ConnectorBindingsRhino();
+
+    private static CancellationTokenSource Lifetime = null;
 
     private static Avalonia.Application AvaloniaApp { get; set; }
 
@@ -77,6 +80,15 @@ namespace SpeckleRhino
 
       MainWindow.Show();
       MainWindow.Activate();
+
+      //required to gracefully quit avalonia and the skia processes
+      //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
+      if (Lifetime == null)
+      {
+        Lifetime = new CancellationTokenSource();
+        Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
+      }
+
 
       //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       //{

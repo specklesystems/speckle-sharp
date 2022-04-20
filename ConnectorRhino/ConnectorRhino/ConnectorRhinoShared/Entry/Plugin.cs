@@ -23,6 +23,7 @@ namespace SpeckleRhino
       RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
       SpeckleCommand.InitAvalonia();
+    
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
