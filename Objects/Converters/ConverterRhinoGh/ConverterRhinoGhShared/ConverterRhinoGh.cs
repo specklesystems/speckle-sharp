@@ -307,6 +307,16 @@ namespace Objects.Converter.RhinoGh
               Report.Log("Converted Curve to Beam");
               break;
 
+            case "Duct":
+              schemaBase = CurveToSpeckleDuct(o, args);
+              Report.Log("Converted Curve to Duct");
+              break;
+
+            case "Pipe":
+              schemaBase = CurveToSpecklePipe(o, args);
+              Report.Log("Converted Curve to Pipe");
+              break;
+
             default:
               Report.Log($"Skipping Curve conversion to schema {schema}");
               break;
