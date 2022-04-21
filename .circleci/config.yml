@@ -871,6 +871,7 @@ workflows:
             - build-deploy-connector-rhino
             - build-deploy-connector-rhino-mac
             - build-deploy-connector-autocad
+            - build-deploy-connector-archicad
             - build-deploy-connector-civil3d
             - build-deploy-connector-etabs
             - build-deploy-connector-sap2000
