@@ -267,8 +267,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
-            if [[ "$VERSION" == *"-"* ]]; then CHANNEL=$(cut -d "-" -f2 <<< $VERSION); else CHANNEL=latest; fi
             msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
+            CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
             if [ "${CIRCLE_TAG}" ]; then echo "version: $SEMVER" > "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$CHANNEL.yml"; fi
       - run:
