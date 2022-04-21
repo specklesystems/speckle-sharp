@@ -73,6 +73,7 @@ namespace Speckle.ConnectorRevit.Entry
           MainWindow.Activate();
 
           //required to gracefully quit avalonia and the skia processes
+          //can also be used to manually do so
           //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
           if (Lifetime == null)
           {

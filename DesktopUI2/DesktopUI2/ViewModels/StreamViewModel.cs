@@ -174,7 +174,7 @@ namespace DesktopUI2.ViewModels
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
-            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}";
+            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{SelectedBranch.name}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         }
@@ -608,7 +608,7 @@ namespace DesktopUI2.ViewModels
     public void LaunchNotificationCommand()
     {
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
-      
+
       if (!string.IsNullOrEmpty(NotificationUrl))
         Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
@@ -643,7 +643,7 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        
+
         HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
 
         Reset();
@@ -667,9 +667,9 @@ namespace DesktopUI2.ViewModels
 
         if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
           ShowReport = true;
-          
+
         GetActivity();
-        
+
       }
       catch (Exception ex)
       {
