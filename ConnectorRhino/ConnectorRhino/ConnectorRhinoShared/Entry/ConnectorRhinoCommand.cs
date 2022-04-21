@@ -81,14 +81,6 @@ namespace SpeckleRhino
       MainWindow.Show();
       MainWindow.Activate();
 
-      //required to gracefully quit avalonia and the skia processes
-      //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
-      if (Lifetime == null)
-      {
-        Lifetime = new CancellationTokenSource();
-        Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
-      }
-
       #if !MAC
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
