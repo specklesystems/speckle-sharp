@@ -89,13 +89,14 @@ namespace SpeckleRhino
         Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
       }
 
-
-      //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      //{
-      //  var parentHwnd = RhinoApp.MainWindowHandle();
-      //  var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-      //  SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-      //}
+      #if !MAC
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        var parentHwnd = RhinoApp.MainWindowHandle();
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      }
+      #endif
     }
 
     private static void AppMain(Application app, string[] args)
