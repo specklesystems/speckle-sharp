@@ -249,6 +249,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       installername:
         type: string
         default: ""
+      build-config:
+        type: string
+        default: "Release"
     steps:
       - checkout
       - attach_workspace:
@@ -264,7 +267,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build_config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
             CHANNEL="latest"
             if [[ $CIRCLE_TAG == *-beta ]]; then CHANNEL=beta; fi
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
@@ -429,6 +432,7 @@ workflows:
           name: build-connector-rhino-mac
           slnname: ConnectorRhino
           projname: ConnectorRhino7
+          build-config: Release Mac
 
   # Dynamo connector - Build/Test
   connector_dynamo:
@@ -640,6 +644,7 @@ workflows:
           slnname: ConnectorRhino
           projname: ConnectorRhino7
           installername: SpeckleRhinoInstall
+          build-config: Release Mac
           installer: true
           slug: rhino-mac
           requires:
