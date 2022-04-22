@@ -157,25 +157,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
 
   build-desktopui:
-    executor:
+    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
       name: win/default
       shell: powershell.exe
     steps:
       - checkout
       - run:
-          name: Restore DesktopUI
-          command: nuget restore DesktopUI/DesktopUI.sln
-      - run:
-          name: Build DesktopUI
-          command: msbuild DesktopUI/DesktopUI.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
-      - run:
-          name: Publish nuget package
-          command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
-            $version = $tag.Split("/")[1]  
-            nuget pack DesktopUI/DesktopUI/DesktopUI.csproj -OutputDirectory $HOME/output -Version $version -Properties Configuration=Release
-            cd $HOME/output
-            nuget push **/*.nupkg -src https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY
+          name: Build DesktopUI2
+          command: dotnet build DesktopUI2/DesktopUI2.sln -c Release -v q
+
 
   build-connector: # Reusable job for basic connectors
     executor:
@@ -509,7 +499,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^(core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
+              only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
             - packandpublish:
                 projectfilepath: Core/Core.sln
@@ -519,7 +509,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^(objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
+              only: /^(nuget-objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
             - packandpublish:
                 projectfilepath: Objects/Objects.sln
@@ -529,7 +519,10 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^(desktopui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
+              only: /^(nuget-dui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: DesktopUI2/DesktopUI2.sln
 
   # Archicad Connector - Build/Test
   connector_archicad:
