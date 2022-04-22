@@ -522,7 +522,7 @@ workflows:
               only: /^(nuget-dui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
             - packandpublish:
-                projectfilepath: DesktopUI2/DesktopUI2.csproj
+                projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
 
   # Archicad Connector - Build/Test
   connector_archicad:
