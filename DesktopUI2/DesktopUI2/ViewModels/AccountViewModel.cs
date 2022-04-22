@@ -38,14 +38,21 @@ namespace DesktopUI2.ViewModels
 
     public void DownloadImage(string url)
     {
-      if (string.IsNullOrEmpty(url))
-        return;
-
-      using (WebClient client = new WebClient())
+      try
       {
-        //client.Headers.Set("Authorization", "Bearer " + Client.ApiToken);
-        client.DownloadDataAsync(new Uri(url));
-        client.DownloadDataCompleted += DownloadComplete;
+        if (string.IsNullOrEmpty(url))
+          return;
+
+        using (WebClient client = new WebClient())
+        {
+          //client.Headers.Set("Authorization", "Bearer " + Client.ApiToken);
+          client.DownloadDataAsync(new Uri(url));
+          client.DownloadDataCompleted += DownloadComplete;
+        }
+      }
+      catch (Exception ex)
+      {
+
       }
     }
 

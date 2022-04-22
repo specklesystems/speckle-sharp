@@ -1,13 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <ProjectGuid>{BDEC781D-F322-49B0-8001-2CA66C182174}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{109B3382-634B-408A-8A5C-4CD09CB92641}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
-    <AssemblyTitle>ConnectorGrasshopper</AssemblyTitle>
-    <Product>ConnectorGrasshopper</Product>
-    <Copyright>Copyright ©  2020</Copyright>
-    <Version>1.0.0.0</Version>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
@@ -15,32 +19,214 @@
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments />
   </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE;</DefineConstants>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <OutputPath>bin\</OutputPath>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.32.20340.21001" IncludeAssets="compile;build" />
-    <PackageReference Include="RhinoCommon" Version="6.32.20340.21001" IncludeAssets="compile;build" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
-    <PackageReference Include="System.Resources.Extensions" Version="6.0.0" />
-  </ItemGroup>
-  
-  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
-  
   <ItemGroup>
+    <PackageReference Include="Grasshopper">
+      <Version>6.28.20199.17141</Version>
+    </PackageReference>
+    <PackageReference Include="GrasshopperAsyncComponent">
+      <Version>1.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="MSBuild.AssemblyVersion">
+      <Version>1.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="RhinoCommon">
+      <Version>6.28.20199.17141</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Accounts\Accounts.AccountDetails.cs" />
+    <Compile Include="Accounts\Accounts.ListAccounts.cs" />
+    <Compile Include="ComponentCategories.cs" />
+    <Compile Include="ConnectorGrasshopperInfo.cs" />
+    <Compile Include="Conversion\Deprecated\Convert.ToNativeAsync.cs" />
+    <Compile Include="Conversion\Deprecated\Convert.ToSpeckleAsync.cs" />
+    <Compile Include="Conversion\Deprecated\ConvertUpgradeUtils.cs" />
+    <Compile Include="Conversion\Deprecated\Serialisation.DeserializeObject.cs" />
+    <Compile Include="Conversion\Deprecated\Serialisation.SerialiseObject.cs" />
+    <Compile Include="Conversion\DeserialiseTaskCapableComponent.cs" />
+    <Compile Include="Conversion\SerialiseTaskCapableComponent.cs" />
+    <Compile Include="Conversion\ToNativeTaskCapableComponent.cs" />
+    <Compile Include="Conversion\ToSpeckleTaskCapableComponent.cs" />
+    <Compile Include="Extras\DebounceDispatcher.cs" />
+    <Compile Include="Extras\GenericAccessParam.cs" />
+    <Compile Include="Extras\GH_SpeckleGoo.cs" />
+    <Compile Include="Extras\SendReceiveDataParam.cs" />
+    <Compile Include="Extras\Speckle.IGH_Goo.cs" />
+    <Compile Include="Extras\SpeckleBaseParam.cs" />
+    <Compile Include="Extras\SpeckleStatefulParam.cs" />
+    <Compile Include="Extras\SpeckleStateTag.cs" />
+    <Compile Include="Extras\SpeckleStreamParam.cs" />
+    <Compile Include="Extras\TreeBuilder.cs" />
+    <Compile Include="Extras\Utilities.cs" />
+    <Compile Include="Loader.cs" />
+    <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
+    <Compile Include="Objects\Deprecated\CreateSpeckleObjectAsync.cs" />
+    <Compile Include="Objects\Deprecated\CreateSpeckleObjectByKeyValueAsync.cs" />
+    <Compile Include="Objects\Deprecated\ExpandSpeckleObjectAsync.cs" />
+    <Compile Include="Objects\Deprecated\ExtendSpeckleObjectAsync.cs" />
+    <Compile Include="Objects\Deprecated\ExtendSpeckleObjectByKeyValueAsync.cs" />
+    <Compile Include="Objects\Deprecated\GetObjectValueByKeyAsync.cs" />
+    <Compile Include="Objects\Deprecated\ObjectsUpgradeUtils.cs" />
+    <Compile Include="Objects\Deprecated\SelectKitAsyncComponentBase.cs" />
+    <Compile Include="Objects\ExpandSpeckleObjectTaskComponent.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
+    <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
+    <Compile Include="Objects\SelectKitComponentBase.cs" />
+    <Compile Include="Objects\SelectKitTaskCapableComponentBase.cs" />
+    <Compile Include="Ops\Operations.ReceiveComponent.cs" />
+    <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
+    <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
+    <Compile Include="Ops\Operations.SendComponent.cs" />
+    <Compile Include="Ops\Operations.SendComponentSync.cs" />
+    <Compile Include="Ops\Operations.SendLocalComponent.cs" />
+    <Compile Include="Ops\Operations.UpgradeUtils.cs" />
+    <Compile Include="Ops\Operations.VariableInputReceiveComponent.cs" />
+    <Compile Include="Ops\Operations.VariableInputSendComponent.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
+    <Compile Include="SchemaBuilder\CreateSchemaObjectBase.cs" />
+    <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
+    <Compile Include="SchemaBuilder\CSOViewModel.cs" />
+    <Compile Include="SchemaBuilder\SchemaBuilderGen.cs" />
+    <Compile Include="SpeckleGHSettings.cs" />
+    <Compile Include="Streams\StreamCreateComponent.cs" />
+    <Compile Include="Streams\StreamDetailsComponent.cs" />
+    <Compile Include="Streams\StreamGetComponent.cs" />
+    <Compile Include="Streams\StreamListComponent.cs" />
+    <Compile Include="Streams\StreamUpdateComponent.cs" />
+    <Compile Include="Transports\SendReceiveTransport.cs" />
+    <Compile Include="Transports\Transports.Disk.cs" />
+    <Compile Include="Transports\Transports.Memory.cs" />
+    <Compile Include="Transports\Transports.Sqlite.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="InternalTestFiles\AllGeometryConversionTest.gh" />
+    <None Include="InternalTestFiles\AsyncIntegrationTest.ghx" />
+    <None Include="InternalTestFiles\AsyncObjectManagementTests.ghx" />
+    <None Include="InternalTestFiles\BrepSendReceiveTest.ghx" />
+    <None Include="InternalTestFiles\BrepTest.ghx" />
+    <None Include="InternalTestFiles\ComplexBrep.ghx" />
+    <None Include="InternalTestFiles\CreateSpeckleObjectTests-WithGeometry.ghx" />
+    <None Include="InternalTestFiles\ExpandObjectTest.ghx" />
+    <None Include="InternalTestFiles\ExpandObjectTestCables.ghx" />
+    <None Include="InternalTestFiles\ExtendObjectTest.ghx" />
+    <None Include="InternalTestFiles\KeyValueTest.ghx" />
+    <None Include="InternalTestFiles\LocalSendReceiveTest.ghx" />
+    <None Include="InternalTestFiles\ReceiveCrash-A.ghx" />
+    <None Include="InternalTestFiles\ReceiveCrash-B.ghx" />
+    <None Include="InternalTestFiles\RecursiveConversionTests.ghx" />
+    <None Include="InternalTestFiles\SenderReceiverConversionTests.gh" />
+    <None Include="InternalTestFiles\SerializationTest.ghx" />
+    <None Include="InternalTestFiles\StreamsTest.ghx" />
+    <None Include="InternalTestFiles\SurfaceTests.ghx" />
+    <None Include="InternalTestFiles\TaskCapableObjectManagement.ghx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\AccountDetails.png" />
+    <Content Include="Resources\Accounts.png" />
+    <Content Include="Resources\BaseParam.png" />
+    <Content Include="Resources\CreateSpeckleObject.png" />
+    <Content Include="Resources\CreateSpeckleObjectByKeyValue.png" />
+    <Content Include="Resources\CreateStream.png" />
+    <Content Include="Resources\Deserialize.png" />
+    <Content Include="Resources\DiskTransport.png" />
+    <Content Include="Resources\docs16.png" />
+    <Content Include="Resources\ExpandSpeckleObject.png" />
+    <Content Include="Resources\ExtendSpeckleObject.png" />
+    <Content Include="Resources\ExtendSpeckleObjectByKeyValue.png" />
+    <Content Include="Resources\forum16.png" />
+    <Content Include="Resources\GetObjectValueByKey.png" />
+    <Content Include="Resources\help16.png" />
+    <Content Include="Resources\LocalReceiver.png" />
+    <Content Include="Resources\LocalSender.png" />
+    <Content Include="Resources\MemoryTransport.png" />
+    <Content Include="Resources\receiveFromTransport.png" />
+    <Content Include="Resources\Receiver.png" />
+    <Content Include="Resources\SchemaBuilder.png" />
+    <Content Include="Resources\Sender.png" />
+    <Content Include="Resources\sendToTransport.png" />
+    <Content Include="Resources\Serialize.png" />
+    <Content Include="Resources\ServerTransport.png" />
+    <Content Include="Resources\speckle-logo-bw.png" />
+    <Content Include="Resources\speckle-logo.png" />
+    <Content Include="Resources\SpeckleTag_Schema.png" />
+    <Content Include="Resources\SQLiteTransport.png" />
+    <Content Include="Resources\StateTag_Detach.Large.png" />
+    <Content Include="Resources\StateTag_Detach.png" />
+    <Content Include="Resources\StateTag_List.Large.png" />
+    <Content Include="Resources\StateTag_List.png" />
+    <Content Include="Resources\StateTag_Optional.Large.png" />
+    <Content Include="Resources\StateTag_Optional.png" />
+    <Content Include="Resources\StreamDetails.png" />
+    <Content Include="Resources\StreamGet.png" />
+    <Content Include="Resources\StreamList.png" />
+    <Content Include="Resources\StreamParam.png" />
+    <Content Include="Resources\StreamUpdate.png" />
+    <Content Include="Resources\SynchronousReceiver.png" />
+    <Content Include="Resources\SynchronousSender.png" />
+    <Content Include="Resources\ToNative.png" />
+    <Content Include="Resources\ToSpeckle.png" />
+    <Content Include="Resources\tutorials16.png" />
+    <None Update="SchemaBuilder\SchemaBuilderGen.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj">
+      <Project>{8f16a9a1-dc5f-4800-821c-336e6ccf8f9c}</Project>
+      <Name>DiskTransport</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj">
+      <Project>{e2a8e961-6db6-4474-9e31-0c00feb4a067}</Project>
+      <Name>ConnectorGrasshopperUtils</Name>
+    </ProjectReference>
+  </ItemGroup>
+   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -52,21 +238,7 @@
       <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
     </Compile>
   </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj" />
-    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Update="SchemaBuilder\SchemaBuilderGen.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  
-  <Target Name="BeforeRebuild">
+    <Target Name="BeforeRebuild">
     <Message Text="Restoring T4 tool..." Importance="high" />
     <Exec Command="dotnet tool restore" />
     <Message Text="Generating T4 templates..." Importance="high" />
@@ -76,10 +248,5 @@
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(AppData)\Grasshopper\Libraries\SpeckleGrasshopper2" />
   </Target>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="Copy &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(TargetDir)$(AssemblyName).gha&quot;" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' '$(TargetDir)$(AssemblyName).gha'" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Linux'))" Command="cp '$(TargetDir)$(AssemblyName).dll' '$(TargetDir)$(AssemblyName).gha'" />
-  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

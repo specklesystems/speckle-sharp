@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -23,6 +25,8 @@ namespace Speckle.ConnectorRevit.Entry
     private static Avalonia.Application AvaloniaApp { get; set; }
     internal static UIApplication uiapp;
 
+    private static CancellationTokenSource Lifetime = null;
+
     public static void InitAvalonia()
     {
       BuildAvaloniaApp().Start(AppMain, null);
@@ -45,6 +49,11 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
+
+
+
+
+
       if (MainWindow == null)
       {
         var viewModel = new MainWindowViewModel(Bindings);
@@ -52,6 +61,8 @@ namespace Speckle.ConnectorRevit.Entry
         {
           DataContext = viewModel
         };
+
+
       }
 
       try
@@ -60,6 +71,16 @@ namespace Speckle.ConnectorRevit.Entry
         {
           MainWindow.Show();
           MainWindow.Activate();
+
+          //required to gracefully quit avalonia and the skia processes
+          //can also be used to manually do so
+          //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
+          if (Lifetime == null)
+          {
+            Lifetime = new CancellationTokenSource();
+            Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
+          }
+
 
           if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
           {

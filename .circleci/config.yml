@@ -249,6 +249,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       installername:
         type: string
         default: ""
+      build-config:
+        type: string
+        default: Release
     steps:
       - checkout
       - attach_workspace:
@@ -264,9 +267,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$VERSION /p:AssemblyInformationalVersion=$SEMVER /p:Version=$VERSION
-            CHANNEL="latest"
-            if [[ $CIRCLE_TAG == *-beta ]]; then CHANNEL=beta; fi
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+            CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
             if [ "${CIRCLE_TAG}" ]; then echo "version: $SEMVER" > "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$CHANNEL.yml"; fi
       - run:
@@ -429,6 +431,7 @@ workflows:
           name: build-connector-rhino-mac
           slnname: ConnectorRhino
           projname: ConnectorRhino7
+          build-config: Release Mac
 
   # Dynamo connector - Build/Test
   connector_dynamo:
@@ -553,7 +556,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT BOTTOM --
-              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|openbuildings|openrail|openroads|bentley|teklastructures|archicad)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
 
       # DYNAMO Build&Deploy
       - build-connector:
@@ -640,6 +643,7 @@ workflows:
           slnname: ConnectorRhino
           projname: ConnectorRhino7
           installername: SpeckleRhinoInstall
+          build-config: Release Mac
           installer: true
           slug: rhino-mac
           requires:
@@ -831,6 +835,31 @@ workflows:
               ignore: /.*/ # For testing only! /ci\/.*/
             tags:
               only: /^(csibridge|csi|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+
+      # Archicad Build&Deploy
+      - setup-archicad-dev:
+          requires:
+            - get-ci-tools
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(archicad|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+      - build-connector:
+          name: build-deploy-connector-archicad
+          slnname: ConnectorArchicad
+          dllname: ConnectorArchicad.dll
+          slug: archicad
+          installer: true
+          requires:
+            - get-ci-tools
+            - setup-archicad-dev
+          filters:
+            branches:
+              ignore: /.*/ # For testing only! /ci\/.*/
+            tags:
+              only: /^(archicad|all|win)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+
       # DEPLOY ALL CONNECTORS
       - deploy: # Will run if all the triggered workflows succeed
           requires:
@@ -842,6 +871,7 @@ workflows:
             - build-deploy-connector-rhino
             - build-deploy-connector-rhino-mac
             - build-deploy-connector-autocad
+            - build-deploy-connector-archicad
             - build-deploy-connector-civil3d
             - build-deploy-connector-etabs
             - build-deploy-connector-sap2000

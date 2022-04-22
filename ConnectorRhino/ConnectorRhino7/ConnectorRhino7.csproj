@@ -9,6 +9,8 @@
     <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AssemblyName>SpeckleConnectorRhino</AssemblyName>
+    <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -69,9 +71,16 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE;RHINO7</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
+    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
+  </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE;RHINO7</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
+    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
   </PropertyGroup>
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
 </Project>

@@ -18,6 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,6 +27,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
   public partial class ConnectorBindingsAutocad : ConnectorBindings
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
+
+    public List<string> GetLayers()
+    {
+      var layers = new List<string>();
+      foreach (var docLayer in Application.UIBindings.Collections.Layers)
+      {
+        var name = docLayer.GetProperties().Find("Name", true).GetValue(docLayer);
+        layers.Add(name as string);
+      }
+      return layers;
+    }
 
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
@@ -103,25 +115,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      var layers = new List<string>();
-      if (Doc != null)
-      {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-        {
-          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-          foreach (ObjectId objId in lyrTbl)
-          {
-            LayerTableRecord lyrTblRec = tr.GetObject(objId, OpenMode.ForRead) as LayerTableRecord;
-            layers.Add(lyrTblRec.Name);
-          }
-          tr.Commit();
-        }
-      }
       return new List<ISelectionFilter>()
       {
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-        new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = GetLayers() },
+        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -699,6 +697,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
       Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
       Doc.BeginDocumentClose += Application_DocumentClosed;
+
+      var layers = Application.UIBindings.Collections.Layers;
+      layers.CollectionChanged += Application_LayerChanged;
+    }
+
+    private void Application_LayerChanged(object sender, EventArgs e)
+    {
+      if (UpdateSelectedStream != null)
+        UpdateSelectedStream();
     }
 
     //checks whether to refresh the stream list in case the user changes active view and selects a different document

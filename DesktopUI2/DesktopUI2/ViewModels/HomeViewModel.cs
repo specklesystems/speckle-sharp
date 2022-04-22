@@ -122,10 +122,17 @@ namespace DesktopUI2.ViewModels
       {
         if (value != null && !value.NoAccess)
         {
-          value.UpdateVisualParentAndInit(HostScreen);
-          MainWindowViewModel.RouterInstance.Navigate.Execute(value);
-          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
-          _selectedSavedStream = value;
+          try
+          {
+            value.UpdateVisualParentAndInit(HostScreen);
+            MainWindowViewModel.RouterInstance.Navigate.Execute(value);
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
+            _selectedSavedStream = value;
+          }
+          catch (Exception ex)
+          {
+
+          }
         }
       }
     }
@@ -179,18 +186,25 @@ namespace DesktopUI2.ViewModels
 
     public HomeViewModel(IScreen screen)
     {
-      Instance = this;
-      HostScreen = screen;
-      RemoveSavedStreamCommand = ReactiveCommand.Create<string>(RemoveSavedStream);
+      try
+      {
+        Instance = this;
+        HostScreen = screen;
+        RemoveSavedStreamCommand = ReactiveCommand.Create<string>(RemoveSavedStream);
 
-      SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
+        SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
 
-      Bindings = Locator.Current.GetService<ConnectorBindings>();
-      this.RaisePropertyChanged("SavedStreams");
-      Init();
+        Bindings = Locator.Current.GetService<ConnectorBindings>();
+        this.RaisePropertyChanged("SavedStreams");
+        Init();
 
-      var config = ConfigManager.Load();
-      ChangeTheme(config.DarkTheme);
+        var config = ConfigManager.Load();
+        ChangeTheme(config.DarkTheme);
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     /// <summary>
@@ -199,17 +213,31 @@ namespace DesktopUI2.ViewModels
     /// <param name="streams"></param>
     internal void UpdateSavedStreams(List<StreamState> streams)
     {
-      SavedStreams.CollectionChanged -= SavedStreams_CollectionChanged;
-      SavedStreams = new ObservableCollection<StreamViewModel>();
-      streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
-      this.RaisePropertyChanged("HasSavedStreams");
-      SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
+      try
+      {
+        SavedStreams.CollectionChanged -= SavedStreams_CollectionChanged;
+        SavedStreams = new ObservableCollection<StreamViewModel>();
+        streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
+        this.RaisePropertyChanged("HasSavedStreams");
+        SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     internal void UpdateSelectedStream()
     {
-      if (_selectedSavedStream != null)
-        _selectedSavedStream.GetBranchesAndRestoreState();
+      try
+      {
+        if (_selectedSavedStream != null)
+          _selectedSavedStream.GetBranchesAndRestoreState();
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     //write changes to file every time they happen
@@ -227,121 +255,162 @@ namespace DesktopUI2.ViewModels
 
     internal void AddSavedStream(StreamViewModel stream)
     {
-      //saved stream has been edited
-      var savedStream = SavedStreams.FirstOrDefault(x => x.StreamState.Id == stream.StreamState.Id);
-      if (savedStream != null)
+      try
       {
-        savedStream = stream;
-        WriteStreamsToFile();
+        //saved stream has been edited
+        var savedStream = SavedStreams.FirstOrDefault(x => x.StreamState.Id == stream.StreamState.Id);
+        if (savedStream != null)
+        {
+          savedStream = stream;
+          WriteStreamsToFile();
+        }
+        //it's a new saved stream
+        else
+        {
+          //triggers => SavedStreams_CollectionChanged
+          SavedStreams.Add(stream);
+
+        }
+
+        this.RaisePropertyChanged("HasSavedStreams");
       }
-      //it's a new saved stream
-      else
+      catch (Exception ex)
       {
-        //triggers => SavedStreams_CollectionChanged
-        SavedStreams.Add(stream);
 
       }
-
-      this.RaisePropertyChanged("HasSavedStreams");
     }
 
     private async Task GetStreams()
     {
-      if (!HasAccounts)
-        return;
-
-      InProgress = true;
-
-      Streams = new List<StreamAccountWrapper>();
-
-      foreach (var account in Accounts)
+      try
       {
-        try
-        {
-          var client = new Client(account.Account);
-          Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
-        }
-        catch (Exception e)
-        {
-          Dialogs.ShowDialog($"Could not get streams for {account.Account.userInfo.email} on {account.Account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
-        }
-      }
-      Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+        if (!HasAccounts)
+          return;
 
-      InProgress = false;
+        InProgress = true;
+
+        Streams = new List<StreamAccountWrapper>();
+
+        foreach (var account in Accounts)
+        {
+          try
+          {
+            var client = new Client(account.Account);
+            Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+          }
+          catch (Exception e)
+          {
+            Dialogs.ShowDialog($"Could not get streams for {account.Account.userInfo.email} on {account.Account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          }
+        }
+        Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+
+        InProgress = false;
+      }
+      catch (Exception ex)
+      {
+
+      }
 
     }
 
     private async Task SearchStreams()
     {
-      if (SearchQuery == "")
+      try
       {
-        GetStreams().ConfigureAwait(false);
-        return;
+        if (SearchQuery == "")
+        {
+          GetStreams().ConfigureAwait(false);
+          return;
+        }
+        if (SearchQuery.Length <= 2)
+          return;
+        InProgress = true;
+
+        Streams = new List<StreamAccountWrapper>();
+
+        foreach (var account in Accounts)
+        {
+          try
+          {
+            var client = new Client(account.Account);
+            Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
+          }
+          catch (Exception e)
+          {
+
+          }
+        }
+
+        Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+
+        InProgress = false;
       }
-      if (SearchQuery.Length <= 2)
-        return;
-      InProgress = true;
-
-      Streams = new List<StreamAccountWrapper>();
-
-      foreach (var account in Accounts)
+      catch (Exception ex)
       {
-        try
-        {
-          var client = new Client(account.Account);
-          Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
-        }
-        catch (Exception e)
-        {
 
-        }
       }
-
-      Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
-
-      InProgress = false;
 
     }
 
     internal async void Init()
     {
-      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
-
-      GetStreams();
-
       try
       {
-        //first show cached accounts, then refresh them
-        await AccountManager.UpdateAccounts();
         Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+
+        GetStreams();
+
+        try
+        {
+          //first show cached accounts, then refresh them
+          await AccountManager.UpdateAccounts();
+          Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
+        }
+        catch { }
+
+
+        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
       }
-      catch { }
+      catch (Exception ex)
+      {
 
-
-      HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
+      }
     }
 
     private void RemoveSavedStream(string id)
     {
-      var s = SavedStreams.FirstOrDefault(x => x.StreamState.Id == id);
-      if (s != null)
+      try
       {
-        SavedStreams.Remove(s);
-        if (s.StreamState.Client != null)
-          Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
-      }
+        var s = SavedStreams.FirstOrDefault(x => x.StreamState.Id == id);
+        if (s != null)
+        {
+          SavedStreams.Remove(s);
+          if (s.StreamState.Client != null)
+            Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
+        }
 
-      this.RaisePropertyChanged("HasSavedStreams");
+        this.RaisePropertyChanged("HasSavedStreams");
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
 
     public async void RemoveAccountCommand(Account account)
     {
+      try
+      {
+        AccountManager.RemoveAccount(account.id);
+        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
+        Init();
+      }
+      catch (Exception ex)
+      {
 
-      AccountManager.RemoveAccount(account.id);
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
-      Init();
+      }
     }
 
     public void OpenProfileCommand(Account account)
@@ -352,62 +421,74 @@ namespace DesktopUI2.ViewModels
 
     public void LaunchManagerCommand()
     {
-      string path = "";
-
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
-
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+      try
       {
-        path = @"/Applications/SpeckleManager.app";
-      }
+        string path = "";
 
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+          path = @"/Applications/SpeckleManager.app";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+          path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe");
+        }
+
+        if (File.Exists(path))
+          Process.Start(path);
+
+        else
+        {
+          Process.Start(new ProcessStartInfo($"https://speckle-releases.netlify.app/") { UseShellExecute = true });
+        }
+      }
+      catch (Exception ex)
       {
-        path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe");
+
       }
-
-      if (File.Exists(path))
-        Process.Start(path);
-
-      else
-      {
-        Process.Start(new ProcessStartInfo($"https://speckle-releases.netlify.app/") { UseShellExecute = true });
-      }
-
     }
     public async void AddAccountCommand()
     {
-      IsLoggingIn = true;
-
-
-      var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
-      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-      await dialog.ShowDialog(MainWindow.Instance);
-
-      if (dialog.Add)
+      try
       {
-        Uri u;
-        if (!Uri.TryCreate(dialog.Url, UriKind.Absolute, out u))
-          Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
-        else
-        {
-          try
-          {
-            Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+        IsLoggingIn = true;
 
-            await AccountManager.AddAccount(dialog.Url);
-            await Task.Delay(1000);
-            Init();
-          }
-          catch (Exception e)
+
+        var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        await dialog.ShowDialog(MainWindow.Instance);
+
+        if (dialog.Add)
+        {
+          Uri u;
+          if (!Uri.TryCreate(dialog.Url, UriKind.Absolute, out u))
+            Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
+          else
           {
-            Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            try
+            {
+              Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+
+              await AccountManager.AddAccount(dialog.Url);
+              await Task.Delay(1000);
+              Init();
+            }
+            catch (Exception e)
+            {
+              Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            }
           }
         }
+
+        IsLoggingIn = false;
       }
+      catch (Exception ex)
+      {
 
-      IsLoggingIn = false;
-
+      }
     }
 
     public void ClearSearchCommand()
@@ -437,6 +518,7 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
+
       var dialog = new NewStreamDialog(Accounts);
       dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
       await dialog.ShowDialog(MainWindow.Instance);

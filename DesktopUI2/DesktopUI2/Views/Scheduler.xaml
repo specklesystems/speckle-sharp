@@ -61,11 +61,11 @@
         HorizontalContentAlignment="Stretch"
         Classes="Mini">
         <StackPanel>
-          <TextBlock Text="Chrono lets you schedule when to automatically send to a stream based on a few triggers." TextWrapping="Wrap" />
+          <TextBlock Text="Speckle Scheduler lets you schedule when to automatically send to a stream based on a few triggers." TextWrapping="Wrap" />
           <TextBlock
             Margin="0,15,0,0"
             IsVisible="{Binding HasSavedSenders, Converter={x:Static BoolConverters.Not}}"
-            Text="Please a save a stream form the main Connector UI ⚠."
+            Text="Please save a stream form the main Connector UI ⚠ to continue."
             TextWrapping="Wrap" />
         </StackPanel>
       </m:Card>
