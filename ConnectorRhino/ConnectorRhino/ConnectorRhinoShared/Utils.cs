@@ -8,6 +8,8 @@ using Speckle.Core.Kits;
 
 using Rhino;
 using Rhino.DocObjects;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace SpeckleRhino
 {
@@ -18,6 +20,9 @@ namespace SpeckleRhino
     public static string AppName = "Rhino";
 #elif RHINO7
     public static string RhinoAppName = VersionedHostApplications.Rhino7;
+    public static string AppName = "Rhino";
+#else
+    public static string RhinoAppName = Applications.Rhino7;
     public static string AppName = "Rhino";
 #endif
     #region extension methods
@@ -68,5 +73,50 @@ namespace SpeckleRhino
         return doc.Layers.FindIndex(newIndex);
     }
     #endregion
+  }
+
+  
+  public static class Formatting
+  {
+    public static string TimeAgo(string timestamp)
+    {
+      TimeSpan timeAgo;
+      try
+      {
+        timeAgo = DateTime.Now.Subtract(DateTime.Parse(timestamp));
+      }
+      catch (FormatException e)
+      {
+        Debug.WriteLine("Could not parse the string to a DateTime");
+        return "";
+      }
+
+      if (timeAgo.TotalSeconds < 60)
+        return "less than a minute ago";
+      if (timeAgo.TotalMinutes < 60)
+        return $"about {timeAgo.Minutes} minute{PluralS(timeAgo.Minutes)} ago";
+      if (timeAgo.TotalHours < 24)
+        return $"about {timeAgo.Hours} hour{PluralS(timeAgo.Hours)} ago";
+      if (timeAgo.TotalDays < 7)
+        return $"about {timeAgo.Days} day{PluralS(timeAgo.Days)} ago";
+      if (timeAgo.TotalDays < 30)
+        return $"about {timeAgo.Days / 7} week{PluralS(timeAgo.Days / 7)} ago";
+      if (timeAgo.TotalDays < 365)
+        return $"about {timeAgo.Days / 30} month{PluralS(timeAgo.Days / 30)} ago";
+
+      return $"over {timeAgo.Days / 356} year{PluralS(timeAgo.Days / 356)} ago";
+    }
+
+    public static string PluralS(int num)
+    {
+      return num != 1 ? "s" : "";
+    }
+
+    public static string CommitInfo(string stream, string branch, string commitId)
+    {
+      string formatted = $"{stream}[ {branch} @ {commitId} ]";
+      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
+      return clean;
+    }
   }
 }

@@ -12,20 +12,28 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Rhino.Geometry;
 using System.Threading;
+using Rhino;
 
 namespace ConnectorGrasshopper.Extras
 {
   public static class Utilities
   {
+    public static string GetVersionedAppName()
+    {
+      var version = VersionedHostApplications.Grasshopper6;
+      if (RhinoApp.Version.Major == 7)
+        version = VersionedHostApplications.Grasshopper7;
+      return version;
+    }
     public static ISpeckleConverter GetDefaultConverter()
     {
       var n = SpeckleGHSettings.SelectedKitName;
       try
       {
-        var defKit = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6).FirstOrDefault(kit => kit != null && kit.Name == n);
-        var converter = defKit.LoadConverter(VersionedHostApplications.Rhino6);
+        var defKit = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName()).FirstOrDefault(kit => kit != null && kit.Name == n);
+        var converter = defKit.LoadConverter(Extras.Utilities.GetVersionedAppName());
         converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        converter.SetContextDocument(RhinoDoc.ActiveDoc);
         return converter;
       }
       catch
@@ -296,6 +304,9 @@ namespace ConnectorGrasshopper.Extras
     public static object TryConvertItemToSpeckle(object value, ISpeckleConverter converter, bool recursive = false, Action OnConversionProgress = null)
     {
       if (value is null) return value;
+
+      string refId = GetRefId(value);
+      
       if (value is IGH_Goo)
       {
         value = value.GetType().GetProperty("Value").GetValue(value);
@@ -307,7 +318,9 @@ namespace ConnectorGrasshopper.Extras
 
       if (converter.CanConvertToSpeckle(value))
       {
-        return converter.ConvertToSpeckle(value);
+        var result = converter.ConvertToSpeckle(value);  
+        result.applicationId = refId;
+        return result;
       }
 
       var subclass = value.GetType().IsSubclassOf(typeof(Base));
@@ -326,6 +339,39 @@ namespace ConnectorGrasshopper.Extras
         return @base2;
 
       return null;
+    }
+
+    public static string GetRefId(object value)
+    {
+      string refId = null;
+      switch (value)
+      {
+        case GH_Brep r:
+          if (r.IsReferencedGeometry)
+            refId = r.ReferenceID.ToString();
+          break;
+        case GH_Mesh r:
+          if (r.IsReferencedGeometry)
+            refId = r.ReferenceID.ToString();
+          break;
+        case GH_Line r:
+          if (r.IsReferencedGeometry)
+            refId = r.ReferenceID.ToString();
+          break;
+        case GH_Point r:
+          if (r.IsReferencedGeometry)
+            refId = r.ReferenceID.ToString();
+          break;
+        case GH_Surface r:
+          if (r.IsReferencedGeometry)
+            refId = r.ReferenceID.ToString();
+          break;
+        case GH_Curve r:
+          if (r.IsReferencedGeometry)
+            refId = r.ReferenceID.ToString();
+          break;
+      }
+      return refId;
     }
 
     /// <summary>
@@ -378,12 +424,12 @@ namespace ConnectorGrasshopper.Extras
       if (Converter != null && Converter.CanConvertToNative(@base))
       {
         var converted = Converter.ConvertToNative(@base);
-        data.Append(TryConvertItemToNative(GH_Convert.ToGoo(converted), Converter));
+        data.Append(GH_Convert.ToGoo(converted));
       }
       // Simple pass the SpeckleBase
       else
       {
-        onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
+        if(onError != null) onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
         data.Append(new GH_SpeckleBase(@base));
       }
       return data;

@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
-using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Logging = Speckle.Core.Logging;
 
@@ -66,7 +63,6 @@ namespace ConnectorGrasshopper.Streams
 
       if (DA.Iteration == 0) // Only report on first iteration of the component.
       {
-        Logging.Tracker.TrackPageview(Logging.Tracker.ACCOUNT_DETAILS);
         Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
       }
 

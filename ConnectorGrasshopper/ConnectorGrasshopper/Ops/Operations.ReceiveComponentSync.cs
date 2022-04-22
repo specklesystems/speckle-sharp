@@ -1,25 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using GrasshopperAsyncComponent;
 using Rhino;
-using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Transports;
+using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Ops
 {
@@ -122,7 +117,7 @@ namespace ConnectorGrasshopper.Ops
     {
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
-      var kits = KitManager.GetKitsWithConvertersForApp(VersionedHostApplications.Rhino6);
+      var kits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
 
       foreach (var kit in kits)
         Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
@@ -212,7 +207,7 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(VersionedHostApplications.Rhino6);
+        Converter = Kit.LoadConverter(Extras.Utilities.GetVersionedAppName());
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
@@ -259,7 +254,6 @@ namespace ConnectorGrasshopper.Ops
 
       if (InPreSolve)
       {
-        Logging.Tracker.TrackPageview("receive", "sync");
 
         var task = Task.Run(async () =>
         {
@@ -301,7 +295,7 @@ namespace ConnectorGrasshopper.Ops
               streamId = StreamWrapper.StreamId,
               commitId = myCommit.id,
               message = myCommit.message,
-              sourceApplication = VersionedHostApplications.Grasshopper
+              sourceApplication = Extras.Utilities.GetVersionedAppName()
             });
           }
           catch
@@ -331,7 +325,7 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-        var data = Extras.Utilities.ConvertToTree(Converter, @base);
+        var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage);
 
         DA.SetDataTree(0, data);
       }

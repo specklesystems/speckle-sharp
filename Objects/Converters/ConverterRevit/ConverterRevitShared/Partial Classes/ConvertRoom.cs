@@ -53,7 +53,8 @@ namespace Objects.Converter.Revit
       speckleRoom.number = revitRoom.Number;
       speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
       speckleRoom.level = ConvertAndCacheLevel(revitRoom, BuiltInParameter.ROOM_LEVEL_ID);
-      speckleRoom.outline = profiles[0];
+      if (profiles.Any())
+        speckleRoom.outline = profiles[0];
       speckleRoom.area = GetParamValue<double>(revitRoom, BuiltInParameter.ROOM_AREA);
       if (profiles.Count > 1)
       {

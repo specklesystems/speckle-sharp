@@ -11,11 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\RhinoViewModel.cs" />
   </ItemGroup>
 </Project>

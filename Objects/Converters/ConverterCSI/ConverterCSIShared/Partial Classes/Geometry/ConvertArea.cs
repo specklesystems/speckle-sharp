@@ -144,7 +144,7 @@ namespace Objects.Converter.CSI
             coordinates.Add(node.basePoint.y / 100);
             coordinates.Add(node.basePoint.z / 100);
             break;
-          case "inch":
+          case "in":
             coordinates.Add(node.basePoint.x / 39.37);
             coordinates.Add(node.basePoint.y / 39.37);
             coordinates.Add(node.basePoint.z / 39.37);
@@ -159,6 +159,10 @@ namespace Objects.Converter.CSI
             coordinates.Add(node.basePoint.y / 100000);
             coordinates.Add(node.basePoint.z / 100000);
             break;
+          default:
+            Report.Log($"Coordinates not added to DisplayMesh");
+            throw new NotSupportedException();
+            break;
         }
       }
 
@@ -167,12 +171,15 @@ namespace Objects.Converter.CSI
       bool advanced = true;
       Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
       speckleStructArea.orientationAngle = angle;
-
-      PolygonMesher polygonMesher = new PolygonMesher();
-      polygonMesher.Init(coordinates);
-      var faces = polygonMesher.Faces();
-      var vertices = polygonMesher.Coordinates;
-      speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces.ToArray(), units: ModelUnits());
+      if(coordinates.Count != 0)
+      {
+        PolygonMesher polygonMesher = new PolygonMesher();
+        polygonMesher.Init(coordinates);
+        var faces = polygonMesher.Faces();
+        var vertices = polygonMesher.Coordinates;
+        //speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces.ToArray(), null, null, ModelUnits(), null);
+        speckleStructArea.displayValue = new List<Geometry.Mesh> { new Geometry.Mesh(vertices.ToList(), faces, units: ModelUnits()) };
+      }
 
       //Model.AreaObj.GetModifiers(area, ref value);
       //speckleProperty2D.modifierInPlane = value[2];

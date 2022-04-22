@@ -7,7 +7,6 @@ using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Special;
-using Rhino;
 using Speckle.Core.Credentials;
 using Logging = Speckle.Core.Logging;
 
@@ -164,7 +163,6 @@ namespace ConnectorGrasshopper.Accounts
 
     public override void AddedToDocument(GH_Document document)
     {
-      Logging.Tracker.TrackPageview(Logging.Tracker.ACCOUNT_LIST);
       base.AddedToDocument(document);
       SetAccountList();
     }

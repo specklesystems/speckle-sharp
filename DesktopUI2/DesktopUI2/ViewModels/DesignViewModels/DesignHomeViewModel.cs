@@ -13,8 +13,10 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public Account SelectedAccount { get; set; } = null;
 
     public bool HasAccounts { get; set; } = true;
+    public bool HasMultipleAccounts { get; set; } = true;
+    public bool HasOneAccount { get; set; } = false;
 
-    public List<Account> Accounts { get; set; } = new List<Account>();
+    public List<AccountViewModel> Accounts { get; set; } = new List<AccountViewModel>();
 
     public string SearchQuery { get; set; }
 
@@ -27,6 +29,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public DesignHomeViewModel()
     {
       var acc = AccountManager.GetDefaultAccount();
+      Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
       if (acc == null)
         return;
       var client = new Client(acc);
@@ -50,7 +53,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     {
     }
 
-    public void LogInCommand()
+    public void AddAccountCommand()
     {
     }
 
@@ -63,8 +66,10 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     }
 
     public void ClearSearchCommand() { }
-    public void ManagerLoginCommand() { }
-    public void DirectLoginCommand() { }
+    public void LaunchManagerCommand() { }
+    public void DirectAddAccountCommand() { }
+
+    public void OpenProfileCommand(Account account) { }
   }
 
 

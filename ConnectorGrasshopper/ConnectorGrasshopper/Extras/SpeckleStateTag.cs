@@ -96,8 +96,10 @@ namespace ConnectorGrasshopper.Extras
     public void RenderSpeckleTagContents(Graphics graphics)
     {
       var p = new GraphicsPath();
+      var format = StringFormat.GenericDefault;
+      format.Alignment = StringAlignment.Center;
       p.AddString(Letter, FontFamily.GenericMonospace, 1, Stage.Height - 2,
-        new Point(Stage.Location.X + 1, this.Stage.Location.Y), null);
+        new Point(Stage.Location.X + Stage.Width / 2, Stage.Location.Y - 1), format);
       
       LinearGradientBrush blueGradient = new LinearGradientBrush(Stage, Color.FromArgb(100, 10, 107, 252),
         Color.FromArgb(Convert.ToInt32((double) GH_Canvas.ZoomFadeLow), Color.FromArgb(0, 10, 107, 252)),

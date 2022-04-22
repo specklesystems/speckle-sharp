@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Logging = Speckle.Core.Logging;
 
@@ -82,8 +80,6 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
-        if (DA.Iteration == 0)
-          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_GET);
 
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {

@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
@@ -44,7 +44,7 @@ namespace ConnectorGrasshopper.Objects
         if (Params.Input.Count == 0)
           return;
         var hasErrors = false;
-        
+
         var duplicateKeys = Params.Input
           .Select(p => p.NickName)
           .GroupBy(x => x).Count(group => @group.Count<string>() > 1);
@@ -53,7 +53,7 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
           return;
         }
-        
+
         var allOptional = Params.Input.FindAll(p => p.Optional).Count == Params.Input.Count;
         if (Params.Input.Count > 0 && allOptional)
         {
@@ -64,7 +64,6 @@ namespace ConnectorGrasshopper.Objects
         if (DA.Iteration == 0)
         {
           Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object" } });
-          Logging.Tracker.TrackPageview("objects", "create", "variableinput");
         }
 
 
@@ -158,16 +157,18 @@ namespace ConnectorGrasshopper.Objects
         {
           var value = inputData[key];
 
-
           if (value is List<object> list)
           {
+
             // Value is a list of items, iterate and convert.
             List<object> converted = null;
             try
             {
+
               converted = list.Select(item =>
               {
-                return Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
+                var result = Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
+                return result;
               }).ToList();
             }
             catch (Exception e)

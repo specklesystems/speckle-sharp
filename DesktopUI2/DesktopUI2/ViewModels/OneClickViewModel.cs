@@ -1,7 +1,5 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -9,7 +7,6 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +20,8 @@ namespace DesktopUI2.ViewModels
     public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
 
     public bool HasFileStream => FileStream != null;
+
+    private string _fileName;
 
     private StreamState _fileStream;
     public StreamState FileStream
@@ -39,6 +38,7 @@ namespace DesktopUI2.ViewModels
     {
       Bindings = _bindings;
       SavedStreams = Bindings.GetStreamsInFile();
+      _fileName = Bindings.GetFileName();
 
       if (fileStream == null)
         LoadFileStream();
@@ -48,12 +48,11 @@ namespace DesktopUI2.ViewModels
 
     private void LoadFileStream()
     {
-      // get bindings doc name and default account
-      var fileName = Bindings.GetFileName();
+      // get default account
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
 
-      var fileStream = SavedStreams.Where(o => o.CachedStream.name == fileName && o.Client.Account == account)?.FirstOrDefault();
+      var fileStream = SavedStreams.Where(o => o.CachedStream.name == _fileName && o.Client.Account == account)?.FirstOrDefault();
       if (fileStream != null)
       {
         FileStream = fileStream;
@@ -64,13 +63,13 @@ namespace DesktopUI2.ViewModels
 
         if (foundStream == null) // create the stream
         {
-          var description = $"Automatic stream for {fileName}";
+          var description = $"Automatic stream for {_fileName}";
           try
           {
-            string streamId = Task.Run(async () => await client.StreamCreate(new StreamCreateInput { description = description, name = fileName, isPublic = false })).Result;
+            string streamId = Task.Run(async () => await client.StreamCreate(new StreamCreateInput { description = description, name = _fileName, isPublic = false })).Result;
             foundStream = Task.Run(async () => await client.StreamGet(streamId)).Result;
           }
-          catch (Exception e){ }
+          catch (Exception e) { }
         }
 
         FileStream = new StreamState(account, foundStream) { BranchName = "main" };
@@ -87,8 +86,8 @@ namespace DesktopUI2.ViewModels
       Stream stream = null;
       try
       {
-        var streams = await client.StreamSearch(Bindings.GetFileName());
-        stream = streams.FirstOrDefault();
+        var streams = await client.StreamSearch(_fileName);
+        stream = streams.Where(s => s.name.Equals(_fileName))?.FirstOrDefault();
       }
       catch (Exception) { }
       return stream;
@@ -136,7 +135,7 @@ namespace DesktopUI2.ViewModels
         dialog.Close();
         if (!progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "oneClick", true } });
+          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "method", "OneClick" } });
           FileStream.LastUsed = DateTime.Now.ToString();
 
           // open in browser
