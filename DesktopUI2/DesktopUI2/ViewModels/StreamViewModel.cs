@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
@@ -415,11 +416,23 @@ namespace DesktopUI2.ViewModels
         else
           SelectedBranch = Branches[0];
 
+        //restore selected filter
         if (StreamState.Filter != null)
         {
           SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
           if (SelectedFilter != null)
             SelectedFilter.Filter = StreamState.Filter;
+        }
+        else
+        {
+          var selectionFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Type == typeof(ManualSelectionFilter).ToString());
+          //if there are any selected objects, set the manual selection automagically
+          if (selectionFilter != null && Bindings.GetSelectedObjects().Any())
+          {
+            SelectedFilter = selectionFilter;
+            SelectedFilter.AddObjectSelection();
+          }
+
         }
         if (StreamState.Settings != null)
         {
@@ -655,7 +668,7 @@ namespace DesktopUI2.ViewModels
         if (!Progress.CancellationTokenSource.IsCancellationRequested && commitId != null)
         {
           LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object> { { "filter", StreamState.Filter.Name } });
 
           Notification = $"Sent successfully, view online";
           NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
