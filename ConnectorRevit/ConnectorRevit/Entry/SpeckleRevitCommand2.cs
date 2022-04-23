@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -24,8 +23,6 @@ namespace Speckle.ConnectorRevit.Entry
     public static ConnectorBindingsRevit2 Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
     internal static UIApplication uiapp;
-
-    private static CancellationTokenSource Lifetime = null;
 
     public static void InitAvalonia()
     {
@@ -62,6 +59,11 @@ namespace Speckle.ConnectorRevit.Entry
           DataContext = viewModel
         };
 
+        //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
+        //to avoid an annoying error when closing revit
+        var cts = new CancellationTokenSource();
+        cts.CancelAfter(100);
+        AvaloniaApp.Run(cts.Token);
 
       }
 
@@ -75,11 +77,6 @@ namespace Speckle.ConnectorRevit.Entry
           //required to gracefully quit avalonia and the skia processes
           //can also be used to manually do so
           //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
-          if (Lifetime == null)
-          {
-            Lifetime = new CancellationTokenSource();
-            Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
-          }
 
 
           if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
