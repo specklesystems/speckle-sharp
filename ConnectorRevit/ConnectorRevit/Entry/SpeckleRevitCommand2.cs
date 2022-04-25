@@ -61,6 +61,7 @@ namespace Speckle.ConnectorRevit.Entry
 
         //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
         //to avoid an annoying error when closing revit
+        //https://github.com/specklesystems/speckle-sharp/issues/1192
         var cts = new CancellationTokenSource();
         cts.CancelAfter(100);
         AvaloniaApp.Run(cts.Token);
@@ -73,10 +74,6 @@ namespace Speckle.ConnectorRevit.Entry
         {
           MainWindow.Show();
           MainWindow.Activate();
-
-          //required to gracefully quit avalonia and the skia processes
-          //can also be used to manually do so
-          //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
 
 
           if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
