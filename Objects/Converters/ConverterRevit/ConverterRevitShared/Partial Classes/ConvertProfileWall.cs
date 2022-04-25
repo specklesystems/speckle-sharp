@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
-using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
@@ -25,9 +23,15 @@ namespace Objects.Converter.Revit
       // Level level = null;
       var structural = speckleRevitWall.structural;
       var profile = new List<DB.Curve>();
+      var minZ = double.MaxValue;
       for (var i = 0; i < CurveToNative(speckleRevitWall.profile).Size; i++)
       {
-        profile.Add(CurveToNative(speckleRevitWall.profile).get_Item(i));
+        var curve = CurveToNative(speckleRevitWall.profile).get_Item(i);
+        profile.Add(curve);
+        if (curve.GetEndPoint(0).Z < minZ)
+          minZ = curve.GetEndPoint(0).Z;
+        if (curve.GetEndPoint(1).Z < minZ)
+          minZ = curve.GetEndPoint(1).Z;
       }
 
       //cannot update
@@ -44,6 +48,10 @@ namespace Objects.Converter.Revit
 
       var level = ConvertLevelToRevit(speckleRevitWall.level);
       TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+
+      var offset = minZ - level.Elevation;
+      TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, offset);
+
 
       if (revitWall.WallType.Name != wallType.Name)
       {
