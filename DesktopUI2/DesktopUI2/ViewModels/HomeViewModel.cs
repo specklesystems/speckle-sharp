@@ -599,6 +599,11 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public async void FilterStreams(object parameter)
+    {
+      Streams = Streams.Where(x => x.Stream.role == $"stream:{parameter}").ToList();
+    }
+
     private Tuple<bool, string> ValidateUrl(string url)
     {
       Uri uri;
