@@ -77,6 +77,9 @@ namespace DesktopUI2.Models
     public bool IsReceiver { get; set; }
 
     [JsonProperty]
+    public bool AutoReceive { get; set; }
+
+    [JsonProperty]
     public string StreamId { get; set; }
 
     /// <summary>

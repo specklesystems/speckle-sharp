@@ -145,6 +145,16 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private bool _autoReceive = false;
+    public bool AutoReceive
+    {
+      get => _autoReceive;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _autoReceive, value);
+      }
+    }
+
     private Branch _selectedBranch;
     public Branch SelectedBranch
     {
@@ -298,6 +308,7 @@ namespace DesktopUI2.ViewModels
         Stream = streamState.CachedStream;
         Client = streamState.Client;
         IsReceiver = streamState.IsReceiver;
+        AutoReceive = streamState.AutoReceive;
 
         //default to receive mode if no permission to send
         if (Stream.role == null || Stream.role == "stream:reviewer")
@@ -506,6 +517,7 @@ namespace DesktopUI2.ViewModels
       {
         StreamState.BranchName = SelectedBranch.name;
         StreamState.IsReceiver = IsReceiver;
+        StreamState.AutoReceive = AutoReceive;
         if (IsReceiver)
           StreamState.CommitId = SelectedCommit.id;
         if (!IsReceiver)
@@ -560,6 +572,9 @@ namespace DesktopUI2.ViewModels
         Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
         NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
         ScrollToBottom();
+
+        if (AutoReceive)
+          ReceiveCommand();
       }
       catch (Exception ex)
       {
