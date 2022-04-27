@@ -70,7 +70,9 @@ namespace Objects.Converter.Revit
       analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
       analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
 #else
-      var analyticalModel = Doc.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(element.Id)) as AnalyticalMember;
+      //var analyticalModel = Doc.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(element.Id)) as AnalyticalMember;
+      //var analyticalModel = AnalyticalToPhysical
+      var analyticalModel = (AnalyticalMember)element;
       analyticalModel.SetReleaseConditions(new ReleaseConditions(true, Convert.ToBoolean(element1d.end1Releases.stiffnessX), Convert.ToBoolean(element1d.end1Releases.stiffnessY), Convert.ToBoolean(element1d.end1Releases.stiffnessZ), Convert.ToBoolean(element1d.end1Releases.stiffnessXX), Convert.ToBoolean(element1d.end1Releases.stiffnessYY), Convert.ToBoolean(element1d.end1Releases.stiffnessZZ)));
       analyticalModel.SetReleaseConditions(new ReleaseConditions(false, Convert.ToBoolean(element1d.end2Releases.stiffnessX), Convert.ToBoolean(element1d.end2Releases.stiffnessY), Convert.ToBoolean(element1d.end2Releases.stiffnessZ), Convert.ToBoolean(element1d.end2Releases.stiffnessXX), Convert.ToBoolean(element1d.end2Releases.stiffnessYY), Convert.ToBoolean(element1d.end2Releases.stiffnessZZ)));
       //TODO set offsets?
@@ -400,15 +402,15 @@ namespace Objects.Converter.Revit
     {
 
       var speckleElement1D = new Element1D();
-      switch (revitStick.Category.Name)
+      switch (revitStick.StructuralRole)
       {
-        case "Analytical Columns":
+        case AnalyticalStructuralRole.StructuralRoleColumn :
           speckleElement1D.type = ElementType1D.Column;
           break;
-        case "Analytical Beams":
+        case AnalyticalStructuralRole.StructuralRoleBeam:
           speckleElement1D.type = ElementType1D.Beam;
           break;
-        case "Analytical Braces":
+        case AnalyticalStructuralRole.StructuralRoleMember:
           speckleElement1D.type = ElementType1D.Brace;
           break;
         default:
@@ -454,11 +456,11 @@ namespace Objects.Converter.Revit
       }
 
       var prop = new Property1D();
+  
+      var stickFamily = (Autodesk.Revit.DB.FamilySymbol)revitStick.Document.GetElement(revitStick.SectionTypeId);
 
-      var stickFamily = revitStick.Document.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(revitStick.Id)) as DB.FamilyInstance;
-
-      var section = stickFamily.Symbol.GetStructuralSection();
-
+      var section = stickFamily.GetStructuralSection();
+      
       var speckleSection = new SectionProfile();
       speckleSection.name = section.StructuralSectionShapeName;
 
@@ -585,9 +587,9 @@ namespace Objects.Converter.Revit
       }
 
       var materialType = stickFamily.StructuralMaterialType;
-      var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
+      var structMat = (DB.Material)stickFamily.Document.GetElement(revitStick.MaterialId);
       if (structMat == null)
-        structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
+        structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
       var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
 
       Structural.Materials.Material speckleMaterial = null;
@@ -597,7 +599,7 @@ namespace Objects.Converter.Revit
         case StructuralMaterialType.Concrete:
           var concreteMaterial = new Concrete
           {
-            name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name,
+             name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
             //type = Structural.MaterialType.Concrete,
             grade = null,
             designCode = null,
@@ -621,7 +623,7 @@ namespace Objects.Converter.Revit
         case StructuralMaterialType.Steel:
           var steelMaterial = new Steel
           {
-            name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name,
+            name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
             //type = Structural.MaterialType.Steel,
             grade = materialAsset.Name,
             designCode = null,
@@ -664,7 +666,7 @@ namespace Objects.Converter.Revit
         default:
           var defaultMaterial = new Objects.Structural.Materials.Material
           {
-            name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name
+            name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
           };
           speckleMaterial = defaultMaterial;
           break;
@@ -698,7 +700,7 @@ namespace Objects.Converter.Revit
       speckleElement1D.property = prop;
 
       GetAllRevitParamsAndIds(speckleElement1D, revitStick);
-      speckleElement1D.displayValue = GetElementDisplayMesh(stickFamily);
+      //speckleElement1D.displayValue = GetElementDisplayMesh(stickFamily);
       return speckleElement1D;
     }
 #endif
