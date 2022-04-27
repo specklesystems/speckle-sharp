@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 namespace DesktopUI2.ViewModels
 {
+
   public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     //Instance of this HomeViewModel, so that the SavedStreams are kept in memory and not disposed on navigation
@@ -33,6 +34,15 @@ namespace DesktopUI2.ViewModels
     public string UrlPathSegment { get; } = "home";
 
     private ConnectorBindings Bindings;
+
+    public enum Filter
+    {
+      all,
+      owner,
+      contributor,
+      reviewer,
+      favorite
+    }
 
     #region bindings
     public string Title => "for " + Bindings.GetHostAppNameVersion();
@@ -68,12 +78,45 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _streams, value);
+        this.RaisePropertyChanged("FilteredStreams");
         this.RaisePropertyChanged("HasStreams");
       }
     }
 
+    private Filter _selectedFilter = Filter.all;
+    public Filter SelectedFilter
+    {
+      get => _selectedFilter;
+      private set
+      {
+        SetFilters(_selectedFilter, value);
+      }
+    }
+    private async void SetFilters(Filter oldValue, Filter newValue)
+    {
+      this.RaiseAndSetIfChanged(ref _selectedFilter, newValue);
+      //refresh stream list if the previous filter is/was favorite
+      if (newValue == Filter.favorite || oldValue == Filter.favorite)
+      {
+        await GetStreams();
+      }
+
+      this.RaisePropertyChanged("FilteredStreams");
+      this.RaisePropertyChanged("HasStreams");
+    }
+    public List<StreamAccountWrapper> FilteredStreams
+    {
+      get
+      {
+
+        if (SelectedFilter == Filter.all || SelectedFilter == Filter.favorite)
+          return Streams;
+        return Streams.Where(x => x.Stream.role == $"stream:{SelectedFilter}").ToList();
+      }
+    }
+
     public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
-    public bool HasStreams => Streams != null && Streams.Any();
+    public bool HasStreams => FilteredStreams != null && FilteredStreams.Any();
 
     public string StreamsText
     {
@@ -296,7 +339,10 @@ namespace DesktopUI2.ViewModels
           try
           {
             var client = new Client(account.Account);
-            Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+            if (SelectedFilter == Filter.favorite)
+              Streams.AddRange((await client.FavoriteStreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+            else
+              Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
           }
           catch (Exception e)
           {
@@ -599,11 +645,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public async void FilterStreams(object parameter)
-    {
-      Streams = Streams.Where(x => x.Stream.role == $"stream:{parameter}").ToList();
-    }
-
     private Tuple<bool, string> ValidateUrl(string url)
     {
       Uri uri;
@@ -678,4 +719,6 @@ namespace DesktopUI2.ViewModels
 
 
   }
+
+
 }
