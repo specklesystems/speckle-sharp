@@ -21,6 +21,8 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
+using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
 #if (CIVIL2021 || CIVIL2022)
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
@@ -443,7 +445,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               return true;
 
 #if (CIVIL2021 || CIVIL2022)
-// NOTE: C3D pressure pipes and pressure fittings API under development
+            // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
             case CivilDB.Structure _:

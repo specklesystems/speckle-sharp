@@ -1,9 +1,16 @@
+﻿using System;
 ﻿using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Linq;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
+using Speckle.Core.Logging;
+using Tekla.Structures.Model;
+using Tekla.Structures;
 
 
 namespace Objects.Converter.TeklaStructures

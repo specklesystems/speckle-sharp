@@ -1,12 +1,18 @@
-﻿using Objects.Structural.Analysis;
-using Objects.Structural.CSI.Geometry;
-using Objects.Structural.Results;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using CSiAPIv1;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using BE = Objects.BuiltElements;
 using OSG = Objects.Structural.Geometry;
+using OSEA = Objects.Structural.CSI.Analysis;
+using Objects.Converter.CSI;
+using Speckle.Core.Logging;
+using Objects.Structural.Analysis;
+using Objects.Structural.Results;
+using Objects.Structural.CSI.Geometry;
 
 namespace Objects.Converter.CSI
 {
