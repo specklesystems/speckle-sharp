@@ -276,14 +276,22 @@
                   Grid.Column="1"
                   Margin="2,0,0,0"
                   VerticalAlignment="Center"
-                  ToolTip.Tip="Filter streams">
-                  <Popup />
+                  ToolTip.Tip="Filter streams by ownership of favorite">
+
                   <MenuItem
                     Width="30"
                     Height="30"
                     Padding="0"
-                    Classes="NoHighlight"
-                    Header="{icons:MaterialIconExt FilterVariant}">
+                    Classes="NoHighlight">
+                    <MenuItem.Header>
+                      <Grid>
+                        <icons:MaterialIcon IsVisible="{Binding !ActiveFilter}" Kind="FilterVariant" />
+                        <icons:MaterialIcon
+                          Foreground="Red"
+                          IsVisible="{Binding ActiveFilter}"
+                          Kind="FilterVariant" />
+                      </Grid>
+                    </MenuItem.Header>
                     <!--<ListBox>
 
                       <TextBlock Text="all" />
@@ -297,7 +305,7 @@
                       Classes="Button"
                       Content="all"
                       GroupName="3"
-                      IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=all}" />
+                      IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=all}" />
 
                     <RadioButton
                       HorizontalContentAlignment="Center"

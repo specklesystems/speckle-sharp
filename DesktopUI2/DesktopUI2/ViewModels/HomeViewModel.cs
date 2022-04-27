@@ -92,17 +92,32 @@ namespace DesktopUI2.ViewModels
         SetFilters(_selectedFilter, value);
       }
     }
+    public bool ActiveFilter
+    {
+      get
+      {
+
+        if (SelectedFilter == ViewModels.HomeViewModel.Filter.all)
+          return false;
+        else
+          return true;
+      }
+    }
     private async void SetFilters(Filter oldValue, Filter newValue)
     {
       this.RaiseAndSetIfChanged(ref _selectedFilter, newValue);
       //refresh stream list if the previous filter is/was favorite
       if (newValue == Filter.favorite || oldValue == Filter.favorite)
       {
+        //do not search favourite streams, too much hassle
+        if (newValue == Filter.favorite && !string.IsNullOrEmpty(SearchQuery))
+          SearchQuery = "";
         await GetStreams();
       }
 
       this.RaisePropertyChanged("FilteredStreams");
       this.RaisePropertyChanged("HasStreams");
+      this.RaisePropertyChanged("ActiveFilter");
     }
     public List<StreamAccountWrapper> FilteredStreams
     {
@@ -141,7 +156,7 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
-        SearchStreams().ConfigureAwait(false);
+        GetStreams().ConfigureAwait(false);
         this.RaisePropertyChanged("StreamsText");
       }
     }
@@ -327,7 +342,7 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        if (!HasAccounts)
+        if (!HasAccounts || (!string.IsNullOrEmpty(SearchQuery) && SearchQuery.Length <= 2))
           return;
 
         InProgress = true;
@@ -339,10 +354,25 @@ namespace DesktopUI2.ViewModels
           try
           {
             var client = new Client(account.Account);
-            if (SelectedFilter == Filter.favorite)
-              Streams.AddRange((await client.FavoriteStreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+
+            //NO SEARCH
+            if (SearchQuery == "")
+            {
+
+              if (SelectedFilter == Filter.favorite)
+                Streams.AddRange((await client.FavoriteStreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+              else
+                Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+            }
+            //SEARCH
             else
-              Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+            {
+              //do not search favorite streams, too much hassle
+              if (SelectedFilter == Filter.favorite)
+                SelectedFilter = Filter.all;
+              Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
+            }
+
           }
           catch (Exception e)
           {
@@ -360,44 +390,7 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    private async Task SearchStreams()
-    {
-      try
-      {
-        if (SearchQuery == "")
-        {
-          GetStreams().ConfigureAwait(false);
-          return;
-        }
-        if (SearchQuery.Length <= 2)
-          return;
-        InProgress = true;
 
-        Streams = new List<StreamAccountWrapper>();
-
-        foreach (var account in Accounts)
-        {
-          try
-          {
-            var client = new Client(account.Account);
-            Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
-          }
-          catch (Exception e)
-          {
-
-          }
-        }
-
-        Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
-
-        InProgress = false;
-      }
-      catch (Exception ex)
-      {
-
-      }
-
-    }
 
     internal async void Init()
     {
