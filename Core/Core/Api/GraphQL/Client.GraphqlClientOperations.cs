@@ -239,6 +239,7 @@ namespace Speckle.Core.Api
                             role,
                             createdAt,
                             updatedAt,
+                            favoritedDate,
                             collaborators {{
                               id,
                               name,
@@ -257,6 +258,71 @@ namespace Speckle.Core.Api
           throw new SpeckleException("Could not get streams", res.Errors);
 
         return res.Data.user.streams.items;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+
+    public Task<List<Stream>> FavoriteStreamsGet(int limit = 10)
+    {
+      return FavoriteStreamsGet(CancellationToken.None, limit);
+    }
+
+    /// <summary>
+    /// Gets all favorite streams for the current user
+    /// </summary>
+    /// <param name="limit">Max number of streams to return</param>
+    /// <returns></returns>
+    public async Task<List<Stream>> FavoriteStreamsGet(CancellationToken cancellationToken, int limit = 10)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query User {{
+                      user{{
+                        id,
+                        email,
+                        name,
+                        bio,
+                        company,
+                        avatar,
+                        verified,
+                        profiles,
+                        role,
+                        favoriteStreams(limit:{limit}) {{
+                          totalCount,
+                          cursor,
+                          items {{
+                            id,
+                            name,
+                            description,
+                            isPublic,
+                            role,
+                            createdAt,
+                            updatedAt,
+                            favoritedDate,
+                            collaborators {{
+                              id,
+                              name,
+                              role,
+                              avatar
+                            }}
+                          }}
+                        }}
+                      }}
+                    }}"
+        };
+
+        var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          throw new SpeckleException("Could not get favorite streams", res.Errors);
+
+        return res.Data.user.favoriteStreams.items;
       }
       catch (Exception e)
       {
