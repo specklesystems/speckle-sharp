@@ -268,7 +268,7 @@ namespace Objects.Converter.Revit
 
       var speckleElement2D = new Element2D();
 
-      var structuralElement = revitSurface.Document.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(revitSurface.Id));
+      var structuralElement = revitSurface;
 
 
 
@@ -314,18 +314,17 @@ namespace Objects.Converter.Revit
       double thickness = 0;
       var memberType = MemberType2D.Generic2D;
 
-      if (structuralElement is DB.Floor)
+      if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleFloor)
       {
-        var floor = structuralElement as DB.Floor;
-        structMaterial = floor.Document.GetElement(floor.FloorType.StructuralMaterialId) as DB.Material;
-        thickness = GetParamValue<double>(structuralElement, BuiltInParameter.STRUCTURAL_FLOOR_CORE_THICKNESS);
+        structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
+        thickness = structuralElement.Thickness;
         memberType = MemberType2D.Slab;
       }
-      else if (structuralElement is DB.Wall)
+      else if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleWall)
       {
-        var wall = structuralElement as DB.Wall;
-        structMaterial = wall.Document.GetElement(wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as DB.Material;
-        thickness = ScaleToSpeckle(wall.WallType.Width);
+
+        structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
+        thickness = structuralElement.Thickness;
         memberType = MemberType2D.Wall;
       }
 
