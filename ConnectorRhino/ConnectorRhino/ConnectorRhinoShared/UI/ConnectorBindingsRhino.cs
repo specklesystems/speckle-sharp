@@ -75,6 +75,12 @@ namespace SpeckleRhino
         UpdateSelectedStream();
     }
 
+
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
     #region Local streams I/O with local file
 
     public override List<StreamState> GetStreamsInFile()

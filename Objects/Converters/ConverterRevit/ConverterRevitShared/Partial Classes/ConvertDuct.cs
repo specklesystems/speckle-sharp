@@ -57,6 +57,12 @@ namespace Objects.Converter.Revit
       }
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleDuct.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      }; ;
 
       // deleting instead of updating for now!
       if (docObj != null)

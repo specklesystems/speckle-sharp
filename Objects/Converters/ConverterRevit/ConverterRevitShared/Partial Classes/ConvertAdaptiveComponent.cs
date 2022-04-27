@@ -15,6 +15,9 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj }; ;
+
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       if (familySymbol.FamilyName != familyName)

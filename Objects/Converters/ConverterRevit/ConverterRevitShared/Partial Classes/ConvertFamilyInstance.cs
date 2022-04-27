@@ -21,6 +21,12 @@ namespace Objects.Converter.Revit
       var isUpdate = false;
       //try update existing
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleFi.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      }; ;
       if (docObj != null)
       {
         try

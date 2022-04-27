@@ -107,7 +107,7 @@
           VerticalAlignment="Center"
           Foreground="Gray"
           Kind="InfoCircle"
-          ToolTip.Tip="Decide what to do when received elements already exist" />
+          ToolTip.Tip="Decide what to do when an element being received already exists.&#x0a;UPDATE: attempts to update existing elements&#x0a;CREATE: always creates a new element&#x0a;IGNORE: skips already existing elements" />
         <ComboBox
           Grid.Row="1"
           Grid.Column="1"
@@ -116,22 +116,7 @@
           VerticalAlignment="Center"
           Items="{Binding ReceiveModes}"
           PlaceholderText="Select a receive mode"
-          SelectedItem="{Binding SelectedReceiveMode}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate>
-              <Grid ColumnDefinitions="auto,*">
-                <!--<icons:MaterialIcon
-                  Margin="0,0,5,0"
-                  Foreground="DarkGray"
-                  Kind="SourceBranch" />-->
-                <TextBlock
-                  Grid.Column="1"
-                  Text="{Binding name}"
-                  TextTrimming="CharacterEllipsis" />
-              </Grid>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
+          SelectedItem="{Binding SelectedReceiveMode}" />
         <!--  AUTO RECEIVE  -->
         <icons:MaterialIcon
           Grid.Row="1"

@@ -18,6 +18,13 @@ namespace Objects.Converter.Revit
 
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
 
+      if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleRailing.applicationId, ApplicationGeneratedId = revitRailing.UniqueId, NativeObject = revitRailing}
+      };
+
       var railingType = GetElementType<RailingType>(speckleRailing);
       Level level = ConvertLevelToRevit(speckleRailing.level);
 

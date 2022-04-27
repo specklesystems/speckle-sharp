@@ -1,6 +1,5 @@
 ﻿using Objects.Geometry;
 using Objects.Primitive;
-using Objects.Other;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,34 +7,17 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
-using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
-using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Ellipse = Objects.Geometry.Ellipse;
-using Hatch = Objects.Other.Hatch;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
-using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using View3D = Objects.BuiltElements.View3D;
-using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 using Alignment = Objects.BuiltElements.Alignment;
-using Station = Objects.BuiltElements.Station;
-
-using Bentley.DgnPlatformNET;
-using Bentley.DgnPlatformNET.Elements;
-using Bentley.DgnPlatformNET.DgnEC;
-using Bentley.GeometryNET;
-using Bentley.MstnPlatformNET;
-using Bentley.ECObjects.Schema;
-using Bentley.ECObjects;
-using Bentley.ECObjects.Instance;
-using Bentley.EC.Persistence.Query;
 
 #if(OPENBUILDINGS)
 using Bentley.Building.Api;
@@ -82,6 +64,8 @@ namespace Objects.Converter.MicroStationOpen
     {
       throw new NotImplementedException("This converter does not have any settings.");
     }
+
+    public ReceiveMode ReceiveMode { get; set; }
 
     public void SetContextDocument(object session)
     {
@@ -312,7 +296,7 @@ namespace Objects.Converter.MicroStationOpen
 
 #if (OPENROADS || OPENRAIL)
         case Alignment o:
-        Report.Log($"Created Alignment {o.id}");
+          Report.Log($"Created Alignment {o.id}");
           return AlignmentToNative(o);
 #endif
         default:

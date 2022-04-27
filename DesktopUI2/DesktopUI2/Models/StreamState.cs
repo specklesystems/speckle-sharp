@@ -2,6 +2,7 @@
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using System;
@@ -78,6 +79,9 @@ namespace DesktopUI2.Models
 
     [JsonProperty]
     public bool AutoReceive { get; set; }
+
+    [JsonProperty]
+    public ReceiveMode ReceiveMode { get; set; }
 
     [JsonProperty]
     public string StreamId { get; set; }

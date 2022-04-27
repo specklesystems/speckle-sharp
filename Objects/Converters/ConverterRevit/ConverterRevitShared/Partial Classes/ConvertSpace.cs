@@ -14,6 +14,9 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> SpaceToNative(Space speckleSpace)
     {
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
+      if (revitSpace != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleSpace.applicationId, ApplicationGeneratedId = revitSpace.UniqueId, NativeObject = revitSpace } };
+
       var level = ConvertLevelToRevit(speckleSpace.level);
       var basePoint = PointToNative(speckleSpace.basePoint);
       var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel);

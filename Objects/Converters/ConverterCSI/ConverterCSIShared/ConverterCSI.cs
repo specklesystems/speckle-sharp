@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using CSiAPIv1;
+﻿using Objects.Structural.Analysis;
+using Objects.Structural.CSI.Geometry;
+using Objects.Structural.Results;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using BE = Objects.BuiltElements;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using OSG = Objects.Structural.Geometry;
-using OSEA = Objects.Structural.CSI.Analysis;
-using Objects.Converter.CSI;
-using Speckle.Core.Logging;
-using Objects.Structural.Analysis;
-using Objects.Structural.Results;
-using Objects.Structural.CSI.Geometry;
 
 namespace Objects.Converter.CSI
 {
@@ -22,8 +16,8 @@ namespace Objects.Converter.CSI
     public static string CSIAppName = VersionedHostApplications.ETABS;
     public static string CSISlug = HostApplications.ETABS.Slug;
 #elif SAP2000
-        public static string CSIAppName = VersionedHostApplications.SAP2000;
-            public static string CSISlug = HostApplications.SAP2000.Slug;
+    public static string CSIAppName = VersionedHostApplications.SAP2000;
+    public static string CSISlug = HostApplications.SAP2000.Slug;
 #elif CSIBridge
         public static string CSIAppName = VersionedHostApplications.CSIBridge;
             public static string CSISlug = HostApplications.CSIBridge.Slug;
@@ -48,12 +42,16 @@ namespace Objects.Converter.CSI
 
     public ResultSetAll AnalysisResults { get; set; }
 
+    public ReceiveMode ReceiveMode { get; set; }
+
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
       SpeckleModel = ModelToSpeckle();
       AnalysisResults = ResultsToSpeckle();
     }
+
+    public ReceiveMode ReceiveMode { get; set; }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 

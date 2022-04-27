@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using DesktopUI2;
+﻿using DesktopUI2;
 using DesktopUI2.Models;
-using Speckle.Core.Models;
-using Speckle.ConnectorCSI.Util;
-using System.Timers;
-using CSiAPIv1;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Timers;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -42,7 +40,10 @@ namespace Speckle.ConnectorCSI.UI
       //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
     }
 
-
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
 
 
     #region boilerplate
@@ -61,7 +62,8 @@ namespace Speckle.ConnectorCSI.UI
 
     public override string GetHostAppNameVersion() => GetHostAppVersion(Model);
     public override string GetHostAppName() => GetHostAppName(Model);
-    public string GetHostAppVersion(cSapModel model){
+    public string GetHostAppVersion(cSapModel model)
+    {
       var name = "";
       var ver = "";
       var type = "";

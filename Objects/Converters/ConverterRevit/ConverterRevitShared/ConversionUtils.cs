@@ -611,20 +611,26 @@ namespace Objects.Converter.Revit
     /// <returns>The element, if found, otherwise null</returns>
     public DB.Element GetExistingElementByApplicationId(string applicationId)
     {
-      if (applicationId == null)
+      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
       var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
+      Element element = null;
       if (@ref == null)
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
-        return Doc.GetElement(applicationId);
+        element = Doc.GetElement(applicationId);
+      }
+      else
+      {
+
+        //return the cached object, if it's still in the model
+        element = Doc.GetElement(@ref.ApplicationGeneratedId);
       }
 
-      //return the cached object, if it's still in the model
-      return Doc.GetElement(@ref.ApplicationGeneratedId);
+      return element;
     }
 
     #endregion
@@ -850,7 +856,7 @@ namespace Objects.Converter.Revit
           return WallLocationLine.FinishFaceInterior;
       }
     }
-    
+
     #region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
@@ -904,7 +910,7 @@ namespace Objects.Converter.Revit
 
       return materialId;
     }
-    
+
     /// <summary>
     /// Retrieves the material from assigned system type for mep elements
     /// </summary>
@@ -913,7 +919,7 @@ namespace Objects.Converter.Revit
     public static RenderMaterial GetMEPSystemMaterial(Element e)
     {
       ElementId idType = ElementId.InvalidElementId;
-            
+
       if (e is DB.MEPCurve dt)
       {
         var system = dt.MEPSystem;
@@ -925,7 +931,7 @@ namespace Objects.Converter.Revit
       else if (IsSupportedMEPCategory(e))
       {
         MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-        
+
         if (m != null && m.ConnectorManager != null)
         {
           //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
@@ -953,7 +959,7 @@ namespace Objects.Converter.Revit
 
       return null;
     }
-            
+
     private static bool IsSupportedMEPCategory(Element e)
     {
       var categories = e.Document.Settings.Categories;
@@ -966,10 +972,10 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_PipeAccessory,
         //BuiltInCategory.OST_MechanicalEquipment,
       };
-      
+
       return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
     }
-    
+
     #endregion
   }
 }

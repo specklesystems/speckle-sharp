@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using DesktopUI2;
+﻿using DesktopUI2;
 using DesktopUI2.Models;
-using Speckle.Core.Models;
 using Speckle.ConnectorTeklaStructures.Util;
-using System.Timers;
-using Tekla.Structures.Model;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Timers;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
@@ -44,7 +43,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
     }
 
 
-
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
 
     #region boilerplate
     public override string GetActiveViewName()
