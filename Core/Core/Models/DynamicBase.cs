@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -191,7 +191,11 @@ namespace Speckle.Core.Models
       var names = new List<string>();
       foreach (var kvp in properties) names.Add(kvp.Key);
 
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null && x.Name != "Item");
+      var pinfos = GetType()
+        .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        .Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null
+                    && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null
+                    && x.Name != "Item");
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       return names;
@@ -205,7 +209,8 @@ namespace Speckle.Core.Models
     {
       //typed members
       var dic = new Dictionary<string, object>();
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null && x.Name != "Item");
+      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        .Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null && x.Name != "Item");
       foreach (var pi in pinfos)
         dic.Add(pi.Name, pi.GetValue(this));
       //dynamic members
