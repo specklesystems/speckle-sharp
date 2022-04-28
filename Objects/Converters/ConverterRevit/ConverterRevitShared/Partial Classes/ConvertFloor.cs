@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -48,7 +49,20 @@ namespace Objects.Converter.Revit
       }
 
       DB.Floor revitFloor = null;
+#if REVIT2023
       if (floorType == null)
+      {
+        throw new SpeckleException("Floor needs a floor type");
+      }
+      else
+      {
+        if (slope != 0 && slopeDirection != null)
+          revitFloor = Floor.Create(Doc, new List<CurveLoop> { CurveArrayToCurveLoop(outline) }, floorType.Id, level.Id, structural, slopeDirection, slope);
+        if (revitFloor == null)
+          revitFloor = Floor.Create(Doc, new List<CurveLoop> { CurveArrayToCurveLoop(outline) }, floorType.Id, level.Id);
+      }
+#else
+  if (floorType == null)
       {
         if (slope != 0 && slopeDirection != null)
           revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
@@ -62,6 +76,8 @@ namespace Objects.Converter.Revit
         if (revitFloor == null)
           revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
+#endif
+
 
       Doc.Regenerate();
 

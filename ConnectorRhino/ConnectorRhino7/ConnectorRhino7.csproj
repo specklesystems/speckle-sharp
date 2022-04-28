@@ -52,7 +52,6 @@
   <ItemGroup>
     <Folder Include="Properties" />
   </ItemGroup>
-
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
     <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.13/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
