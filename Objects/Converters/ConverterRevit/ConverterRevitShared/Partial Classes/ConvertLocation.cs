@@ -87,8 +87,6 @@ namespace Objects.Converter.Revit
         }
       }
 #endif
-      var point = PointToSpeckle((familyInstance.Location as LocationPoint).Point);
-
       Point point = familyInstance.Location switch
       {
         LocationPoint p => PointToSpeckle(p.Point),
