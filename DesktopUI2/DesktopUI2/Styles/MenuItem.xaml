@@ -13,7 +13,7 @@
       Padding="20">
       <StackPanel VerticalAlignment="Center">
         <Menu>
-          <MenuItem Header="File">
+          <MenuItem Classes="NoHighlight" Header="File">
             <MenuItem.Icon>
               <icons:MaterialIcon
                 Foreground="Gray"
@@ -40,6 +40,11 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
+
+
+
+
+
   <Style Selector="MenuItem">
     <Setter Property="Height" Value="28" />
     <Setter Property="Template">
@@ -138,6 +143,9 @@
     </Setter>
   </Style>
 
+
+
+
   <Style Selector="Menu &gt; MenuItem">
     <Setter Property="Padding" Value="4" />
     <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type TemplatedControl}}, Path=Foreground}" />
@@ -195,4 +203,114 @@
   <Style Selector="MenuItem AccessText">
     <Setter Property="FontSize" Value="12" />
   </Style>
+
+
+  <!--  NO HIGHLIGHT  -->
+  <Style Selector="Menu &gt; MenuItem.NoHighlight">
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="root" BorderThickness="{TemplateBinding BorderThickness}">
+          <Panel>
+
+            <ToggleButton
+              Name="PART_HeaderPresenter"
+              Padding="{Binding Padding, RelativeSource={RelativeSource TemplatedParent}}"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
+              assists:ButtonAssist.CornerRadius="20"
+              Classes="Flat TransparentBack ConstantForeground"
+              Content="{TemplateBinding Header}"
+              Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+              IsChecked="{TemplateBinding IsSubMenuOpen,
+                                          Mode=TwoWay}">
+              <ToggleButton.Styles>
+                <Style Selector="ToggleButton AccessText">
+                  <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+                </Style>
+              </ToggleButton.Styles>
+              <ToggleButton.DataTemplates>
+                <DataTemplate DataType="system:String">
+                  <AccessText Text="{Binding}" />
+                </DataTemplate>
+              </ToggleButton.DataTemplates>
+            </ToggleButton>
+
+            <Popup
+              Name="PART_Popup"
+              IsLightDismissEnabled="False"
+              IsOpen="{TemplateBinding IsSubMenuOpen,
+                                       Mode=TwoWay}"
+              WindowManagerAddShadowHint="False">
+              <styles:Card Margin="8" Padding="0">
+                <Border Name="MainBorder" BorderThickness="{TemplateBinding BorderThickness}">
+
+
+                  <ItemsPresenter
+                    Name="PART_ItemsPresenter"
+                    Margin="0,8"
+                    ItemTemplate="{TemplateBinding ItemTemplate}"
+                    Items="{TemplateBinding Items}"
+                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </Border>
+              </styles:Card>
+            </Popup>
+
+
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="MenuItem.NoHighlight &gt; MenuItem">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          Name="PART_MenuItemRootBorder"
+          Height="{TemplateBinding Height}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}">
+          <Panel>
+            <Border Name="PART_MenuItemHighlighter" Background="{DynamicResource MaterialDesignBody}" />
+            <Grid Margin="{TemplateBinding Padding}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGT" />
+              </Grid.ColumnDefinitions>
+
+              <TextBlock
+                Name="PART_InputGestureText"
+                Grid.Column="3"
+                VerticalAlignment="Center"
+                Text="{TemplateBinding InputGesture,
+                                       Converter={StaticResource KeyGestureConverter}}" />
+
+              <ContentPresenter
+                Name="PART_HeaderPresenter"
+                Grid.Column="2"
+                Margin="0"
+                Padding="0"
+                VerticalAlignment="Stretch"
+                Content="{TemplateBinding Header}"
+                Cursor="Arrow">
+                <ContentPresenter.DataTemplates>
+                  <DataTemplate DataType="system:String">
+                    <AccessText Text="{Binding}" />
+                  </DataTemplate>
+                </ContentPresenter.DataTemplates>
+              </ContentPresenter>
+
+
+            </Grid>
+
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
 </Styles>
+
+

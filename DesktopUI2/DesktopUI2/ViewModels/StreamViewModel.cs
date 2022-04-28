@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
@@ -174,7 +175,7 @@ namespace DesktopUI2.ViewModels
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
-            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}";
+            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{SelectedBranch.name}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         }
@@ -289,48 +290,62 @@ namespace DesktopUI2.ViewModels
     }
     public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
     {
-      StreamState = streamState;
-      //use cached stream, then load a fresh one async 
-      //this way we can immediately show stream name and other info and update it later if it changed
-      Stream = streamState.CachedStream;
-      Client = streamState.Client;
-      IsReceiver = streamState.IsReceiver;
-
-      //default to receive mode if no permission to send
-      if (Stream.role == null || Stream.role == "stream:reviewer")
+      try
       {
-        IsReceiver = true;
+        StreamState = streamState;
+        //use cached stream, then load a fresh one async 
+        //this way we can immediately show stream name and other info and update it later if it changed
+        Stream = streamState.CachedStream;
+        Client = streamState.Client;
+        IsReceiver = streamState.IsReceiver;
+
+        //default to receive mode if no permission to send
+        if (Stream.role == null || Stream.role == "stream:reviewer")
+        {
+          IsReceiver = true;
+        }
+
+        HostScreen = hostScreen;
+        RemoveSavedStreamCommand = removeSavedStreamCommand;
+
+        //use dependency injection to get bindings
+        Bindings = Locator.Current.GetService<ConnectorBindings>();
+
+        if (Client == null)
+        {
+          NoAccess = true;
+          Notification = "You do not have access to this Stream.";
+          NotificationUrl = $"{streamState.ServerUrl}/streams/{streamState.StreamId}";
+          return;
+        }
+
+        Init();
+        GenerateMenuItems();
+
+        var updateTextTimer = new System.Timers.Timer();
+        updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
+        updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
+        updateTextTimer.Enabled = true;
       }
-
-      HostScreen = hostScreen;
-      RemoveSavedStreamCommand = removeSavedStreamCommand;
-
-      //use dependency injection to get bindings
-      Bindings = Locator.Current.GetService<ConnectorBindings>();
-
-      if (Client == null)
+      catch (Exception ex)
       {
-        NoAccess = true;
-        Notification = "You do not have access to this Stream.";
-        NotificationUrl = $"{streamState.ServerUrl}/streams/{streamState.StreamId}";
-        return;
+
       }
-
-      Init();
-      GenerateMenuItems();
-
-      var updateTextTimer = new System.Timers.Timer();
-      updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
-      updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
-      updateTextTimer.Enabled = true;
     }
 
     private void Init()
     {
-      GetStream().ConfigureAwait(false);
+      try
+      {
+        GetStream().ConfigureAwait(false);
 
-      GetBranchesAndRestoreState();
-      GetActivity();
+        GetBranchesAndRestoreState();
+        GetActivity();
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     private void UpdateTextTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -341,21 +356,28 @@ namespace DesktopUI2.ViewModels
 
     private void GenerateMenuItems()
     {
-      var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
-      menu.Items = new List<MenuItemViewModel> {
+      try
+      {
+        var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
+        menu.Items = new List<MenuItemViewModel> {
         //new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
         new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox)
       };
-      var customMenues = Bindings.GetCustomStreamMenuItems();
-      if (customMenues != null)
-        menu.Items.AddRange(customMenues.Select(x => new MenuItemViewModel(x, this.StreamState)).ToList());
-      //remove is added last
-      //menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
-      MenuItems.Add(menu);
+        var customMenues = Bindings.GetCustomStreamMenuItems();
+        if (customMenues != null)
+          menu.Items.AddRange(customMenues.Select(x => new MenuItemViewModel(x, this.StreamState)).ToList());
+        //remove is added last
+        //menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
+        MenuItems.Add(menu);
 
-      this.RaisePropertyChanged("MenuItems");
+        this.RaisePropertyChanged("MenuItems");
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     public async Task GetStream()
@@ -376,71 +398,102 @@ namespace DesktopUI2.ViewModels
 
     internal async void GetBranchesAndRestoreState()
     {
-      //get available settings from our bindings
-      Settings = Bindings.GetSettings();
-
-      //get available filters from our bindings
-      AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
-      SelectedFilter = AvailableFilters[0];
-
-      var branches = await Client.StreamGetBranches(Stream.id, 100, 0);
-      Branches = branches;
-
-      var branch = Branches.FirstOrDefault(x => x.name == StreamState.BranchName);
-      if (branch != null)
-        SelectedBranch = branch;
-      else
-        SelectedBranch = Branches[0];
-
-      if (StreamState.Filter != null)
+      try
       {
-        SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
-        if (SelectedFilter != null)
-          SelectedFilter.Filter = StreamState.Filter;
-      }
-      if (StreamState.Settings != null)
-      {
-        foreach (var setting in Settings)
+        //get available settings from our bindings
+        Settings = Bindings.GetSettings();
+
+        //get available filters from our bindings
+        AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
+        SelectedFilter = AvailableFilters[0];
+
+        var branches = await Client.StreamGetBranches(Stream.id, 100, 0);
+        Branches = branches;
+
+        var branch = Branches.FirstOrDefault(x => x.name == StreamState.BranchName);
+        if (branch != null)
+          SelectedBranch = branch;
+        else
+          SelectedBranch = Branches[0];
+
+        //restore selected filter
+        if (StreamState.Filter != null)
         {
-          var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
-          if (savedSetting != null)
-            setting.Selection = savedSetting.Selection;
+          SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
+          if (SelectedFilter != null)
+            SelectedFilter.Filter = StreamState.Filter;
         }
+        else
+        {
+          var selectionFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Type == typeof(ManualSelectionFilter).ToString());
+          //if there are any selected objects, set the manual selection automagically
+          if (selectionFilter != null && Bindings.GetSelectedObjects().Any())
+          {
+            SelectedFilter = selectionFilter;
+            SelectedFilter.AddObjectSelection();
+          }
+
+        }
+        if (StreamState.Settings != null)
+        {
+          foreach (var setting in Settings)
+          {
+            var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
+            if (savedSetting != null)
+              setting.Selection = savedSetting.Selection;
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+
       }
     }
 
     private async void GetActivity()
     {
-
-      var filteredActivity = (await Client.StreamGetActivity(Stream.id))
-        .Where(x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create")
-        .Reverse().ToList();
-      var activity = new List<ActivityViewModel>();
-      foreach (var a in filteredActivity)
+      try
       {
-        var avm = new ActivityViewModel();
-        await avm.Init(a, Client);
-        activity.Add(avm);
+        var filteredActivity = (await Client.StreamGetActivity(Stream.id))
+          .Where(x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create")
+          .Reverse().ToList();
+        var activity = new List<ActivityViewModel>();
+        foreach (var a in filteredActivity)
+        {
+          var avm = new ActivityViewModel();
+          await avm.Init(a, Client);
+          activity.Add(avm);
+
+        }
+        Activity = activity;
+        ScrollToBottom();
+      }
+      catch (Exception ex)
+      {
 
       }
-      Activity = activity;
-      ScrollToBottom();
-
     }
 
     private async void ScrollToBottom()
     {
-      if (StreamEditView.Instance != null)
+      try
       {
-        await Task.Delay(250);
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        if (StreamEditView.Instance != null)
         {
-          var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
-          if (scroller != null)
+          await Task.Delay(250);
+          Avalonia.Threading.Dispatcher.UIThread.Post(() =>
           {
-            scroller.ScrollToEnd();
-          }
-        });
+            var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
+            if (scroller != null)
+            {
+              scroller.ScrollToEnd();
+            }
+          });
+        }
+      }
+      catch (Exception ex)
+      {
+
       }
     }
 
@@ -449,57 +502,85 @@ namespace DesktopUI2.ViewModels
     /// </summary>
     private void UpdateStreamState()
     {
-      StreamState.BranchName = SelectedBranch.name;
-      StreamState.IsReceiver = IsReceiver;
-      if (IsReceiver)
-        StreamState.CommitId = SelectedCommit.id;
-      if (!IsReceiver)
-        StreamState.Filter = SelectedFilter.Filter;
-      StreamState.Settings = Settings.Select(o => o).ToList();
+      try
+      {
+        StreamState.BranchName = SelectedBranch.name;
+        StreamState.IsReceiver = IsReceiver;
+        if (IsReceiver)
+          StreamState.CommitId = SelectedCommit.id;
+        if (!IsReceiver)
+          StreamState.Filter = SelectedFilter.Filter;
+        StreamState.Settings = Settings.Select(o => o).ToList();
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     private async void GetCommits()
     {
-      if (SelectedBranch.commits == null || SelectedBranch.commits.totalCount > 0)
+      try
       {
-        var branch = await Client.BranchGet(Stream.id, SelectedBranch.name, 100);
-        branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
-        Commits = branch.commits.items;
-        var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
-        if (commit != null)
-          SelectedCommit = commit;
+        if (SelectedBranch.commits == null || SelectedBranch.commits.totalCount > 0)
+        {
+          var branch = await Client.BranchGet(Stream.id, SelectedBranch.name, 100);
+          branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
+          Commits = branch.commits.items;
+          var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
+          if (commit != null)
+            SelectedCommit = commit;
+          else
+            SelectedCommit = Commits[0];
+        }
         else
-          SelectedCommit = Commits[0];
+        {
+          SelectedCommit = null;
+          Commits = new List<Commit>();
+          SelectedCommit = null;
+        }
       }
-      else
+      catch (Exception ex)
       {
-        SelectedCommit = null;
-        Commits = new List<Commit>();
-        SelectedCommit = null;
+
       }
     }
 
     private async void Client_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo info)
     {
-      var branches = await Client.StreamGetBranches(StreamState.StreamId);
+      try
+      {
+        var branches = await Client.StreamGetBranches(StreamState.StreamId);
 
-      if (!IsReceiver) return;
+        if (!IsReceiver) return;
 
-      var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
-      var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
+        var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
+        var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
 
-      Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
-      NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
-      ScrollToBottom();
+        Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
+        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
+        ScrollToBottom();
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     public void DownloadImage(string url)
     {
-      using (WebClient client = new WebClient())
+      try
       {
-        client.Headers.Set("Authorization", "Bearer " + Client.ApiToken);
-        client.DownloadDataAsync(new Uri(url));
-        client.DownloadDataCompleted += DownloadComplete;
+        using (WebClient client = new WebClient())
+        {
+          client.Headers.Set("Authorization", "Bearer " + Client.ApiToken);
+          client.DownloadDataAsync(new Uri(url));
+          client.DownloadDataCompleted += DownloadComplete;
+        }
+      }
+      catch (Exception ex)
+      {
+
       }
     }
 
@@ -541,7 +622,8 @@ namespace DesktopUI2.ViewModels
     {
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
 
-      Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
+      if (!string.IsNullOrEmpty(NotificationUrl))
+        Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
       CloseNotificationCommand();
     }
@@ -571,53 +653,72 @@ namespace DesktopUI2.ViewModels
 
     public async void SendCommand()
     {
-      UpdateStreamState();
-      //save the stream as well
-      HomeViewModel.Instance.AddSavedStream(this);
-
-      Reset();
-      Progress.IsProgressing = true;
-      var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
-      Progress.IsProgressing = false;
-
-      if (!Progress.CancellationTokenSource.IsCancellationRequested)
+      try
       {
-        LastUsed = DateTime.Now.ToString();
-        Analytics.TrackEvent(Client.Account, Analytics.Events.Send);
+        UpdateStreamState();
 
-        Notification = $"Sent successfully, view online";
-        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
+        HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
+
+        Reset();
+
+        Progress.IsProgressing = true;
+        var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested && commitId != null)
+        {
+          LastUsed = DateTime.Now.ToString();
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object> { { "filter", StreamState.Filter.Name } });
+
+          Notification = $"Sent successfully, view online";
+          NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
+        }
+        else
+        {
+          Notification = "Nothing sent!";
+        }
+
+        if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
+          ShowReport = true;
+
+        GetActivity();
+
       }
+      catch (Exception ex)
+      {
 
-      if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-        ShowReport = true;
-
-      GetActivity();
+      }
     }
 
     public async void ReceiveCommand()
     {
-      UpdateStreamState();
-      //save the stream as well
-      HomeViewModel.Instance.AddSavedStream(this);
-
-      Reset();
-      Progress.IsProgressing = true;
-      await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
-      Progress.IsProgressing = false;
-
-      if (!Progress.CancellationTokenSource.IsCancellationRequested)
+      try
       {
-        LastUsed = DateTime.Now.ToString();
-        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive);
+        UpdateStreamState();
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
+
+        Reset();
+        Progress.IsProgressing = true;
+        await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          LastUsed = DateTime.Now.ToString();
+          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive);
+        }
+
+        if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
+          ShowReport = true;
+
+
+        GetActivity();
       }
+      catch (Exception ex)
+      {
 
-      if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-        ShowReport = true;
-
-
-      GetActivity();
-
+      }
     }
 
     private void Reset()
@@ -631,107 +732,55 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceiveCommand()
     {
       Progress.CancellationTokenSource.Cancel();
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancel Send or Receive" } });
+      Reset();
+      string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
+      Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
     }
 
     public async void OpenReportCommand()
     {
-      //ensure click transition has finished
-      await Task.Delay(1000);
-      ShowReport = true;
-      var report = new Report();
-      report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
-      report.DataContext = Progress;
-      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
-      report.ShowDialog(MainWindow.Instance);
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
+      try
+      {
+        //ensure click transition has finished
+        await Task.Delay(1000);
+        ShowReport = true;
+        var report = new Report();
+        report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
+        report.DataContext = Progress;
+        report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
+        report.ShowDialog(MainWindow.Instance);
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
-
-
 
     private void SaveCommand()
     {
-      UpdateStreamState();
-      MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-      HomeViewModel.Instance.AddSavedStream(this);
-
-      if (IsReceiver)
+      try
       {
-        Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
+        UpdateStreamState();
+        MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+        HomeViewModel.Instance.AddSavedStream(this);
+
+        if (IsReceiver)
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
+        }
+
+        else
+        {
+          Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
+        }
       }
-
-      else
+      catch (Exception ex)
       {
-        Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
+
       }
     }
-
-    //private async void SendCommand()
-    //{
-
-    //  try
-    //  {
-    //    Progress = new ProgressViewModel();
-    //    Progress.ProgressTitle = "Sending to Speckle 🚀";
-    //    Progress.IsProgressing = true;
-
-    //    var dialog = new QuickOpsDialog();
-    //    dialog.DataContext = Progress;
-    //    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-    //    dialog.ShowDialog(MainWindow.Instance);
-    //    await Task.Run(() => Bindings.SendStream(GetStreamState(), Progress));
-    //    Progress.IsProgressing = false;
-
-    //    if (!Progress.CancellationTokenSource.IsCancellationRequested)
-    //    {
-    //      Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Quick" } });
-    //      Tracker.TrackPageview(Tracker.SEND);
-    //    }
-    //    else
-    //      dialog.Close(); // if user cancelled close automatically
-
-    //    MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-
-    //  }
-    //  catch (Exception ex)
-    //  {
-
-    //  }
-    //}
-
-    //private async void ReceiveCommand()
-    //{
-    //  try
-    //  {
-    //    Progress = new ProgressViewModel();
-    //    Progress.ProgressTitle = "Receiving from Speckle 🚀";
-    //    Progress.IsProgressing = true;
-
-    //    var dialog = new QuickOpsDialog();
-    //    dialog.DataContext = Progress;
-    //    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-    //    dialog.ShowDialog(MainWindow.Instance);
-
-    //    await Task.Run(() => Bindings.ReceiveStream(GetStreamState(), Progress));
-
-    //    Progress.IsProgressing = false;
-
-    //    if (!Progress.CancellationTokenSource.IsCancellationRequested)
-    //    {
-    //      Analytics.TrackEvent(Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "method", "Quick" } });
-    //      Tracker.TrackPageview(Tracker.RECEIVE);
-    //    }
-    //    else
-    //      dialog.Close(); // if user cancelled close automatically
-
-    //    MainWindowViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-    //  }
-    //  catch (Exception ex)
-    //  {
-
-    //  }
-    //}
-
 
 
     private async void OpenSettingsCommand()

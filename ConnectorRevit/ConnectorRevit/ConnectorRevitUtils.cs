@@ -237,7 +237,7 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_GenericModel,
       BuiltInCategory.OST_Grids,
       BuiltInCategory.OST_Gutter,
-      BuiltInCategory.OST_HVAC_Zones,
+      //BuiltInCategory.OST_HVAC_Zones,
       BuiltInCategory.OST_IOSModelGroups,
       BuiltInCategory.OST_LightingDevices,
       BuiltInCategory.OST_LightingFixtures,

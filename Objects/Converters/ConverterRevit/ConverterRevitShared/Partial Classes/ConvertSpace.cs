@@ -96,8 +96,8 @@ namespace Objects.Converter.Revit
       speckleSpace.name = revitSpace.Name;
       speckleSpace.number = revitSpace.Number;
       speckleSpace.basePoint = (Point)LocationToSpeckle(revitSpace);
-      speckleSpace.level = ConvertAndCacheLevel(revitSpace.LevelId);
-      speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId());
+      speckleSpace.level = ConvertAndCacheLevel(revitSpace.LevelId, revitSpace.Document);
+      speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId(), revitSpace.Document);
       speckleSpace.baseOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET);
       speckleSpace.topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
       speckleSpace.outline = profiles[0];

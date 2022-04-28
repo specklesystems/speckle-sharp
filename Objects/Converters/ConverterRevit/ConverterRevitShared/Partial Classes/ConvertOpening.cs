@@ -51,7 +51,7 @@ namespace Objects.Converter.Revit
           }
 
           var poly = rwo.outline as Polyline;
-          if (poly == null || poly.GetPoints().Count != 5)
+          if (poly == null || !(poly.GetPoints().Count == 4 && poly.closed))
             throw new SpeckleException($"Curve outline for wall opening must be a rectangle-shaped polyline.");
 
           var points = poly.GetPoints().Select(PointToNative).ToList();

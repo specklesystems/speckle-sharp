@@ -63,7 +63,7 @@
               Text="{Binding Stream.name}"
               TextTrimming="CharacterEllipsis" />
             <!--  SENDER  -->
-            <Grid Grid.Row="1" ColumnDefinitions="auto,auto">
+            <Grid Grid.Row="1" ColumnDefinitions="auto,auto,auto">
               <Grid
                 Grid.Column="0"
                 ColumnDefinitions="auto,auto,auto,auto,*"
@@ -123,6 +123,14 @@
                 IsVisible="{Binding StreamState.SchedulerEnabled}"
                 Kind="ClockCheck"
                 ToolTip.Tip="Scheduler is enabled on this stream" />
+              <icons:MaterialIcon
+                Grid.Column="2"
+                Margin="10,0,5,0"
+                VerticalAlignment="Center"
+                Foreground="Gray"
+                IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Kind="Heart"
+                ToolTip.Tip="This is a favorite stream" />
             </Grid>
             <!--  DETAILS - visible when not progressing  -->
             <Grid

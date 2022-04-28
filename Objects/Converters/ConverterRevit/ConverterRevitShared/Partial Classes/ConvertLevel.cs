@@ -159,12 +159,12 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      return ConvertAndCacheLevel(param.AsElementId());
+      return ConvertAndCacheLevel(param.AsElementId(), elem.Document);
     }
 
-    private RevitLevel ConvertAndCacheLevel(ElementId id)
+    private RevitLevel ConvertAndCacheLevel(ElementId id, Document doc)
     {
-      var level = Doc.GetElement(id) as DB.Level;
+      var level = doc.GetElement(id) as DB.Level;
 
       if (level == null) return null;
       if (!Levels.ContainsKey(level.Name))

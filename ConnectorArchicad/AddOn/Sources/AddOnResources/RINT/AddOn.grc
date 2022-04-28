@@ -6,6 +6,6 @@
 }
 
 'STR#' ID_ADDON_MENU "Strings for the Menu" {
-/* [  1] */		"Speckle Connector... ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
+/* [  1] */		"ALPHA Speckle Connector ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
 }
 

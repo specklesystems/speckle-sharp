@@ -13,9 +13,11 @@ using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment; 
 using Column = Objects.BuiltElements.Column;
 using Beam = Objects.BuiltElements.Beam;
+using Duct = Objects.BuiltElements.Duct;
 using Wall = Objects.BuiltElements.Wall;
 using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
+using Pipe = Objects.BuiltElements.Pipe;
 using Roof = Objects.BuiltElements.Roof;
 using Opening = Objects.BuiltElements.Opening;
 using Point = Objects.Geometry.Point;
@@ -128,12 +130,32 @@ namespace Objects.Converter.RhinoGh
 
     public Column CurveToSpeckleColumn(RH.Curve curve)
     {
-      return new Column((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
+      return new Column(CurveToSpeckle(curve)) { units = ModelUnits };
     }
 
     public Beam CurveToSpeckleBeam(RH.Curve curve)
     {
-      return new Beam((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
+      return new Beam(CurveToSpeckle(curve)) { units = ModelUnits };
+    }
+
+    // args of format [width, height, diameter]
+    public Duct CurveToSpeckleDuct(RH.Curve curve, string[] args)
+    {
+      Duct duct = null;
+      if (args.Length < 3) return duct;
+      if (double.TryParse(args[0], out double height) && double.TryParse(args[1], out double width) && double.TryParse(args[2], out double diameter))
+        duct = new Duct(CurveToSpeckle(curve), width, height, diameter) { units = ModelUnits, length = curve.GetLength() };
+      return duct;
+    }
+
+    // args of format [diameter]
+    public Pipe CurveToSpecklePipe(RH.Curve curve, string[] args)
+    {
+      Pipe pipe = null;
+      if (args.Length < 1) return pipe;
+      if (double.TryParse(args[0], out double diameter))
+        pipe = new Pipe(CurveToSpeckle(curve), curve.GetLength(), diameter) { units = ModelUnits };
+      return pipe;
     }
 
     public Opening CurveToSpeckleOpening(RH.Curve curve)

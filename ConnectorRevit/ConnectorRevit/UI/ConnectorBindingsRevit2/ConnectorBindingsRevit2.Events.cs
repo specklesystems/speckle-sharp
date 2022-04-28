@@ -96,7 +96,7 @@ namespace Speckle.ConnectorRevit.UI
         dialog.Close();
         if (!progress.CancellationTokenSource.IsCancellationRequested)
         {
-          Analytics.TrackEvent(stream.Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Schedule" } });
+          Analytics.TrackEvent(stream.Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Schedule" }, { "filter", stream.Filter.Name } });
         }
 
       }

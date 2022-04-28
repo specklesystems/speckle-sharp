@@ -8,6 +8,18 @@
     <OutputType>Library</OutputType>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <StartupObject />
+    <PackageProjectUrl>https://speckle.systems</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <Description>Cross platform Desktop UI for Speckle.</Description>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <PackageTags>speckle, ui, desktopui, dui</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <Product></Product>
+    <PackageId>Speckle.DesktopUI</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
 
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -169,6 +181,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Native\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="App.xaml.cs">
