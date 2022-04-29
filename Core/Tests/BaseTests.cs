@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Tests;
@@ -74,6 +76,23 @@ namespace Tests
       Assert.AreEqual(actualNum, num);
     }
 
+    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
+    public void CanGetMemberNames()
+    {
+      var @base = new SampleObject();
+      var names = @base.GetMemberNames();
+      Assert.False(names.Contains("IgnoredSchemaProp"));
+      Assert.False(names.Contains("DeprecatedSchemaProp"));
+    }
+
+    [Test]
+    public void CanGetMembers()
+    {
+      var @base = new SampleObject();
+      var names = @base.GetMembers().Keys;
+      Assert.False(names.Contains("IgnoredSchemaProp"));
+      Assert.False(names.Contains("DeprecatedSchemaProp"));
+    }
     public class SampleObject : Base
     {
       [Chunkable]
@@ -91,10 +110,16 @@ namespace Tests
 
       public string @crazyProp { get; set; }
 
+      [SchemaIgnore]
+      public SampleProp IgnoredSchemaProp { get; set; }
+
+      [Obsolete("Use attached prop")]
+      public SampleProp ObsoleteSchemaProp { get; set; }
+      
       public SampleObject() { }
     }
 
-    public class SampleProp
+    public class SampleProp: Base
     {
       public string name { get; set; }
     }
