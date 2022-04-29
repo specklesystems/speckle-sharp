@@ -80,19 +80,56 @@ namespace Tests
     public void CanGetMemberNames()
     {
       var @base = new SampleObject();
+      @base["dynamicProp"] = 123;
       var names = @base.GetMemberNames();
-      Assert.False(names.Contains("IgnoredSchemaProp"));
+      var propName = "IgnoredSchemaProp";
+      Assert.False(names.Contains(propName));
       Assert.False(names.Contains("DeprecatedSchemaProp"));
     }
 
-    [Test]
+    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
     public void CanGetMembers()
     {
       var @base = new SampleObject();
+      @base["dynamicProp"] = 123;
+
       var names = @base.GetMembers().Keys;
       Assert.False(names.Contains("IgnoredSchemaProp"));
       Assert.False(names.Contains("DeprecatedSchemaProp"));
     }
+    
+    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
+    public void CanGetDynamicMembers()
+    {
+      var @base = new SampleObject();
+      @base["dynamicProp"] = null;
+
+      var names = @base.GetDynamicMemberNames();
+      Assert.True(names.Contains("dynamicProp"));
+      Assert.True(@base["dynamicProp"] == null);
+    }
+
+    [Test]
+    public void CanSetDynamicMembers()
+    {
+      var @base = new SampleObject();
+      var key = "dynamicProp";
+      var value = "something";
+      // Can create a new dynamic member
+      @base[key] = value;
+      Assert.True((string)@base[key] == value);
+      
+      // Can overwrite existing
+      value = "some other value";
+      @base[key] = value;
+      Assert.True((string)@base[key] == value);
+      
+      // Accepts null values
+      @base[key] = null;
+      Assert.True(@base[key] == null);
+    }
+    
+    
     public class SampleObject : Base
     {
       [Chunkable]
@@ -111,15 +148,15 @@ namespace Tests
       public string @crazyProp { get; set; }
 
       [SchemaIgnore]
-      public SampleProp IgnoredSchemaProp { get; set; }
+      public string IgnoredSchemaProp { get; set; }
 
       [Obsolete("Use attached prop")]
-      public SampleProp ObsoleteSchemaProp { get; set; }
+      public string ObsoleteSchemaProp { get; set; }
       
       public SampleObject() { }
     }
 
-    public class SampleProp: Base
+    public class SampleProp
     {
       public string name { get; set; }
     }
