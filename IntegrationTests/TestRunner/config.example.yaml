@@ -1,0 +1,49 @@
+apps:
+  - Revit:
+    - 2020: 
+      - /tmp/asdf
+    - 2021:
+      - /tmp
+  - Rhino:
+    - 6
+    - 7
+  - Unity:
+    - 2021.7
+  - Sketchup:
+    - 10:
+      - /tmp/skpSource
+
+pipelines:
+  - - Revit
+    - Rhino
+    - Unity
+  - - Sketchup
+    - Unity
+
+result_storage: /tmp/tester_results/
+
+# 2. supported app versions
+# Revit:
+# - 2020:
+#    - /tmp/whatever or this could be a file glob
+#    - s3://mymagic.source #this needs an S3 access token of sorts
+# - 2021:
+#    - /asdf
+# Rhino:
+# - 6
+# - 7
+# ...
+# Unity:
+# - 2021.7
+
+# 3. pipelines:
+# - rvt -> rhino -> unity
+# - skp -> blnd -> unity
+# - gh -> rvt -> unreal
+# - rvt -> rvt
+
+
+# how to handle app version specific:
+# source file versions 
+
+# load source files from local folders / config for source file repo separately ?

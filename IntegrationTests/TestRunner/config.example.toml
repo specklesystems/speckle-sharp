@@ -1,0 +1,15 @@
+[[apps]]
+name = "Revit"
+
+[[apps.versions]]
+version = "2020"
+
+[[apps.versions.sourceFiles]] = ['asdf', 'asdf']
+
+
+
+[[apps]]
+name = "Rhino"
+
+[[apps]]
+name = "Unity"

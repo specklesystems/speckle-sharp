@@ -15,7 +15,11 @@
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "env": {
+                "SPECKLE_TEST_SERVER_URL": "https://latest.speckle.dev",
+                "SPECKLE_TEST_TOKEN": "37ba246aa647f9317c0364423e09cfc617a0dfeb4a"
+            }
         },
         {
             "name": ".NET Core Attach",
