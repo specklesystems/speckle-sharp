@@ -8,6 +8,12 @@
     },
     {
       "path": "..\\..\\Objects\\Objects"
+    },
+    {
+      "path": "..\\..\\.circleci"
+    },
+    {
+      "path": "."
     }
   ],
   "settings": {

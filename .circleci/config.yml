@@ -340,12 +340,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             cd speckle-sharp-ci-tools/Resources
             Expand-Archive -Path Archicad25DevKit.zip
       - run:
-          name: build AddOn
+          name: cmake AddOn
           command: |
             cd ConnectorArchicad/AddOn
             mkdir Build
             $env:Path +="C:\Program Files\CMake\bin"
             cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            msbuild "Build/Speckle Connector.sln" -property:Configuration=Release
+      - run:
+          name: msbuild AddOn
+          command: |
+            cd ConnectorArchicad/AddOn
             msbuild "Build/Speckle Connector.sln" -property:Configuration=Release
       - persist_to_workspace:
           root: ./
