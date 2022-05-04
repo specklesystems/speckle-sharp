@@ -66,12 +66,13 @@
           VerticalAlignment="Bottom"
           Orientation="Horizontal"
           Spacing="6">
-          <TextBlock
+          <Image Source="../../Assets/logo.png" Height="30" />
+          <!--<TextBlock
             FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
             FontSize="18"
             FontWeight="Bold"
             Foreground="{DynamicResource PrimaryHueMidBrush}"
-            Text="SPECKLE" />
+            Text="SPECKLE" />-->
           <TextBlock
             FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
             FontSize="18"
