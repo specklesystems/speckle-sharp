@@ -1,14 +1,24 @@
 {
-	"folders": [
-		{
-			"path": "..\\AddOn"
-		},
-		{
-			"path": "..\\ConnectorArchicad"
-		},
-		{
-			"path": "..\\..\\Objects\\Objects"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "path": "..\\AddOn"
+    },
+    {
+      "path": "..\\ConnectorArchicad"
+    },
+    {
+      "path": "..\\..\\Objects\\Objects"
+    },
+    {
+      "path": "..\\..\\.circleci"
+    },
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.associations": {
+      "*.in": "cpp"
+    }
+  }
 }
