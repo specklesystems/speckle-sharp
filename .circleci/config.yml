@@ -881,4 +881,4 @@ workflows:
 
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT ~380  --
-              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|grasshopper-win|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|grasshopper-win|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures|archicad)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
