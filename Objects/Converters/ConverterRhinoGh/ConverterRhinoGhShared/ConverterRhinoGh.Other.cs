@@ -33,7 +33,9 @@ namespace Objects.Converter.RhinoGh
 
       attributes.ColorSource = ObjectColorSource.ColorFromObject;
       attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
-      attributes.PlotWeight = display.lineweight;
+      attributes.PlotWeightSource = ObjectPlotWeightSource.PlotWeightFromObject;
+      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
+      attributes.PlotWeight = display.lineweight * conversionFactor;
       attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
       var lineStyle = Doc.Linetypes.FindName(display.linetype);
       attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
