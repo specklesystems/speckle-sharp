@@ -325,7 +325,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
   setup-archicad-dev: # get Archicad dev kit
     executor:
       name: win/default
-      shell: powershell.exe
+      shell: bash.exe
     steps:
       - checkout
       - attach_workspace:
@@ -338,15 +338,19 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: extract devkit
           command: |
             cd speckle-sharp-ci-tools/Resources
-            Expand-Archive -Path Archicad25DevKit.zip
+            unzip Archicad25DevKit.zip -d Archicad25DevKit
       - run:
-          name: build AddOn
+          name: cmake AddOn
           command: |
             cd ConnectorArchicad/AddOn
             mkdir Build
-            $env:Path +="C:\Program Files\CMake\bin"
-            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit"
-            msbuild "Build/Speckle Connector.sln" /p:Configuration=Release
+            export PATH=$PATH:"C:\Program Files\CMake\bin"
+            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+      - run:
+          name: msbuild AddOn
+          command: |
+            cd ConnectorArchicad/AddOn
+            "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe" "Build/Speckle Connector.sln" -property:Configuration=Release
       - persist_to_workspace:
           root: ./
           paths:
@@ -877,4 +881,4 @@ workflows:
 
           filters:
             tags: # runs on any tag in the format "xyz/1.0.0" or "xyz/1.0.0-beta" -- TO UPDATE IDENTICAL LINE AT ~380  --
-              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|grasshopper-win|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/
+              only: /^(all|win|mac|dynamo|revit|grasshopper|grasshopper-mac|grasshopper-win|rhino|rhino-mac|autocadcivil|revitdynamo|rhinogh|csi|etabs|sap2000|csibridge|safe|microstation|microstation|openbuildings|openrail|openroads|bentley|teklastructures|archicad)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?$/

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\DesktopUI\DesktopUI.csproj", "{A97C3046-2D55-4C49-AB40-A3C2194B82FA}"
 EndProject
@@ -41,11 +41,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2.Launcher", "..\DesktopUI2\DesktopUI2.Launcher\DesktopUI2.Launcher.csproj", "{0F61B231-C025-4905-9FAC-0AC5611A9FB9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2023", "..\Objects\Converters\ConverterRevit\ConverterRevit2023\ConverterRevit2023.csproj", "{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2023", "ConnectorRevit2023\ConnectorRevit2023.csproj", "{586A5A37-93F6-427E-8DF8-C10DB4D6822A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{236cff40-7dda-4cc5-84a9-b1df6f0985ef}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{240ead7e-ef10-482a-b299-3b85b64b032f}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 4
 		ConnectorRevit\ConnectorRevit.projitems*{5fd0d810-03e9-4fd2-93e4-b1b51e5d82c5}*SharedItemsImports = 13
 		ConnectorRevit\ConnectorRevit.projitems*{8a53b084-20d8-48f6-9591-9d53cfa74130}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{c74e4c61-ca68-47f9-825e-91b7a5c4546d}*SharedItemsImports = 5
@@ -172,6 +178,22 @@ Global
 		{0F61B231-C025-4905-9FAC-0AC5611A9FB9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F61B231-C025-4905-9FAC-0AC5611A9FB9}.Release|x64.ActiveCfg = Release|Any CPU
 		{0F61B231-C025-4905-9FAC-0AC5611A9FB9}.Release|x64.Build.0 = Release|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Debug|x64.Build.0 = Debug|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Release|x64.ActiveCfg = Release|Any CPU
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF}.Release|x64.Build.0 = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|x64.Build.0 = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.ActiveCfg = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,6 +215,8 @@ Global
 		{DFDFDBB8-018B-4DCB-A012-54227ABF53A7} = {89C98BAA-C2BC-4EAF-AB97-C513A5A2372D}
 		{AAB81F89-C71C-4F8A-B256-6A23D19134A7} = {39F07EF9-5867-4062-886D-2417C86305C2}
 		{0F61B231-C025-4905-9FAC-0AC5611A9FB9} = {39F07EF9-5867-4062-886D-2417C86305C2}
+		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF} = {0FED0483-A54F-44EE-88FB-2FA6BAD13891}
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A} = {89C98BAA-C2BC-4EAF-AB97-C513A5A2372D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650BE642-C7CC-4FF5-9EE5-8C57BF553143}
