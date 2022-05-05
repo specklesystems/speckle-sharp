@@ -212,6 +212,10 @@
     <Content Include="Resources\ToNative.png" />
     <Content Include="Resources\ToSpeckle.png" />
     <Content Include="Resources\tutorials16.png" />
+    <Content Include="SchemaBuilder\SchemaBuilderGen.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
+    </Content>
     <None Update="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
