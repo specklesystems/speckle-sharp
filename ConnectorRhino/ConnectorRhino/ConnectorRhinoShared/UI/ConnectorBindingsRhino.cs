@@ -729,7 +729,7 @@ namespace SpeckleRhino
       switch (filter.Slug)
       {
         case "manual":
-          return GetSelectedObjects();
+          return filter.Selection;
         case "all":
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           objs.AddRange(Doc.NamedViews.Select(o => o.Name).ToList());
