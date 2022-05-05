@@ -1,35 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Objects.Other;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Acad = Autodesk.AutoCAD;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
-using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
-using Brep = Objects.Geometry.Brep;
+using BlockInstance = Objects.Other.BlockInstance;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Ellipse = Objects.Geometry.Ellipse;
 using Hatch = Objects.Other.Hatch;
-using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
 using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
-using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-using Surface = Objects.Geometry.Surface;
-using Vector = Objects.Geometry.Vector;
-
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Acad = Autodesk.AutoCAD;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 #if (CIVIL2021 || CIVIL2022)
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
@@ -66,6 +59,8 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
     public Document Doc { get; private set; }
     public Transaction Trans { get; private set; } // TODO: evaluate if this should be here
     #endregion ISpeckleConverter props
+
+    public ReceiveMode ReceiveMode { get; set; }
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
 
@@ -450,7 +445,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               return true;
 
 #if (CIVIL2021 || CIVIL2022)
-// NOTE: C3D pressure pipes and pressure fittings API under development
+            // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
             case CivilDB.Structure _:
@@ -487,7 +482,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
         case Point _:
         case Line _:
         case Arc _:
-        case Circle _:  
+        case Circle _:
         case Ellipse _:
         case Spiral _:
         case Hatch _:

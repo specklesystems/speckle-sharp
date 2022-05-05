@@ -1,13 +1,12 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.Curve;
 using Speckle.Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using DB = Autodesk.Revit.DB;
 using Alignment = Objects.BuiltElements.Alignment;
+using DB = Autodesk.Revit.DB;
 using DetailCurve = Objects.BuiltElements.Revit.Curve.DetailCurve;
 using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 
@@ -28,6 +27,13 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> AlignmentToNative(Alignment alignment)
     {
       var docObj = GetExistingElementByApplicationId(alignment.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = alignment.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
+
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
@@ -53,6 +59,12 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> ModelCurveToNative(ModelCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
@@ -89,6 +101,13 @@ namespace Objects.Converter.Revit
         (speckleLine as Base).applicationId = (speckleLine as Base).id;
 
       var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
+
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
@@ -154,6 +173,12 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> DetailCurveToNative(DetailCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      }; ;
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
@@ -203,6 +228,9 @@ namespace Objects.Converter.Revit
     public ApplicationPlaceholderObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       //delete and re-create line
@@ -240,6 +268,9 @@ namespace Objects.Converter.Revit
     public ApplicationPlaceholderObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       // try update existing (update model curve geometry curve based on speckle curve)

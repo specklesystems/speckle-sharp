@@ -1,10 +1,10 @@
 ﻿using Grasshopper.Kernel.Types;
 using Objects.Geometry;
-using Objects.Primitive;
 using Objects.Other;
+using Objects.Primitive;
 using Rhino;
-using Rhino.Geometry;
 using Rhino.DocObjects;
+using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -26,13 +26,11 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using Spiral = Objects.Geometry.Spiral;
-using View3D = Objects.BuiltElements.View3D;
-
 using RH = Rhino.Geometry;
-
+using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
+using View3D = Objects.BuiltElements.View3D;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -55,7 +53,7 @@ namespace Objects.Converter.RhinoGh
     }
 
     public MeshSettings SelectedMeshSettings = MeshSettings.Default;
-    
+
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
@@ -68,9 +66,11 @@ namespace Objects.Converter.RhinoGh
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
+    public ReceiveMode ReceiveMode { get; set; }
+
     public IEnumerable<string> GetServicedApplications()
     {
-      return new[] {RhinoAppName};
+      return new[] { RhinoAppName };
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -110,7 +110,7 @@ namespace Objects.Converter.RhinoGh
         style = DisplayStyleToSpeckle(ro.Attributes);
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
-           schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
+          schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
 
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
@@ -600,7 +600,7 @@ namespace Objects.Converter.RhinoGh
           rhinoObj = DirectShapeToNative(o);
           Report.Log($"Created DirectShape {o.id}");
           break;
-        
+
         case View3D o:
           rhinoObj = ViewToNative(o);
           Report.Log($"Created View3D {o.id}");
@@ -629,7 +629,7 @@ namespace Objects.Converter.RhinoGh
         case DisplayStyle o:
           rhinoObj = DisplayStyleToNative(o);
           break;
-        
+
         case RenderMaterial o:
           rhinoObj = RenderMaterialToNative(o);
           break;
@@ -678,13 +678,13 @@ namespace Objects.Converter.RhinoGh
         case RH.Box _:
         case RH.Mesh _:
 #if RHINO7
-case RH.SubD _:
+        case RH.SubD _:
 #endif
         case RH.Extrusion _:
         case RH.Brep _:
         case NurbsSurface _:
           return true;
-        
+
 #if !GRASSHOPPER
         // This types are not supported in GH!
         case ViewInfo _:

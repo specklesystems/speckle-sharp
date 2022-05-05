@@ -47,6 +47,13 @@ namespace Objects.Converter.Revit
       DB.Electrical.Wire wire = null;
       var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleWire.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
+
       if (docObj != null)
       {
         wire = (DB.Electrical.Wire)docObj;

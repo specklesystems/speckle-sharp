@@ -68,6 +68,8 @@ namespace Objects.Converter.Revit
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
+    public ReceiveMode ReceiveMode { get; set; }
+
     public ConverterRevit()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;

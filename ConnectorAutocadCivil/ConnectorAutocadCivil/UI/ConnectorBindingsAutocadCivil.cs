@@ -18,7 +18,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -49,6 +48,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Control.CreateControl();
     }
 
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
     #region local streams 
     public override void WriteStreamsToFile(List<StreamState> streams)
     {
@@ -66,11 +70,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     #region boilerplate
     public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
-    
+
     public override string GetHostAppName() => Utils.Slug;
 
     private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
-   
+
     public override string GetDocumentId()
     {
       string path = GetDocPath(Doc);
@@ -627,10 +631,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
             */
 
 #if CIVIL2021 || CIVIL2022
-          // add property sets if this is Civil3D
-          var propertySets = obj.GetPropertySets(tr);
-          if (propertySets.Count > 0)
-            converted["propertySets"] = propertySets;
+            // add property sets if this is Civil3D
+            var propertySets = obj.GetPropertySets(tr);
+            if (propertySets.Count > 0)
+              converted["propertySets"] = propertySets;
 #endif
 
             if (obj is BlockReference)

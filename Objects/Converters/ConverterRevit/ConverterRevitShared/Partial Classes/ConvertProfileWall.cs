@@ -19,6 +19,13 @@ namespace Objects.Converter.Revit
 
       var revitWall = GetExistingElementByApplicationId(speckleRevitWall.applicationId) as DB.Wall;
 
+      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleRevitWall.applicationId, ApplicationGeneratedId = revitWall.UniqueId, NativeObject = revitWall}
+      };
+
       var wallType = GetElementType<WallType>(speckleRevitWall);
       // Level level = null;
       var structural = speckleRevitWall.structural;

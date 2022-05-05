@@ -1,9 +1,7 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Linq;
-using System.Numerics;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using View = Objects.BuiltElements.View;
@@ -87,7 +85,6 @@ namespace Objects.Converter.Revit
       var orientation = new ViewOrientation3D(PointToNative(speckleView.origin), up, forward);
 
       // create view
-      var docObj = GetExistingElementByApplicationId(speckleView.applicationId);
       DB.View3D view = null;
       if (speckleView.isOrthogonal)
         view = DB.View3D.CreateIsometric(Doc, viewType.Id);
@@ -101,7 +98,7 @@ namespace Objects.Converter.Revit
       if (view.IsValidObject)
         SetInstanceParameters(view, speckleView);
       view = SetViewParams(view, speckleView);
-    
+
       // set name last due to duplicate name errors
       try
       {
@@ -162,22 +159,22 @@ namespace Objects.Converter.Revit
       // append commit info as prefix
       if (prefix != null)
         newName = prefix + "-" + name;
-      
+
       // Check for invalid characters in view name
       var results = new Regex("[\\{\\}\\[\\]\\:|;<>?`~]")
         .Match(newName);
-      
+
       // If none, fast exit
-      if (results.Length <= 0) 
+      if (results.Length <= 0)
         return newName;
-      
+
       // Name contains invalid characters, replace accordingly.
       var corrected = Regex.Replace(newName, "[\\{\\[]", "(");
       corrected = Regex.Replace(corrected, "[\\}\\]]", ")");
       corrected = Regex.Replace(corrected, "[\\:|;<>?`~]", "-");
-      
+
       Report.ConversionLog.Add($@"Renamed view {name} to {corrected} due to invalid characters.");
-      
+
       return corrected;
 
     }
