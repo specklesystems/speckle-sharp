@@ -677,7 +677,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       switch (filter.Slug)
       {
         case "manual":
-          return GetSelectedObjects();
+          return filter.Selection;
         case "all":
           return Doc.ConvertibleObjects(converter);
         case "layer":
