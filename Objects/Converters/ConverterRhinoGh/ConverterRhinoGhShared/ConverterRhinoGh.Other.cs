@@ -83,7 +83,7 @@ namespace Objects.Converter.RhinoGh
           style.lineweight = Doc.Layers[attributes.LayerIndex].PlotWeight;
           break;
       }
-      if (style.lineweight == 0) style.lineweight = Doc.CreateDefaultAttributes().PlotWeight;
+      if (style.lineweight == 0) style.lineweight = 0.25;
 
       style.units = Units.Millimeters;
 
