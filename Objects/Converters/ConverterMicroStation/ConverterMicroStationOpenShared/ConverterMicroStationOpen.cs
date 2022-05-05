@@ -1,6 +1,5 @@
 ﻿using Objects.Geometry;
 using Objects.Primitive;
-using Objects.Other;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,6 +81,8 @@ namespace Objects.Converter.MicroStationOpen
     {
       throw new NotImplementedException("This converter does not have any settings.");
     }
+
+    public ReceiveMode ReceiveMode { get; set; }
 
     public void SetContextDocument(object session)
     {
@@ -312,7 +313,7 @@ namespace Objects.Converter.MicroStationOpen
 
 #if (OPENROADS || OPENRAIL)
         case Alignment o:
-        Report.Log($"Created Alignment {o.id}");
+          Report.Log($"Created Alignment {o.id}");
           return AlignmentToNative(o);
 #endif
         default:

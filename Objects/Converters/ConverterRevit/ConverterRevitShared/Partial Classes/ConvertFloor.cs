@@ -43,6 +43,13 @@ namespace Objects.Converter.Revit
       // https://adndevbConversionLog.Add.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
       // This would only work if the floors have the same number (and type!!!) of outline curves. 
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleFloor.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
+
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);

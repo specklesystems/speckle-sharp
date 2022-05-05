@@ -4,6 +4,7 @@ using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -345,6 +346,11 @@ namespace DesktopUI2
     public override void WriteStreamsToFile(List<StreamState> streams)
     {
       //done!
+    }
+
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
     }
   }
 }

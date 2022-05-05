@@ -42,7 +42,10 @@ namespace Speckle.ConnectorCSI.UI
       //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
     }
 
-
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
 
 
     #region boilerplate
@@ -61,7 +64,8 @@ namespace Speckle.ConnectorCSI.UI
 
     public override string GetHostAppNameVersion() => GetHostAppVersion(Model);
     public override string GetHostAppName() => GetHostAppName(Model);
-    public string GetHostAppVersion(cSapModel model){
+    public string GetHostAppVersion(cSapModel model)
+    {
       var name = "";
       var ver = "";
       var type = "";

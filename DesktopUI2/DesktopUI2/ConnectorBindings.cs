@@ -3,6 +3,7 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Sentry.Reflection;
+using Speckle.Core.Kits;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,6 +11,7 @@ namespace DesktopUI2
 {
   public delegate void UpdateSavedStreams(List<StreamState> streams);
   public delegate void UpdateSelectedStream();
+
 
   public abstract class ConnectorBindings
   {
@@ -145,6 +147,12 @@ namespace DesktopUI2
     /// </summary>
     /// <returns></returns>
     public abstract List<ISelectionFilter> GetSelectionFilters();
+
+    /// <summary>
+    /// Should return a list of receive modes that the application supports. 
+    /// </summary>
+    /// <returns></returns>
+    public abstract List<ReceiveMode> GetReceiveModes();
 
     /// <summary>
     /// Return a list of custom menu items for stream cards. 

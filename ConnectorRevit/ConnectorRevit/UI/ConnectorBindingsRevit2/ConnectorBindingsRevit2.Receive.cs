@@ -3,22 +3,16 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using ConnectorRevit;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Revit.Async;
-using Speckle.ConnectorRevit.Entry;
-using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using RevitElement = Autodesk.Revit.DB.Element;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -86,7 +80,7 @@ namespace Speckle.ConnectorRevit.UI
           streamId = stream?.id,
           commitId = myCommit?.id,
           message = myCommit?.message,
-          sourceApplication = ConnectorRevitUtils.RevitAppName 
+          sourceApplication = ConnectorRevitUtils.RevitAppName
         });
       }
       catch
@@ -117,6 +111,7 @@ namespace Speckle.ConnectorRevit.UI
 
           t.Start();
           var flattenedObjects = FlattenCommitObject(commitObject, converter);
+          converter.ReceiveMode = state.ReceiveMode;
           // needs to be set for editing to work 
           converter.SetPreviousContextObjects(previouslyReceiveObjects);
           // needs to be set for openings in floors and roofs to work
@@ -130,7 +125,8 @@ namespace Speckle.ConnectorRevit.UI
             return;
           }
 
-          DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+          if (state.ReceiveMode == ReceiveMode.Update)
+            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
 
           state.ReceivedObjects = newPlaceholderObjects;
 
@@ -253,7 +249,7 @@ namespace Speckle.ConnectorRevit.UI
 
       else
       {
-        if(obj != null && !obj.GetType().IsPrimitive)
+        if (obj != null && !obj.GetType().IsPrimitive)
           converter.Report.Log($"Skipped object of type {obj.GetType()}, not supported.");
       }
 

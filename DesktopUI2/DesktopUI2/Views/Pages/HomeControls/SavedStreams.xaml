@@ -92,10 +92,10 @@
               <!--  RECEIVER  -->
               <Grid
                 Grid.Column="0"
-                ColumnDefinitions="auto,auto,auto,auto, *"
+                ColumnDefinitions="auto,auto,auto *"
                 IsVisible="{Binding StreamState.IsReceiver}">
                 <icons:MaterialIcon
-                  Margin="0,0,5,0"
+                  Margin="0,0,2,0"
                   Foreground="Gray"
                   Kind="SourceBranch" />
                 <TextBlock
@@ -106,7 +106,7 @@
 
                 <icons:MaterialIcon
                   Grid.Column="2"
-                  Margin="10,0,5,0"
+                  Margin="5,0,0,0"
                   Foreground="Gray"
                   Kind="SourceCommit" />
                 <TextBlock
@@ -116,21 +116,30 @@
                   TextTrimming="CharacterEllipsis" />
 
               </Grid>
-              <icons:MaterialIcon
+              <StackPanel
                 Grid.Column="1"
                 Margin="10,0,5,0"
-                Foreground="Gray"
-                IsVisible="{Binding StreamState.SchedulerEnabled}"
-                Kind="ClockCheck"
-                ToolTip.Tip="Scheduler is enabled on this stream" />
-              <icons:MaterialIcon
-                Grid.Column="2"
-                Margin="10,0,5,0"
-                VerticalAlignment="Center"
-                Foreground="Gray"
-                IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                Kind="Heart"
-                ToolTip.Tip="This is a favorite stream" />
+                Orientation="Horizontal"
+                Spacing="5">
+                <icons:MaterialIcon
+                  Foreground="Gray"
+                  IsVisible="{Binding StreamState.SchedulerEnabled}"
+                  Kind="ClockCheck"
+                  ToolTip.Tip="Scheduler is enabled on this stream" />
+                <icons:MaterialIcon
+                  VerticalAlignment="Center"
+                  Foreground="Gray"
+                  IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  Kind="Heart"
+                  ToolTip.Tip="This is a favorite stream" />
+                <icons:MaterialIcon
+                  VerticalAlignment="Center"
+                  Foreground="Gray"
+                  IsVisible="{Binding StreamState.AutoReceive}"
+                  Kind="CallReceived"
+                  ToolTip.Tip="Auto Receive is ON for this stream" />
+              </StackPanel>
+
             </Grid>
             <!--  DETAILS - visible when not progressing  -->
             <Grid

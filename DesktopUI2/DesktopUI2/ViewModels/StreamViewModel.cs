@@ -12,6 +12,7 @@ using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -145,6 +146,26 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private bool _autoReceive = false;
+    public bool AutoReceive
+    {
+      get => _autoReceive;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _autoReceive, value);
+      }
+    }
+
+    private ReceiveMode _selectedReceiveMode;
+    public ReceiveMode SelectedReceiveMode
+    {
+      get => _selectedReceiveMode;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedReceiveMode, value);
+      }
+    }
+
     private Branch _selectedBranch;
     public Branch SelectedBranch
     {
@@ -224,6 +245,13 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _availableFilters, value);
     }
 
+    private List<ReceiveMode> _receiveModes;
+    public List<ReceiveMode> ReceiveModes
+    {
+      get => _receiveModes;
+      private set => this.RaiseAndSetIfChanged(ref _receiveModes, value);
+    }
+
     private List<ISetting> _settings;
     public List<ISetting> Settings
     {
@@ -298,6 +326,8 @@ namespace DesktopUI2.ViewModels
         Stream = streamState.CachedStream;
         Client = streamState.Client;
         IsReceiver = streamState.IsReceiver;
+        AutoReceive = streamState.AutoReceive;
+        SelectedReceiveMode = streamState.ReceiveMode;
 
         //default to receive mode if no permission to send
         if (Stream.role == null || Stream.role == "stream:reviewer")
@@ -400,6 +430,12 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
+        //receive modes
+        ReceiveModes = Bindings.GetReceiveModes();
+        //by default the first available receive mode is selected
+        SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+
+
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
 
@@ -506,6 +542,9 @@ namespace DesktopUI2.ViewModels
       {
         StreamState.BranchName = SelectedBranch.name;
         StreamState.IsReceiver = IsReceiver;
+        StreamState.AutoReceive = AutoReceive;
+        StreamState.ReceiveMode = SelectedReceiveMode;
+
         if (IsReceiver)
           StreamState.CommitId = SelectedCommit.id;
         if (!IsReceiver)
@@ -560,6 +599,9 @@ namespace DesktopUI2.ViewModels
         Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
         NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
         ScrollToBottom();
+
+        if (AutoReceive)
+          ReceiveCommand();
       }
       catch (Exception ex)
       {
@@ -706,7 +748,7 @@ namespace DesktopUI2.ViewModels
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
           LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive);
+          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
         }
 
         if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)

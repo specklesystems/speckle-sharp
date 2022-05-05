@@ -50,24 +50,6 @@ namespace Speckle.ConnectorRevit.Entry
       }
 #else
 
-      //TODO: remove
-      //addin tab placeholder => to be delete ina  couple of releases
-      var tempSpecklePanel = application.CreateRibbonPanel("Speckle 2");
-      var placeholderSpeckleButton2 = tempSpecklePanel.AddItem(new PushButtonData("Speckle 2 placeholder", "Revit Connector", typeof(App).Assembly.Location, typeof(NewRibbonCommand).FullName)) as PushButton;
-
-      if (placeholderSpeckleButton2 != null)
-      {
-        placeholderSpeckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
-        placeholderSpeckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        placeholderSpeckleButton2.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-        placeholderSpeckleButton2.ToolTip = "The Speckle Connector has moved and this button will be removed soon.";
-        placeholderSpeckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        placeholderSpeckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
-
-
-
-
       //desktopui 2
       var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
