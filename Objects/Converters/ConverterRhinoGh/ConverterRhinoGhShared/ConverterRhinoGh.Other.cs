@@ -33,7 +33,9 @@ namespace Objects.Converter.RhinoGh
 
       attributes.ColorSource = ObjectColorSource.ColorFromObject;
       attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
-      attributes.PlotWeight = display.lineweight;
+      attributes.PlotWeightSource = ObjectPlotWeightSource.PlotWeightFromObject;
+      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
+      attributes.PlotWeight = display.lineweight * conversionFactor;
       attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
       var lineStyle = Doc.Linetypes.FindName(display.linetype);
       attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
@@ -45,11 +47,47 @@ namespace Objects.Converter.RhinoGh
     {
       var style = new DisplayStyle();
 
-      style.color = attributes.DrawColor(Doc).ToArgb();
-      var lineType = Doc.Linetypes[attributes.LinetypeIndex];
+      // color
+      switch (attributes.ColorSource)
+      {
+        case ObjectColorSource.ColorFromObject:
+          style.color = attributes.ObjectColor.ToArgb();
+          break;
+        case ObjectColorSource.ColorFromMaterial:
+          style.color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
+          break;
+        default: // use layer color as default
+          style.color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
+          break;
+      }
+
+      // line type
+      Linetype lineType = null;
+      switch (attributes.LinetypeSource)
+      {
+        case ObjectLinetypeSource.LinetypeFromObject:
+          lineType = Doc.Linetypes[attributes.LinetypeIndex];
+          break;
+        default: // use layer linetype as default
+          lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
+          break;
+      }
       if (lineType.HasName)
         style.linetype = lineType.Name;
-      style.lineweight = attributes.PlotWeight;
+
+      // line weight
+      switch (attributes.PlotWeightSource)
+      {
+        case ObjectPlotWeightSource.PlotWeightFromObject:
+          style.lineweight = attributes.PlotWeight;
+          break;
+        default: // use layer lineweight as default
+          style.lineweight = Doc.Layers[attributes.LayerIndex].PlotWeight;
+          break;
+      }
+      if (style.lineweight == 0) style.lineweight = 0.25;
+
+      style.units = Units.Millimeters;
 
       return style;
     }

@@ -340,6 +340,7 @@ namespace Speckle.ConnectorAutocadCivil
 
     public static void SetStyle(Base styleBase, Entity entity, Dictionary<string, ObjectId> lineTypeDictionary)
     {
+      var units = styleBase["units"] as string;
       var color = styleBase["color"] as int?;
       if (color == null) color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
       var lineType = styleBase["linetype"] as string;
@@ -352,8 +353,9 @@ namespace Speckle.ConnectorAutocadCivil
         entity.Transparency = new Transparency(systemColor.A);
       }
 
+      double conversionFactor = (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;
       if (lineWidth != null)
-        entity.LineWeight = GetLineWeight((double)lineWidth);
+        entity.LineWeight = GetLineWeight((double)lineWidth * conversionFactor);
 
       if (lineType != null)
         if (lineTypeDictionary.ContainsKey(lineType))

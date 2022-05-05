@@ -95,6 +95,7 @@ namespace Objects.Converter.AutocadCivil
       }
 
       // get lineweight
+      // system variable default is: LWDEFAULT
       double lineWeight = 0.25;
       switch (entity.LineWeight)
       {
@@ -122,6 +123,8 @@ namespace Objects.Converter.AutocadCivil
           break;
       }
       style.lineweight = lineWeight / 100; // convert to mm
+
+      style.units = Units.Millimeters;
 
       return style;
     }
