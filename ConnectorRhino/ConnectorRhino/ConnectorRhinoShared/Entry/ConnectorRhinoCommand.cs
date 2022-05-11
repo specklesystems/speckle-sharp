@@ -14,6 +14,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using System.IO;
 using DesktopUI2;
+using System.Threading;
 
 namespace SpeckleRhino
 {
@@ -32,6 +33,8 @@ namespace SpeckleRhino
     public static Window MainWindow { get; private set; }
 
     public static ConnectorBindingsRhino Bindings { get; set; } = new ConnectorBindingsRhino();
+
+    private static CancellationTokenSource Lifetime = null;
 
     private static Avalonia.Application AvaloniaApp { get; set; }
 
@@ -78,12 +81,14 @@ namespace SpeckleRhino
       MainWindow.Show();
       MainWindow.Activate();
 
-      //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      //{
-      //  var parentHwnd = RhinoApp.MainWindowHandle();
-      //  var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-      //  SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-      //}
+      #if !MAC
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        var parentHwnd = RhinoApp.MainWindowHandle();
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      }
+      #endif
     }
 
     private static void AppMain(Application app, string[] args)

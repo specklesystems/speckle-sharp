@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Arc = Objects.Geometry.Arc;
-using Curve = Objects.Geometry.Curve;
-using Line = Objects.Geometry.Line;
-using Polyline = Objects.Geometry.Polyline;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Curve = Objects.Geometry.Curve;
+using DB = Autodesk.Revit.DB;
+using Line = Objects.Geometry.Line;
+using Polyline = Objects.Geometry.Polyline;
 
 namespace Objects.Converter.Revit
 {
@@ -33,6 +32,9 @@ namespace Objects.Converter.Revit
 
       // check to see if pipe already exists in the doc
       var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
+
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = specklePipe.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } };
 
       Element pipe = null;
       switch (specklePipe.baseCurve)
@@ -73,7 +75,7 @@ namespace Objects.Converter.Revit
 
           // get level
           DB.Level flexPolyLevel = ConvertLevelToRevit(speckleRevitFlexPipe != null ? speckleRevitFlexPipe.level : LevelFromPoint(polyPoints.First()));
-          
+
           var flexPolyPipe = (startTangent != null && endTangent != null) ?
             DB.Plumbing.FlexPipe.Create(Doc, system.Id, flexPipeType.Id, flexPolyLevel.Id, startTangent, endTangent, polyPoints) :
             DB.Plumbing.FlexPipe.Create(Doc, system.Id, flexPipeType.Id, flexPolyLevel.Id, polyPoints);
@@ -171,9 +173,9 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
-      
+
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
-      
+
       if (material != null)
       {
         foreach (var mesh in specklePipe.displayValue)
@@ -191,7 +193,7 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
-      
+
       Report.Log($"Converted FlexPipe {revitPipe.Id}");
 
       return specklePipe;

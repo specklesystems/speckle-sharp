@@ -652,7 +652,7 @@ namespace Objects.Converter.Revit
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, string units = null)
     {
 
-#if (REVIT2021 || REVIT2022)
+#if (REVIT2021 || REVIT2022 || REVIT2023)
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
 #else
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);

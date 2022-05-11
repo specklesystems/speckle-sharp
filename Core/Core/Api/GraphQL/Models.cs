@@ -108,6 +108,7 @@ namespace Speckle.Core.Api
     public string role { get; set; }
     public string createdAt { get; set; }
     public string updatedAt { get; set; }
+    public string favoritedDate { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
     public Branches branches { get; set; }
@@ -262,6 +263,7 @@ namespace Speckle.Core.Api
     //public object profiles { get; set; }
     public string role { get; set; }
     public Streams streams { get; set; }
+    public Streams favoriteStreams { get; set; }
 
     public override string ToString()
     {

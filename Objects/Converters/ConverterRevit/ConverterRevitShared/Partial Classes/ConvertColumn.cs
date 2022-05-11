@@ -54,6 +54,9 @@ namespace Objects.Converter.Revit
 
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleColumn.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } }; ;
+
       bool isUpdate = false;
       if (docObj != null)
       {
@@ -112,11 +115,12 @@ namespace Objects.Converter.Revit
       //rotate
       if (speckleRevitColumn != null && revitColumn != null)
       {
-        var currentRotation = (revitColumn.Location as LocationPoint).Rotation;
-        if (currentRotation != speckleRevitColumn.rotation)
+        var currentRotation = (revitColumn.Location as LocationPoint)?.Rotation;
+
+        if (currentRotation != null && currentRotation != speckleRevitColumn.rotation)
         {
           var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 10000));
-          var s = (revitColumn.Location as LocationPoint).Rotate(axis, speckleRevitColumn.rotation - currentRotation);
+          var s = (revitColumn.Location as LocationPoint).Rotate(axis, speckleRevitColumn.rotation - (double)currentRotation);
         }
       }
 

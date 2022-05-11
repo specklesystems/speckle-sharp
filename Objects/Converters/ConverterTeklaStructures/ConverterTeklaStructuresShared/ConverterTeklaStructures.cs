@@ -1,4 +1,7 @@
 ﻿using System;
+﻿using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -17,7 +20,7 @@ namespace Objects.Converter.TeklaStructures
 #if TeklaStructures2021
     public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2021;
 #elif TeklaStructures2020
-  public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
+    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
 #else
     public static string TeklaStructuresAppName = HostApplications.TeklaStructures.Name;
 #endif
@@ -30,6 +33,8 @@ namespace Objects.Converter.TeklaStructures
     public string WebsiteOrEmail => "https://speckle.systems";
 
     public Model Model { get; private set; }
+
+    public ReceiveMode ReceiveMode { get; set; }
 
     public void SetContextDocument(object doc)
     {

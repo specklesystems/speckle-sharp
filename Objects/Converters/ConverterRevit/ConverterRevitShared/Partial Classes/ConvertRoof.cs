@@ -37,6 +37,8 @@ namespace Objects.Converter.Revit
       var roofType = GetElementType<RoofType>((Base)speckleRoof);
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleRoof).applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleRoof.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } };
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);

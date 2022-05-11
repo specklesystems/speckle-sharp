@@ -1,7 +1,7 @@
-using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
@@ -21,6 +21,12 @@ namespace Objects.Converter.Revit
       var isUpdate = false;
       //try update existing
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleFi.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      }; ;
       if (docObj != null)
       {
         try
@@ -141,7 +147,13 @@ namespace Objects.Converter.Revit
       //these elements come when the curtain wall is generated
       //let's not send them to speckle unless we realize they are needed!
       if (Categories.curtainWallSubElements.Contains(revitFi.Category))
-        return null;
+      {
+        if (SubelementIds.Contains(revitFi.Id))
+          return null;
+        else
+          //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
+          SubelementIds.Add(revitFi.Id);
+      }
 
       //beams & braces
       if (Categories.beamCategories.Contains(revitFi.Category))

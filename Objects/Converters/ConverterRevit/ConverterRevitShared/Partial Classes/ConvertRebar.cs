@@ -37,10 +37,17 @@ namespace Objects.Converter.Revit
 
       // get host element
       var host = GetExistingElementByApplicationId(speckleRevitRebar.host);
+
       if (host == null)
         throw new Speckle.Core.Logging.SpeckleException("Rebar host not found.");
 
       var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleRebar.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
       if (docObj != null)
       {
         rebar = (DB.Structure.Rebar)docObj;

@@ -27,6 +27,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
+    public List<string> GetLayers()
+    {
+      var layers = new List<string>();
+      foreach (var docLayer in Application.UIBindings.Collections.Layers)
+      {
+        var name = docLayer.GetProperties().Find("Name", true).GetValue(docLayer);
+        layers.Add(name as string);
+      }
+      return layers;
+    }
+
     // AutoCAD API should only be called on the main thread.
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
@@ -35,6 +46,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       Control = new System.Windows.Forms.Control();
       Control.CreateControl();
+    }
+
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
     }
 
     #region local streams 
@@ -54,11 +70,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     #region boilerplate
     public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
-    
+
     public override string GetHostAppName() => Utils.Slug;
 
     private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
-   
+
     public override string GetDocumentId()
     {
       string path = GetDocPath(Doc);
@@ -103,25 +119,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      var layers = new List<string>();
-      if (Doc != null)
-      {
-        using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-        {
-          LayerTable lyrTbl = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-          foreach (ObjectId objId in lyrTbl)
-          {
-            LayerTableRecord lyrTblRec = tr.GetObject(objId, OpenMode.ForRead) as LayerTableRecord;
-            layers.Add(lyrTblRec.Name);
-          }
-          tr.Commit();
-        }
-      }
       return new List<ISelectionFilter>()
       {
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
-        new AllSelectionFilter {Slug="all",  Name = "All", Icon = "CubeScan", Description = "Selects all document objects." }
+        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = GetLayers() },
+        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
 
@@ -629,10 +631,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
             */
 
 #if CIVIL2021 || CIVIL2022
-          // add property sets if this is Civil3D
-          var propertySets = obj.GetPropertySets(tr);
-          if (propertySets.Count > 0)
-            converted["propertySets"] = propertySets;
+            // add property sets if this is Civil3D
+            var propertySets = obj.GetPropertySets(tr);
+            if (propertySets.Count > 0)
+              converted["propertySets"] = propertySets;
 #endif
 
             if (obj is BlockReference)
@@ -675,7 +677,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       switch (filter.Slug)
       {
         case "manual":
-          return GetSelectedObjects();
+          return filter.Selection;
         case "all":
           return Doc.ConvertibleObjects(converter);
         case "layer":
@@ -699,6 +701,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
       Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
       Doc.BeginDocumentClose += Application_DocumentClosed;
+
+      var layers = Application.UIBindings.Collections.Layers;
+      layers.CollectionChanged += Application_LayerChanged;
+    }
+
+    private void Application_LayerChanged(object sender, EventArgs e)
+    {
+      if (UpdateSelectedStream != null)
+        UpdateSelectedStream();
     }
 
     //checks whether to refresh the stream list in case the user changes active view and selects a different document

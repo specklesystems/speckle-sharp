@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
@@ -10,7 +7,7 @@ namespace Objects.Converter.Revit
 
     private string _modelUnits;
 
-#if (REVIT2022)
+#if (REVIT2022 || REVIT2023)
     public string ModelUnits
     {
       get

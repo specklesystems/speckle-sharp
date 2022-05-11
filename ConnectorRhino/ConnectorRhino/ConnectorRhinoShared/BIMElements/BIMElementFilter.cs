@@ -19,7 +19,7 @@ namespace SpeckleRhino
   public class SchemaObjectFilter
   {
     #region Properties
-    public enum SupportedSchema { Floor, Wall, Roof, Column, Beam, FaceWall, none };
+    public enum SupportedSchema { Floor, Wall, Roof, Column, Beam, Pipe, Duct, FaceWall, none };
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
     public double minDimension = 25 * Units.GetConversionFactor(Units.Millimeters, RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
@@ -121,7 +121,8 @@ namespace SpeckleRhino
         case SupportedSchema.Column:
           try // assumes non xy linear curve > 45 deg
           {
-            Curve crv = obj.Geometry as Curve; // assumes this has already been filtered for linearity
+            Curve crv = obj.Geometry as Curve;
+            if (!crv.IsLinear()) break;
             double angleRad = Vector3d.VectorAngle(crv.PointAtEnd - crv.PointAtStart, Vector3d.ZAxis);
             if (angleRad > Math.PI / 2)
               angleRad = Math.PI - angleRad;
@@ -133,12 +134,23 @@ namespace SpeckleRhino
         case SupportedSchema.Beam:
           try // assumes xy linear curve of angle =< 45 deg
           {
-            Curve crv = obj.Geometry as Curve; // assumes this has already been filtered for linearity
+            Curve crv = obj.Geometry as Curve;
+            if (!crv.IsLinear()) break;
             double angleRad = Vector3d.VectorAngle(crv.PointAtEnd - crv.PointAtStart, Vector3d.ZAxis);
             if (angleRad > Math.PI / 2)
               angleRad = Math.PI - angleRad;
             if (angleRad >= Math.PI / 4)
               return true;
+          }
+          catch { }
+          break;
+
+        case SupportedSchema.Pipe:
+        case SupportedSchema.Duct:
+          try
+          {
+            Curve crv = obj.Geometry as Curve;
+            if (!crv.IsClosed) return true;
           }
           catch { }
           break;

@@ -75,6 +75,12 @@ namespace SpeckleRhino
         UpdateSelectedStream();
     }
 
+
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
     #region Local streams I/O with local file
 
     public override List<StreamState> GetStreamsInFile()
@@ -230,31 +236,37 @@ namespace SpeckleRhino
       // get commit layer name 
       var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
 
-      // give converter a way to access the base commit layer name
-      RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
+      RhinoApp.InvokeOnUiThread((Action)delegate
+     {
+       // give converter a way to access the base commit layer name
+       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
 
-      // flatten the commit object to retrieve children objs
-      int count = 0;
-      var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
+       // flatten the commit object to retrieve children objs
+       int count = 0;
+       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+         return;
 
-      foreach (var commitObj in commitObjs)
-      {
-        var (obj, layerPath) = commitObj;
-        BakeObject(obj, layerPath, state, converter);
-        conversionProgressDict["Conversion"]++;
-        progress.Update(conversionProgressDict);
-      }
+       foreach (var commitObj in commitObjs)
+       {
+         var (obj, layerPath) = commitObj;
+         BakeObject(obj, layerPath, state, converter);
+         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+           return;
+         conversionProgressDict["Conversion"]++;
+         progress.Update(conversionProgressDict);
+       }
 
-      progress.Report.Merge(converter.Report);
-      Doc.Views.Redraw();
-      Doc.EndUndoRecord(undoRecord);
+       progress.Report.Merge(converter.Report);
+       Doc.Views.Redraw();
+       Doc.EndUndoRecord(undoRecord);
 
-      // undo notes edit
-      var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-      Doc.Notes = segments[0];
+       // undo notes edit
+       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+       Doc.Notes = segments[0];
+     });
+
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
@@ -717,7 +729,7 @@ namespace SpeckleRhino
       switch (filter.Slug)
       {
         case "manual":
-          return GetSelectedObjects();
+          return filter.Selection;
         case "all":
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           objs.AddRange(Doc.NamedViews.Select(o => o.Name).ToList());
