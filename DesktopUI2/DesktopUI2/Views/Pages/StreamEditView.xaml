@@ -30,7 +30,7 @@
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
-      <Grid Margin="15" ColumnDefinitions="auto,*,auto">
+      <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
         <m:FloatingButton
           VerticalAlignment="Center"
           assists:ShadowAssist.ShadowDepth="0"
@@ -81,7 +81,24 @@
               TextTrimming="CharacterEllipsis" />
           </Grid>
         </Grid>
-        <Menu Grid.Column="2" Items="{Binding MenuItems}">
+        <m:FloatingButton
+          Grid.Column="2"
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="Depth0"
+          Background="Transparent"
+          Classes="Mini"
+          Command="{Binding ShareCommand}"
+          ToolTip.Tip="Share">
+          <Button.Content>
+            <icons:MaterialIcon
+              Width="15"
+              Height="15"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="{DynamicResource MaterialDesignBody}"
+              Kind="ShareVariant" />
+          </Button.Content>
+        </m:FloatingButton>
+        <Menu Grid.Column="3" Items="{Binding MenuItems}">
           <Menu.Styles>
             <Style Selector="MenuItem">
               <Setter Property="Header" Value="{Binding Header}" />
@@ -112,7 +129,6 @@
                 <Grid>
                   <m:ColorZone
                     Grid.Row="3"
-										
                     Margin="{Binding Margin}"
                     HorizontalAlignment="{Binding Align}"
                     assists:ShadowAssist.ShadowDepth="Depth0"
@@ -270,8 +286,7 @@
       Background="{DynamicResource MaterialDesignCardBackground}"
       SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem IsEnabled
-							 ="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
+      <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon

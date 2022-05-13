@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using DesktopUI2.ViewModels.Share;
+using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 
 namespace DesktopUI2
@@ -18,20 +18,20 @@ namespace DesktopUI2
     {
       if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
       {
-        //desktop.MainWindow = new MainWindow
-        //{
-        //  DataContext = new MainWindowViewModel(),
-        //};
+        desktop.MainWindow = new MainWindow
+        {
+          DataContext = new MainWindowViewModel(),
+        };
 
         //desktop.MainWindow = new Scheduler
         //{
         //  DataContext = new SchedulerViewModel(),
         //};
 
-        desktop.MainWindow = new Share
-        {
-          DataContext = new ShareViewModel(),
-        };
+        //desktop.MainWindow = new Share
+        //{
+        //  DataContext = new ShareViewModel(),
+        //};
       }
 
       base.OnFrameworkInitializationCompleted();

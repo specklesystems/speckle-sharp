@@ -197,7 +197,7 @@
         Command="{Binding ShareCommand}"
         Content="Share"
         IsEnabled="{Binding HasAddedUsers}"
-        ToolTip.Tip="Share the current entire model viua Speckle with the selected people" />
+        ToolTip.Tip="Share the current entire model via Speckle with the selected people" />
     </StackPanel>
   </Grid>
 </UserControl>

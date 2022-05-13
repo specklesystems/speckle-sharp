@@ -4,6 +4,7 @@ using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels.Share;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows;
@@ -646,6 +647,11 @@ namespace DesktopUI2.ViewModels
     }
 
     #region commands
+
+    public void ShareCommand()
+    {
+      MainWindowViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
+    }
     public void CloseNotificationCommand()
     {
       Notification = "";
