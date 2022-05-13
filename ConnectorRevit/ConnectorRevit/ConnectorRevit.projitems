@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\QuickShareCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\OneClickSendCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SchedulerCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand2.cs" />
@@ -70,5 +71,10 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\oneclick32.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\scheduler16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\scheduler32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\share.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\share16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\share32.png" />
   </ItemGroup>
 </Project>

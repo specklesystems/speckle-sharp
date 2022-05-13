@@ -87,6 +87,20 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButtonSend.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButtonSend.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
+
+
+      // quick share
+      var speckleButtonShare = specklePanel.AddItem(new PushButtonData("Share", "Quick Share", typeof(App).Assembly.Location, typeof(QuickShareCommand).FullName)) as PushButton;
+
+      if (speckleButtonShare != null)
+      {
+        speckleButtonShare.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share16.png", path);
+        speckleButtonShare.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
+        speckleButtonShare.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
+        speckleButtonShare.ToolTip = "Quickly share the selected evelemtns via Speckle, or the entire model if nothing is selected.";
+        speckleButtonShare.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButtonShare.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
 #endif
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
@@ -137,6 +151,7 @@ namespace Speckle.ConnectorRevit.Entry
       SpeckleRevitCommand2.Bindings = bindings;
       SchedulerCommand.Bindings = bindings;
       OneClickSendCommand.Bindings = bindings;
+      QuickShareCommand.Bindings = bindings;
 #endif
 
     }
