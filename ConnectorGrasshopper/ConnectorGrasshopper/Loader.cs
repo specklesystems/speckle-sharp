@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -159,11 +159,11 @@ namespace ConnectorGrasshopper
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;
       speckleMenu.DropDown.Items.Add("Community Forum", Properties.Resources.forum16,
-        (o, args) => Process.Start("https://speckle.community"));
+        (o, args) => Process.Start("https://speckle.community/tag/grasshopper"));
       speckleMenu.DropDown.Items.Add("Tutorials", Properties.Resources.tutorials16,
-        (o, args) => Process.Start("https://speckle.systems/tutorials"));
+        (o, args) => Process.Start("https://speckle.systems/tag/grasshopper/"));
       speckleMenu.DropDown.Items.Add("Docs", Properties.Resources.docs16,
-        (o, args) => Process.Start("https://speckle.guide"));
+        (o, args) => Process.Start("https://speckle.guide/user/grasshopper.html"));
 
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
