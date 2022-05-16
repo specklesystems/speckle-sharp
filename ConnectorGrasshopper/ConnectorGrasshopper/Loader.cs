@@ -154,16 +154,6 @@ namespace ConnectorGrasshopper
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateTabsMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-
-      var showDevItem = new ToolStripMenuItem("Show Developer Tools", null, (o, args) =>
-      {
-        SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
-      });
-      showDevItem.Checked = SpeckleGHSettings.ShowDevComponents;
-      showDevItem.CheckOnClick = true;
-      speckleMenu.DropDown.Items.Add(showDevItem);
-
-      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
   
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
@@ -207,7 +197,7 @@ namespace ConnectorGrasshopper
 
     private void CreateTabsMenu()
     {
-      var tabsMenu = speckleMenu.DropDown.Items.Add("Tabs") as ToolStripMenuItem;
+      var tabsMenu = speckleMenu.DropDown.Items.Add("Show/Hide Components") as ToolStripMenuItem;
       var warn = tabsMenu.DropDown.Items.Add("Changes require restarting Rhino to take effect.");
       warn.Enabled = false;
       new List<string>
@@ -222,7 +212,8 @@ namespace ConnectorGrasshopper
       }.ForEach(s =>
       {
         var category = $"Speckle 2 {s}";
-        var mi = tabsMenu.DropDown.Items.Add(category) as ToolStripMenuItem;
+        var itemName = $"Show {s} components";
+        var mi = tabsMenu.DropDown.Items.Add(itemName) as ToolStripMenuItem;
         mi.CheckOnClick = true;
         mi.Checked = SpeckleGHSettings.GetTabVisibility(category);
         mi.Click += (sender, args) =>
@@ -231,6 +222,16 @@ namespace ConnectorGrasshopper
           SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
         };
       });
+      
+      tabsMenu.DropDown.Items.Add(new ToolStripSeparator());
+      
+      var showDevItem = new ToolStripMenuItem("Show Developer Components", null, (o, args) =>
+      {
+        SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
+      });
+      showDevItem.Checked = SpeckleGHSettings.ShowDevComponents;
+      showDevItem.CheckOnClick = true;
+      tabsMenu.DropDown.Items.Add(showDevItem);
       KeepOpenOnDropdownCheck(tabsMenu);
     }
 
