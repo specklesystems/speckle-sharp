@@ -43,13 +43,29 @@ namespace ConnectorGrasshopper.Objects
 
       if (InPreSolve)
       {
-        GH_SpeckleBase ghSpeckleBase = null;
-        var x = DA.GetData(0, ref ghSpeckleBase);
-        var @base = ghSpeckleBase?.Value;
-        if (!x || @base == null)
+        IGH_Goo inputObj = null;
+        DA.GetData(0, ref inputObj);
+        Base @base;
+        if(inputObj is GH_SpeckleBase speckleBase)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some input values are not Speckle objects or are null.");
-          OnDisplayExpired(true);
+          @base = speckleBase.Value.ShallowCopy();
+        } else if(inputObj is IGH_Goo goo)
+        {
+          var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
+          if(Converter.CanConvertToSpeckle(value))
+          {
+            @base = Converter.ConvertToSpeckle(value);
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
+          }
+          else
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
+            return;
+          }
+        }
+        else
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
           return;
         }
 
