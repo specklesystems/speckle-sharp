@@ -398,11 +398,7 @@ namespace SpeckleRhino
         }
         else if (obj[@"renderMaterial"] is Base renderMaterial)
         {
-          if (renderMaterial["diffuse"] is int color)
-          {
-            attributes.ColorSource = ObjectColorSource.ColorFromObject;
-            attributes.ObjectColor = Color.FromArgb(color);
-          }
+          attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
         }
 
         // assign layer
