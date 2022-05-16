@@ -9,4 +9,5 @@
   <StyleInclude Source="/Styles/Text.xaml" />
   <StyleInclude Source="/Styles/TextBox.xaml" />
   <StyleInclude Source="/Styles/Expander.xaml" />
+  <StyleInclude Source="/Styles/ChipListBox.xaml" />
 </Styles>

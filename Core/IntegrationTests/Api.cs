@@ -132,6 +132,17 @@ namespace TestsIntegration
       Assert.IsTrue(res);
     }
 
+    [Test, Order(41)]
+    public async Task StreamInviteCreate()
+    {
+      var res = await myClient.StreamInviteCreate(
+        new StreamInviteCreateInput { streamId = streamId, email = "test@test.com", message = "Whasssup!" }
+      );
+
+      Assert.IsTrue(res);
+    }
+
+
     #region branches
 
     [Test, Order(41)]

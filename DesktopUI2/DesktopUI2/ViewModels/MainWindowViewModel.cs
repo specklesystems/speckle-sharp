@@ -1,4 +1,6 @@
-﻿using DesktopUI2.Views.Pages;
+﻿using DesktopUI2.ViewModels.Share;
+using DesktopUI2.Views.Pages;
+using DesktopUI2.Views.Pages.ShareControls;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using Splat;
@@ -38,6 +40,7 @@ namespace DesktopUI2.ViewModels
 
       Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamViewModel>));
       Locator.CurrentMutable.Register(() => new HomeView(), typeof(IViewFor<HomeViewModel>));
+      Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 
       RouterInstance = Router; // makes the router available app-wide

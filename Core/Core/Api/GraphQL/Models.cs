@@ -33,6 +33,13 @@ namespace Speckle.Core.Api
     public string userId { get; set; }
   }
 
+  public class StreamInviteCreateInput
+  {
+    public string streamId { get; set; }
+    public string email { get; set; }
+    public string message { get; set; }
+  }
+
   public class BranchCreateInput
   {
     public string streamId { get; set; }

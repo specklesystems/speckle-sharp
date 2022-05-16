@@ -54,10 +54,11 @@ namespace DesktopUI2.Models
       set
       {
         var stream = value;
-        if (stream != null)
-        {
-          stream.collaborators = new List<Collaborator>();
-        }
+        //acad fix
+        //if (stream != null)
+        //{
+        //  stream.collaborators = new List<Collaborator>();
+        //}
         cachedStream = stream;
       }
     }
