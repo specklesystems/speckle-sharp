@@ -7,11 +7,11 @@ namespace DesktopUI2.Views.Pages.ShareControls
 {
   public partial class CollaboratorsView : ReactiveUserControl<CollaboratorsViewModel>
   {
-    //public static CollaboratorsView Instance { get; private set; }
+    public static CollaboratorsView Instance { get; private set; }
     public CollaboratorsView()
     {
       InitializeComponent();
-      // Instance = this;
+      Instance = this;
     }
 
     private void InitializeComponent()

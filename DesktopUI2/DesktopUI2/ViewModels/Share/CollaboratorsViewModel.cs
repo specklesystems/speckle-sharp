@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 
 namespace DesktopUI2.ViewModels.Share
 {
@@ -21,7 +22,7 @@ namespace DesktopUI2.ViewModels.Share
 
     #region bindings
 
-    public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
+    public ReactiveCommand<Unit, Unit> GoBack => MainWindowViewModel.RouterInstance.NavigateBack;
 
     private string _searchQuery = "";
 
@@ -92,6 +93,16 @@ namespace DesktopUI2.ViewModels.Share
       }
     }
 
+    private string _role;
+    public string Role
+    {
+      get => _role;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _role, value);
+      }
+    }
+
     public bool HasAddedUsers
     {
       get => AddedUsers.Any();
@@ -105,19 +116,25 @@ namespace DesktopUI2.ViewModels.Share
     public SelectionModel<AccountViewModel> SelectionModel { get; private set; }
     #endregion
 
+    private StreamViewModel _stream;
+
     public CollaboratorsViewModel(IScreen screen, StreamViewModel stream)
     {
       HostScreen = screen;
+      _stream = stream;
+      Role = stream.Stream.role;
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       userSearchDebouncer = Utils.Debounce(SearchUsers);
 
-
-
-
       SelectionModel = new SelectionModel<AccountViewModel>();
       SelectionModel.SingleSelect = false;
       SelectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+
+      foreach (var collab in stream.Stream.collaborators)
+      {
+        AddedUsers.Add(new AccountViewModel(collab));
+      }
     }
 
     private void Search()
@@ -152,7 +169,7 @@ namespace DesktopUI2.ViewModels.Share
     private void Focus()
     {
       DropDownOpen = false;
-      var searchBox = AddCollaborators.Instance.FindControl<TextBox>("SearchBox");
+      var searchBox = CollaboratorsView.Instance.FindControl<TextBox>("SearchBox");
       searchBox.Focus();
     }
 
@@ -174,9 +191,64 @@ namespace DesktopUI2.ViewModels.Share
 
     }
 
-    private async void ShareCommand()
+    private async void SaveCommand()
     {
-      //ShareViewModel.RouterInstance.Navigate.Execute(new SendingViewModel(HostScreen, AddedUsers.ToList()));
+
+      foreach (var user in AddedUsers)
+      {
+        //invite users by email
+        if (Utils.IsValidEmail(user.Name))
+        {
+          try
+          {
+            await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { email = user.Name, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!" });
+          }
+          catch (Exception e)
+          {
+
+          }
+        }
+        //add new collaborators
+        else if (!_stream.Stream.collaborators.Any(x => x.id == user.Id))
+        {
+          try
+          {
+            await _stream.StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = "stream:contributor" });
+          }
+          catch (Exception e)
+          {
+
+          }
+        }
+      }
+
+      //remove collaborators
+      foreach (var user in _stream.Stream.collaborators)
+      {
+        if (!AddedUsers.Any(x => x.Id == user.id))
+        {
+          try
+          {
+            await _stream.StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId });
+          }
+          catch (Exception e)
+          {
+
+          }
+        }
+      }
+
+      try
+      {
+        _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId);
+        _stream.StreamState.CachedStream = _stream.Stream;
+
+      }
+      catch (Exception e)
+      {
+      }
+
+      MainWindowViewModel.RouterInstance.NavigateBack.Execute();
     }
 
 

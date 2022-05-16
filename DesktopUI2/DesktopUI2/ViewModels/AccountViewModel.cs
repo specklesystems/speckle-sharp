@@ -10,6 +10,7 @@ namespace DesktopUI2.ViewModels
   public class AccountViewModel : ReactiveObject
   {
     public string Name { get; set; }
+    public string Role { get; set; } = "contributor";
     public string Id { get; }
 
     public Account Account { get; private set; }
@@ -46,6 +47,16 @@ namespace DesktopUI2.ViewModels
       AvatarUrl = user.avatar;
 
     }
+
+    public AccountViewModel(Collaborator user)
+    {
+      Name = user.name;
+      Id = user.id;
+      AvatarUrl = user.avatar;
+      Role = user.role;
+
+    }
+
 
 
     public void DownloadImage(string url)
