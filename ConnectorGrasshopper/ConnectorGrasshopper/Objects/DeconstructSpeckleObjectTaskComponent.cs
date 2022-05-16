@@ -29,8 +29,8 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var pObj = pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+      var pObj = pManager.AddGenericParameter("Speckle Object", "O",
+        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
