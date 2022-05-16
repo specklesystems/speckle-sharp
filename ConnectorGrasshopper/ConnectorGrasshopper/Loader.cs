@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -57,7 +57,7 @@ namespace ConnectorGrasshopper
       return GH_LoadingInstruction.Proceed;
     }
 
-    private DialogResult ShowLoadErrorMessageBox()
+    private static DialogResult ShowLoadErrorMessageBox()
     {
       return MessageBox.Show(
         "There was a problem setting up Speckle\n" +
@@ -155,6 +155,16 @@ namespace ConnectorGrasshopper
       CreateTabsMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
+      var showDevItem = new ToolStripMenuItem("Show Developer Tools", null, (o, args) =>
+      {
+        SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
+      });
+      showDevItem.Checked = SpeckleGHSettings.ShowDevComponents;
+      showDevItem.CheckOnClick = true;
+      speckleMenu.DropDown.Items.Add(showDevItem);
+
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+  
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;
@@ -170,7 +180,6 @@ namespace ConnectorGrasshopper
       // Manager button
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo,
         (o, args) => Process.Start("speckle://"));
-
 
       try
       {
