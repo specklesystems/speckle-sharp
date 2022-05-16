@@ -196,7 +196,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
             $channel = if($semver.Contains('-')) {$semver.Split("-")[1] } else { "latest" }
             $version = "$($ver).$($env:CIRCLE_BUILD_NUM)"
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$version  
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver  
             if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
       - run:
           name: Deploy?
