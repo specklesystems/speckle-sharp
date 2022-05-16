@@ -117,6 +117,17 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private bool _isRemovingStream;
+
+    public bool IsRemovingStream
+    {
+      get => _isRemovingStream;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _isRemovingStream, value);
+      }
+    }
+
     private bool _isExpanded;
 
     public bool IsExpanded
@@ -855,6 +866,16 @@ namespace DesktopUI2.ViewModels
       catch (Exception e)
       {
       }
+    }
+
+    private void AskRemoveSavedStreamCommand()
+    {
+      IsRemovingStream = true;
+    }
+
+    private void CancelRemoveSavedStreamCommand()
+    {
+      IsRemovingStream = false;
     }
 
 
