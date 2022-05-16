@@ -21,7 +21,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override Guid ComponentGuid => new Guid("0D862057-254F-40C2-AC4A-9D163BB1E24B");
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObjectByKeyValue;
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary | GH_Exposure.obscure;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
