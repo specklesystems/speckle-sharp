@@ -14,15 +14,15 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class ExpandSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
+  public class DeconstructSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
     IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("4884856A-BCA4-43F8-B665-331F51CF4A39");
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
-    public ExpandSpeckleObjectTaskComponent() : base("Expand Speckle Object", "ESO",
-      "Allows you to decompose a Speckle object in its constituent parts.",
+    public DeconstructSpeckleObjectTaskComponent() : base("Deconstruct Speckle Object", "DSO",
+      "Allows you to deconstruct a Speckle object in its constituent parts.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
