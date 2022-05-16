@@ -222,6 +222,7 @@ namespace ConnectorGrasshopper
           SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
         };
       });
+      KeepOpenOnDropdownCheck(tabsMenu);
     }
 
     private void CreateMeshingSettingsMenu()
@@ -247,7 +248,8 @@ namespace ConnectorGrasshopper
       var meshMenu = new ToolStripMenuItem("Select the default meshing parameters:");
       meshMenu.DropDown.Items.Add(defaultSetting);
       meshMenu.DropDown.Items.Add(currentDocSetting);
-
+      
+      KeepOpenOnDropdownCheck(meshMenu);
       speckleMenu.DropDown.Items.Add(meshMenu);
     }
 
@@ -282,6 +284,17 @@ namespace ConnectorGrasshopper
         objectItem.Checked = !useSchemaTag;
         SpeckleGHSettings.UseSchemaTag = useSchemaTag;
       };
+      KeepOpenOnDropdownCheck(schemaConversionHeader);
+    }
+    
+    public static void KeepOpenOnDropdownCheck (ToolStripMenuItem ctl)
+    {
+      foreach (var item in ctl.DropDownItems.OfType<ToolStripMenuItem>())
+      {
+        item.MouseEnter += (o, e) => ctl.DropDown.AutoClose = false;
+        item.MouseLeave += (o, e) => ctl.DropDown.AutoClose = true;
+      }
+
     }
   }
 }
