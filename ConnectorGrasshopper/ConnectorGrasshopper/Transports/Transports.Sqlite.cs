@@ -13,7 +13,7 @@ namespace ConnectorGrasshopper.Transports
 
     protected override Bitmap Icon => Properties.Resources.SQLiteTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
     public SqliteTransportComponent() : base("Sqlite Transport", "Sqlite", "Creates a Sqlite Transport. This transport will store its objects in a sqlite database at the location you will specify (including a network drive!).", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 

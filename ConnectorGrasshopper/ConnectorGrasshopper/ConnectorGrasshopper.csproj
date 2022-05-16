@@ -103,6 +103,7 @@
     <Compile Include="Loader.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
+    <Compile Include="Objects\DeconstructSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\Deprecated\CreateSpeckleObjectAsync.cs" />
     <Compile Include="Objects\Deprecated\CreateSpeckleObjectByKeyValueAsync.cs" />
     <Compile Include="Objects\Deprecated\ExpandSpeckleObjectAsync.cs" />
@@ -111,7 +112,6 @@
     <Compile Include="Objects\Deprecated\GetObjectValueByKeyAsync.cs" />
     <Compile Include="Objects\Deprecated\ObjectsUpgradeUtils.cs" />
     <Compile Include="Objects\Deprecated\SelectKitAsyncComponentBase.cs" />
-    <Compile Include="Objects\ExpandSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />

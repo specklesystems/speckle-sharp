@@ -14,7 +14,7 @@ namespace ConnectorGrasshopper
     private CancellationTokenSource source;
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Deserialize;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
     public DeserializeTaskCapableComponent(): base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {}    

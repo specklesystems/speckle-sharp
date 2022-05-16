@@ -50,7 +50,13 @@ namespace ConnectorGrasshopper.Objects
       }
       catch
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.\n" +
+                                                        "This can be caused by \n" +
+                                                        "- A corrupted install\n" +
+                                                        "- Another Grasshopper plugin using an older version of Speckle\n" +
+                                                        "- Having an older version of the Rhino connector installed\n\n" +
+                                                        "Try reinstalling both Rhino and Grasshopper connectors.\n\n" +
+                                                        "If the problem persists, please reach out to our Community Forum (https://speckle.community)");
       }
     }
 

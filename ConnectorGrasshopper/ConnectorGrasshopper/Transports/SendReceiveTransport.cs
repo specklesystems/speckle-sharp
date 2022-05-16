@@ -17,7 +17,7 @@ namespace ConnectorGrasshopper.Transports
 
     protected override Bitmap Icon => Properties.Resources.sendToTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
     public SendReceiveTransport() : base("Send To Transports", "ST", "Sends an object to a list of given transports: the object will be stored in each of them. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions, so ensure that the object input already has converted speckle objects inside.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
@@ -73,7 +73,7 @@ namespace ConnectorGrasshopper.Transports
 
     protected override Bitmap Icon => Properties.Resources.receiveFromTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
     public ReceiveFromTransport() : base("Receive From Transport", "RT", "Receives a list of objects from a given transport. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions on the output.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
@@ -92,13 +92,12 @@ namespace ConnectorGrasshopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you've inputed only one transport and a flat list of object ids.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you input only one transport and a flat list of object ids.");
         return;
       }
 
       Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive From Transports" } });
-
-
+      
       List<string> ids = new List<string>();
       DA.GetDataList(1, ids);
 

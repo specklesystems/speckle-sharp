@@ -14,23 +14,23 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class ExpandSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
+  public class DeconstructSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
     IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("4884856A-BCA4-43F8-B665-331F51CF4A39");
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
-    public ExpandSpeckleObjectTaskComponent() : base("Expand Speckle Object", "ESO",
-      "Allows you to decompose a Speckle object in its constituent parts.",
+    public DeconstructSpeckleObjectTaskComponent() : base("Deconstruct Speckle Object", "DSO",
+      "Allows you to deconstruct a Speckle object in its constituent parts.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var pObj = pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+      var pObj = pManager.AddGenericParameter("Speckle Object", "O",
+        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -43,13 +43,29 @@ namespace ConnectorGrasshopper.Objects
 
       if (InPreSolve)
       {
-        GH_SpeckleBase ghSpeckleBase = null;
-        var x = DA.GetData(0, ref ghSpeckleBase);
-        var @base = ghSpeckleBase?.Value;
-        if (!x || @base == null)
+        IGH_Goo inputObj = null;
+        DA.GetData(0, ref inputObj);
+        Base @base;
+        if(inputObj is GH_SpeckleBase speckleBase)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some input values are not Speckle objects or are null.");
-          OnDisplayExpired(true);
+          @base = speckleBase.Value.ShallowCopy();
+        } else if(inputObj is IGH_Goo goo)
+        {
+          var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
+          if(Converter.CanConvertToSpeckle(value))
+          {
+            @base = Converter.ConvertToSpeckle(value);
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
+          }
+          else
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
+            return;
+          }
+        }
+        else
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
           return;
         }
 

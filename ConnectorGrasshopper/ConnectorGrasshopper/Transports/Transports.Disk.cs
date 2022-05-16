@@ -12,7 +12,7 @@ namespace ConnectorGrasshopper.Transports
 
     protected override Bitmap Icon => Properties.Resources.DiskTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
     public DiskTransportComponent() : base("Disk Transport", "Disk", "Creates a Disk Transport. This transport will store objects in files in a folder that you can specify (including one on a network drive!). It's useful for understanding how Speckle's decomposition api works. It's not meant to be performant - it's useful for debugging purposes - e.g., when developing a new class/object model you can understand easily the relative sizes of the resulting objects.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
