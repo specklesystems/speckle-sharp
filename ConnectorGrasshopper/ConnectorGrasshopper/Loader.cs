@@ -225,7 +225,7 @@ namespace ConnectorGrasshopper
       
       tabsMenu.DropDown.Items.Add(new ToolStripSeparator());
       
-      var showDevItem = new ToolStripMenuItem("Show Developer Components", null, (o, args) =>
+      var showDevItem = new ToolStripMenuItem("Show Developer components", null, (o, args) =>
       {
         SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
       });
