@@ -13,7 +13,7 @@ namespace ConnectorGrasshopper.Conversion
   {
     private CancellationTokenSource source;
     public override Guid ComponentGuid => new Guid("6F6A5347-8DE1-44FA-8D26-C73FD21650A9");
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Serialize;
 
     public SerializeTaskCapableComponent() : base(

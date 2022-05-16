@@ -7,7 +7,7 @@ namespace ConnectorGrasshopper
     private const string SELECTED_KIT_NAME = "Speckle2:kit.default.name";
     private const string MESH_SETTINGS = "Speckle2:kit.meshing.settings";
     private const string USE_SCHEMA_TAG_STRATEGY = "Speckle2:conversion.schema.tag";
-
+    private const string SHOW_DEV_COMPONENTS = "Speckle2:dev.components.show";
     /// <summary>
     /// Gets or sets the default selected kit name to be used in this Grasshopper instance.
     /// </summary>
@@ -47,9 +47,19 @@ namespace ConnectorGrasshopper
       }
     }
 
+    public static bool ShowDevComponents
+    {
+      get => Grasshopper.Instances.Settings.GetValue(SHOW_DEV_COMPONENTS, false);
+      set
+      {
+        Grasshopper.Instances.Settings.SetValue(SHOW_DEV_COMPONENTS, value);
+        Grasshopper.Instances.Settings.WritePersistentSettings();
+      }
+    }
+    
     public static bool GetTabVisibility(string name)
     {
-      var tabVisibility = Grasshopper.Instances.Settings.GetValue($"Speckle2:tabs.{name}", true);
+      var tabVisibility = Grasshopper.Instances.Settings.GetValue($"Speckle2:tabs.{name}", false);
       return tabVisibility;
     }
 
