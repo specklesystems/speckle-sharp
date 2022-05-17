@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <Version>2.1.0</Version>
-    <Title>Objects.Converter.RhinoGh7</Title>
+    <Title>Objects.Converter.Rhino7</Title>
     <Description></Description>
     <TargetExt>.dll</TargetExt>
     <PackageId>Speckle.Objects.Converter.Rhino7</PackageId>
@@ -16,7 +16,7 @@
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
+    <PackageTags>speckle objects converter rhino</PackageTags>
     <AssemblyName>Objects.Converter.Rhino7</AssemblyName>
     <RootNamespace>Objects.Converter.Rhino</RootNamespace>
   </PropertyGroup>
@@ -34,9 +34,19 @@
     <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

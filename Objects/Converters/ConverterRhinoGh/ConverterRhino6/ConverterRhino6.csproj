@@ -30,10 +30,6 @@
       <PackagePath></PackagePath>
       <Pack>True</Pack>
     </None>
-    <None Include="..\..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
