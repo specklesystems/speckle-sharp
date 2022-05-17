@@ -25,8 +25,7 @@ commands:
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:CIRCLE_BUILD_NUM)-beta" } else { $env:CIRCLE_TAG }
             $version = $tag.Split("/")[1]  
-            dotnet pack -c Release /p:Version="$version" -o $HOME/output <<parameters.projectfilepath>> 
-            cd $HOME/output
+            msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
 
 # Parameters of our pipeline. Most of them are booleans that indicate which project to build/test with the pattern 'run_{PROJECT_NAME}'
