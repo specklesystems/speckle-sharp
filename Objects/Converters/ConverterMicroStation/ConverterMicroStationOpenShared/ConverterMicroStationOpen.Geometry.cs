@@ -1388,18 +1388,7 @@ namespace Objects.Converter.MicroStationOpen
           _faceIndices.Add(_pointIndex[i] - 1);
         else
         {
-          switch (_faceIndices.Count())
-          {
-            case 3:
-              _faceIndices.Insert(0, 0);
-              break;
-            case 4:
-              _faceIndices.Insert(0, 1);
-              break;
-            default:
-              _faceIndices.Insert(0, _faceIndices.Count());
-              break;
-          }
+          _faceIndices.Insert(0, _faceIndices.Count);
           faces.AddRange(_faceIndices);
           _faceIndices.Clear();
         }

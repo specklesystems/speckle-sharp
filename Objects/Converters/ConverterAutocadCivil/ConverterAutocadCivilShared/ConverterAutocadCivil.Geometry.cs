@@ -1389,9 +1389,9 @@ namespace Objects.Converter.AutocadCivil
                   indices.Add(index);
               }
               if (indices.Count == 4) // vertex index starts at 1 sigh
-                faces.AddRange(new List<int> { 1, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
+                faces.AddRange(new List<int> { 4, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
               else
-                faces.AddRange(new List<int> { 0, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
+                faces.AddRange(new List<int> { 3, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
               break;
           }
         }
@@ -1423,9 +1423,9 @@ namespace Objects.Converter.AutocadCivil
         for (int j = i + 1; j <= i + edgeCount; j++)
           faceVertices.Add(faceArr[j]);
         if (edgeCount == 4) // quad face
-          faces.AddRange(new List<int> { 1, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
+          faces.AddRange(new List<int> { 4, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
         else // triangle face
-          faces.AddRange(new List<int> { 0, faceVertices[0], faceVertices[1], faceVertices[2] });
+          faces.AddRange(new List<int> { 3, faceVertices[0], faceVertices[1], faceVertices[2] });
       }
 
       // colors
@@ -1575,9 +1575,9 @@ namespace Objects.Converter.AutocadCivil
 
                   // get faces
                   if (e.Nodes.Count() == 3)
-                    faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+                    faces.AddRange(new List<int> { 3, faceIndices[0], faceIndices[1], faceIndices[2] });
                   else if (e.Nodes.Count() == 4)
-                    faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+                    faces.AddRange(new List<int> { 4, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
                   e.Dispose();
                 }
               }
