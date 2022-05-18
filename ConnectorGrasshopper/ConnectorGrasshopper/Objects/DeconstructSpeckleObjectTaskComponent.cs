@@ -271,7 +271,15 @@ namespace ConnectorGrasshopper.Objects
 
       foreach (var ghGoo in speckleObjects.AllData(true))
       {
-        var converted = Utilities.TryConvertItemToSpeckle(ghGoo,Converter);
+        object converted;
+        if (ghGoo is GH_SpeckleBase ghBase)
+        {
+          converted = ghBase.Value;
+        }
+        else
+        {
+          converted = Utilities.TryConvertItemToSpeckle(ghGoo,Converter);
+        }
         if (converted is Base b)
         {
           b.GetMemberNames().ToList().ForEach(prop =>
