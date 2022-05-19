@@ -909,7 +909,7 @@ namespace Objects.Converter.Revit
       if (existing != null) return existing.Id;
 
       // Create new material
-      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
+      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
       Material mat = Doc.GetElement(materialId) as Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
