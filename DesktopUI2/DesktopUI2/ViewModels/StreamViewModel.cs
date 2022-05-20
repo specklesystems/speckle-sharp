@@ -473,7 +473,7 @@ namespace DesktopUI2.ViewModels
         }
         else
         {
-          var selectionFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Type == typeof(ManualSelectionFilter).ToString());
+          var selectionFilter = AvailableFilters.FirstOrDefault(x => x.Filter.ViewType == typeof(ManualSelectionFilter));
           //if there are any selected objects, set the manual selection automagically
           if (selectionFilter != null && Bindings.GetSelectedObjects().Any())
           {
@@ -842,30 +842,30 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    private async void OpenSettingsCommand()
+    private void OpenSettingsCommand()
     {
       try
       {
-        var settingsWindow = new Settings();
-        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
 
         // Not doing this causes Avalonia to throw an error about the owner being already set on the Setting View UserControl
         Settings.ForEach(x => x.ResetView());
-
-        var settingsPageViewModel = new SettingsPageViewModel(Settings.Select(x => new SettingViewModel(x)).ToList());
-        settingsWindow.DataContext = settingsPageViewModel;
-        settingsWindow.Title = $"Settings for {Stream.name}";
+        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList());
+        MainWindowViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
-        var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
 
-        if (saveResult != null && (bool)saveResult)
-        {
-          Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
-        }
+        //var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
+
+        //if (saveResult != null && (bool)saveResult)
+        //{
+        //  Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
+        //}
       }
       catch (Exception e)
       {
       }
+
+
     }
 
     private void AskRemoveSavedStreamCommand()

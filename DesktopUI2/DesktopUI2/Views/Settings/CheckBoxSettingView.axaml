@@ -1,0 +1,16 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Settings.CheckBoxSettingView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+
+  mc:Ignorable="d">
+	<Grid>
+		<StackPanel Spacing="10">
+			<TextBlock Text="{Binding Setting.Description}" TextWrapping="Wrap" />
+			<CheckBox IsChecked="{Binding Setting.IsChecked}"/>
+		</StackPanel>
+	</Grid>
+</UserControl>

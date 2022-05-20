@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls;
-using Speckle.Newtonsoft.Json;
+﻿using Speckle.Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace DesktopUI2.Models.Filters
@@ -22,11 +22,6 @@ namespace DesktopUI2.Models.Filters
     string Slug { get; set; }
 
     /// <summary>
-    /// Used as the discriminator for deserialisation.
-    /// </summary>
-    string Type { get; }
-
-    /// <summary>
     /// Shoud return a succint summary of the filter: what does it contain inside?
     /// </summary>
     string Summary { get; }
@@ -45,6 +40,6 @@ namespace DesktopUI2.Models.Filters
     /// View associated to this filter type
     /// </summary>    
     [JsonIgnore]
-    UserControl View { get; set; }
+    Type ViewType { get; }
   }
 }

@@ -177,6 +177,7 @@
             Grid.Row="1"
             Margin="15,0"
             RowDefinitions="auto,auto,auto">
+
             <!--  COMMIT MESSAGE  -->
             <!--<TextBox
                 Margin="0,8,0,0"

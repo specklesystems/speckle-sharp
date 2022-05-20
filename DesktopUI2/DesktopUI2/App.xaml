@@ -2,11 +2,13 @@
   x:Class="DesktopUI2.App"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
   xmlns:local="using:DesktopUI2"
   xmlns:style="clr-namespace:DesktopUI2.Styles"
   xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles">
   <Application.DataTemplates>
     <local:ViewLocator />
+		<dataTemplates:FilterTemplateSelector/>
   </Application.DataTemplates>
   <Application.Styles>
     <StyleInclude Source="avares://Material.Avalonia/Material.Avalonia.Templates.xaml" />
@@ -20,5 +22,28 @@
       SecondaryColor="Orange" />
   </Application.Resources>
 
+  <!--<Application.DataTemplates>
+    <dataTemplates:FilterTemplateSelector>
+      <DataTemplate x:Key="AllSelectionFilter" DataType="model:AllSelectionFilter">
+        <StackPanel Spacing="15">
+          <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+          <TextBlock
+            HorizontalAlignment="Center"
+            Text="🙌"
+            TextWrapping="Wrap" />
+        </StackPanel>
+      </DataTemplate>
 
+			<DataTemplate x:Key="AllSelectionFilter" DataType="model:AllSelectionFilter">
+				<StackPanel Spacing="15">
+					<TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+					<TextBlock
+            HorizontalAlignment="Center"
+            Text="🙌"
+            TextWrapping="Wrap" />
+				</StackPanel>
+			</DataTemplate>
+
+    </dataTemplates:FilterTemplateSelector>
+  </Application.DataTemplates>-->
 </Application>
