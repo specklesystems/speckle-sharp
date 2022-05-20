@@ -77,9 +77,7 @@ namespace ConnectorGrasshopper.Objects
         }
 
         if (DA.Iteration == 0)
-        {
-          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Extend Object By Key Value" } });
-        }
+          Tracker.TrackNodeRun("Extend Object By Key Value");
 
 
         TaskList.Add(Task.Run(() => DoWork(@base.ShallowCopy(), keys, valueTree)));

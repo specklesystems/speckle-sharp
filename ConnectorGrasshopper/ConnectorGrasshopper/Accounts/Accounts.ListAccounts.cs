@@ -12,26 +12,24 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Accounts
 {
-  public class AccountListComponent : GH_ValueList
+  public class AccountListComponent : GH_ValueList, ISpeckleTrackingComponent
   {
+    public ComponentTracker Tracker { get; set; }
+    public bool IsNew { get; set; } = true;
+    
     protected override Bitmap Icon => Properties.Resources.Accounts;
-
     public override Guid ComponentGuid => new Guid("734C6CB6-2430-40B3-BE2F-255B27302131");
-
-    public override string Category { get => ComponentCategories.SECONDARY_RIBBON; }
-
-    public override string SubCategory { get => ComponentCategories.STREAMS; }
-
-    public override string Description { get => "A dropdown list of your existing Speckle accounts."; }
-
-    public override string Name { get => "Accounts"; }
-
+    public override string Category => ComponentCategories.SECONDARY_RIBBON;
+    public override string SubCategory => ComponentCategories.STREAMS;
+    public override string Description => "A dropdown list of your existing Speckle accounts.";
+    public override string Name => "Accounts";
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public AccountListComponent() : base()
     {
       MutableNickName = false;
       //SetAccountList();
+      Tracker = new ComponentTracker(null);
     }
 
     public override bool AppendMenuItems(ToolStripDropDown menu)
@@ -73,7 +71,7 @@ namespace ConnectorGrasshopper.Accounts
         index++;
       }
 
-      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account List" } });
+      Tracker.TrackNodeRun("Accounts list");
 
       if (string.IsNullOrEmpty(selectedServerUrl) && string.IsNullOrEmpty(selectedUserId))
       {
@@ -117,6 +115,8 @@ namespace ConnectorGrasshopper.Accounts
 
     public override bool Read(GH_IReader reader)
     {
+      // Set isNew to false, indicating this node already existed in some way. This prevents the `NodeCreate` event from being raised.
+      IsNew = false;
       try
       {
         selectedUserId = reader.GetString("selectedId");
@@ -165,6 +165,8 @@ namespace ConnectorGrasshopper.Accounts
     {
       base.AddedToDocument(document);
       SetAccountList();
+      // If the node is new (i.e. GH has not called Read(...) ) we log the node creation event.
+      if (IsNew) Tracker.TrackNodeCreation("Accounts list");
     }
   }
 
