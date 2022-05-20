@@ -378,8 +378,8 @@ namespace ConnectorGrasshopper.Ops
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
               continue;
             }
-
-            Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
+            
+            sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
 
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");

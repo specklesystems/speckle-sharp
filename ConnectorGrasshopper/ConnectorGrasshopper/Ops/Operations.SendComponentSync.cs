@@ -19,7 +19,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class SendComponentSync : GH_TaskCapableComponent<List<StreamWrapper>>
+  public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapper>>
   {
     CancellationTokenSource source;
     const int delay = 100000;

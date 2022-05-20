@@ -79,6 +79,7 @@
     <Compile Include="Accounts\Accounts.AccountDetails.cs" />
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
+    <Compile Include="ComponentTracker.cs" />
     <Compile Include="ConnectorGrasshopperInfo.cs" />
     <Compile Include="Conversion\Deprecated\Convert.ToNativeAsync.cs" />
     <Compile Include="Conversion\Deprecated\Convert.ToSpeckleAsync.cs" />
@@ -100,6 +101,10 @@
     <Compile Include="Extras\SpeckleStreamParam.cs" />
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
+    <Compile Include="GH_SpeckleAsyncComponent.cs" />
+    <Compile Include="GH_SpeckleComponent.cs" />
+    <Compile Include="GH_SpeckleTaskCapableComponent.cs" />
+    <Compile Include="ISpeckleTrackingComponent.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
@@ -252,6 +257,9 @@
   </ItemGroup>
    <ItemGroup>
      <EmbeddedResource Include="Properties\Resources.resx" />
+   </ItemGroup>
+   <ItemGroup>
+     <Folder Include="AbstractComponents" />
    </ItemGroup>
     <Target Name="BeforeRebuild">
     <Message Text="Restoring T4 tool..." Importance="high" />

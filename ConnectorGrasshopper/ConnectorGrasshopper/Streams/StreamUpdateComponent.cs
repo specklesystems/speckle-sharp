@@ -9,7 +9,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamUpdateComponent : GH_Component
+  public class StreamUpdateComponent : GH_SpeckleComponent
   {
     public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -68,6 +68,8 @@ namespace ConnectorGrasshopper.Streams
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Not a stream wrapper!");
           return;
         }
+        if(DA.Iteration == 0)
+          Tracker.TrackNodeRun();
         Message = "Fetching";
         Task.Run(async () =>
         {
@@ -85,8 +87,6 @@ namespace ConnectorGrasshopper.Streams
             if (stream.isPublic != isPublic) input.isPublic = isPublic;
 
             await client.StreamUpdate(input);
-
-            Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
           }
           catch (Exception e)
           {

@@ -8,7 +8,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper
 {
-  public class DeserializeTaskCapableComponent: GH_TaskCapableComponent<Base>
+  public class DeserializeTaskCapableComponent: GH_SpeckleTaskCapableComponent<Base>
   {
     public override Guid ComponentGuid => new Guid("0336F3D1-2FEE-4B66-980D-63DB624980C9");
     private CancellationTokenSource source;

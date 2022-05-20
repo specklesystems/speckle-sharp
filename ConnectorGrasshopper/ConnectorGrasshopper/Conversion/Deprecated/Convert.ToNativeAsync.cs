@@ -127,9 +127,8 @@ namespace ConnectorGrasshopper.Conversion
       }
 
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
-      }
+        (Parent as GH_SpeckleAsyncComponent)?.Tracker.TrackNodeRun("Convert To Native");
+
 
 
       GH_Structure<IGH_Goo> _objects;

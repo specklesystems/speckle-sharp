@@ -7,7 +7,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Transports
 {
-  public class SqliteTransportComponent : GH_Component
+  public class SqliteTransportComponent : GH_SpeckleComponent
   {
     public override Guid ComponentGuid { get => new Guid("DFFAF45E-06A8-4458-85D8-74FDA8DF3268"); }
 
@@ -38,9 +38,7 @@ namespace ConnectorGrasshopper.Transports
       }
 
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
-      }
+        Tracker.TrackNodeRun();
 
       string basePath = null, applicationName = null, scope = null;
 

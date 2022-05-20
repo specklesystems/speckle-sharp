@@ -9,7 +9,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class AccountDetailsComponent : GH_Component
+  public class AccountDetailsComponent : GH_SpeckleComponent
   {
     public AccountDetailsComponent() : base("Account Details", "AccDet", "Gets the details from a specific account", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -62,9 +62,7 @@ namespace ConnectorGrasshopper.Streams
       }
 
       if (DA.Iteration == 0) // Only report on first iteration of the component.
-      {
-        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
-      }
+        Tracker.TrackNodeRun();      
 
       Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 

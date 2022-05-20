@@ -53,6 +53,7 @@ namespace ConnectorGrasshopper.Conversion
 
         object item = null;
         DA.GetData(0, ref item);
+        if(DA.Iteration == 0) Tracker.TrackNodeRun();
         var task = Task.Run(() => DoWork(item, DA), source.Token);
         TaskList.Add(task);
         return;

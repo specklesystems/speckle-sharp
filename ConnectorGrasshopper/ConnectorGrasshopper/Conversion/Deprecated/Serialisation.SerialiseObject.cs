@@ -11,7 +11,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Conversion
 {
-  public class SerializeObject : GH_AsyncComponent
+  public class SerializeObject : GH_SpeckleAsyncComponent
   {
     public override Guid ComponentGuid { get => new Guid("EDEBF1F4-3FC3-4E01-95DD-286FF8804EB0"); }
 
@@ -104,9 +104,7 @@ namespace ConnectorGrasshopper.Conversion
     {
       if (CancellationToken.IsCancellationRequested) return;
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Serialize" } });
-      }
+       (Parent as GH_SpeckleAsyncComponent)?.Tracker.TrackNodeRun();
 
       GH_Structure<GH_SpeckleBase> _objects;
       DA.GetDataTree(0, out _objects);
