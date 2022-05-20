@@ -12,6 +12,7 @@ using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
+using Dimension = Objects.Other.Dimension;
 using Ellipse = Objects.Geometry.Ellipse;
 using Hatch = Objects.Other.Hatch;
 using Line = Objects.Geometry.Line;
@@ -167,6 +168,10 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               @base = SolidToSpeckle(o);
               Report.Log($"Converted Solid as Mesh");
               break;
+            case AcadDB.Dimension o:
+              @base = DimensionToSpeckle(o);
+              Report.Log($"Converted Dimension");
+              break;
             case BlockReference o:
               @base = BlockReferenceToSpeckle(o);
               Report.Log($"Converted Block Instance");
@@ -278,6 +283,8 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
 
     public object ConvertToNative(Base @object)
     {
+      // determine if this object has autocad props
+      bool isFromAutoCAD = @object["sourceAppProps"] != null && (@object["sourceAppProps"] as ApplicationProps).app == HostApplications.AutoCAD.Name ? true : false; 
       object acadObj = null;
       switch (@object)
       {
@@ -360,6 +367,11 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
           Report.Log($"Created Mesh {o.id}");
           break;
 
+        case Dimension o:
+          acadObj = isFromAutoCAD ? AcadDimensionToNative(o) : DimensionToNative(o);
+          Report.Log($"Created Dimension {o.id}");
+          break;
+
         case BlockInstance o:
           acadObj = BlockInstanceToNativeDB(o, out BlockReference reference);
           Report.Log($"Created Block Instance {o.id}");
@@ -425,6 +437,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             case AcadDB.Line _:
             case AcadDB.Arc _:
             case AcadDB.Circle _:
+            case AcadDB.Dimension _:
             case AcadDB.Ellipse _:
             case AcadDB.Hatch _:
             case AcadDB.Spline _:
@@ -492,6 +505,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
         //case Brep _:
         case Mesh _:
 
+        case Dimension _:
         case BlockDefinition _:
         case BlockInstance _:
         case Text _:
