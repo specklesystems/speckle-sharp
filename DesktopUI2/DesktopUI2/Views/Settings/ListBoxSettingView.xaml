@@ -8,14 +8,21 @@
   d:DesignHeight="450"
   d:DesignWidth="800"
   mc:Ignorable="d">
-  <Grid>
-    <StackPanel Spacing="10">
-      <TextBlock Text="{Binding Setting.Description}" TextWrapping="Wrap" />
-      <ComboBox
-        HorizontalAlignment="Stretch"
-        Items="{Binding Setting.Values}"
-        SelectedItem="{Binding Selection}" />
-      <TextBlock Text="{Binding Setting.Summary}" />
-    </StackPanel>
+
+  <Grid
+    Margin="10"
+    ColumnDefinitions="1*, 1*"
+    RowDefinitions="auto">
+    <TextBlock
+      Text="{Binding Setting.Name}"
+      TextWrapping="Wrap"
+      ToolTip.Tip="{Binding Setting.Description}" />
+    <ComboBox
+      Grid.Column="1"
+      HorizontalAlignment="Stretch"
+      Items="{Binding Setting.Values}"
+      SelectedItem="{Binding Selection}" />
+    <TextBlock Text="{Binding Setting.Summary}" />
   </Grid>
+
 </UserControl>

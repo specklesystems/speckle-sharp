@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Models.Settings;
+﻿using DesktopUI2.Models.Settings;
 using ReactiveUI;
 
 namespace DesktopUI2.ViewModels
@@ -19,8 +18,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public UserControl SettingView { get; private set; }
-
     private string _selection;
     public string Selection
     {
@@ -37,10 +34,6 @@ namespace DesktopUI2.ViewModels
     public SettingViewModel(ISetting setting)
     {
       Setting = setting;
-      SettingView = setting.View;
-
-      SettingView.DataContext = this;
-
       //restores the selected item
       Selection = setting.Selection;
     }

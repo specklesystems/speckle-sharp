@@ -98,7 +98,7 @@
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
-        <!--  FILTER INFO  -->
+        <!--  FILTER INFO - the magic happens in FilterTemplateSelector.cs -->
         <Grid
           Grid.Row="1"
           Grid.ColumnSpan="4"

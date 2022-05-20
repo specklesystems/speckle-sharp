@@ -1,7 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Speckle.Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.Models.Settings
 {
@@ -43,14 +41,11 @@ namespace DesktopUI2.Models.Settings
     string Selection { get; set; }
 
     /// <summary>
-    /// View associated to this setting type
+    /// View associated to this filter type
     /// </summary>    
-    UserControl View { get; set; }
+    [JsonIgnore]
+    Type ViewType { get; }
 
-    /// <summary>
-    /// Method to restore the View if this object is reused
-    /// </summary>
-    void ResetView();
 
   }
 }

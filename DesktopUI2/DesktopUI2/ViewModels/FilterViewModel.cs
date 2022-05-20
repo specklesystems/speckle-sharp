@@ -105,7 +105,7 @@ namespace DesktopUI2.ViewModels
       {
         var itemsToRemove = new List<string>();
 
-        if (Filter.ViewType == typeof(ListSelectionFilter))
+        if (Filter.Type == typeof(ListSelectionFilter).ToString())
         {
           foreach (var item in Filter.Selection)
           {

@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Views.Settings;
+﻿using DesktopUI2.Views.Settings;
+using System;
 
 namespace DesktopUI2.Models.Settings
 {
@@ -10,14 +10,20 @@ namespace DesktopUI2.Models.Settings
     public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
-    public bool IsChecked { get; set; }
+    public bool IsChecked
+    {
+      get
+      {
+        return bool.Parse(Selection);
+      }
+      set
+      {
+        Selection = value.ToString();
+      }
+    }
     public string Selection { get; set; }
-    public UserControl View { get; set; } = new CheckBoxSettingView();
+    public Type ViewType { get; } = typeof(CheckBoxSettingView);
     public string Summary { get; set; }
 
-    public void ResetView()
-    {
-      View = new CheckBoxSettingView();
-    }
   }
 }

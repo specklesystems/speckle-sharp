@@ -11,6 +11,12 @@ namespace DesktopUI2.Models.Filters
     /// </summary>
     string Name { get; set; }
 
+
+    /// <summary>
+    /// Used as the discriminator for deserialisation.
+    /// </summary>
+    string Type { get; }
+
     /// <summary>
     /// MaterialDesignIcon use the demo app from the MaterialDesignInXamlToolkit to get the correct name
     /// </summary>

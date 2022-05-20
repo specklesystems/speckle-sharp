@@ -268,7 +268,7 @@ namespace DesktopUI2.ViewModels
     public List<ISetting> Settings
     {
       get => _settings;
-      private set
+      internal set
       {
         this.RaiseAndSetIfChanged(ref _settings, value);
         this.RaisePropertyChanged("HasSettings");
@@ -473,7 +473,7 @@ namespace DesktopUI2.ViewModels
         }
         else
         {
-          var selectionFilter = AvailableFilters.FirstOrDefault(x => x.Filter.ViewType == typeof(ManualSelectionFilter));
+          var selectionFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Type == typeof(ManualSelectionFilter).ToString());
           //if there are any selected objects, set the manual selection automagically
           if (selectionFilter != null && Bindings.GetSelectedObjects().Any())
           {
@@ -489,6 +489,7 @@ namespace DesktopUI2.ViewModels
             var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
             if (savedSetting != null)
               setting.Selection = savedSetting.Selection;
+
           }
         }
       }
@@ -847,19 +848,11 @@ namespace DesktopUI2.ViewModels
       try
       {
 
-
-        // Not doing this causes Avalonia to throw an error about the owner being already set on the Setting View UserControl
-        Settings.ForEach(x => x.ResetView());
-        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList());
+        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList(), this);
         MainWindowViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
 
-        //var saveResult = await settingsWindow.ShowDialog<bool?>(MainWindow.Instance); // TODO: debug throws "control already has a visual parent exception" when calling a second time
 
-        //if (saveResult != null && (bool)saveResult)
-        //{
-        //  Settings = settingsPageViewModel.Settings.Select(x => x.Setting).ToList();
-        //}
       }
       catch (Exception e)
       {

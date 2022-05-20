@@ -6,7 +6,7 @@ namespace DesktopUI2.Models.Filters
 {
   public class PropertySelectionFilter : ISelectionFilter
   {
-
+    public string Type => typeof(PropertySelectionFilter).ToString();
     public string Name { get; set; }
     public string Slug { get; set; }
     public string Icon { get; set; }
