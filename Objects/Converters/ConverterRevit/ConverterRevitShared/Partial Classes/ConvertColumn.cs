@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements.Revit;
+using Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -12,7 +12,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> ColumnToNative(BuiltElements.BuiltElement1D speckleColumn)
+    public List<ApplicationPlaceholderObject> ColumnToNative(Framing speckleColumn)
     {
       if (speckleColumn.baseLine == null)
       {
@@ -192,7 +192,7 @@ namespace Objects.Converter.Revit
     {
       var symbol = Doc.GetElement(revitColumn.GetTypeId()) as FamilySymbol;
 
-      var speckleColumn = new RevitColumn();
+      var speckleColumn = new Framing();
       speckleColumn.family = symbol.FamilyName;
       speckleColumn.profile.name = Doc.GetElement(revitColumn.GetTypeId()).Name;
       speckleColumn.level = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
@@ -230,7 +230,7 @@ namespace Objects.Converter.Revit
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
       }
 
-      speckleColumn.displayValue = GetElementMesh(revitColumn);
+      speckleColumn = GetElementMesh(revitColumn);
 
       return speckleColumn;
     }

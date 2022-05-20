@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Objects.DefaultBuildingObjectKit.enums
 {
+public enum FramingType {
+Beam,
+Brace,
+Column
+}
 public enum ProfileType{
  Catalogue,
  Rectangular,

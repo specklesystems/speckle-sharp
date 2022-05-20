@@ -7,8 +7,8 @@ namespace Objects.DefaultBuildingObjectKit.ProjectOrganization
 {
   public class Level:Base
   {
-  public string name { get; set; }
+    public string name { get; set; }
     public double referenceElevation { get; set; }
-    public double Elevation { get; set; }
+    public double elevation { get; set; }
   }
 }

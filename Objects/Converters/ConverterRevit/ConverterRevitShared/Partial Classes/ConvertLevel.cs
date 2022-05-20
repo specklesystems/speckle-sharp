@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
+using PO =  Objects.DefaultBuildingObjectKit.ProjectOrganization;
+
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="speckleLevel"></param>
     /// <returns></returns>
-    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel)
+    public DB.Level ConvertLevelToRevit(PO.Level speckleLevel)
     {
       if (speckleLevel == null) return null;
       var speckleLevelElevation = ScaleToNative((double)speckleLevel.elevation, speckleLevel.units);
@@ -63,17 +64,17 @@ namespace Objects.Converter.Revit
 
       else
       {
-        // If we don't have an existing level, create it.
+        // If we don't have an existing level, create it. -> do nothing
         revitLevel = Level.Create(Doc, (double)speckleLevelElevation);
         if (!hasLevelWithSameName)
           revitLevel.Name = speckleLevel.name;
-        var rl = speckleLevel as RevitLevel;
-        if (rl != null && rl.createView)
-        {
-          CreateViewPlan(speckleLevel.name, revitLevel.Id);
-        }
+        var rl = speckleLevel as PO.Level;
+        //if (rl != null && rl.createView)
+        //{
+        //  CreateViewPlan(speckleLevel.name, revitLevel.Id);
+        //}
 
-        Report.Log($"Created Level {revitLevel.Name} {revitLevel.Id}");
+        //Report.Log($"Created Level {revitLevel.Name} {revitLevel.Id}");
       }
 
 
@@ -81,7 +82,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    public List<ApplicationPlaceholderObject> LevelToNative(BuiltElements.Level speckleLevel)
+    public List<ApplicationPlaceholderObject> LevelToNative(PO.Level speckleLevel)
     {
       var revitLevel = ConvertLevelToRevit(speckleLevel);
       var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleLevel.applicationId, ApplicationGeneratedId = revitLevel.UniqueId, NativeObject = revitLevel } };
@@ -89,13 +90,13 @@ namespace Objects.Converter.Revit
       return placeholders;
     }
 
-    public RevitLevel LevelToSpeckle(DB.Level revitLevel)
+    public PO.Level LevelToSpeckle(DB.Level revitLevel)
     {
-      var speckleLevel = new RevitLevel();
+      var speckleLevel = new PO.Level();
 
       speckleLevel.elevation = ScaleToSpeckle(revitLevel.Elevation);
       speckleLevel.name = revitLevel.Name;
-      speckleLevel.createView = true;
+      //speckleLevel.createView = true; -> why should this be an option ? should think of how we're handling levels 
 
       GetAllRevitParamsAndIds(speckleLevel, revitLevel);
 
@@ -140,7 +141,7 @@ namespace Objects.Converter.Revit
       return collector.FirstOrDefault();
     }
 
-    private RevitLevel ConvertAndCacheLevel(DB.Element elem, BuiltInParameter bip)
+    private PO.Level ConvertAndCacheLevel(DB.Element elem, BuiltInParameter bip)
     {
       var param = elem.get_Parameter(bip);
 
@@ -152,7 +153,7 @@ namespace Objects.Converter.Revit
       return ConvertAndCacheLevel(param.AsElementId());
     }
 
-    private RevitLevel ConvertAndCacheLevel(ElementId id)
+    private PO.Level ConvertAndCacheLevel(ElementId id)
     {
       var level = Doc.GetElement(id) as DB.Level;
 
@@ -162,16 +163,16 @@ namespace Objects.Converter.Revit
         Levels[level.Name] = LevelToSpeckle(level);
       }
 
-      return Levels[level.Name] as RevitLevel;
+      return Levels[level.Name] as PO.Level;
     }
 
-    private RevitLevel LevelFromPoint(XYZ point)
+    private PO.Level LevelFromPoint(XYZ point)
     {
       var p = PointToSpeckle(point);
-      return new RevitLevel() { elevation = p.z, name = "Generated Level " + p.z, units = ModelUnits };
+      return new PO.Level() { elevation = p.z, name = "Generated Level " + p.z, /* units = ModelUnits */};
     }
 
-    private RevitLevel LevelFromCurve(Curve curve)
+    private PO.Level LevelFromCurve(Curve curve)
     {
       var start = curve.GetEndPoint(0);
       var end = curve.GetEndPoint(1);

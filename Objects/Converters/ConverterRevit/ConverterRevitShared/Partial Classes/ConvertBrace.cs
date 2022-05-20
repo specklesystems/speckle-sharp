@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
+using Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
@@ -9,7 +8,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> BraceToNative(BuiltElement1D speckleBrace)
+    public List<ApplicationPlaceholderObject> BraceToNative(Framing speckleBrace)
     {
       //reuse ConversionLog.Addic in Beam class, at these are basically the same thing
       if (speckleBrace is RevitBrace rb)
@@ -35,7 +34,7 @@ namespace Objects.Converter.Revit
 
     private Base BraceToSpeckle(DB.FamilyInstance myFamily)
     {
-      var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
+      var myBeam = BeamToSpeckle(myFamily) as Framing;
 
       var myBrace = new RevitBrace()
       {

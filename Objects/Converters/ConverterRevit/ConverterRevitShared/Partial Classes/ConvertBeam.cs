@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
+using Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
@@ -11,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> BeamToNative(BuiltElement1D speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public List<ApplicationPlaceholderObject> BeamToNative(Framing speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       
       if (speckleBeam.baseLine == null)
@@ -25,17 +24,17 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance revitBeam = null;
 
       //comes from revit or schema builder, has these props
-      var speckleRevitBeam = speckleBeam as RevitBeam;
+      var speckleRevitBeam = speckleBeam as Framing;
 
       if (speckleRevitBeam != null)
       {
         if (level != null)
         {
-          level = GetLevelByName(speckleRevitBeam.level.name);
+          //level = GetLevelByName(speckleRevitBeam.level.name);
         }
       }
 
-      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine));
+      //level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine));
       var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
@@ -107,11 +106,10 @@ namespace Objects.Converter.Revit
       }
       var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
-      var speckleBeam = new RevitBeam();
-      speckleBeam.family = symbol.FamilyName;
-      speckleBeam.profile.name = Doc.GetElement(revitBeam.GetTypeId()).Name;
+      var speckleBeam = new Framing();
+      speckleBeam.BuiltElement1DProperty.name = Doc.GetElement(revitBeam.GetTypeId()).Name;
       speckleBeam.baseLine = baseLine;
-      speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
+      //speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
       speckleBeam.displayValue = GetElementMesh(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);

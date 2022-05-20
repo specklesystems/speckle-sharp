@@ -1,7 +1,9 @@
 ﻿using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
+using Objects.DefaultBuildingObjectKit.PhysicalObjects;
+using Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects;
+using Objects.DefaultBuildingObjectKit.enums;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -113,11 +115,11 @@ namespace Objects.Converter.Revit
       var offset = elem["baseOffset"] as double?;
 
 
-      if (elem is BuiltElement1D)
+      if (elem is Framing)
       {
 
-        BuiltElement1D builtElement1D = (BuiltElement1D)elem;
-        if (builtElement1D.ElementType == Element1DType.Column)
+        Framing builtElement1D = (Framing)elem;
+        if (builtElement1D.framingType == FramingType.Column)
         {
           //revit vertical columns can only be POINT based
           if (!(bool)elem["isSlanted"] || IsVertical(curve))
