@@ -58,6 +58,7 @@
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
+    <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
@@ -66,7 +67,7 @@
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
-    <None Remove="Views\Windows\Settings.xaml" />
+    <None Remove="Views\Windows\SettingsView.xaml" />
     <AvaloniaResource Include="Styles\Expander.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
@@ -156,6 +157,9 @@
     <AvaloniaXaml Include="Views\Scheduler.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -180,7 +184,7 @@
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Settings.xaml">
+    <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
@@ -258,6 +262,9 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditControls\Send.xaml.cs">
       <DependentUpon>Send.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
+      <DependentUpon>CheckBoxSettingView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>

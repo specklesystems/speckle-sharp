@@ -179,6 +179,10 @@ namespace Objects.Converter.Revit
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
       speckleElement["units"] = ModelUnits;
+      speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
+      speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
+
+
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -674,7 +678,8 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
     private DB.Transform GetReferencePointTransform(string type)
     {
-      // get the correct base point from settings
+      // get the correct base point from
+      // settings
       var referencePointTransform = DB.Transform.Identity;
 
       var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
@@ -909,7 +914,7 @@ namespace Objects.Converter.Revit
       if (existing != null) return existing.Id;
 
       // Create new material
-      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
+      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
       Material mat = Doc.GetElement(materialId) as Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);

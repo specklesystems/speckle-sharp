@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using Speckle.Core.Api;
@@ -33,6 +34,7 @@ namespace Speckle.ConnectorRevit.UI
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
@@ -167,6 +169,11 @@ namespace Speckle.ConnectorRevit.UI
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
+      // Get setting to skip linked model elements if necessary
+      var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
+      var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
+
+
       foreach (var @base in objects)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -178,9 +185,11 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           conversionProgressDict["Conversion"]++;
-          // wrapped in a dispatcher not to block the ui
-
           progress.Update(conversionProgressDict);
+
+          //skip element if is froma  linked file and setting is off
+          if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
+            continue;
 
           var convRes = converter.ConvertToNative(@base);
           if (convRes is ApplicationPlaceholderObject placeholder)
@@ -249,7 +258,7 @@ namespace Speckle.ConnectorRevit.UI
 
       else
       {
-        if (obj != null && !obj.GetType().IsPrimitive)
+        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
           converter.Report.Log($"Skipped object of type {obj.GetType()}, not supported.");
       }
 

@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Controls.Selection;
+﻿using Avalonia.Controls.Selection;
 using DesktopUI2.Models.Filters;
 using ReactiveUI;
 using Splat;
@@ -26,8 +25,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public UserControl FilterView { get; set; }
-
     public SelectionModel<string> SelectionModel { get; }
 
     public string Summary { get { return Filter.Summary; } }
@@ -44,7 +41,6 @@ namespace DesktopUI2.ViewModels
         Bindings = Locator.Current.GetService<ConnectorBindings>();
 
         Filter = filter;
-        FilterView = filter.View;
 
         //TODO should clean up this logic a bit
         //maybe have a model, view and viewmodel for each filter
@@ -53,7 +49,8 @@ namespace DesktopUI2.ViewModels
           _valuesList = SearchResults = new List<string>(l.Values);
         }
 
-        FilterView.DataContext = this;
+        //TODO:
+        //FilterView.DataContext = this;
       }
       catch (Exception ex)
       {
