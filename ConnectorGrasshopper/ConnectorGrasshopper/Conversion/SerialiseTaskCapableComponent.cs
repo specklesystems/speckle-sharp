@@ -9,7 +9,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Conversion
 {
-  public class SerializeTaskCapableComponent : GH_TaskCapableComponent<string>
+  public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<string>
   {
     private CancellationTokenSource source;
     public override Guid ComponentGuid => new Guid("6F6A5347-8DE1-44FA-8D26-C73FD21650A9");
@@ -47,6 +47,7 @@ namespace ConnectorGrasshopper.Conversion
 
         GH_SpeckleBase item = null;
         DA.GetData(0, ref item);
+        if(DA.Iteration == 0) Tracker.TrackNodeRun();
         var task = Task.Run(() => DoWork(item, DA), source.Token);
         TaskList.Add(task);
         return;

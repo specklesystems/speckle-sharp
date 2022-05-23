@@ -455,8 +455,8 @@ namespace ConnectorGrasshopper.Ops
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
-
-            Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
+            
+            sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
           }
           else if (transport is ITransport otherTransport)
           {

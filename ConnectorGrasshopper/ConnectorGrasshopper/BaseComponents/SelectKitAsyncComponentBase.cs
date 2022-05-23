@@ -11,7 +11,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class SelectKitAsyncComponentBase : GH_AsyncComponent
+  public class SelectKitAsyncComponentBase : GH_SpeckleAsyncComponent
   {
     public ISpeckleConverter Converter;
 

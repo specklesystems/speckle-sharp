@@ -76,6 +76,14 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseComponents\ComponentTracker.cs" />
+    <Compile Include="BaseComponents\GH_SpeckleAsyncComponent.cs" />
+    <Compile Include="BaseComponents\GH_SpeckleComponent.cs" />
+    <Compile Include="BaseComponents\GH_SpeckleTaskCapableComponent.cs" />
+    <Compile Include="BaseComponents\ISpeckleTrackingComponent.cs" />
+    <Compile Include="BaseComponents\SelectKitAsyncComponentBase.cs" />
+    <Compile Include="BaseComponents\SelectKitComponentBase.cs" />
+    <Compile Include="BaseComponents\SelectKitTaskCapableComponentBase.cs" />
     <Compile Include="Accounts\Accounts.AccountDetails.cs" />
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
@@ -111,12 +119,9 @@
     <Compile Include="Objects\Deprecated\ExtendSpeckleObjectByKeyValueAsync.cs" />
     <Compile Include="Objects\Deprecated\GetObjectValueByKeyAsync.cs" />
     <Compile Include="Objects\Deprecated\ObjectsUpgradeUtils.cs" />
-    <Compile Include="Objects\Deprecated\SelectKitAsyncComponentBase.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
-    <Compile Include="Objects\SelectKitComponentBase.cs" />
-    <Compile Include="Objects\SelectKitTaskCapableComponentBase.cs" />
     <Compile Include="Ops\Operations.ReceiveComponent.cs" />
     <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />

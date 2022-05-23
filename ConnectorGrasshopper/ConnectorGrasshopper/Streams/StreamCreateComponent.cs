@@ -13,7 +13,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamCreateComponent : GH_Component
+  public class StreamCreateComponent : GH_SpeckleComponent
   {
     public override Guid ComponentGuid => new Guid("722690DE-218D-45E1-9183-98B13C7F411D");
 
@@ -102,8 +102,8 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
-      Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
-
+      Tracker.TrackNodeRun("Stream Create");
+      
       Task.Run(async () =>
       {
         var client = new Client(account);

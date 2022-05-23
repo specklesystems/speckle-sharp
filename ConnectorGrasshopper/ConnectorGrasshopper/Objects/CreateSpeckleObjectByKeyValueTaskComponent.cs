@@ -41,9 +41,7 @@ namespace ConnectorGrasshopper.Objects
         var keys = new List<string>();
         var valueTree = new GH_Structure<IGH_Goo>();
         if (DA.Iteration == 0)
-        {
-          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object By Key Value" } });
-        }
+          Tracker.TrackNodeRun("Create Object By Key Value");
 
 
         DA.GetDataList(0, keys);
