@@ -81,13 +81,10 @@ namespace Speckle.ConnectorRevit.UI
     {
       var docs = new List<Document>();
 
-
-
-      // get from settings
-      var sendLinkedModels = GetSettings().FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
+      // Get settings and return empty list if we should not send linked models
+      var sendLinkedModels = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
       if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
         return docs;
-
 
 
       //TODO: is the name the most safe way to look for it?

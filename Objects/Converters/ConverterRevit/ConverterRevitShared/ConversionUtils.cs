@@ -674,7 +674,8 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
     private DB.Transform GetReferencePointTransform(string type)
     {
-      // get the correct base point from settings
+      // get the correct base point from
+      // settings
       var referencePointTransform = DB.Transform.Identity;
 
       var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
