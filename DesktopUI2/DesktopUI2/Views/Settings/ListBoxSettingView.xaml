@@ -6,7 +6,6 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-
   mc:Ignorable="d">
 
   <Grid
@@ -21,7 +20,9 @@
       ToolTip.Tip="{Binding Setting.Description}" />
     <TextBlock
       Grid.Column="1"
-      Text="{Binding Setting.Name}"
+      Margin="5,0"
+      VerticalAlignment="Center"
+      Text="{Binding Setting.Name, FallbackValue='Hello'}"
       TextWrapping="Wrap"
       ToolTip.Tip="{Binding Setting.Description}" />
     <ComboBox

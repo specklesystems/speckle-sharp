@@ -179,6 +179,10 @@ namespace Objects.Converter.Revit
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
       speckleElement["units"] = ModelUnits;
+      speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
+      speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
+
+
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
