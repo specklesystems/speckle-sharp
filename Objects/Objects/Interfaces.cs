@@ -85,12 +85,6 @@ namespace Objects
     T displayValue { get; set; }
   }
 
-  public interface ISourceAppParams
-  {
-    String sourceAppName { get; set; }
-    List<Base> sourceAppParams { get; set; }
-  }
-
 
   #endregion
 }

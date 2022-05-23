@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.DefaultBuildingObjectKit.PhysicalObjects;
 using Objects.DefaultBuildingObjectKit.enums;
 
-namespace Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects
+namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
 {
   public class Floor : BuiltElement2D
   {

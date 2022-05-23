@@ -8,12 +8,12 @@ using Speckle.Core.Models;
 
 namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
 {
-  public class BuiltElement3D : Base , IDisplayValue<List<Mesh>> , ISourceAppParams
+  public class BuiltElement3D : Base , IDisplayValue<List<Mesh>> 
   {
     //should we have something similar to BREP definition here but not a Brep Defn ? 
     public List<Mesh> displayValue { get; set; } // for visualization
     public double surfaceArea { get; set; }// the actual surface area of the 3d element 
-    public string name { get; set; }// for tracking 
+    //public string name { get; set; }// for tracking  -> pull down to the lower layers 
     public double volume { get; set; } //need to have volume on
     public BuiltElement3DProperty BuiltElement3DProperty { get; set; }
 
