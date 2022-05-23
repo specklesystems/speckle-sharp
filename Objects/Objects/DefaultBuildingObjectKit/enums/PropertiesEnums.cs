@@ -15,6 +15,17 @@ public enum ProfileType{
  Circular,
  SemiCircular
 }
+
+public enum floorType{
+ceiling,
+slab,
+floor
+}
+
+public enum wallType{
+WallFromHeight,
+WallFromLevels 
+}
   public enum Element1DType
   {
   Beam,

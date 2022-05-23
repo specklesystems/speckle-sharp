@@ -133,10 +133,10 @@ namespace Objects.Converter.Revit
 
       }
       //undo offset transform
-      else if (elem is BuiltElement2D)
+      else if (elem is PlanarBuiltElement2D)
       {
-        BuiltElement2D builtElement2D = (BuiltElement2D)elem;
-        if (builtElement2D.element2DType == Element2DType.Wall)
+        PlanarBuiltElement2D builtElement2D = (PlanarBuiltElement2D)elem;
+        if (builtElement2D.BuiltElement2DProperty.element2DType == Element2DType.Wall)
         {
           var revitOffset = ScaleToNative((double)offset, ((Base)builtElement2D.outline)["units"] as string);
           XYZ vector = new XYZ(0, 0, -revitOffset);

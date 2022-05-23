@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.BuiltElements;
+using Objects.DefaultBuildingObjectKit.ProjectOrganization;
 using Speckle.Core.Models;
 
 namespace Objects.Structural.ETABS.Geometry
@@ -17,7 +17,7 @@ namespace Objects.Structural.ETABS.Geometry
   public double Rz { get; set; }
   public string GridSystemType { get; set; }
   [DetachProperty]
-  public List<GridLine> gridLines { get; set; }
+  public List<LabelledCurve> gridLines { get; set; }
 
   }
 }

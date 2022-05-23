@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Speckle.Core.Models;
-using Objects.DefaultBuildingObjectKit.PhysicalObjects;
+using Objects.Geometry;
+
 
 namespace Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects
 {
-  public class Roof : NonPlanarBuiltElement2D
+  public class PlanarRoof :BuiltElement2D
   {
   }
 }

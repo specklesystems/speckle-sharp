@@ -101,8 +101,8 @@ namespace Objects.Converter.Revit
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
-        Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
-        return RevitElementToSpeckle(revitBeam);
+        Report.Log($"Beam has no valid baseline, cannot Convert");
+        //return RevitElementToSpeckle(revitBeam);
       }
       var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
