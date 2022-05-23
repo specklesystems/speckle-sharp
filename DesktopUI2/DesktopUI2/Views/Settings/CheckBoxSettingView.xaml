@@ -1,0 +1,25 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Settings.CheckBoxSettingView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+	xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+
+  mc:Ignorable="d">
+
+
+	<Grid ColumnDefinitions="auto,1*,1*" RowDefinitions="auto" Margin="10">
+		<icons:MaterialIcon
+				 Margin="0"
+				 VerticalAlignment="Center"
+				 Foreground="Gray"
+				 Kind="InfoCircle"
+				 ToolTip.Tip="{Binding Setting.Description}" />
+		<TextBlock Grid.Column="1" Text="{Binding Setting.Name}" ToolTip.Tip="" TextWrapping="Wrap" />
+		<CheckBox  HorizontalAlignment="Right"
+      Grid.Column="2" IsChecked="{Binding Setting.IsChecked}"/>
+
+	</Grid>
+</UserControl>

@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using ConnectorRevit;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.UI
@@ -79,6 +80,16 @@ namespace Speckle.ConnectorRevit.UI
     private List<Document> GetLinkedDocuments()
     {
       var docs = new List<Document>();
+
+
+
+      // get from settings
+      var sendLinkedModels = GetSettings().FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
+      if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
+        return docs;
+
+
+
       //TODO: is the name the most safe way to look for it?
       var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document).OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(RevitLinkType)).ToElements().Cast<RevitLinkType>().Select(x => x.Name.Replace(".rvt", ""));
       foreach (Document revitDoc in RevitApp.Application.Documents)

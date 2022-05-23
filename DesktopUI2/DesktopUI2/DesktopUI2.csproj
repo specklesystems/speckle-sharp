@@ -58,6 +58,7 @@
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
+    <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
@@ -154,6 +155,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Scheduler.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
@@ -258,6 +262,9 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditControls\Send.xaml.cs">
       <DependentUpon>Send.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
+      <DependentUpon>CheckBoxSettingView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
