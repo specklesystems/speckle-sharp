@@ -18,21 +18,17 @@ namespace Objects.Other
     /// <summary>
     /// The measurement of the dimension.
     /// </summary>
-    public double value { get; set; }
+    public double measurement { get; set; }
+
+    /// <summary>
+    /// The text of the dimension.
+    /// </summary>
+    public string text { get; set; }
 
     /// <summary>
     /// The position of the dimension
     /// </summary>
     public Point position { get; set; }
-
-    /// <summary>
-    /// The objects being measured.
-    /// </summary>
-    /// <remarks>
-    /// For example, could be two points indicating a linear distance, or an arc angle.
-    /// Points, Lines, and Arc objects expected.
-    /// </remarks>
-    public List<Base> measured { get; set; }
 
     /// <summary>
     /// Curves representing the annotation 
