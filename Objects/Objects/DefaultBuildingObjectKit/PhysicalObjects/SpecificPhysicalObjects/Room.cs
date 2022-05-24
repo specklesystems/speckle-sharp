@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Speckle.Core.Models;
 using Objects.DefaultBuildingObjectKit.ProjectOrganization;
 
-namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
+namespace Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects
 {
-  public class ElectricalWiring : CurveBasedElement
+  public class Room : PointElement
   {
-  public string wiringType { get; set; }
   public Level level { get; set; }
-
+  public double area { get; set; }
+  public double volume { get; set; }
     // to implement source app parameters interface from claire
   }
 }

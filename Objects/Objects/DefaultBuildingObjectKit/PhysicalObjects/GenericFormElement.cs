@@ -8,14 +8,14 @@ using Speckle.Core.Models;
 
 namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
 {
-  public class BuiltElement3D : Base , IDisplayValue<List<Mesh>> 
+  public abstract class GenericFormElement : Base , IDisplayValue<List<Mesh>> 
   {
     //should we have something similar to BREP definition here but not a Brep Defn ? 
     public List<Mesh> displayValue { get; set; } // for visualization
-    public double surfaceArea { get; set; }// the actual surface area of the 3d element 
+    //public double surfaceArea { get; set; }// the actual surface area of the 3d element 
     //public string name { get; set; }// for tracking  -> pull down to the lower layers 
-    public double volume { get; set; } //need to have volume on
-    public BuiltElement3DProperty BuiltElement3DProperty { get; set; }
+    //public double volume { get; set; } //need to have volume on
+    public GenericFormProperty Property { get; set; }
 
     public Material material { get; set; }
 
@@ -23,7 +23,5 @@ namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
 
     public Base childrenObject { get; set; } //maybe holding pointers here would make sense more
 
-    public string sourceAppName { get; set; }
-    public List<Base> sourceAppParams { get; set; }
   }
 }

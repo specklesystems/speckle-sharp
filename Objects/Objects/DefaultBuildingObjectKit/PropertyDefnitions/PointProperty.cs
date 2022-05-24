@@ -6,9 +6,11 @@ using Objects.DefaultBuildingObjectKit.enums;
 
 namespace Objects.DefaultBuildingObjectKit.Calculations
 {
-  public class BuiltElement1DProperty : Base
+  public class PointProperty : Base
   {
     public string name { get; set; }
+
+    public PointPropertyType type { get; set; }
 
   }
 }

@@ -8,13 +8,12 @@ using Objects.Geometry;
 
 namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
 {
-  public class BuiltElement1D : Base , IDisplayValue<List<Mesh>> 
+  public abstract class PointElement : Base , IDisplayValue<List<Mesh>> 
   {
-    public ICurve baseLine { get; set; }
+    public Point basePoint { get; set; }
     //public string name { get; set; }
-    public BuiltElement1DProperty BuiltElement1DProperty { get; set; }
+    public PointProperty property { get; set; }
     public Material material { get; set; }
-    public List<Base> Voids { get; set; }//Physical objects can have voids in them, non physical objects should not be repersented with voids encompassed
     public Base childrenObject { get; set; } //maybe holding pointers here would make sense more
     public List<Mesh> displayValue { get; set; }
   }

@@ -4,11 +4,20 @@ using System.Text;
 using Speckle.Core.Models;
 using Objects.DefaultBuildingObjectKit.enums;
 
-namespace Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects
+namespace Objects.DefaultBuildingObjectKit.PhysicalObjects
 {
-  public class Framing :BuiltElement1D 
+  public class Framing : CurveBasedElement
   {
 
-  public FramingType framingType { get; set; }
+    public ProfileType profileType { get; set; }
+
+    public FramingType framingOrientation { get; set; }
+
+    public double framingSurfaceArea {get;set;}
+    public double end1OffSet { get; set; }
+    public double end2OffSet { get; set; }
+
+    // to implement source app parameters interface from claire
+
   }
 }

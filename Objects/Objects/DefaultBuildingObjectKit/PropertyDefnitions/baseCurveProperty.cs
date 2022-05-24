@@ -6,10 +6,11 @@ using Objects.DefaultBuildingObjectKit.enums;
 
 namespace Objects.DefaultBuildingObjectKit.Calculations
 {
-  public class BuiltElement3DProperty : Base
+  public class baseCurveProperty : Base
   {
-    public string name { get; set; }
-    public Element3DType Element3DType { get; set; }
-    public Base parameters { get; set; }
+  public string name { get; set; }
+  //public double thickness { get; set; }
+
+  public CurveElementType type { get; set; }
   }
 }

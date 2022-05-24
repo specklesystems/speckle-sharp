@@ -16,36 +16,36 @@ public enum ProfileType{
  SemiCircular
 }
 
-public enum floorType{
-ceiling,
-slab,
-floor
-}
 
-public enum wallType{
-WallFromHeight,
-WallFromLevels 
-}
-  public enum Element1DType
+  public enum PointPropertyType
   {
-  Beam,
-  Brace,
-  Column,
-  Wire,
-  Pipe,
-  Rebar,
-  Ducts,
   Weld,
-  Bolts
+  Bolts,
+  Room,
+  Station,
+  Space,
+  Structure
   }
-  public enum Element2DType
+  public enum CurveElementType
   {
+    Wall,
+    Wire,
+    Pipe,
+    Rebar,
+    Ducts,
+    Framing
+
+  }
+  public enum flatSurfaceType {
   Ceiling,
-  Floor,
-  Wall
+  Roof,
+  Slab,
+  Floor
+  }
+  public enum GenericFormType {
+  Roof,
+  Topography,
   }
 
-  public enum Element3DType {
-
-  }
+  public enum rebarShape { }
 }

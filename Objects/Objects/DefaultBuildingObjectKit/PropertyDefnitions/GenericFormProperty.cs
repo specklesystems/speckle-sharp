@@ -6,12 +6,9 @@ using Objects.DefaultBuildingObjectKit.enums;
 
 namespace Objects.DefaultBuildingObjectKit.Calculations
 {
-  public class BuiltElement2DProperty : Base
+  public class GenericFormProperty : Base
   {
-  public string name { get; set; }
-  public double thickness { get; set; }
-
-  public Element2DType element2DType { get; set; }
-  public Base parameters { get; set; }
+    public string name { get; set; }
+    public GenericFormType Type { get; set; }
   }
 }
