@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Autodesk.Revit.ApplicationServices;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
@@ -458,7 +459,7 @@ namespace Objects.Converter.Revit
       var nurbs = DB.NurbSpline.Create(spline);
       return NurbsToSpeckle(nurbs, units ?? ModelUnits);
     }
-
+    
     public CurveArray PolylineToNative(Polyline polyline)
     {
       var curveArray = new CurveArray();
@@ -468,18 +469,37 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        var pts = polyline.points;
-
+        var pts = polyline.GetPoints();
+        var lastPt = pts[0];
         for (var i = 1; i < pts.Count; i++)
         {
-          var speckleLine = new Line(new double[] { pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z }, polyline.units);
-          curveArray.Append(LineToNative(speckleLine));
+          var speckleLine = new Line(lastPt, pts[i] , polyline.units);
+          var scaleToNative = ScaleToNative(speckleLine.length, speckleLine.units);
+          if (scaleToNative < Doc.Application.ShortCurveTolerance)
+            continue;
+          lastPt = pts[i];
+          try
+          {
+            var lineToNative = LineToNative(speckleLine);
+            curveArray.Append(lineToNative);
+          }
+          catch (Exception e)
+          {
+            Report.LogConversionError(e);
+          }
         }
 
         if (polyline.closed)
         {
-          var speckleLine = new Line(new double[] { pts[pts.Count - 1].x, pts[pts.Count - 1].y, pts[pts.Count - 1].z, pts[0].x, pts[0].y, pts[0].z }, polyline.units);
-          curveArray.Append(LineToNative(speckleLine));
+          var speckleLine = new Line(pts[pts.Count - 1], pts[0] , polyline.units);
+          try
+          {
+            curveArray.Append(LineToNative(speckleLine));
+          }
+          catch (Exception e)
+          {
+            Report.LogConversionError(e);
+          }
         }
       }
       return curveArray;
