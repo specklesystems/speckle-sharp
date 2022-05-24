@@ -1,4 +1,4 @@
-﻿using Objects.BuildingObject;
+﻿using Objects.Building;
 using Objects.Definitions;
 using Objects.Organization;
 

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.Organization;
-using Objects.BuildingObject.enums;
+using Objects.Building.enums;
 using Objects.Definitions;
 
-namespace Objects.BuildingObject
+namespace Objects.Building
 {
   public class Wall : CurveBasedElement
   {

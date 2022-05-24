@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.BuildingObject.enums;
+using Objects.Building.enums;
 using Objects.Definitions;
 using Speckle.Core.Models;
 
-namespace Objects.BuildingObject
+namespace Objects.Building
 {
   public class Framing : CurveBasedElement
   {

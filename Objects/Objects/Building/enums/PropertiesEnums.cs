@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects.BuildingObject.enums
+namespace Objects.Building.enums
 {
   public enum FramingType
   {

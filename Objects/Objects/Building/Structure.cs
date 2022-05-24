@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Objects.Definitions;
 
 
-namespace Objects.BuildingObject
+namespace Objects.Building
 {
   public class Structure : PointBasedElement
 

@@ -2,7 +2,7 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
-using Objects.BuildingObject.enums;
+using Objects.Building.enums;
 using Objects.Geometry;
 
 namespace Objects.Organization

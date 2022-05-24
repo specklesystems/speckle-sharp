@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.BuildingObject.enums;
-using Objects.Organization;
 using Objects.Definitions;
+using Objects.Organization;
+using Objects.Geometry;
 
-namespace Objects.BuildingObject
+namespace Objects.Building
 {
-  public class FlatSurface : CurveBasedElement
+  public class PlanarRoof : CurveBasedElement
   {
-  public flatSurfaceType Type{ get; set; }
+  public double thickness { get; set; }
 
   public double area { get; set; }
 
   public Level level { get; set; }
-  public double thickness { get; set; }
+
     // to implement source app parameters interface from claire
   }
 }

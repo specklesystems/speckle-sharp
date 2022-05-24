@@ -34,9 +34,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="BuildingObject\ApplicationSpecific\ArchiCad\" />
-    <Folder Include="BuildingObject\ApplicationSpecific\Revit\" />
-    <Folder Include="BuildingObject\ApplicationSpecific\TeklaStructures\" />
+    <Folder Include="Building\ApplicationSpecific\ArchiCad\" />
+    <Folder Include="Building\ApplicationSpecific\Revit\" />
+    <Folder Include="Building\ApplicationSpecific\TeklaStructures\" />
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>

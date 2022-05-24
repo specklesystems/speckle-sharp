@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Objects.BuildingObject.enums;
+using Objects.Building.enums;
 using Speckle.Core.Models;
 using Objects.Geometry;
 using Objects.Visualization;

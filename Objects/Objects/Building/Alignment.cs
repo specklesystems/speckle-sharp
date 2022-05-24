@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Objects.Definitions;
 
-namespace Objects.BuildingObject
+namespace Objects.Building
 {
   public class Alignment : CurveBasedElement
   {

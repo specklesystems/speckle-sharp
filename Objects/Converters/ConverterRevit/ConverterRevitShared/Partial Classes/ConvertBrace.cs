@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB.Structure;
-using Objects.BuildingObject;
+using Objects.Building;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;

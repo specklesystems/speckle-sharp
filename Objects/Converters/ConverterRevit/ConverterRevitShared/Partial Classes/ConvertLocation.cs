@@ -1,8 +1,8 @@
 ﻿using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuildingObject;
-using Objects.BuildingObject.enums;
+using Objects.Building;
+using Objects.Building.enums;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -135,7 +135,7 @@ namespace Objects.Converter.Revit
       else if (elem is PlanarBuiltElement2D)
       {
         PlanarBuiltElement2D builtElement2D = (PlanarBuiltElement2D)elem;
-        if (builtElement2D.BuiltElement2DProperty.element2DType == BuildingObject.enums.CurveElementType.Wall)
+        if (builtElement2D.BuiltElement2DProperty.element2DType == Building.enums.CurveElementType.Wall)
         {
           var revitOffset = ScaleToNative((double)offset, ((Base)builtElement2D.outline)["units"] as string);
           XYZ vector = new XYZ(0, 0, -revitOffset);

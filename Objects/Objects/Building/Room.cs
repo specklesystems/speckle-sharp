@@ -4,7 +4,7 @@ using System.Text;
 using Objects.Definitions;
 using Objects.Organization;
 
-namespace Objects.BuildingObject
+namespace Objects.Building
 {
   public class Room : PointBasedElement
   {
