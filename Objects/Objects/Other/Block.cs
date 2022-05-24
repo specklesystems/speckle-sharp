@@ -3,6 +3,7 @@ using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Definitions;
 using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
@@ -12,12 +13,10 @@ namespace Objects.Other
   /// <summary>
   /// Block definition class 
   /// </summary>
-  public class BlockDefinition : Base
+  public class BlockDefinition : PointBasedElement
   {
     public string name { get; set; }
-
-    public Point basePoint { get; set; }
-
+    
     [DetachProperty]
     public List<Base> geometry { get; set; }
 

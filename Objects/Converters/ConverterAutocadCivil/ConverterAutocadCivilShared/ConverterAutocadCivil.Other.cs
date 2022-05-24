@@ -18,6 +18,7 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
 using Objects.Other;
 using Autodesk.AutoCAD.Colors;
+using Objects.Visualization;
 
 namespace Objects.Converter.AutocadCivil
 {

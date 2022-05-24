@@ -13,7 +13,7 @@ using System.Drawing;
 using System.Linq;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
-using DisplayStyle = Objects.Other.DisplayStyle;
+using DisplayStyle = Objects.Visualization.DisplayStyle;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
 using Polyline = Objects.Geometry.Polyline;

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuildingObject.enums;
+using Objects.Definitions;
 using Speckle.Core.Models;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.BuildingObject
 {
   public class Framing : CurveBasedElement
   {

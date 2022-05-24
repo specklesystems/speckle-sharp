@@ -3,9 +3,10 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using Objects.Definitions;
 
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.BuildingObject
 {
   public class Structure : PointBasedElement
 

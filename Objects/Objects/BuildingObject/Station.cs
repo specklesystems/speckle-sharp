@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Definitions;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.BuildingObject
 {
-  public class Space : PointBasedElement
+  public class Station : PointBasedElement
   {
     // to implement source app parameters interface from claire
   }

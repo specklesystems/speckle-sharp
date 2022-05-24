@@ -1,5 +1,5 @@
-﻿using Objects.BuildingObject.PhysicalObjects;
-using Objects.ProjectOrganization;
+﻿using Objects.Definitions;
+using Objects.Organization;
 
 namespace Objects.System
 {

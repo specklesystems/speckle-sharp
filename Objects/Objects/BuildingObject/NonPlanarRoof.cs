@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
-using Objects.BuildingObject.PhysicalObjects;
+using Objects.BuildingObject;
+using Objects.Definitions;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.BuildingObject
 {
   public class NonPlanarRoof : CurveBasedElement
   {

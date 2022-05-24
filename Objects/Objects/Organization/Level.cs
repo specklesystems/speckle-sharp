@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
 
-namespace Objects.ProjectOrganization
+namespace Objects.Organization
 {
   public class Level:Base
   {

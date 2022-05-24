@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.BuildingObject.Calculations;
+using Objects.Definitions;
 using Speckle.Core.Models;
 using Objects.Geometry;
 using Objects.Visualization;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.Definitions
 {
   public abstract class CurveBasedElement : Base, IDisplayValue<List<Mesh>>
   {
-    public List<ICurve> baseCurve { get; set; } // lenght is included  can have multiple of ICurves
+    public ICurve baseCurve { get; set; }
 
     public List<Mesh> displayValue { get; set; } // for visualization
     //public double area { get; set; }// the actual area of the 2d element 

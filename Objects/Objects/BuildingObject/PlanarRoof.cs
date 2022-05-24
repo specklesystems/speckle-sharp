@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.ProjectOrganization;
+using Objects.Definitions;
+using Objects.Organization;
 using Objects.Geometry;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.BuildingObject
 {
   public class PlanarRoof : CurveBasedElement
   {

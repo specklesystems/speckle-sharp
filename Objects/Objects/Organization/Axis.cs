@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Objects.BuildingObject.enums;
 using Objects.Geometry;
 
-namespace Objects.ProjectOrganization
+namespace Objects.Organization
 {
   public class Axis : Base
   {
@@ -21,5 +21,12 @@ namespace Objects.ProjectOrganization
       this.axisType = axisType;
       this.definition = definition;
     }
+  }
+
+  public enum AxisType
+  {
+    Cartesian,
+    Cylindrical,
+    Spherical
   }
 }

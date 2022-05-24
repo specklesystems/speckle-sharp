@@ -4,28 +4,32 @@ using System.Text;
 
 namespace Objects.BuildingObject.enums
 {
-public enum FramingType {
-Beam,
-Brace,
-Column
-}
-public enum ProfileType{
- Catalogue,
- Rectangular,
- Circular,
- SemiCircular
-}
+  public enum FramingType
+  {
+    Beam,
+    Brace,
+    Column
+  }
+
+  public enum ProfileType
+  {
+    Catalogue,
+    Rectangular,
+    Circular,
+    SemiCircular
+  }
 
 
   public enum PointPropertyType
   {
-  Weld,
-  Bolts,
-  Room,
-  Station,
-  Space,
-  Structure
+    Weld,
+    Bolts,
+    Room,
+    Station,
+    Space,
+    Structure
   }
+
   public enum CurveElementType
   {
     Wall,
@@ -34,18 +38,23 @@ public enum ProfileType{
     Rebar,
     Ducts,
     Framing
-
-  }
-  public enum flatSurfaceType {
-  Ceiling,
-  Roof,
-  Slab,
-  Floor
-  }
-  public enum GenericFormType {
-  Roof,
-  Topography,
   }
 
-  public enum rebarShape { }
+  public enum flatSurfaceType
+  {
+    Ceiling,
+    Roof,
+    Slab,
+    Floor
+  }
+
+  public enum GenericFormType
+  {
+    Roof,
+    Topography,
+  }
+
+  public enum rebarShape
+  {
+  }
 }

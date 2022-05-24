@@ -28,6 +28,7 @@ using Vector = Objects.Geometry.Vector;
 
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Objects.Visualization;
 using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 #if (CIVIL2021 || CIVIL2022)

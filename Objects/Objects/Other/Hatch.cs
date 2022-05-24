@@ -11,14 +11,15 @@ namespace Objects.Other
 {
   public class Hatch : Base
   {
-    [Obsolete ("Use Loops instead")]
-    public List<ICurve> curves { get; set; }
+    [Obsolete("Use `loops` instead")] public List<ICurve> curves { get; set; }
     public List<HatchLoop> loops { get; set; }
     public string pattern { get; set; }
     public double scale { get; set; } = 1;
     public double rotation { get; set; } = 0; // relative angle
 
-    public Hatch() { }
+    public Hatch()
+    {
+    }
   }
 
   /// <summary>

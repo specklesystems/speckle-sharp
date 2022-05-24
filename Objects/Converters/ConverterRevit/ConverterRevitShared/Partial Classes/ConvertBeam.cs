@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuildingObject.PhysicalObjects;
+using Objects.BuildingObject;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
@@ -13,13 +13,13 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> BeamToNative(Framing speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       
-      if (speckleBeam.baseLine == null)
+      if (speckleBeam.baseCurve == null)
       {
         throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
-      var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
+      var baseLine = CurveToNative(speckleBeam.baseCurve).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;
 
@@ -107,8 +107,8 @@ namespace Objects.Converter.Revit
       var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
       var speckleBeam = new Framing();
-      speckleBeam.BuiltElement1DProperty.name = Doc.GetElement(revitBeam.GetTypeId()).Name;
-      speckleBeam.baseLine = baseLine;
+      // speckleBeam.BuiltElement1DProperty.name = Doc.GetElement(revitBeam.GetTypeId()).Name;
+      speckleBeam.baseCurve = baseLine;
       //speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
       speckleBeam.displayValue = GetElementMesh(revitBeam);
 

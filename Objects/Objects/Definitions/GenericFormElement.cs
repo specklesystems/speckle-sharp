@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.BuildingObject.Calculations;
+using Objects.Definitions;
 using Objects.Geometry;
 using Objects.Visualization;
 using Speckle.Core.Models;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.Definitions
 {
   public abstract class GenericFormElement : Base , IDisplayValue<List<Mesh>> 
   {

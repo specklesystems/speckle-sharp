@@ -18,6 +18,7 @@ using Bentley.GeometryNET;
 using Bentley.DgnPlatformNET.Elements;
 
 using System.Diagnostics;
+using DisplayStyle = Objects.Visualization.DisplayStyle;
 
 namespace Objects.Converter.MicroStationOpen
 {
@@ -97,9 +98,9 @@ namespace Objects.Converter.MicroStationOpen
       }
     }
 
-    public Objects.Other.DisplayStyle GetStyle(Element obj)
+    public DisplayStyle GetStyle(Element obj)
     {
-      var style = new Objects.Other.DisplayStyle();
+      var style = new DisplayStyle();
       Element entity = obj as Element;
 
       throw new NotImplementedException();

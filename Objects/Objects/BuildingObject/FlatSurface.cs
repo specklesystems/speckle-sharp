@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Objects.BuildingObject.enums;
-using Objects.ProjectOrganization;
+using Objects.Organization;
+using Objects.Definitions;
 
-namespace Objects.BuildingObject.PhysicalObjects
+namespace Objects.BuildingObject
 {
   public class FlatSurface : CurveBasedElement
   {

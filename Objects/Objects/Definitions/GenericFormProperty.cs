@@ -4,7 +4,7 @@ using System.Text;
 using Objects.BuildingObject.enums;
 using Speckle.Core.Models;
 
-namespace Objects.BuildingObject.Calculations
+namespace Objects.Definitions
 {
   public class GenericFormProperty : Base
   {

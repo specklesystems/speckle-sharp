@@ -1,7 +1,7 @@
 ﻿using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuildingObject.PhysicalObjects;
+using Objects.BuildingObject;
 using Objects.BuildingObject.enums;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;

@@ -4,7 +4,7 @@ using System.Text;
 using Objects.BuildingObject.enums;
 using Speckle.Core.Models;
 
-namespace Objects.ProjectOrganization
+namespace Objects.Organization
 {
   public class LabelledCurve : Base
   {
