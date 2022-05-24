@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Objects.DefaultBuildingObjectKit.ProjectOrganization;
+using Objects.ProjectOrganization;
 using Speckle.Core.Models;
 
 namespace Objects.Structural.ETABS.Geometry

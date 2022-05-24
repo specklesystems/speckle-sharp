@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using PO =  Objects.DefaultBuildingObjectKit.ProjectOrganization;
+using PO =  Objects.ProjectOrganization;
 
 using Speckle.Core.Models;
 using System;

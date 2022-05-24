@@ -3,7 +3,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.DefaultBuildingObjectKit.ProjectOrganization;
+using Objects.ProjectOrganization;
 
 namespace Objects.Structural.Geometry
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.DefaultBuildingObjectKit.PhysicalObjects.SpecificPhysicalObjects;
+using Objects.BuildingObject.PhysicalObjects;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
