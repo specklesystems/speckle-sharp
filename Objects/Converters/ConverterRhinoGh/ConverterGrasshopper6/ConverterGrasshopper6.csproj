@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Objects.Converter.Grasshopper6</AssemblyName>
-        <RootNamespace>Objects.Converter.Grasshopper</RootNamespace>
+        <RootNamespace>Objects.Converter.Rhino</RootNamespace>
         <PackageId>Speckle.Objects.Converter.Grasshopper6</PackageId>
         <Version>2.1.0</Version>
         <Authors>Speckle</Authors>
@@ -29,10 +29,6 @@
         <None Include="..\..\..\..\logo.png" Link="logo.png">
             <PackagePath></PackagePath>
             <Pack>True</Pack>
-        </None>
-        <None Include="..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
         </None>
     </ItemGroup>
 

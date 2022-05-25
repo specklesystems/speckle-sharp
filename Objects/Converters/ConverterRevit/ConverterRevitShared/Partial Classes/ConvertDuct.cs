@@ -57,6 +57,12 @@ namespace Objects.Converter.Revit
       }
 
       var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleDuct.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      }; ;
 
       // deleting instead of updating for now!
       if (docObj != null)
@@ -109,18 +115,20 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitDuct),
       };
 
-      var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
-      if (material != null)
+      if (revitDuct.MEPSystem != null)
       {
-        foreach (var mesh in speckleDuct.displayValue)
+        var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
+        if (material != null)
         {
-          mesh["renderMaterial"] = material;
+          foreach (var mesh in speckleDuct.displayValue)
+          {
+            mesh["renderMaterial"] = material;
+          }
         }
+
+        var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
+        speckleDuct.systemName = typeElem.Name;
       }
-
-      var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
-
-      speckleDuct.systemName = typeElem.Name;
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,
         new List<string>
@@ -158,18 +166,21 @@ namespace Objects.Converter.Revit
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitDuct)
       };
-      
-      var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
-      if (material != null)
-      {
-        foreach (var mesh in speckleDuct.displayValue)
-        {
-          mesh["renderMaterial"] = material;
-        }
-      }
 
-      var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
-      speckleDuct.systemName = typeElem.Name;
+      if (revitDuct.MEPSystem != null)
+      {
+        var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
+        if (material != null)
+        {
+          foreach (var mesh in speckleDuct.displayValue)
+          {
+            mesh["renderMaterial"] = material;
+          }
+        }
+
+        var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
+        speckleDuct.systemName = typeElem.Name;
+      }
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,
         new List<string>

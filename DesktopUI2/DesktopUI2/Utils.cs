@@ -9,6 +9,7 @@ using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DesktopUI2
@@ -116,6 +117,62 @@ namespace DesktopUI2
         CachedUsers[userId] = user;
 
       return user;
+    }
+  }
+
+
+  public static class Utils
+  {
+    public static bool IsValidEmail(string email)
+    {
+      string expression = "\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+
+      if (Regex.IsMatch(email, expression))
+      {
+        if (Regex.Replace(email, expression, string.Empty).Length == 0)
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+    public static Action Debounce(this Action func, int milliseconds = 300)
+    {
+      CancellationTokenSource cancelTokenSource = null;
+
+      return () =>
+      {
+        cancelTokenSource?.Cancel();
+        cancelTokenSource = new CancellationTokenSource();
+
+        Task.Delay(milliseconds, cancelTokenSource.Token)
+            .ContinueWith(t =>
+            {
+              if (t.IsCompleted)
+              {
+                func();
+              }
+            }, TaskScheduler.Default);
+      };
+    }
+    public static Action<T> Debounce<T>(this Action<T> func, int milliseconds = 300)
+    {
+      CancellationTokenSource cancelTokenSource = null;
+
+      return arg =>
+      {
+        cancelTokenSource?.Cancel();
+        cancelTokenSource = new CancellationTokenSource();
+
+        Task.Delay(milliseconds, cancelTokenSource.Token)
+            .ContinueWith(t =>
+            {
+              if (t.IsCompleted)
+              {
+                func(arg);
+              }
+            }, TaskScheduler.Default);
+      };
     }
   }
 }

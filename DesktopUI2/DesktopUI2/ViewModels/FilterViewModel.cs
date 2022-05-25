@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Controls.Selection;
+﻿using Avalonia.Controls.Selection;
 using DesktopUI2.Models.Filters;
 using ReactiveUI;
 using Splat;
@@ -26,46 +25,58 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public UserControl FilterView { get; set; }
-
     public SelectionModel<string> SelectionModel { get; }
 
     public string Summary { get { return Filter.Summary; } }
 
     public FilterViewModel(ISelectionFilter filter)
     {
-      SelectionModel = new SelectionModel<string>();
-      SelectionModel.SingleSelect = false;
-      SelectionModel.SelectionChanged += SelectionChanged;
+      try
+      {
+        SelectionModel = new SelectionModel<string>();
+        SelectionModel.SingleSelect = false;
+        SelectionModel.SelectionChanged += SelectionChanged;
 
-      //use dependency injection to get bindings
-      Bindings = Locator.Current.GetService<ConnectorBindings>();
+        //use dependency injection to get bindings
+        Bindings = Locator.Current.GetService<ConnectorBindings>();
 
-      Filter = filter;
-      FilterView = filter.View;
+        Filter = filter;
 
+        //TODO should clean up this logic a bit
+        //maybe have a model, view and viewmodel for each filter
+        if (filter is ListSelectionFilter l)
+        {
+          _valuesList = SearchResults = new List<string>(l.Values);
+        }
 
-      //TODO should clean up this logic a bit
-      //maybe have a model, view and viewmodel for each filter
-      if (filter is ListSelectionFilter l)
-        _valuesList = SearchResults = new List<string>(l.Values);
+        //TODO:
+        //FilterView.DataContext = this;
+      }
+      catch (Exception ex)
+      {
 
-      FilterView.DataContext = this;
+      }
     }
 
     #region LIST FILTER
-
     void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
-      if (!isSearching)
+      try
       {
-        foreach (var a in e.SelectedItems)
-          if (!Filter.Selection.Contains(a))
-            Filter.Selection.Add(a as string);
-        foreach (var r in e.DeselectedItems)
-          Filter.Selection.Remove(r as string);
+        if (!isSearching)
+        {
+          foreach (var a in e.SelectedItems)
+            if (!Filter.Selection.Contains(a))
+              Filter.Selection.Add(a as string);
+          foreach (var r in e.DeselectedItems)
+            Filter.Selection.Remove(r as string);
 
-        this.RaisePropertyChanged("Summary");
+          this.RaisePropertyChanged("Summary");
+        }
+      }
+      catch (Exception ex)
+      {
+
       }
     }
     private bool isSearching = false;
@@ -90,78 +101,115 @@ namespace DesktopUI2.ViewModels
     // restore them as the query is cleared
     public void RestoreSelectedItems()
     {
-      foreach (var item in Filter.Selection)
+      try
       {
-        if (!SelectionModel.SelectedItems.Contains(item))
-          SelectionModel.Select(SearchResults.IndexOf(item));
-      }
+        var itemsToRemove = new List<string>();
 
-      this.RaisePropertyChanged("PropertyName");
-      this.RaisePropertyChanged("PropertyValue");
-      this.RaisePropertyChanged("PropertyOperator");
+        if (Filter.Type == typeof(ListSelectionFilter).ToString())
+        {
+          foreach (var item in Filter.Selection)
+          {
+            if (!_valuesList.Contains(item))
+              itemsToRemove.Add(item);
+            if (!SelectionModel.SelectedItems.Contains(item))
+              SelectionModel.Select(SearchResults.IndexOf(item));
+          }
+
+          foreach (var itemToRemove in itemsToRemove)
+            Filter.Selection.Remove(itemToRemove);
+        }
+
+        this.RaisePropertyChanged("PropertyName");
+        this.RaisePropertyChanged("PropertyValue");
+        this.RaisePropertyChanged("PropertyOperator");
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     public List<string> SearchResults { get; set; } = new List<string>();
-    private List<string> _valuesList { get; }
+    private List<string> _valuesList { get; } = new List<string>();
 
     #endregion
 
     #region MANUAL FILTER
     public void SetObjectSelection()
     {
-      var objIds = Bindings.GetSelectedObjects();
-      if (objIds == null || objIds.Count == 0)
+      try
       {
-        //Globals.Notify("Could not get object selection.");
-        return;
-      }
+        var objIds = Bindings.GetSelectedObjects();
+        if (objIds == null || objIds.Count == 0)
+        {
+          //Globals.Notify("Could not get object selection.");
+          return;
+        }
 
-      Filter.Selection = objIds;
-      this.RaisePropertyChanged("Summary");
-      //Globals.Notify("Object selection set.");
+        Filter.Selection = objIds;
+        this.RaisePropertyChanged("Summary");
+        //Globals.Notify("Object selection set.");
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     public void AddObjectSelection()
     {
-      var objIds = Bindings.GetSelectedObjects();
-      if (objIds == null || objIds.Count == 0)
+      try
       {
-        //Globals.Notify("Could not get object selection.");
-        return;
-      }
-
-      objIds.ForEach(id =>
-      {
-        if (Filter.Selection.FirstOrDefault(x => x == id) == null)
+        var objIds = Bindings.GetSelectedObjects();
+        if (objIds == null || objIds.Count == 0)
         {
-          Filter.Selection.Add(id);
+          //Globals.Notify("Could not get object selection.");
+          return;
         }
-      });
-      this.RaisePropertyChanged("Summary");
-      //Globals.Notify("Object added.");
 
+        objIds.ForEach(id =>
+        {
+          if (Filter.Selection.FirstOrDefault(x => x == id) == null)
+          {
+            Filter.Selection.Add(id);
+          }
+        });
+        this.RaisePropertyChanged("Summary");
+        //Globals.Notify("Object added.");
+      }
+      catch (Exception ex)
+      {
+
+      }
     }
 
     public void RemoveObjectSelection()
     {
-      var objIds = Bindings.GetSelectedObjects();
-      if (objIds == null || objIds.Count == 0)
+      try
       {
-        //Globals.Notify("Could not get object selection.");
-        return;
+        var objIds = Bindings.GetSelectedObjects();
+        if (objIds == null || objIds.Count == 0)
+        {
+          //Globals.Notify("Could not get object selection.");
+          return;
+        }
+
+        var filtered = Filter.Selection.Where(o => objIds.IndexOf(o) == -1).ToList();
+
+        if (filtered.Count == Filter.Selection.Count)
+        {
+          //Globals.Notify("No objects removed.");
+          return;
+        }
+
+        //Globals.Notify($"{Filter.Selection.Count - filtered.Count} objects removed.");
+        Filter.Selection = filtered;
+        this.RaisePropertyChanged("Summary");
       }
-
-      var filtered = Filter.Selection.Where(o => objIds.IndexOf(o) == -1).ToList();
-
-      if (filtered.Count == Filter.Selection.Count)
+      catch (Exception ex)
       {
-        //Globals.Notify("No objects removed.");
-        return;
-      }
 
-      //Globals.Notify($"{Filter.Selection.Count - filtered.Count} objects removed.");
-      Filter.Selection = filtered;
-      this.RaisePropertyChanged("Summary");
+      }
     }
 
     public void ClearObjectSelection()

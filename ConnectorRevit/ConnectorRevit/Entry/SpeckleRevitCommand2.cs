@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -45,6 +46,11 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
+
+
+
+
+
       if (MainWindow == null)
       {
         var viewModel = new MainWindowViewModel(Bindings);
@@ -52,6 +58,14 @@ namespace Speckle.ConnectorRevit.Entry
         {
           DataContext = viewModel
         };
+
+        //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
+        //to avoid an annoying error when closing revit
+        //https://github.com/specklesystems/speckle-sharp/issues/1192
+        var cts = new CancellationTokenSource();
+        cts.CancelAfter(100);
+        AvaloniaApp.Run(cts.Token);
+
       }
 
       try
@@ -60,6 +74,7 @@ namespace Speckle.ConnectorRevit.Entry
         {
           MainWindow.Show();
           MainWindow.Activate();
+
 
           if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
           {

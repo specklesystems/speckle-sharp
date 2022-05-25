@@ -6,8 +6,8 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
@@ -21,7 +21,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override Guid ComponentGuid => new Guid("B5232BF7-7014-4F10-8716-C3CEE6A54E2F");
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.primary | GH_Exposure.obscure;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -41,10 +41,7 @@ namespace ConnectorGrasshopper.Objects
         var keys = new List<string>();
         var valueTree = new GH_Structure<IGH_Goo>();
         if (DA.Iteration == 0)
-        {
-          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object By Key Value" } });
-          Logging.Tracker.TrackPageview("objects", "create", "keyValue");
-        }
+          Tracker.TrackNodeRun("Create Object By Key Value");
 
 
         DA.GetDataList(0, keys);

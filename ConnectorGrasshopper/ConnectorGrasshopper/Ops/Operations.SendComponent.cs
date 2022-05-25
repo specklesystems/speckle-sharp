@@ -17,13 +17,11 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
-using Sentry.PlatformAbstractions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -286,8 +284,6 @@ namespace ConnectorGrasshopper.Ops
           return;
         }
 
-        Logging.Tracker.TrackPageview("send", sendComponent.AutoSend ? "auto" : "manual");
-
         //the active document may have changed
         sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
 
@@ -382,8 +378,8 @@ namespace ConnectorGrasshopper.Ops
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
               continue;
             }
-
-            Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "auto", sendComponent.AutoSend } });
+            
+            sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
 
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");

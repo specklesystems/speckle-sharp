@@ -1,7 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Objects.BuiltElements.Revit.Curve;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -19,6 +17,13 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> GridLineToNative(GridLine speckleGridline)
     {
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
+      if (revitGrid != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleGridline.applicationId, ApplicationGeneratedId = revitGrid.UniqueId, NativeObject = revitGrid}
+      }; ;
+
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
 
       //try update the gridline

@@ -47,6 +47,14 @@
     <Setter Property="Margin" Value="20,0,20,0" />
   </Style>
 
+  <!--  STEALTH COMBO  -->
+  <Style Selector="ComboBox.Stealth  /template/ ToggleButton#toggle">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ComboBox.Stealth  /template/ Grid#InputRoot">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+
 
   <Design.PreviewWith>
     <Border
@@ -76,6 +84,14 @@
             </DataTemplate>
 
           </ComboBox.ItemTemplate>
+          <ComboBox.Items>
+            <ComboBoxItem Content="Item 1Item 1Item 1Item 1Item 1Item 1Item 1" />
+            <ComboBoxItem Content="Item 2" />
+            <ComboBoxItem Content="Item 3" />
+          </ComboBox.Items>
+        </ComboBox>
+
+        <ComboBox Classes="Stealth" PlaceholderText="test">
           <ComboBox.Items>
             <ComboBoxItem Content="Item 1Item 1Item 1Item 1Item 1Item 1Item 1" />
             <ComboBoxItem Content="Item 2" />

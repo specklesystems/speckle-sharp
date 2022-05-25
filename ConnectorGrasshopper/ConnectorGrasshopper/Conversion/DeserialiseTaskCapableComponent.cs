@@ -8,13 +8,13 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper
 {
-  public class DeserializeTaskCapableComponent: GH_TaskCapableComponent<Base>
+  public class DeserializeTaskCapableComponent: GH_SpeckleTaskCapableComponent<Base>
   {
     public override Guid ComponentGuid => new Guid("0336F3D1-2FEE-4B66-980D-63DB624980C9");
     private CancellationTokenSource source;
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Deserialize;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
     public DeserializeTaskCapableComponent(): base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
     {}    

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 
 namespace ConnectorRevit
 {
@@ -10,7 +7,7 @@ namespace ConnectorRevit
 
     public static double ConvertFromInternalUnits(double val, Parameter parameter)
     {
-#if !(REVIT2022)
+#if !(REVIT2022 || REVIT2023)
       return UnitUtils.ConvertFromInternalUnits(val, parameter.DisplayUnitType);
 #else
       return UnitUtils.ConvertFromInternalUnits(val, parameter.GetUnitTypeId());

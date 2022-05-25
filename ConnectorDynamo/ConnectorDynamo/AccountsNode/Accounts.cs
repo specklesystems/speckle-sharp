@@ -1,14 +1,14 @@
-﻿using Dynamo.Graph.Nodes;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive.Linq;
+using Dynamo.Graph.Nodes;
+using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.Core.Credentials;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Core.Logging;
-using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 using Account = Speckle.Core.Credentials.Account;
-using Newtonsoft.Json;
 
 namespace Speckle.ConnectorDynamo.AccountsNode
 {
@@ -75,8 +75,6 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     /// </summary>
     public Accounts()
     {
-      Tracker.TrackPageview(Tracker.ACCOUNT_LIST);
-
       AddOutputs();
 
       RegisterAllPorts();

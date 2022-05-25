@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Tests;
@@ -74,6 +76,60 @@ namespace Tests
       Assert.AreEqual(actualNum, num);
     }
 
+    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
+    public void CanGetMemberNames()
+    {
+      var @base = new SampleObject();
+      @base["dynamicProp"] = 123;
+      var names = @base.GetMemberNames();
+      var propName = "IgnoredSchemaProp";
+      Assert.False(names.Contains(propName));
+      Assert.False(names.Contains("DeprecatedSchemaProp"));
+    }
+
+    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
+    public void CanGetMembers()
+    {
+      var @base = new SampleObject();
+      @base["dynamicProp"] = 123;
+
+      var names = @base.GetMembers().Keys;
+      Assert.False(names.Contains("IgnoredSchemaProp"));
+      Assert.False(names.Contains("DeprecatedSchemaProp"));
+    }
+    
+    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
+    public void CanGetDynamicMembers()
+    {
+      var @base = new SampleObject();
+      @base["dynamicProp"] = null;
+
+      var names = @base.GetDynamicMemberNames();
+      Assert.True(names.Contains("dynamicProp"));
+      Assert.True(@base["dynamicProp"] == null);
+    }
+
+    [Test]
+    public void CanSetDynamicMembers()
+    {
+      var @base = new SampleObject();
+      var key = "dynamicProp";
+      var value = "something";
+      // Can create a new dynamic member
+      @base[key] = value;
+      Assert.True((string)@base[key] == value);
+      
+      // Can overwrite existing
+      value = "some other value";
+      @base[key] = value;
+      Assert.True((string)@base[key] == value);
+      
+      // Accepts null values
+      @base[key] = null;
+      Assert.True(@base[key] == null);
+    }
+    
+    
     public class SampleObject : Base
     {
       [Chunkable]
@@ -91,6 +147,12 @@ namespace Tests
 
       public string @crazyProp { get; set; }
 
+      [SchemaIgnore]
+      public string IgnoredSchemaProp { get; set; }
+
+      [Obsolete("Use attached prop")]
+      public string ObsoleteSchemaProp { get; set; }
+      
       public SampleObject() { }
     }
 

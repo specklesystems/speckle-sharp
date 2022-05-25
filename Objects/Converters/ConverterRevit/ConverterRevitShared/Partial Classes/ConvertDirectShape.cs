@@ -18,6 +18,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleDs.applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+        { applicationId = speckleDs.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+
       //just create new one 
       if (docObj != null)
       {
@@ -77,6 +81,10 @@ namespace Objects.Converter.Revit
 
       var docObj = GetExistingElementByApplicationId(brep.applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+        { applicationId = brep.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+
       //just create new one 
       if (docObj != null)
       {
@@ -117,6 +125,10 @@ namespace Objects.Converter.Revit
       string applicationId = meshes[0].applicationId ?? meshes[0].id;
 
       var docObj = GetExistingElementByApplicationId(applicationId);
+
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+        { applicationId = applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
 
       //just create new one 
       if (docObj != null)

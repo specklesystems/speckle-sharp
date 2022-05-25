@@ -127,39 +127,9 @@ namespace Objects.Converter.CSI
       List<double> coordinates = new List<double> { };
       foreach (Node node in nodes)
       {
-        switch (ModelUnits())
-        {
-          case "mm":
-            coordinates.Add(node.basePoint.x / 1000);
-            coordinates.Add(node.basePoint.y / 1000);
-            coordinates.Add(node.basePoint.z / 1000);
-            break;
-          case "m":
-            coordinates.Add(node.basePoint.x);
-            coordinates.Add(node.basePoint.y);
-            coordinates.Add(node.basePoint.z);
-            break;
-          case "cm":
-            coordinates.Add(node.basePoint.x / 100);
-            coordinates.Add(node.basePoint.y / 100);
-            coordinates.Add(node.basePoint.z / 100);
-            break;
-          case "inch":
-            coordinates.Add(node.basePoint.x / 39.37);
-            coordinates.Add(node.basePoint.y / 39.37);
-            coordinates.Add(node.basePoint.z / 39.37);
-            break;
-          case "ft":
-            coordinates.Add(node.basePoint.x / 3.281);
-            coordinates.Add(node.basePoint.y / 3.281);
-            coordinates.Add(node.basePoint.z / 3.281);
-            break;
-          case "micron":
-            coordinates.Add(node.basePoint.x / 100000);
-            coordinates.Add(node.basePoint.y / 100000);
-            coordinates.Add(node.basePoint.z / 100000);
-            break;
-        }
+        coordinates.Add(node.basePoint.x);
+        coordinates.Add(node.basePoint.y);
+        coordinates.Add(node.basePoint.z);
       }
 
       //Get orientation angle
@@ -167,12 +137,15 @@ namespace Objects.Converter.CSI
       bool advanced = true;
       Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
       speckleStructArea.orientationAngle = angle;
-
-      PolygonMesher polygonMesher = new PolygonMesher();
-      polygonMesher.Init(coordinates);
-      var faces = polygonMesher.Faces();
-      var vertices = polygonMesher.Coordinates;
-      speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces.ToArray(), units: ModelUnits());
+      if(coordinates.Count != 0)
+      {
+        PolygonMesher polygonMesher = new PolygonMesher();
+        polygonMesher.Init(coordinates);
+        var faces = polygonMesher.Faces();
+        var vertices = polygonMesher.Coordinates;
+        //speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces.ToArray(), null, null, ModelUnits(), null);
+        speckleStructArea.displayValue = new List<Geometry.Mesh> { new Geometry.Mesh(vertices.ToList(), faces, units: ModelUnits()) };
+      }
 
       //Model.AreaObj.GetModifiers(area, ref value);
       //speckleProperty2D.modifierInPlane = value[2];

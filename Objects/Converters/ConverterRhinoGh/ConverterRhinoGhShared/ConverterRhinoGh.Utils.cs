@@ -21,6 +21,8 @@ namespace Objects.Converter.RhinoGh
 
       // user string has format "DirectShape{[family], [type]}" if it is a directshape conversion
       // user string has format "AdaptiveComponent{[family], [type]}" if it is an adaptive component conversion
+      // user string has format "Pipe{[diameter]}" if it is a pipe conversion
+      // user string has format "Duct{[width], [height], [diameter]}" if it is a duct conversion
       // otherwise, it is just the schema type name
       string schema = obj.Attributes.GetUserString(SpeckleSchemaKey);
 

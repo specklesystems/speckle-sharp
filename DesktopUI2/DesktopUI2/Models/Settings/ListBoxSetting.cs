@@ -1,8 +1,6 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Views.Settings;
+﻿using DesktopUI2.Views.Settings;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DesktopUI2.Models.Settings
 {
@@ -15,12 +13,8 @@ namespace DesktopUI2.Models.Settings
     public string Description { get; set; }
     public List<string> Values { get; set; }
     public string Selection { get; set; }
-    public UserControl View { get; set; } = new ListBoxSettingView();
+    public Type ViewType { get; } = typeof(ListBoxSettingView);
     public string Summary { get; set; }
 
-    public void ResetView()
-    {
-      View = new ListBoxSettingView();
-    }
   }
 }

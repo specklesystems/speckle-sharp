@@ -208,7 +208,14 @@ namespace Speckle.Core.Serialisation
             }
             if (deserialized != null && deserialized is Task<object>)
             {
-              deserialized = ((Task<object>)deserialized).Result;
+              try
+              {
+                deserialized = ((Task<object>)deserialized).Result;
+              }
+              catch(AggregateException aggregateEx)
+              {
+                throw aggregateEx.InnerException;
+              }
               lock (DeserializedObjects)
               {
                 DeserializedObjects[objId] = deserialized;

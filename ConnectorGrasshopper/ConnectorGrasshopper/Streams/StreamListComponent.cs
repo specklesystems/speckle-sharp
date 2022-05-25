@@ -12,7 +12,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamListComponent : GH_Component
+  public class StreamListComponent : GH_SpeckleComponent
   {
     public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -54,8 +54,7 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         string userId = null;
         var limit = 10;
-        if (DA.Iteration == 0)
-          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_LIST);
+
 
         DA.GetData(0, ref userId);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
@@ -82,8 +81,8 @@ namespace ConnectorGrasshopper.Streams
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
-
+        Tracker.TrackNodeRun();
+        
         Task.Run(async () =>
         {
           try
@@ -108,6 +107,14 @@ namespace ConnectorGrasshopper.Streams
       else
       {
         Message = "Done";
+        int limit = 10;
+        DA.GetData(1, ref limit); // Has default value so will never be empty.
+
+        if (limit > 50)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+        }
+        
         if (streams != null)
         {
           DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));

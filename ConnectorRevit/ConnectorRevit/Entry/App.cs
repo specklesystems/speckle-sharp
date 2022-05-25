@@ -25,7 +25,16 @@ namespace Speckle.ConnectorRevit.Entry
       // Fires an init event, where we can get the UIApp
       UICtrlApp.Idling += Initialise;
 
-      var specklePanel = application.CreateRibbonPanel("Speckle 2");
+      string tabName = "Speckle";
+
+      try
+      {
+        application.CreateRibbonTab(tabName);
+      }
+      catch { }
+
+      var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2");
+
       string path = typeof(App).Assembly.Location;
 #if REVIT2019
       //desctopui 1
@@ -40,6 +49,7 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 #else
+
       //desktopui 2
       var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
 
@@ -47,6 +57,7 @@ namespace Speckle.ConnectorRevit.Entry
       {
         speckleButton2.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
         speckleButton2.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        speckleButton2.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
         speckleButton2.ToolTip = "Speckle Connector for Revit";
         speckleButton2.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
@@ -56,8 +67,9 @@ namespace Speckle.ConnectorRevit.Entry
 
       if (schedulerButton != null)
       {
-        schedulerButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.chronos16.png", path);
-        schedulerButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.chronos32.png", path);
+        schedulerButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.scheduler16.png", path);
+        schedulerButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.scheduler32.png", path);
+        schedulerButton.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.scheduler32.png", path);
         schedulerButton.ToolTip = "Scheduler for the Revit Connector";
         schedulerButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
@@ -68,11 +80,26 @@ namespace Speckle.ConnectorRevit.Entry
 
       if (speckleButtonSend != null)
       {
-        speckleButtonSend.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send16.png", path);
-        speckleButtonSend.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.send32.png", path);
+        speckleButtonSend.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick16.png", path);
+        speckleButtonSend.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick32.png", path);
+        speckleButtonSend.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick32.png", path);
         speckleButtonSend.ToolTip = "Sends your selected file objects to Speckle, or the entire model if nothing is selected.";
         speckleButtonSend.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         speckleButtonSend.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+
+
+      // quick share
+      var speckleButtonShare = specklePanel.AddItem(new PushButtonData("Share", "Quick Share", typeof(App).Assembly.Location, typeof(QuickShareCommand).FullName)) as PushButton;
+
+      if (speckleButtonShare != null)
+      {
+        speckleButtonShare.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share16.png", path);
+        speckleButtonShare.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
+        speckleButtonShare.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
+        speckleButtonShare.ToolTip = "Quickly share the selected evelemtns via Speckle, or the entire model if nothing is selected.";
+        speckleButtonShare.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        speckleButtonShare.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 #endif
 
@@ -124,6 +151,7 @@ namespace Speckle.ConnectorRevit.Entry
       SpeckleRevitCommand2.Bindings = bindings;
       SchedulerCommand.Bindings = bindings;
       OneClickSendCommand.Bindings = bindings;
+      QuickShareCommand.Bindings = bindings;
 #endif
 
     }

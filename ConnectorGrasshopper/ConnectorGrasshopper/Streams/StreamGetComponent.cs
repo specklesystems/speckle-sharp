@@ -5,14 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamGetComponent : GH_Component
+  public class StreamGetComponent : GH_SpeckleComponent
   {
     public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account",
       ComponentCategories.PRIMARY_RIBBON,
@@ -82,14 +80,15 @@ namespace ConnectorGrasshopper.Streams
         Message = "Fetching";
         // Validation
         string errorMessage = null;
-        if (DA.Iteration == 0)
-          Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_GET);
 
         if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
           return;
         }
+        
+        if(DA.Iteration == 0)                 
+          Tracker.TrackNodeRun();
 
         // Run
         Task.Run(async () =>
@@ -98,7 +97,6 @@ namespace ConnectorGrasshopper.Streams
           {
             var acc = idWrapper.GetAccount().Result;
             stream = idWrapper;
-            Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
           }
           catch (Exception e)
           {

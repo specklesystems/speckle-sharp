@@ -5,22 +5,24 @@
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
-  xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
   mc:Ignorable="d">
   <Design.DataContext>
-    <vm:DesignHomeViewModel />
+    <dvm:DesignHomeViewModel />
   </Design.DataContext>
   <UserControl.Resources>
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+    <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
   </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="MenuItem.Profile">
@@ -55,6 +57,7 @@
       </Setter>
 
     </Style>
+
   </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
     <m:Card Padding="10,7" CornerRadius="0">
@@ -63,12 +66,13 @@
           VerticalAlignment="Bottom"
           Orientation="Horizontal"
           Spacing="6">
-          <TextBlock
+          <Image Height="30" Source="../../Assets/logo.png" />
+          <!--<TextBlock
             FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
             FontSize="18"
             FontWeight="Bold"
             Foreground="{DynamicResource PrimaryHueMidBrush}"
-            Text="SPECKLE" />
+            Text="SPECKLE" />-->
           <TextBlock
             FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
             FontSize="18"
@@ -224,6 +228,7 @@
                 Icon="{icons:MaterialIconExt ExternalLink}" />
             </MenuItem>
           </Menu>
+
         </StackPanel>
       </Grid>
     </m:Card>
@@ -235,7 +240,11 @@
 
       <!--  SEARCH STREAMS  -->
       <Grid Grid.Row="0" Margin="0">
-        <m:Card Padding="0">
+        <m:Card
+          Margin="5,0"
+          Padding="0"
+          HorizontalAlignment="Stretch"
+          CornerRadius="25">
           <TextBox
             Margin="0"
             Padding="0"
@@ -243,23 +252,101 @@
             Text="{Binding SearchQuery}"
             Watermark="Search streams">
             <TextBox.InnerRightContent>
-              <Button
-                Width="{Binding $self.Bounds.Height}"
-                Padding="4"
-                Classes="Flat"
-                Command="{Binding ClearSearchCommand}"
-                Content="{icons:MaterialIconExt CloseCircle,
-                                                Size=15}" />
+              <StackPanel Orientation="Horizontal">
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  assists:ShadowAssist.ShadowDepth="Depth0"
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding ClearSearchCommand}"
+                  IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  ToolTip.Tip="Clear">
+                  <Button.Content>
+                    <icons:MaterialIcon
+                      Width="15"
+                      Height="15"
+                      assists:ShadowAssist.ShadowDepth="0"
+                      Foreground="{DynamicResource MaterialDesignBody}"
+                      Kind="CloseCircle" />
+                  </Button.Content>
+                </m:FloatingButton>
+
+
+                <Menu
+                  Grid.Column="1"
+                  Margin="2,0,0,0"
+                  VerticalAlignment="Center"
+                  ToolTip.Tip="Filter streams by ownership of favorite">
+
+                  <MenuItem
+                    Width="30"
+                    Height="30"
+                    Padding="0"
+                    Classes="NoHighlight">
+                    <MenuItem.Header>
+                      <Grid>
+                        <icons:MaterialIcon IsVisible="{Binding !ActiveFilter}" Kind="FilterVariant" />
+                        <icons:MaterialIcon
+                          Foreground="Red"
+                          IsVisible="{Binding ActiveFilter}"
+                          Kind="FilterVariant" />
+                      </Grid>
+                    </MenuItem.Header>
+                    <!--<ListBox>
+
+                      <TextBlock Text="all" />
+                      <TextBlock Text="owner" />
+                      <TextBlock Text="contributor" />
+                      <TextBlock Text="reviewer" />
+                      <icons:MaterialIcon VerticalAlignment="Center" Kind="Heart" />
+                    </ListBox>-->
+                    <RadioButton
+                      HorizontalContentAlignment="Center"
+                      Classes="Button"
+                      Content="all"
+                      GroupName="3"
+                      IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=all}" />
+
+                    <RadioButton
+                      HorizontalContentAlignment="Center"
+                      Classes="Button"
+                      Content="owner"
+                      GroupName="3"
+                      IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=owner}" />
+                    <RadioButton
+                      HorizontalContentAlignment="Center"
+                      Classes="Button"
+                      Content="contributor"
+                      GroupName="3"
+                      IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=contributor}" />
+                    <RadioButton
+                      HorizontalContentAlignment="Center"
+                      Classes="Button"
+                      Content="reviewer"
+                      GroupName="3"
+                      IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=reviewer}" />
+                    <RadioButton
+                      Classes="Button"
+                      Content="{icons:MaterialIconExt Kind=Heart}"
+                      GroupName="3"
+                      IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=favorite}" />
+
+                  </MenuItem>
+                </Menu>
+              </StackPanel>
+
             </TextBox.InnerRightContent>
             <TextBox.InnerLeftContent>
               <icons:MaterialIcon
                 Width="15"
                 Height="15"
-                Margin="4,0,0,0"
+                Margin="5,0,0,0"
                 Kind="Search" />
             </TextBox.InnerLeftContent>
           </TextBox>
         </m:Card>
+
       </Grid>
 
 
@@ -329,6 +416,7 @@
           </Expander>
 
 
+
           <!--  ALL STREAMS  -->
 
           <Expander Margin="0,10,0,0" IsExpanded="True">
@@ -353,7 +441,7 @@
                 Classes="NoScroll"
                 IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
                 IsVisible="{Binding HasStreams}"
-                Items="{Binding Streams}"
+                Items="{Binding FilteredStreams}"
                 SelectedItem="{Binding SelectedStream}">
                 <ListBox.Styles>
                   <Style Selector="ListBoxItem:not(:pointerover) StackPanel#HoverButtons">
@@ -367,23 +455,42 @@
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
                   <DataTemplate>
-                    <Grid Margin="4,0" ColumnDefinitions="*,Auto">
-                      <Grid Grid.Column="0" RowDefinitions="auto,auto,auto, auto">
+                    <Grid
+                      Margin="4,0"
+                      ColumnDefinitions="*,Auto"
+                      RowDefinitions="auto, auto">
+                      <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,auto">
                         <TextBlock
                           Classes="Grotesk"
                           Text="{Binding Stream.name}"
                           TextTrimming="CharacterEllipsis" />
+                        <icons:MaterialIcon
+                          Grid.Column="1"
+                          Width="10"
+                          Height="10"
+                          Margin="5,0,0,0"
+                          VerticalAlignment="Center"
+                          IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                          Kind="Heart"
+                          ToolTip.Tip="This is a favorite stream" />
+                      </Grid>
+                      <Grid
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        RowDefinitions="auto,auto, auto">
+
+
                         <TextBlock
-                          Grid.Row="1"
+                          Grid.Row="0"
                           Margin="0,3,0,0"
                           Classes="Caption"
                           MaxLines="1"
                           Text="{Binding Stream.description}"
                           TextTrimming="CharacterEllipsis" />
                         <Grid
-                          Grid.Row="2"
+                          Grid.Row="1"
                           Margin="0,3,0,0"
-                          ColumnDefinitions="auto,auto,*">
+                          ColumnDefinitions="auto,auto, auto, auto,auto,*">
                           <TextBlock
                             Classes="Overline"
                             Text="{Binding Stream.id}"
@@ -397,9 +504,24 @@
                             Classes="Overline"
                             Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
                             TextTrimming="CharacterEllipsis" />
+                          <TextBlock
+                            Grid.Column="3"
+                            Classes="Overline"
+                            Text=" - " />
+                          <icons:MaterialIcon
+                            Grid.Column="4"
+                            Height="12"
+                            VerticalAlignment="Center"
+                            Foreground="Gray"
+                            Kind="Users"
+                            ToolTip.Tip="Collaborators" />
+                          <TextBlock
+                            Grid.Column="5"
+                            Classes="Overline"
+                            Text="{Binding Stream.collaborators.Count}" />
                         </Grid>
                         <Grid
-                          Grid.Row="3"
+                          Grid.Row="2"
                           Margin="0,3,0,0"
                           ColumnDefinitions="auto,auto,*"
                           IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
@@ -427,8 +549,10 @@
                       </Grid>
                       <StackPanel
                         Name="HoverButtons"
+                        Grid.Row="1"
                         Grid.Column="1"
-                        Margin="0,0,10,0"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Top"
                         Orientation="Horizontal"
                         Spacing="10">
 

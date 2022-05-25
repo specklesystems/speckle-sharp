@@ -1,6 +1,7 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
@@ -20,6 +21,12 @@ namespace Objects.Converter.Revit
       var isUpdate = false;
       //try update existing
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleFi.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      }; ;
       if (docObj != null)
       {
         try
@@ -102,6 +109,10 @@ namespace Objects.Converter.Revit
       catch { }
 
       SetInstanceParameters(familyInstance, speckleFi);
+      if (speckleFi.mirrored)
+      {
+        Report.ConversionErrors.Add(new Exception($"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so. (speckle object id: {speckleFi.id}"));
+      }
 
       var placeholders = new List<ApplicationPlaceholderObject>()
       {
@@ -117,9 +128,9 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Entry point for all revit family conversions. TODO: Check for Beams and Columns and any other "dedicated" speckle elements and convert them as such rather than to the generic "family instance" object.
+    /// Entry point for all revit family conversions.
     /// </summary>
-    /// <param name="myElement"></param>
+    /// <param name="revitFi"></param>
     /// <returns></returns>
     public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
@@ -136,7 +147,13 @@ namespace Objects.Converter.Revit
       //these elements come when the curtain wall is generated
       //let's not send them to speckle unless we realize they are needed!
       if (Categories.curtainWallSubElements.Contains(revitFi.Category))
-        return null;
+      {
+        if (SubelementIds.Contains(revitFi.Id))
+          return null;
+        else
+          //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
+          SubelementIds.Add(revitFi.Id);
+      }
 
       //beams & braces
       if (Categories.beamCategories.Contains(revitFi.Category))
@@ -177,6 +194,7 @@ namespace Objects.Converter.Revit
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
       speckleFi.level = lev1 != null ? lev1 : lev2;
+      speckleFi.mirrored = revitFi.Mirrored;
 
       if (revitFi.Location is LocationPoint)
       {

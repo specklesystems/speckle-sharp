@@ -27,6 +27,11 @@ namespace DesktopUI2
         //{
         //  DataContext = new SchedulerViewModel(),
         //};
+
+        //desktop.MainWindow = new Share
+        //{
+        //  DataContext = new ShareViewModel(),
+        //};
       }
 
       base.OnFrameworkInitializationCompleted();

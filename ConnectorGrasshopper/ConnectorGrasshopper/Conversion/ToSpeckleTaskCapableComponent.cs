@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Conversion
 
     public override bool CanDisableConversion => false;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -53,6 +53,7 @@ namespace ConnectorGrasshopper.Conversion
 
         object item = null;
         DA.GetData(0, ref item);
+        if(DA.Iteration == 0) Tracker.TrackNodeRun();
         var task = Task.Run(() => DoWork(item, DA), source.Token);
         TaskList.Add(task);
         return;
