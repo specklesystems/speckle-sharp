@@ -11,7 +11,7 @@ namespace DesktopUI2.ViewModels
     public IScreen HostScreen { get; }
     public string UrlPathSegment { get; } = "settings";
 
-    public ReactiveCommand<Unit, Unit> GoBack => MainWindowViewModel.RouterInstance.NavigateBack;
+    public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
     private StreamViewModel _streamViewModel;
 
@@ -34,7 +34,7 @@ namespace DesktopUI2.ViewModels
     {
       _streamViewModel.Settings = Settings.Select(x => x.Setting).ToList();
 
-      MainWindowViewModel.RouterInstance.NavigateBack.Execute();
+      MainViewModel.RouterInstance.NavigateBack.Execute();
     }
 
   }

@@ -1,0 +1,39 @@
+<UserControl
+  x:Class="DesktopUI2.Views.MainUserControl"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:vm="using:DesktopUI2.ViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+  <!--  copied from the material design window styles  -->
+  <UserControl.Styles>
+    <Style Selector="ContentControl#MainUserControl">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+      <Setter Property="TextBox.Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="TextBox.FontWeight" Value="Medium" />
+      <Setter Property="TextBox.FontSize" Value="14" />
+    </Style>
+  </UserControl.Styles>
+  <ContentControl x:Name="MainUserControl">
+    <Grid>
+      <reactiveUi:RoutedViewHost
+        Grid.Row="1"
+        Width="{Binding $parent[ContentControl].Bounds.Width}"
+        Height="{Binding $parent[ContentControl].Bounds.Height}"
+        Router="{Binding Router}">
+        <reactiveUi:RoutedViewHost.PageTransition>
+          <CrossFade Duration="0.15" />
+        </reactiveUi:RoutedViewHost.PageTransition>
+      </reactiveUi:RoutedViewHost>
+    </Grid>
+  </ContentControl>
+</UserControl>

@@ -183,7 +183,7 @@ namespace DesktopUI2.ViewModels
           try
           {
             value.UpdateVisualParentAndInit(HostScreen);
-            MainWindowViewModel.RouterInstance.Navigate.Execute(value);
+            MainViewModel.RouterInstance.Navigate.Execute(value);
             Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
             _selectedSavedStream = value;
           }
@@ -603,6 +603,7 @@ namespace DesktopUI2.ViewModels
 
       var dialog = new AddFromUrlDialog(defaultText);
       dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      var m = new MainWindow();
       await dialog.ShowDialog(MainWindow.Instance);
 
 
@@ -673,7 +674,7 @@ namespace DesktopUI2.ViewModels
 
     private void OpenStream(StreamState streamState)
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
+      MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
     }
 
     public void ToggleDarkThemeCommand()

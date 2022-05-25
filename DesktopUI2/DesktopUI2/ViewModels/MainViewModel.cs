@@ -9,7 +9,7 @@ using System.Reactive;
 
 namespace DesktopUI2.ViewModels
 {
-  public class MainWindowViewModel : ViewModelBase, IScreen
+  public class MainViewModel : ViewModelBase, IScreen
   {
     public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
     public RoutingState Router { get; private set; }
@@ -21,13 +21,13 @@ namespace DesktopUI2.ViewModels
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
 
-    public MainWindowViewModel(ConnectorBindings _bindings)
+    public MainViewModel(ConnectorBindings _bindings)
     {
       Bindings = _bindings;
       Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
       Init();
     }
-    public MainWindowViewModel()
+    public MainViewModel()
     {
       Init();
     }
@@ -51,9 +51,6 @@ namespace DesktopUI2.ViewModels
       Bindings.UpdateSelectedStream = HomeViewModel.Instance.UpdateSelectedStream;
 
       Router.PropertyChanged += Router_PropertyChanged;
-      //var theme = PaletteHelper.GetTheme();
-      //theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
-      //PaletteHelper.SetTheme(theme);
     }
 
     //https://github.com/AvaloniaUI/Avalonia/issues/5290

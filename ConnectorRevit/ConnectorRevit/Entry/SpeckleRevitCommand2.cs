@@ -4,6 +4,7 @@ using System.Threading;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
@@ -24,9 +25,15 @@ namespace Speckle.ConnectorRevit.Entry
     private static Avalonia.Application AvaloniaApp { get; set; }
     internal static UIApplication uiapp;
 
+
+    internal static DockablePaneId PanelId = new DockablePaneId(new Guid("{0A866FB8-8FD5-4DE8-B24B-56F4FA5B0836}"));
+
+
     public static void InitAvalonia()
     {
-      BuildAvaloniaApp().Start(AppMain, null);
+      BuildAvaloniaApp().SetupWithoutStarting();
+
+      //AppBuilder.Configure<DesktopUI2.App>().UseWin32().UseDirect2D1().UseReactiveUI().SetupWithoutStarting();
     }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
@@ -36,12 +43,23 @@ namespace Speckle.ConnectorRevit.Entry
       .LogToTrace()
       .UseReactiveUI();
 
+
+
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       uiapp = commandData.Application;
-      CreateOrFocusSpeckle();
+
+      DockablePane dp = commandData.Application.GetDockablePane(PanelId);
+      dp.Show();
+
+      //CreateOrFocusSpeckle();
 
       return Result.Succeeded;
+    }
+
+    void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
+    {
+      //panel.lblProjectName.Content = e.Document.ProjectInformation.Name;
     }
 
     public static void CreateOrFocusSpeckle(bool showWindow = true)
@@ -53,7 +71,7 @@ namespace Speckle.ConnectorRevit.Entry
 
       if (MainWindow == null)
       {
-        var viewModel = new MainWindowViewModel(Bindings);
+        var viewModel = new MainViewModel(Bindings);
         MainWindow = new MainWindow
         {
           DataContext = viewModel

@@ -20,7 +20,7 @@ namespace DesktopUI2
       {
         desktop.MainWindow = new MainWindow
         {
-          DataContext = new MainWindowViewModel(),
+          DataContext = new MainViewModel(),
         };
 
         //desktop.MainWindow = new Scheduler
