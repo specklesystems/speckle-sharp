@@ -462,11 +462,12 @@ namespace Objects.Converter.Revit
 
     /// <summary>
     /// Converts a Speckle <see cref="Polyline"/> into a <see cref="CurveArray"/>.
-    /// 
+    /// </summary>
+    /// <remarks>
     /// This method will ensure that no lines smaller than the allowed length are created.
     /// If small segments are encountered, the geometry will be modified to ensure all segments have minimum length and remain connected.
     /// This will result in some vertices being ignored during conversion, which are logged in the report.
-    /// </summary>
+    /// </remarks>
     /// <param name="polyline">The Speckle <see cref="Polyline"/> to convert to Revit</param>
     /// <returns>A Revit <see cref="CurveArray"/></returns>
     public CurveArray PolylineToNative(Polyline polyline)
