@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ConverterOpenBuildings": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Bentley\\OpenBuildings CONNECT Edition\\OpenBuildingsDesigner\\OpenBuildingsDesigner.exe"
-    }
-  }
-}
