@@ -22,124 +22,21 @@
   <Import Project="..\ConverterBentleyShared\ConverterBentleyShared.projitems" Label="Shared" />
 
   <ItemGroup>
+    <PackageReference Include="Speckle.MicroStation.API" Version="0.0.0" />
+    <PackageReference Include="Speckle.OpenRoads.OpenRail.API" Version="0.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' OR '$(IsDesktopBuild)' == false">
-	<PackageReference Include="Speckle.Bentley.API" Version="1.0.0" IncludeAssets="compile" PrivateAssets="all" />
-  </ItemGroup>
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == ''">
-    <Reference Include="Bentley.CifNET.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.Formatting.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.Formatting.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.GeometryModel.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.GeometryModel.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.GeometryModel.SDK.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.GeometryModel.SDK.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.GeometryModel.SDK.Edit.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.GeometryModel.SDK.Edit.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.LinearGeometry.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.LinearGeometry.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.Objects.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.Objects.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.SDK.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.SDK.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.CifNET.SDK.Edit.4.0">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Cif\Bentley.CifNET.SDK.Edit.4.0.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.DgnDisplayNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9bfed12b64a9b7df, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Bentley.DgnDisplayNet.dll</HintPath>
-      <Private>False</Private>
-    </Reference>	
-    <Reference Include="Bentley.DgnPlatformNET, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4bf6c96a266e58d4, processorArchitecture=AMD64">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Bentley.DgnPlatformNET.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bentley.EC.Persistence3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4bf6c96a266e58d4, processorArchitecture=MSIL">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Assemblies\ECFramework\Bentley.EC.Persistence3.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bentley.ECObjects3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4bf6c96a266e58d4, processorArchitecture=MSIL">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Assemblies\ECFramework\Bentley.ECObjects3.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bentley.ECSystem3">
-      <HintPath>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\Assemblies\ECFramework\Bentley.ECSystem3.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.GeometryNET, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4bf6c96a266e58d4, processorArchitecture=AMD64">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Bentley.GeometryNET.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bentley.GeometryNET.Common">
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Bentley.GeometryNET.Common.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.GeometryNET.Structs">
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Bentley.GeometryNET.Structs.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.Interop.MicroStationDGN">
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Assemblies\Bentley.Interop.MicroStationDGN.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.MicroStation">
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Assemblies\Bentley.MicroStation.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.Platform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4bf6c96a266e58d4, processorArchitecture=MSIL">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Assemblies\ECFramework\Bentley.Platform.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ustation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9bfed12b64a9b7df, processorArchitecture=AMD64">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\ustation.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent"  Condition="'$(IsDesktopBuild)' == true">
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
   </Target>
 
 </Project>

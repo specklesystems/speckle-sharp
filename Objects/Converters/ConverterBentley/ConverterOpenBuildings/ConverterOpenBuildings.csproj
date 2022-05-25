@@ -22,84 +22,21 @@
   <Import Project="..\ConverterBentleyShared\ConverterBentleyShared.projitems" Label="Shared" />
 
   <ItemGroup>
+    <PackageReference Include="Speckle.MicroStation.API" Version="0.0.0" />
+    <PackageReference Include="Speckle.OpenBuildings.API" Version="0.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' OR '$(IsDesktopBuild)' == false">
-	<PackageReference Include="Speckle.Bentley.API" Version="1.0.0" IncludeAssets="compile" PrivateAssets="all" />
-  </ItemGroup>
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == ''">
-    <Reference Include="Bentley.Building.Api">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\Bentley.Building.Api.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.EC.Persistence3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=4bf6c96a266e58d4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(ProgramW6432)\Bentley\MicroStation CONNECT Edition\MicroStation\Assemblies\ECFramework\Bentley.EC.Persistence3.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Bentley.DgnDisplayNET">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Bentley.DgnDisplayNet.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.DgnPlatformNET">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Bentley.DgnPlatformNET.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.EC.Controls3">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\ECFramework\Bentley.EC.Controls3.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.ECObjects3">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\ECFramework\Bentley.ECObjects3.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.ECSystem3">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\ECFramework\Bentley.ECSystem3.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.GeometryNET">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Bentley.GeometryNET.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.GeometryNET.Structs">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Bentley.GeometryNET.Structs.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.Interop.MicroStationDGN">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\Bentley.Interop.MicroStationDGN.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.MicroStation">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\Bentley.MicroStation.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Bentley.Platform">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\Assemblies\ECFramework\Bentley.Platform.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="ustation">
-      <HintPath>$(ProgramW6432)\Bentley\OpenBuildings CONNECT Edition\OpenBuildingsDesigner\ustation.dll</HintPath>
-      <Private>false</Private>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-  </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent"  Condition="'$(IsDesktopBuild)' == true">
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
   </Target>
 
 </Project>
