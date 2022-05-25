@@ -459,13 +459,26 @@ namespace Objects.Converter.Revit
       var nurbs = DB.NurbSpline.Create(spline);
       return NurbsToSpeckle(nurbs, units ?? ModelUnits);
     }
-    
+
+    /// <summary>
+    /// Converts a Speckle <see cref="Polyline"/> into a <see cref="CurveArray"/>.
+    /// 
+    /// This method will ensure that no lines smaller than the allowed length are created.
+    /// If small segments are encountered, the geometry will be modified to ensure all segments have minimum length and remain connected.
+    /// This will result in some vertices being ignored during conversion, which are logged in the report.
+    /// </summary>
+    /// <param name="polyline">The Speckle <see cref="Polyline"/> to convert to Revit</param>
+    /// <returns>A Revit <see cref="CurveArray"/></returns>
     public CurveArray PolylineToNative(Polyline polyline)
     {
       var curveArray = new CurveArray();
       if (polyline.value.Count == 6)
       {
-        curveArray.Append(LineToNative(new Line(polyline.value, polyline.units)));
+        // Polyline is actually a single line
+        TryAppendLineSafely(
+          curveArray, 
+          new Line(polyline.value, polyline.units)
+        );
       }
       else
       {
@@ -473,33 +486,19 @@ namespace Objects.Converter.Revit
         var lastPt = pts[0];
         for (var i = 1; i < pts.Count; i++)
         {
-          var speckleLine = new Line(lastPt, pts[i] , polyline.units);
-          var scaleToNative = ScaleToNative(speckleLine.length, speckleLine.units);
-          if (scaleToNative < Doc.Application.ShortCurveTolerance)
-            continue;
-          lastPt = pts[i];
-          try
-          {
-            var lineToNative = LineToNative(speckleLine);
-            curveArray.Append(lineToNative);
-          }
-          catch (Exception e)
-          {
-            Report.LogConversionError(e);
-          }
+          var success = TryAppendLineSafely(
+            curveArray, 
+            new Line(lastPt, pts[i] , polyline.units)
+          );
+          if(success) lastPt = pts[i];
         }
 
         if (polyline.closed)
         {
-          var speckleLine = new Line(pts[pts.Count - 1], pts[0] , polyline.units);
-          try
-          {
-            curveArray.Append(LineToNative(speckleLine));
-          }
-          catch (Exception e)
-          {
-            Report.LogConversionError(e);
-          }
+          TryAppendLineSafely(
+            curveArray, 
+            new Line(pts[pts.Count - 1], pts[0] , polyline.units)
+          );
         }
       }
       return curveArray;

@@ -13,7 +13,9 @@ using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
+using Line = Objects.Geometry.Line;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
+using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
 {
@@ -990,5 +992,38 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
+    
+    
+    /// <summary>
+    /// Checks if a Speckle Line is too sort to be created in Revit.
+    /// The length of the line
+    /// </summary>
+    /// <param name="line"></param>
+    /// <returns></returns>
+    public bool IsLineTooShort(Line line)
+    {
+      var scaleToNative = ScaleToNative(Point.Distance(line.start,line.end), line.units);
+      return scaleToNative < Doc.Application.ShortCurveTolerance;
+    }
+
+    public bool TryAppendLineSafely(CurveArray curveArray, Line line)
+    {
+      if (IsLineTooShort(line))
+      {
+        Report.Log("Some lines in the CurveArray where ignored due to being smaller than the allowed curve length.");
+        return false;
+      }
+      try
+      {
+        curveArray.Append(LineToNative(line));
+        return true;
+      }
+      catch (Exception e)
+      {
+        Report.LogConversionError(e);
+        return false;
+      }
+    }
+
   }
 }
