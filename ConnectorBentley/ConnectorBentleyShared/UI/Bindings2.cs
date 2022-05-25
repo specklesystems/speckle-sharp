@@ -177,6 +177,11 @@ namespace Speckle.ConnectorBentley.UI
       return filterList;
     }
 
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
     //TODO
     public override List<MenuItem> GetCustomStreamMenuItems()
     {

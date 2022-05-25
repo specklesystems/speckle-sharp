@@ -90,6 +90,8 @@ namespace Objects.Converter.Bentley
       throw new NotImplementedException("This converter does not have any settings.");
     }
 
+    public ReceiveMode ReceiveMode { get; set; }
+
     public void SetContextDocument(object session)
     {
       Session = (Session)session;
