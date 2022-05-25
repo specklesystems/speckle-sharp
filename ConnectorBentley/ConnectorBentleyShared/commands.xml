@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<KeyinTree xmlns="http://www.bentley.com/schemas/1.0/MicroStation/AddIn/KeyinTree.xsd">
+  <RootKeyinTable ID="root">
+    <Keyword SubtableRef="Commands" CommandClass="MacroCommand" CommandWord="Speckle">
+      <Options Required="true" TryParse="true"/>
+    </Keyword>
+  </RootKeyinTable>
+
+  <SubKeyinTables>
+    <KeyinTable ID="Commands">
+      <Keyword CommandWord="SpeckleOld" />
+      <Keyword CommandWord="Speckle" />
+    </KeyinTable>
+  </SubKeyinTables>
+
+  <KeyinHandlers>
+    <KeyinHandler Keyin="Speckle SpeckleOld" Function="Speckle.ConnectorBentley.Keyins.Start" />
+    <KeyinHandler Keyin="Speckle Speckle" Function="Speckle.ConnectorBentley.Keyins.Start2" />
+  </KeyinHandlers>
+</KeyinTree>
