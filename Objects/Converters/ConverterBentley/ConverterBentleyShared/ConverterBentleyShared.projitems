@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>208b25e4-2d0e-4534-b197-4c5c96cc53ce</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConverterBentleyShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterBentley.BuiltElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterBentley.Civil.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterBentley.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterBentley.Geometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterBentley.GridSystems.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterBentley.Utils.cs" />
+  </ItemGroup>
+</Project>
