@@ -14,6 +14,7 @@ namespace Objects.BuiltElements.Archicad
       public double arcAngle { get; set; }
       public double length { get; set; }
       public Interval domain { get; set; }
+      public string units { get; set; }
 
       public PolylineSegment(){}
       public PolylineSegment(Point startPoint, Point endPoint, double? arcAngle = null)
@@ -29,6 +30,7 @@ namespace Objects.BuiltElements.Archicad
       public List<PolylineSegment> polylineSegments { get; set; } = new List<PolylineSegment>();
       public double length { get; set; }
       public Interval domain { get; set; }
+      public string units { get; set; }
 
       public Polyline(){}
 

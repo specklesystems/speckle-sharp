@@ -12,17 +12,13 @@ namespace Objects.Other
   /// <summary>
   /// Block definition class 
   /// </summary>
-  public class BlockDefinition : Base
+  public class BlockDefinition : PointBasedElement
   {
     public string name { get; set; }
-
-    public Point basePoint { get; set; }
-
+    
     [DetachProperty]
     public List<Base> geometry { get; set; }
-
-    public string units { get; set; }
-
+    
     public BlockDefinition() { }
   }
 

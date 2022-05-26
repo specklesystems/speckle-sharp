@@ -377,7 +377,6 @@ namespace Objects.Converter.AutocadCivil
         name = record.Name,
         basePoint = PointToSpeckle(record.Origin),
         geometry = geometry,
-        units = ModelUnits
       };
 
       return definition;
