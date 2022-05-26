@@ -1,13 +1,12 @@
-﻿using Objects.BuiltElements;
-using Objects.Geometry;
+﻿using System;
 using Objects.Other;
-using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Objects.Geometry;
 using Objects.Primitive;
-using Speckle.Core.Logging;
+using Objects.BuiltElements;
+using Speckle.Core.Models;
+using System.Collections.Generic;
+using Objects.Properties;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects
 {
@@ -28,10 +27,11 @@ namespace Objects
     double volume { get; set; }
   }
 
-  public interface ICurve   
+  public interface ICurve
   {
     double length { get; set; }
     Interval domain { get; set; }
+    string units { get; set; }
   }
 
   /// <summary>
@@ -61,7 +61,7 @@ namespace Objects
     [Obsolete("Use " + nameof(IDisplayValue<Mesh>) + "." + nameof(IDisplayValue<Mesh>.displayValue) + " instead")]
     Mesh displayMesh { get; set; }
   }
-  
+
   /// <summary>
   /// Specifies displayable <see cref="Base"/> value(s) to be used as a fallback
   /// if a displayable form cannot be converted.
@@ -84,7 +84,77 @@ namespace Objects
     /// </summary>
     T displayValue { get; set; }
   }
+
+  /// <summary>
+  /// Basic interface to store application-specific properties
+  /// </summary>
+  /// <remarks>
+  /// </remarks>
+  public interface IHasSourceAppProps
+  {
+    ApplicationProperties sourceApp { get; set; }
+  }
+
+  public interface IHasChildElements
+  {
+    /// <summary>
+    /// Child elements of any <see cref="Base"/> type can be placed within the <see cref="elements"/> array (eg windows within a wall)
+    /// </summary>
+    List<Base> elements { get; set; }
+  }
+
+  /// <summary>
+  /// Base class for all physical elements. This ensures they have a detached <see cref="displayValue"/> for visualisation
+  /// when they can't be converted to native and a <see cref="sourceApp"/> property for storing properties from the
+  /// authoring application.
+  /// </summary>
+  public abstract class PhysicalElement : Base, IDisplayValue<List<Mesh>>, IHasSourceAppProps
+  {
+    [DetachProperty] public List<Mesh> displayValue { get; set; }
+    [DetachProperty] public ApplicationProperties sourceApp { get; set; }
+    public abstract string units { get; }
+  }
+
+  /// <summary>
+  /// Base class for all <see cref="PhysicalElement"/>s that are defined by a <see cref="Point"/>
+  /// </summary>
+  public abstract class PointBasedElement : PhysicalElement
+  {
+    public Point basePoint { get; set; }
+    
+    /// <summary>
+    /// A string representing the units of this element. It is defined by the units of the <see cref="basePoint"/>
+    /// </summary>
+    public override string units => basePoint?.units;
+  }
+
+  /// <summary>
+  /// Base class for all <see cref="PhysicalElement"/>s that are defined by an <see cref="ICurve"/> <see cref="baseCurve"/>
+  /// </summary>
+  public abstract class CurveBasedElement : PhysicalElement, IHasChildElements
+  {
+    public ICurve baseCurve { get; set; }
+    [DetachProperty] public List<Base> elements { get; set; }
+
+    /// <summary>
+    /// A string representing the units of this element. It is defined by the units of the <see cref="baseCurve"/>
+    /// </summary>
+    public override string units => baseCurve?.units;
+  }
   
+  /// <summary>
+  /// Base class for all <see cref="PhysicalElement"/>s that are defined by an <see cref="ICurve"/> <see cref="outline"/>
+  /// </summary>
+  public abstract class OutlineBasedElement : PhysicalElement,  IHasChildElements
+  {
+    public ICurve outline { get; set; }
+    [DetachProperty] public List<Base> elements { get; set; }
+
+    /// <summary>
+    /// A string representing the units of this element. It is defined by the units of the <see cref="outline"/>
+    /// </summary>
+    public override string units => outline?.units;
+  }
 
   #endregion
 }
