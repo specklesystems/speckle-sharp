@@ -240,7 +240,6 @@ namespace Objects.Converter.RhinoGh
         name = definition.Name,
         basePoint = PointToSpeckle(Point3d.Origin), // rhino by default sets selected block def base pt at world origin
         geometry = geometry,
-        units = ModelUnits
       };
 
       return _definition;

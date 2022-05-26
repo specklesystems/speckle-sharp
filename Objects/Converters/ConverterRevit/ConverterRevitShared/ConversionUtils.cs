@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Objects.Properties;
+using Speckle.Core.Kits;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -185,6 +187,28 @@ namespace Objects.Converter.Revit
 
     }
 
+    public Dictionary<string, object> GetRevitParams(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
+    {
+      var instParams = GetInstanceParams(revitElement, exclusions);
+      var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement);  //ignore type props of levels..!
+      var allParams = new Dictionary<string, object>();
+
+      instParams?.ToList().ForEach(x =>
+      {
+        if ( !allParams.ContainsKey(x.Key) ) allParams.Add(x.Key, x.Value);
+      });
+
+      typeParams?.ToList().ForEach(x =>
+      {
+        if ( !allParams.ContainsKey(x.Key) ) allParams.Add(x.Key, x.Value);
+      });
+
+      //sort by key
+      allParams = allParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+      
+      return allParams;
+    }
+
     //private List<string> alltimeExclusions = new List<string> { 
     //  "ELEM_CATEGORY_PARAM" };
     private Dictionary<string, Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
@@ -298,7 +322,7 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
-
+    
     /// <summary>
     /// </summary>
     /// <param name="revitElement"></param>
@@ -309,7 +333,9 @@ namespace Objects.Converter.Revit
         return;
 
       var speckleParameters = speckleElement["parameters"] as Base;
-      if (speckleParameters == null || speckleParameters.GetDynamicMemberNames().Count() == 0)
+      var speckleRevitProps = speckleElement[ "sourceApp" ] as RevitProperties;
+      var specklePropsDict = speckleParameters?.GetMembers() ?? speckleRevitProps?.props;
+      if ( specklePropsDict == null || speckleParameters?.GetDynamicMemberNames().Count() == 0)
         return;
 
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
@@ -328,7 +354,7 @@ namespace Objects.Converter.Revit
       // its member names will have for Key either a BuiltInName, GUID or Name of the parameter (depending onwhere it comes from)
       // and as value the full Parameter object, that might come from Revit or SchemaBuilder
       // We only loop params we can set and that actually exist on the revit element
-      var filteredSpeckleParameters = speckleParameters.GetMembers()
+      var filteredSpeckleParameters = specklePropsDict
         .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
 
 
@@ -537,6 +563,12 @@ namespace Objects.Converter.Revit
 
       var family = element["family"] as string;
       var type = element["type"] as string;
+
+      if ( element[ "sourceApp" ] is RevitProperties sourceApp )
+      {
+        family = sourceApp.family;
+        type = sourceApp.type;
+      }
 
       ElementType match = null;
 

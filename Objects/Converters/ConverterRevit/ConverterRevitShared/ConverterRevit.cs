@@ -394,6 +394,9 @@ namespace Objects.Converter.Revit
 
         case BE.Wall o:
           return WallToNative(o);
+        
+        case Building.Wall o:
+          return WallToNative(o);
 
         case BE.Duct o:
           return DuctToNative(o);
@@ -556,6 +559,7 @@ namespace Objects.Converter.Revit
         BER.RevitFaceWall _ => true,
         BER.RevitProfileWall _ => true,
         BE.Wall _ => true,
+        Building.Wall _ => true,
         BE.Duct _ => true,
         BE.Pipe _ => true,
         BE.Wire _ => true,
