@@ -47,6 +47,7 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      progress.Max = totalObjectCount;
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
 
@@ -144,12 +145,14 @@ namespace Speckle.ConnectorCSI.UI
       var client = state.Client;
 
       var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
-
+      progress.Max = totalObjectCount;
       var objectId = await Operations.Send(
           @object: commitObj,
           cancellationToken: progress.CancellationTokenSource.Token,
           transports: transports,
-          onProgressAction: dict => progress.Update(dict),
+          onProgressAction: dict => {
+            progress.Update(dict);
+          },
           onErrorAction: (Action<string, Exception>)((s, e) =>
           {
             progress.Report.LogOperationError(e);
@@ -179,13 +182,9 @@ namespace Speckle.ConnectorCSI.UI
       try
       {
         var commitId = await client.CommitCreate(actualCommit);
-
-        //await state.RefreshStream();
         state.PreviousCommitId = commitId;
         return commitId;
 
-        //PersistAndUpdateStreamInFile(state);
-        //RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
       }
       catch (Exception e)
       {
