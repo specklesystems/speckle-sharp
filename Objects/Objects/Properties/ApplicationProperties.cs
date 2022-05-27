@@ -18,10 +18,15 @@ namespace Objects.Properties
     /// The name of the authoring application as a string. Use the defined <see cref="HostApplications"/> name
     /// (eg. <c>HostApplications.Revit.Name</c>)
     /// </summary>
-    public string app { get; set; }
+    public string name { get; set; }
     
+    // TODO: confirm with claire what this is for
     public string className { get; set; }
     
+    /// <summary>
+    /// Any additional notable properties the parent element might have that would be needed to recreate this element
+    /// when receiving in the original authoring application.
+    /// </summary>
     public Dictionary<string, object> props { get; set; } = new Dictionary<string, object>();
 
     public ApplicationProperties()
