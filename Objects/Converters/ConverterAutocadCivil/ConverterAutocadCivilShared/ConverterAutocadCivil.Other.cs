@@ -286,7 +286,17 @@ namespace Objects.Converter.AutocadCivil
       BlockDefinition definition = null;
       var attributes = new Dictionary<string, string>();
 
-      BlockTableRecord btr = (BlockTableRecord)Trans.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
+      var btrObjId = reference.BlockTableRecord;
+      if (reference.IsDynamicBlock)
+      {
+        btrObjId = reference.AnonymousBlockTableRecord;
+        if (btrObjId == ObjectId.Null)
+        {
+          btrObjId = reference.DynamicBlockTableRecord;
+        }
+      }
+
+      var btr = (BlockTableRecord)Trans.GetObject(btrObjId, OpenMode.ForRead);
       definition = BlockRecordToSpeckle(btr);
       foreach (ObjectId id in reference.AttributeCollection)
       {
@@ -361,7 +371,7 @@ namespace Objects.Converter.AutocadCivil
       {
         DBObject obj = Trans.GetObject(id, OpenMode.ForRead);
         Entity objEntity = obj as Entity;
-        if (CanConvertToSpeckle(obj))
+        if (CanConvertToSpeckle(obj) && (objEntity != null && objEntity.Visible))
         {
           Base converted = ConvertToSpeckle(obj);
           if (converted != null)
@@ -374,7 +384,7 @@ namespace Objects.Converter.AutocadCivil
 
       var definition = new BlockDefinition()
       {
-        name = record.Name,
+        name = GetBlockDefName(record),
         basePoint = PointToSpeckle(record.Origin),
         geometry = geometry,
         units = ModelUnits
@@ -382,6 +392,74 @@ namespace Objects.Converter.AutocadCivil
 
       return definition;
     }
+
+    /// <summary>
+    /// Get the name of the block definition from BlockTableRecord.
+    /// If btr is a Dynamic Block, name is formatted as "DynamicBlockName"_"VisibilityName"
+    /// </summary>
+    /// <param name="btr">BlockTableRecord object</param>
+    /// <returns>block table record name</returns>
+    private string GetBlockDefName(BlockTableRecord btr)
+    {
+      var fullName = btr.Name;
+      var curVisibilityName = string.Empty;
+
+      if (btr.IsAnonymous)
+      {
+        // get the DynamicBlockTableRecord and current visibility state name from block reference
+        var blkRefObjIds = btr.GetBlockReferenceIds(true, false);
+        if (blkRefObjIds.Count > 0)
+        {
+          var blockRefObjId = blkRefObjIds[0];
+          var blkRef = Trans.GetObject(blockRefObjId, OpenMode.ForRead) as BlockReference;
+          if (blkRef != null)
+          {
+            var dynBtrObjId = blkRef.DynamicBlockTableRecord;
+            if (dynBtrObjId != ObjectId.Null)
+            {
+              var dynBtr = Trans.GetObject(dynBtrObjId, OpenMode.ForRead) as BlockTableRecord;
+              if (dynBtr != null)
+              { 
+                fullName = string.Concat(dynBtr.Name.Where(c => !char.IsWhiteSpace(c)));
+              }
+            }
+
+            foreach (DynamicBlockReferenceProperty prop in blkRef.DynamicBlockReferencePropertyCollection)
+            { 
+              curVisibilityName = (string)prop.Value;
+            }
+          }
+        }
+      }
+      else if (btr.IsDynamicBlock)
+      {
+        // remove space from name
+        fullName = string.Concat(fullName.Where(c => !char.IsWhiteSpace(c)));
+        // get the current visibility state name from block reference
+        var blkRefObjIds = btr.GetBlockReferenceIds(true, false);
+        if (blkRefObjIds.Count > 0)
+        {
+          var blockRefObjId = blkRefObjIds[0];
+          var blkRef = Trans.GetObject(blockRefObjId, OpenMode.ForRead) as BlockReference;
+          if (blkRef != null)
+          {
+            foreach (DynamicBlockReferenceProperty prop in blkRef.DynamicBlockReferencePropertyCollection)
+            {
+              curVisibilityName = (string)prop.Value;
+            }
+          }
+        }
+      }
+
+      if (!string.IsNullOrEmpty(curVisibilityName))
+      {
+        curVisibilityName = string.Concat(curVisibilityName.Where(c => !char.IsWhiteSpace(c)));
+        fullName = $"{fullName}_{curVisibilityName}";
+      }
+
+      return fullName;
+    }
+
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
