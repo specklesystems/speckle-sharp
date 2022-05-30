@@ -6,6 +6,7 @@ using Objects.BuiltElements;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Properties;
+using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects
@@ -92,6 +93,9 @@ namespace Objects
   /// </remarks>
   public interface IHasSourceAppProps
   {
+    /// <summary>
+    /// Stores application-specific properties from the authoring application for higher fidelity intra-application data transfer.
+    /// </summary>
     ApplicationProperties sourceApp { get; set; }
   }
 
@@ -112,6 +116,11 @@ namespace Objects
   {
     [DetachProperty] public List<Mesh> displayValue { get; set; }
     [DetachProperty] public ApplicationProperties sourceApp { get; set; }
+
+    /// <summary>
+    /// A string representing the abbreviated units (eg "m", "mm", "ft").
+    /// Use the <see cref="Units"/> helper to ensure you're using the correct strings.
+    /// </summary>
     public abstract string units { get; }
   }
 
