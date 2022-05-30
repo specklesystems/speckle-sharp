@@ -67,6 +67,9 @@ namespace Objects.Converter.Revit
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
+    
+    public Dictionary<string, Organization.Level> Levels2 { get; private set; } = new Dictionary<string,
+      Organization.Level>();
 
     public ReceiveMode ReceiveMode { get; set; }
 

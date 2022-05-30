@@ -30,10 +30,10 @@ namespace Objects.Converter.Revit
         };
 
       var wallType = GetElementType<WallType>(speckleWall);
-      Level level = null;
+      Level level;
       var baseCurve = CurveToNative(speckleWall.baseCurve).get_Item(0);
 
-      level = ConvertLevelToRevit(speckleWall.baseLevel ?? LevelFromCurve(baseCurve));
+      level = ConvertLevelToRevit(speckleWall.baseLevel ?? Level2FromCurve(baseCurve));
 
       var isUpdate = true;
       if ( revitWall == null )
@@ -234,9 +234,9 @@ namespace Objects.Converter.Revit
       {
         applicationId = revitWall.UniqueId,
         baseCurve = ( ICurve )baseGeometry,
-        baseLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT),
+        baseLevel = ConvertAndCacheLevel2(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT),
         height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM),
-        topLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE),
+        topLevel = ConvertAndCacheLevel2(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE),
         baseOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET),
         topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET),
         flipped = revitWall.Flipped

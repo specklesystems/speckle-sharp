@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Objects.BuiltElements;
 using Objects.Geometry;
+using Objects.Organization;
 using Speckle.Core.Models;
 
 namespace Objects.Building
