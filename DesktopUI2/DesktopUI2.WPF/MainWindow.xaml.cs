@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
 using System.Windows;
 
 namespace DesktopUI2.WPF
@@ -14,8 +15,11 @@ namespace DesktopUI2.WPF
     {
       BuildAvaloniaApp().SetupWithoutStarting();
       InitializeComponent();
+
       var viewModel = new MainViewModel();
       this.DataContext = viewModel;
+
+      AvaloniaHost.Content = new MainUserControl();
 
     }
 

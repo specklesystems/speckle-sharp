@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace Speckle.ConnectorRevit
+namespace DesktopUI2.WPF
 {
   public class AvaloniaHwndHost : HwndHost
   {
