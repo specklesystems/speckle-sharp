@@ -359,11 +359,10 @@ namespace ConnectorGrasshopper.Ops
         {
           try
           {
-            var converted = Utilities.DataTreeToSpeckle(d.Value, sendComponent.Converter, CancellationToken, () =>
+            var converted = Utilities.DataTreeToNestedLists(d.Value, sendComponent.Converter, CancellationToken, () =>
             {
               ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
             });
-            convertedCount++;
             var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
             var key = d.Key;
             if (param is SendReceiveDataParam srParam)
