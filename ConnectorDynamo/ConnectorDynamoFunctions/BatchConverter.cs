@@ -137,7 +137,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public static bool IsDataTree(Base @base)
     {
-      var regex = new Regex(@"{\d(;\d)*}");
+      var regex = new Regex(@"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$");
       var members = @base.GetDynamicMembers().ToList();
       var isDataTree = members.All(el => regex.Match(el).Success);
       return members.Count > 0 && isDataTree;
@@ -145,7 +145,6 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public object ConvertDataTreeToNative(Base @base)
     {
-      var regex = new Regex(@"{(\d)(;(\d))*}");
       var names = @base.GetDynamicMembers();
       var list = new List<object>();
       foreach (var name in names)

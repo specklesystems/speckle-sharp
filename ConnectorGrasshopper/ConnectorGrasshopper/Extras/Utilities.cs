@@ -99,6 +99,8 @@ namespace ConnectorGrasshopper.Extras
       }
       return @base;
     }
+
+    private static string dataTreePathPattern = @"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$";
     
     /// <summary>
     ///   Converts a <see cref="Base"/> object into a Grasshopper <see cref="DataTree{T}"/>.
@@ -115,10 +117,10 @@ namespace ConnectorGrasshopper.Extras
       {
         var value = @base[key] as List<object>;
         var path = new GH_Path();
-        var pattern = new Regex(@"@\(\d+\)?(.*)"); // Match for the dynamic detach magic "@(DETACH_INT)PATH"
+        var pattern = new Regex(dataTreePathPattern); // Match for the dynamic detach magic "@(DETACH_INT)PATH"
         var matchRes = pattern.Match(key);
-        var pathKey = matchRes.Groups[1];
-        var res = path.FromString(pathKey.Value);
+        var pathKey = matchRes.Groups["path"].Value;
+        var res = path.FromString(pathKey);
         var converted = value.Select(item => TryConvertItemToNative(item, converter));
         dataTree.AppendRange(converted, path);
       });
@@ -136,7 +138,7 @@ namespace ConnectorGrasshopper.Extras
     /// <returns>True if the <see cref="Base"/> object will be successfully converted into a <see cref="DataTree{T}"/>, false otherwise.</returns>
     public static bool CanConvertToDataTree(Base @base)
     {
-      var regex = new Regex(@"{\d+(;\d+)*}");
+      var regex = new Regex(dataTreePathPattern);
       var isDataTree = @base.GetDynamicMembers().All(el => regex.Match(el).Success);
       return isDataTree;
     }
