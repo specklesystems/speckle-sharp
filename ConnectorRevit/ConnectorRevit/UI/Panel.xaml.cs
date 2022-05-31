@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Autodesk.Revit.UI;
+using DesktopUI2.Views;
 
 namespace Speckle.ConnectorRevit
 {
@@ -24,6 +25,8 @@ namespace Speckle.ConnectorRevit
     public Panel()
     {
       InitializeComponent();
+
+      AvaloniaHost.Content = new MainUserControl();
     }
 
     public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)

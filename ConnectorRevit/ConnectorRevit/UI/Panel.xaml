@@ -6,15 +6,13 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:local="clr-namespace:Speckle.ConnectorRevit"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:wpf="clr-namespace:Avalonia.Win32.Interop.Wpf;assembly=Avalonia.Win32.Interop"
   Title="Page1"
   Width="400"
   Height="750"
   mc:Ignorable="d">
 
   <Grid>
-    <wpf:WpfAvaloniaHost>
-      <av:MainUserControl />
-    </wpf:WpfAvaloniaHost>
+    <local:AvaloniaHwndHost x:Name="AvaloniaHost" />
+
   </Grid>
 </Page>
