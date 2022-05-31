@@ -59,6 +59,7 @@ namespace Objects.Geometry
     {
       this.start = start;
       this.end = end;
+      this.length = Point.Distance(start, end);
       this.applicationId = applicationId;
       this.units = units;
     }
@@ -69,6 +70,7 @@ namespace Objects.Geometry
         throw new SpeckleException("Line from coordinate array requires 6 coordinates.");
       this.start = new Point(coordinates[0], coordinates[1], coordinates[2], units, applicationId);
       this.end = new Point(coordinates[3], coordinates[4], coordinates[5], units, applicationId);
+      this.length = Point.Distance(start, end);
       this.applicationId = applicationId;
       this.units = units;
     }
