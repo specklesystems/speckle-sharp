@@ -32,8 +32,8 @@ namespace ConnectorGrasshopper.Ops
     public override Guid ComponentGuid => new Guid("6E528842-C478-4BD0-8DA6-30B7D1F08B04");
 
     protected override Bitmap Icon => Properties.Resources.Sender;
-
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override bool CanDisableConversion => false;
     public bool AutoSend { get; set; } = false;
 
