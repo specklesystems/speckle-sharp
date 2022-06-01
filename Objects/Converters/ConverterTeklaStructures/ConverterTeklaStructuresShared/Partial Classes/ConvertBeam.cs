@@ -103,8 +103,15 @@ namespace Objects.Converter.TeklaStructures
             part.Position = SetPositioning(teklaBeam.position);
     }
         
-    public TeklaBeam BeamToSpeckle(Tekla.Structures.Model.Beam beam)
+    public Base BeamToSpeckle(Tekla.Structures.Model.Beam beam)
     {
+    ///For some reason walls are considered beams in the world of Tekla Structures
+    /// 
+    ///
+      if(beam.Name == "WALL"){
+        var wall = wallToSpeckle(beam);
+        return wall;
+      }
       var speckleBeam = new TeklaBeam();
       //TO DO: Support for curved beams goes in here as well + twin beams
 

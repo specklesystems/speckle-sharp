@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBooleanPart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolygonWelds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWelds.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBentPlate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertContourPlate.cs" />
