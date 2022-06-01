@@ -135,9 +135,11 @@ namespace Speckle.ConnectorDynamo.Functions
       return result;
     }
 
+    private static Regex dataTreePathRegex => new Regex(@"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$");
+    
     public static bool IsDataTree(Base @base)
     {
-      var regex = new Regex(@"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$");
+      var regex = dataTreePathRegex;
       var members = @base.GetDynamicMembers().ToList();
       var isDataTree = members.All(el => regex.Match(el).Success);
       return members.Count > 0 && isDataTree;
@@ -149,6 +151,8 @@ namespace Speckle.ConnectorDynamo.Functions
       var list = new List<object>();
       foreach (var name in names)
       {
+        if (!dataTreePathRegex.Match(name).Success) continue; // Ignore non matching elements, done for extra safety.
+        
         var parts =
           name.Split('{')[1] // Get everything after open curly brace
             .Split('}')[0] // Get everything before close curly brace

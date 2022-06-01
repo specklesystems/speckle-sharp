@@ -119,8 +119,10 @@ namespace ConnectorGrasshopper.Extras
         var path = new GH_Path();
         var pattern = new Regex(dataTreePathPattern); // Match for the dynamic detach magic "@(DETACH_INT)PATH"
         var matchRes = pattern.Match(key);
+        if (matchRes.Length == 0) return;
         var pathKey = matchRes.Groups["path"].Value;
         var res = path.FromString(pathKey);
+        if (!res) return;
         var converted = value.Select(item => TryConvertItemToNative(item, converter));
         dataTree.AppendRange(converted, path);
       });
