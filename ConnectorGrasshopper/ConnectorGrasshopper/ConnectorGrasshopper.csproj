@@ -104,10 +104,10 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="UpgradeUtilities.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\DeconstructSpeckleObjectTaskComponent.cs" />
-    <Compile Include="Objects\Deprecated\ObjectsUpgradeUtils.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
