@@ -88,11 +88,6 @@
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="ConnectorGrasshopperInfo.cs" />
-    <Compile Include="Conversion\Deprecated\Convert.ToNativeAsync.cs" />
-    <Compile Include="Conversion\Deprecated\Convert.ToSpeckleAsync.cs" />
-    <Compile Include="Conversion\Deprecated\ConvertUpgradeUtils.cs" />
-    <Compile Include="Conversion\Deprecated\Serialisation.DeserializeObject.cs" />
-    <Compile Include="Conversion\Deprecated\Serialisation.SerialiseObject.cs" />
     <Compile Include="Conversion\DeserialiseTaskCapableComponent.cs" />
     <Compile Include="Conversion\SerialiseTaskCapableComponent.cs" />
     <Compile Include="Conversion\ToNativeTaskCapableComponent.cs" />
@@ -112,12 +107,6 @@
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\DeconstructSpeckleObjectTaskComponent.cs" />
-    <Compile Include="Objects\Deprecated\CreateSpeckleObjectAsync.cs" />
-    <Compile Include="Objects\Deprecated\CreateSpeckleObjectByKeyValueAsync.cs" />
-    <Compile Include="Objects\Deprecated\ExpandSpeckleObjectAsync.cs" />
-    <Compile Include="Objects\Deprecated\ExtendSpeckleObjectAsync.cs" />
-    <Compile Include="Objects\Deprecated\ExtendSpeckleObjectByKeyValueAsync.cs" />
-    <Compile Include="Objects\Deprecated\GetObjectValueByKeyAsync.cs" />
     <Compile Include="Objects\Deprecated\ObjectsUpgradeUtils.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
