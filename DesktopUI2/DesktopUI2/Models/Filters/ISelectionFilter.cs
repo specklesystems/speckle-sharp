@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls;
-using Speckle.Newtonsoft.Json;
+﻿using Speckle.Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace DesktopUI2.Models.Filters
@@ -11,6 +11,12 @@ namespace DesktopUI2.Models.Filters
     /// </summary>
     string Name { get; set; }
 
+
+    /// <summary>
+    /// Used as the discriminator for deserialisation.
+    /// </summary>
+    string Type { get; }
+
     /// <summary>
     /// MaterialDesignIcon use the demo app from the MaterialDesignInXamlToolkit to get the correct name
     /// </summary>
@@ -20,11 +26,6 @@ namespace DesktopUI2.Models.Filters
     /// Internal filter name 
     /// </summary>
     string Slug { get; set; }
-
-    /// <summary>
-    /// Used as the discriminator for deserialisation.
-    /// </summary>
-    string Type { get; }
 
     /// <summary>
     /// Shoud return a succint summary of the filter: what does it contain inside?
@@ -45,6 +46,6 @@ namespace DesktopUI2.Models.Filters
     /// View associated to this filter type
     /// </summary>    
     [JsonIgnore]
-    UserControl View { get; set; }
+    Type ViewType { get; }
   }
 }

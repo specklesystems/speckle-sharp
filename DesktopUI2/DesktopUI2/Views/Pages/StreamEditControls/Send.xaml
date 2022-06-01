@@ -28,6 +28,7 @@
           <TextBlock FontWeight="Bold" Text="{Binding SelectedFilter.Summary, FallbackValue=?}" />
           <TextBlock Text=" to " />
           <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.name, FallbackValue=?}" />
+
         </StackPanel>
       </Expander.Header>
 
@@ -97,12 +98,12 @@
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
-        <!--  FILTER INFO  -->
+        <!--  FILTER INFO - the magic happens in FilterTemplateSelector.cs -->
         <Grid
           Grid.Row="1"
           Grid.ColumnSpan="4"
           Margin="0,15">
-          <ContentControl Content="{Binding #FilterCombo.SelectedItem.FilterView}" />
+          <ContentControl Content="{Binding SelectedFilter}" />
         </Grid>
         <!--  ADVANCED SETTINGS  -->
         <Button
@@ -153,7 +154,6 @@
         HorizontalAlignment="Right"
         Orientation="Horizontal"
         Spacing="10">
-
 
         <!--  SAVE BTN  -->
         <m:FloatingButton

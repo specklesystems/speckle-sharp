@@ -122,10 +122,11 @@
     <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
-    <Compile Include="Ops\Operations.ReceiveComponent.cs" />
+    <Compile Include="Ops\Deprecated\Operations.ReceiveComponent.cs" />
+    <Compile Include="Ops\Deprecated\Operations.SendComponent.cs" />
+    <Compile Include="Ops\Deprecated\Operations.VariableInputSendComponent.cs" />
     <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
-    <Compile Include="Ops\Operations.SendComponent.cs" />
     <Compile Include="Ops\Operations.SendComponentSync.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="Ops\Operations.UpgradeUtils.cs" />

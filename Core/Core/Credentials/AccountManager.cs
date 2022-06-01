@@ -240,6 +240,10 @@ namespace Speckle.Core.Credentials
         var url = account.serverInfo.url;
         var userServerInfo = await GetUserServerInfo(account.token, url);
 
+        //prevent corrupting existing accounts
+        if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+          continue;
+
         account.userInfo = userServerInfo.user;
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;

@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-
+      DA.DisableGapLogic();
       if (InPreSolve)
       {
         IGH_Goo inputObj = null;
@@ -52,7 +52,10 @@ namespace ConnectorGrasshopper.Objects
         } else if(inputObj is IGH_Goo goo)
         {
           var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
-          if(Converter.CanConvertToSpeckle(value))
+          if (value is Base baseObj) {
+            @base = baseObj;
+          }
+          else if(Converter.CanConvertToSpeckle(value))
           {
             @base = Converter.ConvertToSpeckle(value);
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
@@ -360,7 +363,15 @@ namespace ConnectorGrasshopper.Objects
 
             break;
           default:
-            outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+            var temp = obj[prop.Key];
+            if (temp is Base tempB && Utilities.CanConvertToDataTree(tempB))
+            {
+              outputDict[prop.Key] = Utilities.DataTreeToNative(tempB, Converter);
+            }
+            else
+            {
+              outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+            }
             break;
         }
       }

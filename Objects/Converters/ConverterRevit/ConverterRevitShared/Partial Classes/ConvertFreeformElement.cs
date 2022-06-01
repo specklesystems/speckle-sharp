@@ -110,9 +110,9 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> FreeformElementToNativeFamily(Geometry.Mesh mesh)
     {
       var solids = new List<DB.Solid>();
-
-      var revitMmesh = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid)
-          .Select(m => (m as DB.Solid));
+      var d = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid);
+      var revitMmesh =
+          d.Select(m => (m as DB.Solid));
       solids.AddRange(revitMmesh);
 
 

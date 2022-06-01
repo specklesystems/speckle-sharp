@@ -1,16 +1,19 @@
 <UserControl
-  x:Class="DesktopUI2.Views.Settings.ListBoxSettingView"
+  x:Class="DesktopUI2.Views.Settings.CheckBoxSettingView"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="550"
+  d:DesignWidth="400"
   mc:Ignorable="d">
+
 
   <Grid
     Margin="10"
-    ColumnDefinitions="auto,1*, 1*"
+    ColumnDefinitions="auto,1*,1*"
     RowDefinitions="auto">
     <icons:MaterialIcon
       Margin="0"
@@ -22,15 +25,13 @@
       Grid.Column="1"
       Margin="5,0"
       VerticalAlignment="Center"
-      Text="{Binding Setting.Name, FallbackValue='Hello'}"
+      Text="{Binding Setting.Name, FallbackValue='sample setting'}"
       TextWrapping="Wrap"
-      ToolTip.Tip="{Binding Setting.Description}" />
-    <ComboBox
+      ToolTip.Tip="" />
+    <CheckBox
       Grid.Column="2"
-      HorizontalAlignment="Stretch"
-      Items="{Binding Setting.Values}"
-      SelectedItem="{Binding Selection}" />
-    <TextBlock Text="{Binding Setting.Summary}" />
-  </Grid>
+      HorizontalAlignment="Right"
+      IsChecked="{Binding Setting.IsChecked}" />
 
+  </Grid>
 </UserControl>

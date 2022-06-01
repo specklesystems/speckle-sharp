@@ -1,0 +1,86 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.SettingsView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
+  x:Name="SettingsWindow"
+  d:DesignHeight="500"
+  d:DesignWidth="500"
+  mc:Ignorable="d">
+  <UserControl.DataTemplates>
+    <dataTemplates:SettingsTemplateSelector />
+  </UserControl.DataTemplates>
+  <UserControl.Resources>
+    <conv:EmptyFalseValueConverter x:Key="EmptyFalseValueConverter" />
+  </UserControl.Resources>
+  <Grid RowDefinitions="auto,*">
+    <Border
+      Margin="0,0,0,7"
+      Padding="0"
+      assists:ShadowAssist.ShadowDepth="Depth2"
+      Background="{DynamicResource MaterialDesignCardBackground}">
+      <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="0"
+          Background="Transparent"
+          Classes=""
+          Command="{Binding GoBack}"
+          ToolTip.Tip="Back">
+          <Button.Content>
+            <Viewbox
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Stretch="Fill">
+              <icons:MaterialIcon
+                Width="24"
+                Height="24"
+                Foreground="{DynamicResource MaterialDesignBody}"
+                Kind="ChevronLeft" />
+            </Viewbox>
+          </Button.Content>
+        </m:FloatingButton>
+        <TextBlock
+          Grid.Column="1"
+          Margin="15,0,0,0"
+          VerticalAlignment="Center"
+          Classes="Grotesk"
+          FontSize="20"
+          Text="Settings"
+          TextTrimming="CharacterEllipsis" />
+
+      </Grid>
+    </Border>
+
+    <Grid
+      Grid.Row="1"
+      VerticalAlignment="Stretch"
+      RowDefinitions="auto,auto,*,auto">
+      <ItemsControl
+        Grid.Row="1"
+        Grid.Column="1"
+        Margin="10,10,0,10"
+        Items="{Binding Settings}" />
+
+      <StackPanel
+        Grid.Row="3"
+        Margin="15"
+        HorizontalAlignment="Right"
+        Orientation="Horizontal">
+        <Button
+          Margin="0,0,10,0"
+          assists:ButtonAssist.CornerRadius="25 "
+          Command="{Binding SaveCommand}"
+          Content="Save"
+          ToolTip.Tip="Save these settings" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>
