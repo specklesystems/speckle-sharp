@@ -16,7 +16,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
 
-namespace ConnectorGrasshopper.Ops
+namespace ConnectorGrasshopper.Ops.Deprecated
 {
   public class ReceiveSync : SelectKitTaskCapableComponentBase<Speckle.Core.Models.Base>
   {
@@ -31,7 +31,8 @@ namespace ConnectorGrasshopper.Ops
     public string InputType { get; set; }
     public bool AutoReceive { get; set; }
     //public bool ConvertToNative { get; set; } = true;
-    public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override bool Obsolete => true;
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {

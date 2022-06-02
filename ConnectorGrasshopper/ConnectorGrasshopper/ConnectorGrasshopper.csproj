@@ -103,6 +103,8 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Ops\Deprecated\Operations.ReceiveComponentSync.cs" />
+    <Compile Include="Ops\Deprecated\Operations.SendComponentSync.cs" />
     <Compile Include="Ops\Deprecated\Operations.UpgradeUtils.cs" />
     <Compile Include="UpgradeUtilities.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
@@ -114,9 +116,9 @@
     <Compile Include="Ops\Deprecated\Operations.ReceiveComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.SendComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.VariableInputSendComponent.cs" />
-    <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
+    <Compile Include="Ops\Operations.SyncReceiveComponent.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
-    <Compile Include="Ops\Operations.SendComponentSync.cs" />
+    <Compile Include="Ops\Operations.SyncSendComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
     <Compile Include="Ops\Operations.VariableInputReceiveComponent.cs" />
     <Compile Include="Ops\Operations.VariableInputSendComponent.cs" />
