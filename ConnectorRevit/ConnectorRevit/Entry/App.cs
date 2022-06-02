@@ -24,9 +24,6 @@ namespace Speckle.ConnectorRevit.Entry
       //Always initialize RevitTask ahead of time within Revit API context
       RevitTask.Initialize(application);
 
-      // Set main window handle before the UI shows up
-      AvaloniaHwndHost.hWndAlternativeParent = application.MainWindowHandle;
-
       UICtrlApp = application;
       // Fires an init event, where we can get the UIApp
       UICtrlApp.Idling += Initialise;

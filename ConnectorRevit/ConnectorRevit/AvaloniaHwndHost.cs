@@ -11,7 +11,7 @@ namespace Speckle.ConnectorRevit
 {
   public class AvaloniaHwndHost : HwndHost
   {
-    public static IntPtr hWndAlternativeParent;
+
     private readonly EmbeddableControlRoot _root = new EmbeddableControlRoot();
 
     public AvaloniaHwndHost()
@@ -45,16 +45,12 @@ namespace Speckle.ConnectorRevit
       _root.Prepare();
       _root.Renderer.Start();
 
-      var z = IntPtr.Zero;
-
-      var z2 = ((IWindowImpl)_root.PlatformImpl)?.Handle?.Handle;
-
       var handle = ((IWindowImpl)_root.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
 
       var wpfWindow = Window.GetWindow(this);
 
 
-      var parentHandle = (wpfWindow == null) ? hWndAlternativeParent : new WindowInteropHelper(wpfWindow).Handle;
+      //var parentHandle = (wpfWindow == null) ? hWndAlternativeParent : new WindowInteropHelper(wpfWindow).Handle;
      _ = UnmanagedMethods.SetParent(handle, hwndParent.Handle);
 
       if (IsFocused)
