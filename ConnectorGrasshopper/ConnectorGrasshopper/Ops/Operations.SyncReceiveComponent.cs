@@ -19,7 +19,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveSync : SelectKitTaskCapableComponentBase<Speckle.Core.Models.Base>
+  public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Speckle.Core.Models.Base>
   {
     public StreamWrapper StreamWrapper { get; set; }
     private Client ApiClient { get; set; }
@@ -92,7 +92,7 @@ namespace ConnectorGrasshopper.Ops
       HandleNewCommit();
     }
     
-    public ReceiveSync() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
+    public SyncReceiveComponent() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
     }

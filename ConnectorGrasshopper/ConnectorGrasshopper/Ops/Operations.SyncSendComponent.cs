@@ -20,7 +20,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class SendComponentSync : SelectKitTaskCapableComponentBase<List<StreamWrapper>>
+  public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWrapper>>
   {
     public List<StreamWrapper> OutputWrappers { get; private set; } = new List<StreamWrapper>();
     public bool UseDefaultCache { get; set; } = true;
@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Ops
     public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
     public override bool CanDisableConversion => false;
     
-    public SendComponentSync()
+    public SyncSendComponent()
       : base("Synchronous Sender", "SS",
           "Send data to a Speckle server Synchronously. This will block GH until all the data are received which can be used to safely trigger other processes downstream",
           ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
