@@ -37,11 +37,12 @@ namespace Objects.Converter.CSI
       double[] centerofGravityTopY = null;
       double[] centerofGravityTopZ = null;
 
+      // **** ISSUE WITH THIS METHOD HANGING IF PIER LABEL NOT ASSIGNED IN MODEL **** // 
+      //var s = Model.PierLabel.GetSectionProperties(name, ref numberStories, ref storyName, ref axisAngle, ref numAreaObjs, ref numLineObjs, ref widthBot, ref thicknessBot, ref widthTop, ref thicknessTop, ref matProp
+      //, ref centerofGravityBotX, ref centerofGravityBotY, ref centerofGravityBotZ, ref centerofGravityTopX, ref centerofGravityTopY, ref centerofGravityTopZ);
 
-      var s = Model.PierLabel.GetSectionProperties(name, ref numberStories, ref storyName, ref axisAngle, ref numAreaObjs, ref numLineObjs, ref widthBot, ref thicknessBot, ref widthTop, ref thicknessTop, ref matProp
-      , ref centerofGravityBotX, ref centerofGravityBotY, ref centerofGravityBotZ, ref centerofGravityTopX, ref centerofGravityTopY, ref centerofGravityTopZ);
-
-      var speckleCSIPier = new CSIPier(name, numberStories, storyName, axisAngle, numAreaObjs, numLineObjs, widthBot, thicknessBot, widthTop, thicknessTop, matProp, centerofGravityBotX, centerofGravityTopY, centerofGravityTopZ, centerofGravityTopX, centerofGravityBotY, centerofGravityBotZ);
+      var speckleCSIPier = new CSIPier();
+      speckleCSIPier.name = name;
       SpeckleModel.elements.Add(speckleCSIPier);
       return speckleCSIPier;
     }
