@@ -25,7 +25,7 @@ namespace ConnectorGrasshopper.Ops
     public List<StreamWrapper> OutputWrappers { get; private set; } = new List<StreamWrapper>();
     public bool UseDefaultCache { get; set; } = true;
     
-    private List<object> converted;
+    private Base converted;
     public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
     public override bool CanDisableConversion => false;
     
@@ -100,13 +100,12 @@ namespace ConnectorGrasshopper.Ops
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
-      
       if (RunCount == 1)
       {
         OutputWrappers = new List<StreamWrapper>();
         DA.GetDataTree(0, out GH_Structure<IGH_Goo> dataInput);
         // Note: this method actually converts the objects to speckle too
-        converted = Extras.Utilities.DataTreeToNestedLists(dataInput, Converter, CancelToken);
+        converted = Extras.Utilities.DataTreeToSpeckle(dataInput, Converter, CancelToken);
       }
 
       if (InPreSolve)
@@ -120,7 +119,7 @@ namespace ConnectorGrasshopper.Ops
         
         var task = Task.Run(async () =>
         {
-          if (converted.Count == 0)
+          if (converted == null)
           {
             AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped.");
             return null;
