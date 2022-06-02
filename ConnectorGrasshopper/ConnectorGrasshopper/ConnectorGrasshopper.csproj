@@ -13,7 +13,6 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <LangVersion>8</LangVersion>
-    <Nullable>enable</Nullable>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
@@ -104,6 +103,7 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Ops\Deprecated\Operations.UpgradeUtils.cs" />
     <Compile Include="UpgradeUtilities.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
@@ -118,7 +118,6 @@
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
     <Compile Include="Ops\Operations.SendComponentSync.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
-    <Compile Include="Ops\Operations.UpgradeUtils.cs" />
     <Compile Include="Ops\Operations.VariableInputReceiveComponent.cs" />
     <Compile Include="Ops\Operations.VariableInputSendComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
