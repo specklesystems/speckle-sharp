@@ -158,7 +158,7 @@ namespace Speckle.ConnectorRevit.Entry
       SchedulerCommand.Bindings = bindings;
       OneClickSendCommand.Bindings = bindings;
       QuickShareCommand.Bindings = bindings;
-#endif
+
 
       //Register dockable panel
       var viewModel = new MainViewModel(bindings);
@@ -168,7 +168,7 @@ namespace Speckle.ConnectorRevit.Entry
       };
 
       AppInstance.RegisterDockablePane(SpeckleRevitCommand2.PanelId, "Speckle", Panel);
-
+#endif
       //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
     }
 
