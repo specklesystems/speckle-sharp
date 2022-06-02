@@ -25,7 +25,7 @@ namespace DesktopUI2
     public override void OnFrameworkInitializationCompleted()
     {
 
-      var theme = Theme.Create(Theme.Dark, Primary, Accent);
+      var theme = Theme.Create(Theme.Light, Primary, Accent);
       var themeBootstrap = this.LocateMaterialTheme<MaterialThemeBase>();
       themeBootstrap.CurrentTheme = theme;
 

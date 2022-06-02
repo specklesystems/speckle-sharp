@@ -55,7 +55,7 @@ namespace Speckle.ConnectorRevit
 
 
       var parentHandle = (wpfWindow == null) ? hWndAlternativeParent : new WindowInteropHelper(wpfWindow).Handle;
-      _ = UnmanagedMethods.SetParent(handle, parentHandle);
+     _ = UnmanagedMethods.SetParent(handle, hwndParent.Handle);
 
       if (IsFocused)
       {
