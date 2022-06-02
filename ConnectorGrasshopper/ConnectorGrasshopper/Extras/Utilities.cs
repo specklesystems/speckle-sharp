@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Grasshopper;
 using Grasshopper.Kernel;
@@ -18,10 +19,15 @@ namespace ConnectorGrasshopper.Extras
 {
   public static class Utilities
   {
+    /// <summary>
+    /// Gets the appropriate Grasshopper App name depending on the Version of Rhino currently running. 
+    /// </summary>
+    /// <remarks>If running in Rhino >7, Rhino7 will be used as fallback.</remarks>
+    /// <returns><see cref="VersionedHostApplications.Grasshopper7"/> when Rhino 7 is running, <see cref="VersionedHostApplications.Grasshopper6"/> otherwise.</returns>
     public static string GetVersionedAppName()
     {
       var version = VersionedHostApplications.Grasshopper6;
-      if (RhinoApp.Version.Major == 7)
+      if (RhinoApp.Version.Major >= 7)
         version = VersionedHostApplications.Grasshopper7;
       return version;
     }
@@ -42,6 +48,103 @@ namespace ConnectorGrasshopper.Extras
       }
     }
 
+    /// <summary>
+    ///    Converts a Grasshopper <see cref="DataTree{T}"/> to a <see cref="Base"/> object.
+    ///    All paths in the <see cref="DataTree"/> will become the name of a property in the <see cref="Base"/> object,
+    ///    with their value set as a <see cref="List{T}"/> containing the items of that path.
+    /// </summary>
+    /// <remarks>
+    ///   Since the amount of items in each <see cref="DataTree{T}"/> path can greatly vary,
+    ///   properties will be automatically detached.
+    ///   This is done by adding a prefix to every path property following the pattern <c>@(DETACH_COUNT)</c>.
+    /// </remarks>
+    /// <example>
+    ///   For the path <c >{0;0;0}</c> the resulting property name will be <c>@(1000){0;0;0}</c>.
+    /// </example>
+    /// <param name="dataInput">The input <see cref="GH_Structure{T}"/></param>
+    /// <param name="converter">The converter to use for each path's items.</param>
+    /// <param name="cancellationToken">The token to use for quick cancellation.</param>
+    /// <param name="onConversionProgress">Optional action to report progress to the caller.</param>
+    /// <param name="chunkLength">The length of the chunks to be created for each path list.</param>
+    /// <returns>
+    /// A new Base object where all dynamic properties have a list as value,
+    /// and their names match the pattern described in the example.
+    /// </returns>
+    public static Base DataTreeToSpeckle(
+      GH_Structure<IGH_Goo> dataInput, 
+      ISpeckleConverter converter, 
+      CancellationToken cancellationToken, 
+      Action onConversionProgress = null,
+      int chunkLength = 1000)
+    {
+      var @base = new Base();
+      
+      foreach (var path in dataInput.Paths.ToList())
+      {
+        if (cancellationToken.IsCancellationRequested)
+          break;
+        var key = path.ToString();
+        var chunkingPrefix = $"@({chunkLength})";
+        var value = dataInput.get_Branch(path);
+        var converted = new List<object>();
+        foreach (var item in value)
+        {
+          if (cancellationToken.IsCancellationRequested)
+            break;
+          converted.Add(TryConvertItemToSpeckle(item, converter, true, onConversionProgress));
+        }
+        if (cancellationToken.IsCancellationRequested)
+          break;
+        @base[chunkingPrefix + key] = converted;
+      }
+      return @base;
+    }
+
+    private static string dataTreePathPattern = @"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$";
+    
+    /// <summary>
+    ///   Converts a <see cref="Base"/> object into a Grasshopper <see cref="DataTree{T}"/>.
+    /// </summary>
+    /// <param name="base">The object to convert</param>
+    /// <param name="converter">The converter to use for the child items</param>
+    /// <param name="OnConversionProgress">Optional action to report any progress if necessary.</param>
+    /// <returns></returns>
+    public static GH_Structure<IGH_Goo> DataTreeToNative(Base @base, ISpeckleConverter converter,
+      Action onConversionProgress = null)
+    {
+      var dataTree = new GH_Structure<IGH_Goo>();
+      @base.GetDynamicMembers().ToList().ForEach(key =>
+      {
+        var value = @base[key] as List<object>;
+        var path = new GH_Path();
+        var pattern = new Regex(dataTreePathPattern); // Match for the dynamic detach magic "@(DETACH_INT)PATH"
+        var matchRes = pattern.Match(key);
+        if (matchRes.Length == 0) return;
+        var pathKey = matchRes.Groups["path"].Value;
+        var res = path.FromString(pathKey);
+        if (!res) return;
+        var converted = value.Select(item => TryConvertItemToNative(item, converter));
+        dataTree.AppendRange(converted, path);
+      });
+      
+      return dataTree;
+    }
+    
+    /// <summary>
+    ///   Checks if a given <see cref="Base"/> object can be converted into a Grasshopper <see cref="DataTree{T}"/>.
+    /// </summary>
+    /// <param name="base">The base object to test for DataTree conversion.</param>
+    /// <remarks>
+    ///   This will check if all Dynamic Members of a <see cref="Base"/> object match to the pattern "{\d+(;\d+)*}" (i.e. {0,0}, {123;4;22}, etc.)
+    /// </remarks>
+    /// <returns>True if the <see cref="Base"/> object will be successfully converted into a <see cref="DataTree{T}"/>, false otherwise.</returns>
+    public static bool CanConvertToDataTree(Base @base)
+    {
+      var regex = new Regex(dataTreePathPattern);
+      var isDataTree = @base.GetDynamicMembers().All(el => regex.Match(el).Success);
+      return isDataTree;
+    }
+    
     public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter, Action OnConversionProgress = null)
     {
       return DataTreeToNestedLists(dataInput, converter, CancellationToken.None, OnConversionProgress);
@@ -94,6 +197,7 @@ namespace ConnectorGrasshopper.Extras
         throw ex;
       }
     }
+    
     /// <summary>
     /// Wraps an object in the appropriate <see cref="IGH_Goo"/> subtype for display in GH. The default value will return a <see cref="GH_ObjectWrapper"/> instance.
     /// </summary>

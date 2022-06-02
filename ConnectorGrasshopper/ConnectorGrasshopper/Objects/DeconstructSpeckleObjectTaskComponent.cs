@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-
+      DA.DisableGapLogic();
       if (InPreSolve)
       {
         IGH_Goo inputObj = null;
@@ -363,7 +363,15 @@ namespace ConnectorGrasshopper.Objects
 
             break;
           default:
-            outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+            var temp = obj[prop.Key];
+            if (temp is Base tempB && Utilities.CanConvertToDataTree(tempB))
+            {
+              outputDict[prop.Key] = Utilities.DataTreeToNative(tempB, Converter);
+            }
+            else
+            {
+              outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+            }
             break;
         }
       }
