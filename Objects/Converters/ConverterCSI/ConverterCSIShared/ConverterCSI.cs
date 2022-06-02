@@ -54,7 +54,7 @@ namespace Objects.Converter.CSI
     {
       Model = (cSapModel)doc;
       SpeckleModel = ModelToSpeckle();
-      AnalysisResults = ResultsToSpeckle();
+      //AnalysisResults = ResultsToSpeckle();
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
