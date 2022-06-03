@@ -46,9 +46,9 @@
 
             var handle = ((IWindowImpl)_root.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
 
-            var wpfWindow = Window.GetWindow(this);
+            //var wpfWindow = Window.GetWindow(this);
             //var parentHandle = new WindowInteropHelper(wpfWindow).Handle;
-            _ = UnmanagedMethods.SetParent(handle, hwndParent.Handle);
+      _ = UnmanagedMethods.SetParent(handle, hwndParent.Handle);
 
             if (IsFocused)
             {

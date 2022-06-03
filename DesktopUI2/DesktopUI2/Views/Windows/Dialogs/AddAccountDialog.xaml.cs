@@ -5,20 +5,16 @@ using Avalonia.Markup.Xaml;
 
 namespace DesktopUI2.Views.Windows.Dialogs
 {
-  public partial class AddAccountDialog : Window
+  public partial class AddAccountDialog : DialogUserControl
   {
 
-    public string Url { get; set; }
-    public bool Add = false;
+    private string Url { get; set; }
 
     TextBox UrlField;
     public AddAccountDialog(string url)
     {
       Url = url;
       InitializeComponent();
-#if DEBUG
-      this.AttachDevTools();
-#endif
     }
 
     public AddAccountDialog()
@@ -40,13 +36,12 @@ namespace DesktopUI2.Views.Windows.Dialogs
     {
       //too lazy to create a view model for this or properly style the Dialogs
       Url = this.FindControl<TextBox>("url").Text;
-      Add = true;
-      this.Close();
+      this.Close(Url);
     }
 
     public void Close_Click(object sender, RoutedEventArgs e)
     {
-      this.Close();
+      this.Close(null);
     }
   }
 }

@@ -15,16 +15,12 @@ namespace DesktopUI2.Views
 
       this.WhenActivated(disposables => { });
       AvaloniaXamlLoader.Load(this);
-      Instance = this;
 
 #if DEBUG
       this.AttachDevTools(KeyGesture.Parse("CTRL+R"));
 #endif
 
     }
-
-    public static MainWindow Instance { get; private set; }
-
 
     protected override void OnClosing(CancelEventArgs e)
     {

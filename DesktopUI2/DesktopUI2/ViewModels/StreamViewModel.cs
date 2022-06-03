@@ -804,13 +804,13 @@ namespace DesktopUI2.ViewModels
       {
         //ensure click transition has finished
         await Task.Delay(1000);
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
         ShowReport = true;
         var report = new Report();
-        report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
+        //report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
         report.DataContext = Progress;
-        report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
-        report.ShowDialog(MainWindow.Instance);
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
+        await report.ShowDialog();
+        
       }
       catch (Exception ex)
       {
