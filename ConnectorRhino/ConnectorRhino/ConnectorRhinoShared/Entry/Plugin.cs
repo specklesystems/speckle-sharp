@@ -43,8 +43,8 @@ namespace SpeckleRhino
       }
 
       var bindings = new ConnectorBindingsRhino();
-      if (bindings.GetStreamsInFile().Count > 0)
-        SpeckleCommand.CreateOrFocusSpeckle();
+      //if (bindings.GetStreamsInFile().Count > 0)
+      //  SpeckleCommand.CreateOrFocusSpeckle();
     }
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -61,6 +61,13 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
+      System.Type panelType = typeof(Panel);
+      // Register my custom panel class type with Rhino, the custom panel my be display
+      // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
+      // You can also include the custom panel in any existing panel group by simply right
+      // clicking one a panel tab and checking or un-checking the "MyPane" option.
+      Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
+
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
 

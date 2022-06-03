@@ -11,6 +11,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
+    <RootNamespace>SpeckleRhino</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,13 +48,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties" />
   </ItemGroup>
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
     <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.13/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Xaml" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
@@ -82,4 +86,12 @@
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
   </PropertyGroup>
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
+  <ItemGroup>
+    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
 </Project>
