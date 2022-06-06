@@ -19,6 +19,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Assembly = System.Reflection.Assembly;
 using Speckle.ConnectorTeklaStructures.UI;
+using System.Threading;
 
 namespace Speckle.ConnectorTeklaStructures
 {
@@ -26,6 +27,8 @@ namespace Speckle.ConnectorTeklaStructures
   {
         // Enable inserting of objects in a model
         private readonly Model model;
+        private static CancellationTokenSource Lifetime = null;
+        private static Avalonia.Application AvaloniaApp { get; set; }
         public MainForm()
         {
             // Link to model.         
@@ -34,12 +37,14 @@ namespace Speckle.ConnectorTeklaStructures
 
             try
             {
+                base.Load += (s, e) => Close();
                 AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-                CreateOrFocusSpeckle();
+                CreateOrFocusSpeckle();                
+                
             }
             catch (Exception ex)
             {
-
+                
             }
         }
 
@@ -72,25 +77,55 @@ namespace Speckle.ConnectorTeklaStructures
 
         private static void AppMain(Application app, string[] args)
         {
-            var viewModel = new MainWindowViewModel(Bindings);
-            MainWindow = new DesktopUI2.Views.MainWindow
-            {
-                DataContext = viewModel
-            };
-
-            app.Run(MainWindow);
+            //var viewModel = new MainWindowViewModel(Bindings);
+            //MainWindow = new DesktopUI2.Views.MainWindow
+            //{
+            //    DataContext = viewModel
+            //};
+            //app.Run(MainWindow);
             //System.Threading.Tasks.Task.Run(() => app.Run(MainWindow));
+            AvaloniaApp = app;
         }
-        public static void CreateOrFocusSpeckle()
+        //public static void CreateOrFocusSpeckle()
+        //{
+        //    if (MainWindow == null)
+        //    {
+        //        BuildAvaloniaApp().Start(AppMain, null);
+        //    }
+        //    MainWindow.Show();
+        //    MainWindow.Activate();
+        //}
+        public static void CreateOrFocusSpeckle(bool showWindow = true)
         {
             if (MainWindow == null)
             {
                 BuildAvaloniaApp().Start(AppMain, null);
+                var viewModel = new MainWindowViewModel(Bindings);
+                MainWindow = new DesktopUI2.Views.MainWindow
+                {
+                    DataContext = viewModel
+                };
             }
 
-            MainWindow.Show();
-            MainWindow.Activate();
-        }
+            try
+            {
+                if (showWindow)
+                {
+                    MainWindow.Show();
+                    MainWindow.Activate();
 
+                    //required to gracefully quit avalonia and the skia processes
+                    //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
+                    if (Lifetime == null)
+                    {
+                        Lifetime = new CancellationTokenSource();
+                        System.Threading.Tasks.Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
     }
 }
