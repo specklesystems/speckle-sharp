@@ -12,7 +12,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamListComponent : GH_Component
+  public class StreamListComponent : GH_SpeckleComponent
   {
     public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -81,8 +81,8 @@ namespace ConnectorGrasshopper.Streams
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
-
+        Tracker.TrackNodeRun();
+        
         Task.Run(async () =>
         {
           try

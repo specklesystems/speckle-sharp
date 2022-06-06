@@ -45,7 +45,7 @@
     </When>
     <When Condition="!$(ForceMacBuild) Or $([MSBuild]::IsOsPlatform('Windows')) Or $([MSBuild]::IsOsPlatform('Linux')) ">
       <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115" />
       </ItemGroup>
     </When>
   </Choose>

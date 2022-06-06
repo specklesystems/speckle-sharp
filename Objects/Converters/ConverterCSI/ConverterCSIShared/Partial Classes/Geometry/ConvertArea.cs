@@ -127,43 +127,9 @@ namespace Objects.Converter.CSI
       List<double> coordinates = new List<double> { };
       foreach (Node node in nodes)
       {
-        switch (ModelUnits())
-        {
-          case "mm":
-            coordinates.Add(node.basePoint.x / 1000);
-            coordinates.Add(node.basePoint.y / 1000);
-            coordinates.Add(node.basePoint.z / 1000);
-            break;
-          case "m":
-            coordinates.Add(node.basePoint.x);
-            coordinates.Add(node.basePoint.y);
-            coordinates.Add(node.basePoint.z);
-            break;
-          case "cm":
-            coordinates.Add(node.basePoint.x / 100);
-            coordinates.Add(node.basePoint.y / 100);
-            coordinates.Add(node.basePoint.z / 100);
-            break;
-          case "in":
-            coordinates.Add(node.basePoint.x / 39.37);
-            coordinates.Add(node.basePoint.y / 39.37);
-            coordinates.Add(node.basePoint.z / 39.37);
-            break;
-          case "ft":
-            coordinates.Add(node.basePoint.x / 3.281);
-            coordinates.Add(node.basePoint.y / 3.281);
-            coordinates.Add(node.basePoint.z / 3.281);
-            break;
-          case "micron":
-            coordinates.Add(node.basePoint.x / 100000);
-            coordinates.Add(node.basePoint.y / 100000);
-            coordinates.Add(node.basePoint.z / 100000);
-            break;
-          default:
-            Report.Log($"Coordinates not added to DisplayMesh");
-            throw new NotSupportedException();
-            break;
-        }
+        coordinates.Add(node.basePoint.x);
+        coordinates.Add(node.basePoint.y);
+        coordinates.Add(node.basePoint.z);
       }
 
       //Get orientation angle

@@ -129,6 +129,8 @@
   <Import Project="..\..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2021.0\nt\bin\plugins\Speckle2Tekla" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt</PostBuildEvent>
+    <PostBuildEvent>RD /S /Q "$(TargetDir)arm64\"
+xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2021.0\nt\bin\plugins\Speckle2Tekla" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

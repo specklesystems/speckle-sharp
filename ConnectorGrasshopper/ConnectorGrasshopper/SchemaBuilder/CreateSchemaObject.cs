@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper
 {
   public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    public override GH_Exposure Exposure => GH_Exposure.quarternary;
+    public override GH_Exposure Exposure => GH_Exposure.quarternary | GH_Exposure.obscure;
 
     private ConstructorInfo SelectedConstructor;
     private bool readFailed;
@@ -353,9 +353,7 @@ namespace ConnectorGrasshopper
 
 
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Schema Object" }, { "node", Name } });
-      }
+        Tracker.TrackNodeRun("Create Schema Object", Name);
 
 
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));

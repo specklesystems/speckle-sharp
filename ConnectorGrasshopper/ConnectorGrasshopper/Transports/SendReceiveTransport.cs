@@ -11,13 +11,13 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Transports
 {
-  public class SendReceiveTransport : GH_Component
+  public class SendReceiveTransport : GH_SpeckleComponent
   {
     public override Guid ComponentGuid { get => new Guid("4229B8DC-9F81-49A3-9EF9-DF3DE0B8E4B6"); }
 
     protected override Bitmap Icon => Properties.Resources.sendToTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
     public SendReceiveTransport() : base("Send To Transports", "ST", "Sends an object to a list of given transports: the object will be stored in each of them. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions, so ensure that the object input already has converted speckle objects inside.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
@@ -40,8 +40,8 @@ namespace ConnectorGrasshopper.Transports
         return;
       }
 
-      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send To Transports" } });
-
+      Tracker.TrackNodeRun();
+      
       List<ITransport> transports = new List<ITransport>();
       DA.GetDataList(0, transports);
 
@@ -67,15 +67,15 @@ namespace ConnectorGrasshopper.Transports
     }
   }
 
-  public class ReceiveFromTransport : GH_Component
+  public class ReceiveFromTransport : GH_SpeckleComponent
   {
     public override Guid ComponentGuid { get => new Guid("8C7C6CA5-1557-4216-810B-F64E710526D0"); }
 
     protected override Bitmap Icon => Properties.Resources.receiveFromTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
-    public ReceiveFromTransport() : base("Receive From Transport", "RT", "Receives a list of objects from a given transport. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions on the output.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public ReceiveFromTransport() : base("Receive From Transports", "RT", "Receives a list of objects from a given transport. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions on the output.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -92,13 +92,12 @@ namespace ConnectorGrasshopper.Transports
     {
       if (DA.Iteration != 0)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you've inputed only one transport and a flat list of object ids.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This component does not work with multiple iterations. Please ensure you input only one transport and a flat list of object ids.");
         return;
       }
 
-      Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive From Transports" } });
-
-
+      Tracker.TrackNodeRun();   
+      
       List<string> ids = new List<string>();
       DA.GetDataList(1, ids);
 

@@ -127,11 +127,8 @@ namespace ConnectorGrasshopper.Conversion
       if (CancellationToken.IsCancellationRequested) return;
       DA.DisableGapLogic();
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
-      }
-
-
+        (Parent as GH_SpeckleAsyncComponent)?.Tracker.TrackNodeRun("Convert To Speckle");
+      
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 

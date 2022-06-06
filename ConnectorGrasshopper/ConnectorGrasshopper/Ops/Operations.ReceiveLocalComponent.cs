@@ -104,6 +104,7 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
       base.SolveInstance(DA);
+      if(DA.Iteration == 0) Tracker.TrackNodeRun();
     }
   }
   public class ReceiveLocalWorker : WorkerInstance
@@ -118,7 +119,6 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Receive Local" } });
         Parent.Message = "Receiving...";
         var Converter = (Parent as ReceiveLocalComponent).Converter;
 

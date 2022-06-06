@@ -16,7 +16,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class SelectKitTaskCapableComponentBase<T> : GH_TaskCapableComponent<T>
+  public class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapableComponent<T>
   {
     public ISpeckleConverter Converter;
 
@@ -38,7 +38,6 @@ namespace ConnectorGrasshopper.Objects
       {
         SelectedKitName = SpeckleGHSettings.SelectedKitName;
       }
-
       SetConverter();
     }
 

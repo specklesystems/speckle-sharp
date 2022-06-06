@@ -7,13 +7,13 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Transports
 {
-  public class SqliteTransportComponent : GH_Component
+  public class SqliteTransportComponent : GH_SpeckleComponent
   {
     public override Guid ComponentGuid { get => new Guid("DFFAF45E-06A8-4458-85D8-74FDA8DF3268"); }
 
     protected override Bitmap Icon => Properties.Resources.SQLiteTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
     public SqliteTransportComponent() : base("Sqlite Transport", "Sqlite", "Creates a Sqlite Transport. This transport will store its objects in a sqlite database at the location you will specify (including a network drive!).", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
@@ -38,9 +38,7 @@ namespace ConnectorGrasshopper.Transports
       }
 
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
-      }
+        Tracker.TrackNodeRun();
 
       string basePath = null, applicationName = null, scope = null;
 

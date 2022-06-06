@@ -14,23 +14,23 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class ExpandSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
+  public class DeconstructSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
     IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("4884856A-BCA4-43F8-B665-331F51CF4A39");
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
-    public ExpandSpeckleObjectTaskComponent() : base("Expand Speckle Object", "ESO",
-      "Allows you to decompose a Speckle object in its constituent parts.",
+    public DeconstructSpeckleObjectTaskComponent() : base("Deconstruct Speckle Object", "DSO",
+      "Allows you to deconstruct a Speckle object in its constituent parts.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var pObj = pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O",
-        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
+      var pObj = pManager.AddGenericParameter("Speckle Object", "O",
+        "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -40,23 +40,40 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-
+      DA.DisableGapLogic();
       if (InPreSolve)
       {
-        GH_SpeckleBase ghSpeckleBase = null;
-        var x = DA.GetData(0, ref ghSpeckleBase);
-        var @base = ghSpeckleBase?.Value;
-        if (!x || @base == null)
+        IGH_Goo inputObj = null;
+        DA.GetData(0, ref inputObj);
+        Base @base;
+        if(inputObj is GH_SpeckleBase speckleBase)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some input values are not Speckle objects or are null.");
-          OnDisplayExpired(true);
+          @base = speckleBase.Value.ShallowCopy();
+        } else if(inputObj is IGH_Goo goo)
+        {
+          var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
+          if (value is Base baseObj) {
+            @base = baseObj;
+          }
+          else if(Converter.CanConvertToSpeckle(value))
+          {
+            @base = Converter.ConvertToSpeckle(value);
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
+          }
+          else
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
+            return;
+          }
+        }
+        else
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
           return;
         }
 
         if (DA.Iteration == 0)
-        {
-          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Expand Object" } });
-        }
+          Tracker.TrackNodeRun("Expand Object");
 
 
         var task = Task.Run(() => DoWork(@base));
@@ -241,26 +258,37 @@ namespace ConnectorGrasshopper.Objects
       {
         Console.WriteLine("No iter has run");
         var x = Params.Input[0].VolatileData;
-        var tree = x as GH_Structure<GH_SpeckleBase>;
+        var tree = x as GH_Structure<IGH_Goo>;
         outputList = GetOutputList(tree);
         AutoCreateOutputs();
       }
       base.BeforeSolveInstance();
     }
 
-    private List<string> GetOutputList(GH_Structure<GH_SpeckleBase> speckleObjects)
+    private List<string> GetOutputList(GH_Structure<IGH_Goo> speckleObjects)
     {
       // Get the full list of output parameters
       var fullProps = new List<string>();
 
       foreach (var ghGoo in speckleObjects.AllData(true))
       {
-        var b = (ghGoo as GH_SpeckleBase)?.Value;
-        b?.GetMemberNames().ToList().ForEach(prop =>
+        object converted;
+        if (ghGoo is GH_SpeckleBase ghBase)
         {
-          if (!fullProps.Contains(prop))
-            fullProps.Add(prop);
-        });
+          converted = ghBase.Value;
+        }
+        else
+        {
+          converted = Utilities.TryConvertItemToSpeckle(ghGoo,Converter);
+        }
+        if (converted is Base b)
+        {
+          b.GetMemberNames().ToList().ForEach(prop =>
+          {
+            if (!fullProps.Contains(prop))
+              fullProps.Add(prop);
+          });
+        }
       }
 
       fullProps.Sort();
@@ -335,7 +363,15 @@ namespace ConnectorGrasshopper.Objects
 
             break;
           default:
-            outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+            var temp = obj[prop.Key];
+            if (temp is Base tempB && Utilities.CanConvertToDataTree(tempB))
+            {
+              outputDict[prop.Key] = Utilities.DataTreeToNative(tempB, Converter);
+            }
+            else
+            {
+              outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+            }
             break;
         }
       }

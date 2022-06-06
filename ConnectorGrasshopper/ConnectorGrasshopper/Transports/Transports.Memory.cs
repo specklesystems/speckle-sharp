@@ -7,13 +7,13 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Transports
 {
-  public class MemoryTransportComponent : GH_Component
+  public class MemoryTransportComponent : GH_SpeckleComponent
   {
     public override Guid ComponentGuid { get => new Guid("B3E7A1E0-FB96-45AE-9F47-54D1B495AAC9"); }
 
     protected override Bitmap Icon => Properties.Resources.MemoryTransport;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
     public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates a Memory Transport. This is useful for debugging, or just sending data around one grasshopper defintion. We don't recommend you use it!", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
 
@@ -38,9 +38,7 @@ namespace ConnectorGrasshopper.Transports
       }
 
       if (DA.Iteration == 0)
-      {
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
-      }
+        Tracker.TrackNodeRun();
 
       string name = null;
       DA.GetData(0, ref name);

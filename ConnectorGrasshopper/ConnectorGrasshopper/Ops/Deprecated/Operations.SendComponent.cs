@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
-using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
@@ -20,20 +19,21 @@ using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class NewVariableInputSendComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
+  public class SendComponent : SelectKitAsyncComponentBase
   {
-    public override Guid ComponentGuid => new Guid("B7B46BA5-DF54-4D0C-9668-7E9287409C20");
+    public override Guid ComponentGuid => new Guid("{5E6A5A78-9E6F-4893-8DED-7EEAB63738A5}");
 
     protected override Bitmap Icon => Properties.Resources.Sender;
+    public override bool Obsolete => true;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override bool CanDisableConversion => false;
     public bool AutoSend { get; set; } = false;
 
@@ -49,11 +49,11 @@ namespace ConnectorGrasshopper.Ops
 
     public string BaseId { get; set; }
 
-    public NewVariableInputSendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
+    public SendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      BaseWorker = new NewVariableInputSendComponentWorker(this);
-      Attributes = new NewVariableInputSendComponentAttributes(this);
+      BaseWorker = new SendComponentWorker(this);
+      Attributes = new SendComponentAttributes(this);
     }
 
 
@@ -99,17 +99,13 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-
+      pManager.AddGenericParameter("Data", "D", "The data to send.",
+        GH_ParamAccess.tree);
       pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.",
         GH_ParamAccess.tree, "");
-      pManager.AddParameter(new SendReceiveDataParam
-      {
-        Name = "Data",
-        NickName = "D",
-        Description = "The data to send."
-      });
-      Params.Input[1].Optional = true;
+
+      Params.Input[2].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -225,67 +221,11 @@ namespace ConnectorGrasshopper.Ops
       base.DocumentContextChanged(document, context);
     }
 
-    public bool CanInsertParameter(GH_ParameterSide side, int index)
-    {
-      return side == GH_ParameterSide.Input && index >= 2;
-    }
-
-    public bool CanRemoveParameter(GH_ParameterSide side, int index)
-    {
-      return side == GH_ParameterSide.Input && Params.Input.Count > 3 && index >= 2;
-    }
-
-    public IGH_Param CreateParameter(GH_ParameterSide side, int index)
-    {
-      var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-
-      return new SendReceiveDataParam
-      {
-        Name = uniqueName,
-        NickName = uniqueName,
-        MutableNickName = true,
-        Optional = false
-      };
-    }
-
-    public bool DestroyParameter(GH_ParameterSide side, int index)
-    {
-      return side == GH_ParameterSide.Input && Params.Input.Count > 3 && index >= 2;
-    }
-
-    public void VariableParameterMaintenance()
-    {
-    }
-
-    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
-
-    public override void AddedToDocument(GH_Document document)
-    {
-      base.AddedToDocument(document); // This would set the converter already.
-      Params.ParameterChanged += (sender, args) =>
-      {
-        if (args.ParameterSide != GH_ParameterSide.Input) return;
-        switch (args.OriginalArguments.Type)
-        {
-          case GH_ObjectEventType.NickName:
-            // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
-            // Prevents UI from locking too soon while writing new names for inputs.
-            args.Parameter.Name = args.Parameter.NickName;
-            nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
-            break;
-          case GH_ObjectEventType.NickNameAccepted:
-            args.Parameter.Name = args.Parameter.NickName;
-            ExpireSolution(true);
-            break;
-        }
-      };
-    }
   }
 
-  public class NewVariableInputSendComponentWorker : WorkerInstance
+  public class SendComponentWorker : WorkerInstance
   {
     GH_Structure<IGH_Goo> DataInput;
-    Dictionary<string, GH_Structure<IGH_Goo>> DataInputs;
     GH_Structure<IGH_Goo> _TransportsInput;
     GH_Structure<GH_String> _MessageInput;
 
@@ -306,27 +246,23 @@ namespace ConnectorGrasshopper.Ops
 
     public string BaseId { get; set; }
 
-    public NewVariableInputSendComponentWorker(GH_Component p) : base(p)
+    public SendComponentWorker(GH_Component p) : base(p)
     {
       RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
-      DataInputs = new Dictionary<string, GH_Structure<IGH_Goo>>();
     }
 
-    public override WorkerInstance Duplicate() => new NewVariableInputSendComponentWorker(Parent);
+    public override WorkerInstance Duplicate() => new SendComponentWorker(Parent);
 
     private System.Diagnostics.Stopwatch stopwatch;
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      for (var i = 2; i < Params.Input.Count; i++)
-      {
-        DA.GetDataTree(i, out GH_Structure<IGH_Goo> input);
-        DataInputs.Add(Params.Input[i].Name, input);
-      }
-      DA.GetDataTree(0, out _TransportsInput);
-      DA.GetDataTree(1, out _MessageInput);
+      DA.GetDataTree(0, out DataInput);
+      DA.GetDataTree(1, out _TransportsInput);
+      DA.GetDataTree(2, out _MessageInput);
 
       OutputWrappers = new List<StreamWrapper>();
+
       stopwatch = new System.Diagnostics.Stopwatch();
       stopwatch.Start();
     }
@@ -335,7 +271,7 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        var sendComponent = (NewVariableInputSendComponent)Parent;
+        var sendComponent = (SendComponent)Parent;
         if (sendComponent.JustPastedIn)
         {
           Done();
@@ -352,42 +288,32 @@ namespace ConnectorGrasshopper.Ops
         sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
 
         // Note: this method actually converts the objects to speckle too
-        ObjectToSend = new Base();
-        int convertedCount = 0;
-
-        foreach (var d in DataInputs)
+        try
         {
-          try
+          int convertedCount = 0;
+          var converted = Utilities.DataTreeToNestedLists(DataInput, sendComponent.Converter, CancellationToken, () =>
           {
-            var converted = Utilities.DataTreeToSpeckle(d.Value, sendComponent.Converter, CancellationToken, () =>
-            {
-              ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
-            });
-            convertedCount++;
-            var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
-            var key = d.Key;
-            if (param is SendReceiveDataParam srParam)
-            {
-              if (srParam.Detachable && !key.StartsWith("@"))
-                key = "@" + key;
-            }
-            ObjectToSend[key] = converted;
-            TotalObjectCount += ObjectToSend.GetTotalChildrenCount();
-          }
-          catch (Exception e)
+            ReportProgress("Conversion", Math.Round(convertedCount++ / (double)DataInput.DataCount, 2));
+          });
+
+          if (convertedCount == 0)
           {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
             Done();
             return;
           }
-        }
 
-        if (convertedCount == 0)
+          ObjectToSend = new Base();
+          ObjectToSend["@data"] = converted;
+          TotalObjectCount = ObjectToSend.GetTotalChildrenCount();
+        }
+        catch (Exception e)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
           Done();
           return;
         }
+
         if (CancellationToken.IsCancellationRequested)
         {
           sendComponent.CurrentComponentState = "expired";
@@ -452,12 +378,12 @@ namespace ConnectorGrasshopper.Ops
               RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
               continue;
             }
+            
+            sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
 
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
-            
-            sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
           }
           else if (transport is ITransport otherTransport)
           {
@@ -595,7 +521,7 @@ namespace ConnectorGrasshopper.Ops
       {
 
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
         //Parent.Message = "Error";
         //((SendComponent)Parent).CurrentComponentState = "expired";
@@ -607,16 +533,16 @@ namespace ConnectorGrasshopper.Ops
     {
       stopwatch.Stop();
 
-      if (((NewVariableInputSendComponent)Parent).JustPastedIn)
+      if (((SendComponent)Parent).JustPastedIn)
       {
-        ((NewVariableInputSendComponent)Parent).JustPastedIn = false;
-        DA.SetDataList(0, ((NewVariableInputSendComponent)Parent).OutputWrappers);
+        ((SendComponent)Parent).JustPastedIn = false;
+        DA.SetDataList(0, ((SendComponent)Parent).OutputWrappers);
         return;
       }
 
       if (CancellationToken.IsCancellationRequested)
       {
-        ((NewVariableInputSendComponent)Parent).CurrentComponentState = "expired";
+        ((SendComponent)Parent).CurrentComponentState = "expired";
         return;
       }
 
@@ -627,18 +553,18 @@ namespace ConnectorGrasshopper.Ops
 
       DA.SetDataList(0, OutputWrappers);
 
-      ((NewVariableInputSendComponent)Parent).CurrentComponentState = "up_to_date";
-      ((NewVariableInputSendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent)Parent).CurrentComponentState = "up_to_date";
+      ((SendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
 
-      ((NewVariableInputSendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+      ((SendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
 
-      ((NewVariableInputSendComponent)Parent).OverallProgress = 0;
+      ((SendComponent)Parent).OverallProgress = 0;
 
       var hasWarnings = RuntimeMessages.Count > 0;
       if (!hasWarnings)
       {
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-          $"Successfully pushed {TotalObjectCount} objects to {(((NewVariableInputSendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
+          $"Successfully pushed {TotalObjectCount} objects to {(((SendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
         Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
           $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
         foreach (var t in Transports)
@@ -656,12 +582,12 @@ namespace ConnectorGrasshopper.Ops
     }
   }
 
-  public class NewVariableInputSendComponentAttributes : GH_ComponentAttributes
+  public class SendComponentAttributes : GH_ComponentAttributes
   {
     private bool _selected;
     Rectangle ButtonBounds { get; set; }
 
-    public NewVariableInputSendComponentAttributes(GH_Component owner) : base(owner) { }
+    public SendComponentAttributes(GH_Component owner) : base(owner) { }
 
     public override bool Selected
     {
@@ -671,7 +597,7 @@ namespace ConnectorGrasshopper.Ops
       }
       set
       {
-        //Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
+        Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
         _selected = value;
       }
     }
@@ -696,11 +622,11 @@ namespace ConnectorGrasshopper.Ops
     {
       base.Render(canvas, graphics, channel);
 
-      var state = ((NewVariableInputSendComponent)Owner).CurrentComponentState;
+      var state = ((SendComponent)Owner).CurrentComponentState;
 
       if (channel == GH_CanvasChannel.Objects)
       {
-        if (((NewVariableInputSendComponent)Owner).AutoSend)
+        if (((SendComponent)Owner).AutoSend)
         {
           var autoSendButton =
             GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Send", 2, 0);
@@ -729,18 +655,18 @@ namespace ConnectorGrasshopper.Ops
       {
         if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
         {
-          if (((NewVariableInputSendComponent)Owner).AutoSend)
+          if (((SendComponent)Owner).AutoSend)
           {
-            ((NewVariableInputSendComponent)Owner).AutoSend = false;
+            ((SendComponent)Owner).AutoSend = false;
             Owner.OnDisplayExpired(true);
             return GH_ObjectResponse.Handled;
           }
-          if (((NewVariableInputSendComponent)Owner).CurrentComponentState == "sending")
+          if (((SendComponent)Owner).CurrentComponentState == "sending")
           {
             return GH_ObjectResponse.Handled;
           }
 
-          ((NewVariableInputSendComponent)Owner).CurrentComponentState = "primed_to_send";
+          ((SendComponent)Owner).CurrentComponentState = "primed_to_send";
           Owner.ExpireSolution(true);
           return GH_ObjectResponse.Handled;
         }

@@ -42,7 +42,11 @@ namespace Speckle.Core.Logging
       /// <summary>
       /// Event triggered when an action is executed in Desktop UI, it should contain the name of the action and the host application
       /// </summary>
-      DUIAction
+      DUIAction,
+      /// <summary>
+      /// Event triggered when a node is first created in a visual programming environment, it should contain the name of the action and the host application
+      /// </summary>
+      NodeCreate,
     };
 
 
@@ -114,7 +118,7 @@ namespace Speckle.Core.Logging
 
 #if DEBUG
       //only track in prod
-      return;
+      //return;
 #endif
 
       Task.Run(() =>
