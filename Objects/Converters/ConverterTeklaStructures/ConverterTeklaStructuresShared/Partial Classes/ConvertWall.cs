@@ -14,6 +14,7 @@ using System.Collections;
 using StructuralUtilities.PolygonMesher;
 using Objects.Building;
 using Objects.Properties;
+using Speckle.Core.Kits;
 
 
 
@@ -21,6 +22,22 @@ namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
+    public void wallToNative (Wall Wall){
+      if (!(Wall.baseCurve is Line))
+      {
+        Report.Log("Only line based Wall Elements are supported");
+        return;
+      }
+      Line line = (Line)Wall.baseCurve;
+      TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
+      TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+      var myBeam = new Beam(startPoint, endPoint);
+      if(Wall.sourceApp.name == HostApplications.TeklaStructures.Name ){
+        SetPartPropertiesFromSourceApp((TeklaStructuresProperties)Wall.sourceApp,myBeam);
+        myBeam.Insert();
+      }
+      myBeam.Insert();
+    }
     public Wall wallToSpeckle(Tekla.Structures.Model.Beam wall)
     {
       var units = GetUnitsFromModel();
@@ -42,6 +59,7 @@ namespace Objects.Converter.TeklaStructures
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
       speckleWall.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
       speckleWall.applicationId = wall.Identifier.GUID.ToString();
+      speckleWall.displayValue = new List<Mesh> { GetMeshFromSolid(wall.GetSolid()) };
       return speckleWall;
     }
   }

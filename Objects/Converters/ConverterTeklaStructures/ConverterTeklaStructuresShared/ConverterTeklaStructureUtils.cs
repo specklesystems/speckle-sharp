@@ -14,6 +14,7 @@ using Speckle.Core.Models;
 using Objects.Structural.Properties.Profiles;
 using Tekla.Structures.Datatype;
 using Objects.BuiltElements.TeklaStructures;
+using Objects.Properties;
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -24,6 +25,17 @@ namespace Objects.Converter.TeklaStructures
     {
 
     }
+
+    public void SetPartPropertiesFromSourceApp(TeklaStructuresProperties teklaStructuresProperties, Part part)
+    {
+      part.Material.MaterialString = teklaStructuresProperties.material.name;
+      part.Profile.ProfileString = teklaStructuresProperties.profile.name;
+      part.Class = teklaStructuresProperties.classNumber;
+      part.Finish = teklaStructuresProperties.finish;
+      part.Name = teklaStructuresProperties.name;
+      part.Position = SetPositioning(teklaStructuresProperties.teklaPosition);
+    }
+
     public string GetUnitsFromModel()
     {
       var unit = Distance.CurrentUnitType;

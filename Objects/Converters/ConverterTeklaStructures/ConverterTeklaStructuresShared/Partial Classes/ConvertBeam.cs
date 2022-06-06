@@ -12,6 +12,7 @@ using Tekla.Structures.Solid;
 using TSG = Tekla.Structures.Geometry3d;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
+using Objects.Properties;
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -100,8 +101,10 @@ namespace Objects.Converter.TeklaStructures
       part.Class = teklaBeam.classNumber;
       part.Finish = teklaBeam.finish;
       part.Name = teklaBeam.name;
-            part.Position = SetPositioning(teklaBeam.position);
+      part.Position = SetPositioning(teklaBeam.position);
     }
+
+
         
     public Base BeamToSpeckle(Tekla.Structures.Model.Beam beam)
     {
