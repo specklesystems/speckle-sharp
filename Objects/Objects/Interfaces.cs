@@ -115,7 +115,7 @@ namespace Objects
   public abstract class PhysicalElement : Base, IDisplayValue<List<Mesh>>, IHasSourceAppProps
   {
     [DetachProperty] public List<Mesh> displayValue { get; set; }
-    [DetachProperty] public ApplicationProperties sourceApp { get; set; }
+    public ApplicationProperties sourceApp { get; set; }
 
     /// <summary>
     /// A string representing the abbreviated units (eg "m", "mm", "ft").
