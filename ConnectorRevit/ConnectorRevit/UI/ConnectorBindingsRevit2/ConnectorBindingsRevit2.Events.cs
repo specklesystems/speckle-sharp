@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -138,8 +139,8 @@ namespace Speckle.ConnectorRevit.UI
         if (CurrentDoc != null)
           return;
 
-        if (SpeckleRevitCommand2.MainWindow != null)
-          SpeckleRevitCommand2.MainWindow.Hide();
+        //if (SpeckleRevitCommand2.MainWindow != null)
+        //  SpeckleRevitCommand2.MainWindow.Hide();
 
         //clear saved streams if closig a doc
         if (UpdateSavedStreams != null)
@@ -168,7 +169,7 @@ namespace Speckle.ConnectorRevit.UI
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
-        SpeckleRevitCommand2.CreateOrFocusSpeckle();
+        SpeckleRevitCommand2.Panel.Show();
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);

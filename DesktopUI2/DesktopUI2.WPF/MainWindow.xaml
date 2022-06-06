@@ -7,15 +7,11 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:local="clr-namespace:DesktopUI2.WPF"
   xmlns:av="clr-namespace:AvaloniaHwndHost;assembly=AvaloniaHwndHost"
-  xmlns:wpf="clr-namespace:Avalonia.Win32.Interop.Wpf;assembly=Avalonia.Win32.Interop"
   Title="MainWindow"
   Width="400"
   Height="750"
   mc:Ignorable="d">
   <Grid>
     <av:AvaloniaHwndHost x:Name="AvaloniaHost" />
-    <!--<wpf:WpfAvaloniaHost>
-      <dui:MainUserControl />
-    </wpf:WpfAvaloniaHost>-->
   </Grid>
 </Window>

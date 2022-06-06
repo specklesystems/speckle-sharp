@@ -48,6 +48,7 @@
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
+    <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
@@ -120,6 +121,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\MainUserControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">

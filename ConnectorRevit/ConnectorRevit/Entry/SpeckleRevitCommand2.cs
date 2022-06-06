@@ -17,13 +17,13 @@ namespace Speckle.ConnectorRevit.Entry
   [Transaction(TransactionMode.Manual)]
   public class SpeckleRevitCommand2 : IExternalCommand
   {
-    [DllImport("user32.dll", SetLastError = true)]
-    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
-    const int GWL_HWNDPARENT = -8;
-    public static Window MainWindow { get; private set; }
+
+  
     public static ConnectorBindingsRevit2 Bindings { get; set; }
-    private static Avalonia.Application AvaloniaApp { get; set; }
+
     internal static UIApplication uiapp;
+
+    internal static DockablePane Panel { get; set; }
 
 
     internal static DockablePaneId PanelId = new DockablePaneId(new Guid("{0A866FB8-8FD5-4DE8-B24B-56F4FA5B0836}"));
@@ -32,8 +32,6 @@ namespace Speckle.ConnectorRevit.Entry
     public static void InitAvalonia()
     {
       BuildAvaloniaApp().SetupWithoutStarting();
-
-      //AppBuilder.Configure<DesktopUI2.App>().UseWin32().UseDirect2D1().UseReactiveUI().SetupWithoutStarting();
     }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
@@ -49,10 +47,9 @@ namespace Speckle.ConnectorRevit.Entry
     {
       uiapp = commandData.Application;
 
-      DockablePane dp = commandData.Application.GetDockablePane(PanelId);
-      dp.Show();
+      Panel = commandData.Application.GetDockablePane(PanelId);
+      Panel.Show();
 
-      //CreateOrFocusSpeckle();
 
       return Result.Succeeded;
     }
@@ -62,58 +59,9 @@ namespace Speckle.ConnectorRevit.Entry
       //panel.lblProjectName.Content = e.Document.ProjectInformation.Name;
     }
 
-    public static void CreateOrFocusSpeckle(bool showWindow = true)
-    {
+   
 
 
-
-
-
-      if (MainWindow == null)
-      {
-        var viewModel = new MainViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
-
-        //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
-        //to avoid an annoying error when closing revit
-        var cts = new CancellationTokenSource();
-        cts.CancelAfter(100);
-        AvaloniaApp.Run(cts.Token);
-
-      }
-
-      try
-      {
-        if (showWindow)
-        {
-          MainWindow.Show();
-          MainWindow.Activate();
-
-          //required to gracefully quit avalonia and the skia processes
-          //can also be used to manually do so
-          //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
-
-
-          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-          {
-            var parentHwnd = uiapp.MainWindowHandle;
-            var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-            SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-          }
-        }
-      }
-      catch (Exception ex)
-      {
-      }
-    }
-
-    private static void AppMain(Avalonia.Application app, string[] args)
-    {
-      AvaloniaApp = app;
-    }
   }
 
 }
