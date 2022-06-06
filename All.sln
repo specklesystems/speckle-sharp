@@ -181,6 +181,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriverCSharp", "ConnectorCS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriverPluginCSharp", "ConnectorCSI\DriverPluginCSharp\DriverPluginCSharp.csproj", "{C59939F6-D383-44E3-A7EF-4E160E3DFB73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2023", "ConnectorRevit\ConnectorRevit2023\ConnectorRevit2023.csproj", "{586A5A37-93F6-427E-8DF8-C10DB4D6822A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{02a24dd8-e0ca-4657-baa7-b033a4563709}*SharedItemsImports = 5
@@ -205,6 +207,7 @@ Global
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{464f2220-d7d9-4d8c-bb3d-b93a1c603469}*SharedItemsImports = 4
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{50bc1552-3e7e-4c77-ac3a-aa7c572dfe09}*SharedItemsImports = 5
 		ConnectorMicroStation\ConnectorMicroStationOpenShared\ConnectorMicroStationOpenShared.projitems*{57bf94a8-8f73-4d1a-91d2-b10cc64178b6}*SharedItemsImports = 4
+		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 4
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{58a88f1a-7489-46d2-949d-2fc3f68c8d84}*SharedItemsImports = 4
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{5bbde14e-50f8-4d6e-8e35-747667ad4a09}*SharedItemsImports = 13
@@ -702,6 +705,14 @@ Global
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73}.Release|x64.ActiveCfg = Release|Any CPU
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73}.Release|x64.Build.0 = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Debug|x64.Build.0 = Debug|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.ActiveCfg = Release|Any CPU
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -792,6 +803,7 @@ Global
 		{31E0C098-6813-4571-AB96-A245E0FC1C23} = {11C013F3-2583-4292-938B-707294DAECE1}
 		{C091E499-597D-4077-B83F-08E069091090} = {11C013F3-2583-4292-938B-707294DAECE1}
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73} = {11C013F3-2583-4292-938B-707294DAECE1}
+		{586A5A37-93F6-427E-8DF8-C10DB4D6822A} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
