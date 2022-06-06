@@ -63,39 +63,38 @@ namespace SpeckleRhino
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      //CreateOrFocusSpeckle();
-      var type = typeof(Panel);
-      Rhino.UI.Panels.OpenPanel(type.GUID);
-
-      
+#if MAC
+      CreateOrFocusSpeckle();
+#endif
+      Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 
 
       return Result.Success;
     }
 
-    //public static void CreateOrFocusSpeckle()
-    //{
-    //  if (MainWindow == null)
-    //  {
-    //    var viewModel = new MainWindowViewModel(Bindings);
-    //    MainWindow = new MainWindow
-    //    {
-    //      DataContext = viewModel
-    //    };
-    //  }
+    public static void CreateOrFocusSpeckle()
+    {
+      if (MainWindow == null)
+      {
+        var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
+        MainWindow = new MainWindow
+        {
+          DataContext = viewModel
+        };
+      }
 
-    //  MainWindow.Show();
-    //  MainWindow.Activate();
+      MainWindow.Show();
+      MainWindow.Activate();
 
-    //  #if !MAC
-    //  if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-    //  {
-    //    var parentHwnd = RhinoApp.MainWindowHandle();
-    //    var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-    //    SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-    //  }
-    //  #endif
-    //}
+#if !MAC
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
+        var parentHwnd = RhinoApp.MainWindowHandle();
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+      }
+#endif
+    }
 
     private static void AppMain(Application app, string[] args)
     {

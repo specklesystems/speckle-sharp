@@ -29,8 +29,6 @@
     <Grid>
       <reactiveUi:RoutedViewHost
         Grid.Row="1"
-        Width="{Binding $parent[ContentControl].Bounds.Width}"
-        Height="{Binding $parent[ContentControl].Bounds.Height}"
         Router="{Binding Router}">
         <reactiveUi:RoutedViewHost.PageTransition>
           <CrossFade Duration="0.15" />

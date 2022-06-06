@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
@@ -17,13 +18,18 @@ namespace SpeckleRhino
 
     private static string SpeckleKey = "speckle2";
 
+    public ConnectorBindingsRhino Bindings { get; private set; }
+    public MainViewModel ViewModel { get; private set; }
+
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
       RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
       SpeckleCommand.InitAvalonia();
-    
+
+      Bindings = new ConnectorBindingsRhino();
+      ViewModel = new MainViewModel(Bindings);
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -42,9 +48,16 @@ namespace SpeckleRhino
         return;
       }
 
-      var bindings = new ConnectorBindingsRhino();
-      //if (bindings.GetStreamsInFile().Count > 0)
-      //  SpeckleCommand.CreateOrFocusSpeckle();
+
+
+      if (Bindings.GetStreamsInFile().Count > 0)
+      {
+#if MAC
+      SpeckleCommand.CreateOrFocusSpeckle();
+#endif
+        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+
+      }
     }
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
