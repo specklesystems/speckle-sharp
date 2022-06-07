@@ -276,25 +276,14 @@ namespace Objects.Converter.AutocadCivil
     // Blocks
     public BlockInstance BlockReferenceToSpeckle(BlockReference reference)
     {
-      /*
-      // skip if dynamic block
-      if (reference.IsDynamicBlock)
-        return null;
-      */
-
       // get record
       BlockDefinition definition = null;
       var attributes = new Dictionary<string, string>();
 
       var btrObjId = reference.BlockTableRecord;
       if (reference.IsDynamicBlock)
-      {
-        btrObjId = reference.AnonymousBlockTableRecord;
-        if (btrObjId == ObjectId.Null)
-        {
-          btrObjId = reference.DynamicBlockTableRecord;
-        }
-      }
+        btrObjId = reference.AnonymousBlockTableRecord != ObjectId.Null ? 
+          reference.AnonymousBlockTableRecord : reference.DynamicBlockTableRecord;
 
       var btr = (BlockTableRecord)Trans.GetObject(btrObjId, OpenMode.ForRead);
       definition = BlockRecordToSpeckle(btr);
@@ -404,57 +393,23 @@ namespace Objects.Converter.AutocadCivil
       var fullName = btr.Name;
       var curVisibilityName = string.Empty;
 
-      if (btr.IsAnonymous)
+      if (btr.IsAnonymous || btr.IsDynamicBlock)
       {
-        // get the DynamicBlockTableRecord and current visibility state name from block reference
-        var blkRefObjIds = btr.GetBlockReferenceIds(true, false);
-        if (blkRefObjIds.Count > 0)
-        {
-          var blockRefObjId = blkRefObjIds[0];
-          var blkRef = Trans.GetObject(blockRefObjId, OpenMode.ForRead) as BlockReference;
-          if (blkRef != null)
-          {
-            var dynBtrObjId = blkRef.DynamicBlockTableRecord;
-            if (dynBtrObjId != ObjectId.Null)
-            {
-              var dynBtr = Trans.GetObject(dynBtrObjId, OpenMode.ForRead) as BlockTableRecord;
-              if (dynBtr != null)
-              { 
-                fullName = string.Concat(dynBtr.Name.Where(c => !char.IsWhiteSpace(c)));
-              }
-            }
+        var referenceIds = btr.GetBlockReferenceIds(true, false);
+        ObjectId referenceId = referenceIds.Count > 0 ? referenceIds[0] : ObjectId.Null;
+        BlockReference reference = referenceId != ObjectId.Null ? Trans.GetObject(referenceId, OpenMode.ForRead) as BlockReference : null;
+        if (reference == null) return fullName;
 
-            foreach (DynamicBlockReferenceProperty prop in blkRef.DynamicBlockReferencePropertyCollection)
-            { 
-              curVisibilityName = (string)prop.Value;
-            }
-          }
-        }
-      }
-      else if (btr.IsDynamicBlock)
-      {
-        // remove space from name
-        fullName = string.Concat(fullName.Where(c => !char.IsWhiteSpace(c)));
-        // get the current visibility state name from block reference
-        var blkRefObjIds = btr.GetBlockReferenceIds(true, false);
-        if (blkRefObjIds.Count > 0)
+        if (btr.IsAnonymous)
         {
-          var blockRefObjId = blkRefObjIds[0];
-          var blkRef = Trans.GetObject(blockRefObjId, OpenMode.ForRead) as BlockReference;
-          if (blkRef != null)
-          {
-            foreach (DynamicBlockReferenceProperty prop in blkRef.DynamicBlockReferencePropertyCollection)
-            {
-              curVisibilityName = (string)prop.Value;
-            }
-          }
+          BlockTableRecord dynamicBlock = reference.DynamicBlockTableRecord != ObjectId.Null ? 
+            Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord : null;
+          if (dynamicBlock != null) fullName = dynamicBlock.Name;
         }
-      }
 
-      if (!string.IsNullOrEmpty(curVisibilityName))
-      {
-        curVisibilityName = string.Concat(curVisibilityName.Where(c => !char.IsWhiteSpace(c)));
-        fullName = $"{fullName}_{curVisibilityName}";
+        foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
+          curVisibilityName = (string)prop.Value;
+        if (!string.IsNullOrEmpty(curVisibilityName)) fullName = $"{fullName}_{curVisibilityName}";
       }
 
       return fullName;
