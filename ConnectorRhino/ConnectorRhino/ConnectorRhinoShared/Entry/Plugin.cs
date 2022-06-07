@@ -54,8 +54,9 @@ namespace SpeckleRhino
       {
 #if MAC
       SpeckleCommand.CreateOrFocusSpeckle();
-#endif
+#else
         Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+#endif
 
       }
     }
@@ -74,13 +75,14 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
+#if !MAC
       System.Type panelType = typeof(Panel);
       // Register my custom panel class type with Rhino, the custom panel my be display
       // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
       // You can also include the custom panel in any existing panel group by simply right
       // clicking one a panel tab and checking or un-checking the "MyPane" option.
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
-
+#endif
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
 
