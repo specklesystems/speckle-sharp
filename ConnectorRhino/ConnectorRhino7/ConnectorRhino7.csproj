@@ -30,20 +30,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
     </PackageReference>
-    <PackageReference Include="RhinoCommon">
-      <Version>7.4.21078.1001</Version>
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001">
     </PackageReference>
-    <PackageReference Include="RhinoWindows">
-      <Version>7.4.21078.1001</Version>
+    <PackageReference Include="RhinoWindows" Version="7.4.21078.1001">
     </PackageReference>
-    <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework">
-      <Version>1.0.115.5</Version>
+    <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.115.5">
     </PackageReference>
-    <PackageReference Include="System.Data.SQLite.Core">
-      <Version>1.0.115.5</Version>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5">
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
