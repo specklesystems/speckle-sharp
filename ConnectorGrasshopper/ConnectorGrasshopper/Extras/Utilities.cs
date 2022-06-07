@@ -519,7 +519,7 @@ namespace ConnectorGrasshopper.Extras
     /// <param name="Converter"></param>
     /// <param name="base"></param>
     /// <returns></returns>
-    public static GH_Structure<IGH_Goo> ConvertToTree(ISpeckleConverter Converter, Base @base, Action<GH_RuntimeMessageLevel, string> onError = null)
+    public static GH_Structure<IGH_Goo> ConvertToTree(ISpeckleConverter Converter, Base @base, Action<GH_RuntimeMessageLevel, string> onError = null, bool unwrap = false)
     {
       var data = new GH_Structure<IGH_Goo>();
 
@@ -529,6 +529,22 @@ namespace ConnectorGrasshopper.Extras
       {
         var converted = Converter.ConvertToNative(@base);
         data.Append(GH_Convert.ToGoo(converted));
+      }
+      else if (unwrap && @base.GetDynamicMembers().Count() == 1 && (@base["@data"] != null || @base["@Data"] != null))
+      {
+        // Comes from a wrapper
+        var wrappedData = @base["@data"] ?? @base["@Data"];
+        if (wrappedData is Base wrappedBase)
+        {
+          // New object type tree
+          data = DataTreeToNative(wrappedBase,Converter);
+        }
+        else if (wrappedData is IList list)
+        {
+          // Old nested list type.
+          var treeBuilder = new TreeBuilder(Converter);
+          data = treeBuilder.Build(list);
+        }
       }
       // Simple pass the SpeckleBase
       else

@@ -115,7 +115,6 @@ namespace ConnectorGrasshopper.Objects
                 {
                   var indices = path.Indices.ToList();
                   indices.AddRange(p.Indices);
-                  var newPath = new GH_Path(indices.ToArray());
                   p.Indices = indices.ToArray();
                 });
                 DA.SetDataTree(indexOfOutputParam, structure);

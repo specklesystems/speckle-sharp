@@ -17,7 +17,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
 
-namespace ConnectorGrasshopper.Ops
+namespace ConnectorGrasshopper.Ops.Deprecated
 {
   public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapper>>
   {
@@ -29,7 +29,8 @@ namespace ConnectorGrasshopper.Ops
     public bool UseDefaultCache { get; set; } = true;
     private GH_Structure<IGH_Goo> dataInput;
     private List<object> converted;
-    public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override bool Obsolete => true;
 
     /// <summary>
     /// Initializes a new instance of the SendComponentSync class.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,19 +19,13 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class ReceiveSync : SelectKitTaskCapableComponentBase<Speckle.Core.Models.Base>
+  public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Speckle.Core.Models.Base>
   {
-    CancellationTokenSource source;
-    const int delay = 100000;
-    public ISpeckleKit Kit;
-    //public ISpeckleConverter Converter;
-    public TaskCreationOptions? TaskCreationOptions { get; set; } = null;
     public StreamWrapper StreamWrapper { get; set; }
     private Client ApiClient { get; set; }
     public string ReceivedCommitId { get; set; }
     public string InputType { get; set; }
     public bool AutoReceive { get; set; }
-    //public bool ConvertToNative { get; set; } = true;
     public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
 
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
@@ -45,11 +40,9 @@ namespace ConnectorGrasshopper.Ops
               {
                 // Ensure fresh instance of client.
                 await ResetApiClient(StreamWrapper);
-                if (source == null)
-                  CreateCancelationToken();
 
                 // Get last commit from the branch
-                var b = ApiClient.BranchGet(source.Token, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
+                var b = ApiClient.BranchGet(CancelToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
                 // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
                 if (b.commits.items[0].id != ReceivedCommitId)
@@ -98,34 +91,16 @@ namespace ConnectorGrasshopper.Ops
       if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName) return;
       HandleNewCommit();
     }
-
-    /// <summary>
-    /// Initializes a new instance of the Operations class.
-    /// </summary>
-    public ReceiveSync() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
+    
+    public SyncReceiveComponent() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
-
     }
-
-    public override void AddedToDocument(GH_Document document)
+    
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      SetDefaultKitAndConverter();
-      base.AddedToDocument(document);
-    }
-    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
-      var kits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
-
-      foreach (var kit in kits)
-        Menu_AppendItem(menu, $"{kit.Name} ({kit.Description})", (s, e) =>
-        {
-          SetConverterFromKit(kit.Name);
-        }, true,
-        Kit != null ?
-          kit.Name == Kit.Name : false);
+      
+      base.AppendAdditionalMenuItems(menu);
 
       Menu_AppendSeparator(menu);
 
@@ -146,8 +121,6 @@ namespace ConnectorGrasshopper.Ops
         autoReceiveMi.ToolTipText =
           "To enable automatic receiving, you need to input a stream rather than a specific commit.";
       }
-
-      base.AppendAdditionalComponentMenuItems(menu);
     }
 
     public override bool Write(GH_IWriter writer)
@@ -164,7 +137,6 @@ namespace ConnectorGrasshopper.Ops
       //writer.SetBoolean(nameof(ConvertToNative), ConvertToNative);
       return base.Write(writer);
     }
-
     public override bool Read(GH_IReader reader)
     {
       AutoReceive = reader.GetBoolean("AutoReceive");
@@ -178,76 +150,23 @@ namespace ConnectorGrasshopper.Ops
       if (!string.IsNullOrEmpty(swString)) StreamWrapper = new StreamWrapper(swString);
 
       JustPastedIn = true;
-
-      var kitName = "";
-      reader.TryGetString("KitName", ref kitName);
-
-      if (kitName != "")
-        try
-        {
-          SetConverterFromKit(kitName);
-        }
-        catch (Exception e)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            $"Could not find the {kitName} kit on this machine. Do you have it installed? \n Will fallback to the default one.");
-          SetDefaultKitAndConverter();
-        }
-      else
-        SetDefaultKitAndConverter();
-
-      //ConvertToNative = reader.GetBoolean(nameof(ConvertToNative));
-
       return base.Read(reader);
     }
-
-    private bool foundKit;
-    private void SetDefaultKitAndConverter()
+    
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      try
-      {
-        Kit = KitManager.GetDefaultKit();
-        Converter = Kit.LoadConverter(Extras.Utilities.GetVersionedAppName());
-        Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        SpeckleGHSettings.OnMeshSettingsChanged +=
-          (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-        foundKit = true;
-      }
-      catch
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
-        foundKit = false;
-      }
+      pManager.AddGenericParameter("Stream", "S", "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.item);
     }
-
-    /// <summary>
-    /// Registers all the input parameters for this component.
-    /// </summary>
-    protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
-    {
-      var streamInputIndex = pManager.AddGenericParameter("Stream", "S", "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.item);
-    }
-
-    /// <summary>
-    /// Registers all the output parameters for this component.
-    /// </summary>
-    protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
     }
-
-    /// <summary>
-    /// This is the method that actually does the work.
-    /// </summary>
-    /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+    
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-
       if (RunCount == 1)
       {
-        CreateCancelationToken();
         ParseInput(DA);
         if (InputType == "Invalid") return;
       }
@@ -279,7 +198,7 @@ namespace ConnectorGrasshopper.Ops
 
           var ReceivedObject = Operations.Receive(
           myCommit.referencedObject,
-          source.Token,
+          CancelToken,
           remoteTransport,
           new SQLiteTransport { TransportName = "LC" }, // Local cache!
           null,
@@ -304,12 +223,12 @@ namespace ConnectorGrasshopper.Ops
           }
 
           return ReceivedObject;
-        }, source.Token);
+        }, CancelToken);
         TaskList.Add(task);
         return;
       }
 
-      if (source.IsCancellationRequested)
+      if (CancelToken.IsCancellationRequested)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
       }
@@ -325,63 +244,51 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-        var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage);
+        
+        
+        var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage, true);
 
         DA.SetDataTree(0, data);
       }
     }
 
-    private void CreateCancelationToken()
-    {
-      source = new CancellationTokenSource(delay);
-    }
-
     private void ParseInput(IGH_DataAccess DA)
     {
-      IGH_Goo DataInput = null;
-      var check = DA.GetData(0, ref DataInput);
-
-      var ghGoo = DataInput;
-      if (ghGoo == null) return;
+      IGH_Goo ghGoo = null;
+      if(!DA.GetData(0, ref ghGoo)) return;
 
       var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
       var inputType = "Invalid";
       StreamWrapper newWrapper = null;
 
-      if (input is StreamWrapper wrapper)
+      switch (input)
       {
-        newWrapper = wrapper;
-        inputType = GetStreamTypeMessage(newWrapper);
+        case StreamWrapper wrapper:
+          newWrapper = wrapper;
+          break;
+        case string s:
+          newWrapper = new StreamWrapper(s);
+          break;
       }
-      else if (input is string s)
-      {
-        newWrapper = new StreamWrapper(s);
+      
+      if(newWrapper != null)
         inputType = GetStreamTypeMessage(newWrapper);
-      }
-
-
+      
       InputType = inputType;
       HandleInputType(newWrapper);
     }
-    private string GetStreamTypeMessage(StreamWrapper newWrapper)
+    
+    private static string GetStreamTypeMessage(StreamWrapper newWrapper)
     {
-      string inputType = null;
-      switch (newWrapper?.Type)
+      var inputType = newWrapper?.Type switch
       {
-        case StreamWrapperType.Undefined:
-          inputType = "Invalid";
-          break;
-        case StreamWrapperType.Stream:
-          inputType = "Stream";
-          break;
-        case StreamWrapperType.Commit:
-          inputType = "Commit";
-          break;
-        case StreamWrapperType.Branch:
-          inputType = "Branch";
-          break;
-      }
+        StreamWrapperType.Undefined => "Invalid",
+        StreamWrapperType.Stream => "Stream",
+        StreamWrapperType.Commit => "Commit",
+        StreamWrapperType.Branch => "Branch",
+        _ => null
+      };
 
       return inputType;
     }
@@ -400,38 +307,18 @@ namespace ConnectorGrasshopper.Ops
       {
         // NOTE: Handled in do work
       }
-
-
-
+      
       if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn) return;
       StreamWrapper = wrapper;
 
-      //ResetApiClient(wrapper);
       Task.Run(async () =>
       {
         await ResetApiClient(wrapper);
       });
     }
-
-    /// <summary>
-    /// Provides an Icon for the component.
-    /// </summary>
-    protected override System.Drawing.Bitmap Icon
-    {
-      get
-      {
-        return Resources.SynchronousReceiver;
-      }
-    }
-
-    /// <summary>
-    /// Gets the unique ID for this component. Do not change this ID after release.
-    /// </summary>
-    public override Guid ComponentGuid
-    {
-      get { return new Guid("a1e073a0-5203-438b-9310-e212fc81675d"); }
-    }
-
+    
+    protected override System.Drawing.Bitmap Icon => Resources.SynchronousReceiver;
+    public override Guid ComponentGuid => new Guid("08C7078E-C6DA-4B3B-A57D-CD291CC79B1C");
     public string LastInfoMessage { get; internal set; }
     public bool JustPastedIn { get; internal set; }
     public string ReceivedObjectId { get; internal set; }

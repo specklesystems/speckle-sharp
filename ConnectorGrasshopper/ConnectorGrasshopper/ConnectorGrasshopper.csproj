@@ -13,7 +13,6 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <LangVersion>8</LangVersion>
-    <Nullable>enable</Nullable>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
@@ -88,11 +87,6 @@
     <Compile Include="Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="ComponentCategories.cs" />
     <Compile Include="ConnectorGrasshopperInfo.cs" />
-    <Compile Include="Conversion\Deprecated\Convert.ToNativeAsync.cs" />
-    <Compile Include="Conversion\Deprecated\Convert.ToSpeckleAsync.cs" />
-    <Compile Include="Conversion\Deprecated\ConvertUpgradeUtils.cs" />
-    <Compile Include="Conversion\Deprecated\Serialisation.DeserializeObject.cs" />
-    <Compile Include="Conversion\Deprecated\Serialisation.SerialiseObject.cs" />
     <Compile Include="Conversion\DeserialiseTaskCapableComponent.cs" />
     <Compile Include="Conversion\SerialiseTaskCapableComponent.cs" />
     <Compile Include="Conversion\ToNativeTaskCapableComponent.cs" />
@@ -109,27 +103,23 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Ops\Deprecated\Operations.ReceiveComponentSync.cs" />
+    <Compile Include="Ops\Deprecated\Operations.SendComponentSync.cs" />
+    <Compile Include="Ops\Deprecated\Operations.UpgradeUtils.cs" />
+    <Compile Include="UpgradeUtilities.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\DeconstructSpeckleObjectTaskComponent.cs" />
-    <Compile Include="Objects\Deprecated\CreateSpeckleObjectAsync.cs" />
-    <Compile Include="Objects\Deprecated\CreateSpeckleObjectByKeyValueAsync.cs" />
-    <Compile Include="Objects\Deprecated\ExpandSpeckleObjectAsync.cs" />
-    <Compile Include="Objects\Deprecated\ExtendSpeckleObjectAsync.cs" />
-    <Compile Include="Objects\Deprecated\ExtendSpeckleObjectByKeyValueAsync.cs" />
-    <Compile Include="Objects\Deprecated\GetObjectValueByKeyAsync.cs" />
-    <Compile Include="Objects\Deprecated\ObjectsUpgradeUtils.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectValueByKeyTaskComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.ReceiveComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.SendComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.VariableInputSendComponent.cs" />
-    <Compile Include="Ops\Operations.ReceiveComponentSync.cs" />
+    <Compile Include="Ops\Operations.SyncReceiveComponent.cs" />
     <Compile Include="Ops\Operations.ReceiveLocalComponent.cs" />
-    <Compile Include="Ops\Operations.SendComponentSync.cs" />
+    <Compile Include="Ops\Operations.SyncSendComponent.cs" />
     <Compile Include="Ops\Operations.SendLocalComponent.cs" />
-    <Compile Include="Ops\Operations.UpgradeUtils.cs" />
     <Compile Include="Ops\Operations.VariableInputReceiveComponent.cs" />
     <Compile Include="Ops\Operations.VariableInputSendComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
