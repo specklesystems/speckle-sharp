@@ -630,7 +630,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               converted[key] = obj.ExtensionDictionary.GetUserString(key);
             */
 
-#if CIVIL2021 || CIVIL2022
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
             // add property sets if this is Civil3D
             var propertySets = obj.GetPropertySets(tr);
             if (propertySets.Count > 0)
