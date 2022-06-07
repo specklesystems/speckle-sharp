@@ -65,8 +65,8 @@ namespace SpeckleRhino
       var streams = GetStreamsInFile();
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
-      if (streams.Count > 0)
-        SpeckleCommand.CreateOrFocusSpeckle();
+      //if (streams.Count > 0)
+      //  SpeckleCommand.CreateOrFocusSpeckle();
     }
 
     private void RhinoDoc_LayerChange(object sender, Rhino.DocObjects.Tables.LayerTableEventArgs e)

@@ -723,7 +723,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
 
-        MainWindowViewModel.GoHome();
+        MainViewModel.GoHome();
       }
       catch { }
     }
@@ -739,7 +739,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         if (SpeckleAutocadCommand.MainWindow != null)
           SpeckleAutocadCommand.MainWindow.Hide();
 
-        MainWindowViewModel.GoHome();
+        MainViewModel.GoHome();
       }
       catch { }
     }
@@ -759,7 +759,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         if (UpdateSavedStreams != null)
           UpdateSavedStreams(streams);
 
-        MainWindowViewModel.GoHome();
+        MainViewModel.GoHome();
       }
       catch { }
     }

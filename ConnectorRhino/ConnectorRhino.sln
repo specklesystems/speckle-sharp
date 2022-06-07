@@ -35,6 +35,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino6", "ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{D484DB4F-FB51-478F-B8F9-8FE3370AB392}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
@@ -167,6 +169,20 @@ Global
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.ActiveCfg = Release|Any CPU
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.Build.0 = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|x64.Build.0 = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release Mac|x64.Build.0 = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|x64.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -181,6 +197,7 @@ Global
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{F7D586E0-5452-428D-B704-3FF142DE248B} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{D648BB69-B992-4D34-906E-7A547374B86C} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}

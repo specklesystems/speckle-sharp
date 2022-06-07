@@ -353,7 +353,7 @@
       <!--  CREATE/ADD STREAMS  -->
       <Grid
         Grid.Row="1"
-        Margin="0,15,0,0"
+        Margin="0,15,0,5"
         ColumnDefinitions="*,*">
         <Button
           Margin="0,0,7,0"
@@ -396,9 +396,9 @@
 
       <ScrollViewer
         Grid.Row="4"
-        Padding="0,0,13,5"
+        Padding="0,5,13,5"
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
-        <StackPanel Margin="5" Orientation="Vertical">
+        <StackPanel Margin="5,0,5,5" Orientation="Vertical">
           <!--  SAVED STREAMS  -->
           <Expander
             Margin="0,7,0,0"
@@ -477,7 +477,7 @@
                       <Grid
                         Grid.Row="1"
                         Grid.Column="0"
-                        RowDefinitions="auto,auto, auto">
+                        RowDefinitions="15,15, auto">
 
 
                         <TextBlock

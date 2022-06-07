@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
@@ -11,6 +11,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
+    <RootNamespace>SpeckleRhino</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,38 +23,36 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
+    <PackageReference Include="Avalonia" Version="0.10.15" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.15" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.15" />
     <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
     </PackageReference>
-    <PackageReference Include="RhinoCommon">
-      <Version>7.4.21078.1001</Version>
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001">
     </PackageReference>
-    <PackageReference Include="RhinoWindows">
-      <Version>7.4.21078.1001</Version>
+    <PackageReference Include="RhinoWindows" Version="7.4.21078.1001">
     </PackageReference>
-    <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework">
-      <Version>1.0.115.5</Version>
+    <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.115.5">
     </PackageReference>
-    <PackageReference Include="System.Data.SQLite.Core">
-      <Version>1.0.115.5</Version>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5">
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties" />
-  </ItemGroup>
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.13/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.15/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Xaml" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
@@ -82,4 +81,12 @@
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
   </PropertyGroup>
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
+  <ItemGroup>
+    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
 </Project>

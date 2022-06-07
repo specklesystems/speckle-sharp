@@ -843,14 +843,18 @@ namespace Objects.Converter.Revit
         var poly = new Polycurve(ModelUnits);
         foreach (var segment in loop)
         {
+
           var c = segment.GetCurve();
 
           if (c == null)
           {
             continue;
           }
+          var curve = CurveToSpeckle(c);
 
-          poly.segments.Add(CurveToSpeckle(c));
+          ((Base)curve)["elementId"] = segment.ElementId.ToString();
+
+          poly.segments.Add(curve);
         }
         profiles.Add(poly);
       }

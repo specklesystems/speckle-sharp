@@ -1,4 +1,4 @@
-<Window
+<UserControl
   x:Class="DesktopUI2.Views.Windows.Report"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,26 +7,23 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
-  Title="Report"
-  Width="500"
-  Height="500"
+ 
   d:DesignHeight="500"
   d:DesignWidth="500"
-  Icon="avares://DesktopUI2/Assets/icon.ico"
   mc:Ignorable="d">
-  <Window.Resources>
-    <conv:EmptyFalseValueConverter x:Key="EmptyFalseValueConverter" />
-  </Window.Resources>
-  <Window.Styles>
-    <Style Selector="TextBox.Readonly">
-      <Setter Property="Margin" Value="20,0,20,20" />
-      <Setter Property="FontStyle" Value="Italic" />
-    </Style>
-    <Style Selector="TextBox.Readonly /template/ m|MaterialUnderline#PART_Underline">
-      <Setter Property="IsVisible" Value="False" />
-    </Style>
+	<UserControl.Resources>
+		<conv:EmptyFalseValueConverter x:Key="EmptyFalseValueConverter" />
+	</UserControl.Resources>
+	<UserControl.Styles>
+		<Style Selector="TextBox.Readonly">
+			<Setter Property="Margin" Value="20,0,20,20" />
+			<Setter Property="FontStyle" Value="Italic" />
+		</Style>
+		<Style Selector="TextBox.Readonly /template/ m|MaterialUnderline#PART_Underline">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
 
-  </Window.Styles>
+	</UserControl.Styles>
 
   <Design.DataContext>
     <vm:DesignReportViewModel />
@@ -78,7 +75,7 @@
         Margin="0,0,10,0"
         Command="{Binding GetHelpCommand}"
         Content="Get help on the forum 🤷‍" />
-      <!--<Button Click="Close_Click" Content="Close" />-->
+     <Button Click="Close_Click" Content="Close" />
     </StackPanel>
   </Grid>
-</Window>
+</UserControl>
