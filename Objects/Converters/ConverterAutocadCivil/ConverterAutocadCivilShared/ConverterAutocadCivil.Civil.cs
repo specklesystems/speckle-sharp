@@ -1,4 +1,4 @@
-﻿#if (CIVIL2021 || CIVIL2022)
+﻿#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using System;
 using System.Collections.Generic;
 using System.Linq;
