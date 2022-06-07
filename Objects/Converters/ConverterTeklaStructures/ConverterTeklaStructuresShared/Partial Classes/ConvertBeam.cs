@@ -13,6 +13,7 @@ using TSG = Tekla.Structures.Geometry3d;
 using System.Collections;
 using StructuralUtilities.PolygonMesher;
 using Objects.Properties;
+using Objects.Building;
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -106,58 +107,87 @@ namespace Objects.Converter.TeklaStructures
 
 
         
-    public Base BeamToSpeckle(Tekla.Structures.Model.Beam beam)
+    public Base TeklaBeamElementToSpeckle(Tekla.Structures.Model.Beam beam)
     {
     ///For some reason walls are considered beams in the world of Tekla Structures
     /// 
     ///
       if(beam.Name == "WALL"){
-        var wall = wallToSpeckle(beam);
+        var wall = WallToSpeckle(beam);
         return wall;
       }
-      var speckleBeam = new TeklaBeam();
+      //var speckleBeam = new TeklaBeam();
       //TO DO: Support for curved beams goes in here as well + twin beams
 
       var endPoint = beam.EndPoint;
       var startPoint = beam.StartPoint;
       var units = GetUnitsFromModel();
 
+      Framing speckleFraming = new Framing();
+      var beamCS = beam.GetCoordinateSystem();
+      speckleFraming.sourceApp = new TeklaStructuresProperties
+      {
+
+        alignmnetVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units),
+        className = beam.Class,
+        profile = GetBeamProfile(beam.Profile.ProfileString),
+        material = GetMaterial(beam.Material.MaterialString),
+        teklaPosition = GetPositioning(beam.Position),
+        finish = beam.Finish,
+      };
       Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
-      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-      speckleBeam.baseLine.length = Math.Sqrt(Math.Pow((startPoint.X - endPoint.X),2)+ Math.Pow((startPoint.Y - endPoint.Y), 2)+ Math.Pow((startPoint.Z - endPoint.Z), 2));
-      speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
-      speckleBeam.material = GetMaterial(beam.Material.MaterialString);
-      var beamCS = beam.GetCoordinateSystem();
-      speckleBeam.position = GetPositioning(beam.Position);
-      speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
-      speckleBeam.finish = beam.Finish;
-      speckleBeam.classNumber = beam.Class;
-      speckleBeam.name = beam.Name;
-      speckleBeam.applicationId = beam.Identifier.GUID.ToString();
-      speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
-      var vol = new double();
-      var area = new double();
-      beam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
-      speckleBeam.volume = vol;
-      beam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
-      speckleBeam.area = area;
-      
-      var rebars = beam.GetReinforcements();
-      if (rebars != null)
-      {
-        foreach (var rebar in rebars)
-        {
-           if (rebar is RebarGroup) {speckleBeam.rebars =  RebarGroupToSpeckle((RebarGroup)rebar); }
-
-        }
+      speckleFraming.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
+      speckleFraming.applicationId = beam.Identifier.GUID.ToString();
+      speckleFraming.displayValue = new List<Mesh> { GetMeshFromSolid(beam.GetSolid()) };
+      switch(beam.Name){
+        case "COLUMN":
+          speckleFraming.framingType = Framing.FramingType.Column;
+          break;
+        case "BEAM":
+          speckleFraming.framingType = Framing.FramingType.Beam;
+          break;
+        case "BRACE":
+          speckleFraming.framingType = Framing.FramingType.Brace;
+          break;
       }
+      //Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
+      //Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+      //speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
+      //speckleBeam.baseLine.length = Math.Sqrt(Math.Pow((startPoint.X - endPoint.X),2)+ Math.Pow((startPoint.Y - endPoint.Y), 2)+ Math.Pow((startPoint.Z - endPoint.Z), 2));
+      //speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
+      //speckleBeam.material = GetMaterial(beam.Material.MaterialString);
+      //var beamCS = beam.GetCoordinateSystem();
+      //speckleBeam.position = GetPositioning(beam.Position);
+      //speckleBeam.alignmentVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
+      //speckleBeam.finish = beam.Finish;
+      //speckleBeam.classNumber = beam.Class;
+      //speckleBeam.name = beam.Name;
+      //speckleBeam.applicationId = beam.Identifier.GUID.ToString();
+      //speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
+      //var vol = new double();
+      //var area = new double();
+      //beam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      //speckleBeam.volume = vol;
+      //beam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      //speckleBeam.area = area;
 
-      GetAllUserProperties(speckleBeam, beam);
+      //var rebars = beam.GetReinforcements();
+      //if (rebars != null)
+      //{
+      //  foreach (var rebar in rebars)
+      //  {
+      //     if (rebar is RebarGroup) {speckleBeam.rebars =  RebarGroupToSpeckle((RebarGroup)rebar); }
 
-      var solid = beam.GetSolid();
-      speckleBeam.displayMesh = GetMeshFromSolid(solid);
-      return speckleBeam;
+      //  }
+      //}
+
+      //GetAllUserProperties(speckleBeam, beam);
+
+      //var solid = beam.GetSolid();
+      //speckleBeam.displayMesh = GetMeshFromSolid(solid);
+
+      return speckleFraming;
     }
     /// <summary>
     /// Create beam without display mesh for boolean parts

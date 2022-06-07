@@ -11,6 +11,7 @@ using BE = Objects.BuiltElements;
 using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 using Tekla.Structures;
+using Build = Objects.Building;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -61,6 +62,8 @@ namespace Objects.Converter.TeklaStructures
     {
       switch (@object)
       {
+        case Build.Wall w:
+          return true;
         case BE.Beam b:
           return true;
         case BE.Area a:
@@ -117,6 +120,9 @@ namespace Objects.Converter.TeklaStructures
     {
       switch (@object)
       {
+        case Build.Wall o:
+          WallToNative(o);
+          return true;
         case BE.Beam o:
           BeamToNative(o);
           return true;
@@ -149,7 +155,7 @@ namespace Objects.Converter.TeklaStructures
       switch (@object)
       {
         case Beam o:
-          returnObject = BeamToSpeckle(o);
+          returnObject = TeklaBeamElementToSpeckle(o);
           Report.Log($"Created Beam");
           break;
         case PolyBeam o:
