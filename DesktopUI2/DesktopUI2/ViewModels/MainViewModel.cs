@@ -1,6 +1,7 @@
 ﻿using DesktopUI2.ViewModels.Share;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Pages.ShareControls;
+using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using Splat;
@@ -9,7 +10,7 @@ using System.Reactive;
 
 namespace DesktopUI2.ViewModels
 {
-  public class MainWindowViewModel : ViewModelBase, IScreen
+  public class MainViewModel : ViewModelBase, IScreen
   {
     public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
     public RoutingState Router { get; private set; }
@@ -20,20 +21,48 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
+    internal static MainViewModel Instance { get; private set; }
 
-    public MainWindowViewModel(ConnectorBindings _bindings)
+    public bool DialogVisible
+    {
+      get => _dialogBody!=null;
+    }
+
+    public double DialogOpacity
+    {
+      get => _dialogBody != null ? 1 : 0;
+    }
+
+    private DialogUserControl _dialogBody;
+    public DialogUserControl DialogBody
+    {
+      get => _dialogBody;
+      set  {
+
+        this.RaiseAndSetIfChanged(ref _dialogBody, value);
+        this.RaisePropertyChanged("DialogVisible");
+        this.RaisePropertyChanged("DialogOpacity");
+      }
+
+    }
+
+
+    public MainViewModel(ConnectorBindings _bindings)
     {
       Bindings = _bindings;
-      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
       Init();
     }
-    public MainWindowViewModel()
+    public MainViewModel()
     {
+     
       Init();
     }
 
     private void Init()
     {
+      Instance = this;
+      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+
       RxApp.DefaultExceptionHandler = Observer.Create<Exception>(CatchReactiveException);
 
       Router = new RoutingState();
@@ -51,9 +80,6 @@ namespace DesktopUI2.ViewModels
       Bindings.UpdateSelectedStream = HomeViewModel.Instance.UpdateSelectedStream;
 
       Router.PropertyChanged += Router_PropertyChanged;
-      //var theme = PaletteHelper.GetTheme();
-      //theme.SetPrimaryColor(SwatchHelper.Lookup[MaterialColor.Blue600]);
-      //PaletteHelper.SetTheme(theme);
     }
 
     //https://github.com/AvaloniaUI/Avalonia/issues/5290

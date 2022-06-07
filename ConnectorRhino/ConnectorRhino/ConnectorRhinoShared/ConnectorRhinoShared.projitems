@@ -13,8 +13,30 @@
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\RhinoViewModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Release'">
+    <Page Include="$(MSBuildThisFileDirectory)UI\Panel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="$(MSBuildThisFileDirectory)UI\Panel.xaml.cs">
+        <DependentUpon>Panel.xaml</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Resources\icon.ico" />
   </ItemGroup>
 </Project>

@@ -245,7 +245,7 @@
         Orientation="Horizontal"
         Spacing="10">
         <Button
-          assists:ButtonAssist.CornerRadius="25 "
+          CornerRadius="25 "
           Classes="Flat"
           Command="{Binding RemoveSeletedUsersCommand}"
           Foreground="Red"
@@ -266,7 +266,7 @@
         </Button>
 
         <Button
-          assists:ButtonAssist.CornerRadius="25 "
+          CornerRadius="25 "
           Command="{Binding SaveCommand}"
           Content="Save"
           IsEnabled="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}"
