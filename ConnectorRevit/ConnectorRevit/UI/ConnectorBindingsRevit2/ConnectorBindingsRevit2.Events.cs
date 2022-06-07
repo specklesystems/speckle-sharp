@@ -50,6 +50,7 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.ViewActivated += RevitApp_ViewActivated;
       //RevitApp.Application.DocumentChanged += Application_DocumentChanged;
       RevitApp.Application.DocumentCreated += Application_DocumentCreated;
+      RevitApp.Application.DocumentCreating += Application_DocumentCreating;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Application.DocumentSaved += Application_DocumentSaved;
@@ -59,6 +60,10 @@ namespace Speckle.ConnectorRevit.UI
       //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
+    }
+
+    private void Application_DocumentCreating(object sender, Autodesk.Revit.DB.Events.DocumentCreatingEventArgs e)
+    {
     }
 
     private void Application_FileExported(object sender, Autodesk.Revit.DB.Events.FileExportedEventArgs e)
@@ -111,11 +116,15 @@ namespace Speckle.ConnectorRevit.UI
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
+
+
       try
       {
 
-        if (e.Document == null || e.Document.IsFamilyDocument || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
+        if (e.Document == null ||  e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
           return;
+
+        (App.Panel as Panel).Init();
 
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
@@ -159,6 +168,8 @@ namespace Speckle.ConnectorRevit.UI
     { }
     private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
     {
+      (App.Panel as Panel).Init();
+
       //clear saved streams if opening a new doc
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(new List<StreamState>());
@@ -166,10 +177,13 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
+      (App.Panel as Panel).Init();
+
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
-        SpeckleRevitCommand2.Panel.Show();
+        var panel = RevitApp.GetDockablePane(SpeckleRevitCommand2.PanelId);
+        panel.Show();
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);

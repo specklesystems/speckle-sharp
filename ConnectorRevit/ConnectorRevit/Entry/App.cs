@@ -17,7 +17,7 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static UIControlledApplication UICtrlApp { get; set; }
 
-    public IDockablePaneProvider Panel;
+    public static IDockablePaneProvider Panel;
 
     public Result OnStartup(UIControlledApplication application)
     {
