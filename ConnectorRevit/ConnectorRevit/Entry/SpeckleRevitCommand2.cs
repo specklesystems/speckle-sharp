@@ -23,7 +23,6 @@ namespace Speckle.ConnectorRevit.Entry
 
     internal static UIApplication uiapp;
 
-    internal static DockablePane Panel { get; set; }
 
 
     internal static DockablePaneId PanelId = new DockablePaneId(new Guid("{0A866FB8-8FD5-4DE8-B24B-56F4FA5B0836}"));
@@ -47,17 +46,13 @@ namespace Speckle.ConnectorRevit.Entry
     {
       uiapp = commandData.Application;
 
-      Panel = commandData.Application.GetDockablePane(PanelId);
-      Panel.Show();
+      var panel = commandData.Application.GetDockablePane(PanelId);
+      panel.Show();
 
 
       return Result.Succeeded;
     }
 
-    void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
-    {
-      //panel.lblProjectName.Content = e.Document.ProjectInformation.Name;
-    }
 
    
 

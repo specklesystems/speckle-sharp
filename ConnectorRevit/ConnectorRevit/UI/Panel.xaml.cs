@@ -15,8 +15,17 @@ namespace Speckle.ConnectorRevit
     {
       InitializeComponent();
 
+    }
+
+    /// <summary>
+    /// Switching documents in Revit causes the Panel content to "reset", so we need to re-nitialize the avalonia host each time
+    /// </summary>
+    public void Init()
+    {
       AvaloniaHost.Content = new MainUserControl();
     }
+
+
 
     public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
     {
