@@ -323,6 +323,16 @@ namespace ConnectorGrasshopper.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap SpeckleObjectKeysLogo {
+            get {
+                object obj = ResourceManager.GetObject("SpeckleObjectKeysLogo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap SQLiteTransport {
             get {
                 object obj = ResourceManager.GetObject("SQLiteTransport", resourceCulture);
