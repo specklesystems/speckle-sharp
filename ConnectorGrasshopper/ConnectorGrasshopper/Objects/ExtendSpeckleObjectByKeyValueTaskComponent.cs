@@ -14,7 +14,7 @@ namespace ConnectorGrasshopper.Objects
 {
   public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
   {
-    public ExtendSpeckleObjectByKeyValueTaskComponent() : base("Extend Speckle Object by Key/Value", "ESO K/V",
+    public ExtendSpeckleObjectByKeyValueTaskComponent() : base("Extend Speckle Object by Key/Value", "ESOKV",
       "Extend a current object with key/value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }

@@ -103,9 +103,15 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Objects\GetObjectKeysComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.ReceiveComponentSync.cs" />
     <Compile Include="Ops\Deprecated\Operations.SendComponentSync.cs" />
     <Compile Include="Ops\Deprecated\Operations.UpgradeUtils.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="UpgradeUtilities.cs" />
     <Compile Include="Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="Objects\CreateSpeckleObjectTaskComponent.cs" />
@@ -123,7 +129,6 @@
     <Compile Include="Ops\Operations.VariableInputReceiveComponent.cs" />
     <Compile Include="Ops\Operations.VariableInputSendComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObject.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectBase.cs" />
     <Compile Include="SchemaBuilder\CreateSchemaObjectDialog.cs" />
@@ -190,6 +195,7 @@
     <Content Include="Resources\ServerTransport.png" />
     <Content Include="Resources\speckle-logo-bw.png" />
     <Content Include="Resources\speckle-logo.png" />
+    <None Include="Resources\SpeckleObjectKeysLogo.png" />
     <Content Include="Resources\SpeckleTag_Schema.png" />
     <Content Include="Resources\SQLiteTransport.png" />
     <Content Include="Resources\StateTag_Detach.Large.png" />
@@ -234,7 +240,7 @@
       <Name>ConnectorGrasshopperUtils</Name>
     </ProjectReference>
   </ItemGroup>
-   <ItemGroup>
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -246,22 +252,22 @@
       <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
     </Compile>
   </ItemGroup>
-   <ItemGroup>
-     <EmbeddedResource Include="Properties\Resources.resx" />
-   </ItemGroup>
-    <Target Name="BeforeRebuild">
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Target Name="BeforeRebuild">
     <Message Text="Restoring T4 tool..." Importance="high" />
     <Exec Command="dotnet tool restore" />
     <Message Text="Generating T4 templates..." Importance="high" />
     <Exec Command="dotnet t4 -o $(SolutionDir)ConnectorGrasshopper\SchemaBuilder\SchemaBuilderGen.cs $(SolutionDir)ConnectorGrasshopper\SchemaBuilder\SchemaBuilderGen.tt -P=$(SolutionDir)ConnectorGrasshopper\SchemaBuilder" />
   </Target>
-  
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(AppData)\Grasshopper\Libraries\SpeckleGrasshopper2" />
   </Target>
-
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="Copy &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(TargetDir)$(AssemblyName).gha&quot;" />
     <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' '$(TargetDir)$(AssemblyName).gha'" />

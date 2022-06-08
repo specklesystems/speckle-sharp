@@ -14,6 +14,7 @@ using Grasshopper.Kernel.Data;
 using Rhino.Geometry;
 using System.Threading;
 using Rhino;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace ConnectorGrasshopper.Extras
 {
@@ -447,34 +448,50 @@ namespace ConnectorGrasshopper.Extras
 
     public static string GetRefId(object value)
     {
+
+      dynamic r = value;
       string refId = null;
-      switch (value)
+
+      try
       {
-        case GH_Brep r:
-          if (r.IsReferencedGeometry)
-            refId = r.ReferenceID.ToString();
-          break;
-        case GH_Mesh r:
-          if (r.IsReferencedGeometry)
-            refId = r.ReferenceID.ToString();
-          break;
-        case GH_Line r:
-          if (r.IsReferencedGeometry)
-            refId = r.ReferenceID.ToString();
-          break;
-        case GH_Point r:
-          if (r.IsReferencedGeometry)
-            refId = r.ReferenceID.ToString();
-          break;
-        case GH_Surface r:
-          if (r.IsReferencedGeometry)
-            refId = r.ReferenceID.ToString();
-          break;
-        case GH_Curve r:
-          if (r.IsReferencedGeometry)
-            refId = r.ReferenceID.ToString();
-          break;
+        if (r.IsReferencedGeometry)
+        {
+          refId = r.ReferenceID.ToString();
+        }
       }
+      catch(RuntimeBinderException)
+      {
+        // Pass
+      }
+
+
+      //switch (value)
+      //{
+      //  case GH_GeometricGoo<> r:
+      //    if (r.IsReferencedGeometry)
+      //      refId = r.ReferenceID.ToString();
+      //    break;
+      //  case GH_Mesh r:
+      //    if (r.IsReferencedGeometry)
+      //      refId = r.ReferenceID.ToString();
+      //    break;
+      //  case GH_Line r:
+      //    if (r.IsReferencedGeometry)
+      //      refId = r.ReferenceID.ToString();
+      //    break;
+      //  case GH_Point r:
+      //    if (r.IsReferencedGeometry)
+      //      refId = r.ReferenceID.ToString();
+      //    break;
+      //  case GH_Surface r:
+      //    if (r.IsReferencedGeometry)
+      //      refId = r.ReferenceID.ToString();
+      //    break;
+      //  case GH_Curve r:
+      //    if (r.IsReferencedGeometry)
+      //      refId = r.ReferenceID.ToString();
+      //    break;
+      //}
       return refId;
     }
 

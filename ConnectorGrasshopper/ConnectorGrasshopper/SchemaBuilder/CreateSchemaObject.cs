@@ -38,7 +38,7 @@ namespace ConnectorGrasshopper
     private bool UseSchemaTag;
     private bool UserSetSchemaTag;
 
-    public CreateSchemaObject() : base("Create Schema Object", "CsO",
+    public CreateSchemaObject() : base("Speckle Schema Object", "SSO",
       "Allows you to create a Speckle object from a schema class.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
