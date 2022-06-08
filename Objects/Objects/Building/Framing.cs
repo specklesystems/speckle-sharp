@@ -16,36 +16,46 @@ namespace Objects.Building
   /// </item>
   /// </list>
   /// </summary>
-  public class Framing : CurveBasedElement
+  /// 
+
+  public interface IFraming
   {
-
-
     /// <summary>
     /// The  (base) level of this <see cref="Framing"/>
     /// </summary>
-    public Level baseLevel { get; set; }
+    Level baseLevel { get; set; }
 
 
     /// <summary>
-    /// The offset of this <see cref="Framing"/> from the end of Point3
+    /// The offset of the Framing
     /// </summary>
-    public Vector end1Offset { get; set; }
-
-    /// <summary>
-    /// The offset of this <see cref="Framing"/> from the end of Point2
-    /// </summary>
-    public Vector end2Offset { get; set; }
-
-    public FramingType framingType { get; set; } = FramingType.Beam;
-
-      public enum FramingType
+    double offset { get; set; }
+  }
+  public class Column : CurveBasedElement, IFraming
+  {
+    public Column()
     {
-      Column,
-      Brace,
-      Beam
     }
-    public Framing()
+
+    public Level baseLevel { get; set; }
+    public double offset { get; set; }
+  }
+  public class Beam : CurveBasedElement, IFraming
+  {
+    public Level baseLevel { get; set; }
+    public double offset { get; set; }
+    public Beam()
     {
-    }  
+
+    }
+  }
+  public class Brace : CurveBasedElement, IFraming
+  {
+    public Level baseLevel { get; set; }
+    public double offset { get; set; }
+    public Brace()
+    {
+
+    }
   }
 }
