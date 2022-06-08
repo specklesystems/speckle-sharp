@@ -56,20 +56,8 @@ namespace Objects.Converter.Revit
       }
 
       DB.Floor revitFloor = null;
-#if REVIT2023
+#if (REVIT2019 || REVIT2020 || REVIT2021)
       if (floorType == null)
-      {
-        throw new SpeckleException("Floor needs a floor type");
-      }
-      else
-      {
-        if (slope != 0 && slopeDirection != null)
-          revitFloor = Floor.Create(Doc, new List<CurveLoop> { CurveArrayToCurveLoop(outline) }, floorType.Id, level.Id, structural, slopeDirection, slope);
-        if (revitFloor == null)
-          revitFloor = Floor.Create(Doc, new List<CurveLoop> { CurveArrayToCurveLoop(outline) }, floorType.Id, level.Id);
-      }
-#else
-  if (floorType == null)
       {
         if (slope != 0 && slopeDirection != null)
           revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
@@ -83,11 +71,37 @@ namespace Objects.Converter.Revit
         if (revitFloor == null)
           revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
+
+#else
+     if (floorType == null)
+      {
+        throw new SpeckleException("Floor needs a floor type");
+      }
+      else
+      {
+        //from revit 2022 we can create openings in the floors!
+        var profile = new List<CurveLoop> { CurveArrayToCurveLoop(outline) };
+        if(speckleFloor["voids"] != null && (speckleFloor["voids"] is List<ICurve> voids))
+        {
+          foreach (var v in voids)
+          {
+            var opening = CurveArrayToCurveLoop(CurveToNative(v));
+            profile.Add(opening);
+          }   
+        }
+
+
+        if (slope != 0 && slopeDirection != null)
+          revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, slopeDirection, slope);
+        if (revitFloor == null)
+          revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id);
+      }
 #endif
 
 
       Doc.Regenerate();
 
+      #if (REVIT2019 || REVIT2020 || REVIT2021)
       try
       {
         CreateVoids(revitFloor, speckleFloor);
@@ -96,6 +110,7 @@ namespace Objects.Converter.Revit
       {
         Report.LogConversionError(new Exception($"Could not create openings in floor {speckleFloor.applicationId}", ex));
       }
+      #endif
 
       SetInstanceParameters(revitFloor, speckleFloor);
 
