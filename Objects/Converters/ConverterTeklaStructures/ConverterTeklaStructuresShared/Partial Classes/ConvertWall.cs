@@ -32,7 +32,7 @@ namespace Objects.Converter.TeklaStructures
       Line line = (Line)Wall.baseCurve;
       TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
       TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
-      var myBeam = new Beam(startPoint, endPoint);
+      var myBeam = new Tekla.Structures.Model.Beam(startPoint, endPoint);
       if(Wall.sourceApp.name == HostApplications.TeklaStructures.Name ){
         SetPartPropertiesFromSourceApp((TeklaStructuresProperties)Wall.sourceApp,myBeam);
         myBeam.Insert();

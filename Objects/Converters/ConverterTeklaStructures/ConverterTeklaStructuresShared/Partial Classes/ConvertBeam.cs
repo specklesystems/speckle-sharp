@@ -36,7 +36,7 @@ namespace Objects.Converter.TeklaStructures
             Line line = (Line)beam.baseLine;
             TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
             TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
-            var myBeam = new Beam(startPoint, endPoint);
+            var myBeam = new Tekla.Structures.Model.Beam(startPoint, endPoint);
             SetPartProperties(myBeam, teklaBeam);
             if (!IsProfileValid(myBeam.Profile.ProfileString))
             {
@@ -89,7 +89,7 @@ namespace Objects.Converter.TeklaStructures
         Line line = (Line)beam.baseLine;
         TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
         TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
-        var myBeam = new Beam(startPoint, endPoint);
+        var myBeam = new Tekla.Structures.Model.Beam(startPoint, endPoint);
         myBeam.Insert();
         //Model.CommitChanges();
       }
@@ -123,32 +123,68 @@ namespace Objects.Converter.TeklaStructures
       var startPoint = beam.StartPoint;
       var units = GetUnitsFromModel();
 
-      Framing speckleFraming = new Framing();
-      var beamCS = beam.GetCoordinateSystem();
-      speckleFraming.sourceApp = new TeklaStructuresProperties
-      {
 
-        alignmnetVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units),
-        className = beam.Class,
-        profile = GetBeamProfile(beam.Profile.ProfileString),
-        material = GetMaterial(beam.Material.MaterialString),
-        teklaPosition = GetPositioning(beam.Position),
-        finish = beam.Finish,
-      };
-      Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
-      Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
-      speckleFraming.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
-      speckleFraming.applicationId = beam.Identifier.GUID.ToString();
-      speckleFraming.displayValue = new List<Mesh> { GetMeshFromSolid(beam.GetSolid()) };
-      switch(beam.Name){
+
+      switch (beam.Name){
         case "COLUMN":
-          speckleFraming.framingType = Framing.FramingType.Column;
+          var speckleColumn = new Column();
+          var beamCS = beam.GetCoordinateSystem();
+          speckleColumn.sourceApp = new TeklaStructuresProperties
+          {
+
+            alignmnetVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units),
+            className = beam.Class,
+            profile = GetBeamProfile(beam.Profile.ProfileString),
+            material = GetMaterial(beam.Material.MaterialString),
+            teklaPosition = GetPositioning(beam.Position),
+            finish = beam.Finish,
+          };
+          Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
+          Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+          speckleColumn.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
+          speckleColumn.applicationId = beam.Identifier.GUID.ToString();
+          speckleColumn.displayValue = new List<Mesh> { GetMeshFromSolid(beam.GetSolid()) };
+          return speckleColumn;
           break;
         case "BEAM":
-          speckleFraming.framingType = Framing.FramingType.Beam;
+          var speckleBeam = new Objects.Building.Beam();
+          beamCS = beam.GetCoordinateSystem();
+          speckleBeam.sourceApp = new TeklaStructuresProperties
+          {
+
+            alignmnetVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units),
+            className = beam.Class,
+            profile = GetBeamProfile(beam.Profile.ProfileString),
+            material = GetMaterial(beam.Material.MaterialString),
+            teklaPosition = GetPositioning(beam.Position),
+            finish = beam.Finish,
+          };
+          speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
+          speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+          speckleBeam.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
+          speckleBeam.applicationId = beam.Identifier.GUID.ToString();
+          speckleBeam.displayValue = new List<Mesh> { GetMeshFromSolid(beam.GetSolid()) };
+          return speckleBeam;
           break;
         case "BRACE":
-          speckleFraming.framingType = Framing.FramingType.Brace;
+          var speckleBrace = new Brace();
+          beamCS = beam.GetCoordinateSystem();
+          speckleBrace.sourceApp = new TeklaStructuresProperties
+          {
+
+            alignmnetVector = new Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units),
+            className = beam.Class,
+            profile = GetBeamProfile(beam.Profile.ProfileString),
+            material = GetMaterial(beam.Material.MaterialString),
+            teklaPosition = GetPositioning(beam.Position),
+            finish = beam.Finish,
+          };
+          speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
+          speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+          speckleBrace.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
+          speckleBrace.applicationId = beam.Identifier.GUID.ToString();
+          speckleBrace.displayValue = new List<Mesh> { GetMeshFromSolid(beam.GetSolid()) };
+          return speckleBrace;
           break;
       }
       //Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
@@ -187,7 +223,7 @@ namespace Objects.Converter.TeklaStructures
       //var solid = beam.GetSolid();
       //speckleBeam.displayMesh = GetMeshFromSolid(solid);
 
-      return speckleFraming;
+      return null;
     }
     /// <summary>
     /// Create beam without display mesh for boolean parts
