@@ -19,7 +19,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
 
-    public GetObjectValueByKeyTaskComponent() : base("Speckle Object Value by Key", "Object K/V",
+    public GetObjectValueByKeyTaskComponent() : base("Speckle Object Value by Key", "SOVK",
       "Gets the value of a specific key in a Speckle object.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }

@@ -13,7 +13,7 @@ namespace ConnectorGrasshopper.Objects
   {
 
     public GetObjectKeysComponent()
-      : base("Speckle - Get Object Keys", "SGOK",
+      : base("Speckle Object Keys", "SOK",
           "Get a list of keys available in a speckle object",
            ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
@@ -94,6 +94,8 @@ namespace ConnectorGrasshopper.Objects
     }
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.SpeckleObjectKeysLogo;
+    
+    public override GH_Exposure Exposure => GH_Exposure.primary;
 
     public override Guid ComponentGuid => new Guid("16E28D2D-EA9F-4F59-96CA-045A32EA130C");
   }
