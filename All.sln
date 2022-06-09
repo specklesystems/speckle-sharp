@@ -183,6 +183,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriverPluginCSharp", "Conne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2023", "ConnectorRevit\ConnectorRevit2023\ConnectorRevit2023.csproj", "{586A5A37-93F6-427E-8DF8-C10DB4D6822A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ArchiCAD", "ArchiCAD", "{DF1B3505-793C-4073-975B-04C81CC3CDC4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorArchicad", "ConnectorArchicad\ConnectorArchicad\ConnectorArchicad.csproj", "{D163D710-B946-4D50-8833-BD8B9941033A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{02a24dd8-e0ca-4657-baa7-b033a4563709}*SharedItemsImports = 5
@@ -713,6 +717,14 @@ Global
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.ActiveCfg = Release|Any CPU
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.Build.0 = Release|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Debug|x64.Build.0 = Debug|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|x64.ActiveCfg = Release|Any CPU
+		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -804,6 +816,8 @@ Global
 		{C091E499-597D-4077-B83F-08E069091090} = {11C013F3-2583-4292-938B-707294DAECE1}
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73} = {11C013F3-2583-4292-938B-707294DAECE1}
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
+		{DF1B3505-793C-4073-975B-04C81CC3CDC4} = {DD7DA7E3-FBB7-4216-852B-A4A5BF3AB9AB}
+		{D163D710-B946-4D50-8833-BD8B9941033A} = {DF1B3505-793C-4073-975B-04C81CC3CDC4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
