@@ -9,7 +9,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 #endif
 
@@ -64,7 +64,7 @@ namespace Objects.Converter.AutocadCivil
         {
           _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
 
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
           if (_modelUnits == Units.None)
           {
             // try to get the drawing unit instead
