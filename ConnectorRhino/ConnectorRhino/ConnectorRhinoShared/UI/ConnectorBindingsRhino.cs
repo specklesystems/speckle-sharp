@@ -31,27 +31,16 @@ namespace SpeckleRhino
   {
     public RhinoDoc Doc { get => RhinoDoc.ActiveDoc; }
 
-    public Timer SelectionTimer;
-
     private static string SpeckleKey = "speckle2";
     private static string UserStrings = "userStrings";
     private static string UserDictionary = "userDictionary";
+
+    public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
 
     public ConnectorBindingsRhino()
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
       RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange;
-
-      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-      SelectionTimer.Start();
-    }
-
-    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      if (Doc == null)
-        return;
-      var selection = GetSelectedObjects();
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -74,7 +63,6 @@ namespace SpeckleRhino
       if (UpdateSelectedStream != null)
         UpdateSelectedStream();
     }
-
 
     public override List<ReceiveMode> GetReceiveModes()
     {
@@ -128,10 +116,41 @@ namespace SpeckleRhino
 
     public override string GetFileName() => Doc?.Name;
 
+    private void LogUnsupportedObjects(List<RhinoObject> objs, ISpeckleConverter converter)
+    {
+      var reportLog = new Dictionary<string, int>();
+      foreach (var obj in objs)
+      {
+        var type = obj.ObjectType.ToString();
+        if (reportLog.ContainsKey(type)) reportLog[type] = reportLog[type]++;
+        else reportLog.Add(type, 1);
+      }
+      //converter.Report.LogOperationError();
+      RhinoApp.WriteLine("Deselected unsupported objects:");
+      foreach (var entry in reportLog)
+        Rhino.RhinoApp.WriteLine($"{entry.Value} of type {entry.Key}");
+    }
     public override List<string> GetSelectedObjects()
     {
-      var objs = Doc?.Objects.GetSelectedObjects(true, false).Select(obj => obj.Id.ToString()).ToList();
-      return objs;
+      var objs = new List<string>();
+      if (Doc == null) return objs;
+
+      Converter.SetContextDocument(Doc);
+      
+      var selected = Doc.Objects.GetSelectedObjects(true, false).ToList();
+      if (selected.Count == 0) return objs;
+      var supportedObjs = selected.Where(o => Converter.CanConvertToSpeckle(o) == true)?.ToList();
+      var unsupportedObjs = selected.Where(o => Converter.CanConvertToSpeckle(o) == false)?.ToList();
+
+      // handle any unsupported objects and modify doc selection if so
+      if (unsupportedObjs.Count > 0)
+      {
+        LogUnsupportedObjects(unsupportedObjs, Converter);
+        Doc.Objects.UnselectAll(false);
+        supportedObjs.ForEach(o => o.Select(true, true));
+      }
+
+      return supportedObjs.Select(o => o.Id.ToString())?.ToList();
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
@@ -434,9 +453,7 @@ namespace SpeckleRhino
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.RhinoAppName);
-      converter.SetContextDocument(Doc);
+      Converter.SetContextDocument(Doc);
 
       var streamId = state.StreamId;
       var client = state.Client;
@@ -480,12 +497,12 @@ namespace SpeckleRhino
 
         if (obj != null)
         {
-          if (!converter.CanConvertToSpeckle(obj))
+          if (!Converter.CanConvertToSpeckle(obj))
           {
             progress.Report.Log($"Skipped not supported type:  ${obj.Geometry.ObjectType}");
             continue;
           }
-          converted = converter.ConvertToSpeckle(obj);
+          converted = Converter.ConvertToSpeckle(obj);
           if (converted == null)
           {
             var exception = new Exception($"Failed to convert object ${applicationId} of type ${obj.Geometry.ObjectType}.");
@@ -518,10 +535,10 @@ namespace SpeckleRhino
         else if (viewIndex != -1)
         {
           ViewInfo view = Doc.NamedViews[viewIndex];
-          converted = converter.ConvertToSpeckle(view);
+          converted = Converter.ConvertToSpeckle(view);
           if (converted == null)
           {
-            converter.Report.LogConversionError(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
+            Converter.Report.LogConversionError(new Exception($"Failed to convert object ${applicationId} of type ${view.GetType()}."));
             continue;
           }
           containerName = "Named Views";
@@ -551,7 +568,7 @@ namespace SpeckleRhino
         objCount++;
       }
 
-      progress.Report.Merge(converter.Report);
+      progress.Report.Merge(Converter.Report);
 
       if (objCount == 0)
       {
