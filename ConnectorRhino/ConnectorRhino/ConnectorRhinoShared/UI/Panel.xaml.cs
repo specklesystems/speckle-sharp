@@ -14,10 +14,17 @@ namespace SpeckleRhino
   {
     public Panel()
     {
-      InitializeComponent();
-      //Set in the Plugin so that it's not disposed each time the panel is closed
-      this.DataContext = SpeckleRhinoConnectorPlugin.Instance.ViewModel;
-      AvaloniaHost.Content = new MainUserControl();
+      try
+      {
+        InitializeComponent();
+        //Set in the Plugin so that it's not disposed each time the panel is closed
+        this.DataContext = SpeckleRhinoConnectorPlugin.Instance.ViewModel;
+        AvaloniaHost.Content = new MainUserControl();
+      }
+      catch (Exception ex)
+      {
+
+      }
 
       
 
