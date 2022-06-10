@@ -1,0 +1,85 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.StreamEditControls.Comments"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="500"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <viewModels:DesignSavedStreamViewModel />
+  </Design.DataContext>
+
+  <UserControl.Resources>
+    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+    <conv:RoleValueConverter x:Key="RoleValueConverter" />
+    <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
+  </UserControl.Resources>
+  <ScrollViewer Name="activityScroller">
+    <Grid RowDefinitions="*,auto">
+      <ItemsControl Margin="0,0,0,10" Items="{Binding Comments.items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Expander
+              Padding="15,0"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch"
+              Background="Transparent"
+              Classes="Flat">
+
+              <Expander.Header>
+
+                <!--<Image
+                    Width="28"
+                    Height="28"
+                    Source="{Binding AvatarImage}">
+
+                    <Image.Clip>
+                      <EllipseGeometry Rect="0,0,28,28" />
+                    </Image.Clip>
+                  </Image>-->
+                <Grid
+                  Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}, Path=ActualWidth}"
+                  HorizontalAlignment="Stretch"
+                  Background="Red"
+                  ColumnDefinitions="auto,*, auto">
+                  <icons:MaterialIcon
+                    Width="15"
+                    Height="15"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Kind="Account" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Margin="5,10,10,10"
+                    HorizontalAlignment="Stretch"
+                    Text="{Binding text}"
+                    TextWrapping="Wrap" />
+                  <TextBlock
+                    Grid.Column="2"
+                    Margin="5,10,10,10"
+                    HorizontalAlignment="Right"
+                    Text="3 replies"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="Wrap" />
+                </Grid>
+
+              </Expander.Header>
+
+            </Expander>
+
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+
+      </ItemsControl>
+
+    </Grid>
+
+  </ScrollViewer>
+</UserControl>

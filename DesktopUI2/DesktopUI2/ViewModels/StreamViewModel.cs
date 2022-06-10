@@ -5,7 +5,6 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels.Share;
-using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows;
 using DynamicData;
@@ -233,6 +232,13 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _activity, value);
     }
 
+    private Comments _comments;
+    public Comments Comments
+    {
+      get => _comments;
+      private set => this.RaiseAndSetIfChanged(ref _comments, value);
+    }
+
     private FilterViewModel _selectedFilter;
     public FilterViewModel SelectedFilter
     {
@@ -383,6 +389,7 @@ namespace DesktopUI2.ViewModels
 
         GetBranchesAndRestoreState();
         GetActivity();
+        GetComments();
       }
       catch (Exception ex)
       {
@@ -409,7 +416,7 @@ namespace DesktopUI2.ViewModels
       };
         var customMenues = Bindings.GetCustomStreamMenuItems();
         if (customMenues != null)
-          menu.Items.AddRange(customMenues.Select(x => new MenuItemViewModel(x, this.StreamState)).ToList());
+          menu.Items.AddRange(customMenues.Select(x => new MenuItemViewModel(x, StreamState)).ToList());
         //remove is added last
         //menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
         MenuItems.Add(menu);
@@ -522,6 +529,19 @@ namespace DesktopUI2.ViewModels
 
       }
     }
+
+    private async void GetComments()
+    {
+      try
+      {
+        Comments = await Client.StreamGetComments(Stream.id);
+      }
+      catch (Exception ex)
+      {
+
+      }
+    }
+
 
     private async void ScrollToBottom()
     {
@@ -810,7 +830,7 @@ namespace DesktopUI2.ViewModels
         //report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
         report.DataContext = Progress;
         await report.ShowDialog();
-        
+
       }
       catch (Exception ex)
       {
