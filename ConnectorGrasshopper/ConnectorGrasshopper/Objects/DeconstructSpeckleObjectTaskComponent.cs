@@ -40,11 +40,16 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      DA.DisableGapLogic();
+      //DA.DisableGapLogic();
       if (InPreSolve)
       {
         IGH_Goo inputObj = null;
-        DA.GetData(0, ref inputObj);
+        if (!DA.GetData(0, ref inputObj))
+        {
+          TaskList.Add(Task.Run(() => new Dictionary<string, object>()));
+          return;
+        }
+
         Base @base;
         if(inputObj is GH_SpeckleBase speckleBase)
         {
