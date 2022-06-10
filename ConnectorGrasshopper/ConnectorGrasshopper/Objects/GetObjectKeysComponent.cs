@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Rhino.Geometry;
@@ -9,8 +10,12 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class GetObjectKeysComponent : GH_Component
+  public class GetObjectKeysComponent : GH_SpeckleComponent
   {
+    /// <summary>
+    /// Determines if the result should be computed "per object" or return just a list of unique keys for all objects.
+    /// </summary>
+    private bool perObject = true;
 
     public GetObjectKeysComponent()
       : base("Speckle Object Keys", "SOK",
@@ -19,12 +24,12 @@ namespace ConnectorGrasshopper.Objects
     {
     }
 
-    protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Speckle object to deconstruct into it's properties.", GH_ParamAccess.item));
     }
 
-    protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddTextParameter("Keys", "K", "The keys available on this speckle object", GH_ParamAccess.list);
     }
@@ -66,8 +71,18 @@ namespace ConnectorGrasshopper.Objects
         DA.SetDataList(0, keys);
       }
     }
+    
+    public override bool Write(GH_IWriter writer)
+    {
+      writer.SetBoolean("perObject", perObject);
+      return base.Write(writer);
+    }
 
-    private bool perObject = true;
+    public override bool Read(GH_IReader reader)
+    {
+      reader.TryGetBoolean("perObject", ref perObject);
+      return base.Read(reader);
+    }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
