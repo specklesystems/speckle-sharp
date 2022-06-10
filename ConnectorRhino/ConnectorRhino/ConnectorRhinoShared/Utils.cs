@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 using Rhino;
 using Rhino.DocObjects;
@@ -75,7 +76,19 @@ namespace SpeckleRhino
     #endregion
   }
 
-  
+  public class PreviewObject
+  {
+    public string Layer { get; set; }
+
+    public string Id { get; set; }
+
+    public List<Base> Display { get; set; }
+
+    public Base Base { get; set; }
+
+    public bool Convertible { get; set; }
+  }
+
   public static class Formatting
   {
     public static string TimeAgo(string timestamp)

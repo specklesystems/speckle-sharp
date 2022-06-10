@@ -36,6 +36,8 @@ namespace SpeckleRhino
     private static string UserDictionary = "userDictionary";
 
     public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    public List<PreviewObject> Preview { get; set; } = new List<PreviewObject>();
+    private string SelectedReceiveCommit { get; set; }
 
     public ConnectorBindingsRhino()
     {
@@ -188,46 +190,20 @@ namespace SpeckleRhino
     #endregion
 
     #region receiving 
-
-    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    public async void PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.RhinoAppName);
+      // first check if commit is the same and preview objects have already been generated
+      Commit commit = GetCommit(state, progress);
 
-      if (converter == null)
+      if (commit.id != SelectedReceiveCommit)
       {
-        throw new Exception("Could not find any Kit!");
-        progress.CancellationTokenSource.Cancel();
-      }
+        SelectedReceiveCommit = commit.id;
 
-      converter.SetContextDocument(Doc);
+        string referencedObject = commit.referencedObject;
+        var transport = new ServerTransport(state.Client.Account, state.StreamId);
+        var contex = SynchronizationContext.Current;
 
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
-      //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      Commit commit = null;
-      if (state.CommitId == "latest")
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-        commit = res;
-      }
-      string referencedObject = commit.referencedObject;
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
-      var contex = SynchronizationContext.Current;
-
-      //var commit = state.Commit;
-      var commitObject = await Operations.Receive(
+        var commitObject = await Operations.Receive(
           referencedObject,
           progress.CancellationTokenSource.Token,
           transport,
@@ -241,56 +217,166 @@ namespace SpeckleRhino
           disposeTransports: true
           );
 
-      if (progress.Report.OperationErrorsCount != 0)
-        return state;
+        if (progress.Report.OperationErrorsCount != 0)
+          return state;
+
+        int count = 0;
+        var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
+      }
+      else
+      {
+        // convert preview objects
+        foreach (var previewObj in Preview)
+        {
+
+        }
+      }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
+    }
 
-      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
+    private void GetPreviewObj(PreviewObject obj)
+    {
+      foreach (var displayObj in obj.Display) // these should be meshes and curves
+      {
+        var converted = Converter.ConvertToNative(displayObj);
+        if (converted == null || !(converted is GeometryBase)) continue;
 
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
+        // get display material
+        var material = new DisplayMaterial();
+        var e = new DrawEventArgs();
 
-      // get commit layer name 
-      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+        switch (converted)
+        {
+          case Mesh o:
+            var vp = e.Display.Viewport;
+            if (vp.DisplayMode.EnglishName.ToLower() == "wireframe")
+              e.Display.DrawMeshWires(m_mesh, m_color);
+            else
+              e.Display.DrawMeshShaded(m_mesh, m_material);
+            break;
+        }
+        Doc.Views.Redraw();
+      }
+    }
 
-      RhinoApp.InvokeOnUiThread((Action)delegate
-     {
-       // give converter a way to access the base commit layer name
-       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    {
+      var kit = KitManager.GetDefaultKit();
+      var converter = kit.LoadConverter(Utils.RhinoAppName);
 
-       // flatten the commit object to retrieve children objs
-       int count = 0;
-       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
+      if (converter == null)
+      {
+        throw new Exception("Could not find any Kit!");
+        progress.CancellationTokenSource.Cancel();
+      }
+      converter.SetContextDocument(Doc);
 
-       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-         return;
+      var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-       foreach (var commitObj in commitObjs)
-       {
-         var (obj, layerPath) = commitObj;
-         BakeObject(obj, layerPath, state, converter);
-         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-           return;
-         conversionProgressDict["Conversion"]++;
-         progress.Update(conversionProgressDict);
-       }
+      Commit commit = GetCommit(state, progress);
+      if (commit == null) return null;
 
-       progress.Report.Merge(converter.Report);
-       Doc.Views.Redraw();
-       Doc.EndUndoRecord(undoRecord);
+      // check if preview objects have already been generated, if so convert & bake them directly
+      if (SelectedReceiveCommit == commit.id && Preview.Count > 0)
+      {
+        RhinoApp.InvokeOnUiThread((Action)delegate
+        {
+          foreach (var previewObj in Preview)
+          {
+            BakeObject(previewObj.Base, previewObj.Layer, state, converter);
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+              return;
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
+          }
+        });
+      }
+      // otherwise, receive the commit, fatten, and bake
+      else
+      {
+        var context = SynchronizationContext.Current;
+        string referencedObject = commit.referencedObject;
+        var commitObject = await Operations.Receive(
+            referencedObject,
+            progress.CancellationTokenSource.Token,
+            transport,
+            onProgressAction: dict => progress.Update(dict),
+            onErrorAction: (s, e) =>
+            {
+              progress.Report.LogOperationError(e);
+              progress.CancellationTokenSource.Cancel();
+            },
+            onTotalChildrenCountKnown: (c) => progress.Max = c,
+            disposeTransports: true
+            );
 
-       // undo notes edit
-       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-       Doc.Notes = segments[0];
-     });
+        if (progress.Report.OperationErrorsCount != 0)
+          return state;
 
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          return null;
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+        var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
+
+        var conversionProgressDict = new ConcurrentDictionary<string, int>();
+        conversionProgressDict["Conversion"] = 0;
+
+        // get commit layer name 
+        var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+
+        RhinoApp.InvokeOnUiThread((Action)delegate
+        {
+          // give converter a way to access the base commit layer name
+          RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
+
+          // flatten the commit object to retrieve children objs
+          int count = 0;
+          var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
+
+          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            return;
+
+          foreach (var commitObj in commitObjs)
+          {
+            var (obj, layerPath) = commitObj;
+            BakeObject(obj, layerPath, state, converter);
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+              return;
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
+          }
+
+          // undo notes edit
+          var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+          Doc.Notes = segments[0];
+        });
+      }
+
+      progress.Report.Merge(converter.Report);
+      Doc.Views.Redraw();
+      Doc.EndUndoRecord(undoRecord);
 
       return state;
+    }
+
+    // gets the state commit
+    private async Commit GetCommit(StreamState state, ProgressViewModel progress)
+    {
+      if (state.CommitId == "latest") //if "latest", always make sure we get the latest commit
+      {
+        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+        commit = res.commits.items.FirstOrDefault();
+      }
+      else
+      {
+        var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
+        commit = res;
+      }
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
+      return commit;
     }
 
     // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
@@ -322,7 +408,7 @@ namespace SpeckleRhino
 
             // get bake layer name
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-            string rhLayerName = (objLayerName.StartsWith($"{layer}{Layer.PathSeparator}")) ? objLayerName : $"{layer}{Layer.PathSeparator}{objLayerName}";
+            string rhLayerName = objLayerName.StartsWith($"{layer}{Layer.PathSeparator}") ? objLayerName : $"{layer}{Layer.PathSeparator}{objLayerName}";
 
             var nestedObjects = FlattenCommitObject(@base[prop], converter, rhLayerName, state, ref count, foundConvertibleMember);
             if (nestedObjects.Count > 0)
@@ -369,9 +455,8 @@ namespace SpeckleRhino
         return;
       }
 
-      var convertedList = new List<object>();
-
       //Iteratively flatten any lists
+      var convertedList = new List<object>();
       void FlattenConvertedObject(object item)
       {
         if (item is IList list)
@@ -380,7 +465,6 @@ namespace SpeckleRhino
         else
           convertedList.Add(item);
       }
-
       FlattenConvertedObject(converted);
 
       foreach (var convertedItem in convertedList)
