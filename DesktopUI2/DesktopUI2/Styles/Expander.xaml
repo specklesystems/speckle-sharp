@@ -13,15 +13,15 @@
       Orientation="Vertical">
       <Expander IsExpanded="True">
         <Expander.Header>
-          <Grid Background="Red" ColumnDefinitions="*, auto">
+          <Grid ColumnDefinitions="*, auto">
             <TextBlock
-              Grid.Column="1"
+              Grid.Column="0"
               Margin="5,10,10,10"
               HorizontalAlignment="Stretch"
-              Text="{Binding text}"
+              Text="This is an exander"
               TextWrapping="Wrap" />
             <TextBlock
-              Grid.Column="2"
+              Grid.Column="1"
               Margin="5,10,10,10"
               HorizontalAlignment="Right"
               Text="3 replies"
@@ -62,7 +62,7 @@
     <Setter Property="Background" Value="Transparent" />
   </Style>
 
-  <Style Selector="Expander /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="Expander:up /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter, Expander:down /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
 

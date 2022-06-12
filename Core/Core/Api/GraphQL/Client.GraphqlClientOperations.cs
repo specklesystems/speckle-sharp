@@ -1318,7 +1318,6 @@ namespace Speckle.Core.Api
                             id
                             authorId
                             archived
-                            screenshot
                             text
                             data
                             createdAt

@@ -232,8 +232,8 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _activity, value);
     }
 
-    private Comments _comments;
-    public Comments Comments
+    private List<CommentViewModel> _comments;
+    public List<CommentViewModel> Comments
     {
       get => _comments;
       private set => this.RaiseAndSetIfChanged(ref _comments, value);
@@ -516,8 +516,7 @@ namespace DesktopUI2.ViewModels
         var activity = new List<ActivityViewModel>();
         foreach (var a in filteredActivity)
         {
-          var avm = new ActivityViewModel();
-          await avm.Init(a, Client);
+          var avm = new ActivityViewModel(a, Client);
           activity.Add(avm);
 
         }
@@ -534,7 +533,15 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        Comments = await Client.StreamGetComments(Stream.id);
+        var commentData = await Client.StreamGetComments(Stream.id);
+        var comments = new List<CommentViewModel>();
+        foreach (var c in commentData.items)
+        {
+          var cvm = new CommentViewModel(c, Client);
+          comments.Add(cvm);
+
+        }
+        Comments = comments;
       }
       catch (Exception ex)
       {
