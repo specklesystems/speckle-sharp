@@ -1324,6 +1324,10 @@ namespace Speckle.Core.Api
                             updatedAt
                             viewedAt
                             reactions
+                            resources {
+                              resourceId
+                              resourceType
+                            }
                             replies {
                               totalCount
                               cursor

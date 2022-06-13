@@ -304,7 +304,24 @@ namespace Speckle.Core.Api
     public DateTime? viewedAt { get; set; }
     public object reactions { get; set; }
     public Comments replies { get; set; }
+    public List<Resource> resources { get; set; }
   }
+
+  public class Resource
+  {
+    public string resourceId { get; set; }
+    public ResourceType resourceType { get; set; }
+  }
+
+  public enum ResourceType
+  {
+    commit,
+    stream,
+    @object,
+    comment
+  }
+
+
 
   public class Location
   {

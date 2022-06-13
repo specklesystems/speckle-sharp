@@ -1,8 +1,11 @@
 ﻿using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DesktopUI2.ViewModels
@@ -61,6 +64,22 @@ namespace DesktopUI2.ViewModels
         }
       }
 
+    }
+
+    public void OpenComment()
+    {
+      if (Comment.resources == null || !Comment.resources.Any())
+        return;
+
+      var r0 = Comment.resources[0];
+      var overlay = "";
+
+      if (Comment.resources.Count > 1)
+        overlay = "&overlay=" + string.Join(",", Comment.resources.Skip(1).Select(x => x.resourceId));
+
+
+      Process.Start(new ProcessStartInfo($"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}") { UseShellExecute = true });
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment View" } });
     }
 
 
