@@ -344,4 +344,9 @@ namespace Speckle.Core.Api
   {
     public Comments comments { get; set; }
   }
+
+  public class CommentItemData
+  {
+    public CommentItem comment { get; set; }
+  }
 }

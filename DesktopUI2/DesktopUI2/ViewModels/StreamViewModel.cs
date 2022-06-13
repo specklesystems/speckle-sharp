@@ -537,7 +537,7 @@ namespace DesktopUI2.ViewModels
         var comments = new List<CommentViewModel>();
         foreach (var c in commentData.items)
         {
-          var cvm = new CommentViewModel(c, Client);
+          var cvm = new CommentViewModel(c, Stream.id, Client);
           comments.Add(cvm);
 
         }

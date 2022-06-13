@@ -1356,6 +1356,54 @@ namespace Speckle.Core.Api
         throw new SpeckleException(e.Message, e);
       }
     }
+
+    /// <summary>
+    ///  Gets the screenshot of a Comment
+    /// </summary>
+    /// <param name="id">Id of the comment</param>
+    /// <param name="streamId">Id of the stream to get the comment from</param>
+    /// <returns></returns>
+    public Task<string> StreamGetCommentScreenshot(string id, string streamId)
+    {
+      return StreamGetCommentScreenshot(CancellationToken.None, id, streamId);
+    }
+
+    /// <summary>
+    ///  Gets the screenshot of a Comment
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="id">Id of the comment</param>
+    /// <param name="streamId">Id of the stream to get the comment from</param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<string> StreamGetCommentScreenshot(CancellationToken cancellationToken, string id, string streamId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Comment($id: String!, $streamId: String!) {
+                      comment(id: $id, streamId: $streamId) {
+                            id
+                            screenshot
+                          }
+                        }                                    
+                    ",
+          Variables = new { id, streamId }
+        };
+
+        var res = await GQLClient.SendMutationAsync<CommentItemData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        return res.Data.comment.screenshot;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
     #endregion
 
     #region objects

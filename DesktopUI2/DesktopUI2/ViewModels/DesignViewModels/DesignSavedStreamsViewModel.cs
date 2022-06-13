@@ -104,7 +104,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
       Comments = new List<CommentViewModel>()
       {
-         new CommentViewModel (new CommentItem{ text= "This is a sample comment" }, null)
+         new CommentViewModel (new CommentItem{ text= "This is a sample comment" }, "", null)
 
       };
     }
