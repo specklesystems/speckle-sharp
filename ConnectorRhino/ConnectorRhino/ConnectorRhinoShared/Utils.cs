@@ -11,6 +11,7 @@ using Rhino;
 using Rhino.DocObjects;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using Rhino.Geometry;
 
 namespace SpeckleRhino
 {
@@ -83,6 +84,8 @@ namespace SpeckleRhino
     public string Id { get; set; }
 
     public List<Base> Display { get; set; }
+
+    public List<object> Converted { get; set; } // these should be meshes, curves, hatches, or text
 
     public Base Base { get; set; }
 
