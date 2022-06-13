@@ -250,6 +250,11 @@ namespace SpeckleRhino
       conversionProgressDict["Conversion"] = 0;
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
+      // get commit layer name
+      // give converter a way to access the base commit layer name
+      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+      Doc.Notes += "%%%" + commitLayerName;
+
       // create preview objects if they don't already exist
       if (Preview.Count == 0)
       {
@@ -261,28 +266,11 @@ namespace SpeckleRhino
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
           return null;
 
-        // get commit layer name 
-        var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
-
-        RhinoApp.InvokeOnUiThread((Action)delegate
-        {
-          // give converter a way to access the base commit layer name
-          RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
-
-          // flatten the commit object to retrieve children objs
-          int count = 0;
-          Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
-
-          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-            return;
-
-          // undo notes edit
-          var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-          Doc.Notes = segments[0];
-        });
+        // flatten the commit object to retrieve children objs
+        int count = 0;
+        Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
       }
-      if (Preview.Count == 0)
-        progress.Report.OperationErrors.Add(new Exception($"Could not find any convertible objects!"));
+
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
@@ -291,7 +279,7 @@ namespace SpeckleRhino
       {
         foreach (var previewObj in Preview)
         {
-          if (previewObj.Converted != null)
+          if (previewObj.Converted.Count > 0)
             BakeObject(previewObj.Base, previewObj.Layer, state, previewObj.Converted);
           else 
             BakeObject(previewObj.Base, previewObj.Layer, state);
@@ -301,6 +289,10 @@ namespace SpeckleRhino
           progress.Update(conversionProgressDict);
         }
       });
+
+      // undo notes edit
+      var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+      Doc.Notes = segments[0];
 
       progress.Report.Merge(Converter.Report);
       Doc.Views.Redraw();
@@ -358,26 +350,38 @@ namespace SpeckleRhino
 
       if (obj is Base @base)
       {
-        var previewObj = new PreviewObject() { Base = @base };
+        var previewObj = new PreviewObject() { Base = @base, Layer = layer };
         if (Converter.CanConvertToNative(@base))
         {
           previewObj.Convertible = true;
-          previewObj.Layer = layer;
           objects.Add(previewObj);
           return objects;
         }
         else
         {
           previewObj.Convertible = false;
-          List<string> props = @base.GetDynamicMembers().ToList();
+
+          // handle fallback display separately
+          // NOTE: deprecated displayMesh!!
+          bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
-            props.Add("displayValue");
-          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
-            props.Add("displayMesh");
+          {
+            var fallbackObjects = FlattenCommitObject(@base["displayValue"], layer, ref count, foundConvertibleMember);
+            if (fallbackObjects.Count > 0)
+            {
+              previewObj.Display.AddRange(fallbackObjects);
+              foundConvertibleMember = true;
+            }
+            hasFallback = true;
+          }
+          if (hasFallback)
+            objects.Add(previewObj);
+
+          // handle any children elements, these are added as separate previewObjects
+          List<string> props = @base.GetDynamicMembers().ToList();
           if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
             props.Add("elements");
           int totalMembers = props.Count;
-
           foreach (var prop in props)
           {
             count++;
@@ -389,7 +393,7 @@ namespace SpeckleRhino
             var nestedObjects = FlattenCommitObject(@base[prop], rhLayerName, ref count, foundConvertibleMember);
             if (nestedObjects.Count > 0)
             {
-              previewObj.Display.AddRange(nestedObjects);
+              objects.AddRange(nestedObjects);
               foundConvertibleMember = true;
             }
           }

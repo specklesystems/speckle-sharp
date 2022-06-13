@@ -84,9 +84,9 @@ namespace SpeckleRhino
   {
     public string Layer { get; set; }
 
-    public List<PreviewObject> Display { get; set; }
+    public List<PreviewObject> Display { get; set; } = new List<PreviewObject>();
 
-    public List<object> Converted { get; set; } = new List<object>();// these should be meshes, curves, hatches, or text
+    public List<object> Converted { get; set; } = new List<object>(); 
 
     public Base Base { get; set; }
 
