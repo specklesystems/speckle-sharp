@@ -12,6 +12,8 @@ using Rhino.DocObjects;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Rhino.Geometry;
+using Rhino.Display;
+using DesktopUI2.Models;
 
 namespace SpeckleRhino
 {
@@ -77,20 +79,91 @@ namespace SpeckleRhino
     #endregion
   }
 
+  #region Preview
   public class PreviewObject
   {
     public string Layer { get; set; }
 
-    public string Id { get; set; }
+    public List<PreviewObject> Display { get; set; }
 
-    public List<Base> Display { get; set; }
-
-    public List<object> Converted { get; set; } // these should be meshes, curves, hatches, or text
+    public List<object> Converted { get; set; } = new List<object>();// these should be meshes, curves, hatches, or text
 
     public Base Base { get; set; }
 
     public bool Convertible { get; set; }
+
+    public bool RemoveIfCancelled { get; set; } = false;
   }
+
+  public class PreviewConduit : Rhino.Display.DisplayConduit
+  {
+    public List<PreviewObject> Preview { get; set; }
+
+    protected override void PreDrawObjects(Rhino.Display.DrawEventArgs e)
+    {
+      // draw preview objects
+      foreach (var previewObj in Preview)
+      {
+        if (previewObj.Convertible)
+          Draw(previewObj, e.Display);
+        else
+          previewObj.Display.ForEach(o => Draw(o, e.Display));
+      }
+    }
+
+    private void Draw(PreviewObject obj, DisplayPipeline display)
+    {
+      var material = new DisplayMaterial();
+      var vp = display.Viewport;
+      bool wireMode = vp.DisplayMode.EnglishName.ToLower() == "wireframe" ? true : false;
+
+      foreach (var convertedObj in obj.Converted) // these should be meshes and curves
+      {
+        switch (convertedObj)
+        {
+          case Brep o:
+            if (wireMode)
+              display.DrawBrepWires(o, material.Diffuse);
+            else
+              display.DrawBrepShaded(o, material);
+            break;
+          case Mesh o:
+            if (wireMode)
+              display.DrawMeshWires(o, material.Diffuse);
+            else
+              display.DrawMeshShaded(o, material);
+            break;
+          case Curve o:
+            display.DrawCurve(o, material.Diffuse);
+            break;
+          case Rhino.Geometry.Point3d o:
+            display.DrawPoint(o);
+            break;
+          case PointCloud o:
+            display.DrawPointCloud(o, 1);
+            break;
+          case Hatch o:
+            display.DrawHatch(o, material.Diffuse, material.Diffuse);
+            break;
+          case Text3d o:
+            display.Draw3dText(o, material.Diffuse);
+            break;
+          case InstanceObject o:
+            // todo: this needs to be handled, including how block defs are created during preview
+            break;
+          case string o:
+            // this means it was a view
+            obj.RemoveIfCancelled = true;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+  }
+
+  #endregion
 
   public static class Formatting
   {
