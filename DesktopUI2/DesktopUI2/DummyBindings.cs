@@ -258,6 +258,53 @@ namespace DesktopUI2
       throw new NotImplementedException();
     }
 
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["A1"] = 1;
+      pd["A2"] = 1;
+      progress.Max = 100;
+      progress.Update(pd);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        if (progress.CancellationTokenSource.IsCancellationRequested)
+          return state;
+
+        await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+        pd["A1"] = i;
+        pd["A2"] = i + 2;
+
+        try
+        {
+          if (i % 7 == 0)
+            throw new Exception($"Something happened.");
+        }
+        catch (Exception e)
+        {
+          //TODO
+          //state.Errors.Add(e);
+        }
+
+        progress.Update(pd);
+      }
+
+      // Mock some errors
+      for (int i = 0; i < 10; i++)
+      {
+        try
+        {
+          throw new Exception($"Number {i} fail");
+        }
+        catch (Exception e)
+        {
+          progress.Report.LogOperationError(e);
+        }
+      }
+
+      return state;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var pd = new ConcurrentDictionary<string, int>();

@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Controls\PreviewReceiveButton.xaml" />
     <None Remove="Controls\ReceiveButton.xaml" />
     <None Remove="Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
@@ -112,6 +113,9 @@
       <Generator></Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Controls\PreviewReceiveButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Controls\ReceiveButton.xaml">
@@ -232,6 +236,9 @@
   <ItemGroup>
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\PreviewReceiveButton.xaml.cs">
+      <DependentUpon>PreviewReceiveButton.xaml</DependentUpon>
     </Compile>
     <Compile Update="Controls\ReceiveButton.xaml.cs">
       <DependentUpon>ReceiveButton.xaml</DependentUpon>

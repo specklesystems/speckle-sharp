@@ -192,7 +192,7 @@ namespace SpeckleRhino
     #endregion
 
     #region receiving 
-    public async void PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       // first check if commit is the same and preview objects have already been generated
       Commit commit = await GetCommitFromState(state, progress);
@@ -212,10 +212,14 @@ namespace SpeckleRhino
         int count = 0;
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
         Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
+        Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
+        Preview.ForEach(o => o.Converted = o.Convertible ?
+          ConvertObject(o.Base, state) :
+          o.Display.SelectMany(d => ConvertObject(d.Base, state)).ToList());
+        // undo notes edit
+        var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+        Doc.Notes = segments[0];
       }
-
-      // convert preview objs if it hasn't already been converted
-      Preview.ForEach(o => o.Converted = ConvertObject(o.Base, state));
 
       // create display conduit
       var conduit = new PreviewConduit();
@@ -226,9 +230,10 @@ namespace SpeckleRhino
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         conduit.Enabled = false;
-        return;
+        return null;
       }
       conduit.Enabled = false;
+      return state;
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
@@ -251,9 +256,7 @@ namespace SpeckleRhino
       var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
 
       // get commit layer name
-      // give converter a way to access the base commit layer name
       var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
-      Doc.Notes += "%%%" + commitLayerName;
 
       // create preview objects if they don't already exist
       if (Preview.Count == 0)
@@ -269,30 +272,32 @@ namespace SpeckleRhino
         // flatten the commit object to retrieve children objs
         int count = 0;
         Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
+        Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
+        Preview.ForEach(o => o.Converted = o.Convertible ?
+          ConvertObject(o.Base, state) :
+          o.Display.SelectMany(d => ConvertObject(d.Base, state)).ToList());
+        // undo notes edit
+        var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+        Doc.Notes = segments[0];
       }
 
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
-      // convert and bake preview objects
+      // bake preview objects
       RhinoApp.InvokeOnUiThread((Action)delegate
       {
         foreach (var previewObj in Preview)
         {
-          if (previewObj.Converted.Count > 0)
+          if (previewObj.Converted != null)
             BakeObject(previewObj.Base, previewObj.Layer, state, previewObj.Converted);
-          else 
-            BakeObject(previewObj.Base, previewObj.Layer, state);
+
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             return;
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
         }
       });
-
-      // undo notes edit
-      var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-      Doc.Notes = segments[0];
 
       progress.Report.Merge(Converter.Report);
       Doc.Views.Redraw();
@@ -450,10 +455,9 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(Base obj, string layerPath, StreamState state, List<object> converted = null)
+    private void BakeObject(Base obj, string layerPath, StreamState state, List<object> converted)
     {
-      var convertedList = converted == null ? ConvertObject(obj, state) : converted;
-      foreach (var convertedItem in convertedList)
+      foreach (var convertedItem in converted)
       {
         if (!(convertedItem is GeometryBase convertedRH)) continue;
 

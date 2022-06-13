@@ -777,6 +777,37 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public async void PreviewReceiveCommand()
+    {
+      try
+      {
+        UpdateStreamState();
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
+
+        Reset();
+        Progress.IsProgressing = true;
+        await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
+        Progress.IsProgressing = false;
+
+        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        {
+          LastUsed = DateTime.Now.ToString();
+          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
+        }
+
+        if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
+          ShowReport = true;
+
+
+        GetActivity();
+      }
+      catch (Exception ex)
+      {
+
+      }
+    }
+
     public async void ReceiveCommand()
     {
       try

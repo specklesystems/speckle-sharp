@@ -120,6 +120,14 @@ namespace DesktopUI2
     public abstract Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress);
 
     /// <summary>
+    /// Previews a receive operation
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="progress"></param>
+    /// <returns></returns>
+    public abstract Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress);
+
+    /// <summary>
     /// Adds the current selection to the provided client.
     /// </summary>
     public abstract List<string> GetSelectedObjects();
