@@ -51,7 +51,7 @@
                     Grid.Column="1"
                     Margin="5,10,10,10"
                     HorizontalAlignment="Stretch"
-                    Text="{Binding Comment.text}"
+                    Text="{Binding Text}"
                     TextWrapping="Wrap" />
                   <TextBlock
                     Grid.Column="2"
@@ -97,7 +97,7 @@
                             <TextBlock
                               Grid.Column="1"
                               Margin="5,10,10,10"
-                              Text="{Binding Comment.text}"
+                              Text="{Binding Text}"
                               TextWrapping="Wrap" />
                           </Grid>
 

@@ -1,5 +1,4 @@
 ﻿using DesktopUI2.Models.Filters;
-using Speckle.Core.Api;
 using System.Collections.Generic;
 
 namespace DesktopUI2.ViewModels.DesignViewModels
@@ -102,11 +101,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
           Icon = "ArrowTopRight",
           Message = "Commit created on branch main: 0ae5a01ad7 (Sent 148 objects from Revit2022.)" } };
 
-      Comments = new List<CommentViewModel>()
-      {
-         new CommentViewModel (new CommentItem{ text= "This is a sample comment" }, "", null)
 
-      };
     }
 
     public void ReceiveCommand()

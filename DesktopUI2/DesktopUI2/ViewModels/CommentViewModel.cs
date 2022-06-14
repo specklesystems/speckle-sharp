@@ -17,6 +17,15 @@ namespace DesktopUI2.ViewModels
     public Task<AccountViewModel> Author => GetAuthorAsync();
     public Task<Avalonia.Media.Imaging.Bitmap> Screenshot => GetScreenshotAsync();
 
+    public string Text
+    {
+      get
+      {
+        return string.Join("", Comment.text.Doc.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
+
+
+      }
+    }
 
 
     private async Task<AccountViewModel> GetAuthorAsync()

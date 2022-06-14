@@ -297,7 +297,7 @@ namespace Speckle.Core.Api
     public string authorId { get; set; }
     public bool archived { get; set; }
     public string screenshot { get; set; }
-    public string text { get; set; }
+    public Text text { get; set; }
     public CommentData data { get; set; }
     public DateTime createdAt { get; set; }
     public DateTime updatedAt { get; set; }
@@ -306,6 +306,31 @@ namespace Speckle.Core.Api
     public Comments replies { get; set; }
     public List<Resource> resources { get; set; }
   }
+
+  public partial class Text
+  {
+    public Doc Doc { get; set; }
+  }
+
+  public partial class Doc
+  {
+    public string Type { get; set; }
+    public DocContent[] Content { get; set; }
+  }
+
+  public partial class DocContent
+  {
+    public string Type { get; set; }
+    public ContentContent[] Content { get; set; }
+  }
+
+  public partial class ContentContent
+  {
+    public string Type { get; set; }
+    //public Mark[] Marks { get; set; }
+    public string Text { get; set; }
+  }
+
 
   public class Resource
   {
