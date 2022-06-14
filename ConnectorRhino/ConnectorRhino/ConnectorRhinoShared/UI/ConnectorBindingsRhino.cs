@@ -214,8 +214,8 @@ namespace SpeckleRhino
         Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
         Preview.ForEach(o => o.Converted = o.Convertible ?
-          ConvertObject(o.Base, state) :
-          o.Display.SelectMany(d => ConvertObject(d.Base, state)).ToList());
+          ConvertObject(o.Base) :
+          o.Display.SelectMany(d => ConvertObject(d.Base)).ToList());
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
         Doc.Notes = segments[0];
@@ -230,9 +230,10 @@ namespace SpeckleRhino
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         conduit.Enabled = false;
+        progress.IsProgressing = false;
         return null;
       }
-      conduit.Enabled = false;
+
       return state;
     }
 
@@ -258,45 +259,59 @@ namespace SpeckleRhino
       // get commit layer name
       var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
 
-      // create preview objects if they don't already exist
+      Base commitObject = null;
       if (Preview.Count == 0)
-      {
-        var commitObject = await GetCommit(commit, state, progress);
-
-        if (progress.Report.OperationErrorsCount != 0)
-          return state;
-
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return null;
-
-        // flatten the commit object to retrieve children objs
-        int count = 0;
-        Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
-        Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
-        Preview.ForEach(o => o.Converted = o.Convertible ?
-          ConvertObject(o.Base, state) :
-          o.Display.SelectMany(d => ConvertObject(d.Base, state)).ToList());
-        // undo notes edit
-        var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-        Doc.Notes = segments[0];
-      }
-
+        commitObject = await GetCommit(commit, state, progress);
       if (progress.Report.OperationErrorsCount != 0)
-        return state;
+        return null;
 
-      // bake preview objects
       RhinoApp.InvokeOnUiThread((Action)delegate
       {
+        RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
+
+        // create preview objects if they don't already exist
+        if (Preview.Count == 0)
+        {
+          // flatten the commit object to retrieve children objs
+          int count = 0;
+          Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
+
+          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            return;
+
+          /*
+          Preview.ForEach(o => o.Converted = o.Convertible ?
+            ConvertObject(o.Base) :
+            o.Display.SelectMany(d => ConvertObject(d.Base)).ToList());
+          */
+        }
+
+        if (progress.Report.OperationErrorsCount != 0)
+          return;
+
+        // bake preview objects
         foreach (var previewObj in Preview)
         {
+          if (previewObj.Converted == null || previewObj.Converted.Count == 0)
+          {
+            if (previewObj.Convertible)
+              previewObj.Converted = ConvertObject(previewObj.Base);
+            else
+              previewObj.Converted = previewObj.Display.SelectMany(o => ConvertObject(o.Base)).ToList();
+          }
+
           if (previewObj.Converted != null)
-            BakeObject(previewObj.Base, previewObj.Layer, state, previewObj.Converted);
+            BakeObject(previewObj.Base, previewObj.Layer, previewObj.Converted);
 
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             return;
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
         }
+
+        // undo notes edit
+        var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+        Doc.Notes = segments[0];
       });
 
       progress.Report.Merge(Converter.Report);
@@ -430,7 +445,7 @@ namespace SpeckleRhino
     }
 
     // conversion and bake
-    private List<object> ConvertObject(Base obj, StreamState state)
+    private List<object> ConvertObject(Base obj)
     {
       var convertedList = new List<object>();
 
@@ -455,7 +470,7 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(Base obj, string layerPath, StreamState state, List<object> converted)
+    private void BakeObject(Base obj, string layerPath, List<object> converted)
     {
       foreach (var convertedItem in converted)
       {

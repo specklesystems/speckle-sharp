@@ -8,12 +8,9 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
-  <UserControl.Styles>
-    <Style Selector="icons|MaterialIcon#preview-receive">
-      <Setter Property="RenderTransform" Value="rotate(30deg) scaleX(-1)" />
-    </Style>
-    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#preview-receive">
-      <Setter Property="RenderTransform" Value="rotate(15deg) scaleX(-1)" />
+    <UserControl.Styles>
+        <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#previewreceive">
+      <Setter Property="RenderTransform" Value="scaleX(-1)" />
     </Style>
   </UserControl.Styles>
   <Grid Margin="4">
@@ -25,7 +22,7 @@
       ToolTip.Tip="Previews the objects about to be received">
       <Button.Content>
         <icons:MaterialIcon
-          Name="preview-receive"
+          Name="previewreceive"
           Width="20"
           Height="20"
           Foreground="White"
@@ -56,7 +53,7 @@
         assists:ShadowAssist.ShadowDepth="0"
         Background="Transparent"
         Classes="Mini"
-        Command="{Binding CancelSendOrReceiveCommand}"
+        Command="{Binding CancelPreviewReceiveCommand}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
         ToolTip.Tip="Cancel">
         <Button.Content>

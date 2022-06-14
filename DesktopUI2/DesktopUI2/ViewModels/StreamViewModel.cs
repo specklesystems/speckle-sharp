@@ -787,20 +787,11 @@ namespace DesktopUI2.ViewModels
 
         Reset();
         Progress.IsProgressing = true;
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
         await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
-        Progress.IsProgressing = false;
-
-        if (!Progress.CancellationTokenSource.IsCancellationRequested)
-        {
-          LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
-        }
 
         if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
           ShowReport = true;
-
-
-        GetActivity();
       }
       catch (Exception ex)
       {
@@ -854,6 +845,12 @@ namespace DesktopUI2.ViewModels
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
       Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
+    }
+
+    public void CancelPreviewReceiveCommand()
+    {
+      Progress.CancellationTokenSource.Cancel();
+      Reset();
     }
 
     public async void OpenReportCommand()

@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
+
+using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Rhino.Display;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-using Rhino;
-using Rhino.DocObjects;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using Rhino.Geometry;
-using Rhino.Display;
-using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
 
 namespace SpeckleRhino
 {
