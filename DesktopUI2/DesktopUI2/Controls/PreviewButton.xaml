@@ -1,5 +1,5 @@
 <UserControl
-  x:Class="DesktopUI2.Controls.PreviewReceiveButton"
+  x:Class="DesktopUI2.Controls.PreviewButton"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -9,25 +9,25 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
     <UserControl.Styles>
-        <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#previewreceive">
+        <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#preview">
       <Setter Property="RenderTransform" Value="scaleX(-1)" />
     </Style>
   </UserControl.Styles>
   <Grid Margin="4">
     <m:FloatingButton
       VerticalAlignment="Center"
-      Command="{Binding PreviewReceiveCommand}"
+      Command="{Binding PreviewCommand}"
       IsDefault="True"
       IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-      ToolTip.Tip="Previews the objects about to be received">
+      ToolTip.Tip="Previews the objects about to be sent or received">
       <Button.Content>
         <icons:MaterialIcon
-          Name="previewreceive"
+          Name="preview"
           Width="20"
           Height="20"
           Foreground="White"
           Kind="Eye"
-          ToolTip.Tip="Preview receive">
+          ToolTip.Tip="Preview">
           <icons:MaterialIcon.Transitions>
             <Transitions>
               <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
@@ -53,7 +53,7 @@
         assists:ShadowAssist.ShadowDepth="0"
         Background="Transparent"
         Classes="Mini"
-        Command="{Binding CancelPreviewReceiveCommand}"
+        Command="{Binding CancelPreviewCommand}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
         ToolTip.Tip="Cancel">
         <Button.Content>

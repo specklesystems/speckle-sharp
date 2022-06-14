@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace DesktopUI2.Controls
 {
-  public partial class PreviewReceiveButton : UserControl
+  public partial class PreviewButton : UserControl
   {
-    public PreviewReceiveButton()
+    public PreviewButton()
     {
       InitializeComponent();
     }

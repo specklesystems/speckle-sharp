@@ -173,6 +173,9 @@
 
           </Button.Content>
         </m:FloatingButton>
+          
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
 
         <!--  SEND BTN  -->
         <c:SendButton />

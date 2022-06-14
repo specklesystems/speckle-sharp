@@ -208,8 +208,8 @@
           </Button.Content>
         </m:FloatingButton>
           
-        <!--  PREVIEW RECEIVE BTN  -->
-        <c:PreviewReceiveButton />
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
 
         <!--  RECEIVE BTN  -->
         <c:ReceiveButton />

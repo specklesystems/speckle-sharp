@@ -39,6 +39,7 @@ namespace SpeckleRhino
 
     public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
     public List<PreviewObject> Preview { get; set; } = new List<PreviewObject>();
+    public PreviewConduit PreviewConduit { get; set; }
     private string SelectedReceiveCommit { get; set; }
 
     public ConnectorBindingsRhino()
@@ -184,9 +185,25 @@ namespace SpeckleRhino
       return new List<ISetting>();
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> objs)
     {
-      throw new NotImplementedException();
+      foreach (var id in objs)
+      {
+        RhinoObject obj = Doc.Objects.FindId(new Guid(id));
+        if (obj != null)
+        {
+          obj.Select(true, true, false, false, true, true);
+        }
+      }
+    }
+
+    public override void ResetDocument()
+    {
+      if (PreviewConduit != null)
+        PreviewConduit.Enabled = false;
+
+      Doc.Objects.UnselectAll(false); // TODO: consider instead of unselecting, storing doc visibility state and restoring to this point
+      Doc.Views.Redraw();
     }
 
     #endregion
@@ -222,15 +239,14 @@ namespace SpeckleRhino
       }
 
       // create display conduit
-      var conduit = new PreviewConduit();
-      conduit.Preview = Preview;
-      conduit.Enabled = true;
+      PreviewConduit = new PreviewConduit();
+      PreviewConduit.Preview = Preview;
+      PreviewConduit.Enabled = true;
       Doc.Views.Redraw();
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
-        conduit.Enabled = false;
-        progress.IsProgressing = false;
+        PreviewConduit.Enabled = false;
         return null;
       }
 
@@ -278,12 +294,6 @@ namespace SpeckleRhino
 
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             return;
-
-          /*
-          Preview.ForEach(o => o.Converted = o.Convertible ?
-            ConvertObject(o.Base) :
-            o.Display.SelectMany(d => ConvertObject(d.Base)).ToList());
-          */
         }
 
         if (progress.Report.OperationErrorsCount != 0)
@@ -539,7 +549,13 @@ namespace SpeckleRhino
     #endregion
 
     #region sending
-
+    public override async void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
+      Doc.Objects.UnselectAll(false);
+      SelectClientObjects(GetObjectsFromFilter(state.Filter));
+      Doc.Views.Redraw();
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       Converter.SetContextDocument(Doc);

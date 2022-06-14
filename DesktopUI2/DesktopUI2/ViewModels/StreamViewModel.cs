@@ -777,19 +777,23 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public async void PreviewReceiveCommand()
+    public async void PreviewCommand()
     {
       try
       {
         UpdateStreamState();
-        //save the stream as well
-        HomeViewModel.Instance.AddSavedStream(this);
-
         Reset();
         Progress.IsProgressing = true;
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
-        await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
-
+        if (IsReceiver)
+        {
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
+          await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
+        }
+        if (!IsReceiver)
+        {
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
+          await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
+        }
         if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
           ShowReport = true;
       }
@@ -847,9 +851,10 @@ namespace DesktopUI2.ViewModels
       Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
     }
 
-    public void CancelPreviewReceiveCommand()
+    public void CancelPreviewCommand()
     {
       Progress.CancellationTokenSource.Cancel();
+      Bindings.ResetDocument();
       Reset();
     }
 
