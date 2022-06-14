@@ -4,6 +4,7 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -61,7 +62,7 @@ namespace Objects.Converter.Revit
 
 
         #region MaterialQuantities
-            public MaterialQuantities MaterialQuantitiesToSpeckle(DB.Element element)
+            public Objects.Other.MaterialQuantities MaterialQuantitiesToSpeckle(DB.Element element)
         {
             var matIDs = element.GetMaterialIds(false);
             if (matIDs == null || matIDs.Count() == 0)
@@ -71,16 +72,16 @@ namespace Objects.Converter.Revit
             var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
             return MaterialQuantitiesToSpeckle(element, materials);
         }
-        public MaterialQuantities MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials)
+        public Objects.Other.MaterialQuantities MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials)
         {
             if (materials == null || materials.Count() == 0) return null;
-            List<MaterialQuantity> quantities = new List<MaterialQuantity>();
+            List<Objects.Other.MaterialQuantity> quantities = new List<Objects.Other.MaterialQuantity>();
 
             foreach (var material in materials)
             {
-                quantities.Add(GetElementMaterialQuantity(element, material));
+                quantities.Add(MaterialQuantityToSpeckle(element, material));
             }
-            MaterialQuantities speckleElement = new MaterialQuantities(quantities);
+            Objects.Other.MaterialQuantities speckleElement = new Objects.Other.MaterialQuantities(quantities);
 
             speckleElement["materials"] = speckleElement.quantities;
             return speckleElement;

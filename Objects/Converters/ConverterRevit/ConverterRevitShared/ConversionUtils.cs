@@ -887,11 +887,11 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var revitMaterial = element.Document.GetElement(matId) as Material;
+      var revitMaterial = element.Document.GetElement(matId) as DB.Material;
       return RenderMaterialToSpeckle(revitMaterial);
     }
 
-    public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
+    public static RenderMaterial RenderMaterialToSpeckle(DB.Material revitMaterial)
     {
       if (revitMaterial == null)
         return null;
@@ -913,15 +913,15 @@ namespace Objects.Converter.Revit
 
       // Try and find an existing material
       var existing = new FilteredElementCollector(Doc)
-        .OfClass(typeof(Material))
-        .Cast<Material>()
+        .OfClass(typeof(DB.Material))
+        .Cast<DB.Material>()
         .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
 
       if (existing != null) return existing.Id;
 
       // Create new material
       ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
-      Material mat = Doc.GetElement(materialId) as Material;
+      DB.Material mat = Doc.GetElement(materialId) as DB.Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
       mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
@@ -970,7 +970,7 @@ namespace Objects.Converter.Revit
 
       if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-        var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+        var mat = e.Document.GetElement(mechType.MaterialId) as DB.Material;
         RenderMaterial material = RenderMaterialToSpeckle(mat);
 
         return material;

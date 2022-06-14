@@ -1,11 +1,9 @@
 ﻿
-using Autodesk.Revit.DB.Structure;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DB = Autodesk.Revit.DB;
 
 namespace Objects.Other
 {
@@ -21,6 +19,23 @@ namespace Objects.Other
             this.material = m;
             this.volume = volume;
             this.area = area;
+        }
+    }
+
+    public class MaterialQuantities : Base
+    {
+
+
+        public List<MaterialQuantity> quantities;
+
+        public MaterialQuantities()
+        {
+
+        }
+        [SchemaInfo("MaterialQuantity", "Creates the quantity of a material")]
+        public MaterialQuantities(List<MaterialQuantity> quantities)
+        {
+            this.quantities = quantities;
         }
     }
 }

@@ -27,6 +27,18 @@ namespace Objects.Converter.Revit
         {
             throw new NotImplementedException();
         }
+
+        private Objects.Other.Material ConvertAndCacheMaterial(DB.ElementId id, DB.Document doc)
+        {
+            var material = doc.GetElement(id) as DB.Material;
+
+            if (material == null) return null;
+            if (!Materials.ContainsKey(material.Name))
+            {
+                Materials[material.Name] = MaterialToSpeckle(material);
+            }
+            return Materials[material.Name] as Objects.Other.Material;
+        }
     }
 
 }
