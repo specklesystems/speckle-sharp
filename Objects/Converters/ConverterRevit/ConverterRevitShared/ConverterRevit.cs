@@ -119,11 +119,11 @@ namespace Objects.Converter.Revit
         case DB.View o:
           returnObject = ViewToSpeckle(o);
           break;
-                    //NOTE: Converts all materials in the materials library
-        case DB.Material o:
-          returnObject = MaterialToSpeckle(o);
-          break;
-        case DB.ModelCurve o:
+                //NOTE: Converts all materials in the materials library
+                case DB.Material o:
+                    returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
+                    break;
+                case DB.ModelCurve o:
 
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
           {
@@ -479,7 +479,9 @@ namespace Objects.Converter.Revit
       return @object
       switch
       {
+        
         DB.DetailCurve _ => true,
+        DB.Material _ =>true;
         DB.DirectShape _ => true,
         DB.FamilyInstance _ => true,
         DB.Floor _ => true,
