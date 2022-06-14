@@ -100,6 +100,7 @@ namespace Speckle.ConnectorRevit.UI
           selection.AddRange(doc.Views2D());
           selection.AddRange(doc.Views3D());
           selection.AddRange(doc.SupportedTypes());
+          selection.AddRange(doc.Materials());
           return selection;
 
         case "category":

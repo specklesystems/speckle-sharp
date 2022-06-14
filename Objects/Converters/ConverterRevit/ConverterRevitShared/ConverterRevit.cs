@@ -119,6 +119,10 @@ namespace Objects.Converter.Revit
         case DB.View o:
           returnObject = ViewToSpeckle(o);
           break;
+                    //NOTE: Converts all materials in the materials library
+        case DB.Material o:
+          returnObject = MaterialToSpeckle(o);
+          break;
         case DB.ModelCurve o:
 
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
@@ -267,7 +271,20 @@ namespace Objects.Converter.Revit
         returnObject["renderMaterial"] = material;
       }
 
-      return returnObject;
+      //NOTE: adds the quantities of all materials to an element
+            if (returnObject != null)
+            {
+                try
+                {
+                    returnObject["material_quantities"] = MaterialQuantitiesToSpeckle(@object as DB.Element);
+                }
+                catch (System.Exception e)
+                {
+                    Report.Log(e.Message);
+                }
+            }
+
+            return returnObject;
     }
 
     private string GetElemInfo(object o)
