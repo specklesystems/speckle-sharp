@@ -70,7 +70,13 @@ namespace Objects.Converter.Revit
 
     public ReceiveMode ReceiveMode { get; set; }
 
-    public ConverterRevit()
+
+        /// <summary>
+        /// Contains all materials in the model
+        /// </summary>
+        public Dictionary<string, Objects.Other.Material> Materials { get; private set; } = new Dictionary<string, Objects.Other.Material>();
+
+        public ConverterRevit()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
       Report.Log($"Using converter: {this.Name} v{ver}");
