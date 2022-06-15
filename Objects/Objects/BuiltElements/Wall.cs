@@ -155,9 +155,10 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
+      
       this.family = family;
       this.type = type;
-      this.surface = surface.Surfaces[0];
+      this.surface = surface?.Surfaces[0];
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;
