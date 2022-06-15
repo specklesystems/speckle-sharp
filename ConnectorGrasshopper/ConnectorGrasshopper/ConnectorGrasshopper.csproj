@@ -103,6 +103,7 @@
     <Compile Include="Extras\TreeBuilder.cs" />
     <Compile Include="Extras\Utilities.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="Objects\Deprecated\ExpandSpeckleObjectTaskComponent.cs" />
     <Compile Include="Objects\GetObjectKeysComponent.cs" />
     <Compile Include="Ops\Deprecated\Operations.ReceiveComponentSync.cs" />
     <Compile Include="Ops\Deprecated\Operations.SendComponentSync.cs" />
