@@ -640,7 +640,7 @@ namespace Objects.Converter.RhinoGh
 
       var speckleMesh = new Mesh(verts, faces, colors, textureCoordinates, u)
       {
-        volume = mesh.Volume(),
+        volume = mesh.IsClosed ? mesh.Volume() : 0,
         bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u)
       };
 
