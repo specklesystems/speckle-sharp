@@ -377,7 +377,7 @@ namespace ConnectorGrasshopper.Objects
             }
             else
             {
-              outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+              outputDict[prop.Key] = Utilities.TryConvertItemToNative(temp, Converter);
             }
             break;
         }
