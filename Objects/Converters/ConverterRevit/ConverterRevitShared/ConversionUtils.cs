@@ -183,8 +183,6 @@ namespace Objects.Converter.Revit
       speckleElement["units"] = ModelUnits;
       speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
       speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
-
-
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -219,23 +217,38 @@ namespace Objects.Converter.Revit
 
       return speckleParameters.GroupBy(x => x.applicationInternalName).Select(x => x.First()).ToDictionary(x => x.applicationInternalName, x => x);
     }
-
-    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
+    
+    /// <summary>
+    /// Returns the value of a Revit Built-In <see cref="DB.Parameter"/> given a target <see cref="DB.Element"/> and <see cref="BuiltInParameter"/>
+    /// </summary>
+    /// <param name="elem">The <see cref="DB.Element"/> containing the Built-In <see cref="DB.Parameter"/></param>
+    /// <param name="bip">The <see cref="BuiltInParameter"/> enum name of the target parameter</param>
+    /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
     {
       var rp = elem.get_Parameter(bip);
 
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = ParameterToSpeckle(rp).value;
+      var value = ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
-      else
-        return (T)ParameterToSpeckle(rp).value;
+ 
+      return (T)ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
     }
 
-    //rp must HaveValue
-    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
+    /// <summary>
+    /// Converts a Revit Built-In <see cref="DB.Parameter"/> to a Speckle <see cref="Parameter"/>.
+    /// </summary>
+    /// <param name="rp">The Revit Built-In <see cref="DB.Parameter"/> to convert</param>
+    /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
+    /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
+    /// <returns></returns>
+    /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
+    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
     {
       var sp = new Parameter
       {
@@ -255,7 +268,7 @@ namespace Objects.Converter.Revit
           try
           {
             sp.applicationUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
-            sp.value = RevitVersionHelper.ConvertFromInternalUnits(val, rp);
+            sp.value = unitsOverride == null ? RevitVersionHelper.ConvertFromInternalUnits(val, rp) : ScaleToSpeckle(val, unitsOverride);
           }
           catch
           {
