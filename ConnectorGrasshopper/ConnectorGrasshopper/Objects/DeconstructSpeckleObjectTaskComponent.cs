@@ -40,16 +40,11 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      //DA.DisableGapLogic();
+
       if (InPreSolve)
       {
         IGH_Goo inputObj = null;
-        if (!DA.GetData(0, ref inputObj))
-        {
-          TaskList.Add(Task.Run(() => new Dictionary<string, object>()));
-          return;
-        }
-
+        DA.GetData(0, ref inputObj);
         Base @base;
         if(inputObj is GH_SpeckleBase speckleBase)
         {
@@ -120,6 +115,7 @@ namespace ConnectorGrasshopper.Objects
                 {
                   var indices = path.Indices.ToList();
                   indices.AddRange(p.Indices);
+                  var newPath = new GH_Path(indices.ToArray());
                   p.Indices = indices.ToArray();
                 });
                 DA.SetDataTree(indexOfOutputParam, structure);
@@ -367,15 +363,7 @@ namespace ConnectorGrasshopper.Objects
 
             break;
           default:
-            var temp = obj[prop.Key];
-            if (temp is Base tempB && Utilities.CanConvertToDataTree(tempB))
-            {
-              outputDict[prop.Key] = Utilities.DataTreeToNative(tempB, Converter);
-            }
-            else
-            {
-              outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
-            }
+            outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
             break;
         }
       }

@@ -19,7 +19,8 @@ namespace DesktopUI2
     public static async void ShowDialog(string title, string message, DialogIconKind icon)
     {
       Dialog d = new Dialog(title, message, icon);
-      await d.ShowDialog();
+      d.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      await d.ShowDialog(MainWindow.Instance);
     }
 
     public static IDialogWindow<DialogResult> SendReceiveDialog(string header, object dataContext)
@@ -33,7 +34,7 @@ namespace DesktopUI2
         NegativeResult = new DialogResult("cancel"),
         Borderless = true,
 
-        //Width = MainWindow.Instance.Width - 20,
+        Width = MainWindow.Instance.Width - 20,
         DialogButtons = new DialogButton[]
           {
             new DialogButton

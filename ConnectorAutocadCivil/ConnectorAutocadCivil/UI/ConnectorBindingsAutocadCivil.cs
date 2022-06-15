@@ -630,7 +630,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               converted[key] = obj.ExtensionDictionary.GetUserString(key);
             */
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022
             // add property sets if this is Civil3D
             var propertySets = obj.GetPropertySets(tr);
             if (propertySets.Count > 0)
@@ -723,7 +723,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
 
-        MainViewModel.GoHome();
+        MainWindowViewModel.GoHome();
       }
       catch { }
     }
@@ -739,7 +739,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         if (SpeckleAutocadCommand.MainWindow != null)
           SpeckleAutocadCommand.MainWindow.Hide();
 
-        MainViewModel.GoHome();
+        MainWindowViewModel.GoHome();
       }
       catch { }
     }
@@ -759,7 +759,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         if (UpdateSavedStreams != null)
           UpdateSavedStreams(streams);
 
-        MainViewModel.GoHome();
+        MainWindowViewModel.GoHome();
       }
       catch { }
     }

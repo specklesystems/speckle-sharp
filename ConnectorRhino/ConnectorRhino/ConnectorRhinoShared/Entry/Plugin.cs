@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
@@ -18,18 +17,13 @@ namespace SpeckleRhino
 
     private static string SpeckleKey = "speckle2";
 
-    public ConnectorBindingsRhino Bindings { get; private set; }
-    public MainViewModel ViewModel { get; private set; }
-
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
       RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
       SpeckleCommand.InitAvalonia();
-
-      Bindings = new ConnectorBindingsRhino();
-      ViewModel = new MainViewModel(Bindings);
+    
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -48,17 +42,9 @@ namespace SpeckleRhino
         return;
       }
 
-
-
-      if (Bindings.GetStreamsInFile().Count > 0)
-      {
-#if MAC
-      SpeckleCommand.CreateOrFocusSpeckle();
-#else
-        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
-#endif
-
-      }
+      var bindings = new ConnectorBindingsRhino();
+      if (bindings.GetStreamsInFile().Count > 0)
+        SpeckleCommand.CreateOrFocusSpeckle();
     }
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -75,14 +61,6 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-#if !MAC
-      System.Type panelType = typeof(Panel);
-      // Register my custom panel class type with Rhino, the custom panel my be display
-      // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
-      // You can also include the custom panel in any existing panel group by simply right
-      // clicking one a panel tab and checking or un-checking the "MyPane" option.
-      Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
-#endif
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
 

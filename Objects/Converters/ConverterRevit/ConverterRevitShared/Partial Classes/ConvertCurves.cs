@@ -124,11 +124,8 @@ namespace Objects.Converter.Revit
           Report.LogConversionError(e); return null;
         }
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
-        if (speckleLine is IDisplayValue<Geometry.Polyline> d)
-          return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(),
-            speckleLine);
-        else
-          return new List<ApplicationPlaceholderObject>();
+        return ModelCurvesFromEnumerator(CurveToNative(((Geometry.Curve)speckleLine).displayValue).GetEnumerator(),
+          speckleLine);
       }
     }
 

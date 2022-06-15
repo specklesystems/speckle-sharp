@@ -129,13 +129,14 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancelled Quick Op" } });
     }
 
-    public async void OpenReportCommand()
+    public void OpenReportCommand()
     {
       var report = new Report();
+      report.Title = $"Report";
       report.DataContext = this;
+      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
+      report.ShowDialog(MainWindow.Instance);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
-      await report.ShowDialog();
-      
     }
   }
 }

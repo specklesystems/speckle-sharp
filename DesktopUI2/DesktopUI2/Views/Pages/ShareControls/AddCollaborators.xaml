@@ -173,7 +173,7 @@
       Orientation="Horizontal"
       Spacing="10">
       <Button
-        CornerRadius="25 "
+        assists:ButtonAssist.CornerRadius="25 "
         Classes="Flat"
         Command="{Binding RemoveSeletedUsersCommand}"
         Foreground="Red"
@@ -193,7 +193,7 @@
       </Button>
 
       <Button
-        CornerRadius="25 "
+        assists:ButtonAssist.CornerRadius="25 "
         Command="{Binding ShareCommand}"
         Content="Share"
         IsEnabled="{Binding HasAddedUsers}"

@@ -55,7 +55,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       if (MainWindow == null)
       {
-        var viewModel = new MainViewModel(Bindings);
+        var viewModel = new MainWindowViewModel(Bindings);
         MainWindow = new MainWindow
         {
           DataContext = viewModel
