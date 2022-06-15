@@ -131,14 +131,17 @@ namespace Objects.Converter.CSI
       string Notes = "";
       string GUID = "";
       var s = Model.PropFrame.GetGeneral(property,ref FileName,ref MatProp,ref T3,ref T2,ref Area,ref As2,ref As3,ref Torsion,ref I22,ref I33,ref S22,ref S33,ref Z22,ref Z33,ref R22,ref R33,ref Color,ref Notes,ref GUID);
-      sectionProfile.name = property;
-      sectionProfile.area = Area;
-      sectionProfile.Ky = As3 / Area;
-      sectionProfile.Kz = As2 / Area;
-      sectionProfile.Iyy = I33;
-      sectionProfile.Izz = I22;
-      sectionProfile.J = Torsion;
-      sectionProfile.applicationId = GUID;
+      if(s == 0){
+        sectionProfile.name = property;
+        sectionProfile.area = Area;
+        sectionProfile.Ky = As3 / Area;
+        sectionProfile.Kz = As2 / Area;
+        sectionProfile.Iyy = I33;
+        sectionProfile.Izz = I22;
+        sectionProfile.J = Torsion;
+        sectionProfile.applicationId = GUID;
+      }
+      
       //to be discussed whether radius of gyration and section mod/plastic mod is needed ~ i personally think so
     }
   }
