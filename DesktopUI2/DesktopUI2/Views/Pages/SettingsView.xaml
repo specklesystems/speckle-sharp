@@ -76,7 +76,7 @@
         Orientation="Horizontal">
         <Button
           Margin="0,0,10,0"
-          assists:ButtonAssist.CornerRadius="25 "
+          CornerRadius="25 "
           Command="{Binding SaveCommand}"
           Content="Save"
           ToolTip.Tip="Save these settings" />

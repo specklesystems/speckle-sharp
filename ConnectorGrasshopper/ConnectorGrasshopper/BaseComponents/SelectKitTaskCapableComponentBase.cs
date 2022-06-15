@@ -29,6 +29,8 @@ namespace ConnectorGrasshopper.Objects
     public SelectKitTaskCapableComponentBase(string name, string nickname, string description, string category,
       string subCategory) : base(name, nickname, description, category, subCategory)
     {
+      Converter = null;
+      Kit = null;
     }
 
     public override void AddedToDocument(GH_Document document)

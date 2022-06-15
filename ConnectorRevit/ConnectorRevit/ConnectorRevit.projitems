@@ -56,6 +56,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\Panel.xaml.cs">
+      <DependentUpon>Panel.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)SpeckleRevit2.addin">
@@ -76,5 +79,11 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\share.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\share16.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\share32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)UI\Panel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

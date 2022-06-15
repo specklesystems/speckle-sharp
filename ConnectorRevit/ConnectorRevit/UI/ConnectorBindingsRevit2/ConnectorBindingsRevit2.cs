@@ -46,9 +46,7 @@ namespace Speckle.ConnectorRevit.UI
     public override string GetHostAppNameVersion() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
     public override string GetHostAppName() => HostApplications.Revit.Slug;
 
-    public override string GetDocumentId() => GetDocHash(CurrentDoc?.Document);
-
-    private string GetDocHash(Document doc) => Utilities.hashString(doc.PathName + doc.Title, Utilities.HashingFuctions.MD5);
+    public override string GetDocumentId() => CurrentDoc?.Document?.GetHashCode().ToString();
 
     public override string GetDocumentLocation() => CurrentDoc.Document.PathName;
 

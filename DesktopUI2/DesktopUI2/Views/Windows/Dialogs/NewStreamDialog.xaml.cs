@@ -8,22 +8,18 @@ using System.Collections.Generic;
 
 namespace DesktopUI2.Views.Windows.Dialogs
 {
-  public partial class NewStreamDialog : Window
+  public partial class NewStreamDialog : DialogUserControl
   {
     public Account Account { get; set; }
     public string StreamName { get; set; }
     public string Description { get; set; }
     public bool IsPublic { get; set; }
-    public bool Create = false;
 
     public NewStreamDialog() { }
 
     public NewStreamDialog(List<AccountViewModel> accounts)
     {
       InitializeComponent();
-#if DEBUG
-      this.AttachDevTools();
-#endif
       var combo = this.FindControl<ComboBox>("accounts");
       combo.Items = accounts;
       combo.SelectedIndex = 0;
@@ -42,13 +38,12 @@ namespace DesktopUI2.Views.Windows.Dialogs
       StreamName = this.FindControl<TextBox>("name").Text;
       Description = this.FindControl<TextBox>("description").Text;
       IsPublic = isPublic.HasValue ? isPublic.Value : false;
-      Create = true;
-      this.Close();
+      this.Close(true);
     }
 
     public void Close_Click(object sender, RoutedEventArgs e)
     {
-      this.Close();
+      this.Close(false);
     }
   }
 }

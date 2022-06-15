@@ -48,26 +48,22 @@
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
+    <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
-    <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
-    <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
-    <None Remove="Views\Pages\ShareControls\Sending.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
-    <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
-    <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
-    <None Remove="Views\Windows\SettingsView.xaml" />
+    <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Expander.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaResource>
@@ -127,16 +123,13 @@
     <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\AddCollaborators.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\CollaboratorsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
+    <AvaloniaXaml Include="Views\MainUserControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Scheduler.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\MainWindow.xaml">
@@ -154,16 +147,7 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Scheduler.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Share.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">
@@ -184,19 +168,16 @@
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.13" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
-    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0" />
+    <PackageReference Include="Avalonia" Version="0.10.15" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.15" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.15" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.15" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.90-nightly" />
     <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
@@ -230,20 +211,8 @@
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\ShareControls\AddCollaborators.xaml.cs">
-      <DependentUpon>AddCollaborators.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\ShareControls\Sending.xaml.cs">
-      <DependentUpon>Sending.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\ShareControls\CollaboratorsView.xaml.cs">
-      <DependentUpon>CollaboratorsView.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Scheduler.xaml.cs">
-      <DependentUpon>Scheduler.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Scheduler.xaml.cs">
       <DependentUpon>Scheduler.xaml</DependentUpon>
@@ -263,14 +232,8 @@
     <Compile Update="Views\Pages\StreamEditControls\Send.xaml.cs">
       <DependentUpon>Send.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
-      <DependentUpon>CheckBoxSettingView.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Share.xaml.cs">
-      <DependentUpon>Share.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
       <DependentUpon>AddAccountDialog.xaml</DependentUpon>

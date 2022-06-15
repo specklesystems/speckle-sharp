@@ -1,0 +1,52 @@
+<UserControl
+  x:Class="DesktopUI2.Views.MainUserControl"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:vm="using:DesktopUI2.ViewModels"
+	xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
+  d:DesignHeight="500"
+	xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <vm:MainViewModel />
+  </Design.DataContext>
+  <!--  copied from the material design window styles  -->
+  <UserControl.Styles>
+    <Style Selector="ContentControl#MainUserControl">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+      <Setter Property="TextBox.Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="TextBox.FontWeight" Value="Medium" />
+			<Setter Property="TextBox.FontSize" Value="14" />
+		 </Style>
+  </UserControl.Styles>
+  <ContentControl x:Name="MainUserControl">
+    <Grid>
+      <reactiveUi:RoutedViewHost
+        Grid.Row="1"
+        Router="{Binding Router}">
+        <reactiveUi:RoutedViewHost.PageTransition>
+          <CrossFade Duration="0.15" />
+        </reactiveUi:RoutedViewHost.PageTransition>
+      </reactiveUi:RoutedViewHost>
+			<Grid Opacity="{Binding DialogOpacity}" IsVisible="{Binding DialogVisible}">
+				<Grid.Transitions>
+					<Transitions>
+						<DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+					</Transitions>
+				</Grid.Transitions>
+				<Border Background="{DynamicResource MaterialDesignCardBackground}"  Opacity="0.8"/>
+				<styles:Card assists:ShadowAssist.ShadowDepth="10"  Margin="40" MinHeight="100" Padding="0" VerticalAlignment="Center">
+					<ContentControl Content="{Binding DialogBody}" />
+				</styles:Card>
+		</Grid>
+			
+    </Grid>
+	
+  </ContentControl>
+</UserControl>
