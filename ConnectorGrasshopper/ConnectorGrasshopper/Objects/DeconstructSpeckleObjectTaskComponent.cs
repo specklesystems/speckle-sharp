@@ -263,8 +263,11 @@ namespace ConnectorGrasshopper.Objects
         Console.WriteLine("No iter has run");
         var x = Params.Input[0].VolatileData;
         var tree = x as GH_Structure<IGH_Goo>;
-        outputList = GetOutputList(tree);
-        AutoCreateOutputs();
+        if (tree != null)
+        {
+          outputList = GetOutputList(tree);
+          AutoCreateOutputs();
+        }
       }
       base.BeforeSolveInstance();
     }
