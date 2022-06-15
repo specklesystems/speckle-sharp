@@ -129,7 +129,9 @@ namespace Objects.Converter.RhinoGh
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
         
-        if(ro is BrepObject)
+        // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
+        // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
+        if(ro is BrepObject || ro is ExtrusionObject)
           displayMesh = GetRhinoRenderMesh(ro);
         
         if (!(@object is InstanceObject)) // block instance check
