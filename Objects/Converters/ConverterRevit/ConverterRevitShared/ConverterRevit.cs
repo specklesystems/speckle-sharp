@@ -277,12 +277,14 @@ namespace Objects.Converter.Revit
                 try
                 {
                     var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
-                    if(qs != null)
+                    if (qs != null)
                     {
                         returnObject["material_quantities"] = new List<Base>();
                         (returnObject["material_quantities"] as List<Base>).AddRange(MaterialQuantitiesToSpeckle(@object as DB.Element));
                     }
-                    
+                    else returnObject["material_quantities"] = null;
+
+
                 }
                 catch (System.Exception e)
                 {

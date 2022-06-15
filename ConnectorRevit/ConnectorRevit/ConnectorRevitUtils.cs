@@ -210,21 +210,7 @@ namespace Speckle.ConnectorRevit
       return false;
     }
 
-    /// <summary>
-    /// Returns all materials in the Material library
-    /// </summary>
-    /// <param name="doc">Reit-Document</param>
-    /// <returns></returns>
-    public static List<Autodesk.Revit.DB.Material> Materials(this Document doc)
-    {
-      List<Autodesk.Revit.DB.Material> materials = new FilteredElementCollector(doc)
-        .WhereElementIsNotElementType()
-        .OfCategory(BuiltInCategory.OST_Materials)
-        .Cast<Autodesk.Revit.DB.Material>()
-        .ToList();
-
-      return materials;
-    }
+   
 
     //list of currently supported Categories (for sending only)
     //exact copy of the one in the ConverterRevitShared.Categories

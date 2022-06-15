@@ -136,7 +136,6 @@ namespace Speckle.ConnectorRevit.UI
             selection.Add(currentDoc.ProjectInformation);
             selection.AddRange(currentDoc.Views2D());
             selection.AddRange(currentDoc.Views3D());
-            selection.AddRange(currentDoc.Materials());
 
             //and these for every linked doc
             foreach (var doc in allDocs)
