@@ -128,11 +128,14 @@ namespace Objects.Converter.RhinoGh
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
-
+        
+        if(ro is BrepObject)
+          displayMesh = GetRhinoRenderMesh(ro);
+        
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
         
-        displayMesh = GetRhinoRenderMesh(ro);
+
       }
 
       switch (@object)
