@@ -22,20 +22,4 @@ namespace Objects.Other
         }
     }
 
-    public class MaterialQuantities : Base
-    {
-
-
-        public List<MaterialQuantity> quantities;
-
-        public MaterialQuantities()
-        {
-
-        }
-        [SchemaInfo("MaterialQuantity", "Creates the quantity of a material")]
-        public MaterialQuantities(List<MaterialQuantity> quantities)
-        {
-            this.quantities = quantities;
-        }
-    }
 }

@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
 
 
         #region MaterialQuantities
-            public Objects.Other.MaterialQuantities MaterialQuantitiesToSpeckle(DB.Element element)
+            public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element)
         {
             var matIDs = element.GetMaterialIds(false);
             if (matIDs == null || matIDs.Count() == 0)
@@ -72,7 +72,7 @@ namespace Objects.Converter.Revit
             var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
             return MaterialQuantitiesToSpeckle(element, materials);
         }
-        public Objects.Other.MaterialQuantities MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials)
+        public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials)
         {
             if (materials == null || materials.Count() == 0) return null;
             List<Objects.Other.MaterialQuantity> quantities = new List<Objects.Other.MaterialQuantity>();
@@ -81,10 +81,7 @@ namespace Objects.Converter.Revit
             {
                 quantities.Add(MaterialQuantityToSpeckle(element, material));
             }
-            Objects.Other.MaterialQuantities speckleElement = new Objects.Other.MaterialQuantities(quantities);
-
-            speckleElement["materials"] = speckleElement.quantities;
-            return speckleElement;
+            return quantities;
         }
 
 

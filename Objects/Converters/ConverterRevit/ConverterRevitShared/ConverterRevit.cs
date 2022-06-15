@@ -276,7 +276,13 @@ namespace Objects.Converter.Revit
             {
                 try
                 {
-                    returnObject["material_quantities"] = MaterialQuantitiesToSpeckle(@object as DB.Element);
+                    var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
+                    if(qs != null)
+                    {
+                        returnObject["material_quantities"] = new List<Base>();
+                        (returnObject["material_quantities"] as List<Base>).AddRange(MaterialQuantitiesToSpeckle(@object as DB.Element));
+                    }
+                    
                 }
                 catch (System.Exception e)
                 {
@@ -284,6 +290,7 @@ namespace Objects.Converter.Revit
                 }
             }
 
+           
             return returnObject;
     }
 
@@ -481,7 +488,7 @@ namespace Objects.Converter.Revit
       {
         
         DB.DetailCurve _ => true,
-        DB.Material _ =>true;
+        DB.Material _ =>true,
         DB.DirectShape _ => true,
         DB.FamilyInstance _ => true,
         DB.Floor _ => true,
