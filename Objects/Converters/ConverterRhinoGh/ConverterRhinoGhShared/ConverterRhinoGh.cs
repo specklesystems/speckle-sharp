@@ -98,9 +98,26 @@ namespace Objects.Converter.RhinoGh
     // speckle user string for custom schemas
     string SpeckleSchemaKey = "SpeckleSchema";
 
+    public RH.Mesh GetRhinoRenderMesh(RhinoObject rhinoObj)
+    {
+      ObjRef[] meshObjRefs = RhinoObject.GetRenderMeshes(new List<RhinoObject>{rhinoObj}, false, false);
+      if (meshObjRefs == null || meshObjRefs.Length == 0) return null;
+      if (meshObjRefs.Length == 1) return meshObjRefs[0]?.Mesh();
+      
+      var joinedMesh = new RH.Mesh();
+      foreach (var t in meshObjRefs)
+      {
+        var mesh = t?.Mesh();
+        if (mesh != null)
+          joinedMesh.Append(mesh);
+      }
+
+      return joinedMesh;
+    }
     public Base ConvertToSpeckle(object @object)
     {
       RenderMaterial material = null;
+      RH.Mesh displayMesh = null;
       DisplayStyle style = null;
       Base @base = null;
       Base schema = null;
@@ -114,6 +131,8 @@ namespace Objects.Converter.RhinoGh
 
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
+        
+        displayMesh = GetRhinoRenderMesh(ro);
       }
 
       switch (@object)
@@ -214,7 +233,7 @@ namespace Objects.Converter.RhinoGh
         case RH.SubD o:
           if (o.HasBrepForm)
           {
-            @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()));
+            @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()),null, displayMesh);
             Report.Log($"Converted SubD as BREP");
           }
           else
@@ -225,11 +244,11 @@ namespace Objects.Converter.RhinoGh
           break;
 #endif
         case RH.Extrusion o:
-          @base = BrepToSpeckle(o.ToBrep());
+          @base = BrepToSpeckle(o.ToBrep(), null, displayMesh);
           Report.Log($"Converted Extrusion as Brep");
           break;
         case RH.Brep o:
-          @base = BrepToSpeckle(o.DuplicateBrep());
+          @base = BrepToSpeckle(o.DuplicateBrep(), null, displayMesh);
           Report.Log($"Converted Brep");
           break;
         case NurbsSurface o:
