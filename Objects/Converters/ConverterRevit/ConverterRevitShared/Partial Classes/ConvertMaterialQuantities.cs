@@ -52,11 +52,7 @@ namespace Objects.Converter.Revit
             var speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
             return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area);
         }
-        public List<ApplicationPlaceholderObject> MaterialQuantityToNative()
-        {
-            //To-Do: Is this needed?
-            throw new System.NotImplementedException("Missing MaterialQuantity to Native");
-        }
+        
 
         #endregion
 

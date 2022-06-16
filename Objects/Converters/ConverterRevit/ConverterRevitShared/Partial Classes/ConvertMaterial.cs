@@ -23,10 +23,7 @@ namespace Objects.Converter.Revit
             return speckleMaterial;
         }
 
-        public List<ApplicationPlaceholderObject> MaterialToNative(Objects.Other.Material speckleBeam, StructuralType structuralType = StructuralType.Beam)
-        {
-            throw new NotImplementedException();
-        }
+      
 
         private Objects.Other.Material ConvertAndCacheMaterial(DB.ElementId id, DB.Document doc)
         {
