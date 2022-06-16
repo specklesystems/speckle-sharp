@@ -183,8 +183,8 @@ namespace Objects.Converter.CSI
       var k = Model.PropFrame.GetSectProps(property, ref Area, ref As2, ref As3, ref Torsion, ref I22, ref I33, ref S22, ref S33, ref Z22, ref Z33, ref R22, ref R33);
       sectionProfile.name = property;
       sectionProfile.area = Area;
-      sectionProfile.Ky = !Double.IsNaN(As3 / Area) ? (As3 / Area) : 0;
-      sectionProfile.Kz = !Double.IsNaN(As2 / Area) ? (As2 / Area) : 0;
+      sectionProfile.Ky = (Area == 0 || As3 == 0) ? 0 : As3 / Area; 
+      sectionProfile.Kz = (Area == 0 || As2 == 0) ? 0 : As2 / Area;
       sectionProfile.Iyy = I33;
       sectionProfile.Izz = I22;
       sectionProfile.J = Torsion;
