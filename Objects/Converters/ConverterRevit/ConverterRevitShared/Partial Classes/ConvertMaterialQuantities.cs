@@ -21,36 +21,22 @@ namespace Objects.Converter.Revit
         public Objects.Other.MaterialQuantity MaterialQuantityToSpeckle(DB.Element element, DB.Material material)
         {
             if (material == null || element == null) return null;
-            //Create VolumeParam
-            Objects.BuiltElements.Revit.Parameter volume = new Objects.BuiltElements.Revit.Parameter()
-            {
-                name = "Volume",
-                value = RevitVersionHelper.ConvertCubiceMetresFromInternalUnits(element.GetMaterialVolume(material.Id)),
-                applicationUnitType = "autodesk.unit.unit:cubicMeters-1.0.1",
-                applicationUnit = "autodesk.spec.aec:volume-2.0.0",
-                applicationInternalName = null,
-                isShared = false,
-                isReadOnly = false,
-                isTypeParameter = true,
-                units = null
-            };
+            
+            //Get quantities
+            double volume = element.GetMaterialVolume(material.Id);
+            double area = element.GetMaterialArea(material.Id,false); //To-Do: Do we need Paint-Materials
 
-            Objects.BuiltElements.Revit.Parameter area = new Objects.BuiltElements.Revit.Parameter()
-            {
-                name = "Area",
-                applicationUnitType = "autodesk.unit.unit:squareMeters-1.0.1",
-                applicationUnit = "autodesk.spec.aec:area-2.0.0",
-                applicationInternalName = null,
-                isShared = false,
-                isReadOnly = false,
-                isTypeParameter = true,
-                value = RevitVersionHelper.ConvertSquareMetresFromInternalUnits(element.GetMaterialArea(material.Id, false)),
-                units = null
-            };
+            //Convert Feet to meters
+            string units = Speckle.Core.Kits.Units.Meters;
+            double factor =  Speckle.Core.Kits.Units.GetConversionFactor(Speckle.Core.Kits.Units.Feet, units);
+            volume *= factor * factor*factor;
+            area *= factor * factor;
 
+            
 
+            //Create and return materialquantity
             var speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
-            return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area);
+            return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area,units);
         }
         
 

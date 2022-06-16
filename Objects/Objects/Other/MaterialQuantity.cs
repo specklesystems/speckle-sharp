@@ -10,15 +10,26 @@ namespace Objects.Other
     public class MaterialQuantity : Base
     {
         public Objects.Other.Material material { get; set; }
-        public Objects.BuiltElements.Revit.Parameter volume { get; set; }
+        public double volume { get; set; }
 
-        public Objects.BuiltElements.Revit.Parameter area { get; set; }
+        /// <summary>
+        /// Area of the material on a element
+        /// </summary>
+        public double area { get; set; }
+
+        /// <summary>
+        /// UnitMeasure of the quantity,e.g meters implies aquaremeters for area and cubicmeters for the volume
+        /// </summary>
+        public string units { get; set; }
+
+
         [Speckle.Core.Kits.SchemaInfo("MaterialQuantity", "Creates the quantity of a material")]
-        public MaterialQuantity(Objects.Other.Material m, Objects.BuiltElements.Revit.Parameter volume, Objects.BuiltElements.Revit.Parameter area)
+        public MaterialQuantity(Objects.Other.Material m, double volume, double  area, string units)
         {
-            this.material = m;
-            this.volume = volume;
-            this.area = area;
+            material = m;
+            this.volume = volume;   
+            this.area = area;   
+            this.units = units;
         }
     }
 

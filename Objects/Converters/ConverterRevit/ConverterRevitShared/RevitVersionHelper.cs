@@ -119,35 +119,7 @@ namespace Objects.Converter.Revit
     }
 
 
-        /// <summary>
-        /// Converting internal units into squaremeters
-        /// </summary>
-        /// <param name="val">value internal unit</param>
-        /// <returns></returns>
-        public static double ConvertSquareMetresFromInternalUnits(double val)
-        {
-#if (REVIT2022 || REVIT2023)
-            return UnitUtils.ConvertFromInternalUnits(val, new ForgeTypeId("autodesk.unit.unit:squareMeters-1.0.1"));
-
-#else
-            return UnitUtils.ConvertFromInternalUnits(val, DisplayUnitType.DUT_SQUARE_METERS);
-#endif
-        }
-
-        /// <summary>
-        /// Converting internal units into Cubic Metres
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        public static double ConvertCubiceMetresFromInternalUnits(double val)
-        {
-#if (REVIT2022 || REVIT2023)
-            return UnitUtils.ConvertFromInternalUnits(val, new ForgeTypeId("autodesk.unit.unit:cubicMeters-1.0.1"));
-
-#else
-            return UnitUtils.ConvertFromInternalUnits(val, DisplayUnitType.DUT_CUBIC_METERS);
-#endif
-        }
+        
     }
 }
 

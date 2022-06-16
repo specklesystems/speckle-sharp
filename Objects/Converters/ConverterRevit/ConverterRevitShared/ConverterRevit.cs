@@ -280,7 +280,7 @@ namespace Objects.Converter.Revit
                     if (qs != null)
                     {
                         returnObject["material_quantities"] = new List<Base>();
-                        (returnObject["material_quantities"] as List<Base>).AddRange(MaterialQuantitiesToSpeckle(@object as DB.Element));
+                        (returnObject["material_quantities"] as List<Base>).AddRange(qs);
                     }
                     else returnObject["material_quantities"] = null;
 
