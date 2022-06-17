@@ -29,8 +29,6 @@ namespace SpeckleConnectorCSI
 
     public static Window MainWindow { get; private set; }
 
-    private static Avalonia.Application AvaloniaApp { get; set; }
-
     public static ConnectorBindingsCSI Bindings { get; set; }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
@@ -40,32 +38,26 @@ namespace SpeckleConnectorCSI
       .LogToTrace()
       .UseReactiveUI();
 
-    public static void InitAvalonia()
-    {
-      BuildAvaloniaApp().Start(AppMain, null);
-    }
-
 
     public static void CreateOrFocusSpeckle()
     {
       if (MainWindow == null)
       {
-        var viewModel = new MainWindowViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
+        BuildAvaloniaApp().Start(AppMain, null);
       }
 
       MainWindow.Show();
       MainWindow.Activate();
-
-
     }
 
-    private static void AppMain(Avalonia.Application app, string[] args)
+    private static void AppMain(Application app, string[] args)
     {
-      AvaloniaApp = app;
+      var viewModel = new MainViewModel(Bindings);
+      MainWindow = new MainWindow { DataContext = viewModel };
+      MainWindow.Closed += SpeckleWindowClosed;
+      MainWindow.Closing += SpeckleWindowClosed;
+      app.Run(MainWindow);
+      //Task.Run(() => app.Run(MainWindow));
     }
 
     public static void OpenOrFocusSpeckle(cSapModel model)
@@ -118,8 +110,7 @@ namespace SpeckleConnectorCSI
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
       model = SapModel;
       AppDomain domain = null;
-      InitAvalonia();
- 
+
 
       try
       {
@@ -135,7 +126,7 @@ namespace SpeckleConnectorCSI
         //return;
       }
 
-      return; 
+      return;
     }
   }
 
