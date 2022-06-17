@@ -409,9 +409,9 @@ namespace SpeckleRhino
           attributes.SetUserString("SpeckleSchema", schema);
 
         // handle user strings
-        if (obj[UserStrings] is Dictionary<string, string> userStrings)
+        if (obj[UserStrings] is Dictionary<string, object> userStrings)
           foreach (var key in userStrings.Keys)
-            attributes.SetUserString(key, userStrings[key]);
+            attributes.SetUserString(key, userStrings[key] as string);
 
         // handle user dictionaries
         if (obj[UserDictionary] is Dictionary<string, object> dict)
