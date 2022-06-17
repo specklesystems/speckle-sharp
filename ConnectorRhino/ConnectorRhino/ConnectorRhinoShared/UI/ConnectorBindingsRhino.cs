@@ -356,14 +356,10 @@ namespace SpeckleRhino
       void FlattenConvertedObject(object item)
       {
         if (item is IList list)
-        {
           foreach (object child in list)
             FlattenConvertedObject(child);
-        }
         else
-        {
           convertedList.Add(item);
-        }
       }
 
       FlattenConvertedObject(converted);
@@ -392,26 +388,18 @@ namespace SpeckleRhino
 
         // handle display style
         if (obj[@"displayStyle"] is Base display)
-        {
           if (converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
             attributes = displayAttribute;
-        }
         else if (obj[@"renderMaterial"] is Base renderMaterial)
-        {
           attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
-        }
 
         // assign layer
         attributes.LayerIndex = bakeLayer.Index;
 
-        // TODO: deprecate after awhile, schemas included in user strings. This would be a breaking change.
-        if (obj["SpeckleSchema"] is string schema)
-          attributes.SetUserString("SpeckleSchema", schema);
-
         // handle user strings
-        if (obj[UserStrings] is Dictionary<string, string> userStrings)
+        if (obj[UserStrings] is Dictionary<string, object> userStrings)
           foreach (var key in userStrings.Keys)
-            attributes.SetUserString(key, userStrings[key]);
+            attributes.SetUserString(key, userStrings[key] as string);
 
         // handle user dictionaries
         if (obj[UserDictionary] is Dictionary<string, object> dict)
