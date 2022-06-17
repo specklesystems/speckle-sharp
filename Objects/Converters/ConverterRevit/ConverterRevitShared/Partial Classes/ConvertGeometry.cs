@@ -408,6 +408,15 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public bool UnboundCurveIfSingle(CurveArray array)
+    {
+      if (array.Size != 1) return false;
+      var item = array.get_Item(0);
+      if (!item.IsBound) return false;
+      item.MakeUnbound();
+      return true;
+    }
+
     public bool IsCurveClosed(DB.Curve nativeCurve, double tol = 1E-6)
     {
       var endPoint = nativeCurve.GetEndPoint(0);
@@ -437,17 +446,9 @@ namespace Objects.Converter.Revit
     public CurveLoop CurveArrayToCurveLoop(CurveArray array)
     {
       var loop = new CurveLoop();
-      if (array.Size == 1)
-      {
-        var item = array.get_Item(0);
-        if (item.IsBound)
-        {
-          item.MakeUnbound();
-        }
-      }
+      UnboundCurveIfSingle(array);
       foreach (var item in array.Cast<DB.Curve>())
         loop.Append(item);
-
       return loop;
     }
 
@@ -800,26 +801,19 @@ namespace Objects.Converter.Revit
         if (!nativeCurve.IsBound)
           nativeCurve.MakeBound(0, nativeCurve.Period);
 
-        var endPoint = nativeCurve.GetEndPoint(0);
-        var source = nativeCurve.GetEndPoint(1);
-        var distanceTo = endPoint.DistanceTo(source);
-        var closed = distanceTo < 1E-6;
-        if (closed)
+        if (IsCurveClosed(nativeCurve))
         {
-          // Revit does not like single curve loop edges, so we split them in two.
-          var start = nativeCurve.GetEndParameter(0);
-          var end = nativeCurve.GetEndParameter(1);
-          var mid = start + ((end - start) / 2);
-
-          var a = nativeCurve.Clone();
-          a.MakeBound(start, mid);
-
-          var b = nativeCurve.Clone();
-          b.MakeBound(mid, end);
-
-          var halfEdgeA = BRepBuilderEdgeGeometry.Create(a);
-          var halfEdgeB = BRepBuilderEdgeGeometry.Create(b);
-          return new List<BRepBuilderEdgeGeometry> { halfEdgeA, halfEdgeB };
+          var (first, second) = SplitCurveInTwoHalves(nativeCurve);
+          if (edge.ProxyCurveIsReversed)
+          {
+            first = first.CreateReversed();
+            second = second.CreateReversed();
+          }
+          var halfEdgeA = BRepBuilderEdgeGeometry.Create(first);
+          var halfEdgeB = BRepBuilderEdgeGeometry.Create(second);
+          return edge.ProxyCurveIsReversed 
+            ? new List<BRepBuilderEdgeGeometry> { halfEdgeA, halfEdgeB }
+            : new List<BRepBuilderEdgeGeometry> { halfEdgeB, halfEdgeA };
         }
 
         // TODO: Remove short segments if smaller than 'Revit.ShortCurveTolerance'.

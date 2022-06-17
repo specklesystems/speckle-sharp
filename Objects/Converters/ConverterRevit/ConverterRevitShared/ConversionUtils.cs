@@ -778,15 +778,8 @@ namespace Objects.Converter.Revit
         if (HasOverlappingOpening(@void, openings))
           continue;
 
-        var curveArray = CurveToNative(@void);
-        if (curveArray.Size == 1)
-        {
-          var item = curveArray.get_Item(0);
-          if (item.IsBound)
-          {
-            item.MakeUnbound();
-          }
-        }
+        var curveArray = CurveToNative(@void, true);
+        UnboundCurveIfSingle(curveArray);
         Doc.Create.NewOpening(host, curveArray, false);
       }
     }

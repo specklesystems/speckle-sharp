@@ -21,14 +21,7 @@ namespace Objects.Converter.Revit
 
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline, true);
-      if (outline.Size == 1)
-      {
-        var item = outline.get_Item(0);
-        if (item.IsBound)
-        {
-          item.MakeUnbound();
-        }
-      }
+      UnboundCurveIfSingle(outline);
       DB.Level level;
       double slope = 0;
       DB.Line slopeDirection = null;
