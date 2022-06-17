@@ -125,6 +125,9 @@ namespace Objects.Converter.CSI
       Model.PropFrame.GetMaterial(name, ref materialProp);
       speckleStructProperty1D.material = MaterialToSpeckle(materialProp);
       speckleStructProperty1D.profile = SectionToSpeckle(name);
+
+      speckleStructProperty1D.applicationId = $"{speckleStructProperty1D.material.applicationId}:{speckleStructProperty1D.profile.applicationId}";
+
       return speckleStructProperty1D;
     }
 
