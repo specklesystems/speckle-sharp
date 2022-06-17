@@ -354,7 +354,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="crv">A speckle curve.</param>
     /// <returns></returns>
-    public CurveArray CurveToNative(ICurve crv)
+    public CurveArray CurveToNative(ICurve crv, bool splitIfClosed = false)
     {
       CurveArray curveArray = new CurveArray();
       switch (crv)
@@ -379,7 +379,17 @@ namespace Objects.Converter.Revit
           return PolylineToNative(spiral.displayValue);
 
         case Curve nurbs:
-          curveArray.Append(CurveToNative(nurbs));
+          var n = CurveToNative(nurbs);
+          if(IsCurveClosed(n) && splitIfClosed)
+          {
+            var split = SplitCurveInTwoHalves(n);
+            curveArray.Append(split.Item1);
+            curveArray.Append(split.Item2);
+          }
+          else
+          {
+            curveArray.Append(n);
+          }
           return curveArray;
 
         case Polyline poly:
@@ -399,6 +409,31 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public bool IsCurveClosed(DB.Curve nativeCurve, double tol = 1E-6)
+    {
+      var endPoint = nativeCurve.GetEndPoint(0);
+      var source = nativeCurve.GetEndPoint(1);
+      var distanceTo = endPoint.DistanceTo(source);
+      return distanceTo < tol;
+    }
+    
+    public (DB.Curve, DB.Curve) SplitCurveInTwoHalves(DB.Curve nativeCurve){
+
+      var curveArray = new CurveArray();
+      // Revit does not like single curve loop edges, so we split them in two.
+      var start = nativeCurve.GetEndParameter(0);
+      var end = nativeCurve.GetEndParameter(1);
+      var mid = start + ((end - start) / 2);
+
+      var a = nativeCurve.Clone();
+      a.MakeBound(start, mid);
+      curveArray.Append(a);
+      var b = nativeCurve.Clone();
+      b.MakeBound(mid, end);
+      curveArray.Append(b);
+
+      return (a,b);
+    }
     //thanks Revit
     public CurveLoop CurveArrayToCurveLoop(CurveArray array)
     {
@@ -767,7 +802,7 @@ namespace Objects.Converter.Revit
           // Revit does not like single curve loop edges, so we split them in two.
           var start = nativeCurve.GetEndParameter(0);
           var end = nativeCurve.GetEndParameter(1);
-          var mid = (end - start) / 2;
+          var mid = start + ((end - start) / 2);
 
           var a = nativeCurve.Clone();
           a.MakeBound(start, mid);

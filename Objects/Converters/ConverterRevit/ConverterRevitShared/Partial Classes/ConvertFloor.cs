@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
       }
 
       bool structural = false;
-      var outline = CurveToNative(speckleFloor.outline);
+      var outline = CurveToNative(speckleFloor.outline, true);
 
       DB.Level level;
       double slope = 0;
