@@ -779,6 +779,14 @@ namespace Objects.Converter.Revit
           continue;
 
         var curveArray = CurveToNative(@void);
+        if (curveArray.Size == 1)
+        {
+          var item = curveArray.get_Item(0);
+          if (item.IsBound)
+          {
+            item.MakeUnbound();
+          }
+        }
         Doc.Create.NewOpening(host, curveArray, false);
       }
     }

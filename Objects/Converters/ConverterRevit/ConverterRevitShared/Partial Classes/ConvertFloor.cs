@@ -21,7 +21,14 @@ namespace Objects.Converter.Revit
 
       bool structural = false;
       var outline = CurveToNative(speckleFloor.outline, true);
-
+      if (outline.Size == 1)
+      {
+        var item = outline.get_Item(0);
+        if (item.IsBound)
+        {
+          item.MakeUnbound();
+        }
+      }
       DB.Level level;
       double slope = 0;
       DB.Line slopeDirection = null;
@@ -85,7 +92,7 @@ namespace Objects.Converter.Revit
         {
           foreach (var v in voids)
           {
-            var opening = CurveArrayToCurveLoop(CurveToNative(v));
+            var opening = CurveArrayToCurveLoop(CurveToNative(v, true));
             profile.Add(opening);
           }   
         }

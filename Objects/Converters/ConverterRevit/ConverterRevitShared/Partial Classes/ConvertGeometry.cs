@@ -242,8 +242,7 @@ namespace Objects.Converter.Revit
           0,
           2 * Math.PI
         );
-        //if(!e.IsBound)
-        //  e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
+        e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
         return e;
       }
     }
@@ -438,6 +437,14 @@ namespace Objects.Converter.Revit
     public CurveLoop CurveArrayToCurveLoop(CurveArray array)
     {
       var loop = new CurveLoop();
+      if (array.Size == 1)
+      {
+        var item = array.get_Item(0);
+        if (item.IsBound)
+        {
+          item.MakeUnbound();
+        }
+      }
       foreach (var item in array.Cast<DB.Curve>())
         loop.Append(item);
 
