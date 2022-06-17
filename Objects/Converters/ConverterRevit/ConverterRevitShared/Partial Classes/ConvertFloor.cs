@@ -20,8 +20,8 @@ namespace Objects.Converter.Revit
       }
 
       bool structural = false;
-      var outline = CurveToNative(speckleFloor.outline);
-
+      var outline = CurveToNative(speckleFloor.outline, true);
+      UnboundCurveIfSingle(outline);
       DB.Level level;
       double slope = 0;
       DB.Line slopeDirection = null;
@@ -85,7 +85,7 @@ namespace Objects.Converter.Revit
         {
           foreach (var v in voids)
           {
-            var opening = CurveArrayToCurveLoop(CurveToNative(v));
+            var opening = CurveArrayToCurveLoop(CurveToNative(v, true));
             profile.Add(opening);
           }   
         }
