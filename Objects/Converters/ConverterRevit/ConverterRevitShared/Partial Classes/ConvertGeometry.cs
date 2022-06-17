@@ -582,7 +582,7 @@ namespace Objects.Converter.Revit
 
     // Insipred by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
-    public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage)
+    public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage, RenderMaterial parentMaterial = null)
     {
       var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
 
@@ -591,8 +591,8 @@ namespace Objects.Converter.Revit
 
       var vertices = ArrayToPoints(mesh.vertices, mesh.units);
 
-      ElementId materialId = RenderMaterialToNative(mesh["renderMaterial"] as RenderMaterial);
-
+      ElementId materialId = RenderMaterialToNative(parentMaterial ?? (mesh["renderMaterial"] as RenderMaterial));
+      
       int i = 0;
       while (i < mesh.faces.Count)
       {
@@ -890,6 +890,7 @@ namespace Objects.Converter.Revit
           break;
       }
 
+      var materialId = RenderMaterialToNative(brep["renderMaterial"] as RenderMaterial);
       using var builder = new BRepBuilder(bRepType);
 
       builder.SetAllowShortEdges();
@@ -899,7 +900,8 @@ namespace Objects.Converter.Revit
       foreach (var face in brep.Faces)
       {
         var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
-
+        builder.SetFaceMaterialId(faceId, materialId);
+        
         foreach (var loop in face.Loops)
         {
           var loopId = builder.AddLoop(faceId);
