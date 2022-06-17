@@ -17,7 +17,6 @@ namespace Objects.Structural.Geometry
     [DetachProperty]
     public Property1D property { get; set; }
     public ElementType1D type { get; set; }
-    public MemberType memberType { get; set; }
     public Restraint end1Releases { get; set; }
     public Restraint end2Releases { get; set; }
     public Vector end1Offset { get; set; }

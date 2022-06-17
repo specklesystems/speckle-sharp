@@ -192,7 +192,7 @@ namespace Objects.Converter.CSI
       }
 
       // Should discretize between wall and slab types
-      speckleStructArea.memberType = MemberType.Generic2D;
+      //speckleStructArea.memberType = MemberType.Generic2D;
 
       return speckleStructArea;
     }
