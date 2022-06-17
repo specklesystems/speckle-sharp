@@ -228,7 +228,7 @@ namespace Objects.Converter.Revit
       return a;
     }
 
-    public DB.Ellipse EllipseToNative(Ellipse ellipse)
+    public DB.Curve EllipseToNative(Ellipse ellipse)
     {
       //TODO: support ellipse arcs
       using (DB.Plane basePlane = PlaneToNative(ellipse.plane))
@@ -239,11 +239,11 @@ namespace Objects.Converter.Revit
           ScaleToNative((double)ellipse.secondRadius, ellipse.units),
           basePlane.XVec.Normalize(),
           basePlane.YVec.Normalize(),
-          ellipse.domain.start ?? 0,
-          ellipse.domain.end ?? 2 * Math.PI
-        ) as DB.Ellipse;
-
-        e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
+          0,
+          2 * Math.PI
+        );
+        //if(!e.IsBound)
+        //  e.MakeBound(ellipse.trimDomain?.start ?? 0, ellipse.trimDomain?.end ?? 2 * Math.PI);
         return e;
       }
     }
