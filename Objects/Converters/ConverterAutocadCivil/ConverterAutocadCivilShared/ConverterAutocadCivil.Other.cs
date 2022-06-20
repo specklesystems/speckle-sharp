@@ -408,7 +408,7 @@ namespace Objects.Converter.AutocadCivil
         }
 
         foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
-          curVisibilityName = (string)prop.Value;
+          curVisibilityName = prop.Value is double o ? o.ToString() : (string)prop.Value;
         if (!string.IsNullOrEmpty(curVisibilityName)) fullName = $"{fullName}_{curVisibilityName}";
       }
 

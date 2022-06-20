@@ -110,7 +110,7 @@ namespace SpeckleConnectorCSI
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
       model = SapModel;
       AppDomain domain = null;
- 
+
 
       try
       {
@@ -126,7 +126,7 @@ namespace SpeckleConnectorCSI
         //return;
       }
 
-      return; 
+      return;
     }
   }
 

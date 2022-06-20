@@ -142,7 +142,9 @@ namespace ConnectorGrasshopper.Extras
     public static bool CanConvertToDataTree(Base @base)
     {
       var regex = new Regex(dataTreePathPattern);
-      var isDataTree = @base.GetDynamicMembers().All(el => regex.Match(el).Success);
+      var dynamicMembers = @base.GetDynamicMembers().ToList();
+      if (dynamicMembers.Count == 0) return false;
+      var isDataTree = dynamicMembers.All(el => regex.Match(el).Success);
       return isDataTree;
     }
     

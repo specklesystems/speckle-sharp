@@ -532,7 +532,6 @@ namespace Objects.Converter.RhinoGh
       var tolerance = 0.0;
 
       curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
-
       Polyline displayValue;
 
       if (poly.Count == 2)
@@ -641,7 +640,7 @@ namespace Objects.Converter.RhinoGh
 
       var speckleMesh = new Mesh(verts, faces, colors, textureCoordinates, u)
       {
-        volume = mesh.Volume(),
+        volume = mesh.IsClosed ? mesh.Volume() : 0,
         bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u)
       };
 
@@ -805,30 +804,37 @@ namespace Objects.Converter.RhinoGh
     /// </summary>
     /// <param name="brep">BREP to be converted.</param>
     /// <returns></returns>
-    public Brep BrepToSpeckle(RH.Brep brep, string units = null)
+    public Brep BrepToSpeckle(RH.Brep brep, string units = null, RH.Mesh previewMesh = null)
     {
       var tol = Doc.ModelAbsoluteTolerance;
       //tol = 0;
       var u = units ?? ModelUnits;
-      brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
+      brep.Repair(tol);
       // foreach (var f in brep.Faces)
       // {
       //   f.RebuildEdges(tol, false, false);
       // }
       // Create complex
       var joinedMesh = new RH.Mesh();
-      var mySettings = MeshingParameters.Default;
-      switch (SelectedMeshSettings)
+      if (previewMesh == null)
       {
-        case MeshSettings.Default:
-          mySettings = new MeshingParameters(0.05, 0.05);
-          break;
-        case MeshSettings.CurrentDoc:
-          mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
-          break;
+        var mySettings = MeshingParameters.Default;
+        switch (SelectedMeshSettings)
+        {
+          case MeshSettings.Default:
+            mySettings = new MeshingParameters(0.05, 0.05);
+            break;
+          case MeshSettings.CurrentDoc:
+            mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
+            break;
+        }
+        joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+        joinedMesh.Weld(Math.PI);
       }
-      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-      joinedMesh.Weld(Math.PI);
+      else
+      {
+        joinedMesh = previewMesh;
+      }
 
       var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
 
@@ -1002,7 +1008,7 @@ namespace Objects.Converter.RhinoGh
             rhTrim.SetTolerances(tol, tol);
           });
         });
-
+        
         newBrep.Repair(tol);
 
         return newBrep;
