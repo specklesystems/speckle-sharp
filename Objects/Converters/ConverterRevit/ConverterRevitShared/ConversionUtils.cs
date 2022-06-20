@@ -1055,6 +1055,7 @@ namespace Objects.Converter.Revit
 
 
     public bool UnboundCurveIfSingle(DB.CurveArray array)
+
     {
       if (array.Size != 1) return false;
       var item = array.get_Item(0);
@@ -1073,7 +1074,6 @@ namespace Objects.Converter.Revit
 
     public (DB.Curve, DB.Curve) SplitCurveInTwoHalves(DB.Curve nativeCurve)
     {
-
       var curveArray = new CurveArray();
       // Revit does not like single curve loop edges, so we split them in two.
       var start = nativeCurve.GetEndParameter(0);
@@ -1088,6 +1088,7 @@ namespace Objects.Converter.Revit
       curveArray.Append(b);
 
       return (a, b);
+
     }
   }
 }
