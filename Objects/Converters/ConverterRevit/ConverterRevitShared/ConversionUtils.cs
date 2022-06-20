@@ -217,7 +217,7 @@ namespace Objects.Converter.Revit
 
       return speckleParameters.GroupBy(x => x.applicationInternalName).Select(x => x.First()).ToDictionary(x => x.applicationInternalName, x => x);
     }
-    
+
     /// <summary>
     /// Returns the value of a Revit Built-In <see cref="DB.Parameter"/> given a target <see cref="DB.Element"/> and <see cref="BuiltInParameter"/>
     /// </summary>
@@ -236,7 +236,7 @@ namespace Objects.Converter.Revit
       var value = ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
- 
+
       return (T)ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
     }
 
@@ -901,11 +901,11 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var revitMaterial = element.Document.GetElement(matId) as Material;
+      var revitMaterial = element.Document.GetElement(matId) as DB.Material;
       return RenderMaterialToSpeckle(revitMaterial);
     }
 
-    public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
+    public static RenderMaterial RenderMaterialToSpeckle(DB.Material revitMaterial)
     {
       if (revitMaterial == null)
         return null;
@@ -927,15 +927,15 @@ namespace Objects.Converter.Revit
 
       // Try and find an existing material
       var existing = new FilteredElementCollector(Doc)
-        .OfClass(typeof(Material))
-        .Cast<Material>()
+        .OfClass(typeof(DB.Material))
+        .Cast<DB.Material>()
         .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
 
       if (existing != null) return existing.Id;
 
       // Create new material
       ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
-      Material mat = Doc.GetElement(materialId) as Material;
+      DB.Material mat = Doc.GetElement(materialId) as DB.Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
       mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
@@ -984,7 +984,7 @@ namespace Objects.Converter.Revit
 
       if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-        var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+        var mat = e.Document.GetElement(mechType.MaterialId) as DB.Material;
         RenderMaterial material = RenderMaterialToSpeckle(mat);
 
         return material;
@@ -1010,8 +1010,8 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
-    
-    
+
+
     /// <summary>
     /// Checks if a Speckle <see cref="Line"/> is too sort to be created in Revit.
     /// </summary>
@@ -1022,7 +1022,7 @@ namespace Objects.Converter.Revit
     /// <returns>true if the line is too short, false otherwise.</returns>
     public bool IsLineTooShort(Line line)
     {
-      var scaleToNative = ScaleToNative(Point.Distance(line.start,line.end), line.units);
+      var scaleToNative = ScaleToNative(Point.Distance(line.start, line.end), line.units);
       return scaleToNative < Doc.Application.ShortCurveTolerance;
     }
 
@@ -1053,8 +1053,9 @@ namespace Objects.Converter.Revit
       }
     }
 
-    
-    public bool UnboundCurveIfSingle(CurveArray array)
+
+    public bool UnboundCurveIfSingle(DB.CurveArray array)
+
     {
       if (array.Size != 1) return false;
       var item = array.get_Item(0);
@@ -1070,9 +1071,9 @@ namespace Objects.Converter.Revit
       var distanceTo = endPoint.DistanceTo(source);
       return distanceTo < tol;
     }
-    
-    public (DB.Curve, DB.Curve) SplitCurveInTwoHalves(DB.Curve nativeCurve){
 
+    public (DB.Curve, DB.Curve) SplitCurveInTwoHalves(DB.Curve nativeCurve)
+    {
       var curveArray = new CurveArray();
       // Revit does not like single curve loop edges, so we split them in two.
       var start = nativeCurve.GetEndParameter(0);
@@ -1086,7 +1087,8 @@ namespace Objects.Converter.Revit
       b.MakeBound(mid, end);
       curveArray.Append(b);
 
-      return (a,b);
+      return (a, b);
+
     }
   }
 }
