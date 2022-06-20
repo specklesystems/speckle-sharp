@@ -10,6 +10,7 @@ using Rhino.Display;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using ReportObject = Speckle.Core.Models.ProgressReport.ReportObject;
 
 using DesktopUI2.ViewModels;
 
@@ -87,6 +88,8 @@ namespace SpeckleRhino
     public List<object> Converted { get; set; } = new List<object>(); 
 
     public Base Base { get; set; }
+
+    public ReportObject ReportObject { get; set; }
 
     public bool Convertible { get; set; }
 

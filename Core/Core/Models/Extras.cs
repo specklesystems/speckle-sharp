@@ -93,69 +93,79 @@ namespace Speckle.Core.Models
     public object NativeObject;
   }
 
+  public static class Helpers
+  {
+    public static void Update(this ProgressReport.ReportObject obj, string speckleId = null, string applicationId = null, ProgressReport.ConversionStatus? status = null, string message = null, List<string> notes = null, bool? hasError = null)
+    {
+      if (speckleId != null) obj.SpeckleId = speckleId;
+      if (applicationId != null) obj.ApplicationId = applicationId;
+      if (status.HasValue) obj.Status = status.Value;
+      if (message != null) obj.Message = message;
+      if (notes != null) notes.Where(o => !string.IsNullOrEmpty(o))?.ToList().ForEach(o => obj.Notes.Add(o));
+      if (hasError.HasValue) obj.HasError = hasError.Value;
+    }
+  }
+
   public class ProgressReport
   {
+    #region Conversion
+    public enum ConversionStatus { Converted, Created, Skipped, Failed, Updated, Unknown };
+
+    /// <summary>
+    /// Class for tracking objects during conversion
+    /// </summary>
+    public class ReportObject
+    {
+      public string SpeckleId { get; set; }
+      public string ApplicationId { get; set; }
+      public ConversionStatus Status { get; set; } = ConversionStatus.Unknown;
+      public string Message { get; set; } = string.Empty;
+      public List<string> Notes { get; set; } = new List<string>();
+      public bool HasError { get; set; } = false;
+
+      public ReportObject()
+      {
+      }
+    }
+
+    private List<ReportObject> ReportObjects { get; set; } = new List<ReportObject>();
+
     /// <summary>
     /// Keeps track of the conversion process
     /// </summary>
     public List<string> ConversionLog { get; } = new List<string>();
 
-    private readonly object ConversionLogLock = new object(); 
-    public string ConversionLogString
-    {
-      get
-      {
-        var summary = "";
-        lock (ConversionLogLock)
-        {
-          var converted = ConversionLog.Count(x => x.ToLowerInvariant().Contains("converted"));
-          var created = ConversionLog.Count(x => x.ToLowerInvariant().Contains("created"));
-          var skipped = ConversionLog.Count(x => x.ToLowerInvariant().Contains("skipped"));
-          var failed = ConversionLog.Count(x => x.ToLowerInvariant().Contains("failed"));
-          var updated = ConversionLog.Count(x => x.ToLowerInvariant().Contains("updated"));
-
-          summary += converted > 0 ? $"CONVERTED: {converted}\n" : "";
-          summary += created > 0 ? $"CREATED: {created}\n" : "";
-          summary += updated > 0 ? $"UPDATED: {updated}\n" : "";
-          summary += skipped > 0 ? $"SKIPPED: {skipped}\n" : "";
-          summary += failed > 0 ? $"FAILED: {failed}\n" : "";
-          summary = !string.IsNullOrEmpty(summary) ? $"SUMMARY\n\n{summary}\n\n" : "";
-
-          return summary + string.Join("\n", ConversionLog);
-        }
-      }
-    }
-
+    private readonly object ConversionLogLock = new object();
     public void Log(string text)
     {
       var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
       lock (ConversionLogLock)
         ConversionLog.Add(time + " " + text);
     }
-    
+    public void Log(ReportObject obj)
+    {
+      var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
+      ReportObjects.Add(obj);
+      var logItem = time + " " + obj.Status + (obj.SpeckleId != null ? $"(Speckle){obj.SpeckleId}" : "") + (obj.ApplicationId != null ? $"(Application){obj.ApplicationId}" : "") + $": {obj.Message}";
+      lock (ConversionLogLock)
+        ConversionLog.Add(logItem);
+    }
+
+    public int GetConversionTotal(ConversionStatus action)
+    {
+      var actionObjects = ReportObjects.Where(o => o.Status == action);
+      return actionObjects == null ? 0 : actionObjects.Count();
+    }
+
     /// <summary>
-    /// Keeps track of errors in the conversions.
+    /// Keeps track of items selected in the Report
     /// </summary>
-    public List<Exception> ConversionErrors { get; } = new List<Exception>();
-    private readonly object ConversionErrorsLock = new object(); 
-    public string ConversionErrorsString
-    {
-      get
-      {
-        lock(ConversionErrorsLock)
-          return string.Join("\n", ConversionErrors.Select(x => x.Message).Distinct());
-      }
-    }
+    public List<string> Selection { get; set; } = new List<string>();
 
-    public int ConversionErrorsCount => ConversionErrors.Count;
+    #endregion
 
-    public void LogConversionError(Exception exception)
-    {
-      lock(ConversionErrorsLock)
-        ConversionErrors.Add(exception);
-      Log(exception.Message);
-    }
-
+    #region Operation
+    #endregion
 
     /// <summary>
     /// Keeps track of errors in the operations of send/receive.
@@ -170,7 +180,6 @@ namespace Speckle.Core.Models
           return string.Join("\n", OperationErrors.Select(x => x.Message).Distinct());
       }
     }
-
 
     public int OperationErrorsCount => OperationErrors.Count;
 
