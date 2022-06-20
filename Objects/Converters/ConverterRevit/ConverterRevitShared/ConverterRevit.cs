@@ -71,15 +71,15 @@ namespace Objects.Converter.Revit
     public ReceiveMode ReceiveMode { get; set; }
 
 
-        /// <summary>
-        /// Contains all materials in the model
-        /// </summary>
-        public Dictionary<string, Objects.Other.Material> Materials { get; private set; } = new Dictionary<string, Objects.Other.Material>();
+    /// <summary>
+    /// Contains all materials in the model
+    /// </summary>
+    public Dictionary<string, Objects.Other.Material> Materials { get; private set; } = new Dictionary<string, Objects.Other.Material>();
 
-        public ConverterRevit()
+    public ConverterRevit()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
-      Report.Log($"Using converter: {this.Name} v{ver}");
+      Report.Log($"Using converter: {Name} v{ver}");
     }
 
     public void SetContextDocument(object doc)
@@ -119,11 +119,11 @@ namespace Objects.Converter.Revit
         case DB.View o:
           returnObject = ViewToSpeckle(o);
           break;
-                //NOTE: Converts all materials in the materials library
-                case DB.Material o:
-                    returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
-                    break;
-                case DB.ModelCurve o:
+        //NOTE: Converts all materials in the materials library
+        case DB.Material o:
+          returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
+          break;
+        case DB.ModelCurve o:
 
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
           {
@@ -272,28 +272,28 @@ namespace Objects.Converter.Revit
       }
 
       //NOTE: adds the quantities of all materials to an element
-            if (returnObject != null)
-            {
-                try
-                {
-                    var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
-                    if (qs != null)
-                    {
-                        returnObject["material_quantities"] = new List<Base>();
-                        (returnObject["material_quantities"] as List<Base>).AddRange(qs);
-                    }
-                    else returnObject["material_quantities"] = null;
+      if (returnObject != null)
+      {
+        try
+        {
+          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
+          if (qs != null)
+          {
+            returnObject["materialQuantities"] = new List<Base>();
+            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
+          }
+          else returnObject["materialQuantities"] = null;
 
 
-                }
-                catch (System.Exception e)
-                {
-                    Report.Log(e.Message);
-                }
-            }
+        }
+        catch (System.Exception e)
+        {
+          Report.Log(e.Message);
+        }
+      }
 
-           
-            return returnObject;
+
+      return returnObject;
     }
 
     private string GetElemInfo(object o)
@@ -488,9 +488,9 @@ namespace Objects.Converter.Revit
       return @object
       switch
       {
-        
+
         DB.DetailCurve _ => true,
-        DB.Material _ =>true,
+        DB.Material _ => true,
         DB.DirectShape _ => true,
         DB.FamilyInstance _ => true,
         DB.Floor _ => true,
