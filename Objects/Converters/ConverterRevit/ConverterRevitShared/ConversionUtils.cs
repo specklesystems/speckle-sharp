@@ -183,8 +183,6 @@ namespace Objects.Converter.Revit
       speckleElement["units"] = ModelUnits;
       speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
       speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
-
-
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -220,22 +218,37 @@ namespace Objects.Converter.Revit
       return speckleParameters.GroupBy(x => x.applicationInternalName).Select(x => x.First()).ToDictionary(x => x.applicationInternalName, x => x);
     }
 
-    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
+    /// <summary>
+    /// Returns the value of a Revit Built-In <see cref="DB.Parameter"/> given a target <see cref="DB.Element"/> and <see cref="BuiltInParameter"/>
+    /// </summary>
+    /// <param name="elem">The <see cref="DB.Element"/> containing the Built-In <see cref="DB.Parameter"/></param>
+    /// <param name="bip">The <see cref="BuiltInParameter"/> enum name of the target parameter</param>
+    /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
     {
       var rp = elem.get_Parameter(bip);
 
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = ParameterToSpeckle(rp).value;
+      var value = ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
-      else
-        return (T)ParameterToSpeckle(rp).value;
+
+      return (T)ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
     }
 
-    //rp must HaveValue
-    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
+    /// <summary>
+    /// Converts a Revit Built-In <see cref="DB.Parameter"/> to a Speckle <see cref="Parameter"/>.
+    /// </summary>
+    /// <param name="rp">The Revit Built-In <see cref="DB.Parameter"/> to convert</param>
+    /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
+    /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
+    /// <returns></returns>
+    /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
+    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
     {
       var sp = new Parameter
       {
@@ -255,7 +268,7 @@ namespace Objects.Converter.Revit
           try
           {
             sp.applicationUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
-            sp.value = RevitVersionHelper.ConvertFromInternalUnits(val, rp);
+            sp.value = unitsOverride == null ? RevitVersionHelper.ConvertFromInternalUnits(val, rp) : ScaleToSpeckle(val, unitsOverride);
           }
           catch
           {
@@ -765,7 +778,8 @@ namespace Objects.Converter.Revit
         if (HasOverlappingOpening(@void, openings))
           continue;
 
-        var curveArray = CurveToNative(@void);
+        var curveArray = CurveToNative(@void, true);
+        UnboundCurveIfSingle(curveArray);
         Doc.Create.NewOpening(host, curveArray, false);
       }
     }
@@ -996,8 +1010,8 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
-    
-    
+
+
     /// <summary>
     /// Checks if a Speckle <see cref="Line"/> is too sort to be created in Revit.
     /// </summary>
@@ -1008,7 +1022,7 @@ namespace Objects.Converter.Revit
     /// <returns>true if the line is too short, false otherwise.</returns>
     public bool IsLineTooShort(Line line)
     {
-      var scaleToNative = ScaleToNative(Point.Distance(line.start,line.end), line.units);
+      var scaleToNative = ScaleToNative(Point.Distance(line.start, line.end), line.units);
       return scaleToNative < Doc.Application.ShortCurveTolerance;
     }
 
@@ -1038,7 +1052,42 @@ namespace Objects.Converter.Revit
         return false;
       }
     }
-        
 
+
+    public bool UnboundCurveIfSingle(DB.CurveArray array)
+    {
+      if (array.Size != 1) return false;
+      var item = array.get_Item(0);
+      if (!item.IsBound) return false;
+      item.MakeUnbound();
+      return true;
     }
+
+    public bool IsCurveClosed(DB.Curve nativeCurve, double tol = 1E-6)
+    {
+      var endPoint = nativeCurve.GetEndPoint(0);
+      var source = nativeCurve.GetEndPoint(1);
+      var distanceTo = endPoint.DistanceTo(source);
+      return distanceTo < tol;
+    }
+
+    public (DB.Curve, DB.Curve) SplitCurveInTwoHalves(DB.Curve nativeCurve)
+    {
+
+      var curveArray = new CurveArray();
+      // Revit does not like single curve loop edges, so we split them in two.
+      var start = nativeCurve.GetEndParameter(0);
+      var end = nativeCurve.GetEndParameter(1);
+      var mid = start + ((end - start) / 2);
+
+      var a = nativeCurve.Clone();
+      a.MakeBound(start, mid);
+      curveArray.Append(a);
+      var b = nativeCurve.Clone();
+      b.MakeBound(mid, end);
+      curveArray.Append(b);
+
+      return (a, b);
+    }
+  }
 }

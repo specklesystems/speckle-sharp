@@ -245,9 +245,10 @@ namespace Objects.Converter.CSI
           var speckleLoadFrame = new LoadBeam();
           var element = FrameToSpeckle(frameName[index]);
           var loadID = String.Concat(loadPat[index], val1[index], val2[index], dist1[index], dist2[index], dir[index], MyType[index]);
+          speckleLoadFrame.applicationId = loadID;
           FrameStoring.TryGetValue(loadID, out var element1DList);
           if (element1DList == null) { element1DList = new List<Base> { }; }
-          element1DList.Add(element);
+          if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId)) element1DList.Add(element);
           FrameStoring[loadID] = element1DList;
 
           switch (dir[index])
@@ -337,9 +338,10 @@ namespace Objects.Converter.CSI
           var speckleLoadFrame = new LoadBeam();
           var element = FrameToSpeckle(frameName[index]);
           var loadID = String.Concat(loadPat[index], val, dist[index], dir[index], MyType[index]);
+          speckleLoadFrame.applicationId = loadID;
           FrameStoring.TryGetValue(loadID, out var element1DList);
           if (element1DList == null) { element1DList = new List<Base> { }; }
-          element1DList.Add(element);
+          if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId)) element1DList.Add(element);
           FrameStoring[loadID] = element1DList;
 
           switch (dir[index])

@@ -78,6 +78,7 @@ namespace Objects.Converter.CSI
           var speckleLoadFace = new LoadFace();
           var element = AreaToSpeckle(areaName[index]);
           var loadID = string.Concat(loadPat[index], csys[index], dir[index], value[index]);
+          speckleLoadFace.applicationId = loadID;
           AreaStoring.TryGetValue(loadID, out var element2Dlist);
           if (element2Dlist == null) { element2Dlist = new List<Base> { }; }
           element2Dlist.Add(element);
@@ -164,6 +165,7 @@ namespace Objects.Converter.CSI
           var speckleLoadFace = new CSIWindLoadingFace();
           var element = AreaToSpeckle(areaName[index]);
           var loadID = string.Concat(loadPat[index], myType[index], cp[index]);
+          speckleLoadFace.applicationId = loadID;
           AreaStoring.TryGetValue(loadID, out var element2Dlist);
           if (element2Dlist == null) { element2Dlist = new List<Base> { }; }
           element2Dlist.Add(element);

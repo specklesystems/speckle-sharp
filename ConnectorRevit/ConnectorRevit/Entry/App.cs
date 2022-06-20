@@ -142,7 +142,7 @@ namespace Speckle.ConnectorRevit.Entry
       AppInstance = sender as UIApplication;
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-     
+
 
 
 #if REVIT2019
@@ -161,7 +161,7 @@ namespace Speckle.ConnectorRevit.Entry
       OneClickSendCommand.Bindings = bindings;
       QuickShareCommand.Bindings = bindings;
 
-      try
+      if (SpeckleRevitCommand2.UseDockablePanel)
       {
         //Register dockable panel
         var viewModel = new MainViewModel(bindings);
@@ -171,11 +171,7 @@ namespace Speckle.ConnectorRevit.Entry
         };
         AppInstance.RegisterDockablePane(SpeckleRevitCommand2.PanelId, "Speckle", Panel);
       }
-      catch (Exception ex)
-      {
 
-      }
-     
 
 
 #endif

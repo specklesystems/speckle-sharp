@@ -141,6 +141,7 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       var regex = dataTreePathRegex;
       var members = @base.GetDynamicMembers().ToList();
+      if (members.Count == 0) return false;
       var isDataTree = members.All(el => regex.Match(el).Success);
       return members.Count > 0 && isDataTree;
     }

@@ -5,6 +5,8 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.BuiltElements.Revit;
+using Objects.Other;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
@@ -42,7 +44,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              var mesh = brep.displayValue.SelectMany(m => MeshToNative(m));
+              var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
               converted.AddRange(mesh);
             }
             break;
@@ -90,7 +92,7 @@ namespace Objects.Converter.Revit
       {
         Doc.Delete(docObj.Id);
       }
-
+      
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
       revitDs.ApplicationId = brep.applicationId;
@@ -106,7 +108,7 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         Report.LogConversionError(new Exception(e.Message));
-        var mesh = brep.displayValue.SelectMany(m => MeshToNative(m));
+        var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
         revitDs.SetShape(mesh.ToArray());
       }
       Report.Log($"Converted DirectShape {revitDs.Id}");
