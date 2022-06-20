@@ -3,15 +3,24 @@
   using Avalonia.Controls.Embedding;
   using Avalonia.Input;
   using Avalonia.Platform;
-  using Avalonia.Rendering;
   using System;
   using System.Runtime.InteropServices;
-  using System.Windows;
   using System.Windows.Interop;
 
   public class AvaloniaHwndHost : HwndHost
   {
-    private  EmbeddableControlRoot _root = new EmbeddableControlRoot();
+    private EmbeddableControlRoot _root;
+    //Switching documents in Revit causes the Panel content to "reset",
+    //as a consequence BuildWindowCore gets called again the _root needs to be initialized again
+    private EmbeddableControlRoot root
+    {
+      get
+      {
+        if (_root == null)
+          _root = new EmbeddableControlRoot();
+        return _root;
+      }
+    }
 
     public AvaloniaHwndHost()
     {
@@ -28,10 +37,10 @@
 
     public Avalonia.Controls.Control Content
     {
-      get => (Avalonia.Controls.Control)_root.Content;
+      get => (Avalonia.Controls.Control)root.Content;
       set
       {
-        _root.Content = value;
+        root.Content = value;
         if (value != null)
         {
           value.DataContext = DataContext;
@@ -41,15 +50,10 @@
 
     protected override HandleRef BuildWindowCore(HandleRef hwndParent)
     {
-      //Switching documents in Revit causes the Panel content to "reset",
-      //as a consequence BuildWindowCore gets called again the _root needs to be initialized again
-      if (_root.Renderer == null)
-        _root = new EmbeddableControlRoot();
+      root.Prepare();
+      root.Renderer.Start();
 
-      _root.Prepare();
-      _root.Renderer.Start();
-
-      var handle = ((IWindowImpl)_root.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
+      var handle = ((IWindowImpl)root.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
 
       //var wpfWindow = Window.GetWindow(this);
       //var parentHandle = new WindowInteropHelper(wpfWindow).Handle;
@@ -61,12 +65,12 @@
         FocusManager.Instance.Focus(null);
       }
 
-      return new HandleRef(_root, handle);
+      return new HandleRef(root, handle);
     }
 
     protected override void DestroyWindowCore(HandleRef hwnd)
     {
-      _root.Dispose();
+      root.Dispose();
     }
   }
 }
