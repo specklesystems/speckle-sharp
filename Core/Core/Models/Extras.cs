@@ -95,40 +95,38 @@ namespace Speckle.Core.Models
 
   public static class Helpers
   {
-    public static void Update(this ProgressReport.ReportObject obj, string speckleId = null, string applicationId = null, ProgressReport.ConversionStatus? status = null, string message = null, List<string> notes = null, bool? hasError = null)
+    public static void Update(this ProgressReport.ReportObject obj, string createdId = null, ProgressReport.ConversionStatus? status = null, string message = null, List<string> notes = null)
     {
-      if (speckleId != null) obj.SpeckleId = speckleId;
-      if (applicationId != null) obj.ApplicationId = applicationId;
+      if (createdId != null && !obj.CreatedIds.Contains(createdId)) obj.CreatedIds.Add(createdId);
       if (status.HasValue) obj.Status = status.Value;
       if (message != null) obj.Message = message;
       if (notes != null) notes.Where(o => !string.IsNullOrEmpty(o))?.ToList().ForEach(o => obj.Notes.Add(o));
-      if (hasError.HasValue) obj.HasError = hasError.Value;
     }
   }
 
   public class ProgressReport
   {
     #region Conversion
-    public enum ConversionStatus { Converted, Created, Skipped, Failed, Updated, Unknown };
+    public enum ConversionStatus { Converting, Created, Skipped, Failed, Updated, Unknown };
 
     /// <summary>
     /// Class for tracking objects during conversion
     /// </summary>
     public class ReportObject
     {
-      public string SpeckleId { get; set; }
-      public string ApplicationId { get; set; }
+      public string Id { get; set; }
+      public List<string> CreatedIds { get; set; } = new List<string>();
       public ConversionStatus Status { get; set; } = ConversionStatus.Unknown;
       public string Message { get; set; } = string.Empty;
       public List<string> Notes { get; set; } = new List<string>();
-      public bool HasError { get; set; } = false;
 
-      public ReportObject()
+      public ReportObject(string id)
       {
+        Id = id;
       }
     }
 
-    private List<ReportObject> ReportObjects { get; set; } = new List<ReportObject>();
+    private List<ReportObject> _reportObjects { get; set; } = new List<ReportObject>();
 
     /// <summary>
     /// Keeps track of the conversion process
@@ -145,15 +143,33 @@ namespace Speckle.Core.Models
     public void Log(ReportObject obj)
     {
       var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
-      ReportObjects.Add(obj);
-      var logItem = time + " " + obj.Status + (obj.SpeckleId != null ? $"(Speckle){obj.SpeckleId}" : "") + (obj.ApplicationId != null ? $"(Application){obj.ApplicationId}" : "") + $": {obj.Message}";
+      var _reportObject = UpdateReportObject(obj); 
+      if (_reportObject == null)
+        _reportObjects.Add(obj);
+      
+      var logItem = time + " " + obj.Status + $" {obj.Id}: {obj.Message}";
       lock (ConversionLogLock)
         ConversionLog.Add(logItem);
+    }
+    private ReportObject UpdateReportObject(ReportObject obj)
+    {
+      if (GetReportObject(obj.Id, out int index))
+      {
+        _reportObjects[index].Update(status: obj.Status, message: obj.Message, notes: obj.Notes);
+        return _reportObjects[index];
+      }
+      else return null;
+    }
+    public bool GetReportObject(string id, out int index)
+    {
+      var _reportObject = _reportObjects.Where(o => o.Id == id)?.First();
+      index = _reportObject != null ? _reportObjects.IndexOf(_reportObject) : -1;
+      return index == -1 ? false : true;
     }
 
     public int GetConversionTotal(ConversionStatus action)
     {
-      var actionObjects = ReportObjects.Where(o => o.Status == action);
+      var actionObjects = _reportObjects.Where(o => o.Status == action);
       return actionObjects == null ? 0 : actionObjects.Count();
     }
 
@@ -165,13 +181,11 @@ namespace Speckle.Core.Models
     #endregion
 
     #region Operation
-    #endregion
-
     /// <summary>
     /// Keeps track of errors in the operations of send/receive.
     /// </summary>
     public List<Exception> OperationErrors { get; } = new List<Exception>();
-    private readonly object OperationErrorsLock = new object(); 
+    private readonly object OperationErrorsLock = new object();
     public string OperationErrorsString
     {
       get
@@ -185,19 +199,22 @@ namespace Speckle.Core.Models
 
     public void LogOperationError(Exception exception)
     {
-      lock(OperationErrorsLock)
+      lock (OperationErrorsLock)
         OperationErrors.Add(exception);
       Log(exception.Message);
     }
+    #endregion
 
     public void Merge(ProgressReport report)
     {
-      lock(ConversionErrorsLock)
-        ConversionErrors.AddRange(report.ConversionErrors);
       lock(OperationErrorsLock)
         OperationErrors.AddRange(report.OperationErrors);
       lock (ConversionLogLock)
         ConversionLog.AddRange(report.ConversionLog);
+      // update report objects with notes
+      foreach (var _reportObject in report._reportObjects)
+        if (GetReportObject(_reportObject.Id, out int index))
+          _reportObjects[index].Notes.AddRange(_reportObject.Notes);
     }
   }
 }

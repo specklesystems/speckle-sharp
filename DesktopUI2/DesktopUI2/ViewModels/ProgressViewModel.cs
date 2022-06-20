@@ -112,13 +112,6 @@ namespace DesktopUI2.ViewModels
         report += Report.OperationErrorsString;
       }
 
-      if (Report.ConversionErrorsCount > 0)
-      {
-        if (Report.OperationErrorsCount > 0)
-          report += "\n\n";
-        report += "CONVERSION ERRORS\n\n";
-        report += Report.ConversionErrorsString;
-      }
       var safeReport = HttpUtility.UrlEncode(report);
       Process.Start(new ProcessStartInfo($"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help") { UseShellExecute = true });
     }
