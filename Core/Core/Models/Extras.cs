@@ -95,12 +95,13 @@ namespace Speckle.Core.Models
 
   public static class Helpers
   {
-    public static void Update(this ProgressReport.ReportObject obj, string createdId = null, ProgressReport.ConversionStatus? status = null, string message = null, List<string> notes = null)
+    public static void Update(this ProgressReport.ReportObject obj, string createdId = null, ProgressReport.ConversionStatus? status = null, string message = null, List<string> notes = null, string note = null)
     {
       if (createdId != null && !obj.CreatedIds.Contains(createdId)) obj.CreatedIds.Add(createdId);
       if (status.HasValue) obj.Status = status.Value;
       if (message != null) obj.Message = message;
       if (notes != null) notes.Where(o => !string.IsNullOrEmpty(o))?.ToList().ForEach(o => obj.Notes.Add(o));
+      if (!string.IsNullOrEmpty(note)) obj.Notes.Add(note);
     }
   }
 
@@ -151,7 +152,7 @@ namespace Speckle.Core.Models
       lock (ConversionLogLock)
         ConversionLog.Add(logItem);
     }
-    private ReportObject UpdateReportObject(ReportObject obj)
+    public ReportObject UpdateReportObject(ReportObject obj)
     {
       if (GetReportObject(obj.Id, out int index))
       {
@@ -162,7 +163,7 @@ namespace Speckle.Core.Models
     }
     public bool GetReportObject(string id, out int index)
     {
-      var _reportObject = _reportObjects.Where(o => o.Id == id)?.First();
+      var _reportObject = _reportObjects.Where(o => o.Id == id)?.FirstOrDefault();
       index = _reportObject != null ? _reportObjects.IndexOf(_reportObject) : -1;
       return index == -1 ? false : true;
     }

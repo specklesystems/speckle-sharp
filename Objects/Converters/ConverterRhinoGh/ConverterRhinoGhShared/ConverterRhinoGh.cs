@@ -1,16 +1,25 @@
-﻿using Grasshopper.Kernel.Types;
-using Objects.Geometry;
-using Objects.Other;
-using Objects.Primitive;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using RH = Rhino.Geometry;
+using Grasshopper.Kernel.Types;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhino.Display;
+using ReportObject = Speckle.Core.Models.ProgressReport.ReportObject;
+
+using Objects.Geometry;
+using Objects.Other;
+using Objects.Primitive;
+
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -28,7 +37,6 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Transform = Objects.Other.Transform;
@@ -76,8 +84,6 @@ namespace Objects.Converter.RhinoGh
       return new[] { RhinoAppName };
     }
 
-    public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
-
     public RhinoDoc Doc { get; private set; } = Rhino.RhinoDoc.ActiveDoc ?? null;
 
     public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
@@ -124,13 +130,17 @@ namespace Objects.Converter.RhinoGh
       DisplayStyle style = null;
       Base @base = null;
       Base schema = null;
+      ReportObject reportObj = null;
+      List<string> notes = new List<string>();
+
       if (@object is RhinoObject ro)
       {
+        reportObj = new ReportObject(ro.Id.ToString());
         material = RenderMaterialToSpeckle(ro.GetMaterial(true));
         style = DisplayStyleToSpeckle(ro.Attributes);
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
-          schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
+          schema = ConvertToSpeckleBE(ro, reportObj) ?? ConvertToSpeckleStr(ro, reportObj);
         
         // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
         // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
@@ -145,95 +155,69 @@ namespace Objects.Converter.RhinoGh
       {
         case Point3d o:
           @base = PointToSpeckle(o);
-          Report.Log($"Converted Point {o}");
           break;
         case Rhino.Geometry.Point o:
           @base = PointToSpeckle(o);
-          Report.Log($"Converted Point {o}");
           break;
         case PointCloud o:
           @base = PointcloudToSpeckle(o);
-          Report.Log($"Converted PointCloud");
           break;
         case Vector3d o:
           @base = VectorToSpeckle(o);
-          Report.Log($"Converted Vector3d {o}");
           break;
         case RH.Interval o:
           @base = IntervalToSpeckle(o);
-          Report.Log($"Converted Interval {o}");
           break;
         case UVInterval o:
           @base = Interval2dToSpeckle(o);
-          Report.Log($"Converted Interval2d {o}");
           break;
         case RH.Line o:
           @base = LineToSpeckle(o);
-          Report.Log($"Converted Line");
           break;
         case LineCurve o:
           @base = LineToSpeckle(o);
-          Report.Log($"Converted LineCurve");
           break;
         case RH.Plane o:
           @base = PlaneToSpeckle(o);
-          Report.Log($"Converted Plane");
           break;
         case Rectangle3d o:
           @base = PolylineToSpeckle(o);
-          Report.Log($"Converted Polyline");
           break;
         case RH.Circle o:
           @base = CircleToSpeckle(o);
-          Report.Log($"Converted Circle");
           break;
         case RH.Arc o:
           @base = ArcToSpeckle(o);
-          Report.Log($"Converted Arc");
           break;
         case ArcCurve o:
           @base = ArcToSpeckle(o);
-          Report.Log($"Converted Arc");
           break;
         case RH.Ellipse o:
           @base = EllipseToSpeckle(o);
-          Report.Log($"Converted Ellipse");
           break;
         case RH.Polyline o:
           @base = PolylineToSpeckle(o) as Base;
-          Report.Log($"Converted Polyline");
           break;
         case NurbsCurve o:
           if (o.TryGetEllipse(out RH.Ellipse ellipse))
-          {
             @base = EllipseToSpeckle(ellipse);
-            Report.Log($"Converted NurbsCurve as Ellipse");
-          }
           else
-          {
             @base = CurveToSpeckle(o) as Base;
-            Report.Log($"Converted NurbsCurve");
-          }
           break;
         case PolylineCurve o:
           @base = PolylineToSpeckle(o);
-          Report.Log($"Converted Polyline Curve");
           break;
         case PolyCurve o:
           @base = PolycurveToSpeckle(o);
-          Report.Log($"Converted PolyCurve");
           break;
         case RH.Box o:
           @base = BoxToSpeckle(o);
-          Report.Log($"Converted Box");
           break;
         case RH.Hatch o:
           @base = HatchToSpeckle(o);
-          Report.Log($"Converted Hatch");
           break;
         case RH.Mesh o:
           @base = MeshToSpeckle(o);
-          Report.Log($"Converted Mesh");
           break;
         
 # if GRASSHOPPER
@@ -251,50 +235,45 @@ namespace Objects.Converter.RhinoGh
           if (o.HasBrepForm)
           {
             @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()),null, displayMesh);
-            Report.Log($"Converted SubD as BREP");
           }
           else
           {
             @base = MeshToSpeckle(o);
-            Report.Log($"Converted SubD as Mesh");
           }
           break;
 #endif
         case RH.Extrusion o:
           @base = BrepToSpeckle(o.ToBrep(), null, displayMesh);
-          Report.Log($"Converted Extrusion as Brep");
           break;
         case RH.Brep o:
           @base = BrepToSpeckle(o.DuplicateBrep(), null, displayMesh);
-          Report.Log($"Converted Brep");
           break;
         case NurbsSurface o:
           @base = SurfaceToSpeckle(o);
-          Report.Log($"Converted NurbsSurface");
           break;
         case ViewInfo o:
           @base = ViewToSpeckle(o);
-          Report.Log($"Converted ViewInfo");
           break;
         case InstanceDefinition o:
           @base = BlockDefinitionToSpeckle(o);
-          Report.Log($"Converted InstanceDefinition {o.Id}");
           break;
         case InstanceObject o:
           @base = BlockInstanceToSpeckle(o);
-          Report.Log($"Converted BlockInstance {o.Id}");
           break;
         case TextEntity o:
           @base = TextToSpeckle(o);
-          Report.Log($"Converted TextEntity");
           break;
         case Rhino.Geometry.Dimension o:
           @base = DimensionToSpeckle(o);
           Report.Log($"Converted Dimension");
           break;
         default:
-          Report.Log($"Skipped not supported type: {@object.GetType()}");
-          throw new NotSupportedException();
+          if (reportObj != null)
+          {
+            reportObj.Update(status: ProgressReport.ConversionStatus.Skipped, note: $"{@object.GetType()} type not supported");
+            Report.UpdateReportObject(reportObj);
+          }
+          return @base;
       }
 
       if (material != null)
@@ -309,6 +288,12 @@ namespace Objects.Converter.RhinoGh
         @base["@SpeckleSchema"] = schema;
       }
 
+      if (reportObj != null)
+      {
+        reportObj.Update(notes: notes);
+        Report.UpdateReportObject(reportObj);
+      }
+
       return @base;
     }
 
@@ -317,19 +302,20 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
-    public Base ConvertToSpeckleBE(object @object)
+    public Base ConvertToSpeckleBE(object @object, ReportObject reportObj)
     {
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
 
       Base schemaBase = null;
+      List<string> notes = null;
       if (obj is InstanceObject)
       {
         if (schema == "AdaptiveComponent")
           schemaBase = InstanceToAdaptiveComponent(obj as InstanceObject, args);
         else
-          Report.Log($"Skipping Instance conversion to unsupported schema {schema}");
+          reportObj.Update(note: $"Skipping Instance conversion to unsupported schema {schema}");
       }
 
       switch (obj.Geometry)
@@ -339,26 +325,22 @@ namespace Objects.Converter.RhinoGh
           {
             case "Column":
               schemaBase = CurveToSpeckleColumn(o);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Beam":
               schemaBase = CurveToSpeckleBeam(o);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Duct":
-              schemaBase = CurveToSpeckleDuct(o, args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = CurveToSpeckleDuct(o, args, out notes);
               break;
 
             case "Pipe":
-              schemaBase = CurveToSpecklePipe(o, args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = CurveToSpecklePipe(o, args, out notes);
               break;
 
             default:
-              Report.Log($"Skipping Curve conversion to schema {schema}");
+              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
@@ -367,32 +349,27 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "Floor":
-              schemaBase = BrepToSpeckleFloor(o);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = BrepToSpeckleFloor(o, out notes);
               break;
 
             case "Roof":
-              schemaBase = BrepToSpeckleRoof(o);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = BrepToSpeckleRoof(o, out notes);
               break;
 
             case "Wall":
-              schemaBase = BrepToSpeckleWall(o);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = BrepToSpeckleWall(o, out notes);
               break;
 
             case "FaceWall":
               schemaBase = BrepToFaceWall(o, args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "DirectShape":
               schemaBase = BrepToDirectShape(o, args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
-              Report.Log($"Skipping Brep Conversion to unsupported schema {schema}");
+              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
@@ -401,32 +378,27 @@ namespace Objects.Converter.RhinoGh
           switch (schema)
           {
             case "Floor":
-              schemaBase = BrepToSpeckleFloor(o.ToBrep());
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = BrepToSpeckleFloor(o.ToBrep(), out notes);
               break;
 
             case "Roof":
-              schemaBase = BrepToSpeckleRoof(o.ToBrep());
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = BrepToSpeckleRoof(o.ToBrep(), out notes);
               break;
 
             case "Wall":
-              schemaBase = BrepToSpeckleWall(o.ToBrep());
-              Report.Log($"Generated {schema} from {o.ObjectType}");
+              schemaBase = BrepToSpeckleWall(o.ToBrep(), out notes);
               break;
 
             case "FaceWall":
               schemaBase = BrepToFaceWall(o.ToBrep(), args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "DirectShape":
               schemaBase = ExtrusionToDirectShape(o, args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
-              Report.Log($"Skipping Extrusion conversion to unsupported schema {schema}");
+              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
@@ -436,33 +408,32 @@ namespace Objects.Converter.RhinoGh
           {
             case "DirectShape":
               schemaBase = MeshToDirectShape(o, args);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Topography":
               schemaBase = MeshToTopography(o);
-              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
-              Report.Log($"Skipping Mesh conversion to unsupported schema {schema}");
+              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
 
         default:
-          Report.Log($"{obj.ObjectType} is not supported in schema conversions.");
+          reportObj.Update(note: $"{obj.ObjectType} is not supported in schema conversions.");
           break;
       }
+      reportObj.Notes.AddRange(notes);
+      if (schemaBase != null)
+        reportObj.Notes.Add($"Created {schema} schema from {obj.GetType()}");
+      else
+        reportObj.Update(note: $"{schema} schema creation from {obj.GetType()} failed");
+      Report.UpdateReportObject(reportObj);
       return schemaBase;
     }
 
-    public List<Base> ConvertToSpeckleBE(List<object> objects)
-    {
-      return objects.Select(x => ConvertToSpeckleBE(x)).ToList();
-    }
-
-    public Base ConvertToSpeckleStr(object @object)
+    public Base ConvertToSpeckleStr(object @object, ReportObject reportObj)
     {
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
@@ -509,162 +480,131 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-    public List<Base> ConvertToSpeckleStr(List<object> objects)
-    {
-      return objects.Select(x => ConvertToSpeckleStr(x)).ToList();
-    }
-
-
     public object ConvertToNative(Base @object)
     {
       object rhinoObj = null;
       bool isFromRhino = @object[RhinoPropName] != null ? true : false;
+      var reportObj = Report.GetReportObject(@object.id, out int index) ? new ReportObject(@object.id) : null;
+      List<string> notes = new List<string>();
       switch (@object)
       {
         case Point o:
           rhinoObj = PointToNative(o);
-          Report.Log($"Created Point {o.id}");
           break;
 
         case Pointcloud o:
           rhinoObj = PointcloudToNative(o);
-          Report.Log($"Created PointCloud {o.id}");
           break;
 
         case Vector o:
           rhinoObj = VectorToNative(o);
-          Report.Log($"Created Vector {o.id}");
           break;
 
         case Hatch o:
           rhinoObj = HatchToNative(o);
-          Report.Log($"Created Hatch {o.id}");
           break;
 
         case Interval o:
           rhinoObj = IntervalToNative(o);
-          Report.Log($"Created Interval {o.id}");
           break;
 
         case Interval2d o:
           rhinoObj = Interval2dToNative(o);
-          Report.Log($"Created Interval2d {o.id}");
           break;
 
         case Line o:
           rhinoObj = LineToNative(o);
-          Report.Log($"Created Line {o.id}");
           break;
 
         case Plane o:
           rhinoObj = PlaneToNative(o);
-          Report.Log($"Created Plane {o.id}");
           break;
 
         case Circle o:
           rhinoObj = CircleToNative(o);
-          Report.Log($"Created Circle {o.id}");
           break;
 
         case Arc o:
           rhinoObj = ArcToNative(o);
-          Report.Log($"Created Arc {o.id}");
           break;
 
         case Ellipse o:
           rhinoObj = EllipseToNative(o);
-          Report.Log($"Created Ellipse {o.id}");
           break;
 
         case Spiral o:
           rhinoObj = SpiralToNative(o);
-          Report.Log($"Created Spiral {o.id} as Curve");
           break;
 
         case Polyline o:
           rhinoObj = PolylineToNative(o);
-          Report.Log($"Created Polyline {o.id}");
           break;
 
         case Polycurve o:
           rhinoObj = PolycurveToNative(o);
-          Report.Log($"Created PolyCurve {o.id}");
           break;
 
         case Curve o:
           rhinoObj = CurveToNative(o);
-          Report.Log($"Created Curve {o.id}");
           break;
 
         case Box o:
           rhinoObj = BoxToNative(o);
-          Report.Log($"Created Box {o.id}");
           break;
 
         case Mesh o:
           rhinoObj = MeshToNative(o);
-          Report.Log($"Created Mesh {o.id}");
           break;
 
         case Brep o:
           // Brep conversion should always fallback to mesh if it fails.
-          var b = BrepToNative(o);
+          var b = BrepToNative(o, out notes);
           if (b == null)
           {
+            notes.Add($"{b.ObjectType} conversion failed: converting displayValue as Meshes");
             rhinoObj = o.displayValue?.Select(MeshToNative).ToArray();
-            Report.Log($"Created Brep {o.id} as Meshes");
           }
           else
           {
             rhinoObj = b;
-            Report.Log($"Created Brep {o.id}");
           }
           break;
 
         case Surface o:
           rhinoObj = SurfaceToNative(o);
-          Report.Log($"Created Surface {o.id}");
           break;
 
         case Alignment o:
           if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
           {
             rhinoObj = CurveToNative(o.baseCurve);
-            Report.Log($"Created Alignment {o.id}");
             break;
           }
           rhinoObj = AlignmentToNative(o);
-          Report.Log($"Created Alignment {o.id} as Curve");
           break;
 
         case ModelCurve o:
           rhinoObj = CurveToNative(o.baseCurve);
-          Report.Log($"Created ModelCurve {o.id}");
           break;
 
         case DirectShape o:
           rhinoObj = DirectShapeToNative(o);
-          Report.Log($"Created DirectShape {o.id}");
           break;
 
         case View3D o:
           rhinoObj = ViewToNative(o);
-          Report.Log($"Created View3D {o.id}");
           break;
 
         case BlockDefinition o:
           rhinoObj = BlockDefinitionToNative(o);
-          Report.Log($"Created BlockDefinition {o.id}");
           break;
 
         case BlockInstance o:
           rhinoObj = BlockInstanceToNative(o);
-          Report.Log($"Created BlockInstance {o.id}");
           break;
 
         case Text o:
           rhinoObj = TextToNative(o);
-          Report.Log($"Created Text {o.id}");
           break;
 
         case Dimension o:
@@ -674,7 +614,6 @@ namespace Objects.Converter.RhinoGh
 
         case Objects.Structural.Geometry.Element1D o:
           rhinoObj = element1DToNative(o);
-          Report.Log($"Created Element1D with line {o.id}");
           break;
 
         case DisplayStyle o:
@@ -692,8 +631,18 @@ namespace Objects.Converter.RhinoGh
           rhinoObj = TransformToNative(o);
           break;
         default:
-          Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
-          throw new NotSupportedException();
+          if (reportObj != null)
+          {
+            reportObj.Update(status: ProgressReport.ConversionStatus.Skipped, note: $"{@object.GetType()} type not supported");
+            Report.UpdateReportObject(reportObj);
+          }
+          break;
+      }
+
+      if (reportObj != null)
+      {
+        reportObj.Update(notes: notes);
+        Report.UpdateReportObject(reportObj);
       }
 
       return rhinoObj;

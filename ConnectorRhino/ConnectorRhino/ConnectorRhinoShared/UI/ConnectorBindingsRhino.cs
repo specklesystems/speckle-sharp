@@ -630,6 +630,7 @@ namespace SpeckleRhino
             continue;
           }
           reportObj.Update(status: ProgressReport.ConversionStatus.Converting);
+
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(obj);
           if (converted == null)
@@ -698,7 +699,7 @@ namespace SpeckleRhino
         }
 
         // log report object
-        reportObj.Update(status: ProgressReport.ConversionStatus.Created, message: $"Successfully converted Rhino {obj.ObjectType} to Speckle {obj.ObjectType}");
+        reportObj.Update(status: ProgressReport.ConversionStatus.Created, message: $"Successfully converted Rhino {obj.ObjectType} to Speckle {converted.speckle_type}");
         progress.Report.Log(reportObj);
 
         objCount++;

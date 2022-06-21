@@ -428,6 +428,8 @@ namespace Objects.Converter.RhinoGh
     public PolyCurve PolycurveToNative(Polycurve p)
     {
       PolyCurve myPolyc = new PolyCurve();
+      var notes = new List<string>();
+
       foreach (var segment in p.segments)
       {
         try
@@ -436,7 +438,9 @@ namespace Objects.Converter.RhinoGh
           myPolyc.Append((RH.Curve)ConvertToNative((Base)segment));
         }
         catch
-        { }
+        {
+          notes.Add($"Could not append curve {segment.GetType()} to PolyCurve");
+        }
       }
 
       if (p.domain != null)
@@ -959,8 +963,9 @@ namespace Objects.Converter.RhinoGh
     /// <param name="brep">The Speckle Brep to convert</param>
     /// <returns></returns>
     /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
-    public RH.Brep BrepToNative(Brep brep)
+    public RH.Brep BrepToNative(Brep brep, out List<string> notes)
     {
+      notes = new List<string>();
       var tol = Doc.ModelAbsoluteTolerance;
       try
       {
@@ -1015,7 +1020,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception e)
       {
-        Report.LogConversionError(new Exception("Failed to convert brep.", e));
+        notes.Add(e.Message);
         return null;
       }
     }

@@ -140,22 +140,38 @@ namespace Objects.Converter.RhinoGh
     }
 
     // args of format [width, height, diameter]
-    public Duct CurveToSpeckleDuct(RH.Curve curve, string[] args)
+    public Duct CurveToSpeckleDuct(RH.Curve curve, string[] args, out List<string> notes)
     {
       Duct duct = null;
-      if (args.Length < 3) return duct;
+      notes = new List<string>();
+
+      if (args.Length < 3)
+      {
+        notes.Add("Number of schema arguments less than 3");
+        return duct;
+      }
       if (double.TryParse(args[0], out double height) && double.TryParse(args[1], out double width) && double.TryParse(args[2], out double diameter))
         duct = new Duct(CurveToSpeckle(curve), width, height, diameter) { units = ModelUnits, length = curve.GetLength() };
+      else
+        notes.Add("Could not parse schema arguments into doubles");
       return duct;
     }
 
     // args of format [diameter]
-    public Pipe CurveToSpecklePipe(RH.Curve curve, string[] args)
+    public Pipe CurveToSpecklePipe(RH.Curve curve, string[] args, out List<string> notes)
     {
       Pipe pipe = null;
-      if (args.Length < 1) return pipe;
+      notes = new List<string>();
+
+      if (args.Length < 1)
+      {
+        notes.Add("Number of schema arguments less than 1");
+        return pipe;
+      }
       if (double.TryParse(args[0], out double diameter))
         pipe = new Pipe(CurveToSpeckle(curve), curve.GetLength(), diameter) { units = ModelUnits };
+      else
+        notes.Add("Could not parse schema arguments into doubles");
       return pipe;
     }
 
@@ -169,39 +185,60 @@ namespace Objects.Converter.RhinoGh
       return new Floor((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
-    public Wall BrepToSpeckleWall(RH.Brep brep)
+    public Wall BrepToSpeckleWall(RH.Brep brep, out List<string> notes)
     {
       Wall wall = null;
+      notes = new List<string>();
+
       BoundingBox brepBox = brep.GetBoundingBox(false);
       double height = brepBox.Max.Z - brepBox.Min.Z; // extract height
       var bottomCurves = GetSurfaceBrepEdges(brep, getBottom: true); // extract baseline
+      if (bottomCurves == null)
+      {
+        notes.Add("Could not extract wall bottom curves");
+        return wall;
+      }
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract openings
       List<Base> openings = new List<Base>();
       if (intCurves != null)
         foreach (ICurve crv in intCurves)
           openings.Add(new Opening(crv));
-      if (bottomCurves != null && height > 0)
+      if (height > 0)
         wall = new Wall(height, bottomCurves[0], openings) { units = ModelUnits };
+      else
+        notes.Add("Wall height is 0");
       return wall;
     }
 
-    public Floor BrepToSpeckleFloor(RH.Brep brep)
+    public Floor BrepToSpeckleFloor(RH.Brep brep, out List<string> notes)
     {
       Floor floor = null;
+      notes = new List<string>();
+
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
+      if (extCurves == null)
+      {
+        notes.Add("Could not extract floor outline curves");
+        return floor;
+      }
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-      if (extCurves != null)
-        floor = new Floor(extCurves[0], intCurves) { units = ModelUnits };
+      floor = new Floor(extCurves[0], intCurves) { units = ModelUnits };
       return floor;
     }
 
-    public Roof BrepToSpeckleRoof(RH.Brep brep)
+    public Roof BrepToSpeckleRoof(RH.Brep brep, out List<string> notes)
     {
       Roof roof = null;
+      notes = new List<string>();
+
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
+      if (extCurves == null)
+      {
+        notes.Add("Could not extract roof outline curves");
+        return roof;
+      }
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-      if (extCurves != null)
-        roof = new Roof(extCurves[0], intCurves) { units = ModelUnits };
+      roof = new Roof(extCurves[0], intCurves) { units = ModelUnits };
       return roof;
     }
 
