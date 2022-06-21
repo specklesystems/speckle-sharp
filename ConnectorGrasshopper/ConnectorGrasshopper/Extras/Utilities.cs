@@ -85,7 +85,8 @@ namespace ConnectorGrasshopper.Extras
         if (cancellationToken.IsCancellationRequested)
           break;
         var key = path.ToString();
-        var chunkingPrefix = $"@({chunkLength})";
+        //TODO: Rolled back chunking due to issue with detaching children. Revisit this once done.
+        var chunkingPrefix = $"@";
         var value = dataInput.get_Branch(path);
         var converted = new List<object>();
         foreach (var item in value)
@@ -101,7 +102,7 @@ namespace ConnectorGrasshopper.Extras
       return @base;
     }
 
-    private static string dataTreePathPattern = @"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$";
+    private static string dataTreePathPattern = @"^(@(\(\d+\))?)?(?<path>\{\d+(;\d+)*\})$";
     
     /// <summary>
     ///   Converts a <see cref="Base"/> object into a Grasshopper <see cref="DataTree{T}"/>.
