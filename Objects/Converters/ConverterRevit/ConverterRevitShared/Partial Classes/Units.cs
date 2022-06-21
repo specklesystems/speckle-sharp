@@ -39,9 +39,9 @@ namespace Objects.Converter.Revit
       return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
     }
 
-    public double ScaleToSpeckle(double value)
+    public double ScaleToSpeckle(double value, string units = null)
     {
-      return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
+      return UnitUtils.ConvertFromInternalUnits(value, units == null ? RevitLengthTypeId : new ForgeTypeId(UnitsToNative(units)));
     }
 
     //new units api introduced in 2021, bleah
@@ -140,9 +140,9 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    public double ScaleToSpeckle(double value)
+    public double ScaleToSpeckle(double value, string units = null)
     {
-      return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
+      return UnitUtils.ConvertFromInternalUnits(value, units == null ? RevitLengthTypeId : UnitsToNative(units));
     }
 
     private string UnitsToSpeckle(DisplayUnitType type)

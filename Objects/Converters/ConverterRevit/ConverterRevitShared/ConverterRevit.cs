@@ -70,10 +70,16 @@ namespace Objects.Converter.Revit
 
     public ReceiveMode ReceiveMode { get; set; }
 
+
+    /// <summary>
+    /// Contains all materials in the model
+    /// </summary>
+    public Dictionary<string, Objects.Other.Material> Materials { get; private set; } = new Dictionary<string, Objects.Other.Material>();
+
     public ConverterRevit()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
-      Report.Log($"Using converter: {this.Name} v{ver}");
+      Report.Log($"Using converter: {Name} v{ver}");
     }
 
     public void SetContextDocument(object doc)
@@ -112,6 +118,10 @@ namespace Objects.Converter.Revit
           break;
         case DB.View o:
           returnObject = ViewToSpeckle(o);
+          break;
+        //NOTE: Converts all materials in the materials library
+        case DB.Material o:
+          returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
           break;
         case DB.ModelCurve o:
 
@@ -260,6 +270,28 @@ namespace Objects.Converter.Revit
         var material = GetElementRenderMaterial(@object as DB.Element);
         returnObject["renderMaterial"] = material;
       }
+
+      //NOTE: adds the quantities of all materials to an element
+      if (returnObject != null)
+      {
+        try
+        {
+          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
+          if (qs != null)
+          {
+            returnObject["materialQuantities"] = new List<Base>();
+            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
+          }
+          else returnObject["materialQuantities"] = null;
+
+
+        }
+        catch (System.Exception e)
+        {
+          Report.Log(e.Message);
+        }
+      }
+
 
       return returnObject;
     }
@@ -456,7 +488,9 @@ namespace Objects.Converter.Revit
       return @object
       switch
       {
+
         DB.DetailCurve _ => true,
+        DB.Material _ => true,
         DB.DirectShape _ => true,
         DB.FamilyInstance _ => true,
         DB.Floor _ => true,

@@ -135,12 +135,13 @@ namespace Speckle.ConnectorDynamo.Functions
       return result;
     }
 
-    private static Regex dataTreePathRegex => new Regex(@"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$");
+    private static Regex dataTreePathRegex => new Regex(@"^(@(\(\d+\))?)?(?<path>\{\d+(;\d+)*\})$");
     
     public static bool IsDataTree(Base @base)
     {
       var regex = dataTreePathRegex;
       var members = @base.GetDynamicMembers().ToList();
+      if (members.Count == 0) return false;
       var isDataTree = members.All(el => regex.Match(el).Success);
       return members.Count > 0 && isDataTree;
     }

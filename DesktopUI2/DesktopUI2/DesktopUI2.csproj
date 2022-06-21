@@ -55,11 +55,17 @@
     <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
+    <None Remove="Views\Pages\SettingsView.xaml" />
+    <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
+    <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
+    <None Remove="Views\Pages\ShareControls\Sending.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
+    <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
     <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+    <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
@@ -136,6 +142,18 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Comments.xaml">
+        <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\AddCollaborators.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\CollaboratorsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
@@ -159,7 +177,13 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Share.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">

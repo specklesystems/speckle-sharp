@@ -85,7 +85,8 @@ namespace ConnectorGrasshopper.Extras
         if (cancellationToken.IsCancellationRequested)
           break;
         var key = path.ToString();
-        var chunkingPrefix = $"@({chunkLength})";
+        //TODO: Rolled back chunking due to issue with detaching children. Revisit this once done.
+        var chunkingPrefix = $"@";
         var value = dataInput.get_Branch(path);
         var converted = new List<object>();
         foreach (var item in value)
@@ -101,7 +102,7 @@ namespace ConnectorGrasshopper.Extras
       return @base;
     }
 
-    private static string dataTreePathPattern = @"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$";
+    private static string dataTreePathPattern = @"^(@(\(\d+\))?)?(?<path>\{\d+(;\d+)*\})$";
     
     /// <summary>
     ///   Converts a <see cref="Base"/> object into a Grasshopper <see cref="DataTree{T}"/>.
@@ -142,7 +143,9 @@ namespace ConnectorGrasshopper.Extras
     public static bool CanConvertToDataTree(Base @base)
     {
       var regex = new Regex(dataTreePathPattern);
-      var isDataTree = @base.GetDynamicMembers().All(el => regex.Match(el).Success);
+      var dynamicMembers = @base.GetDynamicMembers().ToList();
+      if (dynamicMembers.Count == 0) return false;
+      var isDataTree = dynamicMembers.All(el => regex.Match(el).Success);
       return isDataTree;
     }
     
