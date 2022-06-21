@@ -105,51 +105,158 @@
       </Grid>
     </Border>
 
+    <Grid
+      Grid.Row="1"
+      Margin="15,0"
+      RowDefinitions="*,auto,auto">
+      <!--  ACTIVITY & COMMENTS  -->
 
-    <TabControl Grid.Row="1" Background="Transparent">
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Kind="TimelineText"
-              ToolTip.Tip="Send and Receive activity" />
-            <TextBlock
-              Margin="10,0,0,0"
-              VerticalAlignment="Center"
-              Text="Activity" />
-          </StackPanel>
-        </TabItem.Header>
-        <!--  ACTIVITY  -->
-        <!--
-          NOTE FORMATTED TEXT IS COMING TO AVALONIA !
-          https://github.com/AvaloniaUI/Avalonia/pull/6953
-        -->
-        <uc:Activity />
-      </TabItem>
+      <TabControl Grid.Row="0" Background="Transparent">
+        <TabItem>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Kind="TimelineText"
+                ToolTip.Tip="Send and Receive activity" />
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Activity" />
+            </StackPanel>
+          </TabItem.Header>
+          <!--  ACTIVITY  -->
+          <!--
+            NOTE FORMATTED TEXT IS COMING TO AVALONIA !
+            https://github.com/AvaloniaUI/Avalonia/pull/6953
+          -->
+          <uc:Activity />
+        </TabItem>
 
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Kind="Comments"
-              ToolTip.Tip="Comments" />
-            <TextBlock
-              Margin="10,0,0,0"
-              VerticalAlignment="Center"
-              Text="Comments" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Comments />
-      </TabItem>
+        <TabItem>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Kind="Comments"
+                ToolTip.Tip="Comments" />
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Comments" />
+            </StackPanel>
+          </TabItem.Header>
+          <uc:Comments />
+        </TabItem>
 
-    </TabControl>
+      </TabControl>
 
+      <!--  NOTIFICATION  -->
+      <m:ColorZone
+        Grid.Row="1"
+        Margin="0,0,0,10"
+        assists:ShadowAssist.ShadowDepth="Depth0"
+        CornerRadius="25"
+        IsVisible="{Binding ShowNotification}"
+        Mode="PrimaryMid">
+        <Grid ColumnDefinitions="*, auto">
+          <Button
+            Margin="0,0,3,0"
+            VerticalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding LaunchNotificationCommand}"
+            CornerRadius="25,0,0,25"
+            ToolTip.Tip="View online">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock
+                VerticalAlignment="Center"
+                Classes="Overline"
+                FontWeight="Medium"
+                Foreground="White"
+                Text="{Binding Notification}"
+                TextWrapping="Wrap" />
+              <icons:MaterialIcon
+                Margin="5,0"
+                VerticalAlignment="Center"
+                Foreground="White"
+                Kind="ExternalLink" />
+            </StackPanel>
+          </Button>
+          <m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding CloseNotificationCommand}"
+            ToolTip.Tip="Close notification">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                Foreground="White"
+                Kind="Close" />
+
+            </Button.Content>
+          </m:FloatingButton>
+        </Grid>
+      </m:ColorZone>
+      <!--  REPORT  -->
+      <m:ColorZone
+        Grid.Row="2"
+        Margin="0,0,0,10"
+        assists:ShadowAssist.ShadowDepth="Depth0"
+        CornerRadius="25"
+        IsVisible="{Binding ShowReport}"
+        Mode="Accent">
+
+        <Grid ColumnDefinitions="*, auto">
+          <Button
+            Margin="0,0,3,0"
+            VerticalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding OpenReportCommand}"
+            CornerRadius="25,0,0,25"
+            ToolTip.Tip="Open Report">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock
+                VerticalAlignment="Center"
+                Classes="Overline"
+                FontWeight="Medium"
+                Foreground="White"
+                Text="Some elements have warnings, please check the report"
+                TextWrapping="Wrap" />
+              <icons:MaterialIcon
+                Margin="5,0"
+                VerticalAlignment="Center"
+                Foreground="White"
+                Kind="TextBox" />
+            </StackPanel>
+
+          </Button>
+          <m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding CloseReportNotificationCommand}"
+            ToolTip.Tip="Close notification">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                Foreground="White"
+                Kind="Close" />
+
+            </Button.Content>
+          </m:FloatingButton>
+        </Grid>
+      </m:ColorZone>
+
+    </Grid>
 
     <!--  SEND/RECEIVE  -->
     <TabControl
