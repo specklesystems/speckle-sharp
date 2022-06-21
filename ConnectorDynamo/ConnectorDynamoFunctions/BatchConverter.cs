@@ -135,7 +135,7 @@ namespace Speckle.ConnectorDynamo.Functions
       return result;
     }
 
-    private static Regex dataTreePathRegex => new Regex(@"^(@\(\d+\))?(?<path>\{\d+(;\d+)*\})$");
+    private static Regex dataTreePathRegex => new Regex(@"^(@(\(\d+\))?)?(?<path>\{\d+(;\d+)*\})$");
     
     public static bool IsDataTree(Base @base)
     {
