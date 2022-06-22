@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2023", "..\Ob
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2023", "ConnectorRevit2023\ConnectorRevit2023.csproj", "{586A5A37-93F6-427E-8DF8-C10DB4D6822A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{D8576AEE-6EF4-4BD7-B024-864653EC41E5}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{236cff40-7dda-4cc5-84a9-b1df6f0985ef}*SharedItemsImports = 5
@@ -194,6 +196,14 @@ Global
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.ActiveCfg = Release|Any CPU
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A}.Release|x64.Build.0 = Release|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -217,6 +227,7 @@ Global
 		{0F61B231-C025-4905-9FAC-0AC5611A9FB9} = {39F07EF9-5867-4062-886D-2417C86305C2}
 		{236CFF40-7DDA-4CC5-84A9-B1DF6F0985EF} = {0FED0483-A54F-44EE-88FB-2FA6BAD13891}
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A} = {89C98BAA-C2BC-4EAF-AB97-C513A5A2372D}
+		{D8576AEE-6EF4-4BD7-B024-864653EC41E5} = {39F07EF9-5867-4062-886D-2417C86305C2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650BE642-C7CC-4FF5-9EE5-8C57BF553143}

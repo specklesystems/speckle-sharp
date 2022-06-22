@@ -48,7 +48,7 @@ namespace Speckle.ConnectorTeklaStructures
 
     private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel(Bindings);
+      var viewModel = new MainViewModel(Bindings);
       MainWindow = new MainWindow
       {
         DataContext = viewModel

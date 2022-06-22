@@ -14,7 +14,7 @@ namespace ConnectorGrasshopper.Objects
 {
   public class CreateSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
   {
-    public CreateSpeckleObjectByKeyValueTaskComponent() : base("Create Speckle Object by Key/Value", "K/V",
+    public CreateSpeckleObjectByKeyValueTaskComponent() : base("Create Speckle Object by Key/Value", "CSOKV",
       "Creates a speckle object from key value pairs", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }

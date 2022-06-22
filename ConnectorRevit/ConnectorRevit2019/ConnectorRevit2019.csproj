@@ -60,13 +60,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
-      <Version>0.10.13</Version>
+      <Version>0.10.15</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.13</Version>
+      <Version>0.10.15</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.13</Version>
+      <Version>0.10.15</Version>
     </PackageReference>
     <PackageReference Include="ModPlus.Revit.API.2019">
       <Version>1.0.0</Version>
@@ -85,6 +85,10 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj">
+      <Project>{d8576aee-6ef4-4bd7-b024-864653ec41e5}</Project>
+      <Name>AvaloniaHwndHost</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
       <Project>{aab81f89-c71c-4f8a-b256-6a23d19134a7}</Project>

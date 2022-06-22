@@ -52,7 +52,7 @@ namespace SpeckleConnectorCSI
 
     private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel(Bindings);
+      var viewModel = new MainViewModel(Bindings);
       MainWindow = new MainWindow { DataContext = viewModel };
       MainWindow.Closed += SpeckleWindowClosed;
       MainWindow.Closing += SpeckleWindowClosed;
@@ -110,7 +110,7 @@ namespace SpeckleConnectorCSI
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
       model = SapModel;
       AppDomain domain = null;
- 
+
 
       try
       {
@@ -126,7 +126,7 @@ namespace SpeckleConnectorCSI
         //return;
       }
 
-      return; 
+      return;
     }
   }
 

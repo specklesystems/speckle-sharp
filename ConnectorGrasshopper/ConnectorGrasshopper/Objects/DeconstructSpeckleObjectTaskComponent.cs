@@ -17,7 +17,7 @@ namespace ConnectorGrasshopper.Objects
   public class DeconstructSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
     IGH_VariableParameterComponent
   {
-    public override Guid ComponentGuid => new Guid("4884856A-BCA4-43F8-B665-331F51CF4A39");
+    public override Guid ComponentGuid => new Guid("1913AB7A-50D6-4B6C-8353-D3366F73FC84");
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
@@ -40,11 +40,16 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      DA.DisableGapLogic();
+      //DA.DisableGapLogic();
       if (InPreSolve)
       {
         IGH_Goo inputObj = null;
-        DA.GetData(0, ref inputObj);
+        if (!DA.GetData(0, ref inputObj))
+        {
+          TaskList.Add(Task.Run(() => new Dictionary<string, object>()));
+          return;
+        }
+
         Base @base;
         if(inputObj is GH_SpeckleBase speckleBase)
         {
@@ -115,7 +120,6 @@ namespace ConnectorGrasshopper.Objects
                 {
                   var indices = path.Indices.ToList();
                   indices.AddRange(p.Indices);
-                  var newPath = new GH_Path(indices.ToArray());
                   p.Indices = indices.ToArray();
                 });
                 DA.SetDataTree(indexOfOutputParam, structure);
@@ -259,8 +263,11 @@ namespace ConnectorGrasshopper.Objects
         Console.WriteLine("No iter has run");
         var x = Params.Input[0].VolatileData;
         var tree = x as GH_Structure<IGH_Goo>;
-        outputList = GetOutputList(tree);
-        AutoCreateOutputs();
+        if (tree != null)
+        {
+          outputList = GetOutputList(tree);
+          AutoCreateOutputs();
+        }
       }
       base.BeforeSolveInstance();
     }
@@ -370,7 +377,7 @@ namespace ConnectorGrasshopper.Objects
             }
             else
             {
-              outputDict[prop.Key] = Utilities.TryConvertItemToNative(obj[prop.Key], Converter);
+              outputDict[prop.Key] = Utilities.TryConvertItemToNative(temp, Converter);
             }
             break;
         }

@@ -445,6 +445,7 @@ namespace Objects.Converter.AutocadCivil
           // get the connection point to the next segment
           var connectionPoint = new Point3d();
           var nextSegment = GetSegmentByType(polyline, i + 1);
+          if (nextSegment == null) continue;
           if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
             connectionPoint = nextSegment.StartPoint;
           else

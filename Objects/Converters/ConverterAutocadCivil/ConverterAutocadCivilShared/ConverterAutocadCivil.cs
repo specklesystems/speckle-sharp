@@ -24,7 +24,7 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -37,11 +37,15 @@ namespace Objects.Converter.AutocadCivil
 #if AUTOCAD2021
     public static string AutocadAppName = VersionedHostApplications.Autocad2021;
 #elif AUTOCAD2022
-public static string AutocadAppName = VersionedHostApplications.Autocad2022;
+    public static string AutocadAppName = VersionedHostApplications.Autocad2022;
+#elif AUTOCAD2023
+    public static string AutocadAppName = VersionedHostApplications.Autocad2023;
 #elif CIVIL2021
     public static string AutocadAppName = VersionedHostApplications.Civil2021;
 #elif CIVIL2022
     public static string AutocadAppName = VersionedHostApplications.Civil2022;
+#elif CIVIL2023
+    public static string AutocadAppName = VersionedHostApplications.Civil2023;
 #endif
 
     public ConverterAutocadCivil()
@@ -188,7 +192,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               @base = TextToSpeckle(o);
               Report.Log($"Converted Text");
               break;
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
               Report.Log($"Converted Alignment");
@@ -398,7 +402,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             Report.Log($"Created Alignment {o.id} as Curve");
             break;
           }
-#if (CIVIL2020 || CIVIL2021)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
           acadObj = AlignmentToNative(o);
           if (acadObj != null)
             fallback = string.Empty;
@@ -457,7 +461,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             case AcadDB.MText _:
               return true;
 
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
             // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:

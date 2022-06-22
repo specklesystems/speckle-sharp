@@ -32,7 +32,7 @@ namespace SpeckleRhino
 
     public static Window MainWindow { get; private set; }
 
-    public static ConnectorBindingsRhino Bindings { get; set; } = new ConnectorBindingsRhino();
+    
 
     private static CancellationTokenSource Lifetime = null;
 
@@ -45,7 +45,7 @@ namespace SpeckleRhino
 
     public static void InitAvalonia()
     {
-      BuildAvaloniaApp().Start(AppMain, null);
+      BuildAvaloniaApp().SetupWithoutStarting();
     }
 
     public static AppBuilder BuildAvaloniaApp()
@@ -63,7 +63,12 @@ namespace SpeckleRhino
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
+#if MAC
       CreateOrFocusSpeckle();
+#endif
+      Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+
+
       return Result.Success;
     }
 
@@ -71,7 +76,7 @@ namespace SpeckleRhino
     {
       if (MainWindow == null)
       {
-        var viewModel = new MainWindowViewModel(Bindings);
+        var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
         MainWindow = new MainWindow
         {
           DataContext = viewModel
@@ -81,14 +86,14 @@ namespace SpeckleRhino
       MainWindow.Show();
       MainWindow.Activate();
 
-      #if !MAC
+#if !MAC
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
         var parentHwnd = RhinoApp.MainWindowHandle();
         var hwnd = MainWindow.PlatformImpl.Handle.Handle;
         SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
       }
-      #endif
+#endif
     }
 
     private static void AppMain(Application app, string[] args)
