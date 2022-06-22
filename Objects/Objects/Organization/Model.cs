@@ -5,7 +5,7 @@ namespace Objects.Organization
 {
   /// <summary>
   /// Represents a model from an authoring application and can be used as the root commit object when sending.
-  /// It contains <see cref="ModelInfo"/> and <see cref="ModelSettings"/> objects 
+  /// It contains <see cref="ModelInfo"/> and <see cref="Setting"/> objects 
   /// </summary>
   public class Model: Base
   {
@@ -16,7 +16,7 @@ namespace Objects.Organization
     public ModelInfo info { get; set; }
     
     
-    public ModelSettings settings { get; set; }
+    public List<Setting> settings { get; set; }
 
   }
 
@@ -82,11 +82,17 @@ namespace Objects.Organization
     /// </summary>
     public double longitude { get; set; }
   }
-
   
-  
-  public class ModelSettings  : Base
+  public class Setting  : Base
   {
+    /// <summary>
+    /// The name of the setting
+    /// </summary>
+    public string name { get; set; }
 
+    /// <summary>
+    /// The objects selected in the setting
+    /// </summary>
+    public List<Base> selection { get; set; }
   }
 }
