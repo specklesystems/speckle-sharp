@@ -14,7 +14,7 @@ using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
-using CSiAPIv1; 
+using CSiAPIv1;
 
 namespace Objects.Converter.CSI
 {
@@ -77,11 +77,15 @@ namespace Objects.Converter.CSI
 
       if (model.elements != null)
       {
+
+        var framesNames = GetAllFrameNames(Model);
+        var AreaNames = GetAllAreaNames(Model);
         foreach (var element in model.elements)
         {
 
           if (element is Element1D && !(element is CSITendon))
           {
+
             var CSIelement = (Element1D)element;
             if (CSIelement.type == ElementType1D.Link)
             {
@@ -89,7 +93,13 @@ namespace Objects.Converter.CSI
             }
             else
             {
-              FrameToNative((Element1D)element);
+            if(framesNames.Contains(CSIelement.name)){
+                updateFrametoNative((Element1D)element);
+            }
+            else
+              {
+                FrameToNative((Element1D)element);
+              }
             }
           }
 
