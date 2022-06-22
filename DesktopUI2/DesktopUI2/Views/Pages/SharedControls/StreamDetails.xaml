@@ -1,0 +1,78 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.SharedControls.StreamDetails"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="150"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <conv:RoleValueConverter x:Key="RoleValueConverter" />
+    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+    <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
+  </UserControl.Resources>
+  <Grid Margin="0,3,0,0" ColumnDefinitions="auto,auto,auto,auto,auto,auto,auto,auto,auto,*">
+    <icons:MaterialIcon
+      Grid.Column="0"
+      Height="12"
+      VerticalAlignment="Center"
+      Foreground="Gray"
+      Kind="Users"
+      ToolTip.Tip="Number of collaborators on this stream" />
+    <TextBlock
+      Grid.Column="1"
+      Classes="Overline"
+      Text="{Binding Stream.collaborators.Count}" />
+    <icons:MaterialIcon
+      Grid.Column="2"
+      Height="12"
+      Margin="3,0,0,0"
+      VerticalAlignment="Center"
+      Foreground="Gray"
+      Kind="Comments"
+      ToolTip.Tip="Number of comments on this stream" />
+    <TextBlock
+      Grid.Column="3"
+      Classes="Overline"
+      Text="{Binding Stream.commentCount}" />
+    <icons:MaterialIcon
+      Grid.Column="4"
+      Height="12"
+      Margin="3,0,0,0"
+      VerticalAlignment="Center"
+      Foreground="Gray"
+      Kind="Hearts"
+      ToolTip.Tip="Number of people who favorited this stream" />
+    <TextBlock
+      Grid.Column="5"
+      Classes="Overline"
+      Text="{Binding Stream.favoritesCount}" />
+    <TextBlock
+      Grid.Column="6"
+      Classes="Overline"
+      Text=" - " />
+    <TextBlock
+      Grid.Column="7"
+      Classes="Overline"
+      Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
+      TextTrimming="CharacterEllipsis" />
+    <TextBlock
+      Grid.Column="8"
+      Classes="Overline"
+      Text=" - " />
+    <TextBlock
+      Grid.Column="9"
+      Classes="Overline"
+      Text="{Binding Stream.id}"
+      TextTrimming="CharacterEllipsis" />
+
+
+
+
+
+  </Grid>
+</UserControl>

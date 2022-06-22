@@ -11,7 +11,26 @@
       Height="200"
       Margin="15"
       Orientation="Vertical">
-      <Expander Header="This is expander! Click me to expand the content." IsExpanded="True">
+      <Expander IsExpanded="True">
+        <Expander.Header>
+          <Grid ColumnDefinitions="*, auto">
+            <TextBlock
+              Grid.Column="0"
+              Margin="5,10,10,10"
+              HorizontalAlignment="Stretch"
+              Text="This is an exander"
+              TextWrapping="Wrap" />
+            <TextBlock
+              Grid.Column="1"
+              Margin="5,10,10,10"
+              HorizontalAlignment="Right"
+              Text="3 replies"
+              TextTrimming="CharacterEllipsis"
+              TextWrapping="Wrap" />
+          </Grid>
+
+        </Expander.Header>
+
         <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
       </Expander>
       <Expander Classes="Flat Transparent" Header="This is another expander!">
@@ -41,6 +60,10 @@
 
   <Style Selector="Expander.Transparent /template/ m|Card#PART_ExpanderRoot">
     <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Expander:up /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter, Expander:down /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
 
 </Styles>

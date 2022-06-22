@@ -73,6 +73,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public bool ShowReport { get; set; } = true;
     public List<MenuItemViewModel> MenuItems = new List<MenuItemViewModel>();
     public List<ActivityViewModel> Activity { get; set; }
+    public List<CommentViewModel> Comments { get; set; }
 
 
     public DesignSavedStreamViewModel()
@@ -90,15 +91,17 @@ namespace DesktopUI2.ViewModels.DesignViewModels
       };
 
       Activity = new List<ActivityViewModel>() {
-        new ActivityViewModel {
+        new ActivityViewModel (null, null){
 
           Margin = new Avalonia.Thickness(50,10,10,0),
           Icon = "ArrowBottomLeft",
           Message = "Commit 5aaf00a723 was received by Matteo Cominetti" },
-        new ActivityViewModel {
+        new ActivityViewModel (null, null) {
               Margin = new Avalonia.Thickness(10,10,50,0),
           Icon = "ArrowTopRight",
           Message = "Commit created on branch main: 0ae5a01ad7 (Sent 148 objects from Revit2022.)" } };
+
+
     }
 
     public void ReceiveCommand()

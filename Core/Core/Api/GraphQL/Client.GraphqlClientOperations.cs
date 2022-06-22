@@ -157,6 +157,8 @@ namespace Speckle.Core.Api
                         role
                         createdAt
                         updatedAt
+                        commentCount
+                        favoritesCount
                         collaborators {{
                           id
                           name
@@ -240,6 +242,8 @@ namespace Speckle.Core.Api
                             createdAt,
                             updatedAt,
                             favoritedDate,
+                            commentCount
+                            favoritesCount
                             collaborators {{
                               id,
                               name,
@@ -305,6 +309,8 @@ namespace Speckle.Core.Api
                             createdAt,
                             updatedAt,
                             favoritedDate,
+                            commentCount
+                            favoritesCount
                             collaborators {{
                               id,
                               name,
@@ -365,6 +371,8 @@ namespace Speckle.Core.Api
                           role,
                           createdAt,
                           updatedAt,
+                          commentCount
+                          favoritesCount
                           collaborators {
                             id,
                             name,
@@ -1206,7 +1214,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Gets the activity of a stream
     /// </summary>
-    /// <param name="streamId">Id of the stream to get the commits from</param>
+    /// <param name="streamId">Id of the stream to get the activity from</param>
     /// <param name="after">Only show activity after this DateTime</param>
     /// <param name="before">Only show activity before this DateTime</param>
     /// <param name="cursor">Time to filter the activity with</param>
@@ -1222,7 +1230,7 @@ namespace Speckle.Core.Api
     /// Gets the activity of a stream
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamId">Id of the stream to get the commits from</param>
+    /// <param name="id">Id of the stream to get the activity from</param>
     /// <param name="after">Only show activity after this DateTime</param>
     /// <param name="before">Only show activity before this DateTime</param>
     /// <param name="cursor">Time to filter the activity with</param>
@@ -1230,15 +1238,15 @@ namespace Speckle.Core.Api
     /// <param name="limit">Max number of commits to get</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public async Task<List<ActivityItem>> StreamGetActivity(CancellationToken cancellationToken, string id, DateTime? after = null, DateTime? before = null, DateTime? cursor = null, string actionType = "", int limit = 10)
+    public async Task<List<ActivityItem>> StreamGetActivity(CancellationToken cancellationToken, string id, DateTime? after = null, DateTime? before = null, DateTime? cursor = null, string actionType = "", int limit = 25)
     {
       try
       {
         var request = new GraphQLRequest
         {
-          Query = @"query Stream($id: String!, $before: DateTime,$after: DateTime, $cursor: DateTime, $activity: String) {
+          Query = @"query Stream($id: String!, $before: DateTime,$after: DateTime, $cursor: DateTime, $activity: String, $limit: Int!) {
                       stream(id: $id) {
-                        activity (actionType: $activity, after: $after, before: $before, cursor: $cursor) {
+                        activity (actionType: $activity, after: $after, before: $before, cursor: $cursor, limit: $limit) {
                           totalCount
                           cursor
                           items {
@@ -1271,6 +1279,139 @@ namespace Speckle.Core.Api
     }
 
 
+    #endregion
+
+    #region comments
+
+    /// <summary>
+    /// Gets the comments on a Stream
+    /// </summary>
+    /// <param name="streamId">Id of the stream to get the comments from</param>
+    /// <param name="limit">The number of comments to get</param>
+    /// <param name="cursor">Time to filter the comments with</param>
+    /// <returns></returns>
+    public Task<Comments> StreamGetComments(string streamId, int limit = 25, string cursor = null)
+    {
+      return StreamGetComments(CancellationToken.None, streamId, limit, cursor);
+    }
+
+    /// <summary>
+    ///  Gets the comments on a Stream
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="streamId">Id of the stream to get the comments from</param>
+    /// <param name="limit">The number of comments to get</param>
+    /// <param name="cursor">Time to filter the comments with</param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<Comments> StreamGetComments(CancellationToken cancellationToken, string streamId, int limit = 25, string cursor = null)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Comments($streamId: String!, $cursor: String, $limit: Int!) {
+                      comments(streamId: $streamId, cursor: $cursor, limit: $limit) {
+                          totalCount
+                          cursor
+                          items {
+                            id
+                            authorId
+                            archived
+                            text {
+                              doc
+                            }
+                            data
+                            createdAt
+                            updatedAt
+                            viewedAt
+                            reactions
+                            resources {
+                              resourceId
+                              resourceType
+                            }
+                            replies {
+                              totalCount
+                              cursor
+                              items {
+                                id
+                                authorId
+                                archived
+                                text {
+                                  doc
+                                }
+                                data
+                                createdAt
+                                updatedAt
+                                viewedAt
+                            }
+                          }
+                        }                                    
+                      }
+                    }",
+          Variables = new { streamId, cursor, limit }
+        };
+
+        var res = await GQLClient.SendMutationAsync<CommentsData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        return res.Data.comments;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    /// <summary>
+    ///  Gets the screenshot of a Comment
+    /// </summary>
+    /// <param name="id">Id of the comment</param>
+    /// <param name="streamId">Id of the stream to get the comment from</param>
+    /// <returns></returns>
+    public Task<string> StreamGetCommentScreenshot(string id, string streamId)
+    {
+      return StreamGetCommentScreenshot(CancellationToken.None, id, streamId);
+    }
+
+    /// <summary>
+    ///  Gets the screenshot of a Comment
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="id">Id of the comment</param>
+    /// <param name="streamId">Id of the stream to get the comment from</param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<string> StreamGetCommentScreenshot(CancellationToken cancellationToken, string id, string streamId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Comment($id: String!, $streamId: String!) {
+                      comment(id: $id, streamId: $streamId) {
+                            id
+                            screenshot
+                          }
+                        }                                    
+                    ",
+          Variables = new { id, streamId }
+        };
+
+        var res = await GQLClient.SendMutationAsync<CommentItemData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        return res.Data.comment.screenshot;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
     #endregion
 
     #region objects

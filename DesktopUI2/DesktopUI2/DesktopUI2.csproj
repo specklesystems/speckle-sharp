@@ -52,6 +52,9 @@
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
     <None Remove="Views\Pages\SettingsView.xaml" />
     <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
     <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
@@ -131,6 +134,15 @@
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\MainUserControl.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\SharedControls\StreamDetails.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Activity.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Comments.xaml">
+        <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -234,6 +246,15 @@
     </Compile>
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\SharedControls\StreamDetails.xaml.cs">
+      <DependentUpon>StreamDetails.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\StreamEditControls\Activity.xaml.cs">
+      <DependentUpon>Activity.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\StreamEditControls\Comments.xaml.cs">
+      <DependentUpon>Comments.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>
