@@ -19,6 +19,7 @@ using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Pipe = Objects.BuiltElements.Pipe;
 using Roof = Objects.BuiltElements.Roof;
+using Topography = Objects.BuiltElements.Topography;
 using Opening = Objects.BuiltElements.Opening;
 using Point = Objects.Geometry.Point;
 using View3D = Objects.BuiltElements.View3D;
@@ -215,12 +216,12 @@ namespace Objects.Converter.RhinoGh
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
     }
 
-    public RV.RevitTopography MeshToTopography(RH.Mesh mesh)
+    public Topography MeshToTopography(RH.Mesh mesh)
     {
       if (mesh.IsClosed)
         return null;
 
-      return new RV.RevitTopography(MeshToSpeckle(mesh)) { units = ModelUnits };
+      return new Topography(MeshToSpeckle(mesh)) { units = ModelUnits };
     }
 
     public RV.AdaptiveComponent InstanceToAdaptiveComponent(InstanceObject instance, string[] args)
