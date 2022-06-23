@@ -69,6 +69,8 @@ namespace Objects.Converter.Revit
       var ceilingType = GetElementType<CeilingType>(speckleCeiling);
 
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleCeiling.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } };
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);

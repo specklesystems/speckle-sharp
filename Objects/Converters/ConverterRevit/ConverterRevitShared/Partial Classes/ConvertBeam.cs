@@ -12,7 +12,7 @@ namespace Objects.Converter.Revit
   {
     public List<ApplicationPlaceholderObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
-      
+
       if (speckleBeam.baseLine == null)
       {
         throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
@@ -38,6 +38,9 @@ namespace Objects.Converter.Revit
       var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
+
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } }; ;
 
       if (docObj != null)
       {
@@ -104,7 +107,7 @@ namespace Objects.Converter.Revit
         Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
         return RevitElementToSpeckle(revitBeam);
       }
-      var symbol = Doc.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
+      var symbol = revitBeam.Document.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
       var speckleBeam = new RevitBeam();
       speckleBeam.family = symbol.FamilyName;

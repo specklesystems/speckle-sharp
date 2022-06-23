@@ -13,6 +13,9 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject { applicationId = speckleSurface.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+
       var pts = new List<XYZ>();
       foreach (Geometry.Mesh displayMesh in speckleSurface.displayValue)
       {

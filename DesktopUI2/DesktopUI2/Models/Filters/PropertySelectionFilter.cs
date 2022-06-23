@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Views.Filters;
+﻿using DesktopUI2.Views.Filters;
+using System;
 using System.Collections.Generic;
 
 namespace DesktopUI2.Models.Filters
@@ -7,7 +7,6 @@ namespace DesktopUI2.Models.Filters
   public class PropertySelectionFilter : ISelectionFilter
   {
     public string Type => typeof(PropertySelectionFilter).ToString();
-
     public string Name { get; set; }
     public string Slug { get; set; }
     public string Icon { get; set; }
@@ -19,7 +18,7 @@ namespace DesktopUI2.Models.Filters
     public string PropertyValue { get; set; }
     public string PropertyOperator { get; set; }
 
-    public UserControl View { get; set; } = new PropertyFilterView();
+    public Type ViewType { get; } = typeof(PropertyFilterView);
 
     public string Summary
     {

@@ -90,13 +90,27 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
     }
 
-    [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
+    [SchemaDeprecated]
+    [SchemaInfo("RevitColumn Slanted (old)", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
     public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
       this.baseLine = baseLine;
       this.level = level;
+      //this.structural = structural;
+      this.isSlanted = true;
+      this.parameters = parameters.ToBase();
+    }
+
+    [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
+    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, Level topLevel = null, bool structural = false, List<Parameter> parameters = null)
+    {
+      this.family = family;
+      this.type = type;
+      this.baseLine = baseLine;
+      this.level = level;
+      this.topLevel = topLevel;
       //this.structural = structural;
       this.isSlanted = true;
       this.parameters = parameters.ToBase();

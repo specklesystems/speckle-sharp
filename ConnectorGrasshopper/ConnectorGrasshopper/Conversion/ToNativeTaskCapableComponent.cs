@@ -23,7 +23,7 @@ namespace ConnectorGrasshopper.Conversion
     {
     }
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
     protected override Bitmap Icon => Properties.Resources.ToNative;
 
@@ -48,6 +48,7 @@ namespace ConnectorGrasshopper.Conversion
       {
         object item = null;
         DA.GetData(0, ref item);
+        if(DA.Iteration == 0) Tracker.TrackNodeRun();
         var task = Task.Run(() => DoWork(item, DA), CancelToken);
         TaskList.Add(task);
         return;

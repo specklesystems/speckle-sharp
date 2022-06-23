@@ -1,14 +1,14 @@
-﻿using Dynamo.Graph.Nodes;
-using ProtoCore.AST.AssociativeAST;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Speckle.Core.Logging;
-using Dynamo.Engine;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
+using Dynamo.Engine;
+using Dynamo.Graph.Nodes;
 using Dynamo.Utilities;
 using Newtonsoft.Json;
+using ProtoCore.AST.AssociativeAST;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.ViewNode
 {
@@ -74,8 +74,6 @@ namespace Speckle.ConnectorDynamo.ViewNode
     /// </summary>
     public View()
     {
-      Tracker.TrackPageview(Tracker.STREAM_VIEW);
-
       AddInputs();
 
       RegisterAllPorts();

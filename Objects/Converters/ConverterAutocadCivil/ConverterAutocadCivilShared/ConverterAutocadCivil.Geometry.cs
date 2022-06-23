@@ -521,8 +521,36 @@ namespace Objects.Converter.AutocadCivil
 
       return (reverseDirection) ? segment.GetReverseParameterCurve() : segment;
     }
-    // polylines can only support curve segments of type circular arc. c
-    // currently, this will collapse 3d polycurves into 2d since there is no polycurve class that can contain 3d polylines with nonlinear segments
+    private bool IsPolycurvePlanar(Polycurve polycurve)
+    {
+      double? z = null;
+      foreach (var segment in polycurve.segments)
+      {
+        switch (segment)
+        {
+          case Line o:
+            if (z == null) z = o.start.z;
+            if (o.start.z != z || o.end.z != z) return false;
+            break;
+          case Arc o:
+            if (z == null) z = o.startPoint.z;
+            if (o.startPoint.z != z || o.midPoint.z != z || o.endPoint.z != z) return false;
+            break;
+          case Curve o:
+            if (z == null) z = o.points[2];
+            for (int i = 2; i < o.points.Count; i += 3)
+              if (o.points[i] != z) return false;
+            break;
+          case Spiral o:
+            if (z == null) z = o.startPoint.z;
+            if (o.startPoint.z != z || o.endPoint.z != z) return false;
+            break;
+        }
+      }
+      return true;
+    }
+
+    // polylines can only support curve segments of type circular arc.
     public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve)
     {
       AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
@@ -560,10 +588,6 @@ namespace Objects.Converter.AutocadCivil
           default:
             return null;
         }
-      }
-      for (int i = 0; i < polycurve.segments.Count; i++)
-      {
-        
       }
 
       return polyline;
@@ -666,20 +690,35 @@ namespace Objects.Converter.AutocadCivil
       return curve;
     }
     // handles polycurves with spline segments: bakes segments individually and then joins
-    // TODO: can use this for 3d polycurves with arc segments (needs an IsPlanar property)
-    public Spline PolycurveSplineToNativeDB(Polycurve polycurve)
+    public AcadDB.Curve PolycurveSplineToNativeDB(Polycurve polycurve)
     {
-      AcadDB.Curve firstSegment = CurveToNativeDB(polycurve.segments[0]);
-      List<AcadDB.Curve> otherSegments = new List<AcadDB.Curve>();
-      for (int i = 1; i < polycurve.segments.Count; i++)
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+
+      Entity first = null;
+      List<Entity> others = new List<Entity>();
+      for (int i = 0; i < polycurve.segments.Count; i++)
       {
         var converted = CurveToNativeDB(polycurve.segments[i]);
         if (converted == null)
-          return null;
-        otherSegments.Add(converted);
+          continue;
+
+        var newEntity = Trans.GetObject(modelSpaceRecord.Append(converted), OpenMode.ForWrite) as Entity;
+        if (first == null)
+          first = newEntity;
+        else
+          others.Add(newEntity);
       }
-      firstSegment.JoinEntities(otherSegments.ToArray());
-      return firstSegment.Spline;
+
+      try
+      {
+        first.JoinEntities(others.ToArray());
+        return first as Spline;
+      }
+      catch (Exception e)
+      {
+        Report.ConversionLog.Add("Could not join Polycurve segments: segments converted individually.");
+        return null;
+      }
     }
 
     // Curve
@@ -1481,8 +1520,14 @@ namespace Objects.Converter.AutocadCivil
       if (solid != null)
       {
         brep = new AcadBRep.Brep(solid);
-        volume = solid.MassProperties.Volume;
-        area = solid.Area;
+        try
+        {
+          area = solid.Area;
+          volume = solid.MassProperties.Volume;
+        }
+        catch (Exception e)
+        { };
+        
         bbox = BoxToSpeckle(solid.GeometricExtents);
       }
       else if (surface != null)
@@ -1523,15 +1568,8 @@ namespace Objects.Converter.AutocadCivil
                   var faceIndices = new List<int>();
                   foreach (var n in e.Nodes)
                   {
-                    if (!_vertices.Contains(n.Point))
-                    {
-                      faceIndices.Add(_vertices.Count);
-                      _vertices.Add(n.Point);
-                    }
-                    else
-                    {
-                      faceIndices.Add(_vertices.IndexOf(n.Point));
-                    }
+                    faceIndices.Add(_vertices.Count);
+                    _vertices.Add(n.Point);
                     n.Dispose();
                   }
 

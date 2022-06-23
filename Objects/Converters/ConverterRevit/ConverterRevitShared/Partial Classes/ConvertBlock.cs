@@ -72,10 +72,34 @@ namespace Objects.Converter.Revit
       }
 
       var ids = new List<ElementId>();
-      breps.ForEach(o => { ids.Add((DirectShapeToNative(o).NativeObject as DB.DirectShape)?.Id); });
-      meshes.ForEach(o => { ids.Add((DirectShapeToNative(o).NativeObject as DB.DirectShape)?.Id); });
-      curves.ForEach(o => { ids.Add(Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc)).Id); });
-      blocks.ForEach(o => { ids.Add(BlockInstanceToNative(o, transform).Id); });
+      breps.ForEach(o =>
+      {
+        var ds = DirectShapeToNative(o).NativeObject as DB.DirectShape;
+        if (ds != null)
+          ids.Add(ds.Id);
+      });
+      meshes.ForEach(o =>
+      {
+        var ds = DirectShapeToNative(o).NativeObject as DB.DirectShape;
+        if (ds != null)
+          ids.Add(ds.Id);
+        ids.Add(ds.Id);
+      });
+      curves.ForEach(o =>
+      {
+        var mc = Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc));
+        if (mc != null)
+          ids.Add(mc.Id);
+      });
+      blocks.ForEach(o =>
+      {
+        var block = BlockInstanceToNative(o, transform);
+        if (block != null)
+          ids.Add(block.Id);
+      });
+
+      if (!ids.Any())
+        return null;
 
       var group = Doc.Create.NewGroup(ids);
       group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";

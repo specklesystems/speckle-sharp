@@ -70,6 +70,9 @@ namespace Speckle.Core.Transports
 
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
+      if (String.IsNullOrEmpty(StreamId) || String.IsNullOrEmpty(id) || targetTransport == null)
+        throw new Exception("Invalid parameters to CopyObjectAndChildren");
+
       if (CancellationToken.IsCancellationRequested)
         return null;
 
@@ -121,11 +124,15 @@ namespace Speckle.Core.Transports
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
+      if (String.IsNullOrEmpty(StreamId) || objectIds == null)
+        throw new Exception("Invalid parameters to HasObjects");
       return await Api.HasObjects(StreamId, objectIds);
     }
 
     public void SaveObject(string id, string serializedObject)
     {
+      if (String.IsNullOrEmpty(StreamId) || String.IsNullOrEmpty(id) || serializedObject == null)
+        throw new Exception("Invalid parameters to SaveObject");
       lock (SendBufferLock)
       {
         if (ErrorState)
@@ -137,6 +144,8 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string id, ITransport sourceTransport)
     {
+      if (String.IsNullOrEmpty(StreamId) || String.IsNullOrEmpty(id) || sourceTransport == null)
+        throw new Exception("Invalid parameters to SaveObject");
       SaveObject(id, sourceTransport.GetObject(id));
     }
 
@@ -150,6 +159,7 @@ namespace Speckle.Core.Transports
       ErrorState = false;
       ShouldSendThreadRun = true;
       SendingThread = new Thread(new ThreadStart(SendingThreadMain));
+      SendingThread.Name = "ServerTransportSender";
       SendingThread.IsBackground = true;
       SendingThread.Start();
     }

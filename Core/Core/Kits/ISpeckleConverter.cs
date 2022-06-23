@@ -1,7 +1,5 @@
-﻿using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using Speckle.Core.Models;
 
 namespace Speckle.Core.Kits
 {
@@ -17,6 +15,11 @@ namespace Speckle.Core.Kits
     /// Keeps track of the conversion process
     /// </summary>
     public ProgressReport Report { get; }
+
+    /// <summary>
+    /// Decides what to do when an element being received already exists
+    /// </summary>
+    public ReceiveMode ReceiveMode { get; set; }
 
 
     /// <summary>
@@ -72,7 +75,7 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <param name="doc">The current application document</param>
     public void SetContextDocument(object doc);
-    
+
     /// <summary>
     /// Some converters need to know which other objects are being converted, in order to sort relationships between them (ie, Revit). Use this method to set them.
     /// </summary>
@@ -84,12 +87,20 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <param name="objects"></param>
     public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects);
-    
+
     /// <summary>
     /// Some converters need to be able to receive some settings to modify their internal behaviour (i.e. Rhino's Brep Meshing options). Use this method to set them.
     /// </summary>
     /// <param name="settings">The object representing the settings for your converter.</param>
     public void SetConverterSettings(object settings);
 
+  }
+
+
+  public enum ReceiveMode
+  {
+    Update,
+    Create,
+    Ignore
   }
 }

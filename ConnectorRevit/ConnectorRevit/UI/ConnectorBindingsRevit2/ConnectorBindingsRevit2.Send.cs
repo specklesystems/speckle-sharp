@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -14,8 +15,8 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
-
-
+    // used to store the Stream State settings when sending/receiving
+    private List<ISetting> CurrentSettings { get; set; }
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
     /// the Server and the local DB, and creates a commit with the objects.
@@ -30,6 +31,7 @@ namespace Speckle.ConnectorRevit.UI
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);

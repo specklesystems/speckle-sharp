@@ -92,6 +92,34 @@ namespace SpeckleRhino
       }
     }
 
+    public class CreatePipe : Command
+    {
+      public override string EnglishName => "CreatePipe";
+
+      protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+      {
+        var selectedObjects = GetObjectSelection(ObjectType.Curve);
+        if (selectedObjects == null)
+          return Result.Cancel;
+        ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Pipe.ToString(), doc, false);
+        return Result.Success;
+      }
+    }
+
+    public class CreateDuct : Command
+    {
+      public override string EnglishName => "CreateDuct";
+
+      protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+      {
+        var selectedObjects = GetObjectSelection(ObjectType.Curve);
+        if (selectedObjects == null)
+          return Result.Cancel;
+        ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Duct.ToString(), doc, false);
+        return Result.Success;
+      }
+    }
+
     public class CreateFaceWall : Command
     {
       public override string EnglishName => "CreateFaceWall";
@@ -279,7 +307,7 @@ namespace SpeckleRhino
         if (!automatic)
         {
           // Construct an options getter for schema options
-          // This includes an option toggle for "DirectShape" (true will asign selected schema as the family)
+          // This includes an option toggle for "DirectShape" (true will assign selected schema as the family)
           // Also includes an option list of supported schemas
           var getOpt = new GetOption();
           getOpt.SetCommandPrompt("Select schema options. Press Enter when done");
@@ -437,8 +465,22 @@ namespace SpeckleRhino
         string uniqueName = $"DirectShape_{obj.Id.ToString().Substring(0,5)}";
         value = $"{DirectShapeKey}({schema},{uniqueName})";
       }
-      if (schema == SchemaObjectFilter.SupportedSchema.FaceWall.ToString())
-        value = $"{schema}([family],[type])";
+      if (Enum.TryParse<SchemaObjectFilter.SupportedSchema>(schema, out var parsedSchema))
+      {
+        switch (parsedSchema)
+        {
+          case SchemaObjectFilter.SupportedSchema.FaceWall:
+            value = $"{schema}([family],[type])";
+            break;
+          case SchemaObjectFilter.SupportedSchema.Pipe:
+            value = $"{schema}(1.0)";
+            break;
+          case SchemaObjectFilter.SupportedSchema.Duct:
+            value = $"{schema}(1.0,1.0,1.0)";
+            break;
+        }
+      }
+
       obj.Attributes.SetUserString(SpeckleSchemaKey, value);
     }
 

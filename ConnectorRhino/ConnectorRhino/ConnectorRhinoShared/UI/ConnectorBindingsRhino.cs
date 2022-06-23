@@ -40,6 +40,7 @@ namespace SpeckleRhino
     public ConnectorBindingsRhino()
     {
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+      RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange;
 
       SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
       SelectionTimer.Elapsed += SelectionTimer_Elapsed;
@@ -62,9 +63,22 @@ namespace SpeckleRhino
         return;
 
       var streams = GetStreamsInFile();
-      UpdateSavedStreams(streams);
+      if (UpdateSavedStreams != null)
+        UpdateSavedStreams(streams);
       if (streams.Count > 0)
         SpeckleCommand.CreateOrFocusSpeckle();
+    }
+
+    private void RhinoDoc_LayerChange(object sender, Rhino.DocObjects.Tables.LayerTableEventArgs e)
+    {
+      if (UpdateSelectedStream != null)
+        UpdateSelectedStream();
+    }
+
+
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
     }
 
     #region Local streams I/O with local file
@@ -131,7 +145,6 @@ namespace SpeckleRhino
         new ListSelectionFilter {Slug="layer", Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = layers },
         new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information as views to the stream"},
         new ManualSelectionFilter()
-
       };
     }
 
@@ -221,33 +234,39 @@ namespace SpeckleRhino
       conversionProgressDict["Conversion"] = 0;
 
       // get commit layer name 
-      var commitLayerName = Speckle.DesktopUI.Utils.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
 
-      // give converter a way to access the base commit layer name
-      RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
+      RhinoApp.InvokeOnUiThread((Action)delegate
+     {
+       // give converter a way to access the base commit layer name
+       RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName;
 
-      // flatten the commit object to retrieve children objs
-      int count = 0;
-      var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
+       // flatten the commit object to retrieve children objs
+       int count = 0;
+       var commitObjs = FlattenCommitObject(commitObject, converter, commitLayerName, state, ref count);
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+         return;
 
-      foreach (var commitObj in commitObjs)
-      {
-        var (obj, layerPath) = commitObj;
-        BakeObject(obj, layerPath, state, converter);
-        conversionProgressDict["Conversion"]++;
-        progress.Update(conversionProgressDict);
-      }
+       foreach (var commitObj in commitObjs)
+       {
+         var (obj, layerPath) = commitObj;
+         BakeObject(obj, layerPath, state, converter);
+         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+           return;
+         conversionProgressDict["Conversion"]++;
+         progress.Update(conversionProgressDict);
+       }
 
-      progress.Report.Merge(converter.Report);
-      Doc.Views.Redraw();
-      Doc.EndUndoRecord(undoRecord);
+       progress.Report.Merge(converter.Report);
+       Doc.Views.Redraw();
+       Doc.EndUndoRecord(undoRecord);
 
-      // undo notes edit
-      var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
-      Doc.Notes = segments[0];
+       // undo notes edit
+       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
+       Doc.Notes = segments[0];
+     });
+
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
@@ -320,7 +339,6 @@ namespace SpeckleRhino
       return objects;
     }
 
-
     // conversion and bake
     private void BakeObject(Base obj, string layerPath, StreamState state, ISpeckleConverter converter)
     {
@@ -380,11 +398,7 @@ namespace SpeckleRhino
         }
         else if (obj[@"renderMaterial"] is Base renderMaterial)
         {
-          if (renderMaterial["diffuse"] is int color)
-          {
-            attributes.ColorSource = ObjectColorSource.ColorFromObject;
-            attributes.ObjectColor = Color.FromArgb(color);
-          }
+          attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
         }
 
         // assign layer
@@ -711,7 +725,7 @@ namespace SpeckleRhino
       switch (filter.Slug)
       {
         case "manual":
-          return GetSelectedObjects();
+          return filter.Selection;
         case "all":
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           objs.AddRange(Doc.NamedViews.Select(o => o.Name).ToList());

@@ -44,6 +44,8 @@ namespace Objects.Converter.Dynamo
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
 
+    public ReceiveMode ReceiveMode { get; set; }
+
     public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();

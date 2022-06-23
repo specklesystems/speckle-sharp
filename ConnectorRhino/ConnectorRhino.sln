@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30621.155
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{1E404CB8-22F1-439D-B58E-C23B14A45158}"
 	ProjectSection(SolutionItems) = preProject
@@ -10,15 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{6321CA2D-5275-42A3-A034-170A0040E19E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\DesktopUI\DesktopUI.csproj", "{A97C3046-2D55-4C49-AB40-A3C2194B82FA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RhinoVersionProjects", "RhinoVersionProjects", "{E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorRhinoShared", "ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.shproj", "{B7376EC8-5D3E-47D2-96A7-748552F14C39}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino6", "ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRhinoGh", "ConverterRhinoGh", "{F415936B-1E0C-4218-B8A8-E54F15549BBB}"
 EndProject
@@ -28,105 +24,163 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino6", "..\Objec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino7", "..\Objects\Converters\ConverterRhinoGh\ConverterRhino7\ConverterRhino7.csproj", "{6C851417-514B-4E45-9553-408377535B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRhino7", "ConnectorRhino7\ConnectorRhino7.csproj", "{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino7", "ConnectorRhino7\ConnectorRhino7.csproj", "{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6C851417-514B-4E45-9553-408377535B68} = {6C851417-514B-4E45-9553-408377535B68}
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D} = {EAA8D25F-A118-4B16-BC6C-A71463B3C53D}
+		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {B74CB8C1-187B-46A6-B20B-92B8C129F3EE}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2\DesktopUI2\DesktopUI2.csproj", "{F7D586E0-5452-428D-B704-3FF142DE248B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino6", "ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 4
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
 		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 4
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{f1703d03-3edb-4389-add9-39c52c6aea19}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Mac|Any CPU = Debug Mac|Any CPU
+		Debug Mac|x64 = Debug Mac|x64
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Release Mac|Any CPU = Release Mac|Any CPU
+		Release Mac|x64 = Release Mac|x64
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug Mac|x64.Build.0 = Debug|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Debug|x64.Build.0 = Debug|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release Mac|x64.Build.0 = Release|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release|x64.ActiveCfg = Release|Any CPU
 		{6321CA2D-5275-42A3-A034-170A0040E19E}.Release|x64.Build.0 = Release|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|x64.ActiveCfg = Debug|x64
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|x64.Build.0 = Debug|x64
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|x64.ActiveCfg = Release|x64
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|x64.Build.0 = Release|x64
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug Mac|x64.Build.0 = Debug|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Debug|x64.Build.0 = Debug|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release Mac|x64.Build.0 = Release|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release|x64.ActiveCfg = Release|Any CPU
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D}.Release|x64.Build.0 = Release|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|x64.Build.0 = Debug|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.ActiveCfg = Release|Any CPU
-		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.Build.0 = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug Mac|x64.Build.0 = Debug|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Debug|x64.Build.0 = Debug|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release Mac|x64.Build.0 = Release|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|x64.ActiveCfg = Release|Any CPU
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19}.Release|x64.Build.0 = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Debug Mac|x64.Build.0 = Debug|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Debug|x64.Build.0 = Debug|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{6C851417-514B-4E45-9553-408377535B68}.Release Mac|x64.Build.0 = Release|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Release|x64.ActiveCfg = Release|Any CPU
 		{6C851417-514B-4E45-9553-408377535B68}.Release|x64.Build.0 = Release|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug Mac|Any CPU.ActiveCfg = Debug Mac|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug Mac|Any CPU.Build.0 = Debug Mac|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug Mac|x64.Build.0 = Debug|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Debug|x64.Build.0 = Debug|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release Mac|Any CPU.ActiveCfg = Release Mac|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release Mac|Any CPU.Build.0 = Release Mac|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release Mac|x64.Build.0 = Release|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|x64.ActiveCfg = Release|Any CPU
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}.Release|x64.Build.0 = Release|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug Mac|x64.Build.0 = Debug|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Debug|x64.Build.0 = Debug|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release Mac|x64.Build.0 = Release|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release|x64.ActiveCfg = Release|Any CPU
 		{F7D586E0-5452-428D-B704-3FF142DE248B}.Release|x64.Build.0 = Release|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug Mac|Any CPU.ActiveCfg = Debug Mac|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug Mac|Any CPU.Build.0 = Debug Mac|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Debug|x64.Build.0 = Debug|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release Mac|Any CPU.ActiveCfg = Release Mac|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release Mac|Any CPU.Build.0 = Release Mac|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release Mac|x64.Build.0 = Release|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.ActiveCfg = Release|Any CPU
+		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6321CA2D-5275-42A3-A034-170A0040E19E} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
-		{D648BB69-B992-4D34-906E-7A547374B86C} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{F415936B-1E0C-4218-B8A8-E54F15549BBB} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
 		{F1703D03-3EDB-4389-ADD9-39C52C6AEA19} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
 		{6C851417-514B-4E45-9553-408377535B68} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{F7D586E0-5452-428D-B704-3FF142DE248B} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
+		{D648BB69-B992-4D34-906E-7A547374B86C} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}

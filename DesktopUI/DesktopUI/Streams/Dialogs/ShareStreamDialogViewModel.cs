@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
 using Speckle.DesktopUI.Utils;
 using Stylet;
 
@@ -126,7 +124,6 @@ namespace Speckle.DesktopUI.Streams
 
     public async void AddCollaborator()
     {
-      Tracker.TrackPageview("stream", "add-collaborator");
       try
       {
         var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()

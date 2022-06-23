@@ -22,7 +22,6 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -510,8 +509,6 @@ namespace ConnectorGrasshopper.Ops
       var receiveComponent = ((VariableInputReceiveComponent)Parent);
       try
       {
-        Tracker.TrackPageview("receive", receiveComponent.AutoReceive ? "auto" : "manual");
-
         InternalProgressAction = dict =>
         {
           //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
@@ -784,7 +781,7 @@ namespace ConnectorGrasshopper.Ops
     {
       var equalLength = outputList.Count == Parent?.Params.Output.Count;
       if (!equalLength) return false;
-      
+
       var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name));
       return diffParams.Count() == 1;
     }
@@ -797,7 +794,7 @@ namespace ConnectorGrasshopper.Ops
 
       Parent.RecordUndoEvent("Creating Outputs");
       if (HasSingleRename())
-      { 
+      {
         var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.Name));
         var diffOut = outputList
           .Where(name =>

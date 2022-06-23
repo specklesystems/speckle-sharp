@@ -44,7 +44,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
     }
 
 
-
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
 
     #region boilerplate
     public override string GetActiveViewName()

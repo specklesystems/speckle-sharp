@@ -16,14 +16,14 @@ using Grasshopper.Kernel.Special;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Utilities = ConnectorGrasshopper.Extras.Utilities;
 using Logging = Speckle.Core.Logging;
+using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper
 {
   public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
   {
-    public override GH_Exposure Exposure => GH_Exposure.quarternary;
+    public override GH_Exposure Exposure => GH_Exposure.quarternary | GH_Exposure.obscure;
 
     private ConstructorInfo SelectedConstructor;
     private bool readFailed;
@@ -353,10 +353,7 @@ namespace ConnectorGrasshopper
 
 
       if (DA.Iteration == 0)
-      {
-        Tracker.TrackPageview("objects", "create", "variableinput");
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Schema Object" }, { "node", Name } });
-      }
+        Tracker.TrackNodeRun("Create Schema Object", Name);
 
 
       var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
@@ -487,7 +484,7 @@ namespace ConnectorGrasshopper
 
       var listElementType = t.GetElementType();
       var list = (IList)Array.CreateInstance(listElementType, values.Count);
-      for (int i=0; i< values.Count; i++)
+      for (int i = 0; i < values.Count; i++)
       {
         list[i] = (ConvertType(listElementType, values[i], param.Name));
       }

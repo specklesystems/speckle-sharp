@@ -70,6 +70,11 @@ namespace Speckle.ConnectorRevit.UI
       return streams;
     }
 
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create, ReceiveMode.Ignore };
+    }
+
     //TODO
     public override List<MenuItem> GetCustomStreamMenuItems()
     {

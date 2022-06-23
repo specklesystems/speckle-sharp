@@ -5,6 +5,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Speckle.Core.Logging;
 
 namespace Objects.BuiltElements
 {
@@ -16,7 +17,7 @@ namespace Objects.BuiltElements
 
     public Opening() { }
 
-    //[SchemaInfo("Opening", "Creates a Speckle opening")]
+    [SchemaInfo("Arch Opening", "Creates a Speckle opening", "BIM", "Architecture")]
     public Opening(ICurve outline)
     {
       this.outline = outline;
@@ -45,6 +46,24 @@ namespace Objects.BuiltElements.Revit
     public RevitWall host { get; set; }
 
     public RevitWallOpening() { }
+    
+    [Obsolete("Use constructor with Polyline input instead"), SchemaDeprecated, SchemaInfo("Revit Wall Opening (Deprecated)", "Creates a Speckle Wall opening for revit", "BIM", "Architecture")]
+    public RevitWallOpening(ICurve outline , RevitWall host = null)
+    {
+      if (!(outline is Polyline)) throw new SpeckleException("Outline should be a rectangular-shaped polyline", false);
+      this.outline = outline;
+      this.host = host;
+    }
+    
+    [SchemaInfo("Revit Wall Opening", "Creates a Speckle Wall opening for revit", "BIM", "Architecture")]
+    public RevitWallOpening(Polyline outline, RevitWall host = null)
+    {
+      if(outline == null) throw new SpeckleException("Outline cannot be null", false);
+      if(outline?.GetPoints().Count != 4) 
+        throw new SpeckleException("Outline should be a rectangular-shaped polyline", false);
+      this.outline = outline;
+      this.host = host;
+    }
   }
 
   public class RevitShaft : RevitOpening

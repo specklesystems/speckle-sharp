@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <RootNamespace>Objects.Converter.Revit</RootNamespace>
+    <AssemblyName>Objects.Converter.Revit2023</AssemblyName>
+    <Configurations>Debug;Release</Configurations>
+    <DefineConstants>$(DefineConstants);REVIT2023</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.Revit2023</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>Objects.Converter.Revit2023</Product>
+    <Version>2.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Description>Converter for Revit 2023</Description>
+    <PackageTags>speckle objects converter revit</PackageTags>
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
+    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
+    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\&quot;&#xD;&#xA;&#xD;&#xA;)" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
+  </ItemGroup>
+
+  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
+</Project>

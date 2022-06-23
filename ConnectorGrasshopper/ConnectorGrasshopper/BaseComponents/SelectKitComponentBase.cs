@@ -15,12 +15,12 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class SelectKitComponentBase : GH_Component
+  public class SelectKitComponentBase : GH_SpeckleComponent
   {
     public ISpeckleConverter Converter;
 
     public ISpeckleKit Kit;
-
+    
     public SelectKitComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
     }
@@ -93,9 +93,11 @@ namespace ConnectorGrasshopper.Objects
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
+
       try
       {
-        Kit = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName()).FirstOrDefault(kit => kit.Name == SpeckleGHSettings.SelectedKitName);
+        Kit = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName())
+          .FirstOrDefault(kit => kit.Name == SpeckleGHSettings.SelectedKitName);
         Converter = Kit.LoadConverter(Extras.Utilities.GetVersionedAppName());
         Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);

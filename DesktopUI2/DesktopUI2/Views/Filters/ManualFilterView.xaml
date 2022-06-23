@@ -8,7 +8,7 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   d:DesignHeight="450"
-  d:DesignWidth="400"
+  d:DesignWidth="450"
   mc:Ignorable="d">
   <UserControl.Styles>
     <Style Selector="Button.Outline">
@@ -23,21 +23,21 @@
   </UserControl.Styles>
   <StackPanel Margin="0,4" Spacing="10">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
+    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+      <Button
+        Background="{DynamicResource PrimaryHueMidBrush}"
+        Classes="Outline"
+				Width="150"
+        Command="{Binding SetObjectSelection}"
+        Foreground="White"
+        ToolTip.Tip="Sets the currently selected objects.">
+        <StackPanel Orientation="Horizontal">
+          <icons:MaterialIcon Kind="Plus" />
+          <TextBlock Classes="ButtonText" Text="SELECT" />
+        </StackPanel>
+      </Button>
 
-    <!--<Button
-      assists:ButtonAssist.CornerRadius="16"
-      BorderBrush="Green"
-      Classes="Outline"
-      Command="{Binding SetObjectSelection}"
-      Foreground="Green"
-      ToolTip.Tip="Clears any existing objects,&#x0a;and sets the current selected ones.">
-      <StackPanel Orientation="Horizontal">
-        <icons:MaterialIcon Kind="AddCircle" />
-        <TextBlock Classes="ButtonText" Text="SET SELECTION" />
-      </StackPanel>
-    </Button>-->
-
-    <Button
+      <!--<Button
       Classes="Outline"
       Command="{Binding AddObjectSelection}"
       ToolTip.Tip="Adds the currently selected objects to the&#x0a;existing list.&#x0a;Does not clear old ones.">
@@ -45,9 +45,9 @@
         <icons:MaterialIcon Kind="AddCircle" />
         <TextBlock Classes="ButtonText" Text="ADD SELECTION" />
       </StackPanel>
-    </Button>
+    </Button>-->
 
-    <!--<Button
+      <!--<Button
       BorderBrush="IndianRed"
       Classes="Outline"
       Command="{Binding RemoveObjectSelection}"
@@ -59,18 +59,19 @@
       </StackPanel>
     </Button>-->
 
-    <Button
-      BorderBrush="OrangeRed"
-      Classes="Outline"
-      Command="{Binding ClearObjectSelection}"
-      Foreground="OrangeRed"
-      ToolTip.Tip="Removes all selected objects.">
-      <StackPanel Orientation="Horizontal">
-        <icons:MaterialIcon Kind="RemoveCircleMultiple" />
-        <TextBlock Classes="ButtonText" Text="CLEAR SELECTION" />
-      </StackPanel>
-    </Button>
-
+      <Button
+        BorderBrush="OrangeRed"
+        Classes="Outline"
+				Width="150"
+        Command="{Binding ClearObjectSelection}"
+        Foreground="OrangeRed"
+        ToolTip.Tip="Removes all selected objects.">
+        <StackPanel Orientation="Horizontal">
+          <icons:MaterialIcon Kind="Delete" />
+          <TextBlock Classes="ButtonText" Text="CLEAR" />
+        </StackPanel>
+      </Button>
+    </StackPanel>
     <TextBlock
       Margin="0,12,0,8"
       FontSize="14"

@@ -25,6 +25,9 @@ namespace Objects.Converter.Revit
 
       // Cannot update revit wall to new mass face
       FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
+      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleWall.applicationId, ApplicationGeneratedId = revitWall.UniqueId, NativeObject = revitWall } };
+
       if (revitWall != null)
       {
         Doc.Delete(revitWall.Id);

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -18,28 +18,55 @@ namespace Objects.Converter.Revit
       var baseCurves = CurveToNative(speckleOpening.outline);
 
       var docObj = GetExistingElementByApplicationId(speckleOpening.applicationId);
-      if (docObj != null)
-      {
-        Doc.Delete(docObj.Id);
-      }
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+        { applicationId = speckleOpening.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
 
-      DB.Opening revitOpening = null;
+      if (docObj != null)
+        Doc.Delete(docObj.Id);
+
+      Opening revitOpening = null;
 
       switch (speckleOpening)
       {
         case RevitWallOpening rwo:
           {
-            if (CurrentHostElement as Wall == null)
-              throw new Speckle.Core.Logging.SpeckleException($"Hosted wall openings require a host wall");
-            var points = (rwo.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
-            revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
+            // Prevent host element overriding as this will propagate upwards to other hosted elements in a wall :)
+            string elementId = null;
+            var hostElement = CurrentHostElement;
+            if (!(hostElement is Wall))
+            {
+              // Try with the opening wall if it exists
+              if (rwo.host == null) throw new SpeckleException($"Hosted wall openings require a host wall");
+              Element existingElement;
+              try
+              {
+                existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
+              }
+              catch (Exception e)
+              {
+                throw new SpeckleException($"Could not find the provided host wall by it's element id.", e);
+              }
+
+              if (!(existingElement is Wall wall))
+                throw new SpeckleException($"The provided host element is not a wall.");
+
+              hostElement = wall;
+            }
+
+            var poly = rwo.outline as Polyline;
+            if (poly == null || !(poly.GetPoints().Count == 4 && poly.closed))
+              throw new SpeckleException($"Curve outline for wall opening must be a rectangle-shaped polyline.");
+
+            var points = poly.GetPoints().Select(PointToNative).ToList();
+            revitOpening = Doc.Create.NewOpening((Wall)hostElement, points[0], points[2]);
             break;
           }
 
         case RevitVerticalOpening rvo:
           {
             if (CurrentHostElement == null)
-              throw new Speckle.Core.Logging.SpeckleException($"Hosted vertical openings require a host family");
+              throw new SpeckleException($"Hosted vertical openings require a host family");
             revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
             break;
           }
@@ -57,14 +84,19 @@ namespace Objects.Converter.Revit
         default:
           if (CurrentHostElement as Wall != null)
           {
-            var points = (speckleOpening.outline as Polyline).points.Select(x => PointToNative(x)).ToList();
+            var speckleOpeningOutline = speckleOpening.outline as Polyline;
+            if (speckleOpeningOutline == null)
+              throw new SpeckleException("Cannot create opening, outline must be a rectangle-shaped polyline.");
+
+            var points = speckleOpeningOutline.GetPoints().Select(PointToNative).ToList();
             revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
           }
           else
           {
             Report.LogConversionError(new Exception("Cannot create Opening, opening type not supported"));
-            throw new Speckle.Core.Logging.SpeckleException("Opening type not supported");
+            throw new SpeckleException("Opening type not supported");
           }
+
           break;
       }
 
@@ -72,8 +104,14 @@ namespace Objects.Converter.Revit
       {
         SetInstanceParameters(revitOpening, ro);
       }
+
       Report.Log($"Created Opening {revitOpening.Id}");
-      return new ApplicationPlaceholderObject { NativeObject = revitOpening, applicationId = speckleOpening.applicationId, ApplicationGeneratedId = revitOpening.UniqueId };
+      return new ApplicationPlaceholderObject
+      {
+        NativeObject = revitOpening,
+        applicationId = speckleOpening.applicationId,
+        ApplicationGeneratedId = revitOpening.UniqueId
+      };
     }
 
     public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
@@ -113,9 +151,12 @@ namespace Objects.Converter.Revit
           speckleOpening = new RevitShaft();
           if (revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE) != null)
           {
-            ((RevitShaft)speckleOpening).topLevel = ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_HEIGHT_TYPE);
-            ((RevitShaft)speckleOpening).bottomLevel = ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_BASE_CONSTRAINT);
-            ((RevitShaft)speckleOpening).height = GetParamValue<double>(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
+            ((RevitShaft)speckleOpening).topLevel =
+              ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_HEIGHT_TYPE);
+            ((RevitShaft)speckleOpening).bottomLevel =
+              ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_BASE_CONSTRAINT);
+            ((RevitShaft)speckleOpening).height =
+              GetParamValue<double>(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
           }
         }
 
@@ -128,12 +169,14 @@ namespace Objects.Converter.Revit
             poly.segments.Add(CurveToSpeckle(curve));
           }
         }
+
         speckleOpening.outline = poly;
       }
 
       speckleOpening["type"] = revitOpening.Name;
 
-      GetAllRevitParamsAndIds(speckleOpening, revitOpening, new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
+      GetAllRevitParamsAndIds(speckleOpening, revitOpening,
+        new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
       Report.Log($"Converted Opening {revitOpening.Id}");
       return speckleOpening;
     }

@@ -15,6 +15,9 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj }; ;
+
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       if (familySymbol.FamilyName != familyName)
@@ -73,7 +76,7 @@ namespace Objects.Converter.Revit
     private AdaptiveComponent AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
-      speckleAc.family = Doc.GetElement(revitAc.GetTypeId()).Name;
+      speckleAc.family = revitAc.Document.GetElement(revitAc.GetTypeId()).Name;
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
       speckleAc.displayValue = GetElementMesh(revitAc);

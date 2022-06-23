@@ -1,0 +1,203 @@
+﻿<UserControl
+  x:Class="DesktopUI2.Views.Pages.ShareControls.AddCollaborators"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:vm="using:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <Grid Margin="15" RowDefinitions="auto, auto, auto, auto, *, auto">
+    <TextBlock
+      Margin="10"
+      Text="Share this model with anyone, anywhere 🌍"
+      TextWrapping="Wrap" />
+    <Grid Grid.Row="1" Margin="0,10,0,0">
+      <ComboBox
+        Margin="8,19,8,0"
+        Classes="Stealth"
+        IsDropDownOpen="{Binding DropDownOpen, FallbackValue=True}"
+        Items="{Binding Users}"
+        SelectedItem="{Binding SelectedUser}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="auto,*">
+              <Image
+                Width="28"
+                Height="28"
+                IsVisible="{Binding AvatarUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Source="{Binding AvatarImage}">
+                <Image.Clip>
+                  <EllipseGeometry Rect="0,0,28,28" />
+                </Image.Clip>
+              </Image>
+
+              <icons:MaterialIcon
+                Width="28"
+                Height="28"
+                Margin="0,0,5,0"
+                Foreground="DarkGray"
+                IsVisible="{Binding AvatarUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                Kind="Email" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="5,0,0,0"
+                VerticalAlignment="Center"
+                Text="{Binding Name}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <m:Card Padding="0" CornerRadius="25">
+        <!--  SEARCH USERS  -->
+        <TextBox
+          Name="SearchBox"
+          Margin="0"
+          Padding="0"
+          Classes="Solo Small"
+          Text="{Binding SearchQuery}"
+          Watermark="Search users or type email">
+          <TextBox.InnerRightContent>
+            <Button
+              Width="{Binding $self.Bounds.Height}"
+              Padding="4"
+              Classes="Flat"
+              Command="{Binding ClearSearchCommand}"
+              Content="{icons:MaterialIconExt CloseCircle,
+                                              Size=15}" />
+          </TextBox.InnerRightContent>
+          <TextBox.InnerLeftContent>
+            <icons:MaterialIcon
+              Width="15"
+              Height="15"
+              Margin="10,0,0,0"
+              Kind="Search" />
+          </TextBox.InnerLeftContent>
+        </TextBox>
+      </m:Card>
+
+    </Grid>
+    <ProgressBar
+      Grid.Row="2"
+      Margin="12,5"
+      IsIndeterminate="True"
+      IsVisible="{Binding ShowProgress, FallbackValue=True}" />
+
+    <m:Card
+      Grid.Row="3"
+      Margin="0,15"
+      VerticalAlignment="Stretch"
+      HorizontalContentAlignment="Stretch"
+      Classes="Mini"
+      IsVisible="{Binding HasAddedUsers}">
+      <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+        <ListBox
+          x:Name="ItemsListBox"
+          Margin="0"
+          Classes="Chip Avatar"
+          Items="{Binding AddedUsers}"
+          Selection="{Binding SelectionModel}"
+          SelectionMode="Multiple, Toggle">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid Margin="0" ColumnDefinitions="Auto,*">
+
+                <!--<Grid Margin="0" IsVisible="{Binding AvatarUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
+                  <Path
+                    Width="28"
+                    Height="28"
+                    Fill="{DynamicResource PrimaryHueMidBrush}">
+                    <Path.Data>
+                      <CombinedGeometry GeometryCombineMode="Xor">
+                        <CombinedGeometry.Geometry1>
+                          <PathGeometry Figures="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
+                        </CombinedGeometry.Geometry1>
+                        <CombinedGeometry.Geometry2>
+                          <EllipseGeometry Rect="-2,-2,28,28" />
+                        </CombinedGeometry.Geometry2>
+                      </CombinedGeometry>
+                    </Path.Data>
+                  </Path>
+                </Grid>-->
+
+                <icons:MaterialIcon
+                  Width="22"
+                  Height="22"
+                  Margin="5,0,0,0"
+                  Foreground="DarkGray"
+                  IsVisible="{Binding AvatarUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                  Kind="Email" />
+
+                <Image
+                  Width="28"
+                  Height="28"
+                  IsVisible="{Binding AvatarUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  Source="{Binding AvatarImage}">
+
+                  <Image.Clip>
+                    <EllipseGeometry Rect="0,0,28,28" />
+                  </Image.Clip>
+                </Image>
+                <TextBlock
+                  Grid.Column="1"
+                  Margin="5,0,0,0"
+                  VerticalAlignment="Center"
+                  Text="{Binding Name}"
+                  TextTrimming="CharacterEllipsis" />
+
+
+              </Grid>
+
+
+
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </ScrollViewer>
+    </m:Card>
+
+
+
+    <StackPanel
+      Grid.Row="5"
+      Grid.ColumnSpan="2"
+      Margin="0,10,0,0"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal"
+      Spacing="10">
+      <Button
+        assists:ButtonAssist.CornerRadius="25 "
+        Classes="Flat"
+        Command="{Binding RemoveSeletedUsersCommand}"
+        Foreground="Red"
+        IsVisible="{Binding HasSelectedUsers}"
+        ToolTip.Tip="Remove selected users and emails">
+        <Grid Margin="0" ColumnDefinitions="auto,*">
+
+          <icons:MaterialIcon VerticalAlignment="Center" Kind="AccountMinus" />
+          <TextBlock
+            Grid.Column="1"
+            Margin="8,0"
+            Padding="0"
+            VerticalAlignment="Center"
+            Text="Remove"
+            TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Button>
+
+      <Button
+        assists:ButtonAssist.CornerRadius="25 "
+        Command="{Binding ShareCommand}"
+        Content="Share"
+        IsEnabled="{Binding HasAddedUsers}"
+        ToolTip.Tip="Share the current entire model via Speckle with the selected people" />
+    </StackPanel>
+  </Grid>
+</UserControl>

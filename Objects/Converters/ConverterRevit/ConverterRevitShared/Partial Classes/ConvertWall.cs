@@ -20,6 +20,8 @@ namespace Objects.Converter.Revit
       }
 
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
+      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleWall.applicationId, ApplicationGeneratedId = revitWall.UniqueId, NativeObject = revitWall } }; ;
 
       var wallType = GetElementType<WallType>(speckleWall);
       Level level = null;
@@ -201,10 +203,18 @@ namespace Objects.Converter.Revit
       var solidMullions = new List<Solid>();
       foreach (ElementId panelId in grid.GetPanelIds())
       {
+        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
+        if (SubelementIds.Contains(panelId))
+          continue;
+        SubelementIds.Add(panelId);
         solidPanels.AddRange(GetElementSolids(wall.Document.GetElement(panelId)));
       }
       foreach (ElementId mullionId in grid.GetMullionIds())
       {
+        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
+        if (SubelementIds.Contains(mullionId))
+          continue;
+        SubelementIds.Add(mullionId);
         solidMullions.AddRange(GetElementSolids(wall.Document.GetElement(mullionId)));
       }
 
@@ -213,6 +223,11 @@ namespace Objects.Converter.Revit
 
       return (meshPanels, meshMullions);
     }
+
+    //this is to prevent duplicated panels & mullions from being sent in curtain walls
+    //might need improvement in the future
+    //see https://github.com/specklesystems/speckle-sharp/issues/1197
+    private List<ElementId> SubelementIds = new List<ElementId>();
 
   }
 }

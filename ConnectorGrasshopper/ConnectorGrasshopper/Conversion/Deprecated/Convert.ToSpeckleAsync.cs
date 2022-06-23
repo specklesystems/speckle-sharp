@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
-
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Kits;
-using Logging = Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
@@ -128,12 +127,8 @@ namespace ConnectorGrasshopper.Conversion
       if (CancellationToken.IsCancellationRequested) return;
       DA.DisableGapLogic();
       if (DA.Iteration == 0)
-      {
-        Logging.Tracker.TrackPageview(Logging.Tracker.CONVERT_TOSPECKLE);
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
-      }
-
-
+        (Parent as GH_SpeckleAsyncComponent)?.Tracker.TrackNodeRun("Convert To Speckle");
+      
       GH_Structure<IGH_Goo> _objects;
       DA.GetDataTree(0, out _objects);
 

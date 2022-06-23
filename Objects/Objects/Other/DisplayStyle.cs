@@ -17,6 +17,7 @@ namespace Objects.Other
     public int color { get; set; } = Color.LightGray.ToArgb(); // opacity assumed from a value
     public string linetype { get; set; }
     public double lineweight { get; set; } // assumed in mm
+    public string units { get; set; }
 
     public DisplayStyle() { }
   }

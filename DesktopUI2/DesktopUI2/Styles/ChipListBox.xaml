@@ -9,7 +9,15 @@
       Height="200"
       Padding="20">
       <StackPanel VerticalAlignment="Center">
-        <ListBox>
+        <ListBox Classes="Chip">
+          <ListBox.Items>
+            <ListBoxItem Content="Item 1" IsSelected="True" />
+            <ListBoxItem Content="Item 2" />
+            <ListBoxItem Content="Item 3" />
+          </ListBox.Items>
+        </ListBox>
+
+        <ListBox Classes="Avatar Chip">
           <ListBox.Items>
             <ListBoxItem Content="Item 1" IsSelected="True" />
             <ListBoxItem Content="Item 2" />
@@ -21,7 +29,7 @@
     </Border>
   </Design.PreviewWith>
 
-  <Style Selector="ListBoxItem">
+  <Style Selector="ListBox.Chip ListBoxItem">
     <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -63,27 +71,31 @@
     </Setter>
   </Style>
 
-  <Style Selector="ListBoxItem /template/ Border">
+  <Style Selector="ListBox.Chip ListBoxItem /template/ Border">
     <Setter Property="CornerRadius" Value="25" />
   </Style>
 
-  <Style Selector="ListBoxItem /template/ Border#normalBorder">
+  <Style Selector="ListBox.Chip ListBoxItem /template/ Border#normalBorder">
     <Setter Property="Opacity" Value="0.12" />
   </Style>
 
 
-  <Style Selector="ListBoxItem">
+  <Style Selector="ListBox.Chip ListBoxItem">
     <Setter Property="Margin" Value="1" />
   </Style>
 
-  <Style Selector="ListBoxItem:selected /template/ Border#selectedBorder">
+  <Style Selector="ListBox.Avatar ListBoxItem">
+    <Setter Property="Padding" Value="0,0,5,0" />
+  </Style>
+
+  <Style Selector="ListBox.Chip ListBoxItem:selected /template/ Border#selectedBorder">
     <Setter Property="Opacity" Value="0.36" />
   </Style>
-  <Style Selector="ListBoxItem:selected /template/ Border#normalBorder">
+  <Style Selector="ListBox.Chip ListBoxItem:selected /template/ Border#normalBorder">
     <Setter Property="Opacity" Value="0" />
   </Style>
 
-  <Style Selector="ListBox">
+  <Style Selector="ListBox.Chip">
     <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>

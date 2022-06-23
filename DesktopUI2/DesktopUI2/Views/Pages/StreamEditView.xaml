@@ -5,6 +5,7 @@
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,6 +15,9 @@
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
+  <UserControl.DataTemplates>
+    <dataTemplates:FilterTemplateSelector />
+  </UserControl.DataTemplates>
 
   <Design.DataContext>
     <viewModels:DesignSavedStreamViewModel />
@@ -30,7 +34,7 @@
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
-      <Grid Margin="15" ColumnDefinitions="auto,*,auto">
+      <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
         <m:FloatingButton
           VerticalAlignment="Center"
           assists:ShadowAssist.ShadowDepth="0"
@@ -47,6 +51,7 @@
               <icons:MaterialIcon
                 Width="24"
                 Height="24"
+                Foreground="{DynamicResource MaterialDesignBody}"
                 Kind="ChevronLeft" />
             </Viewbox>
 
@@ -65,7 +70,7 @@
           <Grid
             Grid.Row="1"
             Margin="0,3,0,0"
-            ColumnDefinitions="auto,auto,*">
+            ColumnDefinitions="auto,auto,auto,auto,auto,*">
             <TextBlock
               Classes="Overline"
               Text="{Binding Stream.id}"
@@ -79,9 +84,41 @@
               Classes="Overline"
               Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
               TextTrimming="CharacterEllipsis" />
+            <TextBlock
+              Grid.Column="3"
+              Classes="Overline"
+              Text=" - " />
+            <icons:MaterialIcon
+              Grid.Column="4"
+              Height="12"
+              VerticalAlignment="Center"
+              Foreground="Gray"
+              Kind="Users"
+              ToolTip.Tip="Collaborators" />
+            <TextBlock
+              Grid.Column="5"
+              Classes="Overline"
+              Text="{Binding Stream.collaborators.Count}" />
           </Grid>
         </Grid>
-        <Menu Grid.Column="2" Items="{Binding MenuItems}">
+        <m:FloatingButton
+          Grid.Column="2"
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="Depth0"
+          Background="Transparent"
+          Classes="Mini"
+          Command="{Binding ShareCommand}"
+          ToolTip.Tip="Share">
+          <Button.Content>
+            <icons:MaterialIcon
+              Width="15"
+              Height="15"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="{DynamicResource MaterialDesignBody}"
+              Kind="UsersAdd" />
+          </Button.Content>
+        </m:FloatingButton>
+        <Menu Grid.Column="3" Items="{Binding MenuItems}">
           <Menu.Styles>
             <Style Selector="MenuItem">
               <Setter Property="Header" Value="{Binding Header}" />
@@ -116,7 +153,7 @@
                     HorizontalAlignment="{Binding Align}"
                     assists:ShadowAssist.ShadowDepth="Depth0"
                     CornerRadius="25"
-                    Mode="Light"
+                    Mode="Standard"
                     Opacity="{Binding Message, Converter={StaticResource StringOpacityValueConverter}}">
                     <Grid ColumnDefinitions="auto,*">
                       <icons:MaterialIcon
@@ -144,6 +181,7 @@
             Grid.Row="1"
             Margin="15,0"
             RowDefinitions="auto,auto,auto">
+
             <!--  COMMIT MESSAGE  -->
             <!--<TextBox
                 Margin="0,8,0,0"
@@ -269,8 +307,7 @@
       Background="{DynamicResource MaterialDesignCardBackground}"
       SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem IsEnabled
-							 ="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
+      <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon

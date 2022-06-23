@@ -20,7 +20,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     public string SearchQuery { get; set; }
 
-    public List<StreamAccountWrapper> Streams { get; set; } = new List<StreamAccountWrapper>();
+    public List<StreamAccountWrapper> FilteredStreams { get; set; } = new List<StreamAccountWrapper>();
 
     public List<DesignSavedStreamViewModel> SavedStreams { get; set; }
 
@@ -33,7 +33,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
       if (acc == null)
         return;
       var client = new Client(acc);
-      Streams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
+      FilteredStreams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
 
       var d = new DesignSavedStreamsViewModel();
       SavedStreams = d.SavedStreams;

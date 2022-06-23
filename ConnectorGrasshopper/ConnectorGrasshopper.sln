@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30517.126
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopper", "ConnectorGrasshopper\ConnectorGrasshopper.csproj", "{BDEC781D-F322-49B0-8001-2CA66C182174}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{CCD06981-ACB2-4B1C-9953-00976F1E535D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}"
@@ -22,25 +20,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils",
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRhinoGhShared", "..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.shproj", "{B74CB8C1-187B-46A6-B20B-92B8C129F3EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper6", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper6\ConverterGrasshopper6.csproj", "{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper6", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper6\ConverterGrasshopper6.csproj", "{D79A3AAC-B7C4-46EA-90AC-5F63BE1E8775}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper7", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{D0783323-D28A-4A2B-9F4E-3534275D3909}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper7", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{D0783323-D28A-4A2B-9F4E-3534275D3909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopper", "ConnectorGrasshopper\ConnectorGrasshopper.csproj", "{109B3382-634B-408A-8A5C-4CD09CB92641}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{4902152d-64bc-4df0-a588-61ec7be93af0}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{e6d4a1fa-d208-4170-88b7-6c4af08beb37}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{d0783323-d28a-4a2b-9f4e-3534275d3909}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{d79a3aac-b7c4-46ea-90ac-5f63be1e8775}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BDEC781D-F322-49B0-8001-2CA66C182174}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BDEC781D-F322-49B0-8001-2CA66C182174}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BDEC781D-F322-49B0-8001-2CA66C182174}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4D98D2C-E5DA-463E-BF6C-68E9B77C72F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -65,6 +61,10 @@ Global
 		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0783323-D28A-4A2B-9F4E-3534275D3909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

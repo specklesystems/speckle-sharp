@@ -12,6 +12,7 @@ using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Archicad.Launcher
@@ -86,6 +87,11 @@ namespace Archicad.Launcher
       return new List<StreamState>();
     }
 
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
@@ -123,7 +129,7 @@ namespace Archicad.Launcher
 
     private static string IdentifyStream(StreamState state)
     {
-      var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null};
+      var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null };
       return stream.ToString();
     }
   }

@@ -57,6 +57,7 @@ namespace Speckle.Core.Transports.ServerUtils
       for (int i = 0; i < NumThreads; i++)
       {
         Thread t = new Thread(new ThreadStart(ThreadMain));
+        t.Name = $"ParallelServerAPI";
         t.IsBackground = true;
         Threads.Add(t);
         t.Start();
@@ -176,7 +177,7 @@ namespace Speckle.Core.Transports.ServerUtils
       Dictionary<string, bool> ret = new Dictionary<string, bool>();
       foreach(Task<object> task in tasks)
       {
-        Dictionary<string, bool> taskResult = task.Result as Dictionary<string, bool>;
+        Dictionary<string, bool> taskResult = (await task) as Dictionary<string, bool>;
         foreach (KeyValuePair<string, bool> kv in taskResult)
           ret[kv.Key] = kv.Value;
       }
@@ -217,7 +218,7 @@ namespace Speckle.Core.Transports.ServerUtils
         Task<object> op = QueueOperation(ServerApiOperation.DownloadObjects, (streamId, splitObjectsIds[i], callbackWrapper));
         tasks.Add(op);
       }
-      Task.WaitAll(tasks.ToArray());
+      await Task.WhenAll(tasks.ToArray());
       // Console.WriteLine($"ParallelServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
 
     }
@@ -250,7 +251,7 @@ namespace Speckle.Core.Transports.ServerUtils
         Task<object> op = QueueOperation(ServerApiOperation.UploadObjects, (streamId, splitObjects[i]));
         tasks.Add(op);
       }
-      Task.WaitAll(tasks.ToArray());
+      await Task.WhenAll(tasks.ToArray());
       // Console.WriteLine($"ParallelServerApi::UploadObjects({objects.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
     }
 

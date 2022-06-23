@@ -3,10 +3,10 @@
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
         <Version>2.1.0</Version>
-        <Title>Objects.Converter.GrasshopperRhino7</Title>
+        <Title>Objects.Converter.Grasshopper7</Title>
         <Description></Description>
         <TargetExt>.dll</TargetExt>
-        <PackageId>Speckle.Objects.Converter.Rhino7</PackageId>
+        <PackageId>Speckle.Objects.Converter.Grasshopper7</PackageId>
         <Authors>Speckle</Authors>
         <Company />
         <Product />
@@ -18,7 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
         <AssemblyName>Objects.Converter.Grasshopper7</AssemblyName>
-        <RootNamespace>Objects.Converter.Grasshopper7</RootNamespace>
+        <RootNamespace>Objects.Converter.Rhino</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,12 +27,27 @@
 
     <ItemGroup>
         <PackageReference Include="Grasshopper" Version="7.4.21078.1001" />
+        <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" />
     </ItemGroup>
 
+
+    <PropertyGroup>
+        <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+        <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+        <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+    </PropertyGroup>
+    
     <ItemGroup>
-        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </ProjectReference>
+        <ProjectReference Include="..\..\..\Objects\Objects.csproj">
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>

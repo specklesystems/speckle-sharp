@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Runtime;
@@ -26,7 +27,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     #endregion
     private static Avalonia.Application AvaloniaApp { get; set; }
     public static Window MainWindow { get; private set; }
-
+    private static CancellationTokenSource Lifetime = null;
     public static ConnectorBindingsAutocad Bindings { get; set; }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
@@ -67,6 +68,14 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         {
           MainWindow.Show();
           MainWindow.Activate();
+
+          //required to gracefully quit avalonia and the skia processes
+          //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
+          if (Lifetime == null)
+          {
+            Lifetime = new CancellationTokenSource();
+            Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
+          }
 
           if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
           {

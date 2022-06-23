@@ -42,6 +42,7 @@ class ResourceCompiler (object):
 		imageResourcesFolder = os.path.join (self.resourcesPath, 'RFIX', 'Images')
 		inputFileBaseName = os.path.splitext (os.path.split (inputFilePath)[1])[0]
 		nativeResourceFilePath = os.path.join (self.resourceObjectsPath, inputFileBaseName + nativeResourceFileExtenion)
+		print(f"{self.resConvPath} -m=r -T={platformSign} -q=utf8 {codepage} -w=2 -p={imageResourcesFolder} -i={inputFilePath} -o={nativeResourceFilePath}")
 		result = subprocess.call ([
 			self.resConvPath,
 			'-m', 'r',						# resource compile mode

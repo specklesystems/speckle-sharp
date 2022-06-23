@@ -14,6 +14,9 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> SpaceToNative(Space speckleSpace)
     {
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
+      if (revitSpace != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleSpace.applicationId, ApplicationGeneratedId = revitSpace.UniqueId, NativeObject = revitSpace } };
+
       var level = ConvertLevelToRevit(speckleSpace.level);
       var basePoint = PointToNative(speckleSpace.basePoint);
       var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel);
@@ -96,8 +99,8 @@ namespace Objects.Converter.Revit
       speckleSpace.name = revitSpace.Name;
       speckleSpace.number = revitSpace.Number;
       speckleSpace.basePoint = (Point)LocationToSpeckle(revitSpace);
-      speckleSpace.level = ConvertAndCacheLevel(revitSpace.LevelId);
-      speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId());
+      speckleSpace.level = ConvertAndCacheLevel(revitSpace.LevelId, revitSpace.Document);
+      speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId(), revitSpace.Document);
       speckleSpace.baseOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET);
       speckleSpace.topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
       speckleSpace.outline = profiles[0];

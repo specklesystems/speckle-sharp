@@ -1,4 +1,4 @@
-<Window
+﻿<Window
   x:Class="DesktopUI2.Views.Scheduler"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,10 +15,6 @@
   Icon="/Assets/icon.ico"
   SizeToContent="Height"
   mc:Ignorable="d">
-
-  <Design.DataContext>
-    <vm:MainWindowViewModel />
-  </Design.DataContext>
   <Grid RowDefinitions="auto, *">
     <m:Card Padding="10,7" CornerRadius="0">
       <Grid ColumnDefinitions="auto,*">
@@ -61,11 +57,11 @@
         HorizontalContentAlignment="Stretch"
         Classes="Mini">
         <StackPanel>
-          <TextBlock Text="Chrono lets you schedule when to automatically send to a stream based on a few triggers." TextWrapping="Wrap" />
+          <TextBlock Text="Speckle Scheduler lets you schedule when to automatically send to a stream based on a few triggers." TextWrapping="Wrap" />
           <TextBlock
             Margin="0,15,0,0"
             IsVisible="{Binding HasSavedSenders, Converter={x:Static BoolConverters.Not}}"
-            Text="Please a save a stream form the main Connector UI ⚠."
+            Text="Please save a stream form the main Connector UI ⚠ to continue."
             TextWrapping="Wrap" />
         </StackPanel>
       </m:Card>

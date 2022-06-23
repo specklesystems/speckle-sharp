@@ -20,7 +20,14 @@ namespace ConnectorGrasshopperUtils
     public static IEnumerable<ConstructorInfo> GetValidConstr(Type type, bool includeDeprecated = true)
     {
       
-      return type.GetConstructors().Where(y => y.GetCustomAttribute<SchemaInfo>() != null && (!includeDeprecated || y.GetCustomAttribute<SchemaDeprecated>() == null));
+      return type.GetConstructors().Where(y =>
+      {
+        var hasSchemaInfo = y.GetCustomAttribute<SchemaInfo>() != null;
+        var isDeprecated = y.GetCustomAttribute<SchemaDeprecated>() != null;
+        return includeDeprecated
+          ? hasSchemaInfo
+          : hasSchemaInfo && !isDeprecated;
+      });
     }
 
     public static ConstructorInfo FindConstructor(string ConstructorName, string TypeName)

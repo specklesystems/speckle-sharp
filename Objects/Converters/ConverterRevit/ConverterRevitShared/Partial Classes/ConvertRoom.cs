@@ -13,6 +13,8 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> RoomToNative(Room speckleRoom)
     {
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
+      if (revitRoom != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleRoom.applicationId, ApplicationGeneratedId = revitRoom.UniqueId, NativeObject = revitRoom } }; ;
       var level = ConvertLevelToRevit(speckleRoom.level);
 
       var isUpdate = true;

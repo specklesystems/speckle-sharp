@@ -70,7 +70,13 @@ namespace SpeckleConnectorCSI
     private static void SpeckleWindowClosed(object sender, EventArgs e)
     {
       isSpeckleClosed = true;
-      Environment.Exit(0);
+      Process[] processCollection = Process.GetProcesses();
+      foreach (Process p in processCollection)
+      {
+        if (p.ProcessName == "DriverCSharp")
+          Environment.Exit(0);
+      }
+      //Environment.Exit(0);
       pluginCallback.Finish(0);
     }
 
@@ -104,32 +110,11 @@ namespace SpeckleConnectorCSI
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
       model = SapModel;
       AppDomain domain = null;
-      try
-      {
-        //cHelper helper = new Helper();
-        //var etabsObject = helper.GetObject("CSI.ETABS.API.ETABSObject");
-        //model = etabsObject.SapModel;
-
-      }
-      catch (Exception E)
-      {
-        ISapPlugin.Finish(0);
-        return;
-      }
+ 
 
       try
       {
-        //SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-        //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-        //SelectionTimer.Start();
         OpenOrFocusSpeckle(model);
-        //var windows = new Button();
-        //var reactiveUI = new ReactiveUI.ReactiveObject();
-        //var Avalonia = new Avalonia.ReactiveUI.ViewModelViewHost();
-        //var DUI2 = new DesktopUI2.App();
-        //var avaolniaVis = Avalonia.Visuals.Media.Imaging.BitmapBlendingMode.Destination;
-        //var mainWindow = new MainWindowViewModel();
-        //var app = new AppBuilder();
 
 
       }

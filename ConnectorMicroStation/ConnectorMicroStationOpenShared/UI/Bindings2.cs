@@ -170,6 +170,11 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return filterList;
     }
 
+    public override List<ReceiveMode> GetReceiveModes()
+    {
+      return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
     public override List<ISetting> GetSettings()
     {
       return new List<ISetting>();

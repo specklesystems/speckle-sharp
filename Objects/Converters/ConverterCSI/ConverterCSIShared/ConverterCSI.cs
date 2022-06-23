@@ -22,8 +22,8 @@ namespace Objects.Converter.CSI
     public static string CSIAppName = VersionedHostApplications.ETABS;
     public static string CSISlug = HostApplications.ETABS.Slug;
 #elif SAP2000
-        public static string CSIAppName = VersionedHostApplications.SAP2000;
-            public static string CSISlug = HostApplications.SAP2000.Slug;
+    public static string CSIAppName = VersionedHostApplications.SAP2000;
+    public static string CSISlug = HostApplications.SAP2000.Slug;
 #elif CSIBridge
         public static string CSIAppName = VersionedHostApplications.CSIBridge;
             public static string CSISlug = HostApplications.CSIBridge.Slug;
@@ -31,8 +31,8 @@ namespace Objects.Converter.CSI
       public static string CSIAppName = VersionedHostApplications.SAFE;
       public static string CSISlug = HostApplications.SAFE.Slug;
 #else
-        public static string CSIAppName = VersionedHostApplications.CSI;
-        public static string CSISlug = HostApplications.CSI.Slug;
+    public static string CSIAppName = VersionedHostApplications.CSI;
+    public static string CSISlug = HostApplications.CSI.Slug;
 #endif
     public string Description => "Default Speckle Kit for CSI";
 
@@ -47,6 +47,8 @@ namespace Objects.Converter.CSI
     public Model SpeckleModel { get; set; }
 
     public ResultSetAll AnalysisResults { get; set; }
+
+    public ReceiveMode ReceiveMode { get; set; }
 
     public void SetContextDocument(object doc)
     {

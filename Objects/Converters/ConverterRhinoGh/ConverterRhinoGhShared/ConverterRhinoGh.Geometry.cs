@@ -433,7 +433,7 @@ namespace Objects.Converter.RhinoGh
         try
         {
           //let the converter pick the best type of curve
-          myPolyc.AppendSegment((RH.Curve)ConvertToNative((Base)segment));
+          myPolyc.Append((RH.Curve)ConvertToNative((Base)segment));
         }
         catch
         { }
@@ -938,9 +938,12 @@ namespace Objects.Converter.RhinoGh
           return t;
         })
         .ToList();
-      spcklBrep.volume = brep.GetVolume();
-      spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(true)), u);
+      //spcklBrep.volume = brep.GetVolume();
+      spcklBrep.volume = brep.IsSolid ? brep.GetVolume() : 0;
+
       spcklBrep.area = brep.GetArea();
+      spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(false)), u);
+      
       return spcklBrep;
     }
 

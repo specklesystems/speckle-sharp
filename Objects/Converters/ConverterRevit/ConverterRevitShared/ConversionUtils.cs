@@ -179,6 +179,10 @@ namespace Objects.Converter.Revit
       speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = revitElement.UniqueId;
       speckleElement["units"] = ModelUnits;
+      speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
+      speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
+
+
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -257,6 +261,13 @@ namespace Objects.Converter.Revit
           }
           break;
         case StorageType.Integer:
+#if REVIT2023
+
+          if (rp.Definition.GetDataType() == SpecTypeId.Boolean.YesNo)
+            sp.value = Convert.ToBoolean(rp.AsInteger());
+          else
+            sp.value = rp.AsInteger();
+#else
           switch (rp.Definition.ParameterType)
           {
             case ParameterType.YesNo:
@@ -266,6 +277,7 @@ namespace Objects.Converter.Revit
               sp.value = rp.AsInteger();
               break;
           }
+#endif
           break;
         case StorageType.String:
           sp.value = rp.AsString();
@@ -611,20 +623,26 @@ namespace Objects.Converter.Revit
     /// <returns>The element, if found, otherwise null</returns>
     public DB.Element GetExistingElementByApplicationId(string applicationId)
     {
-      if (applicationId == null)
+      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
       var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
+      Element element = null;
       if (@ref == null)
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
-        return Doc.GetElement(applicationId);
+        element = Doc.GetElement(applicationId);
+      }
+      else
+      {
+
+        //return the cached object, if it's still in the model
+        element = Doc.GetElement(@ref.ApplicationGeneratedId);
       }
 
-      //return the cached object, if it's still in the model
-      return Doc.GetElement(@ref.ApplicationGeneratedId);
+      return element;
     }
 
     #endregion
@@ -660,7 +678,8 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
     private DB.Transform GetReferencePointTransform(string type)
     {
-      // get the correct base point from settings
+      // get the correct base point from
+      // settings
       var referencePointTransform = DB.Transform.Identity;
 
       var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
@@ -851,8 +870,8 @@ namespace Objects.Converter.Revit
       }
     }
 
-        #region materials
-        public RenderMaterial GetElementRenderMaterial(DB.Element element)
+    #region materials
+    public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element.GetMaterialIds(false).FirstOrDefault();
 
@@ -895,7 +914,7 @@ namespace Objects.Converter.Revit
       if (existing != null) return existing.Id;
 
       // Create new material
-      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name);
+      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
       Material mat = Doc.GetElement(materialId) as Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
@@ -904,74 +923,72 @@ namespace Objects.Converter.Revit
 
       return materialId;
     }
-    
-        /// <summary>
-        /// Retrieves the material from assigned system type for mep elements
-        /// </summary>
-        /// <param name="e">Revit element to parse</param>
-        /// <returns></returns>
-        public static RenderMaterial GetMEPSystemMaterial(Element e)
-        {
-            var material = GetMEPDefaultMaterial();
-            ElementId idType = ElementId.InvalidElementId;
-            
-            if (e is DB.MEPCurve dt)
-            {
-              idType = dt.MEPSystem.GetTypeId();
-            }
-            else if (IsSupportedMEPCategory(e))
-            {
-                MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-                
-                if (m != null && m.ConnectorManager != null)
-                {
-                    //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
-                    foreach (Connector item in m.ConnectorManager.Connectors)
-                    {
-                        if (item.MEPSystem != null)
-                        {
-                            idType = item.MEPSystem.GetTypeId();
-                            break;
-                        }
-                    }
-                }
-            }
 
-            if (idType != ElementId.InvalidElementId)
-            {
-                DB.MEPSystemType mechType = e.Document.GetElement(idType) as DB.MEPSystemType;
-                var mat = e.Document.GetElement(mechType.MaterialId) as Material;
-                material = RenderMaterialToSpeckle(mat);
-            }
-            return material;
+    /// <summary>
+    /// Retrieves the material from assigned system type for mep elements
+    /// </summary>
+    /// <param name="e">Revit element to parse</param>
+    /// <returns></returns>
+    public static RenderMaterial GetMEPSystemMaterial(Element e)
+    {
+      ElementId idType = ElementId.InvalidElementId;
+
+      if (e is DB.MEPCurve dt)
+      {
+        var system = dt.MEPSystem;
+        if (system != null)
+        {
+          idType = system.GetTypeId();
         }
-            
-        private static bool IsSupportedMEPCategory(Element e)
-        {
-          var categories = e.Document.Settings.Categories;
+      }
+      else if (IsSupportedMEPCategory(e))
+      {
+        MEPModel m = ((DB.FamilyInstance)e).MEPModel;
 
-          var supportedCategories = new[]
+        if (m != null && m.ConnectorManager != null)
+        {
+          //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
+          foreach (Connector item in m.ConnectorManager.Connectors)
           {
-            BuiltInCategory.OST_PipeFitting,
-            BuiltInCategory.OST_DuctFitting,
-            BuiltInCategory.OST_DuctAccessory,
-            BuiltInCategory.OST_PipeAccessory,
-            //BuiltInCategory.OST_MechanicalEquipment,
-          };
-          
-          return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
+            var system = item.MEPSystem;
+            if (system != null)
+            {
+              idType = system.GetTypeId();
+              break;
+            }
+          }
         }
+      }
 
-        /// <summary>
-        /// creates a standard material with opacity for MEP elements
-        /// used, if no suitable material is found while fetching the systems type material
-        /// </summary>
-        /// <returns></returns>
-        public static RenderMaterial GetMEPDefaultMaterial()
-        {
-            var material = new RenderMaterial() { opacity = 0.8, diffuse = System.Drawing.Color.Gray.ToArgb() };
-            return material;
-        }
-        #endregion
+      if (idType == ElementId.InvalidElementId) return null;
+
+      if (e.Document.GetElement(idType) is MEPSystemType mechType)
+      {
+        var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+        RenderMaterial material = RenderMaterialToSpeckle(mat);
+
+        return material;
+      }
+
+      return null;
     }
+
+    private static bool IsSupportedMEPCategory(Element e)
+    {
+      var categories = e.Document.Settings.Categories;
+
+      var supportedCategories = new[]
+      {
+        BuiltInCategory.OST_PipeFitting,
+        BuiltInCategory.OST_DuctFitting,
+        BuiltInCategory.OST_DuctAccessory,
+        BuiltInCategory.OST_PipeAccessory,
+        //BuiltInCategory.OST_MechanicalEquipment,
+      };
+
+      return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
+    }
+
+    #endregion
+  }
 }

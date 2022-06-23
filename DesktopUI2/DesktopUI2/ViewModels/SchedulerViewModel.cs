@@ -4,6 +4,7 @@ using DesktopUI2.Models.Scheduler;
 using DesktopUI2.Views;
 using ReactiveUI;
 using Speckle.Core.Logging;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -106,28 +107,35 @@ namespace DesktopUI2.ViewModels
 
     private void SaveCommand()
     {
-      //updating the list of streams, in case stuff has changes in the mian DUI
-      SavedStreams = Bindings.GetStreamsInFile();
-      foreach (var stream in SavedStreams)
+      try
       {
-        if (stream.Id == SelectedStream.Id && Enabled)
+        //updating the list of streams, in case stuff has changes in the mian DUI
+        SavedStreams = Bindings.GetStreamsInFile();
+        foreach (var stream in SavedStreams)
         {
-          stream.SchedulerEnabled = true;
-          stream.SchedulerTrigger = SelectedTrigger.Slug;
+          if (stream.Id == SelectedStream.Id && Enabled)
+          {
+            stream.SchedulerEnabled = true;
+            stream.SchedulerTrigger = SelectedTrigger.Slug;
+          }
+          else
+            stream.SchedulerEnabled = false;
         }
-        else
-          stream.SchedulerEnabled = false;
+
+        Bindings.WriteStreamsToFile(SavedStreams.ToList());
+
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Scheduler Set" } });
+
+
+        if (HomeViewModel.Instance != null)
+          HomeViewModel.Instance.UpdateSavedStreams(SavedStreams.ToList());
+
+        Scheduler.Instance.Close();
       }
+      catch (Exception ex)
+      {
 
-      Bindings.WriteStreamsToFile(SavedStreams.ToList());
-
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Scheduler Set" } });
-
-
-      if (HomeViewModel.Instance != null)
-        HomeViewModel.Instance.UpdateSavedStreams(SavedStreams.ToList());
-
-      Scheduler.Instance.Close();
+      }
     }
 
 

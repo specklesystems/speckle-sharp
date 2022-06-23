@@ -109,10 +109,22 @@ namespace Speckle.Core.Api
         if (serializerVersion == SerializerVersion.V1)
           localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
         else
-          localRes = serializerV2.Deserialize(objString);
+        {
+          try
+          {
+            localRes = serializerV2.Deserialize(objString);
+          }
+          catch ( Exception e )
+          {
+            if ( serializerV2.OnErrorAction == null ) throw;
+            serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", new SpeckleException(
+              $"A deserialization error has occurred: {e.Message}", e));
+            localRes = null;
+          }
+        }
 
         if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal) dispLocal.Dispose();
-        if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRempte) dispRempte.Dispose();
+        if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRemote) dispRemote.Dispose();
 
         return localRes;
       }
@@ -139,7 +151,18 @@ namespace Speckle.Core.Api
       if (serializerVersion == SerializerVersion.V1)
         res = JsonConvert.DeserializeObject<Base>(objString, settings);
       else
-        res = serializerV2.Deserialize(objString);
+      {
+        try
+        {
+          res = serializerV2.Deserialize(objString);
+        }
+        catch ( Exception e )
+        {
+          if ( serializerV2.OnErrorAction == null ) throw;
+          serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", e);
+          res = null;
+        }
+      }
 
       if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dl) dl.Dispose();
       if (disposeTransports && remoteTransport is IDisposable dr) dr.Dispose();

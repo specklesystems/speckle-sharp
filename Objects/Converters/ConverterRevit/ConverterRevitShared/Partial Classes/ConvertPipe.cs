@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Arc = Objects.Geometry.Arc;
-using Curve = Objects.Geometry.Curve;
-using Line = Objects.Geometry.Line;
-using Polyline = Objects.Geometry.Polyline;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Curve = Objects.Geometry.Curve;
+using DB = Autodesk.Revit.DB;
+using Line = Objects.Geometry.Line;
+using Polyline = Objects.Geometry.Polyline;
 
 namespace Objects.Converter.Revit
 {
@@ -17,56 +16,78 @@ namespace Objects.Converter.Revit
     public List<ApplicationPlaceholderObject> PipeToNative(BuiltElements.Pipe specklePipe)
     {
       var speckleRevitPipe = specklePipe as RevitPipe;
-      var types = new FilteredElementCollector(Doc).WhereElementIsElementType()
+      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
+
+      // get system info
+      var systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType()
        .OfClass(typeof(DB.Plumbing.PipingSystemType)).ToElements().Cast<ElementType>().ToList();
       var systemFamily = speckleRevitPipe?.systemType ?? "";
-      var system = types.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
-                   types.FirstOrDefault(x => x.Name == systemFamily);
+      var system = systemTypes.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
+                   systemTypes.FirstOrDefault(x => x.Name == systemFamily);
       if (system == null)
       {
-        system = types.FirstOrDefault();
+        system = systemTypes.FirstOrDefault();
         Report.LogConversionError(new Exception($"Pipe type {systemFamily} not found; replaced with {system.Name}"));
       }
 
       // check to see if pipe already exists in the doc
       var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
 
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = specklePipe.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } };
+
       Element pipe = null;
-      if (specklePipe.baseCurve is Line line)
+      switch (specklePipe.baseCurve)
       {
-        var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
+        case Line line:
+          DB.Line baseLine = LineToNative(line);
+          DB.Level level = ConvertLevelToRevit(speckleRevitPipe != null ? speckleRevitPipe.level : LevelFromCurve(baseLine));
+          var linePipe = DB.Plumbing.Pipe.Create(Doc, system.Id, pipeType.Id, level.Id, baseLine.GetEndPoint(0), baseLine.GetEndPoint(1));
+          if (docObj != null)
+          {
+            var lineSystem = linePipe.MEPSystem.Id;
+            linePipe = (DB.Plumbing.Pipe)docObj;
+            linePipe.SetSystemType(lineSystem);
+            ((LocationCurve)linePipe.Location).Curve = baseLine;
+          }
+          pipe = linePipe;
+          break;
+        case Polyline _:
+        case Curve _:
+          var speckleRevitFlexPipe = specklePipe as RevitFlexPipe;
+          var flexPipeType = (speckleRevitFlexPipe != null) ? GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe) : GetElementType<DB.Plumbing.FlexPipeType>(specklePipe);
 
-        DB.Line baseLine = LineToNative(line);
-        DB.Level level = ConvertLevelToRevit(speckleRevitPipe != null ? speckleRevitPipe.level : LevelFromCurve(baseLine));
-        var linePipe = DB.Plumbing.Pipe.Create(Doc, system.Id, pipeType.Id, level.Id, baseLine.GetEndPoint(0), baseLine.GetEndPoint(1));
-        if (docObj != null)
-        {
-          var lineSystem = linePipe.MEPSystem.Id;
-          linePipe = (DB.Plumbing.Pipe)docObj;
-          linePipe.SetSystemType(lineSystem);
-          ((LocationCurve)linePipe.Location).Curve = baseLine;
-        }
-        pipe = linePipe;
-      }
-      else if (specklePipe.baseCurve is Polyline polyline)
-      {
-        var speckleRevitFlexPipe = specklePipe as RevitFlexPipe;
-        var pipeType = GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe);
+          // get points
+          Polyline basePoly = specklePipe.baseCurve as Polyline;
+          if (specklePipe.baseCurve is Curve curve)
+          {
+            basePoly = curve.displayValue;
+            var baseCurve = CurveToNative(curve);
+            var start = baseCurve.GetEndPoint(0);
+            var end = baseCurve.GetEndPoint(1);
+          }
+          if (basePoly == null) break;
+          var polyPoints = basePoly.GetPoints().Select(o => PointToNative(o)).ToList();
 
-        var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();
-        DB.Level level = ConvertLevelToRevit(speckleRevitFlexPipe != null ? speckleRevitFlexPipe.level : LevelFromPoint(points.First()));
-        var startTangent = VectorToNative(speckleRevitFlexPipe.startTangent);
-        var endTangent = VectorToNative(speckleRevitFlexPipe.endTangent);
-        var flexPipe = DB.Plumbing.FlexPipe.Create(Doc, system.Id, pipeType.Id, level.Id, startTangent, endTangent, points);
-        
-        if (docObj != null)
-          Doc.Delete(docObj.Id); // deleting instead of updating for now!
+          // get tangents if they exist
+          XYZ startTangent = (speckleRevitFlexPipe != null) ? VectorToNative(speckleRevitFlexPipe.startTangent) : null;
+          XYZ endTangent = (speckleRevitFlexPipe != null) ? VectorToNative(speckleRevitFlexPipe.endTangent) : null;
 
-        pipe = flexPipe;
-      }
-      else
-      {
-        Report.LogConversionError(new Exception($"Pipe BaseCurve of type ${specklePipe.baseCurve.GetType()} cannot be used to create a Revit Pipe"));
+          // get level
+          DB.Level flexPolyLevel = ConvertLevelToRevit(speckleRevitFlexPipe != null ? speckleRevitFlexPipe.level : LevelFromPoint(polyPoints.First()));
+
+          var flexPolyPipe = (startTangent != null && endTangent != null) ?
+            DB.Plumbing.FlexPipe.Create(Doc, system.Id, flexPipeType.Id, flexPolyLevel.Id, startTangent, endTangent, polyPoints) :
+            DB.Plumbing.FlexPipe.Create(Doc, system.Id, flexPipeType.Id, flexPolyLevel.Id, polyPoints);
+
+          if (docObj != null)
+            Doc.Delete(docObj.Id); // deleting instead of updating for now!
+
+          pipe = flexPolyPipe;
+          break;
+        default:
+          Report.LogConversionError(new Exception($"Pipe BaseCurve of type ${specklePipe.baseCurve.GetType()} cannot be used to create a Revit Pipe"));
+          break;
       }
 
       if (speckleRevitPipe != null)
@@ -108,7 +129,6 @@ namespace Objects.Converter.Revit
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
-      
       if (material != null)
       {
         foreach (var mesh in specklePipe.displayValue)
@@ -153,8 +173,9 @@ namespace Objects.Converter.Revit
         displayValue = GetElementMesh(revitPipe)
       };
 
+
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
-      
+
       if (material != null)
       {
         foreach (var mesh in specklePipe.displayValue)
@@ -172,7 +193,7 @@ namespace Objects.Converter.Revit
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
-      
+
       Report.Log($"Converted FlexPipe {revitPipe.Id}");
 
       return specklePipe;

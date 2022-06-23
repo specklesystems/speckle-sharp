@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
-using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class AccountDetailsComponent : GH_Component
+  public class AccountDetailsComponent : GH_SpeckleComponent
   {
     public AccountDetailsComponent() : base("Account Details", "AccDet", "Gets the details from a specific account", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -65,10 +62,7 @@ namespace ConnectorGrasshopper.Streams
       }
 
       if (DA.Iteration == 0) // Only report on first iteration of the component.
-      {
-        Logging.Tracker.TrackPageview(Logging.Tracker.ACCOUNT_DETAILS);
-        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Details" } });
-      }
+        Tracker.TrackNodeRun();      
 
       Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 

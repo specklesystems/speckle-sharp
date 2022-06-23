@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamUpdateComponent : GH_Component
+  public class StreamUpdateComponent : GH_SpeckleComponent
   {
     public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -51,9 +48,6 @@ namespace ConnectorGrasshopper.Streams
       string description = null;
       bool isPublic = false;
 
-      if (DA.Iteration == 0)
-        Logging.Tracker.TrackPageview(Logging.Tracker.STREAM_UPDATE);
-
       if (!DA.GetData(0, ref ghSpeckleStream)) return;
       DA.GetData(1, ref name);
       DA.GetData(2, ref description);
@@ -74,6 +68,8 @@ namespace ConnectorGrasshopper.Streams
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Not a stream wrapper!");
           return;
         }
+        if(DA.Iteration == 0)
+          Tracker.TrackNodeRun();
         Message = "Fetching";
         Task.Run(async () =>
         {
@@ -91,8 +87,6 @@ namespace ConnectorGrasshopper.Streams
             if (stream.isPublic != isPublic) input.isPublic = isPublic;
 
             await client.StreamUpdate(input);
-
-            Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
           }
           catch (Exception e)
           {

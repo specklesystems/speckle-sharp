@@ -662,7 +662,7 @@ namespace Objects.Converter.AutocadCivil
           curve = LineToSpeckle(line);
           break;
         default:
-          curve = CurveToSpeckle(pipe.Spline);
+          curve = CurveToSpeckle(pipe.BaseCurve);
           break;
       }
 
@@ -701,7 +701,7 @@ namespace Objects.Converter.AutocadCivil
           curve = LineToSpeckle(line);
           break;
         default:
-          curve = CurveToSpeckle(pipe.Spline);
+          curve = CurveToSpeckle(pipe.BaseCurve);
           break;
       }
 

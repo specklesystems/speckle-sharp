@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -42,13 +43,33 @@ namespace Objects.Converter.Revit
       // https://adndevbConversionLog.Add.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
       // This would only work if the floors have the same number (and type!!!) of outline curves. 
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+        return new List<ApplicationPlaceholderObject>
+      {
+        new ApplicationPlaceholderObject
+          {applicationId = speckleFloor.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
+      };
+
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
       }
 
       DB.Floor revitFloor = null;
+#if REVIT2023
       if (floorType == null)
+      {
+        throw new SpeckleException("Floor needs a floor type");
+      }
+      else
+      {
+        if (slope != 0 && slopeDirection != null)
+          revitFloor = Floor.Create(Doc, new List<CurveLoop> { CurveArrayToCurveLoop(outline) }, floorType.Id, level.Id, structural, slopeDirection, slope);
+        if (revitFloor == null)
+          revitFloor = Floor.Create(Doc, new List<CurveLoop> { CurveArrayToCurveLoop(outline) }, floorType.Id, level.Id);
+      }
+#else
+  if (floorType == null)
       {
         if (slope != 0 && slopeDirection != null)
           revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
@@ -62,6 +83,8 @@ namespace Objects.Converter.Revit
         if (revitFloor == null)
           revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
       }
+#endif
+
 
       Doc.Regenerate();
 

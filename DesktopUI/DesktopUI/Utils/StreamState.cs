@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
-using Speckle.Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using Stylet;
 using static Speckle.DesktopUI.Utils.BranchContextMenuItem;
 
@@ -237,7 +236,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     private ISelectionFilter _filter;
-    
+
     // decided not to store these in the file - commenting out in case we change our minds 
     // [JsonProperty]
     // [JsonConverter(typeof(SelectionFilterConverter))]
@@ -581,8 +580,8 @@ namespace Speckle.DesktopUI.Utils
 
     public void SendWithCommitMessage(object sender, KeyEventArgs e)
     {
-      if ( e.Key != Key.Enter ) return;
-      CommitMessage = ( ( TextBox ) sender ).Text;
+      if (e.Key != Key.Enter) return;
+      CommitMessage = ((TextBox)sender).Text;
       Send();
     }
 
@@ -597,7 +596,6 @@ namespace Speckle.DesktopUI.Utils
         return;
       }
 
-      Tracker.TrackPageview(Tracker.SEND);
       IsSending = true;
       ShowProgressBar = true;
       //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
@@ -629,8 +627,6 @@ namespace Speckle.DesktopUI.Utils
         Globals.Notify("Operation in progress. Cannot send at this time.");
         return;
       }
-
-      Tracker.TrackPageview(Tracker.RECEIVE);
 
       IsReceiving = true;
       ShowProgressBar = true;
