@@ -105,7 +105,13 @@ namespace Objects.Converter.CSI
 
           else if (element is Element2D)
           {
-            AreaToNative((Element2D)element);
+            var CSIElement = (Element2D)element;
+          if(AreaNames.Contains(CSIElement.name)){
+              updateExistingArea(CSIElement);
+            }
+          else{
+              AreaToNative(CSIElement);
+            }
           }
           else if (element is CSIStories)
           {
@@ -119,6 +125,7 @@ namespace Objects.Converter.CSI
         foreach (Node node in model.nodes)
         {
           PointToNative(node);
+          updateExistingNode(node);
         }
       }
 

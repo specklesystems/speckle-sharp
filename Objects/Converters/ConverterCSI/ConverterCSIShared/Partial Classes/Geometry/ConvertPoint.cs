@@ -14,6 +14,9 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
+    public object updatePoint(Node speckleStructNode){
+      return speckleStructNode.name;
+    }
     public object PointToNative(Node speckleStructNode)
     {
       if (GetAllPointNames(Model).Contains(speckleStructNode.name))

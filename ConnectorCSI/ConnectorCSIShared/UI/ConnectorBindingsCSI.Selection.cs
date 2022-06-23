@@ -119,63 +119,7 @@ namespace Speckle.ConnectorCSI.UI
           {
             Model.SelectObj.Group(group);
           }
-          return GetSelectedObjects();
-
-
-
-          /// CSI doesn't list fields of different objects. 
-          /// For "param" search, maybe search over the name of
-          /// methods of each type?
-
-          //case "param":
-          //    try
-          //    {
-          //        if (ConnectorCSIUtils.ObjectTypes.Count == 0)
-          //        {
-          //            var _ = ConnectorCSIUtils.GetObjectTypesAndNames(Model);
-          //        }
-
-          //        var propFilter = filter as PropertySelectionFilter;
-          //        var query = new FilteredElementCollector(doc)
-          //          .WhereElementIsNotElementType()
-          //          .WhereElementIsNotElementType()
-          //          .WhereElementIsViewIndependent()
-          //          .Where(x => x.IsPhysicalElement())
-          //          .Where(fi => fi.LookupParameter(propFilter.PropertyName) != null);
-
-          //        propFilter.PropertyValue = propFilter.PropertyValue.ToLowerInvariant();
-
-          //        switch (propFilter.PropertyOperator)
-          //        {
-          //            case "equals":
-          //                query = query.Where(fi =>
-          //                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
-          //                break;
-          //            case "contains":
-          //                query = query.Where(fi =>
-          //                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
-          //                break;
-          //            case "is greater than":
-          //                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-          //                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-          //                                            fi.LookupParameter(propFilter.PropertyName)) >
-          //                                          double.Parse(propFilter.PropertyValue));
-          //                break;
-          //            case "is less than":
-          //                query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-          //                                            fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-          //                                            fi.LookupParameter(propFilter.PropertyName)) <
-          //                                          double.Parse(propFilter.PropertyValue));
-          //                break;
-          //        }
-
-          //        selection = query.ToList();
-          //    }
-          //    catch (Exception e)
-          //    {
-          //        Log.CaptureException(e);
-          //    }
-          //    return selection;
+          return GetSelectedObjects();          
       }
 
       return selection;

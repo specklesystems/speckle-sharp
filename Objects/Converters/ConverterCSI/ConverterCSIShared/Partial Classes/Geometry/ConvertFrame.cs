@@ -14,12 +14,12 @@ namespace Objects.Converter.CSI
   public partial class ConverterCSI
   {
 
-    public object updateFrametoNative (Element1D element1D){
-     
-
+    public object updateFrametoNative(Element1D element1D)
+    {
       string GUID = "";
       Model.FrameObj.GetGUID(element1D.name, ref GUID);
-      if(GUID == element1D.applicationId){
+      if (GUID == element1D.applicationId)
+      {
         string pt1 = "";
         string pt2 = "";
         Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
@@ -28,9 +28,11 @@ namespace Objects.Converter.CSI
         Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
         Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
         setFrameElementProperties(element1D, element1D.name);
-
       }
-
+      else
+      {
+        return FrameToNative(element1D);
+      }
       return element1D.name;
     }
     public object FrameToNative(Element1D element1D)
@@ -249,7 +251,8 @@ namespace Objects.Converter.CSI
       return speckleStructFrame;
     }
 
-    public void setFrameElementProperties(Element1D element1D, string newFrame){
+    public void setFrameElementProperties(Element1D element1D, string newFrame)
+    {
       bool[] end1Release = null;
       bool[] end2Release = null;
       double[] startV, endV;
