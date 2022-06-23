@@ -134,6 +134,20 @@ namespace SpeckleRhino
       }
     }
 
+    public class CreateTopography : Command
+    {
+      public override string EnglishName => "CreateTopography";
+
+      protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+      {
+        var selectedObjects = GetObjectSelection(ObjectType.Mesh);
+        if (selectedObjects == null)
+          return Result.Cancel;
+        ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Topography.ToString(), doc, false);
+        return Result.Success;
+      }
+    }
+
     public class CreateDirectShape : Command
     {
       public override string EnglishName => "CreateDirectShape";

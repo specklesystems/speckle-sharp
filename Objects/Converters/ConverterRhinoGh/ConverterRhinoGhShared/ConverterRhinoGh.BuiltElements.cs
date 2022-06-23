@@ -215,6 +215,14 @@ namespace Objects.Converter.RhinoGh
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
     }
 
+    public RV.RevitTopography MeshToTopography(RH.Mesh mesh)
+    {
+      if (mesh.IsClosed)
+        return null;
+
+      return new RV.RevitTopography(MeshToSpeckle(mesh)) { units = ModelUnits };
+    }
+
     public RV.AdaptiveComponent InstanceToAdaptiveComponent(InstanceObject instance, string[] args)
     {
       if (args.Length == 0)
