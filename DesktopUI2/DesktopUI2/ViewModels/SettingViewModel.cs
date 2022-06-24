@@ -1,5 +1,8 @@
 ﻿using DesktopUI2.Models.Settings;
 using ReactiveUI;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace DesktopUI2.ViewModels
 {
@@ -30,12 +33,31 @@ namespace DesktopUI2.ViewModels
 
       }
     }
+    private bool _popupVisible = false;
+    public bool PopupVisible
+    {
+      get => _popupVisible;
+      set
+      {
+        //sets the selected item on the data model
+        _popupVisible = value;
+        this.RaiseAndSetIfChanged(ref _popupVisible, value);
 
+      }
+    }
+    //public ObservableCollection<string> Selections { get; set; }
+    public ICommand TogglePopup { get; set; }
+    public SettingViewModel()
+    {
+      Setting = new MultiSelectBoxSetting { Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.", 
+        Values = new List<string>() { "Default", "Project Base Point", "Survey Point" }, Selections = new ObservableCollection<string>() { "Default", "bb", "Project Base Point", "Survey Point" } };
+    }
     public SettingViewModel(ISetting setting)
     {
       Setting = setting;
       //restores the selected item
       Selection = setting.Selection;
+      TogglePopup = ReactiveCommand.Create(() => PopupVisible = !PopupVisible);
     }
 
 
