@@ -7,9 +7,11 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using Autodesk.Revit.ApplicationServices;
+using ConverterDxf;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
@@ -23,6 +25,7 @@ using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
+using netDxf;
 
 namespace Objects.Converter.Revit
 {
@@ -657,6 +660,52 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public ApplicationPlaceholderObject MeshToDxfImport(Mesh mesh)
+    {
+      var dxfConverter = new SpeckleDxfConverter();
+      dxfConverter.Settings.PrettyMeshes = true;
+      dxfConverter.SetContextDocument(null); // Resets the internal Doc.
+      
+      var dxfMesh = dxfConverter.ConvertToNative(mesh);
+      
+      if (dxfMesh is IEnumerable<netDxf.Entities.EntityObject> collection)
+        dxfConverter.Doc.Entities.Add(collection.ToList().Where(x => x!= null));
+      else
+        dxfConverter.Doc.Entities.Add(dxfMesh as netDxf.Entities.EntityObject);
+      
+      var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Temp",
+        "Dxf");
+      if(!Directory.Exists(folderPath)) 
+        Directory.CreateDirectory(folderPath);
+      var path = Path.Combine(folderPath, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}.dxf");
+      dxfConverter.Doc.Save(path);
+      
+      // Create a 3D view to import the SAT file
+      var typeId = Doc.GetDefaultElementTypeId(ElementTypeGroup.ViewType3D);
+      var view = View3D.CreatePerspective(Doc, typeId);
+
+      // Call Doc Import
+      var success = Doc.Import(
+        path, 
+        new DWGImportOptions()
+        {
+          Unit = ImportUnit.Millimeter
+        }, 
+        view, out var elementId);
+
+      //Doc.Delete(view.Id);
+      //File.Delete(path);
+      var el = Doc.GetElement(elementId);
+      el.Pinned = false;
+      return new ApplicationPlaceholderObject()
+      {
+        id = mesh.id, 
+        applicationId = mesh.applicationId,
+        NativeObject = el,
+        ApplicationGeneratedId = el.UniqueId
+      };
+    }
+    
     public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
       if (arr.Count % 3 != 0)
