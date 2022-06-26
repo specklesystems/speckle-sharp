@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
 
-namespace ConverterDxf
+namespace Objects.Converters.DxfConverter
 {
     public struct MeshTopologyResult
     {

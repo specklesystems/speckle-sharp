@@ -4,8 +4,11 @@ using System.Linq;
 using Objects.Geometry;
 using Dxf = netDxf;
 using Dxfe = netDxf.Entities;
+using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
+using Point = Objects.Geometry.Point;
 
-namespace ConverterDxf
+namespace Objects.Converters.DxfConverter
 {
     public partial class SpeckleDxfConverter
     {

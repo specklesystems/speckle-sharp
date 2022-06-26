@@ -1,4 +1,4 @@
-namespace ConverterDxf
+namespace Objects.Converters.DxfConverter
 {
     public class ConverterDxfSettings
     {

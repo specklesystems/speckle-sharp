@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Speckle.Core.Models;
 
-namespace ConverterDxf
+namespace Objects.Converters.DxfConverter
 {
     public partial class SpeckleDxfConverter
     {

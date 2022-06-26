@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dxf = netDxf;
-using Dxfe = netDxf.Entities;
-using Speckle.Core.Models;
 using Objects.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Dxf = netDxf;
+using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
+using Point = Objects.Geometry.Point;
 
-namespace ConverterDxf
+namespace Objects.Converters.DxfConverter
 {
     public partial class SpeckleDxfConverter : ISpeckleConverter
     {

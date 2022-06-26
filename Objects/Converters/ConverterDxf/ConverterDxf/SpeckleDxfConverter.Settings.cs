@@ -1,6 +1,6 @@
 using System;
 
-namespace ConverterDxf
+namespace Objects.Converters.DxfConverter
 {
     public partial class SpeckleDxfConverter
     {

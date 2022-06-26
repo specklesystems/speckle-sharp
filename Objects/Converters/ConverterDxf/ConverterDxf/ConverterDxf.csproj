@@ -5,6 +5,7 @@
         <AssemblyName>Objects.ConverterDxf</AssemblyName>
         <LangVersion>9</LangVersion>
         <Nullable>disable</Nullable>
+        <RootNamespace>Objects.Converters.DxfConverter</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
