@@ -110,6 +110,9 @@ namespace Speckle.Core.Api
     public string updatedAt { get; set; }
     public string favoritedDate { get; set; }
 
+    public int commentCount { get; set; }
+    public int favoritesCount { get; set; }
+
     public List<Collaborator> collaborators { get; set; }
     public Branches branches { get; set; }
 
@@ -271,6 +274,88 @@ namespace Speckle.Core.Api
     }
   }
 
+  public class Comments
+  {
+    public int totalCount { get; set; }
+    public DateTime? cursor { get; set; }
+    public List<CommentItem> items { get; set; }
+  }
+
+  public class CommentData
+  {
+    public Comments comments { get; set; }
+    public List<double> camPos { get; set; }
+    public object filters { get; set; }
+    public Location location { get; set; }
+    public object selection { get; set; }
+    public object sectionBox { get; set; }
+  }
+
+  public class CommentItem
+  {
+    public string id { get; set; }
+    public string authorId { get; set; }
+    public bool archived { get; set; }
+    public string screenshot { get; set; }
+    public Text text { get; set; }
+    public CommentData data { get; set; }
+    public DateTime createdAt { get; set; }
+    public DateTime updatedAt { get; set; }
+    public DateTime? viewedAt { get; set; }
+    public object reactions { get; set; }
+    public Comments replies { get; set; }
+    public List<Resource> resources { get; set; }
+  }
+
+  public partial class Text
+  {
+    public Doc Doc { get; set; }
+  }
+
+  public partial class Doc
+  {
+    public string Type { get; set; }
+    public DocContent[] Content { get; set; }
+  }
+
+  public partial class DocContent
+  {
+    public string Type { get; set; }
+    public ContentContent[] Content { get; set; }
+  }
+
+  public partial class ContentContent
+  {
+    public string Type { get; set; }
+    //public Mark[] Marks { get; set; }
+    public string Text { get; set; }
+  }
+
+
+  public class Resource
+  {
+    public string resourceId { get; set; }
+    public ResourceType resourceType { get; set; }
+  }
+
+  public enum ResourceType
+  {
+    commit,
+    stream,
+    @object,
+    comment
+  }
+
+
+
+  public class Location
+  {
+    public double x { get; set; }
+    public double y { get; set; }
+    public double z { get; set; }
+  }
+
+
   public class UserData
   {
     public User user { get; set; }
@@ -295,5 +380,15 @@ namespace Speckle.Core.Api
   public class StreamsData
   {
     public Streams streams { get; set; }
+  }
+
+  public class CommentsData
+  {
+    public Comments comments { get; set; }
+  }
+
+  public class CommentItemData
+  {
+    public CommentItem comment { get; set; }
   }
 }

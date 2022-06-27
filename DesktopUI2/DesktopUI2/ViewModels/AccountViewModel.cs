@@ -3,6 +3,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace DesktopUI2.ViewModels
@@ -14,6 +15,16 @@ namespace DesktopUI2.ViewModels
     public string Id { get; }
 
     public Account Account { get; private set; }
+
+    public string SimpleName
+    {
+      get
+      {
+        if (HomeViewModel.Instance.Accounts.Any(x => x.Account.userInfo.id == Id))
+          return "You";
+        return Name;
+      }
+    }
 
     public string FullAccountName
     {

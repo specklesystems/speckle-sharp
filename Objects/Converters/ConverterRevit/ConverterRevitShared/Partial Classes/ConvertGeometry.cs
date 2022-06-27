@@ -197,6 +197,13 @@ namespace Objects.Converter.Revit
         endAngle = (double)arc.endAngle;
       }
       var plane = PlaneToNative(arc.plane);
+
+      if (Point.Distance(arc.startPoint, arc.endPoint) < 1E-6)
+      {
+        // Endpoints coincide, it's a circle.
+        return DB.Arc.Create(plane, ScaleToNative(arc.radius ?? 0, arc.units), startAngle, endAngle);
+      }
+      
       return DB.Arc.Create(PointToNative(arc.startPoint), PointToNative(arc.endPoint), PointToNative(arc.midPoint));
       //return Arc.Create( plane.Origin, (double) arc.Radius * Scale, startAngle, endAngle, plane.XVec, plane.YVec );
     }

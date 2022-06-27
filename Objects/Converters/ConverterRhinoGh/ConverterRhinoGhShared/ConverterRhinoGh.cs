@@ -323,22 +323,22 @@ namespace Objects.Converter.RhinoGh
           {
             case "Column":
               schemaBase = CurveToSpeckleColumn(o);
-              Report.Log($"Converted Curve to Column");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Beam":
               schemaBase = CurveToSpeckleBeam(o);
-              Report.Log("Converted Curve to Beam");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Duct":
               schemaBase = CurveToSpeckleDuct(o, args);
-              Report.Log("Converted Curve to Duct");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Pipe":
               schemaBase = CurveToSpecklePipe(o, args);
-              Report.Log("Converted Curve to Pipe");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
@@ -352,27 +352,27 @@ namespace Objects.Converter.RhinoGh
           {
             case "Floor":
               schemaBase = BrepToSpeckleFloor(o);
-              Report.Log($"Converted Brep to Floor");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Roof":
               schemaBase = BrepToSpeckleRoof(o);
-              Report.Log($"Converted Brep to Roof");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Wall":
               schemaBase = BrepToSpeckleWall(o);
-              Report.Log($"Converted Brep to Wall");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "FaceWall":
               schemaBase = BrepToFaceWall(o, args);
-              Report.Log($"Converted Brep to Face Wall");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "DirectShape":
               schemaBase = BrepToDirectShape(o, args);
-              Report.Log($"Converted Brep to DirectShape");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
@@ -386,27 +386,27 @@ namespace Objects.Converter.RhinoGh
           {
             case "Floor":
               schemaBase = BrepToSpeckleFloor(o.ToBrep());
-              Report.Log($"Converted Extrusion to Floor");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Roof":
               schemaBase = BrepToSpeckleRoof(o.ToBrep());
-              Report.Log($"Converted Extrusion to Roof");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "Wall":
               schemaBase = BrepToSpeckleWall(o.ToBrep());
-              Report.Log($"Converted Extrusion to Wall");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "FaceWall":
               schemaBase = BrepToFaceWall(o.ToBrep(), args);
-              Report.Log($"Converted Extrusion to FaceWall");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             case "DirectShape":
               schemaBase = ExtrusionToDirectShape(o, args);
-              Report.Log($"Converted Extrusion to DirectShape");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
@@ -420,7 +420,12 @@ namespace Objects.Converter.RhinoGh
           {
             case "DirectShape":
               schemaBase = MeshToDirectShape(o, args);
-              Report.Log($"Converted Mesh to DirectShape");
+              Report.Log($"Generated {schema} from {o.ObjectType}");
+              break;
+
+            case "Topography":
+              schemaBase = MeshToTopography(o);
+              Report.Log($"Generated {schema} from {o.ObjectType}");
               break;
 
             default:
@@ -430,7 +435,7 @@ namespace Objects.Converter.RhinoGh
           break;
 
         default:
-          Report.Log($"{obj.GetType()} is not supported in schema conversions.");
+          Report.Log($"{obj.ObjectType} is not supported in schema conversions.");
           break;
       }
       return schemaBase;

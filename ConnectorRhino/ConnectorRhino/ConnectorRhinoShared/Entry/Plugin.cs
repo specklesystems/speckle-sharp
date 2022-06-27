@@ -23,11 +23,13 @@ namespace SpeckleRhino
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
+
+      Bindings = new ConnectorBindingsRhino();
+      ViewModel = new MainViewModel(Bindings);
+
       RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
       RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
       SpeckleCommand.InitAvalonia();
-
-      Bindings = new ConnectorBindingsRhino();
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -59,7 +61,7 @@ namespace SpeckleRhino
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      //new document => new view model
+      //new document => new view model (used by the panel only)
       ViewModel = new MainViewModel(Bindings);
 
       if (e.Merge) // this is a paste or import event

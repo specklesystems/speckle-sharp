@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
-using DesktopUI2.Views;
+using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using Material.Dialog.Icons;
@@ -104,8 +104,15 @@ namespace DesktopUI2
   public static class ApiUtils
   {
     private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+    private static Dictionary<string, AccountViewModel> CachedAccounts = new Dictionary<string, AccountViewModel>();
 
-    public static async Task<User> GetUser(string userId, Client client)
+    public static void ClearCache()
+    {
+      CachedAccounts = new Dictionary<string, AccountViewModel>();
+      CachedUsers = new Dictionary<string, User>();
+    }
+
+    private static async Task<User> GetUser(string userId, Client client)
     {
       if (CachedUsers.ContainsKey(userId))
         return CachedUsers[userId];
@@ -116,6 +123,22 @@ namespace DesktopUI2
         CachedUsers[userId] = user;
 
       return user;
+    }
+
+    public static async Task<AccountViewModel> GetAccount(string userId, Client client)
+    {
+      if (CachedAccounts.ContainsKey(userId))
+        return CachedAccounts[userId];
+
+      User user = await GetUser(userId, client);
+
+      if (user == null)
+        return null;
+
+      var avm = new AccountViewModel(user);
+      CachedAccounts[userId] = avm;
+      return avm;
+
     }
   }
 
