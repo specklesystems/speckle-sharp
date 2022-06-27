@@ -10,8 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Autodesk.Revit.ApplicationServices;
-using ConverterDxf;
+using Objects.Converters.DxfConverter;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
@@ -25,7 +24,6 @@ using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
-using netDxf;
 
 namespace Objects.Converter.Revit
 {
@@ -668,10 +666,10 @@ namespace Objects.Converter.Revit
       
       var dxfMesh = dxfConverter.ConvertToNative(mesh);
       
-      if (dxfMesh is IEnumerable<netDxf.Entities.EntityObject> collection)
+      if (dxfMesh is IEnumerable<Speckle.netDxf.Entities.EntityObject> collection)
         dxfConverter.Doc.Entities.Add(collection.ToList().Where(x => x!= null));
       else
-        dxfConverter.Doc.Entities.Add(dxfMesh as netDxf.Entities.EntityObject);
+        dxfConverter.Doc.Entities.Add(dxfMesh as Speckle.netDxf.Entities.EntityObject);
       
       var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Temp",
         "Dxf");
@@ -697,6 +695,7 @@ namespace Objects.Converter.Revit
       //File.Delete(path);
       var el = Doc.GetElement(elementId);
       el.Pinned = false;
+      
       return new ApplicationPlaceholderObject()
       {
         id = mesh.id, 

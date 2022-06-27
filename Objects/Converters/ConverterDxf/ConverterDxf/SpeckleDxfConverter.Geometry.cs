@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
-using Dxf = netDxf;
-using Dxfe = netDxf.Entities;
+using Dxf = Speckle.netDxf;
+using Dxfe = Speckle.netDxf.Entities;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;
 using Point = Objects.Geometry.Point;
@@ -12,11 +12,11 @@ namespace Objects.Converters.DxfConverter
 {
     public partial class SpeckleDxfConverter
     {
-        public netDxf.Vector3 VectorToNative(Point pt) => VectorToNative(new Vector(pt));
-        public netDxf.Vector3 VectorToNative(Vector pt) => new(pt.x, pt.y, pt.z);
-        public netDxf.Entities.Point PointToNative(Point pt) => new(VectorToNative(pt));
+        public Dxf.Vector3 VectorToNative(Point pt) => VectorToNative(new Vector(pt));
+        public Dxf.Vector3 VectorToNative(Vector pt) => new(pt.x, pt.y, pt.z);
+        public Dxf.Entities.Point PointToNative(Point pt) => new(VectorToNative(pt));
 
-        public netDxf.Entities.Line LineToNative(Line line) =>
+        public Dxf.Entities.Line LineToNative(Line line) =>
             new(VectorToNative(line.start), VectorToNative(line.end));
 
         public Dxfe.Mesh MeshToNative(Mesh mesh) => new(

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Speckle.Core.Models;
-
+using Speckle.netDxf;
 namespace Objects.Converters.DxfConverter
 {
     public partial class SpeckleDxfConverter
@@ -10,10 +10,10 @@ namespace Objects.Converters.DxfConverter
             switch (doc)
             {
                 case null: // Create a new in-memory document
-                    Doc = new netDxf.DxfDocument();
+                    Doc = new DxfDocument();
                     break;
                 case string str: // Load up an existing document
-                    Doc = netDxf.DxfDocument.Load(str);
+                    Doc = DxfDocument.Load(str);
                     break;
             }
         }

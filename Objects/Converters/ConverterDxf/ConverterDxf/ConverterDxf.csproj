@@ -9,9 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\..\..\netDxf\netDxf\netDxf.csproj" />
       <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" ExcludeAssets="runtime" />
       <ProjectReference Include="..\..\..\Objects\Objects.csproj" ExcludeAssets="runtime" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Speckle.netDxf" Version="3.0.0" />
     </ItemGroup>
     
     <PropertyGroup>
