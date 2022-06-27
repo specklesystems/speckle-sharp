@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using Objects.Primitive;
 using Speckle.Core.Logging;
-using Speckle.Core.Kits;
 
 namespace Objects
 {
