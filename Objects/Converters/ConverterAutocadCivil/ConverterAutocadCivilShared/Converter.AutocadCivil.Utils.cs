@@ -1,4 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -6,9 +10,7 @@ using Speckle.Core.Models;
 
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 #endif
@@ -53,6 +55,93 @@ namespace Objects.Converter.AutocadCivil
         return _lineTypeDictionary;
       }
     }
+
+    /// <summary>
+    /// Removes invalid characters for Autocad layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidAutocadChars(string str)
+    {
+      // using this to handle rhino nested layer syntax
+      // replace "::" layer delimiter with "$" (acad standard)
+      string cleanDelimiter = str.Replace("::", "$");
+
+      // remove all other invalid chars
+      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
+    }
+
+    #region app props
+    public static string AutocadPropName = "AutocadProps";
+
+    private Base GetAutoCADProps(DBObject o, Type t, bool getParentProps = false)
+    {
+      var appProps = new Base();
+      appProps["class"] = t.Name;
+
+      // set primitive writeable props 
+      foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+      {
+        try
+        {
+          if (propInfo.GetSetMethod() != null &&
+            (propInfo.PropertyType.IsPrimitive ||
+            propInfo.PropertyType == typeof(string) ||
+            propInfo.PropertyType == typeof(decimal)))
+          {
+            var propValue = propInfo.GetValue(o);
+            if (propInfo.GetValue(o) != null)
+              appProps[propInfo.Name] = propValue;
+          }
+        }
+        catch (Exception e)
+        { }
+      }
+      if (getParentProps)
+      {
+        foreach (var propInfo in t.BaseType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+        {
+          try
+          {
+            if (propInfo.GetSetMethod() != null &&
+              (propInfo.PropertyType.IsPrimitive ||
+              propInfo.PropertyType == typeof(string) ||
+              propInfo.PropertyType == typeof(decimal)))
+            {
+              var propValue = propInfo.GetValue(o);
+              if (propInfo.GetValue(o) != null)
+                appProps[propInfo.Name] = propValue;
+            }
+          }
+          catch (Exception e)
+          { }
+        }
+      }
+
+      return appProps;
+    }
+
+    // TODO: need to determine when props should be scaled to native units!!
+    private void SetAutoCADProps(object o, Type t, Base props)
+    {
+      var propNames = props.GetDynamicMembers();
+      if (o == null || propNames.Count() == 0)
+        return;
+
+      foreach (var propInfo in t.GetProperties())
+      {
+        try
+        {
+          if (propInfo.CanWrite && propNames.Contains(propInfo.Name))
+            t.InvokeMember(propInfo.Name,
+              BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty,
+              Type.DefaultBinder, o, new object[] { props[propInfo.Name] });
+        }
+        catch (Exception e)
+        { }
+      }
+    }
+    #endregion
 
     #region units
     private string _modelUnits;
@@ -126,19 +215,6 @@ namespace Objects.Converter.AutocadCivil
     }
     #endregion
 
-    /// <summary>
-    /// Removes invalid characters for Autocad layer and block names
-    /// </summary>
-    /// <param name="str"></param>
-    /// <returns></returns>
-    public static string RemoveInvalidAutocadChars(string str)
-    {
-      // using this to handle rhino nested layer syntax
-      // replace "::" layer delimiter with "$" (acad standard)
-      string cleanDelimiter = str.Replace("::", "$");
-
-      // remove all other invalid chars
-      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
-    }
+    
   }
 }
