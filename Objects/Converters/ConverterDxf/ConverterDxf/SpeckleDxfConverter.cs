@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
@@ -11,7 +11,7 @@ using Point = Objects.Geometry.Point;
 
 namespace Objects.Converters.DxfConverter
 {
-    public partial class SpeckleDxfConverter : ISpeckleConverter
+    public partial class SpeckleDxfConverter
     {
         public Dxf.DxfDocument Doc;
         public string Description => "The Objects DXF Converter";
