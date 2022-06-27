@@ -80,13 +80,13 @@ namespace Speckle.Core.Kits
     /// Some converters need to know which other objects are being converted, in order to sort relationships between them (ie, Revit). Use this method to set them.
     /// </summary>
     /// <param name="objects"></param>
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects);
+    public void SetContextObjects(List<ApplicationObject> objects);
 
     /// <summary>
     /// Some converters need to know which objects have been converted before in order to update them (ie, Revit). Use this method to set them.
     /// </summary>
     /// <param name="objects"></param>
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects);
+    public void SetPreviousContextObjects(List<ApplicationObject> objects);
 
     /// <summary>
     /// Some converters need to be able to receive some settings to modify their internal behaviour (i.e. Rhino's Brep Meshing options). Use this method to set them.

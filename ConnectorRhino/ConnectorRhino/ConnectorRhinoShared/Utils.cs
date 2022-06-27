@@ -10,7 +10,6 @@ using Rhino.Display;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using ReportObject = Speckle.Core.Models.ProgressReport.ReportObject;
 
 using DesktopUI2.ViewModels;
 
@@ -79,26 +78,9 @@ namespace SpeckleRhino
   }
 
   #region Preview
-  public class PreviewObject
-  {
-    public string Layer { get; set; }
-
-    public List<PreviewObject> Display { get; set; } = new List<PreviewObject>();
-
-    public List<object> Converted { get; set; } = new List<object>(); 
-
-    public Base Base { get; set; }
-
-    public ReportObject ReportObject { get; set; }
-
-    public bool Convertible { get; set; }
-
-    public bool RemoveIfCancelled { get; set; } = false;
-  }
-
   public class PreviewConduit : Rhino.Display.DisplayConduit
   {
-    public List<PreviewObject> Preview { get; set; }
+    public List<ApplicationObject> Preview { get; set; }
 
     protected override void PreDrawObjects(Rhino.Display.DrawEventArgs e)
     {
@@ -108,11 +90,11 @@ namespace SpeckleRhino
         if (previewObj.Convertible)
           Draw(previewObj, e.Display);
         else
-          previewObj.Display.ForEach(o => Draw(o, e.Display));
+          previewObj.Fallback.ForEach(o => Draw(o, e.Display));
       }
     }
 
-    private void Draw(PreviewObject obj, DisplayPipeline display)
+    private void Draw(ApplicationObject obj, DisplayPipeline display)
     {
       var material = new DisplayMaterial();
       var vp = display.Viewport;
@@ -154,7 +136,7 @@ namespace SpeckleRhino
             break;
           case string o:
             // this means it was a view
-            obj.RemoveIfCancelled = true;
+            obj.Rollback = true;
             break;
           default:
             break;

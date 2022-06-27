@@ -27,7 +27,7 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 
-using ReportObject = Speckle.Core.Models.ProgressReport.ReportObject;
+using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 
 namespace SpeckleRhino
 {
@@ -40,7 +40,8 @@ namespace SpeckleRhino
     private static string UserDictionary = "userDictionary";
 
     public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-    public List<PreviewObject> Preview { get; set; } = new List<PreviewObject>();
+    public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public PreviewConduit PreviewConduit { get; set; }
     private string SelectedReceiveCommit { get; set; }
 
@@ -235,7 +236,7 @@ namespace SpeckleRhino
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
         Preview.ForEach(o => o.Converted = o.Convertible ?
           ConvertObject(o, progress) :
-          o.Display.SelectMany(d => ConvertObject(d, progress)).ToList());
+          o.Fallback.SelectMany(f => ConvertObject(f, progress)).ToList());
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
         Doc.Notes = segments[0];
@@ -310,7 +311,7 @@ namespace SpeckleRhino
             if (previewObj.Convertible)
               previewObj.Converted = ConvertObject(previewObj, progress);
             else
-              previewObj.Converted = previewObj.Display.SelectMany(o => ConvertObject(o, progress)).ToList();
+              previewObj.Converted = previewObj.Fallback.SelectMany(o => ConvertObject(o, progress)).ToList();
           }
 
           if (previewObj.Converted != null)
@@ -377,24 +378,23 @@ namespace SpeckleRhino
     }
 
     // Recurses through the commit object and flattens it. Returns list of Preview objects
-    private List<PreviewObject> FlattenCommitObject(object obj, string layer, ProgressViewModel progress, ref int count, bool foundConvertibleMember = false)
+    private List<ApplicationObject> FlattenCommitObject(object obj, string layer, ProgressViewModel progress, ref int count, bool foundConvertibleMember = false)
     {
-      var objects = new List<PreviewObject>();
+      var objects = new List<ApplicationObject>();
 
       if (obj is Base @base)
       {
-        var previewObj = new PreviewObject() { Base = @base, Layer = layer };
-        var reportObj = new ReportObject(@base.id);
+        var appObj = new ApplicationObject(@base.id) { Container = layer };
         if (Converter.CanConvertToNative(@base))
         {
-          previewObj.Convertible = true;
-          previewObj.ReportObject = reportObj;
-          objects.Add(previewObj);
+          appObj.Convertible = true;
+          objects.Add(appObj);
+          StoredObjects.Add(@base.id, @base);
           return objects;
         }
         else
         {
-          previewObj.Convertible = false;
+          appObj.Convertible = false;
 
           // handle fallback display separately
           // NOTE: deprecated displayMesh!!
@@ -404,14 +404,13 @@ namespace SpeckleRhino
             var fallbackObjects = FlattenCommitObject(@base["displayValue"], layer, progress, ref count, foundConvertibleMember);
             if (fallbackObjects.Count > 0)
             {
-              previewObj.Display.AddRange(fallbackObjects);
-              previewObj.ReportObject = reportObj;
+              appObj.Fallback.AddRange(fallbackObjects);
               foundConvertibleMember = true;
+              hasFallback = true;
             }
-            hasFallback = true;
           }
           if (hasFallback)
-            objects.Add(previewObj);
+            objects.Add(appObj);
 
           // handle any children elements, these are added as separate previewObjects
           List<string> props = @base.GetDynamicMembers().ToList();
@@ -436,8 +435,8 @@ namespace SpeckleRhino
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            reportObj.Update(status: ProgressReport.ConversionStatus.Skipped, message: $"Receiving objects of type {@base.speckle_type} not supported in Rhino");
-            progress.Report.Log(reportObj);
+            appObj.Update(status: ApplicationObject.ConversionStatus.Skipped, logItem: $"Receiving objects of type {@base.speckle_type} not supported in Rhino");
+            progress.Report.Log(appObj);
           }
 
           return objects;
@@ -464,19 +463,19 @@ namespace SpeckleRhino
     }
 
     // conversion and bake
-    private List<object> ConvertObject(PreviewObject previewObj, ProgressViewModel progress)
+    private List<object> ConvertObject(ApplicationObject previewObj, ProgressViewModel progress)
     {
-      var obj = previewObj.Base;
+      var obj = StoredObjects[previewObj.id];
       var convertedList = new List<object>();
 
       // add preview object report object to progress for converter
-      previewObj.ReportObject.Status = ProgressReport.ConversionStatus.Converting;
-      progress.Report.Log(previewObj.ReportObject);
+      previewObj.Status = ApplicationObject.ConversionStatus.Converting;
+      progress.Report.Log(previewObj);
 
       var converted = Converter.ConvertToNative(obj);
       if (converted == null)
       {
-        previewObj.ReportObject.Update(status: ProgressReport.ConversionStatus.Failed, message: $"Conversion of {obj.speckle_type} returned Null");
+        previewObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Conversion of {obj.speckle_type} returned Null");
         return convertedList;
       }
 
@@ -493,10 +492,10 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(PreviewObject previewObj, ProgressViewModel progress)
+    private void BakeObject(ApplicationObject previewObj, ProgressViewModel progress)
     {
-      var obj = previewObj.Base;
-      string layerPath = previewObj.Layer;
+      var obj = StoredObjects[previewObj.id];
+      string layerPath = previewObj.Container;
       var converted = previewObj.Converted;
       int bakedCount = 0;
       foreach (var convertedItem in converted)
@@ -505,14 +504,14 @@ namespace SpeckleRhino
 
         if (!convertedRH.IsValidWithLog(out string log))
         {
-          previewObj.ReportObject.Update(notes: new List<string>() { $"{log.Replace("\n", "").Replace("\r", "")}" });
+          previewObj.Update(log: new List<string>() { $"{log.Replace("\n", "").Replace("\r", "")}" });
           continue;
         }
 
         Layer bakeLayer = Doc.GetLayer(layerPath, true);
         if (bakeLayer == null)
         {
-          previewObj.ReportObject.Update(notes: new List<string>() { $"Could not create layer {layerPath}." });
+          previewObj.Update(log: new List<string>() { $"Could not create layer {layerPath}." });
           continue;
         }
 
@@ -540,10 +539,10 @@ namespace SpeckleRhino
         Guid id = Doc.Objects.Add(convertedRH, attributes);
         if (id == Guid.Empty)
         {
-          previewObj.ReportObject.Update(notes: new List<string>() { $"Could not add to document." });
+          previewObj.Update(log: new List<string>() { $"Could not add to document." });
           continue;
         }
-        previewObj.ReportObject.Update(createdId: id.ToString());
+        previewObj.Update(createdId: id.ToString());
 
         // handle render material
         if (obj[@"renderMaterial"] is Base render)
@@ -560,10 +559,10 @@ namespace SpeckleRhino
       bakedCount++;
 
       if (bakedCount == 0)
-        previewObj.ReportObject.Update(status: ProgressReport.ConversionStatus.Failed, message: $"Could not create object {obj.id} of type {obj.speckle_type}");
+        previewObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Could not create object {obj.id} of type {obj.speckle_type}");
       else
-        previewObj.ReportObject.Update(status: ProgressReport.ConversionStatus.Created);
-      progress.Report.Log(previewObj.ReportObject);
+        previewObj.Update(status: ApplicationObject.ConversionStatus.Created);
+      progress.Report.Log(previewObj);
     }
 
     #endregion
@@ -584,7 +583,6 @@ namespace SpeckleRhino
       var client = state.Client;
 
       int objCount = 0;
-      bool renamedlayers = false;
 
       state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
       var commitObject = new Base();
@@ -606,7 +604,7 @@ namespace SpeckleRhino
           return null;
 
         Base converted = null;
-        ReportObject reportObj = new ReportObject(applicationId);
+        ApplicationObject reportObj = new ApplicationObject(applicationId);
         string containerName = string.Empty;
 
         // applicationId can either be doc obj guid or name of view
@@ -625,17 +623,17 @@ namespace SpeckleRhino
         {
           if (!Converter.CanConvertToSpeckle(obj))
           {
-            reportObj.Update(status: ProgressReport.ConversionStatus.Skipped, message: $"Sending objects of type {obj.ObjectType} not supported in Rhino");
+            reportObj.Update(status: ApplicationObject.ConversionStatus.Skipped, logItem: $"Sending objects of type {obj.ObjectType} not supported in Rhino");
             progress.Report.Log(reportObj);
             continue;
           }
-          reportObj.Update(status: ProgressReport.ConversionStatus.Converting);
+          reportObj.Update(status: ApplicationObject.ConversionStatus.Converting);
 
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(obj);
           if (converted == null)
           {
-            reportObj.Update(status: ProgressReport.ConversionStatus.Failed, message: $"Conversion of {obj.ObjectType} returned Null");
+            reportObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Conversion of {obj.ObjectType} returned Null");
             progress.Report.Log(reportObj);
             continue;
           }
@@ -658,19 +656,17 @@ namespace SpeckleRhino
             var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
             string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
             containerName = cleanLayerPath;
-            if (!cleanLayerPath.Equals(layerPath))
-              renamedlayers = true;
           }
         }
         else if (viewIndex != -1)
         {
           ViewInfo view = Doc.NamedViews[viewIndex];
-          reportObj.Update(status: ProgressReport.ConversionStatus.Converting);
+          reportObj.Update(status: ApplicationObject.ConversionStatus.Converting);
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(view);
           if (converted == null)
           {
-            reportObj.Update(status: ProgressReport.ConversionStatus.Failed, message: $"Creation of {view.GetType()} returned Null");
+            reportObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Creation of {view.GetType()} returned Null");
             progress.Report.Log(reportObj);
             continue;
           }
@@ -699,7 +695,7 @@ namespace SpeckleRhino
         }
 
         // log report object
-        reportObj.Update(status: ProgressReport.ConversionStatus.Created, message: $"Successfully converted Rhino {obj.ObjectType} to Speckle {converted.speckle_type}");
+        reportObj.Update(status: ApplicationObject.ConversionStatus.Created, logItem: $"Successfully converted Rhino {obj.ObjectType} to Speckle {converted.speckle_type}");
         progress.Report.Log(reportObj);
 
         objCount++;
@@ -712,9 +708,6 @@ namespace SpeckleRhino
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
         return null;
       }
-
-      if (renamedlayers)
-        progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;

@@ -337,17 +337,18 @@ namespace Objects.Converter.RhinoGh
       return outCurves;
     }
     
-    public List<object> DirectShapeToNative(RV.DirectShape directShape)
+    public List<object> DirectShapeToNative(RV.DirectShape directShape, out List<string> log)
     {
+      log = new List<string>();
       if (directShape.displayValue == null)
       {
-        Report.Log($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
+        log.Add($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
         return null;
       }
 
       if (directShape.displayValue.Count == 0)
       {
-        Report.Log($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
+        log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
         return null;
       }
 
@@ -358,7 +359,7 @@ namespace Objects.Converter.RhinoGh
       
       if (nativeObjects.Count == 0)
       {
-        Report.Log($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements");
+        log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements");
         return null;
       }
 
