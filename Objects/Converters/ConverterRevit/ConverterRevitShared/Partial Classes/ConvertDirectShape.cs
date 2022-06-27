@@ -108,6 +108,7 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         Report.LogConversionError(new Exception(e.Message));
+        return MeshToDxfImport(brep.displayValue[0]);
         var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
         revitDs.SetShape(mesh.ToArray());
       }

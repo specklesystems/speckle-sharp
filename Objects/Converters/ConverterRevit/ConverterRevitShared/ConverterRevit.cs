@@ -346,7 +346,7 @@ namespace Objects.Converter.Revit
           return ModelCurveToNative(o);
 
         case Geometry.Brep o:
-          return MeshToDxfImport(o.displayValue[0]);
+          //return MeshToDxfImport(o.displayValue[0]);
           return DirectShapeToNative(o);
 
         case Geometry.Mesh o:
