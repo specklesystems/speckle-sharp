@@ -20,6 +20,7 @@ namespace Objects.Converter.CSI
       Model.AreaObj.GetGUID(area.name, ref GUID);
       if (area.applicationId == GUID)
       {
+        setAreaProperties(area.name, area);
       }
       return area.name;
     }
