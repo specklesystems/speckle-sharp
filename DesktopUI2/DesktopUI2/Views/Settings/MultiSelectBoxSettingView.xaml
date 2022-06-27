@@ -16,7 +16,7 @@
   <Grid
     Margin="10"
     ColumnDefinitions="auto,auto,*"
-    RowDefinitions="auto">
+    RowDefinitions="auto, auto">
     <icons:MaterialIcon
       Margin="0"
       VerticalAlignment="Center"
@@ -32,7 +32,7 @@
       ToolTip.Tip="{Binding Setting.Description}" />
 
 
-      <StackPanel Grid.Column="2">
+      <StackPanel Grid.Column="2" Grid.RowSpan="2">
         <!--<Grid>-->
         <Border
           Name="PopupTarget"
@@ -57,9 +57,11 @@
                           Text="{Binding}"/>
                         <Button
                           VerticalContentAlignment="Center"
-                          HorizontalAlignment="Left"
+                          HorizontalAlignment="Right"
                           Margin="0"
                           Padding="0"
+                          Command="{Binding $parent[WrapPanel].DataContext.Setting.RemoveSelection}"
+                          CommandParameter="{Binding}"
                           Background="Transparent">
                           <Button.Content>
                             <icons:MaterialIcon
@@ -85,7 +87,7 @@
               Grid.Column="1"
               VerticalContentAlignment="Center"
               HorizontalAlignment="Right"
-              Command="{Binding TogglePopup}"
+              Command="{Binding Setting.TogglePopup}"
               Margin="0"
               Padding="0"
               Background="Transparent">
@@ -105,8 +107,8 @@
         </StackPanel>
         <Popup 
           Opacity="100"
-          IsOpen="{Binding PopupVisible}" 
-          Width="{Binding #PopupTarget.Width}"
+          IsOpen="{Binding Setting.PopupVisible}" 
+          Width="{Binding #PopupTarget.Bounds.Width}"
           PlacementAnchor="Top"
           PlacementMode="Bottom"
           PlacementTarget="{Binding #PopupTarget}"> 
@@ -116,7 +118,7 @@
             BorderBrush="Gray"
             CornerRadius="10"
             Items="{Binding Setting.Values}" 
-            SelectionMode="Multiple">
+            SelectedItem="{Binding Setting.MultiSelectBoxSelection}">
           </ListBox>
         </Popup>
         <!--<ComboBox

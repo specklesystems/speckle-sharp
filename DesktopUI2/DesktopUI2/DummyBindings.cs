@@ -113,11 +113,8 @@ namespace DesktopUI2
         new ListBoxSetting {Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} },
         new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
         new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving"},
-        new CheckBoxSetting {Slug = "disallowjoin-beams", Name = "Disallow Join For Beams", Icon ="CallSplit", IsChecked= false, Description = "Disallow joins for beams by default"},
-        new CheckBoxSetting {Slug = "disallowjoin-columns", Name = "Disallow Join For Columns", Icon ="CallSplit", IsChecked= false, Description = "Disallow joins for columns by default"},
-        new MultiSelectBoxSetting { Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.",
-          Values = new List<string>() { "Default", "Project Base Point", "Survey Point" }, Selections = new ObservableCollection<string>() { "Default", "Project Base Point", "Survey Point" } },
-        new CheckBoxSetting {Slug = "disallowjoin-columns", Name = "Disallow Join For Columns", Icon ="CallSplit", IsChecked= false, Description = "Disallow joins for columns by default"},
+        new MultiSelectBoxSetting { Name = "Disallow Join For Elements", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.",
+          Values = new List<string>() { "Beams", "Columns", "Walls" }, Selections = new ObservableCollection<string>() { "Beams", "Columns", "Walls" } },
     };
     }
 
