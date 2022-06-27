@@ -54,7 +54,7 @@ namespace Objects
 
   #endregion
 
-    #region Built elements
+  #region Built elements
 
   [Obsolete("Use " + nameof(IDisplayValue<Mesh>) + " instead")]
   public interface IDisplayMesh
