@@ -16,7 +16,7 @@
   <Grid
     Margin="10"
     ColumnDefinitions="auto,auto,*"
-    RowDefinitions="auto, auto">
+    RowDefinitions="auto, auto, auto">
     <icons:MaterialIcon
       Margin="0"
       VerticalAlignment="Center"
@@ -31,14 +31,97 @@
       TextWrapping="Wrap"
       ToolTip.Tip="{Binding Setting.Description}" />
 
+    <StackPanel Grid.Column="2" Grid.RowSpan="2">
+      <Grid>
+        <TextBlock 
+          Margin="5"
+          TextWrapping="Wrap"
+          Text="{Binding Setting.Selection}"/>
+        <DropDown 
+          Name="PopupParent"
+          MinWidth="150"
+          VerticalAlignment="Bottom">
+          
+        </DropDown>
+        <Popup
+          Name="PopupBody"
+          Opacity="100"
+          WindowManagerAddShadowHint="False"
+          IsOpen="{Binding #PopupParent.IsDropDownOpen}"
+          Width="{Binding #PopupParent.Bounds.Width}"
+          PlacementAnchor="Top"
+          PlacementMode="Bottom"
+          PlacementTarget="{Binding #PopupParent}">
+          <ListBox
+            Background="White"
+            IsVisible="True"
+            BorderThickness="1"
+            BorderBrush="Gray"
+            CornerRadius="10"
+            Classes="Chip"
+            Items="{Binding Setting.Values}"
+            Selection="{Binding Setting.SelectionModel}"
+            SelectionMode="Multiple,Toggle">
+          </ListBox>
+        </Popup>
+      </Grid>
+    </StackPanel>
 
-      <StackPanel Grid.Column="2" Grid.RowSpan="2">
-        <!--<Grid>-->
+    <StackPanel 
+      Grid.Row="2" 
+      Grid.ColumnSpan="3"
+      IsVisible="{Binding Setting.AddCustom}">
+      <TextBox
+        Margin="0,8"
+        Padding="0"
+        assists:TextFieldAssist.CornerRadius="32"
+        BorderBrush="{Binding $self.Foreground}"
+        BorderThickness="1"
+        Classes="Solo"
+        Text="{Binding Setting.SearchQuery, Mode=TwoWay}"
+        Watermark="Material, Category, Family, or Type">
+        <TextBox.InnerLeftContent>
+          <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Kind="Magnify" />
+          </Border>
+        </TextBox.InnerLeftContent>
+        <TextBox.InnerRightContent>
+          <Button
+            Margin="0,8"
+            CornerRadius="32">
+            Done
+          </Button>
+        </TextBox.InnerRightContent>
+      </TextBox>
+
+
+
+      <ScrollViewer
+        Grid.Row="2"
+        MaxHeight="180"
+        VerticalScrollBarVisibility="Auto">
+        <ListBox
+          x:Name="ItemsListBox"
+          Margin="0,0,0,8"
+          Classes="Chip"
+          Items="{Binding SearchResults}"
+          Selection="{Binding SelectionModel}"
+          SelectionMode="Multiple, Toggle" />
+      </ScrollViewer>
+    </StackPanel>
+
+
+      <!--<StackPanel Grid.Column="2" Grid.RowSpan="2">
         <Border
           Name="PopupTarget"
           BorderThickness="1"
           BorderBrush="Gray"
-          CornerRadius="5">
+          CornerRadius="10">
           <Grid ColumnDefinitions="*, auto">
             <WrapPanel Margin="5">
               <ItemsControl Items="{Binding Setting.Selections}">
@@ -48,7 +131,7 @@
                       Margin="0,0,3,3" 
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left"
-                      CornerRadius="5"
+                      CornerRadius="10"
                       Padding="5"
                       Background="{DynamicResource PrimaryHueMidBrush}">
                       <StackPanel Orientation="Horizontal">
@@ -121,32 +204,7 @@
             SelectedItem="{Binding Setting.MultiSelectBoxSelection}">
           </ListBox>
         </Popup>
-        <!--<ComboBox
-          HorizontalAlignment="Stretch"
-          Items="{Binding Setting.Values}"
-          SelectedItem="{Binding Selection}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate>
-              <Grid ColumnDefinitions="auto, 1*">
-                <TextBlock Text="hell0"/>
-                <CheckBox
-                  Grid.Column="2"
-                  HorizontalAlignment="Right"
-                  IsChecked="{Binding Setting.IsChecked}" />
-              </Grid>
-            </DataTemplate>
-            
-          </ComboBox.ItemTemplate>
-          <ComboBox.Template>
-            
-              
-          </ComboBox.Template>
-          <ComboBox.ItemContainerGenerator>
-            
-          </ComboBox.ItemContainerGenerator>
-        </ComboBox>-->
-        <!--</Grid>--> 
-      </StackPanel>
+      </StackPanel>-->
 
   </Grid>
 
