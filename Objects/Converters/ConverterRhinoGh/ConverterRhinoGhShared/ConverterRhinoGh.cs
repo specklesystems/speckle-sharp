@@ -68,7 +68,7 @@ namespace Objects.Converter.RhinoGh
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
-      Report.Log($"Using converter: {Name} v{ver}");
+      //Report.Log($"Using converter: {Name} v{ver}");
     }
     public string Description => "Default Speckle Kit for Rhino & Grasshopper";
     public string Name => nameof(ConverterRhinoGh);
@@ -86,11 +86,11 @@ namespace Objects.Converter.RhinoGh
 
     public RhinoDoc Doc { get; private set; } = Rhino.RhinoDoc.ActiveDoc ?? null;
 
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
     public void SetConverterSettings(object settings)
     {
       var s = (MeshSettings)settings;
@@ -100,8 +100,8 @@ namespace Objects.Converter.RhinoGh
     public void SetContextDocument(object doc)
     {
       Doc = (RhinoDoc)doc;
-      Report.Log($"Using document: {Doc.Path}");
-      Report.Log($"Using units: {ModelUnits}");
+      //Report.Log($"Using document: {Doc.Path}");
+      //Report.Log($"Using units: {ModelUnits}");
     }
 
     // speckle user string for custom schemas
@@ -130,12 +130,12 @@ namespace Objects.Converter.RhinoGh
       DisplayStyle style = null;
       Base @base = null;
       Base schema = null;
-      ReportObject reportObj = null;
+      ApplicationObject reportObj = null;
       List<string> notes = new List<string>();
 
       if (@object is RhinoObject ro)
       {
-        reportObj = new ReportObject(ro.Id.ToString());
+        reportObj = new ApplicationObject(ro.Id.ToString());
         material = RenderMaterialToSpeckle(ro.GetMaterial(true));
         style = DisplayStyleToSpeckle(ro.Attributes);
 
@@ -270,7 +270,7 @@ namespace Objects.Converter.RhinoGh
         default:
           if (reportObj != null)
           {
-            reportObj.Update(status: ProgressReport.ConversionStatus.Skipped, note: $"{@object.GetType()} type not supported");
+            reportObj.Update(status: ApplicationObject.ConversionStatus.Skipped, logItem: $"{@object.GetType()} type not supported");
             Report.UpdateReportObject(reportObj);
           }
           return @base;
@@ -290,7 +290,7 @@ namespace Objects.Converter.RhinoGh
 
       if (reportObj != null)
       {
-        reportObj.Update(notes: notes);
+        reportObj.Update(log: notes);
         Report.UpdateReportObject(reportObj);
       }
 
@@ -302,7 +302,7 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
-    public Base ConvertToSpeckleBE(object @object, ReportObject reportObj)
+    public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj)
     {
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
@@ -315,7 +315,7 @@ namespace Objects.Converter.RhinoGh
         if (schema == "AdaptiveComponent")
           schemaBase = InstanceToAdaptiveComponent(obj as InstanceObject, args);
         else
-          reportObj.Update(note: $"Skipping Instance conversion to unsupported schema {schema}");
+          reportObj.Update(logItem: $"Skipping Instance conversion to unsupported schema {schema}");
       }
 
       switch (obj.Geometry)
@@ -340,7 +340,7 @@ namespace Objects.Converter.RhinoGh
               break;
 
             default:
-              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
+              reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
@@ -369,7 +369,7 @@ namespace Objects.Converter.RhinoGh
               break;
 
             default:
-              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
+              reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
@@ -398,7 +398,7 @@ namespace Objects.Converter.RhinoGh
               break;
 
             default:
-              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
+              reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
@@ -415,25 +415,25 @@ namespace Objects.Converter.RhinoGh
               break;
 
             default:
-              reportObj.Update(note: $"{schema} creation from {o.ObjectType} is not supported");
+              reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
               break;
           }
           break;
 
         default:
-          reportObj.Update(note: $"{obj.ObjectType} is not supported in schema conversions.");
+          reportObj.Update(logItem: $"{obj.ObjectType} is not supported in schema conversions.");
           break;
       }
-      reportObj.Notes.AddRange(notes);
+      reportObj.Log.AddRange(notes);
       if (schemaBase != null)
-        reportObj.Notes.Add($"Created {schema} schema from {obj.GetType()}");
+        reportObj.Log.Add($"Created {schema} schema from {obj.GetType()}");
       else
-        reportObj.Update(note: $"{schema} schema creation from {obj.GetType()} failed");
+        reportObj.Update(logItem: $"{schema} schema creation from {obj.GetType()} failed");
       Report.UpdateReportObject(reportObj);
       return schemaBase;
     }
 
-    public Base ConvertToSpeckleStr(object @object, ReportObject reportObj)
+    public Base ConvertToSpeckleStr(object @object, ApplicationObject reportObj)
     {
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
@@ -484,7 +484,7 @@ namespace Objects.Converter.RhinoGh
     {
       object rhinoObj = null;
       bool isFromRhino = @object[RhinoPropName] != null ? true : false;
-      var reportObj = Report.GetReportObject(@object.id, out int index) ? new ReportObject(@object.id) : null;
+      var reportObj = Report.GetReportObject(@object.id, out int index) ? new ApplicationObject(@object.id) : null;
       List<string> notes = new List<string>();
       switch (@object)
       {
@@ -588,7 +588,7 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case DirectShape o:
-          rhinoObj = DirectShapeToNative(o);
+          rhinoObj = DirectShapeToNative(o, out notes);
           break;
 
         case View3D o:
@@ -633,7 +633,7 @@ namespace Objects.Converter.RhinoGh
         default:
           if (reportObj != null)
           {
-            reportObj.Update(status: ProgressReport.ConversionStatus.Skipped, note: $"{@object.GetType()} type not supported");
+            reportObj.Update(status: ApplicationObject.ConversionStatus.Skipped, logItem: $"{@object.GetType()} type not supported");
             Report.UpdateReportObject(reportObj);
           }
           break;
@@ -641,7 +641,7 @@ namespace Objects.Converter.RhinoGh
 
       if (reportObj != null)
       {
-        reportObj.Update(notes: notes);
+        reportObj.Update(log: notes);
         Report.UpdateReportObject(reportObj);
       }
 
