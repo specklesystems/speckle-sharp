@@ -13,7 +13,7 @@ namespace Objects.Other
   /// <summary>
   /// Dimension class 
   /// </summary>
-  public class Dimension : Base, IDisplayValue<List<ICurve>>, ISourceAppProps
+  public class Dimension : Base, IDisplayValue<List<ICurve>>
   {
     /// <summary>
     /// The measurement of the dimension.
@@ -36,8 +36,6 @@ namespace Objects.Other
     public List<ICurve> displayValue { get; set; } = new List<ICurve>();
 
     public string units { get; set; }
-
-    public ApplicationProps sourceAppProps { get; set; }
 
     public Dimension() { }
   }

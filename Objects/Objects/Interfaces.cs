@@ -52,27 +52,6 @@ namespace Objects
     bool TransformTo(Transform transform, out ITransformable transformed);
   }
 
-  /// <summary>
-  /// Basic interface to store application-specific properties
-  /// </summary>
-  /// <remarks>
-  /// </remarks>
-  public interface ISourceAppProps
-  {
-    ApplicationProps sourceAppProps { get; set; }
-  }
-
-  /// <summary>
-  /// 
-  /// </summary>
-  /// <remarks>
-  /// Placeholder for thinking about object ledger / transaction history
-  /// </remarks>
-  public interface IAppLedger
-  {
-    // List<ISourceApp> history { get; set; }
-  }
-
   #endregion
 
     #region Built elements

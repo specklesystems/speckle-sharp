@@ -288,7 +288,7 @@ namespace Objects.Converter.AutocadCivil
     public object ConvertToNative(Base @object)
     {
       // determine if this object has autocad props
-      bool isFromAutoCAD = @object["sourceAppProps"] != null && (@object["sourceAppProps"] as ApplicationProps).app == HostApplications.AutoCAD.Name ? true : false; 
+      bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false; 
       object acadObj = null;
       switch (@object)
       {
