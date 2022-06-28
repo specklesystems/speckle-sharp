@@ -17,7 +17,7 @@ namespace Speckle.ConnectorRevit.Entry
   public class SpeckleRevitCommand2 : IExternalCommand
   {
 
-    public static bool UseDockablePanel = false;
+    public static bool UseDockablePanel = true;
 
     //window stuff
     [DllImport("user32.dll", SetLastError = true)]
