@@ -349,9 +349,17 @@ namespace Objects.Converter.Revit
         case Geometry.Brep o:
           return DirectShapeToNative(o);
 
-        case Geometry.Mesh o:
-          return DirectShapeToNative(o);
-
+        case Geometry.Mesh mesh:
+          switch (ToNativeMeshSetting)
+          {
+            case ToNativeMeshSettingEnum.DxfImport:
+              return MeshToDxfImport(mesh, Doc);
+            case ToNativeMeshSettingEnum.DxfImportInFamily:
+              return MeshToDxfImportFamily(mesh, Doc);
+            case ToNativeMeshSettingEnum.Default:
+            default:
+              return DirectShapeToNative(new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
+          }
         // non revit built elems
         case BE.Alignment o:
           if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility

@@ -9,7 +9,6 @@ namespace Objects.Converters.DxfConverter
         private void SetConverterSettings(ConverterDxfSettings settings)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            
         }
     }
 }

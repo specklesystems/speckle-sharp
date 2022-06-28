@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.BuiltElements.Revit;
 using Objects.Other;
+using Speckle.Core.Kits;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
@@ -18,17 +19,8 @@ namespace Objects.Converter.Revit
 
     public ApplicationPlaceholderObject DirectShapeToNative(DirectShape speckleDs)
     {
-      var docObj = GetExistingElementByApplicationId(speckleDs.applicationId);
-
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-        { applicationId = speckleDs.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
-
-      //just create new one 
-      if (docObj != null)
-      {
-        Doc.Delete(docObj.Id);
-      }
+      var existing = CheckForExistingObject(speckleDs);
+      if (existing != null) return existing;
 
       var converted = new List<DB.GeometryObject>();
 
@@ -74,23 +66,30 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
-    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationPlaceholderObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public ApplicationPlaceholderObject CheckForExistingObject(Base @base)
     {
-      // if it comes from GH it doesn't have an applicationId, the use the hash id
-      brep.applicationId ??= brep.id;
- 
-      var docObj = GetExistingElementByApplicationId(brep.applicationId);
+      @base.applicationId ??= @base.id;
+      var docObj = GetExistingElementByApplicationId(@base.applicationId);
 
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
         return new ApplicationPlaceholderObject
-        { applicationId = brep.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+          { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
 
       //just create new one 
       if (docObj != null)
       {
         Doc.Delete(docObj.Id);
       }
+
+      return null;
+    }
+    
+    
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public ApplicationPlaceholderObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    {
+      var existing = CheckForExistingObject(brep);
+      if (existing != null) return existing;
       
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
@@ -109,92 +108,36 @@ namespace Objects.Converter.Revit
         Report.LogConversionError(new Exception(e.Message));
         switch (ToNativeMeshSetting)
         {
-          case ToNativeMeshSettingEnum.Default:
-            var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
-            revitDs.SetShape(mesh.ToArray());
-            break;
           case ToNativeMeshSettingEnum.DxfImport:
             return BrepToDxfImport(brep, Doc);
           case ToNativeMeshSettingEnum.DxfImportInFamily:
             return BrepToDxfImportFamily(brep, Doc);
+          case ToNativeMeshSettingEnum.Default:
           default:
-            throw new ArgumentOutOfRangeException();
+            var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
+            revitDs.SetShape(mesh.ToArray());
+            break;
         }
       }
       Report.Log($"Converted DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
-    public enum ToNativeMeshSettingEnum
-    {
-      Default,
-      DxfImport,
-      DxfImportInFamily
-    }
-
-    public ToNativeMeshSettingEnum ToNativeMeshSetting
-    {
-      get
-      {
-        if (!Settings.ContainsKey("pretty-mesh")) return ToNativeMeshSettingEnum.Default;
-        var value = Settings["pretty-mesh"];
-        switch (value)
-        {
-          case "dxf":
-            return ToNativeMeshSettingEnum.DxfImport;
-          case "family-dxf":
-            return ToNativeMeshSettingEnum.DxfImportInFamily;
-          case "default":
-          default:
-            return ToNativeMeshSettingEnum.Default; 
-        }
-      }
-      set
-      {
-        Settings["pretty-mesh"] = value switch
-        {
-          ToNativeMeshSettingEnum.DxfImport => "dxf",
-          ToNativeMeshSettingEnum.DxfImportInFamily => "family-dxf",
-          ToNativeMeshSettingEnum.Default => "default",
-          _ => Settings["pretty-mesh"]
-        };
-      }
-    }
-    
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
-    {
-      switch (ToNativeMeshSetting)
-      {
-        case ToNativeMeshSettingEnum.Default:
-          return DirectShapeToNative(new[] { mesh }, cat, mesh.applicationId ?? mesh.id);
-        case ToNativeMeshSettingEnum.DxfImport:
-          return MeshToDxfImport(mesh, Doc);
-        case ToNativeMeshSettingEnum.DxfImportInFamily:
-          return MeshToDxfImportFamily(mesh, Doc);
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
-    }
-
+    public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh,
+      BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+      => DirectShapeToNative(new []{mesh}, cat, mesh.applicationId ?? mesh.id);
+    
+    
     public ApplicationPlaceholderObject DirectShapeToNative(IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel, string applicationId = null)
     {
       // if it comes from GH it doesn't have an applicationId, then use the hash id 
       if (meshes.Count == 0) return null;
       applicationId ??= meshes[0].id;
 
-      var docObj = GetExistingElementByApplicationId(applicationId);
-
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-        { applicationId = applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
-
-      //just create new one 
-      if (docObj != null)
-      {
-        Doc.Delete(docObj.Id);
-      }
-
+      var existing = CheckForExistingObject(meshes[0]);
+      if (existing != null) return existing;
+      
       var converted = new List<GeometryObject>();
       foreach (Mesh m in meshes)
       {
