@@ -34,6 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTeklaObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFreeformElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Local Dependencies\ConverterRevit\ConverterRevit2020\ConverterRevitShared\Partial Classes\ConverterRevit.DxfImport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProjectInfo.cs" />

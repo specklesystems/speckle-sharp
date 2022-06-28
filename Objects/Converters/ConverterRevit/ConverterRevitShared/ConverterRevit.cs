@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -346,11 +347,9 @@ namespace Objects.Converter.Revit
           return ModelCurveToNative(o);
 
         case Geometry.Brep o:
-          //return MeshToDxfImport(o.displayValue[0]);
           return DirectShapeToNative(o);
 
         case Geometry.Mesh o:
-          return MeshToDxfImport(o);
           return DirectShapeToNative(o);
 
         // non revit built elems

@@ -78,9 +78,8 @@ namespace Objects.Converter.Revit
     public ApplicationPlaceholderObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
       // if it comes from GH it doesn't have an applicationId, the use the hash id
-      if (brep.applicationId == null)
-        brep.applicationId = brep.id;
-
+      brep.applicationId ??= brep.id;
+ 
       var docObj = GetExistingElementByApplicationId(brep.applicationId);
 
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
@@ -108,18 +107,75 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         Report.LogConversionError(new Exception(e.Message));
-        return MeshToDxfImport(brep.displayValue[0]);
-        var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
-        revitDs.SetShape(mesh.ToArray());
+        switch (ToNativeMeshSetting)
+        {
+          case ToNativeMeshSettingEnum.Default:
+            var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
+            revitDs.SetShape(mesh.ToArray());
+            break;
+          case ToNativeMeshSettingEnum.DxfImport:
+            return BrepToDxfImport(brep, Doc);
+          case ToNativeMeshSettingEnum.DxfImportInFamily:
+            return BrepToDxfImportFamily(brep, Doc);
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
       }
       Report.Log($"Converted DirectShape {revitDs.Id}");
       return new ApplicationPlaceholderObject { applicationId = brep.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
-    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public enum ToNativeMeshSettingEnum
+    {
+      Default,
+      DxfImport,
+      DxfImportInFamily
+    }
 
+    public ToNativeMeshSettingEnum ToNativeMeshSetting
+    {
+      get
+      {
+        if (!Settings.ContainsKey("pretty-mesh")) return ToNativeMeshSettingEnum.Default;
+        var value = Settings["pretty-mesh"];
+        switch (value)
+        {
+          case "dxf":
+            return ToNativeMeshSettingEnum.DxfImport;
+          case "family-dxf":
+            return ToNativeMeshSettingEnum.DxfImportInFamily;
+          case "default":
+          default:
+            return ToNativeMeshSettingEnum.Default; 
+        }
+      }
+      set
+      {
+        Settings["pretty-mesh"] = value switch
+        {
+          ToNativeMeshSettingEnum.DxfImport => "dxf",
+          ToNativeMeshSettingEnum.DxfImportInFamily => "family-dxf",
+          ToNativeMeshSettingEnum.Default => "default",
+          _ => Settings["pretty-mesh"]
+        };
+      }
+    }
+    
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
     public ApplicationPlaceholderObject DirectShapeToNative(Mesh mesh, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
-    => DirectShapeToNative(new[] { mesh }, cat);
+    {
+      switch (ToNativeMeshSetting)
+      {
+        case ToNativeMeshSettingEnum.Default:
+          return DirectShapeToNative(new[] { mesh }, cat);
+        case ToNativeMeshSettingEnum.DxfImport:
+          return MeshToDxfImport(mesh, Doc);
+        case ToNativeMeshSettingEnum.DxfImportInFamily:
+          return MeshToDxfImportFamily(mesh, Doc);
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+    }
 
     public ApplicationPlaceholderObject DirectShapeToNative(IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {

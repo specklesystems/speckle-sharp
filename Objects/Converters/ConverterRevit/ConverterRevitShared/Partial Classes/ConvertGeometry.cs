@@ -658,53 +658,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationPlaceholderObject MeshToDxfImport(Mesh mesh)
-    {
-      var dxfConverter = new SpeckleDxfConverter();
-      dxfConverter.Settings.PrettyMeshes = true;
-      dxfConverter.SetContextDocument(null); // Resets the internal Doc.
-      
-      var dxfMesh = dxfConverter.ConvertToNative(mesh);
-      
-      if (dxfMesh is IEnumerable<Speckle.netDxf.Entities.EntityObject> collection)
-        dxfConverter.Doc.Entities.Add(collection.ToList().Where(x => x!= null));
-      else
-        dxfConverter.Doc.Entities.Add(dxfMesh as Speckle.netDxf.Entities.EntityObject);
-      
-      var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Temp",
-        "Dxf");
-      if(!Directory.Exists(folderPath)) 
-        Directory.CreateDirectory(folderPath);
-      var path = Path.Combine(folderPath, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}.dxf");
-      dxfConverter.Doc.Save(path);
-      
-      // Create a 3D view to import the SAT file
-      var typeId = Doc.GetDefaultElementTypeId(ElementTypeGroup.ViewType3D);
-      var view = View3D.CreatePerspective(Doc, typeId);
 
-      // Call Doc Import
-      var success = Doc.Import(
-        path, 
-        new DWGImportOptions()
-        {
-          Unit = ImportUnit.Millimeter
-        }, 
-        view, out var elementId);
-
-      //Doc.Delete(view.Id);
-      //File.Delete(path);
-      var el = Doc.GetElement(elementId);
-      el.Pinned = false;
-      
-      return new ApplicationPlaceholderObject()
-      {
-        id = mesh.id, 
-        applicationId = mesh.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
-    }
-    
     public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
       if (arr.Count % 3 != 0)
@@ -928,7 +882,7 @@ namespace Objects.Converter.Revit
 
       return result;
     }
-
+    
     public Solid BrepToNative(Brep brep)
     {
       //Make sure face references are calculated by revit
@@ -948,7 +902,6 @@ namespace Objects.Converter.Revit
       using var builder = new BRepBuilder(bRepType);
 
       builder.SetAllowShortEdges();
-      builder.AllowRemovalOfProblematicFaces();
 
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
@@ -965,7 +918,7 @@ namespace Objects.Converter.Revit
               var loopId = builder.AddLoop(faceId);
               if (face.OrientationReversed)
                 loop.TrimIndices.Reverse();
-              var lastVertexIndex = loop.Trims[0].Edge.StartIndex;
+
               foreach (var trim in loop.Trims)
               {
                 try
@@ -985,7 +938,6 @@ namespace Objects.Converter.Revit
                     edgeIds.AddRange(bRepBuilderGeometryIds);
                   }
 
-                  var coEdgeReversed = lastVertexIndex != trim.Edge.StartIndex;
                   var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
                   if (trimReversed)
                   {
@@ -999,8 +951,6 @@ namespace Objects.Converter.Revit
                       if (builder.IsValidEdgeId(edgeIds[e]))
                         builder.AddCoEdge(loopId, edgeIds[e], false);
                   }
-
-                  lastVertexIndex = trim.Edge.EndIndex;
                 }
                 catch (Exception e)
                 {
@@ -1232,7 +1182,6 @@ namespace Objects.Converter.Revit
             }
           }
         }
-
       }
       throw new NotImplementedException();
     }
