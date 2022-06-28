@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConverterDynamo": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Dynamo\\Dynamo Core\\2.7\\DynamoSandbox.exe"
+    }
+  }
+}
