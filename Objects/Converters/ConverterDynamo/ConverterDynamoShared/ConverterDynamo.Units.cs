@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-#if REVIT
+﻿#if REVIT
 using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
 #endif
@@ -40,7 +36,7 @@ namespace Objects.Converter.Dynamo
       return Speckle.Core.Kits.Units.Meters;
     }
 
-#if !(REVIT2022)
+#if !(REVIT2022 || REVIT2023)
 
     private DisplayUnitType _revitUnitsTypeId = DisplayUnitType.DUT_UNDEFINED;
     public DisplayUnitType RevitLengthTypeId
