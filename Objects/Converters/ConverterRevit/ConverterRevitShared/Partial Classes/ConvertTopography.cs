@@ -31,7 +31,7 @@ namespace Objects.Converter.Revit
           pts.Add(PointToNative(point));
         }
 
-#if REVIT2022 || REVIT2023
+#if !REVIT2019
         facets.Capacity += (int) (displayMesh.faces.Count / 4f) * 3;
         int j = 0;
         while (j < displayMesh.faces.Count)
@@ -47,7 +47,7 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
       }
       TopographySurface revitSurface = null;
-#if REVIT2022 || REVIT2023
+#if !REVIT2019
       revitSurface = TopographySurface.Create(Doc, pts, facets);
 #else
       revitSurface = TopographySurface.Create(Doc, pts);
