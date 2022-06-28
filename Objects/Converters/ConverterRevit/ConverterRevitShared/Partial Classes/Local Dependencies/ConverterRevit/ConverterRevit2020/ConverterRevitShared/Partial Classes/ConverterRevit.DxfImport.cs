@@ -62,6 +62,7 @@ namespace Objects.Converter.Revit
       var el = CreateDxfImportFamily(
         new List<Base>(brep.displayValue), 
         $"Speckle-Brep-{brep.id}-{brep.applicationId}",
+        1,
         doc);
       
       return new ApplicationPlaceholderObject
