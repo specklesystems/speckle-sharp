@@ -108,9 +108,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
       - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
       # Node, redis, postgres and speckle-server images for test server
-      - image: "circleci/node:12"
-      - image: "circleci/redis:6"
-      - image: "circleci/postgres:12"
+      - image: "cimg/node:16.15"
+      - image: "cimg/redis:6.2"
+      - image: "cimg/postgres:14.2"
         environment:
           POSTGRES_DB: speckle2_test
           POSTGRES_PASSWORD: speckle
@@ -127,6 +127,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           STRATEGY_LOCAL: "true"
           CANONICAL_URL: "http://localhost:3000"
           WAIT_HOSTS: localhost:5432, localhost:6379
+          DISABLE_FILE_UPLOADS: "true"
     steps:
       - checkout
       - run:
