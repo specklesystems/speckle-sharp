@@ -22,11 +22,11 @@ namespace Objects.Converter.CSI
       {
         string pt1 = "";
         string pt2 = "";
-        Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
-        var specklePt1 = element1D.end1Node.basePoint;
-        var specklePt2 = element1D.end2Node.basePoint;
-        Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
-        Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
+        //Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
+        //var specklePt1 = element1D.end1Node.basePoint;
+        //var specklePt2 = element1D.end2Node.basePoint;
+        //Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
+        //Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
         setFrameElementProperties(element1D, element1D.name);
       }
       else

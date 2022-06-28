@@ -122,10 +122,16 @@ namespace Objects.Converter.CSI
 
       if (model.nodes != null)
       {
+        var pointNames = GetAllPointNames(Model);
         foreach (Node node in model.nodes)
         {
-          PointToNative(node);
-          updateExistingNode(node);
+        if(pointNames.Contains(node.name)){
+            updatePoint(node);
+        }else{
+            PointToNative(node);
+          }
+          
+          
         }
       }
 
