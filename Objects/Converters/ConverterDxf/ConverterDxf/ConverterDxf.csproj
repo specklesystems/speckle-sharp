@@ -6,6 +6,7 @@
         <LangVersion>9</LangVersion>
         <Nullable>disable</Nullable>
         <RootNamespace>Objects.Converters.DxfConverter</RootNamespace>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Speckle.netDxf" Version="3.0.0" />
+      <PackageReference Include="Speckle.netDxf" Version="3.0.1" PrivateAssets="true"/>
     </ItemGroup>
     
     <PropertyGroup>
@@ -22,8 +23,9 @@
     </PropertyGroup>
     
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-        <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\$(ProjectName)\&quot;" />
+        <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+        <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)Speckle.netDxf.dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
         <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/Objects/'" />
-        <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)netDxf.dll' $HOME'/.config/Speckle/Kits/Objects/'" />
+        <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)Speckle.netDxf.dll' $HOME'/.config/Speckle/Kits/Objects/'" />
     </Target>
 </Project>
