@@ -11,6 +11,7 @@ namespace Objects.Converters.DxfConverter
             {
                 case null: // Create a new in-memory document
                     Doc = new DxfDocument();
+                    Doc.DrawingVariables.InsUnits = UnitsToDocUnits(Settings.DocUnits);
                     break;
                 case string str: // Load up an existing document
                     Doc = DxfDocument.Load(str);
