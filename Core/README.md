@@ -6,7 +6,7 @@
 
 This is an early alpha release, not meant for use in production! We're working to stabilise the 2.0 API, and until then there will be breaking changes. You have been warned!
 
-## Introduction
+## Introductions
 
 ### Core
 
