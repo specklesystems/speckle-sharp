@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
       switch (ToNativeMeshSetting)
       {
         case ToNativeMeshSettingEnum.Default:
-          return DirectShapeToNative(new[] { mesh }, cat);
+          return DirectShapeToNative(new[] { mesh }, cat, mesh.applicationId ?? mesh.id);
         case ToNativeMeshSettingEnum.DxfImport:
           return MeshToDxfImport(mesh, Doc);
         case ToNativeMeshSettingEnum.DxfImportInFamily:
@@ -177,11 +177,11 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationPlaceholderObject DirectShapeToNative(IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public ApplicationPlaceholderObject DirectShapeToNative(IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel, string applicationId = null)
     {
       // if it comes from GH it doesn't have an applicationId, then use the hash id 
       if (meshes.Count == 0) return null;
-      string applicationId = meshes[0].applicationId ?? meshes[0].id;
+      applicationId ??= meshes[0].id;
 
       var docObj = GetExistingElementByApplicationId(applicationId);
 
