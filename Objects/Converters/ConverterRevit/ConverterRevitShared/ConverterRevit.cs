@@ -361,7 +361,7 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return DirectShapeToNative(o.displayValue);
+          return DirectShapeToNative(o.displayValue, applicationId: o.applicationId);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
