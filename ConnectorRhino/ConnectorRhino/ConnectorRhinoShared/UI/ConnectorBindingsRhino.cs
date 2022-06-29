@@ -229,6 +229,7 @@ namespace SpeckleRhino
           
         SelectedReceiveCommit = commit.id;
         Preview.Clear();
+        StoredObjects.Clear();
 
         int count = 0;
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
@@ -269,6 +270,7 @@ namespace SpeckleRhino
       if (SelectedReceiveCommit != commit.id)
       {
         Preview.Clear();
+        StoredObjects.Clear();
         SelectedReceiveCommit = commit.id;
       }
 

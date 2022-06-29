@@ -100,6 +100,7 @@ namespace Speckle.Core.Models
 
     public bool Convertible { get; set; } // is the object conversion supported by the converter
 
+    [JsonIgnore]
     public List<ApplicationObject> Fallback { get; set; } // the fallback base if direct conversion is not supported, output corresponding base during flatten
     
     public string Id { get; set; } // the original object id (speckle or application)
