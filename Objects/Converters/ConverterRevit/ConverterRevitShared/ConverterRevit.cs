@@ -395,7 +395,26 @@ namespace Objects.Converter.Revit
           return DetailCurveToNative(o);
 
         case BER.DirectShape o:
-          return DirectShapeToNative(o);
+          try
+          {
+            // Try to convert to direct shape, taking into account the current mesh settings
+            return DirectShapeToNative(o, ToNativeMeshSetting);
+          }
+          catch (FallbackToDxfException e)
+          {
+            // FallbackToDxf exception means we should attempt a DXF import instead.
+            switch (ToNativeMeshSetting)
+            {
+              case ToNativeMeshSettingEnum.DxfImport:
+                return DirectShapeToDxfImport(o); // DirectShape -> DXF
+              case ToNativeMeshSettingEnum.DxfImportInFamily:
+                return DirectShapeToDxfImportFamily(o); // DirectShape -> Family (DXF inside)
+              case ToNativeMeshSettingEnum.Default:
+              default:
+                // For anything else, try again with the default fallback (ugly meshes).
+                return DirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
+            }
+          }
 
         case BER.FreeformElement o:
           return FreeformElementToNative(o);

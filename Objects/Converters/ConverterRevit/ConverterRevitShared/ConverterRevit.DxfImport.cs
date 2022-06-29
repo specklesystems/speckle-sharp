@@ -12,11 +12,42 @@ using Speckle.Core.Models;
 using Speckle.netDxf.Entities;
 using FamilyInstance = Objects.BuiltElements.Revit.FamilyInstance;
 using Mesh = Objects.Geometry.Mesh;
+using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    public ApplicationPlaceholderObject DirectShapeToDxfImport(DirectShape ds, DB.Document doc = null)
+    {
+      var existing = CheckForExistingObject(ds);
+      if (existing != null) return existing;
+      
+      var el = CreateDxfImport(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
+      return new ApplicationPlaceholderObject
+      {
+        id = ds.id,
+        applicationId = ds.applicationId,
+        NativeObject = el,
+        ApplicationGeneratedId = el.UniqueId
+      };
+    }
+    
+    public ApplicationPlaceholderObject DirectShapeToDxfImportFamily(DirectShape ds, DB.Document doc = null)
+    {
+      var existing = CheckForExistingObject(ds);
+      if (existing != null) return existing;
+      
+      var el = CreateDxfImportFamily(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
+      return new ApplicationPlaceholderObject
+      {
+        id = ds.id,
+        applicationId = ds.applicationId,
+        NativeObject = el,
+        ApplicationGeneratedId = el.UniqueId
+      };
+    }
+    
     public ApplicationPlaceholderObject MeshToDxfImport(Mesh mesh, DB.Document doc = null)
     {
       var existing = CheckForExistingObject(mesh);
@@ -116,7 +147,6 @@ namespace Objects.Converter.Revit
         return new List<EntityObject> { (EntityObject)o };
       }).Where(e => e != null).ToList();
         
-    
       
       if (collection.Count == 0) throw new SpeckleException("No objects could be converted to DXF.", false);
       

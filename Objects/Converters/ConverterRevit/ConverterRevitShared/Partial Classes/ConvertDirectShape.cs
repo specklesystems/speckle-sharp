@@ -16,8 +16,42 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    public class FallbackToDxfException : Exception
+    {
+      public FallbackToDxfException(string message) : base(message)
+      {
+      }
 
-    public ApplicationPlaceholderObject DirectShapeToNative(DirectShape speckleDs)
+      public FallbackToDxfException(string message, Exception innerException) : base(message, innerException)
+      {
+      }
+    }
+
+    public ApplicationPlaceholderObject TryDirectShapeToNative(DirectShape o)
+    {
+      try
+      {
+        // Try to convert to direct shape, taking into account the current mesh settings
+        return DirectShapeToNative(o, ToNativeMeshSetting);
+      }
+      catch (FallbackToDxfException e)
+      {
+        // FallbackToDxf exception means we should attempt a DXF import instead.
+        switch (ToNativeMeshSetting)
+        {
+          case ToNativeMeshSettingEnum.DxfImport:
+            return DirectShapeToDxfImport(o); // DirectShape -> DXF
+          case ToNativeMeshSettingEnum.DxfImportInFamily:
+            return DirectShapeToDxfImportFamily(o); // DirectShape -> Family (DXF inside)
+          case ToNativeMeshSettingEnum.Default:
+          default:
+            // For anything else, try again with the default fallback (ugly meshes).
+            return DirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
+        }
+      }
+    }
+    
+    public ApplicationPlaceholderObject DirectShapeToNative(DirectShape speckleDs, ToNativeMeshSettingEnum fallback)
     {
       var existing = CheckForExistingObject(speckleDs);
       if (existing != null) return existing;
@@ -36,11 +70,15 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
+              if (fallback != ToNativeMeshSettingEnum.Default)
+                throw new FallbackToDxfException("Failed to convert BREP to Solid. Falling back to DXF import as per settings.");
               var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
               converted.AddRange(mesh);
             }
             break;
           case Mesh mesh:
+            if (fallback != ToNativeMeshSettingEnum.Default)
+              throw new FallbackToDxfException("DirectShape contains Mesh. Falling back to DXF import as per Settings.");            
             var rMesh = MeshToNative(mesh);
             converted.AddRange(rMesh);
             break;
