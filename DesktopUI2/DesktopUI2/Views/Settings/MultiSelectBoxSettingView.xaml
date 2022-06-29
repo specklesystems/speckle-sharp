@@ -15,7 +15,7 @@
 
   <Grid
     Margin="10"
-    ColumnDefinitions="auto,auto,*"
+    ColumnDefinitions="auto,1*,1*"
     RowDefinitions="auto, auto, auto">
     <icons:MaterialIcon
       Margin="0"
@@ -36,6 +36,7 @@
         <TextBlock 
           Margin="5"
           TextWrapping="Wrap"
+          MinHeight="16"
           Text="{Binding Setting.Selection}"/>
         <DropDown 
           Name="PopupParent"
@@ -52,67 +53,107 @@
           PlacementAnchor="Top"
           PlacementMode="Bottom"
           PlacementTarget="{Binding #PopupParent}">
-          <ListBox
-            Background="White"
-            IsVisible="True"
+          <Border
+            Background="{DynamicResource MaterialDesignCardBackground}"
             BorderThickness="1"
-            BorderBrush="Gray"
-            CornerRadius="10"
-            Classes="Chip"
+            BorderBrush="Gray">
+            <StackPanel>
+          <ListBox
             Items="{Binding Setting.Values}"
             Selection="{Binding Setting.SelectionModel}"
             SelectionMode="Multiple,Toggle">
           </ListBox>
+            <Button>
+              + Custom
+            </Button>
+            </StackPanel>
+          </Border>
         </Popup>
       </Grid>
     </StackPanel>
 
+    <!--{Binding Setting.AddCustom}-->
     <StackPanel 
       Grid.Row="2" 
       Grid.ColumnSpan="3"
-      IsVisible="{Binding Setting.AddCustom}">
-      <TextBox
-        Margin="0,8"
-        Padding="0"
-        assists:TextFieldAssist.CornerRadius="32"
-        BorderBrush="{Binding $self.Foreground}"
-        BorderThickness="1"
-        Classes="Solo"
-        Text="{Binding Setting.SearchQuery, Mode=TwoWay}"
-        Watermark="Material, Category, Family, or Type">
-        <TextBox.InnerLeftContent>
-          <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Kind="Magnify" />
-          </Border>
-        </TextBox.InnerLeftContent>
-        <TextBox.InnerRightContent>
-          <Button
-            Margin="0,8"
-            CornerRadius="32">
-            Done
-          </Button>
-        </TextBox.InnerRightContent>
-      </TextBox>
+      IsVisible="True">
+      <!--<Grid Margin="0,10" ColumnDefinitions="*,*,*,*, auto" RowDefinitions="auto,auto">
+        <TextBlock
+          Text="Category *" 
+          Margin="5"/>
+        <TextBlock
+          Grid.Column="1"
+          Text="Material"
+          Margin="5"/>
+        <TextBlock
+          Grid.Row="0"
+          Grid.Column="2"
+          Text="Family"
+          Margin="5"/>
+        <TextBlock
+          Grid.Row="0"
+          Grid.Column="3"
+          Text="Type"
+          Margin="5"/>
+        <Button
+          Grid.Row="0"
+          Grid.Column="4"
+          Grid.RowSpan="1"
+          Margin="0"
+          CornerRadius="32">
+          Done
+        </Button>
+      </Grid>-->
+      <Grid ColumnDefinitions="auto, 1*">
 
-
+        <TextBox
+          Grid.Column="1"
+          Margin="0,8"
+          IsEnabled="{Binding #Category.Text}"
+          Padding="0"
+          assists:TextFieldAssist.CornerRadius="32"
+          BorderBrush="{Binding $self.Foreground}"
+          BorderThickness="1"
+          Classes="Solo"
+          Text="{Binding Setting.Test, Mode=TwoWay}"
+          Watermark="Material, Family, or Type">
+          <TextBox.InnerLeftContent>
+            <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Kind="Magnify" />
+            </Border>
+          </TextBox.InnerLeftContent>
+          <TextBox.InnerRightContent>
+            <!--<Button
+              Margin="0,8"
+              CornerRadius="32">
+              Done
+            </Button>-->
+          </TextBox.InnerRightContent>
+        </TextBox>
+      </Grid>
 
       <ScrollViewer
         Grid.Row="2"
         MaxHeight="180"
         VerticalScrollBarVisibility="Auto">
-        <ListBox
+        <StackPanel>
+          <ListBox
           x:Name="ItemsListBox"
+          x:Class=""
           Margin="0,0,0,8"
           Classes="Chip"
-          Items="{Binding SearchResults}"
-          Selection="{Binding SelectionModel}"
-          SelectionMode="Multiple, Toggle" />
-      </ScrollViewer>
+          Items="{Binding Setting.SearchResults2}"
+          Selection="{Binding Setting.SearchSelectionModel}"
+          SelectionMode="Multiple, Toggle">
+        </ListBox>
+        <TextBlock Text="{Binding Setting.Test}"/>
+        </StackPanel>
+       </ScrollViewer>
     </StackPanel>
 
 

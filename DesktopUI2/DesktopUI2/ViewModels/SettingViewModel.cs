@@ -44,13 +44,18 @@ namespace DesktopUI2.ViewModels
         Name = "Disallow Join For Elements",
         Icon = "CrosshairsGps",
         Description = "Hello world. This is a setting.",
-        Values = new List<string>() { "Beams", "Columns", "Walls", "+Custom" },
-        Selections = new ObservableCollection<string>()
+        Values = new List<string>() {"Walls", "+Custom" }
       };
       var MultiSelectBox = (MultiSelectBoxSetting)Setting;
-      MultiSelectBox.SelectionModel = new SelectionModel<string>();
-      MultiSelectBox.SelectionModel.SingleSelect = false;
-      MultiSelectBox.SelectionModel.SelectionChanged += MultiSelectBox.SelectionChanged;
+      //MultiSelectBox.SelectionModel = new SelectionModel<string>();
+      //MultiSelectBox.SelectionModel.SingleSelect = false;
+      //MultiSelectBox.SelectionModel.SelectionChanged += MultiSelectBox.SelectionChanged;
+
+      //MultiSelectBox.SearchSelectionModel = new SelectionModel<string>();
+      //MultiSelectBox.SearchSelectionModel.SingleSelect = false;
+      //MultiSelectBox.SearchSelectionModel.SelectionChanged += MultiSelectBox.SearchSelectionChanged;
+
+      
     }
     public SettingViewModel(ISetting setting)
     {
@@ -60,9 +65,9 @@ namespace DesktopUI2.ViewModels
       if (Setting is MultiSelectBoxSetting)
       {
         var MultiSelectBox = (MultiSelectBoxSetting)Setting;
-        MultiSelectBox.SelectionModel = new SelectionModel<string>();
-        MultiSelectBox.SelectionModel.SingleSelect = false;
-        MultiSelectBox.SelectionModel.SelectionChanged += MultiSelectBox.SelectionChanged;
+        //MultiSelectBox.SelectionModel = new SelectionModel<string>();
+        //MultiSelectBox.SelectionModel.SingleSelect = false;
+        //MultiSelectBox.SelectionModel.SelectionChanged += MultiSelectBox.SelectionChanged;
         //MultiSelectBox.TogglePopup = ReactiveCommand.Create(() => MultiSelectBox.PopupVisible = !MultiSelectBox.PopupVisible);
         //MultiSelectBox.RemoveSelection = ReactiveCommand.Create<string>(sel => MultiSelectBox.Selections.Remove(sel));
       }
