@@ -19,7 +19,7 @@ namespace Speckle.ConnectorRevit.UI
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
-      List<string> prettyMeshOptions = new List<string>() { InternalOrigin };
+      List<string> prettyMeshOptions = new List<string>() { defaultValue, dxf, familyDxf };
 
       // find project base point and survey point. these don't always have name props, so store them under custom strings
       var basePoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
