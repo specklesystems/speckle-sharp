@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.netDxf.Units;
@@ -25,12 +26,18 @@ namespace Objects.Converters.DxfConverter
         public Dxfe.Mesh MeshToNative(Mesh mesh) => new(
             mesh.GetPoints().Select(VectorToNative),
             mesh.GetFaceIndices()
-        );
+        )
+        {
+            Color = MaterialToNativeColor(mesh["renderMaterial"] as RenderMaterial)
+        };
 
-        public IEnumerable<Dxfe.EntityObject> MeshToNativePretty(Mesh mesh)
+        public IEnumerable<Dxfe.EntityObject> MeshToNativePretty(Mesh mesh, RenderMaterial renderMaterial = null)
         {
             var topology = mesh.GetMeshEdgeFaces();
-            return MeshFacesToNative(topology).Concat<Dxfe.EntityObject>(MeshEdgesToNative(topology));
+            return MeshFacesToNative(
+                topology,
+                renderMaterial: renderMaterial ?? mesh["renderMaterial"] as RenderMaterial
+                ).Concat<Dxfe.EntityObject>(MeshEdgesToNative(topology));
         }
 
         private IEnumerable<Dxfe.Line> MeshEdgesToNative(MeshTopologyResult topology,
@@ -47,7 +54,7 @@ namespace Objects.Converters.DxfConverter
                          return line;
                      });
 
-        private IEnumerable<Dxfe.Face3D> MeshFacesToNative(MeshTopologyResult topology, string layerName = "Mesh Faces")
+        private IEnumerable<Dxfe.Face3D> MeshFacesToNative(MeshTopologyResult topology, string layerName = "Mesh Faces", RenderMaterial renderMaterial = null)
         {
             var vertices = topology.Vertices.Select(VectorToNative).ToList();
             return topology.Faces.Select(indices =>
@@ -69,15 +76,22 @@ namespace Objects.Converters.DxfConverter
 
                 face.EdgeFlags = (Dxfe.Face3DEdgeFlags)15; // All edges hidden!
                 face.Layer = new Dxf.Tables.Layer(layerName);
+                face.Color = MaterialToNativeColor(renderMaterial);
                 return face;
             }).Where(f => f != null);
         }
 
+        public Dxf.AciColor MaterialToNativeColor(RenderMaterial renderMaterial)
+        {
+            if(renderMaterial == null) return Dxf.AciColor.ByLayer;
+            var sysColor = System.Drawing.Color.FromArgb(renderMaterial.diffuse);
+            return new Dxf.AciColor(sysColor.R, sysColor.G, sysColor.B);
+        }
 
         public IEnumerable<Dxfe.EntityObject> BrepToNative(Brep brep)
         {
             return Settings.PrettyMeshes 
-                ? brep.displayValue.SelectMany(MeshToNativePretty) 
+                ? brep.displayValue.SelectMany(m => MeshToNativePretty(m, brep["renderMaterial"] as RenderMaterial)) 
                 : brep.displayValue.Select(MeshToNative);
         }
     }
