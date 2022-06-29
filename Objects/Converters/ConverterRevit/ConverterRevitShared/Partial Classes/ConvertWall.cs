@@ -11,6 +11,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    // CAUTION: these strings need to have the same values as in the connector
+    const string StructuralWalls = "Structural Walls";
+    const string ArchitecturalWalls = "Achitectural Walls";
 
     public List<ApplicationPlaceholderObject> WallToNative(BuiltElements.Wall speckleWall)
     {
@@ -44,6 +47,19 @@ namespace Objects.Converter.Revit
       {
         isUpdate = false;
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
+        if (Settings.ContainsKey("disallow-join"))
+        {
+          if (new List<string>(Settings["disallow-join"].Split(',')).Contains(StructuralWalls) && structural)
+          {
+            WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
+            WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
+          }
+          if (new List<string>(Settings["disallow-join"].Split(',')).Contains(ArchitecturalWalls) && !structural)
+          {
+            WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
+            WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
+          }
+        }
       }
       if (revitWall == null)
       {
