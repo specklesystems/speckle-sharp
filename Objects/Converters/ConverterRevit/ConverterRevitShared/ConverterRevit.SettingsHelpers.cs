@@ -2,6 +2,11 @@
 {
   public partial class ConverterRevit
   {
+    // CAUTION: these strings need to have the same values as in the connector
+    const string defaultValue = "Default";
+    const string dxf = "DXF";
+    const string familyDxf = "Family DXF";
+
     public enum ToNativeMeshSettingEnum
     {
       Default,
@@ -13,15 +18,15 @@
     {
       get
       {
-        if (!Settings.ContainsKey("pretty-mesh")) return ToNativeMeshSettingEnum.DxfImport;
+        if (!Settings.ContainsKey("pretty-mesh")) return ToNativeMeshSettingEnum.Default;
         var value = Settings["pretty-mesh"];
         switch (value)
         {
-          case "dxf":
+          case dxf:
             return ToNativeMeshSettingEnum.DxfImport;
-          case "family-dxf":
+          case familyDxf:
             return ToNativeMeshSettingEnum.DxfImportInFamily;
-          case "default":
+          case defaultValue:
           default:
             return ToNativeMeshSettingEnum.Default; 
         }
@@ -30,9 +35,9 @@
       {
         Settings["pretty-mesh"] = value switch
         {
-          ToNativeMeshSettingEnum.DxfImport => "dxf",
-          ToNativeMeshSettingEnum.DxfImportInFamily => "family-dxf",
-          ToNativeMeshSettingEnum.Default => "default",
+          ToNativeMeshSettingEnum.DxfImport => dxf,
+          ToNativeMeshSettingEnum.DxfImportInFamily => familyDxf,
+          ToNativeMeshSettingEnum.Default => defaultValue,
           _ => Settings["pretty-mesh"]
         };
       }
