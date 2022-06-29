@@ -113,8 +113,8 @@ namespace DesktopUI2
         new ListBoxSetting {Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} },
         new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
         new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving"},
-        new MultiSelectBoxSetting { Name = "Disallow Join For Elements", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.",
-          Values = new List<string>() { "StructuralFraming", "ArchitecturalWalls", "StructuralWalls", "+Custom" } },
+        new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
+          Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
     };
     }
 

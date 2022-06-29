@@ -29,8 +29,8 @@ namespace Speckle.ConnectorRevit.UI
         new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Sends or receives stream objects in relation to this document point"},
         new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
         new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving NOTE: elements from linked models will be received in the current document"},
-        new CheckBoxSetting {Slug = "disallowjoin-beams", Name = "Disallow Join For Beams", Icon ="CallSplit", IsChecked= false, Description = "Disallow joins for beams by default"},
-        new CheckBoxSetting {Slug = "disallowjoin-columns", Name = "Disallow Join For Columns", Icon ="CallSplit", IsChecked= false, Description = "Disallow joins for columns by default"}
+        new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
+          Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
       };
     }
   }

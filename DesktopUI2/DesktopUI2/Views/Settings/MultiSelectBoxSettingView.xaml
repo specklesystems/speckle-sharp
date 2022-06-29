@@ -40,8 +40,8 @@
           Text="{Binding Setting.Selection}"/>
         <DropDown 
           Name="PopupParent"
-          MinWidth="150"
-          VerticalAlignment="Bottom">
+          VerticalAlignment="Bottom"
+          Margin="0">
           
         </DropDown>
         <Popup
@@ -55,55 +55,36 @@
           PlacementTarget="{Binding #PopupParent}">
           <Border
             Background="{DynamicResource MaterialDesignCardBackground}"
-            BorderThickness="1"
-            BorderBrush="Gray">
+            BorderThickness="0"
+            BorderBrush="Gray"
+            CornerRadius="5">
             <StackPanel>
-          <ListBox
-            Items="{Binding Setting.Values}"
-            Selection="{Binding Setting.SelectionModel}"
-            SelectionMode="Multiple,Toggle">
-          </ListBox>
-            <Button>
-              + Custom
-            </Button>
+              <ListBox
+                Items="{Binding Setting.Values}"
+                Selection="{Binding Setting.SelectionModel}"
+                SelectionMode="Multiple,Toggle">
+              </ListBox>
+              <!-- button to create custom value -->
+              <!--<Button>
+                + Custom
+              </Button>-->
+              <!-- this button corrosponds to commented 
+              block below -->
             </StackPanel>
           </Border>
         </Popup>
       </Grid>
     </StackPanel>
 
-    <!--{Binding Setting.AddCustom}-->
-    <StackPanel 
+    <!-- This code is for the option to add more customizable 
+    options such a walls or structural framing of a specific material,
+    family, or type -->
+    <!-- Change isvisible from {Binding Setting.AddCustom}
+    to True in order to have a better debug experience-->
+    <!--<StackPanel 
       Grid.Row="2" 
       Grid.ColumnSpan="3"
-      IsVisible="True">
-      <!--<Grid Margin="0,10" ColumnDefinitions="*,*,*,*, auto" RowDefinitions="auto,auto">
-        <TextBlock
-          Text="Category *" 
-          Margin="5"/>
-        <TextBlock
-          Grid.Column="1"
-          Text="Material"
-          Margin="5"/>
-        <TextBlock
-          Grid.Row="0"
-          Grid.Column="2"
-          Text="Family"
-          Margin="5"/>
-        <TextBlock
-          Grid.Row="0"
-          Grid.Column="3"
-          Text="Type"
-          Margin="5"/>
-        <Button
-          Grid.Row="0"
-          Grid.Column="4"
-          Grid.RowSpan="1"
-          Margin="0"
-          CornerRadius="32">
-          Done
-        </Button>
-      </Grid>-->
+      IsVisible="{Binding Setting.AddCustom}">
       <Grid ColumnDefinitions="auto, 1*">
 
         <TextBox
@@ -115,7 +96,7 @@
           BorderBrush="{Binding $self.Foreground}"
           BorderThickness="1"
           Classes="Solo"
-          Text="{Binding Setting.Test, Mode=TwoWay}"
+          Text="{Binding Setting.SearchQuery, Mode=TwoWay}"
           Watermark="Material, Family, or Type">
           <TextBox.InnerLeftContent>
             <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
@@ -128,11 +109,7 @@
             </Border>
           </TextBox.InnerLeftContent>
           <TextBox.InnerRightContent>
-            <!--<Button
-              Margin="0,8"
-              CornerRadius="32">
-              Done
-            </Button>-->
+
           </TextBox.InnerRightContent>
         </TextBox>
       </Grid>
@@ -154,98 +131,7 @@
         <TextBlock Text="{Binding Setting.Test}"/>
         </StackPanel>
        </ScrollViewer>
-    </StackPanel>
-
-
-      <!--<StackPanel Grid.Column="2" Grid.RowSpan="2">
-        <Border
-          Name="PopupTarget"
-          BorderThickness="1"
-          BorderBrush="Gray"
-          CornerRadius="10">
-          <Grid ColumnDefinitions="*, auto">
-            <WrapPanel Margin="5">
-              <ItemsControl Items="{Binding Setting.Selections}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Border
-                      Margin="0,0,3,3" 
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Left"
-                      CornerRadius="10"
-                      Padding="5"
-                      Background="{DynamicResource PrimaryHueMidBrush}">
-                      <StackPanel Orientation="Horizontal">
-                        <TextBlock 
-                          VerticalAlignment="Center"
-                          Text="{Binding}"/>
-                        <Button
-                          VerticalContentAlignment="Center"
-                          HorizontalAlignment="Right"
-                          Margin="0"
-                          Padding="0"
-                          Command="{Binding $parent[WrapPanel].DataContext.Setting.RemoveSelection}"
-                          CommandParameter="{Binding}"
-                          Background="Transparent">
-                          <Button.Content>
-                            <icons:MaterialIcon
-                              Margin="0"
-                              Padding="0"
-                              VerticalAlignment="Center"
-                              assists:ShadowAssist.ShadowDepth="0"
-                              Kind="Close" />
-                          </Button.Content>
-                        </Button>
-                      </StackPanel>
-                    </Border>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-                <ItemsControl.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <WrapPanel/>
-                  </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-              </ItemsControl>
-            </WrapPanel>
-            <Button
-              Grid.Column="1"
-              VerticalContentAlignment="Center"
-              HorizontalAlignment="Right"
-              Command="{Binding Setting.TogglePopup}"
-              Margin="0"
-              Padding="0"
-              Background="Transparent">
-              <Button.Content>
-                <icons:MaterialIcon
-                  Margin="0"
-                  Padding="0"
-                  VerticalAlignment="Center"
-                  assists:ShadowAssist.ShadowDepth="0"
-                  Foreground="Black"
-                  Kind="MenuDown" />
-              </Button.Content>
-            </Button>
-          </Grid>
-        </Border>
-        <StackPanel Spacing="3">
-        </StackPanel>
-        <Popup 
-          Opacity="100"
-          IsOpen="{Binding Setting.PopupVisible}" 
-          Width="{Binding #PopupTarget.Bounds.Width}"
-          PlacementAnchor="Top"
-          PlacementMode="Bottom"
-          PlacementTarget="{Binding #PopupTarget}"> 
-          <ListBox 
-            IsVisible="True"
-            BorderThickness="1"
-            BorderBrush="Gray"
-            CornerRadius="10"
-            Items="{Binding Setting.Values}" 
-            SelectedItem="{Binding Setting.MultiSelectBoxSelection}">
-          </ListBox>
-        </Popup>
-      </StackPanel>-->
+    </StackPanel>-->
 
   </Grid>
 

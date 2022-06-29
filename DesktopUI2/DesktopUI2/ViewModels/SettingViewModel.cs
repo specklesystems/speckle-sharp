@@ -41,36 +41,18 @@ namespace DesktopUI2.ViewModels
       Bindings = new DummyBindings();
       Setting = new MultiSelectBoxSetting
       {
+        Slug = "disallow-join",
         Name = "Disallow Join For Elements",
-        Icon = "CrosshairsGps",
-        Description = "Hello world. This is a setting.",
-        Values = new List<string>() {"Walls", "+Custom" }
+        Icon = "CallSplit",
+        Description = "Determine which objects should not be allowed to join by default",
+        Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" }
       };
-      var MultiSelectBox = (MultiSelectBoxSetting)Setting;
-      //MultiSelectBox.SelectionModel = new SelectionModel<string>();
-      //MultiSelectBox.SelectionModel.SingleSelect = false;
-      //MultiSelectBox.SelectionModel.SelectionChanged += MultiSelectBox.SelectionChanged;
-
-      //MultiSelectBox.SearchSelectionModel = new SelectionModel<string>();
-      //MultiSelectBox.SearchSelectionModel.SingleSelect = false;
-      //MultiSelectBox.SearchSelectionModel.SelectionChanged += MultiSelectBox.SearchSelectionChanged;
-
-      
     }
     public SettingViewModel(ISetting setting)
     {
       Setting = setting;
       //restores the selected item
       Selection = setting.Selection;
-      if (Setting is MultiSelectBoxSetting)
-      {
-        var MultiSelectBox = (MultiSelectBoxSetting)Setting;
-        //MultiSelectBox.SelectionModel = new SelectionModel<string>();
-        //MultiSelectBox.SelectionModel.SingleSelect = false;
-        //MultiSelectBox.SelectionModel.SelectionChanged += MultiSelectBox.SelectionChanged;
-        //MultiSelectBox.TogglePopup = ReactiveCommand.Create(() => MultiSelectBox.PopupVisible = !MultiSelectBox.PopupVisible);
-        //MultiSelectBox.RemoveSelection = ReactiveCommand.Create<string>(sel => MultiSelectBox.Selections.Remove(sel));
-      }
     }
   }
 }
