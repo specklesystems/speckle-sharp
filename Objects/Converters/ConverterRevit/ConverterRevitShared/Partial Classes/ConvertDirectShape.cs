@@ -16,17 +16,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public class FallbackToDxfException : Exception
-    {
-      public FallbackToDxfException(string message) : base(message)
-      {
-      }
-
-      public FallbackToDxfException(string message, Exception innerException) : base(message, innerException)
-      {
-      }
-    }
-
+    /// <summary>
+    /// Attempts to convert a DirectShape to Revit according to the current ToNativeMeshSetting value.
+    /// </summary>
+    /// <param name="o">The direct shape to convert</param>
+    /// <returns>An application placeholder object containing a DirectShape, DXF Import or Family containing DXF Import.</returns>
     public ApplicationPlaceholderObject TryDirectShapeToNative(DirectShape o)
     {
       try
@@ -36,6 +30,7 @@ namespace Objects.Converter.Revit
       }
       catch (FallbackToDxfException e)
       {
+        Report.Log(e.Message);
         // FallbackToDxf exception means we should attempt a DXF import instead.
         switch (ToNativeMeshSetting)
         {
@@ -51,6 +46,13 @@ namespace Objects.Converter.Revit
       }
     }
     
+    /// <summary>
+    /// The default DirectShape conversion method. Will return a Revit DirectShape with the containing geometry.
+    /// </summary>
+    /// <param name="speckleDs"></param>
+    /// <param name="fallback"></param>
+    /// <returns></returns>
+    /// <exception cref="FallbackToDxfException"></exception>
     public ApplicationPlaceholderObject DirectShapeToNative(DirectShape speckleDs, ToNativeMeshSettingEnum fallback)
     {
       var existing = CheckForExistingObject(speckleDs);
@@ -104,25 +106,7 @@ namespace Objects.Converter.Revit
       return new ApplicationPlaceholderObject { applicationId = speckleDs.applicationId, ApplicationGeneratedId = revitDs.UniqueId, NativeObject = revitDs };
     }
 
-    public ApplicationPlaceholderObject CheckForExistingObject(Base @base)
-    {
-      @base.applicationId ??= @base.id;
-      var docObj = GetExistingElementByApplicationId(@base.applicationId);
 
-      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-          { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
-
-      //just create new one 
-      if (docObj != null)
-      {
-        Doc.Delete(docObj.Id);
-      }
-
-      return null;
-    }
-    
-    
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
     public ApplicationPlaceholderObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
