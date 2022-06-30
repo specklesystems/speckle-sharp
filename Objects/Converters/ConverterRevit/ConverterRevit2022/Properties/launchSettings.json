@@ -6,7 +6,10 @@
     },
     "ConverterRevit2022": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe"
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe",
+      "jsWebView2Debugging": false,
+      "sqlDebugging": false,
+      "nativeDebugging": true
     }
   }
 }

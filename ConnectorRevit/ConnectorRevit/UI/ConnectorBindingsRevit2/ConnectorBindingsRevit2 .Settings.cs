@@ -12,6 +12,10 @@ namespace Speckle.ConnectorRevit.UI
     const string ProjectBase = "Project Base";
     const string Survey = "Survey";
 
+    const string StructuralFraming = "Structural Framing";
+    const string StructuralWalls = "Structural Walls";
+    const string ArchitecturalWalls = "Achitectural Walls";
+
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
@@ -28,7 +32,9 @@ namespace Speckle.ConnectorRevit.UI
       {
         new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Sends or receives stream objects in relation to this document point"},
         new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
-        new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving NOTE: elements from linked models will be received in the current document"}
+        new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving NOTE: elements from linked models will be received in the current document"},
+        new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
+          Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
       };
     }
   }
