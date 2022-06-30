@@ -23,6 +23,8 @@ namespace Objects.Other
         public string units { get; set; }
 
 
+        public MaterialQuantity() { }
+        
         [Speckle.Core.Kits.SchemaInfo("MaterialQuantity", "Creates the quantity of a material")]
         public MaterialQuantity(Objects.Other.Material m, double volume, double  area, string units)
         {
