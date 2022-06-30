@@ -8,6 +8,7 @@ using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
 using STR = Objects.Structural;
+using GE = Objects.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -308,6 +309,17 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
+      Settings.TryGetValue("recieve-object-mesh", out string recieveModelMesh);
+      if(bool.Parse(recieveModelMesh) == true){
+        List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+        System.Reflection.PropertyInfo propInfo = @object.GetType().GetProperty("displayValue");
+        dynamic property = propInfo.GetValue(displayValues);
+        List<GE.Mesh> meshes = property;
+        if(meshes != null){
+          return DirectShapeToNative(meshes);
+        }
+      }
       //Family Document
       if (Doc.IsFamilyDocument)
       {
@@ -351,6 +363,11 @@ namespace Objects.Converter.Revit
         case Geometry.Mesh o:
           return DirectShapeToNative(o);
 
+        //case BE.TeklaStructures.Bolts o:
+        //  return DirectShapeToNative(o.displayMesh);
+        //case BE.TeklaStructures.TeklaBeam o:
+        //  return DirectShapeToNative(o.displayValue);
+
         // non revit built elems
         case BE.Alignment o:
           if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
@@ -365,8 +382,8 @@ namespace Objects.Converter.Revit
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
 
-        case BE.TeklaStructures.TeklaBeam o:
-          return TeklaBeamToNative(o);
+        //case BE.TeklaStructures.TeklaBeam o:
+        //  return TeklaBeamToNative(o);
 
         case BE.Beam o:
           return BeamToNative(o);
