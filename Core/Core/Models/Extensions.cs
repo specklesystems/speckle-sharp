@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +13,7 @@ namespace Speckle.Core.Models.Extensions
     /// Should return 'true' if the object is to be included in the output, 'false' otherwise.
     /// </remarks>
     public delegate bool FlattenPredicate(Base @base);
-    
+
     /// <summary>
     /// Provides access to each base object in the traverse function, and decides whether the traverse function should continue traversing it's children or not.
     /// </summary>
@@ -25,71 +23,72 @@ namespace Speckle.Core.Models.Extensions
     public delegate bool BaseRecursionBreaker(Base @base);
 
     /// <summary>
-    /// Traverses through an object and returns it's inner <see cref="Base"/> objects, or a subselection of them.
+    /// Traverses through the <paramref name="root"/> object and its children.
+    /// Only traverses through the first occurrence of a <see cref="Base"/> object (to prevent infinite recursion on circular references)
     /// </summary>
-    /// <param name="obj">The object to flatten.</param>
-    /// <param name="unique">True if you wish to filter out duplicate objects, false otherwise</param>
-    /// <param name="predicate">Determines whether an object should be included in the output.</param>
-    /// <param name="recursionBreaker">Determines whether an object should include it's children in the output.</param>
-    /// <returns>A flat <see cref="IEnumerable"/> of <see cref="Base"/> objects.</returns>
-    public static IEnumerable<Base> Flatten(this Base obj, bool unique, FlattenPredicate predicate = null,
-                                            BaseRecursionBreaker recursionBreaker = null)
+    /// <param name="root">The root object of the tree to flatten</param>
+    /// <param name="recursionBreaker">Optional predicate function to determine whether to break (or continue) traversal of a <see cref="Base"/> object's children.</param>
+    /// <returns>A flat List of <see cref="Base"/> objects.</returns>
+    /// <seealso cref="Traverse"/>
+    public static List<Base> Flatten(this Base root, BaseRecursionBreaker recursionBreaker = null)
     {
-      // TODO: Cache solution could be improved.
-      var result = Enumerable.Empty<Base>();
+      recursionBreaker ??= b => false;
+      
       var cache = new HashSet<string>();
-      obj.Traverse(b =>
+      return Traverse(root, b =>
       {
         // Stop if we've already encountered the object and the unique flag is true.
-        if (unique && cache.Contains(b.id)) return true;
-        cache.Add(b.id);
+        if (!cache.Add(b.id)) return true;
         
-        // Add to result if predicate returns true. If no predicate is found, the element will be added by default.
-        if (predicate?.Invoke(b) ?? true)
-          result = result.Append(b);
-        
-        // Return the result of the recursionBreaker function.
-        // If no recursionBreaker is found, it will continue recurring through the objects children.
-        return recursionBreaker?.Invoke(b) ?? false;
-      });
-      return result;
+        return recursionBreaker.Invoke(b);
+      }).ToList();
     }
-    
+
+
     /// <summary>
-    /// Traverses the specified <see cref="Base"/> object, and all of it's children, with a callback to access each of them and break the traverse execution.
+    /// Depth-first traversal of the specified <paramref name="root"/> object and all of its children as a deferred Enumerable, with a <paramref name="recursionBreaker"/> function to break the traversal.
     /// </summary>
-    /// <param name="obj">The <see cref="Base"/> object to traverse.</param>
-    /// <param name="recursionBreaker">Delegate function to access each <see cref="Base"/> object as it's traversed, and allows for control to stop the traverse behaviour on it's children.</param>
-    public static void Traverse(this Base obj, BaseRecursionBreaker recursionBreaker) => Traverse((object)obj, recursionBreaker);
-    
-    /// <summary>
-    /// The private implementation of the traverse function for Base objects.
-    /// It accepts an <see cref="object"/> to allow recursive calls through lists and dicts.
-    /// This was designed to work with <see cref="Base"/> objects,
-    /// and you should use the publicly facing version: <see cref="Traverse"/>
-    /// </summary>
-    /// <param name="obj">The object to traverse</param>
-    /// <param name="recursionBreaker">Delegate function to access each <see cref="Base"/> object as it's traversed, and allows for control to stop the traverse behaviour on it's children.</param>
-    private static void Traverse(object obj, BaseRecursionBreaker recursionBreaker)
+    /// <param name="root">The <see cref="Base"/> object to traverse.</param>
+    /// <param name="recursionBreaker">Predicate function to determine whether to break (or continue) traversal of a <see cref="Base"/> object's children.</param>
+    /// <returns>Deferred Enumerable of the <see cref="Base"/> objects being traversed (iterable only once).</returns>
+    public static IEnumerable<Base> Traverse(this Base root, BaseRecursionBreaker recursionBreaker)
     {
-      switch (obj)
+      var stack = new Stack<Base>();
+      stack.Push(root);
+
+      while (stack.Count > 0)
       {
-        case Base @base:
+        Base current = stack.Pop();
+        yield return current;
+        
+        foreach (string child in current.GetDynamicMemberNames())
         {
-          // Break if recursionBraker says so. Continue by default.
-          if (recursionBreaker?.Invoke(@base) ?? false) break;
-          foreach (var prop in @base.GetDynamicMemberNames())
-            Traverse(@base[prop], recursionBreaker);
-          break;
+          switch (current[child])
+          {
+            case Base o:
+              if(!recursionBreaker(o))
+                stack.Push(o);
+              break;
+            case IDictionary dictionary:
+            {
+              foreach (object obj in dictionary.Keys)
+              {
+                if (obj is Base b && !recursionBreaker(b))
+                  stack.Push(b);
+              }
+              break;
+            }
+            case IList collection:
+            {
+              foreach (object obj in collection)
+              {
+                if (obj is Base b && !recursionBreaker(b))
+                  stack.Push(b);
+              }
+              break;
+            }
+          }
         }
-        case IDictionary dict:
-          foreach (var dictValue in dict.Values)
-            Traverse(dictValue, recursionBreaker);
-          break;
-        case IEnumerable enumerable:
-          foreach (var listValue in enumerable)
-            Traverse(listValue, recursionBreaker);
-          break;
       }
     }
   }
