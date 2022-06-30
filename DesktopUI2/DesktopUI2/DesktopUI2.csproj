@@ -64,7 +64,8 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
-    <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+	<None Remove="Views\Settings\ListBoxSettingView.xaml" />
+	<None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
@@ -183,6 +184,9 @@
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+	<AvaloniaXaml Include="Views\Settings\MultiSelectBoxSettingView.xaml">
+		<Generator>MSBuild:Compile</Generator>
+	</AvaloniaXaml>
     <AvaloniaXaml Include="Views\Share.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -280,6 +284,9 @@
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
     </Compile>
+	<Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
+		<DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
+	</Compile>
     <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
       <DependentUpon>AddAccountDialog.xaml</DependentUpon>
     </Compile>
