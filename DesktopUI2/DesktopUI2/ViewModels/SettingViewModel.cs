@@ -34,20 +34,7 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-    public ConnectorBindings Bindings;
-  
-    public SettingViewModel()
-    {
-      Bindings = new DummyBindings();
-      Setting = new MultiSelectBoxSetting
-      {
-        Slug = "disallow-join",
-        Name = "Disallow Join For Elements",
-        Icon = "CallSplit",
-        Description = "Determine which objects should not be allowed to join by default",
-        Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" }
-      };
-    }
+
     public SettingViewModel(ISetting setting)
     {
       Setting = setting;
