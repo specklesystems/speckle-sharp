@@ -7,6 +7,9 @@ using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
@@ -17,6 +20,9 @@ namespace Objects.Converter.Revit
 
     public List<ApplicationPlaceholderObject> WallToNative(BuiltElements.Wall speckleWall)
     {
+      Debug.WriteLine("helllllllo");
+      Report.Log("wall to native");
+      Console.WriteLine("wall to native (console)");
       if (speckleWall.baseLine == null)
       {
         throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleWall.applicationId}. Only line based Walls are currently supported.");
@@ -49,13 +55,20 @@ namespace Objects.Converter.Revit
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
         if (Settings.ContainsKey("disallow-join"))
         {
-          if (new List<string>(Settings["disallow-join"].Split(',')).Contains(StructuralWalls) && structural)
+          List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+          Report.Log($"disallow join setting: {joinSettings}");
+          foreach (var x in joinSettings)
+            Report.Log($"x: {x}");
+          Report.Log($"structural flag is: {structural} type: {structural.GetType()}");
+          if (joinSettings.Contains(StructuralWalls) && structural)
           {
+            Report.Log("disallow join for struct walls");
             WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
             WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
           }
-          if (new List<string>(Settings["disallow-join"].Split(',')).Contains(ArchitecturalWalls) && !structural)
+          if (joinSettings.Contains(ArchitecturalWalls) && !structural)
           {
+            Report.Log("disallow join for arch walls");
             WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
             WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
           }

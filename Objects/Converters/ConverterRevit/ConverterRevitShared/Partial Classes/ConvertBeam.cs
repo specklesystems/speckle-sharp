@@ -4,6 +4,7 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -83,7 +84,8 @@ namespace Objects.Converter.Revit
         // currently, this setting only applies to beams being created
         if (Settings.ContainsKey("disallow-join"))
         {
-          if (new List<string>(Settings["disallow-join"].Split(',')).Contains(StructuralFraming))
+          List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+          if (joinSettings.Contains(StructuralFraming))
           {
             StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 0);
             StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 1);

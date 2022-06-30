@@ -26,7 +26,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns></returns>
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-
+      System.Diagnostics.Debug.WriteLine("Recieve stream");
+      Console.WriteLine("ReceiveStream (console)");
+      System.Diagnostics.Trace.WriteLine("whatever");
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
