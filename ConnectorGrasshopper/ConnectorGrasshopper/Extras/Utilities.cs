@@ -424,7 +424,7 @@ namespace ConnectorGrasshopper.Extras
         return value;
 
 
-      if (converter.CanConvertToSpeckle(value))
+      if (converter != null && converter.CanConvertToSpeckle(value))
       {
         var result = converter.ConvertToSpeckle(value);  
         result.applicationId = refId;
