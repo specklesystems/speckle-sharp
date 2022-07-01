@@ -16,7 +16,7 @@
     {
       get
       {
-        if (_root == null)
+        if (_root == null || _root.Renderer == null)
           _root = new EmbeddableControlRoot();
         return _root;
       }
