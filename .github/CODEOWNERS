@@ -2,7 +2,7 @@
 
 # Global owner is the connectors team. This ensures everyone get's pinged if no owner is found
 
-* @specklesystems/connectors
+* @connectors
 
 # Core
 # Not needed, falls back on team approval
