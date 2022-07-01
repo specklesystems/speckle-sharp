@@ -40,6 +40,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2022", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2023", "..\Objects\Converters\ConverterDynamo\ConverterDynamoRevit2023\ConverterDynamoRevit2023.csproj", "{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterDxf", "..\Objects\Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{BF4DCC7D-5F05-4900-BA97-148652AA6E79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +112,7 @@ Global
 		{2A97FBBE-9EE1-4F52-ADF1-26CCDB739797} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
 		{88D1CCC9-6FDE-452F-BC7C-D03560CE57D2} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
 		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
