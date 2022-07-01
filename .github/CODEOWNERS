@@ -1,0 +1,37 @@
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+
+# Global owner is the connectors team. This ensures everyone get's pinged if no rule matches
+# TODO: Create connectors team in GitHub
+* @AlanRynne
+
+# Core
+# Not needed, falls back on team approval
+
+# Objects
+
+Objects/ConverterAutocadCivil/* @clairekuang
+Objects/ConverterCSI/* @reynold-chan
+Objects/ConverterDynamo/* @teocomi @alanrynne
+Objects/ConverterMicrostation/* @reynold-chan
+Objects/ConverterRevit/* @connorivy @teocomi
+Objects/ConverterRhinoGh/* @alanrynne
+Objects/ConverterTeklaStructures/* @reynold-chan
+Objects/StructuralUtilities/PolygonMesher/* @reynold-chan
+
+# Connectors
+
+ConnectorAutocadCivil/* @clairekuang
+ConnectorArchicad/* @izzylys
+ConnectorCSI/* @reynold-chan
+ConnectorDynamo/* @teocomi @alanrynne
+ConnectorGrasshopper/* @alanrynne @clairekuang
+ConnectorMicrostation/* @reynold-chan
+ConnectorRevit/* @teocomi @connorivy
+ConnectorRhino/* @clairekuang @alanrynne
+ConnectorTeklaStructures/* @reynold-chan
+
+# DesktopUI
+
+DesktopUI/* @teocomi @clairekuang
+DesktopUI2/* @teocomi @clairekuang
