@@ -6,7 +6,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.IO" #>
 <#
-	var buildPath = $@"Y:\Documents\Speckle\speckle-sharp\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Debug";
+	var buildPath = $@".\bin\Debug";
 	var files = Directory.EnumerateFiles(buildPath, "*.dll");
 	var x = 4;
 
@@ -44,7 +44,7 @@
    foreach (var path in files)
    {
 #>
-		<File Id="<#= Path.GetFileName(path) #>" Source="<#= path #>" Target="%BinariesTargetDirectory%"/>
+		<File Id="<#= Path.GetFileName(path) #>" Source="<#= "%BinariesFolder%\\"  + Path.GetFileName(path) #>" Target="%BinariesTargetDirectory%"/>
 <#
    }
 #> </Component>
