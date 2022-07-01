@@ -9,6 +9,7 @@ using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
 using STR = Objects.Structural;
 using GE = Objects.Geometry;
+using System;
 
 namespace Objects.Converter.Revit
 {
@@ -310,15 +311,24 @@ namespace Objects.Converter.Revit
     public object ConvertToNative(Base @object)
     {
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
-      Settings.TryGetValue("recieve-object-mesh", out string recieveModelMesh);
-      if(bool.Parse(recieveModelMesh) == true){
-        List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-        System.Reflection.PropertyInfo propInfo = @object.GetType().GetProperty("displayValue");
-        dynamic property = propInfo.GetValue(displayValues);
-        List<GE.Mesh> meshes = property;
-        if(meshes != null){
+      Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
+      if (bool.Parse(recieveModelMesh) == true)
+      {
+        try
+        {
+          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
+          //dynamic property = propInfo;
+          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
           return DirectShapeToNative(meshes);
         }
+        catch 
+        {
+
+        }
+
+        
+
       }
       //Family Document
       if (Doc.IsFamilyDocument)
