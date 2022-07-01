@@ -1,27 +1,27 @@
-# This is a comment.
-# Each line is a file pattern followed by one or more owners.
+# SPECKLE-SHARP OWNERS
 
-# Global owner is the connectors team. This ensures everyone get's pinged if no rule matches
-# TODO: Create connectors team in GitHub
-* @AlanRynne
+# Global owner is the connectors team. This ensures everyone get's pinged if no owner is found
+
+* @specklesystems/connectors
 
 # Core
 # Not needed, falls back on team approval
 
 # Objects
+#   Converters require product owner approval, anything else falls back to team approval
 
-Objects/ConverterAutocadCivil/* @clairekuang
+Objects/ConverterAutocadCivil/* @clairekuang @reynold-chan
 Objects/ConverterCSI/* @reynold-chan
 Objects/ConverterDynamo/* @teocomi @alanrynne
 Objects/ConverterMicrostation/* @reynold-chan
 Objects/ConverterRevit/* @connorivy @teocomi
-Objects/ConverterRhinoGh/* @alanrynne
+Objects/ConverterRhinoGh/* @alanrynne @clairekuang
 Objects/ConverterTeklaStructures/* @reynold-chan
 Objects/StructuralUtilities/PolygonMesher/* @reynold-chan
 
 # Connectors
 
-ConnectorAutocadCivil/* @clairekuang
+ConnectorAutocadCivil/* @clairekuang @reynold-chan
 ConnectorArchicad/* @izzylys
 ConnectorCSI/* @reynold-chan
 ConnectorDynamo/* @teocomi @alanrynne
