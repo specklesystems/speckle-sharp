@@ -12,6 +12,10 @@ namespace Speckle.ConnectorRevit.UI
     const string ProjectBase = "Project Base";
     const string Survey = "Survey";
 
+    const string defaultValue = "Default";
+    const string dxf = "DXF";
+    const string familyDxf = "Family DXF";
+
     const string StructuralFraming = "Structural Framing";
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
@@ -19,6 +23,7 @@ namespace Speckle.ConnectorRevit.UI
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
+      List<string> prettyMeshOptions = new List<string>() { defaultValue, dxf, familyDxf };
 
       // find project base point and survey point. these don't always have name props, so store them under custom strings
       var basePoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
@@ -35,6 +40,7 @@ namespace Speckle.ConnectorRevit.UI
         new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving NOTE: elements from linked models will be received in the current document"},
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
+        new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Description = "Determines the display style of imported meshes"},
       };
     }
   }

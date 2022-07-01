@@ -115,7 +115,8 @@ namespace DesktopUI2
         new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving"},
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
           Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
-    };
+        new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Description = "Determines the display style of imported meshes" },
+      };
     }
 
     public override List<StreamState> GetStreamsInFile()

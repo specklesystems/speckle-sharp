@@ -170,6 +170,7 @@ namespace Speckle.Core.Kits
     public const string Revit2021 = "Revit2021";
     public const string Revit2022 = "Revit2022";
     public const string Revit2023 = "Revit2023";
+    public const string Dxf = "Dxf";
     public const string DynamoSandbox = "DynamoSandbox";
     public const string DynamoRevit = "DynamoRevit";
     public const string DynamoRevit2021 = "DynamoRevit2021";

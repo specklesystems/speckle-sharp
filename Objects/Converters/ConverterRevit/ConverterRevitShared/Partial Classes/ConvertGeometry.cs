@@ -7,9 +7,10 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
-using Autodesk.Revit.ApplicationServices;
+using Objects.Converters.DxfConverter;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
@@ -657,6 +658,7 @@ namespace Objects.Converter.Revit
       }
     }
 
+
     public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
       if (arr.Count % 3 != 0)
@@ -755,7 +757,6 @@ namespace Objects.Converter.Revit
     public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
     {
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
-
       var nativeCurveArray = CurveToNative(edge.Curve);
       bool isTrimmed = edge.Curve.domain != null && edge.Domain != null &&
         (edge.Curve.domain.start != edge.Domain.start ||
@@ -881,7 +882,7 @@ namespace Objects.Converter.Revit
 
       return result;
     }
-
+    
     public Solid BrepToNative(Brep brep)
     {
       //Make sure face references are calculated by revit
@@ -901,65 +902,86 @@ namespace Objects.Converter.Revit
       using var builder = new BRepBuilder(bRepType);
 
       builder.SetAllowShortEdges();
-      builder.AllowRemovalOfProblematicFaces();
 
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
       {
-        var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
-        builder.SetFaceMaterialId(faceId, materialId);
-        
-        foreach (var loop in face.Loops)
+        try
         {
-          var loopId = builder.AddLoop(faceId);
-          if (face.OrientationReversed)
-            loop.TrimIndices.Reverse();
-
-          foreach (var trim in loop.Trims)
+          var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
+          builder.SetFaceMaterialId(faceId, materialId);
+        
+          foreach (var loop in face.Loops)
           {
-            if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated && trim.TrimType != BrepTrimType.Seam)
-              continue;
-
-            if (trim.Edge == null)
-              continue;
-
-            var edgeIds = brepEdges[trim.EdgeIndex];
-            if (edgeIds == null)
+            try
             {
-              // First time we see this edge, convert it and add
-              edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
-              var bRepBuilderGeometryIds = BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge));
-              edgeIds.AddRange(bRepBuilderGeometryIds);
+              var loopId = builder.AddLoop(faceId);
+              if (face.OrientationReversed)
+                loop.TrimIndices.Reverse();
+
+              foreach (var trim in loop.Trims)
+              {
+                try
+                {
+                  if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated &&
+                      trim.TrimType != BrepTrimType.Seam)
+                    continue;
+                  if (trim.Edge == null)
+                    continue;
+
+                  var edgeIds = brepEdges[trim.EdgeIndex];
+                  if (edgeIds == null)
+                  {
+                    // First time we see this edge, convert it and add
+                    edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
+                    var bRepBuilderGeometryIds = BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge));
+                    edgeIds.AddRange(bRepBuilderGeometryIds);
+                  }
+
+                  var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
+                  if (trimReversed)
+                  {
+                    for (int e = edgeIds.Count - 1; e >= 0; --e)
+                      if (builder.IsValidEdgeId(edgeIds[e]))
+                        builder.AddCoEdge(loopId, edgeIds[e], true);
+                  }
+                  else
+                  {
+                    for (int e = 0; e < edgeIds.Count; ++e)
+                      if (builder.IsValidEdgeId(edgeIds[e]))
+                        builder.AddCoEdge(loopId, edgeIds[e], false);
+                  }
+                }
+                catch (Exception e)
+                {
+                  throw new SpeckleException($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)}  on brep with id {brep.id}\n   Reason: {e.Message}", false);
+                }
+              }
+              builder.FinishLoop(loopId);
             }
-
-            var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
-            if (trimReversed)
+            catch (Exception e)
             {
-              for (int e = edgeIds.Count - 1; e >= 0; --e)
-                if (builder.IsValidEdgeId(edgeIds[e]))
-                  builder.AddCoEdge(loopId, edgeIds[e], true);
-
-            }
-            else
-            {
-              for (int e = 0; e < edgeIds.Count; ++e)
-                if (builder.IsValidEdgeId(edgeIds[e]))
-                  builder.AddCoEdge(loopId, edgeIds[e], false);
+              if (e is SpeckleException) throw;
+              throw new SpeckleException($"Failed to create loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
             }
           }
-
-          builder.FinishLoop(loopId);
+          builder.FinishFace(faceId);
         }
-        builder.FinishFace(faceId);
+        catch (Exception e)
+        {
+          builder.Dispose();
+          if (e is SpeckleException) throw;
+          throw new SpeckleException($"Failed to create face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
+        }
       }
 
-      var removedFace = builder.RemovedSomeFaces();
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
 
       var isResultAvailable = builder.IsResultAvailable();
       if (!isResultAvailable) return null;
       var result = builder.GetResult();
+      builder.Dispose();
       return result;
     }
 
@@ -1160,7 +1182,6 @@ namespace Objects.Converter.Revit
             }
           }
         }
-
       }
       throw new NotImplementedException();
     }
