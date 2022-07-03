@@ -215,6 +215,9 @@
     <None Update="Native\libAvalonia.Native.OSX.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Views\Pages\StreamEditControls\Report.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.16" />

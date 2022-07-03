@@ -105,17 +105,6 @@ namespace DesktopUI2.ViewModels
       get => !string.IsNullOrEmpty(Notification);
     }
 
-    private bool _showReport;
-
-    public bool ShowReport
-    {
-      get => _showReport;
-      private set
-      {
-        this.RaiseAndSetIfChanged(ref _showReport, value);
-      }
-    }
-
     private bool _isRemovingStream;
 
     public bool IsRemovingStream
@@ -230,6 +219,13 @@ namespace DesktopUI2.ViewModels
     {
       get => _activity;
       private set => this.RaiseAndSetIfChanged(ref _activity, value);
+    }
+
+    private List<ApplicationObjectViewModel> _report;
+    public List<ApplicationObjectViewModel> Report
+    {
+      get => _report;
+      private set => this.RaiseAndSetIfChanged(ref _report, value); 
     }
 
     private List<CommentViewModel> _comments;
@@ -389,6 +385,7 @@ namespace DesktopUI2.ViewModels
 
         GetBranchesAndRestoreState();
         GetActivity();
+        GetReport();
         GetComments();
       }
       catch (Exception ex)
@@ -409,10 +406,8 @@ namespace DesktopUI2.ViewModels
       {
         var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
         menu.Items = new List<MenuItemViewModel> {
-        //new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
-        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox)
       };
         var customMenues = Bindings.GetCustomStreamMenuItems();
         if (customMenues != null)
@@ -454,7 +449,6 @@ namespace DesktopUI2.ViewModels
         //by default the first available receive mode is selected
         SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
 
-
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
 
@@ -487,7 +481,6 @@ namespace DesktopUI2.ViewModels
             SelectedFilter = selectionFilter;
             SelectedFilter.AddObjectSelection();
           }
-
         }
         if (StreamState.Settings != null)
         {
@@ -496,7 +489,6 @@ namespace DesktopUI2.ViewModels
             var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
             if (savedSetting != null)
               setting.Selection = savedSetting.Selection;
-
           }
         }
       }
@@ -504,6 +496,18 @@ namespace DesktopUI2.ViewModels
       {
 
       }
+    }
+
+    private void GetReport()
+    {
+      var report = new List<ApplicationObjectViewModel>();
+      foreach (var applicationObject in Progress.Report.ReportObjects)
+      {
+        var rvm = new ApplicationObjectViewModel(applicationObject, StreamState.IsReceiver);
+        report.Add(rvm);
+      }
+      Report = report;
+      
     }
 
     private async void GetActivity()
@@ -698,13 +702,6 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
-    public void CloseReportNotificationCommand()
-    {
-      ShowReport = false;
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Report Dismiss" } });
-    }
-
-
     public void LaunchNotificationCommand()
     {
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
@@ -765,11 +762,8 @@ namespace DesktopUI2.ViewModels
           Notification = "Nothing sent!";
         }
 
-        if (Progress.Report.GetConversionTotal(Speckle.Core.Models.ApplicationObject.ConversionStatus.Failed) > 0 || Progress.Report.OperationErrorsCount > 0)
-          ShowReport = true;
-
         GetActivity();
-
+        GetReport();
       }
       catch (Exception ex)
       {
@@ -794,8 +788,7 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
           await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
         }
-        if (Progress.Report.GetConversionTotal(Speckle.Core.Models.ApplicationObject.ConversionStatus.Failed) > 0 || Progress.Report.OperationErrorsCount > 0)
-          ShowReport = true;
+        GetReport();
       }
       catch (Exception ex)
       {
@@ -822,11 +815,8 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
         }
 
-        if (Progress.Report.GetConversionTotal(Speckle.Core.Models.ApplicationObject.ConversionStatus.Failed) > 0 || Progress.Report.OperationErrorsCount > 0)
-          ShowReport = true;
-
-
         GetActivity();
+        GetReport();
       }
       catch (Exception ex)
       {
@@ -838,7 +828,6 @@ namespace DesktopUI2.ViewModels
     {
       Notification = "";
       NotificationUrl = "";
-      ShowReport = false;
       Progress = new ProgressViewModel();
     }
 
@@ -856,26 +845,6 @@ namespace DesktopUI2.ViewModels
       Progress.CancellationTokenSource.Cancel();
       Bindings.ResetDocument();
       Reset();
-    }
-
-    public async void OpenReportCommand()
-    {
-      try
-      {
-        //ensure click transition has finished
-        await Task.Delay(1000);
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
-        ShowReport = true;
-        var report = new Report();
-        //report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
-        report.DataContext = Progress;
-        await report.ShowDialog();
-
-      }
-      catch (Exception ex)
-      {
-
-      }
     }
 
     private void SaveCommand()

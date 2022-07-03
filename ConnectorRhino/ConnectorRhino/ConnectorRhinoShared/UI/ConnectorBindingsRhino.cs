@@ -386,7 +386,7 @@ namespace SpeckleRhino
 
       if (obj is Base @base)
       {
-        var appObj = new ApplicationObject(@base.id) { Container = layer };
+        var appObj = new ApplicationObject(@base.id, @base.speckle_type) { Container = layer };
         if (Converter.CanConvertToNative(@base))
         {
           appObj.Convertible = true;
@@ -606,7 +606,6 @@ namespace SpeckleRhino
           return null;
 
         Base converted = null;
-        ApplicationObject reportObj = new ApplicationObject(applicationId);
         string containerName = string.Empty;
 
         // applicationId can either be doc obj guid or name of view
@@ -620,6 +619,8 @@ namespace SpeckleRhino
         {
           viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
         }
+        ApplicationObject reportObj = new ApplicationObject(applicationId, obj.ObjectType.ToString());
+
 
         if (obj != null)
         {

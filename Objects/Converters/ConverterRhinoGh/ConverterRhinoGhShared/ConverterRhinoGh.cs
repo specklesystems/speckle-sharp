@@ -135,7 +135,7 @@ namespace Objects.Converter.RhinoGh
 
       if (@object is RhinoObject ro)
       {
-        reportObj = new ApplicationObject(ro.Id.ToString());
+        reportObj = new ApplicationObject(ro.Id.ToString(), ro.ObjectType.ToString());
         material = RenderMaterialToSpeckle(ro.GetMaterial(true));
         style = DisplayStyleToSpeckle(ro.Attributes);
 
@@ -484,7 +484,7 @@ namespace Objects.Converter.RhinoGh
     {
       object rhinoObj = null;
       bool isFromRhino = @object[RhinoPropName] != null ? true : false;
-      var reportObj = Report.GetReportObject(@object.id, out int index) ? new ApplicationObject(@object.id) : null;
+      var reportObj = Report.GetReportObject(@object.id, out int index) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
       List<string> notes = new List<string>();
       switch (@object)
       {

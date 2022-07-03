@@ -103,7 +103,9 @@ namespace Speckle.Core.Models
     [JsonIgnore]
     public List<ApplicationObject> Fallback { get; set; } // the fallback base if direct conversion is not supported, output corresponding base during flatten
     
-    public string Id { get; set; } // the original object id (speckle or application)
+    public string OriginalId { get; set; } // the original object id (speckle or application)
+
+    public string Slug { get; set; } // a descriptive name for the object - use original id and object type
 
     public List<string> CreatedIds { get; set; } // the created object ids (speckle or application)
 
@@ -116,9 +118,10 @@ namespace Speckle.Core.Models
     [JsonIgnore]
     public List<object> Converted { get; set; } // the converted objects
 
-    public ApplicationObject(string id) 
+    public ApplicationObject(string id, string type) 
     {
-      Id = id;
+      OriginalId = id;
+      Slug = id + " " + type;
     }
 
     public void Update(string createdId = null, ConversionStatus? status = null, List<string> log = null, string logItem = null)
@@ -133,33 +136,33 @@ namespace Speckle.Core.Models
   public class ProgressReport
   {
     #region Conversion
-    private List<ApplicationObject> _reportObjects { get; set; } = new List<ApplicationObject>();
+    public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
 
     public void Log(ApplicationObject obj)
     {
       var _reportObject = UpdateReportObject(obj); 
       if (_reportObject == null)
-        _reportObjects.Add(obj);
+        ReportObjects.Add(obj);
     }
     public ApplicationObject UpdateReportObject(ApplicationObject obj)
     {
-      if (GetReportObject(obj.Id, out int index))
+      if (GetReportObject(obj.OriginalId, out int index))
       {
-        _reportObjects[index].Update(status: obj.Status, log: obj.Log);
-        return _reportObjects[index];
+        ReportObjects[index].Update(status: obj.Status, log: obj.Log);
+        return ReportObjects[index];
       }
       else return null;
     }
     public bool GetReportObject(string id, out int index)
     {
-      var _reportObject = _reportObjects.Where(o => o.Id == id)?.FirstOrDefault();
-      index = _reportObject != null ? _reportObjects.IndexOf(_reportObject) : -1;
+      var _reportObject = ReportObjects.Where(o => o.OriginalId == id)?.FirstOrDefault();
+      index = _reportObject != null ? ReportObjects.IndexOf(_reportObject) : -1;
       return index == -1 ? false : true;
     }
 
     public int GetConversionTotal(ApplicationObject.ConversionStatus action)
     {
-      var actionObjects = _reportObjects.Where(o => o.Status == action);
+      var actionObjects = ReportObjects.Where(o => o.Status == action);
       return actionObjects == null ? 0 : actionObjects.Count();
     }
 
@@ -199,9 +202,9 @@ namespace Speckle.Core.Models
       lock(OperationErrorsLock)
         OperationErrors.AddRange(report.OperationErrors);
       // update report object notes
-      foreach (var _reportObject in report._reportObjects)
-        if (GetReportObject(_reportObject.Id, out int index))
-          _reportObjects[index].Log.AddRange(_reportObject.Log);
+      foreach (var _reportObject in report.ReportObjects)
+        if (GetReportObject(_reportObject.OriginalId, out int index))
+          ReportObjects[index].Log.AddRange(_reportObject.Log);
     }
   }
 }
