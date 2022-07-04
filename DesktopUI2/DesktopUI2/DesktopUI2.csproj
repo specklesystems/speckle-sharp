@@ -56,6 +56,7 @@
     <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Report.xaml" />
     <None Remove="Views\Pages\SettingsView.xaml" />
     <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
     <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
@@ -73,7 +74,6 @@
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
-    <None Remove="Views\Windows\Report.xaml" />
     <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Expander.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -161,6 +161,9 @@
     <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Report.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -209,14 +212,8 @@
     <AvaloniaXaml Include="Views\Windows\Dialogs\QuickOpsDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Report.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Views\Pages\StreamEditControls\Report.xaml">
-      <Generator>MSBuild:Compile</Generator>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -311,9 +308,6 @@
     </Compile>
     <Compile Update="Views\Windows\Dialogs\QuickOpsDialog.xaml.cs">
       <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Report.xaml.cs">
-      <DependentUpon>Report.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using DesktopUI2.Views;
+﻿using Avalonia.Controls.Selection;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
 using ReactiveUI;
 using Speckle.Core.Logging;
@@ -12,8 +13,6 @@ using System.Web;
 
 namespace DesktopUI2.ViewModels
 {
-
-
   public class ProgressViewModel : ReactiveObject
   {
     public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
@@ -49,7 +48,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _progressTitle, value);
       }
     }
-
 
     private string _progressSummary;
     public string ProgressSummary
@@ -120,15 +118,6 @@ namespace DesktopUI2.ViewModels
     {
       CancellationTokenSource.Cancel();
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancelled Quick Op" } });
-    }
-
-    public async void OpenReportCommand()
-    {
-      var report = new Report();
-      report.DataContext = this;
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
-      await report.ShowDialog();
-      
     }
   }
 }

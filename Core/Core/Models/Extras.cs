@@ -101,17 +101,17 @@ namespace Speckle.Core.Models
     public bool Convertible { get; set; } // is the object conversion supported by the converter
 
     [JsonIgnore]
-    public List<ApplicationObject> Fallback { get; set; } // the fallback base if direct conversion is not supported, output corresponding base during flatten
+    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>(); // the fallback base if direct conversion is not supported, output corresponding base during flatten
     
     public string OriginalId { get; set; } // the original object id (speckle or application)
 
-    public string Slug { get; set; } // a descriptive name for the object - use original id and object type
+    public string Descriptor { get; set; } // a descriptive name for the object - use object type
 
-    public List<string> CreatedIds { get; set; } // the created object ids (speckle or application)
+    public List<string> CreatedIds { get; set; } = new List<string>(); // the created object ids (speckle or application)
 
     public ConversionStatus Status { get; set; } // status of the object, for report categorization
 
-    public List<string> Log { get; set; } // conversion notes or other important info, exposed to user
+    public List<string> Log { get; set; } = new List<string>(); // conversion notes or other important info, exposed to user
 
     public bool Rollback { get; set; } // object creation or bake operation to be rolled back
 
@@ -121,7 +121,7 @@ namespace Speckle.Core.Models
     public ApplicationObject(string id, string type) 
     {
       OriginalId = id;
-      Slug = id + " " + type;
+      Descriptor = type;
     }
 
     public void Update(string createdId = null, ConversionStatus? status = null, List<string> log = null, string logItem = null)

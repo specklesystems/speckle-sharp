@@ -621,7 +621,6 @@ namespace SpeckleRhino
         }
         ApplicationObject reportObj = new ApplicationObject(applicationId, obj.ObjectType.ToString());
 
-
         if (obj != null)
         {
           if (!Converter.CanConvertToSpeckle(obj))

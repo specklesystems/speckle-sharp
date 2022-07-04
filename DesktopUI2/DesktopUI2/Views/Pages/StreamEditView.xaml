@@ -44,7 +44,6 @@
           Command="{Binding GoBack}"
           ToolTip.Tip="Back">
           <Button.Content>
-
             <Viewbox
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
@@ -55,7 +54,6 @@
                 Foreground="{DynamicResource MaterialDesignBody}"
                 Kind="ChevronLeft" />
             </Viewbox>
-
           </Button.Content>
 
         </m:FloatingButton>
@@ -100,10 +98,7 @@
               <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
             </Style>
           </Menu.Styles>
-
         </Menu>
-
-
       </Grid>
     </Border>
 
@@ -111,7 +106,7 @@
       Grid.Row="1"
       Margin="15,0"
       RowDefinitions="*,auto,auto">
-      <!--  ACTIVITY & COMMENTS  -->
+      <!--  ACTIVITY & COMMENTS & REPORT -->
 
       <TabControl Grid.Row="0" Background="Transparent">
         <TabItem>
@@ -153,6 +148,25 @@
             </StackPanel>
           </TabItem.Header>
           <uc:Comments />
+        </TabItem>
+          
+        <!--  REPORT  -->
+        <TabItem>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Kind="Information"
+                ToolTip.Tip="Send and Receive report" />
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Report" />
+            </StackPanel>
+          </TabItem.Header>
+          <uc:Report />
         </TabItem>
 
       </TabControl>
