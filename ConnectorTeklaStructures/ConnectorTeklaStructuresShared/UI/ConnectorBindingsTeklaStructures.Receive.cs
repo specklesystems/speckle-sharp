@@ -19,10 +19,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
   {
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
-    }
     #region receiving
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
