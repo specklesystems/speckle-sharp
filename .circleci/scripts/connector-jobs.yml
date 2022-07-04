@@ -1,0 +1,106 @@
+# This file contains the individual jobs each connector must run to build/deploy.
+# Each application should have its own entry as a list of jobs.
+# These jobs will be pulled into the 'config-template.yml' file when needed.
+# The name of each build step will be set using the "slug"
+
+grasshopper:
+  - build-connector:
+      slnname: ConnectorGrasshopper
+      dllname: SpeckleConnectorGrasshopper.gha
+      slug: grasshopper
+  - build-connector-mac:
+      slnname: ConnectorGrasshopper
+      projname: ConnectorGrasshopper
+      slug: grasshopper-mac
+
+rhino:
+  - build-connector:
+      slnname: ConnectorRhino
+      dllname: SpeckleConnectorRhino.rhp
+      slug: rhino
+      requires:
+        - build-desktopui
+  - build-connector-mac:
+      slnname: ConnectorRhino
+      projname: ConnectorRhino7
+      build-config: Release Mac
+      slug: rhino-mac
+      requires:
+        - build-desktopui
+
+dynamo:
+  - build-connector:
+      slnname: ConnectorDynamo
+      dllname: SpeckleConnectorDynamo.dll
+      slug: dynamo
+
+revit:
+  - build-connector:
+      slnname: ConnectorRevit
+      dllname: SpeckleConnectorRevit.dll
+      slug: revit
+      requires:
+        - build-desktopui
+
+autocadcivil:
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: autocad
+      requires:
+        - build-desktopui
+
+microstation:
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorMicroStation.dll
+      slug: microstation
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorOpenBuildings.dll
+      slug: openbuildings
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorOpenRail.dll
+      slug: openrail
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorOpenRoads.dll
+      slug: openroads
+
+tekla:
+  - build-connector:
+      slnname: ConnectorTeklaStructures
+      dllname: SpeckleConnectorTeklaStructures.dll
+      slug: teklastructures
+      requires:
+        - build-desktopui
+
+csi:
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: etabs
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: sap2000
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: safe
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: csibridge
+
+archicad:
+  - setup-archicad-dev:
+      requires:
+        - get-ci-tools
+  - build-connector:
+      requires:
+        - setup-archicad-dev
+      slnname: ConnectorArchicad
+      dllname: ConnectorArchicad.dll
+      slug: archicad
