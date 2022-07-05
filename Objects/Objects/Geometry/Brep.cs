@@ -243,6 +243,7 @@ namespace Objects.Geometry
     [JsonIgnore]
     public List<BrepTrim> Trims { get; set; }
     [DetachProperty, SchemaIgnore]
+    
     [Chunkable(62500)]
     public List<int> TrimsValue
     {
