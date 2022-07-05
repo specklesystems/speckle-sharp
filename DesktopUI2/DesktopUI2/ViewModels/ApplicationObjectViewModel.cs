@@ -46,19 +46,19 @@ namespace DesktopUI2.ViewModels
 
     private List<string> PointDescriptorList = new List<string>{"point"};
     private List<string> CurveDescriptorList = new List<string> { "curve", "line", "vector", "arc", "circle", "ellipse", "spiral", "spline" };
-    private List<string> SurfaceDescriptorList = new List<string> { "surface", "plane", "solid", "brep", "box", "mesh" };
-    private List<string> AnnotationDescriptorList = new List<string> { "hatch", "text", "dimension", "view", "family", "level" };
+    private List<string> SurfaceDescriptorList = new List<string> { "plane" };
+    private List<string> AnnotationDescriptorList = new List<string> { "hatch", "text", "dimension", "view", "family", "level", "annotation" };
     private string GetIconFromDescriptor(string descriptor)
     {
       var lowercase = descriptor.ToLower();
       if (PointDescriptorList.Any(s => lowercase.Contains(s)))
-        return "PlusCircleOutline";
+        return "SquareSmall";
       else if (CurveDescriptorList.Any(s => lowercase.Contains(s)))
-        return "Audio";
+        return "MathIntegral";
       else if (SurfaceDescriptorList.Any(s => lowercase.Contains(s)))
-        return "ImageFilterNone";
+        return "SquareRounded";
       else if (AnnotationDescriptorList.Any(s => lowercase.Contains(s)))
-        return "Tag";
+        return "TagOutline";
       else
         return "CubeOutline";
     }

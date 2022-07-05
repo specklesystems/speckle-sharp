@@ -507,7 +507,6 @@ namespace DesktopUI2.ViewModels
         report.Add(rvm);
       }
       Report = report;
-      
     }
 
     private async void GetActivity()
