@@ -26,16 +26,38 @@ namespace Objects.Converter.TeklaStructures
       {
 
         var faces = mesh.faces;
-        faces.Select((x, i) => new { Index = i, Value = x })
-        .GroupBy(x => x.Index / 3)
+        List<List<int>> faceList = new List<List<int>> { };
+        faceList = faces.Select((x, i) => new { Index = i, Value = x })
+        .GroupBy(x => x.Index / 4)
         .Select(x => x.Select(v => v.Value).ToList())
         .ToList();
         var vertices = mesh.vertices;
-        vertices.Select((x, i) => new { Index = i, Value = x })
+        List<List<double>> verticesList = new List<List<double>> { };
+        verticesList =  vertices.Select((x, i) => new { Index = i, Value = x })
         .GroupBy(x => x.Index / 3)
         .Select(x => x.Select(v => v.Value).ToList())
         .ToList();
+        Vector[] vertexs = new Vector[] { };
+        int[][] outerWires = new int[][] { };
+        var innerLoop = new Dictionary<int, int[][]> { };
+        foreach(var vertex in verticesList){
+          var teklaVectorVertex = new Vector(vertex[0], vertex[1], vertex[2]);
+          vertexs.Append(teklaVectorVertex);
+        }
+        foreach(var face in faceList){
+          var teklaFaceLoop = new[] { face[1], face[2], face[3] };
+          outerWires.Append(teklaFaceLoop);
+        }
+        var brep = new FacetedBrep(vertexs, outerWires, innerLoop);
 
+        var shapeItem = new ShapeItem
+        {
+          Name = "Test",
+          ShapeFacetedBrep = brep,
+          UpAxis = ShapeUpAxis.Z_Axis
+        };
+        shapeItem.Insert();
+        //Model.CommitChanges();
       }
 
       //var vertex = new[]
@@ -58,7 +80,7 @@ namespace Objects.Converter.TeklaStructures
       //  };
       //var innerWires = new Dictionary<int, int[][]>
       //  {
-            
+
       //  };
 
       //var brep = new FacetedBrep(vertex, outerWires, innerWires);

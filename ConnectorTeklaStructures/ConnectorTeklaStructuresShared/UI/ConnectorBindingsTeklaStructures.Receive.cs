@@ -29,6 +29,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
       converter.SetContextDocument(Model);
       //var previouslyRecieveObjects = state.ReceivedObjects;
 
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
+
       if (converter == null)
       {
         throw new Exception("Could not find any Kit!");

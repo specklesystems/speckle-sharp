@@ -248,7 +248,7 @@ namespace Objects.Converter.TeklaStructures
 
     public void SetConverterSettings(object settings)
     {
-      throw new NotImplementedException("This converter does not have any settings.");
+      Settings = settings as Dictionary<string, string>;
     }
   }
 }
