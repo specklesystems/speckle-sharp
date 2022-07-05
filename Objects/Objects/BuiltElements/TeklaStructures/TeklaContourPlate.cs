@@ -14,9 +14,12 @@ namespace Objects.BuiltElements.TeklaStructures
     public SectionProfile profile { get; set; }
     [DetachProperty]
     public Material material { get; set; }
-    public string finish { get; set; }
-    public string classNumber { get; set; }
-    public TeklaPosition position { get; set; }
+        [DetachProperty]
+        public string finish { get; set; }
+        [DetachProperty]
+        public string classNumber { get; set; }
+        [DetachProperty]
+        public TeklaPosition position { get; set; }
 
     [DetachProperty]
     public Mesh displayMesh { get; set; }

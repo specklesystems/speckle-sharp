@@ -41,7 +41,6 @@ namespace Objects.Converter.TeklaStructures
     public TeklaContourPlate ContourPlateToSpeckle(Tekla.Structures.Model.ContourPlate plate)
     {
       var specklePlate = new TeklaContourPlate();
-      var units = GetUnitsFromModel();
       specklePlate.name = plate.Name;
       specklePlate.profile = GetContourPlateProfile(plate.Profile.ProfileString);
       specklePlate.material = GetMaterial(plate.Material.MaterialString);

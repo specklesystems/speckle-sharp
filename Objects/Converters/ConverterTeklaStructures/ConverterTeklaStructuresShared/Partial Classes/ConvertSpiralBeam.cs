@@ -59,9 +59,9 @@ namespace Objects.Converter.TeklaStructures
 
       var vol = new double();
       var area = new double();
-      SpiralBeam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      SpiralBeam.GetReportProperty("VOLUME", ref vol);
       speckleBeam.volume = vol;
-      SpiralBeam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      SpiralBeam.GetReportProperty("AREA", ref area);
       speckleBeam.area = area;
 
       return speckleBeam;

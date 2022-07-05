@@ -35,7 +35,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
         return;
       }
 
-      var selection = GetSelectedObjects();
+      // Commented out because not doing anything and causes freeze up on big selections
+      //var selection = GetSelectedObjects();
       //TO DO
 
 
