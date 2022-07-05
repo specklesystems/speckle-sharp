@@ -195,10 +195,9 @@ namespace SpeckleRhino
       {
         RhinoObject obj = Doc.Objects.FindId(new Guid(id));
         if (obj != null)
-        {
           obj.Select(true, true, false, false, true, true);
-        }
       }
+      Doc.Views.Redraw();
     }
 
     public override void ResetDocument()
@@ -467,7 +466,7 @@ namespace SpeckleRhino
     // conversion and bake
     private List<object> ConvertObject(ApplicationObject previewObj, ProgressViewModel progress)
     {
-      var obj = StoredObjects[previewObj.id];
+      var obj = StoredObjects[previewObj.OriginalId];
       var convertedList = new List<object>();
 
       // add preview object report object to progress for converter
@@ -496,7 +495,7 @@ namespace SpeckleRhino
     }
     private void BakeObject(ApplicationObject previewObj, ProgressViewModel progress)
     {
-      var obj = StoredObjects[previewObj.id];
+      var obj = StoredObjects[previewObj.OriginalId];
       string layerPath = previewObj.Container;
       var converted = previewObj.Converted;
       int bakedCount = 0;

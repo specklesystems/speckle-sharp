@@ -23,11 +23,12 @@
   </UserControl.Resources>
     
   <ScrollViewer Name="activityScroller">
-    <ItemsControl Margin="0,0,0,15" Items="{Binding Report}">
+    <ItemsControl Margin="0,0,0,0" Items="{Binding Report}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <m:ColorZone
             assists:ShadowAssist.ShadowDepth="Depth0"
+            Margin="0,0,0,10"
             CornerRadius="25"
             Mode="Standard"
             Background="{Binding Color}">
@@ -37,7 +38,7 @@
               Background="Transparent"
               Classes="Flat">
               <Expander.Header>
-                <Grid ColumnDefinitions="auto,auto,*">
+                <Grid ColumnDefinitions="auto,auto,auto,*">
                   <icons:MaterialIcon
                     Width="15"
                     Height="15"
@@ -47,19 +48,40 @@
                   <TextBlock
                     Margin="10,0,0,0"
                     Grid.Column="2"
+                    VerticalAlignment="Center"
                     Text="{Binding Name}"
                     TextWrapping="Wrap" />
+                  <TextBlock
+                    Margin="10,0,0,0"
+                    Foreground="LightGray"
+                    VerticalAlignment="Center"
+                    Grid.Column="3"
+                    Text="{Binding Id}"
+                    TextWrapping="Wrap" />
+                  <m:FloatingButton
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Background="Transparent"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    Classes="Mini"
+                    Command="{Binding SelectApplicationObject}"
+                    ToolTip.Tip="View in app">
+                    <Button.Content>
+                      <icons:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        Foreground="{DynamicResource PrimaryHueDarkBrush}"
+                        Kind="Eye" />
+                    </Button.Content>
+                  </m:FloatingButton>
                 </Grid>
               </Expander.Header>
               <!--  REPORT ITEM BODY  -->
-              <Grid RowDefinitions="auto, auto, auto">
-                <TextBlock
-                  Margin="10,0,0,0"
-                  Text="{Binding Id}"
-                  TextWrapping="Wrap" />
+              <Grid ColumnDefinitions="auto,auto,auto,*">
                 <ItemsControl
-                  Margin="10,0,0,0"
-                  Grid.Row="1"
+                  Margin="10,0,0,10"
+                  Grid.Column="2"
                   Items="{Binding Log}" />
               </Grid>
             </Expander>

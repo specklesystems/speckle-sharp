@@ -204,7 +204,9 @@ namespace Speckle.Core.Models
       // update report object notes
       foreach (var _reportObject in report.ReportObjects)
         if (GetReportObject(_reportObject.OriginalId, out int index))
-          ReportObjects[index].Log.AddRange(_reportObject.Log);
+          foreach (var logItem in _reportObject.Log)
+            if (!ReportObjects[index].Log.Contains(logItem))
+              ReportObjects[index].Log.Add(logItem);
     }
   }
 }

@@ -6,6 +6,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
+using Splat;
 using System.Threading.Tasks;
 
 namespace DesktopUI2.ViewModels
@@ -20,8 +21,13 @@ namespace DesktopUI2.ViewModels
     public string Icon { get; set; }
     public string Color { get; set; }
 
+    private ConnectorBindings Bindings;
+
     public ApplicationObjectViewModel(ApplicationObject item, bool isReceiver)
     {
+      //use dependency injection to get bindings
+      Bindings = Locator.Current.GetService<ConnectorBindings>();
+
       Id = item.OriginalId;
       Name = item.Descriptor;
       Log = item.Log;
@@ -63,13 +69,11 @@ namespace DesktopUI2.ViewModels
         return "CubeOutline";
     }
 
-    public void OpenApplicationObject()
+    public void SelectApplicationObject()
     {
-      if (Log.Count == 0)
-        return;
+      Bindings.SelectClientObjects(ApplicationIds);
 
-      // TODO: expose log strings
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Report Item View" } });
+      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Viewed Report Item" } });
     }
   }
 }

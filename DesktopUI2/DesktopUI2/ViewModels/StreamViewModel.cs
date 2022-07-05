@@ -870,7 +870,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
     private void OpenSettingsCommand()
     {
       try
@@ -879,14 +878,10 @@ namespace DesktopUI2.ViewModels
         var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList(), this);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
-
-
       }
       catch (Exception e)
       {
       }
-
-
     }
 
     private void AskRemoveSavedStreamCommand()
@@ -899,7 +894,6 @@ namespace DesktopUI2.ViewModels
       IsRemovingStream = false;
     }
 
-
     [DependsOn(nameof(SelectedBranch))]
     [DependsOn(nameof(SelectedFilter))]
     [DependsOn(nameof(SelectedCommit))]
@@ -908,8 +902,6 @@ namespace DesktopUI2.ViewModels
     {
       return true;
     }
-
-
 
     [DependsOn(nameof(SelectedBranch))]
     [DependsOn(nameof(SelectedFilter))]
