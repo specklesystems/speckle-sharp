@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-
-using Rhino;
-using Rhino.Commands;
-using Rhino.PlugIns;
-
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
-
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using System.IO;
-using DesktopUI2;
-using System.Threading;
+using Rhino;
+using Rhino.Commands;
 
 namespace SpeckleRhino
 {
@@ -32,7 +25,7 @@ namespace SpeckleRhino
 
     public static Window MainWindow { get; private set; }
 
-    
+
 
     private static CancellationTokenSource Lifetime = null;
 
