@@ -479,7 +479,8 @@ namespace Speckle.Core.Transports
       {
         using (var reader = new StreamReader(stream, Encoding.UTF8))
         {
-          while (reader.Peek() > 0)
+          string line;
+          while ((line = reader.ReadLine()) != null)
           {
             if (CancellationToken.IsCancellationRequested)
             {
@@ -487,7 +488,6 @@ namespace Speckle.Core.Transports
               return false;
             }
 
-            var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             targetTransport.SaveObject(pcs[0], pcs[1]);
 
