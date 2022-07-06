@@ -5,6 +5,7 @@
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:c="clr-namespace:DesktopUI2.Controls"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,26 +17,17 @@
     <viewModels:DesignSavedStreamViewModel />
   </Design.DataContext>
     
-  <UserControl.Resources>
-    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
-    <conv:RoleValueConverter x:Key="RoleValueConverter" />
-    <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
-  </UserControl.Resources>
-    
   <ScrollViewer Name="activityScroller">
-    <ItemsControl Margin="0,0,0,0" Items="{Binding Report}">
+    <ItemsControl Items="{Binding Report}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <m:ColorZone
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Margin="0,0,0,10"
-            CornerRadius="25"
-            Mode="Standard"
-            Background="{Binding Color}">
             <Expander
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Stretch"
               Background="Transparent"
+              IsVisible="{Binding Visible}"
+              IsExpanded="{Binding HasAlert}"
+              CornerRadius="25"
               Classes="Flat">
               <Expander.Header>
                 <Grid ColumnDefinitions="auto,auto,auto,*">
@@ -43,13 +35,15 @@
                     Width="15"
                     Height="15"
                     VerticalAlignment="Center"
+                    Foreground="{Binding IconColor}"
                     Kind="{Binding Icon}"
-                    ToolTip.Tip="{Binding Id}" />
+                    ToolTip.Tip="{Binding Status}" />
                   <TextBlock
                     Margin="10,0,0,0"
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     Text="{Binding Name}"
+                    Foreground="{Binding TextColor}"
                     TextWrapping="Wrap" />
                   <TextBlock
                     Margin="10,0,0,0"
@@ -58,34 +52,19 @@
                     Grid.Column="3"
                     Text="{Binding Id}"
                     TextWrapping="Wrap" />
-                  <m:FloatingButton
+                  <!--  PREVIEW BTN  -->
+                  <c:PreviewButton
                     Grid.Column="4"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Right"
-                    Background="Transparent"
-                    assists:ShadowAssist.ShadowDepth="Depth0"
-                    Classes="Mini"
-                    Command="{Binding SelectApplicationObject}"
-                    ToolTip.Tip="View in app">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="{DynamicResource PrimaryHueDarkBrush}"
-                        Kind="Eye" />
-                    </Button.Content>
-                  </m:FloatingButton>
+                    HorizontalAlignment="Right"/>
                 </Grid>
               </Expander.Header>
               <!--  REPORT ITEM BODY  -->
               <Grid ColumnDefinitions="auto,auto,auto,*">
                 <ItemsControl
-                  Margin="10,0,0,10"
-                  Grid.Column="2"
+                  Margin="25,0,0,10"
                   Items="{Binding Log}" />
               </Grid>
             </Expander>
-          </m:ColorZone>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>

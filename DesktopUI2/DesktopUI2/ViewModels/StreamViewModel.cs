@@ -40,6 +40,14 @@ namespace DesktopUI2.ViewModels
 
     public ICommand RemoveSavedStreamCommand { get; }
 
+    public bool PreviewEnabled => true;
+    private bool previewOn = false;
+    public bool PreviewOn
+    {
+      get => previewOn;
+      set => this.RaiseAndSetIfChanged(ref previewOn, value);
+    }
+
     #region bindings
     private Stream _stream;
     public Stream Stream
@@ -772,26 +780,35 @@ namespace DesktopUI2.ViewModels
 
     public async void PreviewCommand()
     {
-      try
+      PreviewOn = !PreviewOn;
+      if (PreviewOn)
       {
-        UpdateStreamState();
-        Reset();
-        Progress.IsProgressing = true;
-        if (IsReceiver)
+        try
         {
-          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
-          await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
+          UpdateStreamState();
+          Reset();
+          if (IsReceiver)
+          {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
+            await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
+          }
+          if (!IsReceiver)
+          {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
+            await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
+          }
+          GetReport();
         }
-        if (!IsReceiver)
+        catch (Exception ex)
         {
-          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
-          await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
-        }
-        GetReport();
-      }
-      catch (Exception ex)
-      {
 
+        }
+      }
+      else
+      {
+        Progress.CancellationTokenSource.Cancel();
+        Bindings.ResetDocument();
+        Reset();
       }
     }
 
@@ -837,13 +854,6 @@ namespace DesktopUI2.ViewModels
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
       Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
-    }
-
-    public void CancelPreviewCommand()
-    {
-      Progress.CancellationTokenSource.Cancel();
-      Bindings.ResetDocument();
-      Reset();
     }
 
     private void SaveCommand()

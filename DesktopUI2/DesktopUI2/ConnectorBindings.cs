@@ -160,7 +160,7 @@ namespace DesktopUI2
     /// clients should be able to select/preview/hover one way or another their associated objects
     /// </summary>
     /// <param name="args"></param>
-    public abstract void SelectClientObjects(List<string> objs);
+    public abstract void SelectClientObjects(List<string> objs, bool deselect = false);
 
     /// <summary>
     /// Should return a list of filters that the application supports. 

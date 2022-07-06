@@ -189,14 +189,18 @@ namespace SpeckleRhino
       return new List<ISetting>();
     }
 
-    public override void SelectClientObjects(List<string> objs)
+    public override void SelectClientObjects(List<string> objs, bool deselect = false)
     {
       foreach (var id in objs)
       {
         RhinoObject obj = Doc.Objects.FindId(new Guid(id));
         if (obj != null)
-          obj.Select(true, true, false, false, true, true);
+        {
+          if (deselect) obj.Select(false, true, false, true, true, true);
+          else obj.Select(true, true, true, true, true, true);
+        }
       }
+      Doc.Views.ActiveView.ActiveViewport.ZoomExtentsSelected();
       Doc.Views.Redraw();
     }
 
@@ -205,7 +209,7 @@ namespace SpeckleRhino
       if (PreviewConduit != null)
         PreviewConduit.Enabled = false;
 
-      Doc.Objects.UnselectAll(false); // TODO: consider instead of unselecting, storing doc visibility state and restoring to this point
+      Doc.Objects.UnselectAll(true); // TODO: consider instead of unselecting, storing doc visibility state and restoring to this point
       Doc.Views.Redraw();
     }
 
@@ -436,7 +440,7 @@ namespace SpeckleRhino
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            appObj.Update(status: ApplicationObject.ConversionStatus.Skipped, logItem: $"Receiving objects of type {@base.speckle_type} not supported in Rhino");
+            appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving objects of type {@base.speckle_type} not supported in Rhino");
             progress.Report.Log(appObj);
           }
 
@@ -470,13 +474,13 @@ namespace SpeckleRhino
       var convertedList = new List<object>();
 
       // add preview object report object to progress for converter
-      previewObj.Status = ApplicationObject.ConversionStatus.Converting;
+      previewObj.Status = ApplicationObject.State.Converting;
       progress.Report.Log(previewObj);
 
       var converted = Converter.ConvertToNative(obj);
       if (converted == null)
       {
-        previewObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Conversion of {obj.speckle_type} returned Null");
+        previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion of {obj.speckle_type} returned Null");
         return convertedList;
       }
 
@@ -560,9 +564,9 @@ namespace SpeckleRhino
       bakedCount++;
 
       if (bakedCount == 0)
-        previewObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Could not create object {obj.id} of type {obj.speckle_type}");
+        previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not create object {obj.id} of type {obj.speckle_type}");
       else
-        previewObj.Update(status: ApplicationObject.ConversionStatus.Created);
+        previewObj.Update(status: ApplicationObject.State.Created);
       progress.Report.Log(previewObj);
     }
 
@@ -624,17 +628,17 @@ namespace SpeckleRhino
         {
           if (!Converter.CanConvertToSpeckle(obj))
           {
-            reportObj.Update(status: ApplicationObject.ConversionStatus.Skipped, logItem: $"Sending objects of type {obj.ObjectType} not supported in Rhino");
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending objects of type {obj.ObjectType} not supported in Rhino");
             progress.Report.Log(reportObj);
             continue;
           }
-          reportObj.Update(status: ApplicationObject.ConversionStatus.Converting);
+          reportObj.Update(status: ApplicationObject.State.Converting);
 
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(obj);
           if (converted == null)
           {
-            reportObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Conversion of {obj.ObjectType} returned Null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion of {obj.ObjectType} returned Null");
             progress.Report.Log(reportObj);
             continue;
           }
@@ -662,12 +666,12 @@ namespace SpeckleRhino
         else if (viewIndex != -1)
         {
           ViewInfo view = Doc.NamedViews[viewIndex];
-          reportObj.Update(status: ApplicationObject.ConversionStatus.Converting);
+          reportObj.Update(status: ApplicationObject.State.Converting);
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(view);
           if (converted == null)
           {
-            reportObj.Update(status: ApplicationObject.ConversionStatus.Failed, logItem: $"Creation of {view.GetType()} returned Null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Creation of {view.GetType()} returned Null");
             progress.Report.Log(reportObj);
             continue;
           }
@@ -696,7 +700,7 @@ namespace SpeckleRhino
         }
 
         // log report object
-        reportObj.Update(status: ApplicationObject.ConversionStatus.Created, logItem: $"Successfully converted Rhino {obj.ObjectType} to Speckle {converted.speckle_type}");
+        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Successfully converted Rhino {obj.ObjectType} to Speckle {converted.speckle_type}");
         progress.Report.Log(reportObj);
 
         objCount++;

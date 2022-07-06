@@ -258,7 +258,7 @@ namespace DesktopUI2
       return collection;
     }
 
-    public override void SelectClientObjects(List<string> objs)
+    public override void SelectClientObjects(List<string> objs, bool deselect = false)
     {
       throw new NotImplementedException();
     }

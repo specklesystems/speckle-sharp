@@ -8,62 +8,42 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
-    <UserControl.Styles>
-        <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#preview">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#previewOn">
+      <Setter Property="RenderTransform" Value="scaleX(-1)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#previewOn">
       <Setter Property="RenderTransform" Value="scaleX(-1)" />
     </Style>
   </UserControl.Styles>
-  <Grid Margin="4">
+  <Grid>
     <m:FloatingButton
       VerticalAlignment="Center"
+      assists:ShadowAssist.ShadowDepth="Depth0"
+      Background="Transparent"
       Command="{Binding PreviewCommand}"
-      IsDefault="True"
-      IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-      ToolTip.Tip="Previews the objects about to be sent or received">
+      IsEnabled="{Binding PreviewEnabled}"
+      ToolTip.Tip="Preview objects to send or receive">
       <Button.Content>
-        <icons:MaterialIcon
-          Name="preview"
-          Width="20"
-          Height="20"
-          Foreground="White"
-          Kind="Eye"
-          ToolTip.Tip="Preview">
-          <icons:MaterialIcon.Transitions>
-            <Transitions>
-              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
-            </Transitions>
-          </icons:MaterialIcon.Transitions>
-
-        </icons:MaterialIcon>
-
+        <Panel>
+            <icons:MaterialIcon
+              Name="previewOn"
+              IsVisible="{Binding PreviewOn}"
+              Width="20"
+              Height="20"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="{DynamicResource PrimaryHueMidBrush}"
+              Kind="Lightbulb" />
+            <icons:MaterialIcon
+              Name="previewOff"
+              IsVisible="{Binding !PreviewOn}"
+              Width="20"
+              Height="20"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="{DynamicResource PrimaryHueMidBrush}"
+              Kind="LightbulbOutline" />
+        </Panel>
       </Button.Content>
     </m:FloatingButton>
-
-    <Grid>
-      <ProgressBar
-        Width="40"
-        Height="40"
-        Classes="Circle"
-        IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
-        IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
-        Maximum="{Binding Progress.Max}"
-        Value="{Binding Progress.Value}" />
-      <m:FloatingButton
-        assists:ButtonAssist.HoverColor="Transparent"
-        assists:ShadowAssist.ShadowDepth="0"
-        Background="Transparent"
-        Classes="Mini"
-        Command="{Binding CancelPreviewCommand}"
-        IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
-        ToolTip.Tip="Cancel">
-        <Button.Content>
-          <icons:MaterialIcon
-            Width="15"
-            Height="15"
-            Foreground="{DynamicResource PrimaryHueDarkBrush}"
-            Kind="Close" />
-        </Button.Content>
-      </m:FloatingButton>
-    </Grid>
   </Grid>
 </UserControl>

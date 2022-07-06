@@ -85,7 +85,7 @@ namespace Speckle.Core.Models
   /// </summary>
   public class ApplicationObject : Base
   {
-    public enum ConversionStatus
+    public enum State
     {
       Converting, // Speckle object is in the process of being converted to an Application Object
       Created, // Speckle object is created from an ApplicationObject or ApplicationObject is created from Speckle Object
@@ -109,7 +109,7 @@ namespace Speckle.Core.Models
 
     public List<string> CreatedIds { get; set; } = new List<string>(); // the created object ids (speckle or application)
 
-    public ConversionStatus Status { get; set; } // status of the object, for report categorization
+    public State Status { get; set; } // status of the object, for report categorization
 
     public List<string> Log { get; set; } = new List<string>(); // conversion notes or other important info, exposed to user
 
@@ -124,7 +124,7 @@ namespace Speckle.Core.Models
       Descriptor = type;
     }
 
-    public void Update(string createdId = null, ConversionStatus? status = null, List<string> log = null, string logItem = null)
+    public void Update(string createdId = null, State? status = null, List<string> log = null, string logItem = null)
     {
       if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
       if (status.HasValue) Status = status.Value;
@@ -160,7 +160,7 @@ namespace Speckle.Core.Models
       return index == -1 ? false : true;
     }
 
-    public int GetConversionTotal(ApplicationObject.ConversionStatus action)
+    public int GetConversionTotal(ApplicationObject.State action)
     {
       var actionObjects = ReportObjects.Where(o => o.Status == action);
       return actionObjects == null ? 0 : actionObjects.Count();

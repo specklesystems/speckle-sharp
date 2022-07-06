@@ -554,11 +554,8 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
-
       var dialog = new NewStreamDialog(Accounts);
       var result = await dialog.ShowDialog<bool>();
-
-
 
       if (result)
       {
@@ -683,7 +680,6 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
-
     }
 
     private void ChangeTheme(bool isDark)
