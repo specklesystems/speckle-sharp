@@ -238,9 +238,31 @@ namespace SpeckleRhino
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
         Preview = FlattenCommitObject(commitObject, commitLayerName, progress, ref count);
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
-        Preview.ForEach(o => o.Converted = o.Convertible ?
-          ConvertObject(o, progress) :
-          o.Fallback.SelectMany(f => ConvertObject(f, progress)).ToList());
+        
+        // Convert preview objects
+        foreach (var previewObj in Preview)
+        {
+          previewObj.Converted = previewObj.Convertible ? 
+            ConvertObject(previewObj, progress) :
+            previewObj.Fallback.SelectMany(f => ConvertObject(f, progress)).ToList();
+
+          // reporting
+          if (!previewObj.Convertible)
+          {
+            if (previewObj.Converted.Count == 0)
+              previewObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving objects of type {previewObj.Descriptor} not supported in Rhino and no valid fallback values found");
+            else
+              previewObj.Update(status: ApplicationObject.State.Created, logItem: $"Receiving objects of type {previewObj.Descriptor} not supported in Rhino, converting to {previewObj.Converted.Count} fallback values instead");
+          }
+          else
+          {
+            previewObj.Update(status: ApplicationObject.State.Created);
+          }
+          progress.Report.Log(previewObj);
+        }
+
+        progress.Report.Merge(Converter.Report);
+
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
         Doc.Notes = segments[0];
@@ -441,7 +463,7 @@ namespace SpeckleRhino
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
             appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving objects of type {@base.speckle_type} not supported in Rhino");
-            progress.Report.Log(appObj);
+            objects.Add(appObj);
           }
 
           return objects;
@@ -500,68 +522,76 @@ namespace SpeckleRhino
     private void BakeObject(ApplicationObject previewObj, ProgressViewModel progress)
     {
       var obj = StoredObjects[previewObj.OriginalId];
-      string layerPath = previewObj.Container;
       var converted = previewObj.Converted;
       int bakedCount = 0;
       foreach (var convertedItem in converted)
       {
-        if (!(convertedItem is GeometryBase convertedRH)) continue;
-
-        if (!convertedRH.IsValidWithLog(out string log))
+        switch (convertedItem)
         {
-          previewObj.Update(log: new List<string>() { $"{log.Replace("\n", "").Replace("\r", "")}" });
-          continue;
-        }
+          case GeometryBase o:
+            string layerPath = previewObj.Container;
+            if (!o.IsValidWithLog(out string log))
+            {
+              previewObj.Update(logItem: $"{log.Replace("\n", "").Replace("\r", "")}");
+              continue;
+            }
+            Layer bakeLayer = Doc.GetLayer(layerPath, true);
+            if (bakeLayer == null)
+            {
+              previewObj.Update(logItem: $"Could not create layer {layerPath}.");
+              continue;
+            }
+            var attributes = new ObjectAttributes();
 
-        Layer bakeLayer = Doc.GetLayer(layerPath, true);
-        if (bakeLayer == null)
-        {
-          previewObj.Update(log: new List<string>() { $"Could not create layer {layerPath}." });
-          continue;
-        }
+            // handle display style
+            if (obj[@"displayStyle"] is Base display)
+              if (Converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
+                attributes = displayAttribute;
+              else if (obj[@"renderMaterial"] is Base renderMaterial)
+                attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
 
-        var attributes = new ObjectAttributes();
+            // assign layer
+            attributes.LayerIndex = bakeLayer.Index;
 
-        // handle display style
-        if (obj[@"displayStyle"] is Base display)
-          if (Converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
-            attributes = displayAttribute;
-        else if (obj[@"renderMaterial"] is Base renderMaterial)
-          attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
+            // handle user strings
+            if (obj[UserStrings] is Dictionary<string, object> userStrings)
+              foreach (var key in userStrings.Keys)
+                attributes.SetUserString(key, userStrings[key] as string);
 
-        // assign layer
-        attributes.LayerIndex = bakeLayer.Index;
+            // handle user dictionaries
+            if (obj[UserDictionary] is Dictionary<string, object> dict)
+              ParseDictionaryToArchivable(attributes.UserDictionary, dict);
 
-        // handle user strings
-        if (obj[UserStrings] is Dictionary<string, object> userStrings)
-          foreach (var key in userStrings.Keys)
-            attributes.SetUserString(key, userStrings[key] as string);
+            Guid id = Doc.Objects.Add(o, attributes);
+            if (id == Guid.Empty)
+            {
+              previewObj.Update(logItem: $"Could not add to document.");
+              continue;
+            }
+            previewObj.Update(createdId: id.ToString());
 
-        // handle user dictionaries
-        if (obj[UserDictionary] is Dictionary<string, object> dict)
-          ParseDictionaryToArchivable(attributes.UserDictionary, dict);
+            bakedCount++;
 
-        Guid id = Doc.Objects.Add(convertedRH, attributes);
-        if (id == Guid.Empty)
-        {
-          previewObj.Update(log: new List<string>() { $"Could not add to document." });
-          continue;
-        }
-        previewObj.Update(createdId: id.ToString());
-
-        // handle render material
-        if (obj[@"renderMaterial"] is Base render)
-        {
-          var convertedMaterial = Converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
-          if (convertedMaterial is RenderMaterial rm)
-          {
-            var rhinoObject = Doc.Objects.FindId(id);
-            rhinoObject.RenderMaterial = rm;
-            rhinoObject.CommitChanges();
-          }
+            // handle render material
+            if (obj[@"renderMaterial"] is Base render)
+            {
+              var convertedMaterial = Converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
+              if (convertedMaterial is RenderMaterial rm)
+              {
+                var rhinoObject = Doc.Objects.FindId(id);
+                rhinoObject.RenderMaterial = rm;
+                rhinoObject.CommitChanges();
+              }
+            }
+            break;
+          case RhinoObject o:
+            previewObj.Update(createdId: o.Id.ToString());
+            bakedCount++;
+            break;
+          default:
+            break;
         }
       }
-      bakedCount++;
 
       if (bakedCount == 0)
         previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not create object {obj.id} of type {obj.speckle_type}");

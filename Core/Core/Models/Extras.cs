@@ -113,8 +113,6 @@ namespace Speckle.Core.Models
 
     public List<string> Log { get; set; } = new List<string>(); // conversion notes or other important info, exposed to user
 
-    public bool Rollback { get; set; } // object creation or bake operation to be rolled back
-
     [JsonIgnore]
     public List<object> Converted { get; set; } // the converted objects
 
@@ -124,12 +122,13 @@ namespace Speckle.Core.Models
       Descriptor = type;
     }
 
-    public void Update(string createdId = null, State? status = null, List<string> log = null, string logItem = null)
+    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, List<string> log = null, string logItem = null)
     {
+      if (createdIds != null) createdIds.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(o => CreatedIds.Add(o));
       if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
       if (status.HasValue) Status = status.Value;
-      if (log != null) log.Where(o => !string.IsNullOrEmpty(o))?.ToList().ForEach(o => Log.Add(o));
-      if (!string.IsNullOrEmpty(logItem)) Log.Add(logItem);
+      if (log != null) log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
+      if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem)) Log.Add(logItem);
     }
   }
 
@@ -148,7 +147,7 @@ namespace Speckle.Core.Models
     {
       if (GetReportObject(obj.OriginalId, out int index))
       {
-        ReportObjects[index].Update(status: obj.Status, log: obj.Log);
+        ReportObjects[index].Update(status: obj.Status, createdIds: obj.CreatedIds, log: obj.Log);
         return ReportObjects[index];
       }
       else return null;

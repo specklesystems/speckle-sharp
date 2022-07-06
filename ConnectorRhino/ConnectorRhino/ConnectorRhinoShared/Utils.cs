@@ -97,6 +97,7 @@ namespace SpeckleRhino
     private void Draw(ApplicationObject obj, DisplayPipeline display)
     {
       var material = new DisplayMaterial();
+      material.Transparency = 0.8;
       var vp = display.Viewport;
       bool wireMode = vp.DisplayMode.EnglishName.ToLower() == "wireframe" ? true : false;
 
@@ -133,10 +134,11 @@ namespace SpeckleRhino
             break;
           case InstanceObject o:
             // todo: this needs to be handled, including how block defs are created during preview
+            //obj.Rollback = true;
             break;
           case string o:
             // this means it was a view
-            obj.Rollback = true;
+            //obj.Rollback = true;
             break;
           default:
             break;
