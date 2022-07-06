@@ -24,8 +24,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RhinoCommon" Version="6.28.20199.17141" />
-    <PackageReference Include="Grasshopper" Version="6.28.20199.17141" />
+    <PackageReference Include="RhinoCommon" Version="6.28.20199.17141" IncludeAssets="compile;build" />
+    <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build" />
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
   </ItemGroup>
 </Project>
