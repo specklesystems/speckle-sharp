@@ -29,15 +29,13 @@ jobs:
             (Core|Objects|ConnectorArchicad)/.* archicad true
           base-revision: main
           output-path: .circleci/scripts/parameters.json
-      - run:
-          name: LS scripts folders
-          command: ls .circleci/scripts
       - run: cat .circleci/scripts/parameters.json
       - run: pip install pyyaml
+      - run: echo ${CIRCLE_TAG}
       - run: # run a command
           name: Generate config
           command: |
-            python .circleci/scripts/config-generator.py
+            python .circleci/scripts/config-generator.py -d ${CIRCLE_TAG} -o .circleci/continuation-config.yml
       - continuation/continue:
           configuration_path: .circleci/continuation-config.yml # use newly generated config to continue
 
