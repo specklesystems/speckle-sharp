@@ -238,6 +238,18 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           paths:
             - speckle-sharp-ci-tools/Installers
 
+  push-nugets:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - packandpublish:
+          projectfilepath: Core/Core.sln
+      - packandpublish:
+          projectfilepath: Objects/Objects.sln
+      - packandpublish:
+          projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
+
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
       - image: cimg/base:2021.01
