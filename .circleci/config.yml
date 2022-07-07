@@ -15,23 +15,26 @@ jobs:
     executor: python/default
     steps:
       - checkout # checkout code
-      - path-filtering/set-parameters:
-          mapping: |
-            Core/.* run_core true
-            (Core|Objects|ConnectorRhino|.*/ConverterRhinoGh)/.* rhino true
-            (Core|Objects|ConnectorGrasshopper|.*/ConverterRhinoGh)/.* grasshopper true
-            (Core|Objects|ConnectorRevit|.*/ConverterRevit)/.* revit true
-            (Core|Objects|ConnectorDynamo|.*/ConverterDynamo)/.* dynamo true
-            (Core|Objects|ConnectorAutocadCivil|.*/ConverterAutocadCivil)/.* autocadcivil true
-            (Core|Objects|ConnectorCSI|.*/ConverterCSI)/.* csi true
-            (Core|Objects|ConnectorMicroStation|.*/ConverterMicroStation)/.* microstation true
-            (Core|Objects|ConnectorTeklaStructures|.*/ConverterTeklaStructures)/.* teklastructures true
-            (Core|Objects|ConnectorArchicad)/.* archicad true
-          base-revision: main
-          output-path: .circleci/scripts/parameters.json
-          filters:
-            branches:
-              except: /(main|ci/.*)/
+      - when:
+          condition:
+            and:
+              - not:
+                  equal: [main, << pipeline.git.branch >>]
+          steps:
+            - path-filtering/set-parameters:
+                mapping: |
+                  Core/.* run_core true
+                  (Core|Objects|ConnectorRhino|.*/ConverterRhinoGh)/.* rhino true
+                  (Core|Objects|ConnectorGrasshopper|.*/ConverterRhinoGh)/.* grasshopper true
+                  (Core|Objects|ConnectorRevit|.*/ConverterRevit)/.* revit true
+                  (Core|Objects|ConnectorDynamo|.*/ConverterDynamo)/.* dynamo true
+                  (Core|Objects|ConnectorAutocadCivil|.*/ConverterAutocadCivil)/.* autocadcivil true
+                  (Core|Objects|ConnectorCSI|.*/ConverterCSI)/.* csi true
+                  (Core|Objects|ConnectorMicroStation|.*/ConverterMicroStation)/.* microstation true
+                  (Core|Objects|ConnectorTeklaStructures|.*/ConverterTeklaStructures)/.* teklastructures true
+                  (Core|Objects|ConnectorArchicad)/.* archicad true
+                base-revision: main
+                output-path: .circleci/scripts/parameters.json
       - run: cat .circleci/scripts/parameters.json
       - run: pip install pyyaml
       - run: echo ${CIRCLE_TAG}
