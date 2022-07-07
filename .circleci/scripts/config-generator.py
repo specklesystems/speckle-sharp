@@ -1,7 +1,7 @@
 import json
 import yaml
 
-deploy = True
+deploy = False
 
 
 def setup():
