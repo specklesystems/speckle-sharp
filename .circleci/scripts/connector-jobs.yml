@@ -49,6 +49,12 @@ autocadcivil:
       slug: autocad
       requires:
         - build-desktopui
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: civil3d
+      requires:
+        - build-desktopui
 
 microstation:
   - build-connector:
@@ -68,7 +74,7 @@ microstation:
       dllname: SpeckleConnectorOpenRoads.dll
       slug: openroads
 
-tekla:
+teklastructures:
   - build-connector:
       slnname: ConnectorTeklaStructures
       dllname: SpeckleConnectorTeklaStructures.dll

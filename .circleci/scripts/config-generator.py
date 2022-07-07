@@ -1,7 +1,7 @@
 import json
 import yaml
 
-deploy = False
+deploy = True
 
 
 def setup():
@@ -25,9 +25,18 @@ def setup():
         common_jobs = yaml.safe_load(cf)
 
 
-def getTagFilter(connector_name):
-    version_regex = "([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?$"
-    return f"/^({connector_name}|all)\\/{version_regex}/"
+def getTagRegexString(connector_names):
+    version_regex = "([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?"
+    tags = connector_names + ["all"]
+    tagExpression = "(" + "|".join(tags) + ")"
+    return f"/^{version_regex}\\/{tagExpression}$/"
+
+
+def getTagFilter(connector_names):
+    return {
+        "branches": {"ignore": "/.*/"},
+        "tags": {"only": getTagRegexString(connector_names)},
+    }
 
 
 print("---- Started creating config ----")
@@ -41,6 +50,9 @@ build_core = False
 if "core" in params.keys():
     build_core = params["core"]
 
+
+jobs_before_deploy = []
+slugs_to_match = []
 for connector, run in params.items():
     # Add any common jobs first
     if connector in common_jobs.keys():
@@ -52,6 +64,8 @@ for connector, run in params.items():
     if run and connector in connector_jobs.keys():
         # Get jobs to run per connector
         jobs_to_run = connector_jobs[connector]
+        if connector not in slugs_to_match:
+            slugs_to_match.append(connector)
         # Setup each job
         for j in jobs_to_run:
             # Job only has one key with the job name
@@ -63,6 +77,7 @@ for connector, run in params.items():
             if is_connector_job:
                 # Get the slug
                 slug = connector if "slug" not in jobAttrs.keys() else jobAttrs["slug"]
+
                 # Make sure you've initialized the 'requires' item
                 if "requires" not in jobAttrs.keys():
                     jobAttrs["requires"] = []
@@ -72,20 +87,41 @@ for connector, run in params.items():
                     # Require core tests too if core needs rebuilding.
                     jobAttrs["requires"] += ["test-core"]
                 # Add name to all jobs
-                jobAttrs["name"] = f"{slug}-build"
+                name = f"{slug}-build"
+                jobAttrs["name"] = name
+                jobs_before_deploy.append(name)
+                print(f"    Added connector job: {name}")
 
             # Add tags if marked for deployment
             if deploy:
                 jobAttrs["installer"] = True
-                jobAttrs["filters"] = {
-                    "branches": {"ignore": "/.*/"},
-                    "tags": {"only": getTagFilter(connector)},
-                }
+                jobAttrs["filters"] = getTagFilter([connector])
 
         # Append connector jobs to main workflow jobs
         main_workflow["jobs"] += connector_jobs[connector]
         print(f"Added connector jobs: {connector}")
 
+# Modify jobs for deployment
+if deploy:
+    deploy_job = {}
+    deploy_job["filters"] = getTagFilter(slugs_to_match)
+    deploy_job["requires"] = jobs_before_deploy
+    main_workflow["jobs"] += [{"deployment": deploy_job}]
+
+    print("Added deploy job: deployment")
+    if "get-ci-tools" in main_workflow["jobs"]:
+        main_workflow["jobs"].remove("get-ci-tools")
+
+    ci_tools_job = {"filters": getTagFilter(slugs_to_match)}
+    main_workflow["jobs"] += [{"get-ci-tools": ci_tools_job}]
+    print("Modified job for deploy: get-ci-tools")
+
+    for job in main_workflow["jobs"]:
+        x = list(job.keys())
+        jobAttrs = job[x[0]]
+        if "filters" not in jobAttrs.keys():
+            jobAttrs["filters"] = getTagFilter(slugs_to_match)
+            print(f"Added tag filter for all jobs that was missing it: {x[0]}")
 # Output continuation file
 with open(".circleci/continuation-config.yml", "w") as file:
     documents = yaml.dump(config, file, sort_keys=False)
