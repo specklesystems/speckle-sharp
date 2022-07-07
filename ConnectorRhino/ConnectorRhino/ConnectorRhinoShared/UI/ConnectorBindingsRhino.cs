@@ -199,6 +199,16 @@ namespace SpeckleRhino
           if (deselect) obj.Select(false, true, false, true, true, true);
           else obj.Select(true, true, true, true, true, true);
         }
+        else
+        {
+          // this may be a receive select: try finding the preview object
+          if (PreviewConduit != null && PreviewConduit.Enabled)
+          {
+            PreviewConduit.Enabled = false;
+            PreviewConduit.SelectPreviewObject(id, deselect);
+            PreviewConduit.Enabled = true;
+          }
+        }
       }
       Doc.Views.ActiveView.ActiveViewport.ZoomExtentsSelected();
       Doc.Views.Redraw();
@@ -242,6 +252,7 @@ namespace SpeckleRhino
         // Convert preview objects
         foreach (var previewObj in Preview)
         {
+          previewObj.CreatedIds = new List<string>() { previewObj.OriginalId }; // temporary store speckle id as created id for Preview report selection to work
           previewObj.Converted = previewObj.Convertible ? 
             ConvertObject(previewObj, progress) :
             previewObj.Fallback.SelectMany(f => ConvertObject(f, progress)).ToList();
@@ -269,9 +280,9 @@ namespace SpeckleRhino
       }
 
       // create display conduit
-      PreviewConduit = new PreviewConduit();
-      PreviewConduit.Preview = Preview;
+      PreviewConduit = new PreviewConduit(Preview);
       PreviewConduit.Enabled = true;
+      Doc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(PreviewConduit.bbox);
       Doc.Views.Redraw();
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -341,6 +352,7 @@ namespace SpeckleRhino
               previewObj.Converted = previewObj.Fallback.SelectMany(o => ConvertObject(o, progress)).ToList();
           }
 
+          previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
           if (previewObj.Converted != null)
             BakeObject(previewObj, progress);
 

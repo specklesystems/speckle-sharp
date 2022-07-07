@@ -596,11 +596,11 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case BlockDefinition o:
-          rhinoObj = BlockDefinitionToNative(o);
+          rhinoObj = BlockDefinitionToNative(o, out notes);
           break;
 
         case BlockInstance o:
-          rhinoObj = BlockInstanceToNative(o);
+          rhinoObj = BlockInstanceToNative(o, out notes);
           break;
 
         case Text o:
@@ -706,7 +706,6 @@ namespace Objects.Converter.RhinoGh
           return true;
 #endif
         default:
-
           return false;
       }
     }

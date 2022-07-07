@@ -580,6 +580,8 @@ namespace Objects.Converter.RhinoGh
       var ptsList = curve.GetPoints().Select(o => PointToNative(o).Location).ToList();
 
       var nurbsCurve = NurbsCurve.Create(false, curve.degree, ptsList);
+      if (nurbsCurve == null)
+        return null;
 
       for (int j = 0; j < nurbsCurve.Points.Count; j++)
       {

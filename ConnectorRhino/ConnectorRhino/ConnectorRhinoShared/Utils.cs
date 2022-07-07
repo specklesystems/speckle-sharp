@@ -12,6 +12,8 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 using DesktopUI2.ViewModels;
+using System.Drawing;
+using System.Linq;
 
 namespace SpeckleRhino
 {
@@ -78,70 +80,106 @@ namespace SpeckleRhino
   }
 
   #region Preview
-  public class PreviewConduit : Rhino.Display.DisplayConduit
+  public class PreviewConduit : DisplayConduit
   {
-    public List<ApplicationObject> Preview { get; set; }
+    private Dictionary<string, List<object>> Preview { get; set; } = new Dictionary<string, List<object>>();
+    private List<string> Selected = new List<string>();
+    public BoundingBox bbox;
+    private Color color = Color.FromArgb(200, 59, 130, 246);
+    private Color selectedColor = Color.FromArgb(200, 255, 255, 0);
+    private DisplayMaterial material;
+
+    public PreviewConduit(List<ApplicationObject> preview)
+    {
+      material = new DisplayMaterial();
+      material.Transparency = 0.8;
+      material.Diffuse = color;
+      bbox = new BoundingBox();
+
+      foreach (var previewObj in preview)
+      {
+        var converted = new List<object>();
+        foreach (var obj in previewObj.Converted)
+        {
+          switch (obj)
+          {
+            case GeometryBase o:
+              bbox.Union(o.GetBoundingBox(false));
+              break;
+            case Text3d o:
+              bbox.Union(o.BoundingBox);
+              break;
+            case InstanceObject o:
+              // todo: this needs to be handled, including how block defs are created during preview
+              //obj.Rollback = true;
+              break;
+            default:
+              break;
+          }
+          converted.Add(obj);
+        }
+        Preview.Add(previewObj.OriginalId, converted);
+      }
+    }
+
+    public void SelectPreviewObject(string id, bool unselect = false)
+    {
+      if (Preview.ContainsKey(id))
+      {
+        if (unselect)
+          Selected.Remove(id);
+        else
+          if (!Selected.Contains(id)) Selected.Add(id);
+      }
+    }
+
+    // reference: https://developer.rhino3d.com/api/RhinoCommon/html/M_Rhino_Display_DisplayConduit_CalculateBoundingBox.htm
+    protected override void CalculateBoundingBox(CalculateBoundingBoxEventArgs e)
+    {
+      base.CalculateBoundingBox(e);
+      e.IncludeBoundingBox(bbox);
+    }
+
+    protected override void CalculateBoundingBoxZoomExtents(CalculateBoundingBoxEventArgs e)
+    {
+      this.CalculateBoundingBox(e);
+    }
 
     protected override void PreDrawObjects(Rhino.Display.DrawEventArgs e)
     {
       // draw preview objects
-      foreach (var previewObj in Preview)
-      {
-        if (previewObj.Convertible)
-          Draw(previewObj, e.Display);
-        else
-          previewObj.Fallback.ForEach(o => Draw(o, e.Display));
-      }
-    }
+      var display = e.Display;
 
-    private void Draw(ApplicationObject obj, DisplayPipeline display)
-    {
-      var material = new DisplayMaterial();
-      material.Transparency = 0.8;
-      var vp = display.Viewport;
-      bool wireMode = vp.DisplayMode.EnglishName.ToLower() == "wireframe" ? true : false;
-
-      foreach (var convertedObj in obj.Converted) // these should be meshes and curves
+      foreach (var previewobj in Preview)
       {
-        switch (convertedObj)
+        var drawColor = Selected.Contains(previewobj.Key) ?  selectedColor : color;
+        var drawMaterial = material;
+        drawMaterial.Diffuse = drawColor;
+        foreach (var obj in previewobj.Value)
         {
-          case Brep o:
-            if (wireMode)
-              display.DrawBrepWires(o, material.Diffuse);
-            else
-              display.DrawBrepShaded(o, material);
-            break;
-          case Mesh o:
-            if (wireMode)
-              display.DrawMeshWires(o, material.Diffuse);
-            else
-              display.DrawMeshShaded(o, material);
-            break;
-          case Curve o:
-            display.DrawCurve(o, material.Diffuse);
-            break;
-          case Rhino.Geometry.Point3d o:
-            display.DrawPoint(o);
-            break;
-          case PointCloud o:
-            display.DrawPointCloud(o, 1);
-            break;
-          case Hatch o:
-            display.DrawHatch(o, material.Diffuse, material.Diffuse);
-            break;
-          case Text3d o:
-            display.Draw3dText(o, material.Diffuse);
-            break;
-          case InstanceObject o:
-            // todo: this needs to be handled, including how block defs are created during preview
-            //obj.Rollback = true;
-            break;
-          case string o:
-            // this means it was a view
-            //obj.Rollback = true;
-            break;
-          default:
-            break;
+          switch (obj)
+          {
+            case Brep o:
+              display.DrawBrepShaded(o, drawMaterial);
+              break;
+            case Mesh o:
+              display.DrawMeshShaded(o, drawMaterial);
+              break;
+            case Curve o:
+              display.DrawCurve(o, drawColor);
+              break;
+            case Rhino.Geometry.Point o:
+              display.DrawPoint(o.Location, drawColor);
+              break;
+            case Point3d o:
+              display.DrawPoint(o,drawColor);
+              break;
+            case PointCloud o:
+              display.DrawPointCloud(o, 5, drawColor);
+              break;
+            default:
+              break;
+          }
         }
       }
     }

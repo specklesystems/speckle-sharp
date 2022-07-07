@@ -42,7 +42,7 @@ namespace DesktopUI2.ViewModels
       Id = item.OriginalId;
       Name = item.Descriptor;
       Log = item.Log;
-      HasAlert = item.Convertible;
+      HasAlert = item.Log.Count > 1 ? true : false;
       Status = item.Status.ToString();
       ApplicationIds = isReceiver ? item.CreatedIds : new List<string>() { item.OriginalId };
 
