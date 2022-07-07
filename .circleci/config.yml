@@ -48,4 +48,12 @@ jobs:
 workflows:
   setup:
     jobs:
-      - setup
+      - setup:
+          name: Build Setup
+      - setup:
+          name: Deploy Setup
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?\/.*$/

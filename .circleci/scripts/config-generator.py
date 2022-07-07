@@ -142,11 +142,6 @@ def createConfigFile(deploy, outputPath):
         deploy_job["requires"] = jobs_before_deploy
         main_workflow["jobs"] += [{"deploy-connectors": deploy_job}]
 
-        push_nugets_job = {}
-        push_nugets_job["filters"] = getTagFilter(slugs_to_match)
-        push_nugets_job["requires"] = ["deploy-connectors"]
-        main_workflow["jobs"] += [{"push-nugets": push_nugets_job}]
-
         print("Added deploy job: deployment")
         if "get-ci-tools" in main_workflow["jobs"]:
             main_workflow["jobs"].remove("get-ci-tools")

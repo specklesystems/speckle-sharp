@@ -61,14 +61,20 @@ microstation:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorMicroStation.dll
       slug: microstation
+      requires:
+        - build-desktopui
   - build-connector:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
+      requires:
+        - build-desktopui
   - build-connector:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
+      requires:
+        - build-desktopui
   - build-connector:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorOpenRoads.dll
@@ -87,18 +93,26 @@ csi:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: etabs
+      requires:
+        - build-desktopui
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: sap2000
+      requires:
+        - build-desktopui
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: safe
+      requires:
+        - build-desktopui
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: csibridge
+      requires:
+        - build-desktopui
 
 archicad:
   - setup-archicad-dev:
@@ -107,6 +121,7 @@ archicad:
   - build-connector:
       requires:
         - setup-archicad-dev
+        - build-desktopui
       slnname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
       slug: archicad

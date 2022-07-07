@@ -126,16 +126,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $version = "$($ver).$($env:CIRCLE_BUILD_NUM)"
             msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver  
             if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
-      - run:
-          name: Deploy?
-          command:
-            | # stop job if not triggered by deployment workflow (parameters.installer == false)
-            if (-Not [System.Convert]::ToBoolean('<< parameters.installer >>') ) { 
-            circleci-agent step halt 
-            Write-Host "Job stopped gracefully"
-            } else { Write-Host "Job continuing" }
       - run: # Creates the inno installer
-          name: InnoSetup
+          name: Build Installer
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
           shell: cmd.exe #does not work in powershell
           environment:
@@ -188,14 +180,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
             if [ "${CIRCLE_TAG}" ]; then echo "version: $SEMVER" > "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$CHANNEL.yml"; fi
-      - run:
-          name: Deploy?
-          command: |
-            echo "Should we deploy this?"
-            if [[ <<parameters.installer>> == true ]]  
-              then echo "Yes! Continuing..."
-            else circleci-agent step halt
-            fi
 
       # Compress build files
       - run:
@@ -237,18 +221,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           root: ./
           paths:
             - speckle-sharp-ci-tools/Installers
-
-  push-nugets:
-    executor:
-      name: win/default
-      shell: powershell.exe
-    steps:
-      - packandpublish:
-          projectfilepath: Core/Core.sln
-      - packandpublish:
-          projectfilepath: Objects/Objects.sln
-      - packandpublish:
-          projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
@@ -296,7 +268,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           paths:
             - ConnectorArchicad/AddOn/Build
 
-  deploy: # Uploads all installers found to S3
+  deploy-connectors: # Uploads all installers found to S3
     docker:
       - image: cimg/base:2021.01
     steps:
@@ -329,3 +301,36 @@ workflows:
       - build-desktopui:
           requires:
             - build-core
+  nuget:
+    jobs:
+      # CORE Nuget Publish
+      - build-core:
+          name: nuget-deploy-core
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-core|nugets)?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: Core/Core.sln
+      - build-objects:
+          name: nuget-deploy-objects
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-objects|nugets)?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: Objects/Objects.sln
+      - build-desktopui:
+          name: nuget-deploy-desktopui
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-dui|nugets)?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
