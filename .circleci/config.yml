@@ -20,6 +20,10 @@ jobs:
             and:
               - not:
                   equal: [main, << pipeline.git.branch >>]
+              - not:
+                  matches:
+                    pattern: ".*/?ci/.*"
+                    value: << pipeline.git.branch >>
           steps:
             - path-filtering/set-parameters:
                 mapping: |
