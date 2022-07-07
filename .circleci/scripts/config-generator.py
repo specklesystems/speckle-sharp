@@ -20,9 +20,13 @@ def runCommand(argv):
             print(arg_help)  # print the help message
             sys.exit(2)
         elif opt in ("-d", "--deploy"):
-            print(opt)
-            print(arg)
-            deploy = arg is not None
+            deploy = arg is not None and arg not in [
+                "none",
+                "None",
+                "False",
+                "false",
+                "f",
+            ]
         elif opt in ("-o", "--output"):
             output_filepath = arg
 

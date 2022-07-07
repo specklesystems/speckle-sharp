@@ -41,7 +41,7 @@ jobs:
       - run: # run a command
           name: Generate config
           command: |
-            python .circleci/scripts/config-generator.py -d ${CIRCLE_TAG} -o .circleci/continuation-config.yml
+            python .circleci/scripts/config-generator.py -d ${CIRCLE_TAG:-none} -o .circleci/continuation-config.yml
       - continuation/continue:
           configuration_path: .circleci/continuation-config.yml # use newly generated config to continue
 
