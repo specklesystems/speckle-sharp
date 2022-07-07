@@ -29,6 +29,9 @@ jobs:
             (Core|Objects|ConnectorArchicad)/.* archicad true
           base-revision: main
           output-path: .circleci/scripts/parameters.json
+          filters:
+            branches:
+              except: /(main|ci/.*)/
       - run: cat .circleci/scripts/parameters.json
       - run: pip install pyyaml
       - run: echo ${CIRCLE_TAG}
