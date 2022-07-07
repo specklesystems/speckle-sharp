@@ -24,6 +24,10 @@ jobs:
                   matches:
                     pattern: ".*/?ci/.*"
                     value: << pipeline.git.branch >>
+              - not:
+                  matches:
+                    pattern: ".*/all$"
+                    value: << pipeline.git.tag >>
           steps:
             - path-filtering/set-parameters:
                 mapping: |
@@ -41,7 +45,6 @@ jobs:
                 output-path: .circleci/scripts/parameters.json
       - run: cat .circleci/scripts/parameters.json
       - run: pip install pyyaml
-      - run: echo ${CIRCLE_TAG}
       - run: # run a command
           name: Generate config
           command: |
