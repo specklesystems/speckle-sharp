@@ -307,6 +307,42 @@ namespace Objects.Converter.Revit
 
       return "";
     }
+    private BuiltInCategory GetObjectCategory(Base @object)
+    {
+      switch(@object)
+      {
+        case BE.Beam _:
+        case BE.Brace _:
+        case BE.TeklaStructures.TeklaContourPlate _:
+          return BuiltInCategory.OST_StructuralFraming;
+        case BE.TeklaStructures.Bolts _:
+          return BuiltInCategory.OST_StructConnectionBolts;
+        case BE.TeklaStructures.Welds _:
+          return BuiltInCategory.OST_StructConnectionWelds;
+        case BE.Floor _:
+          return BuiltInCategory.OST_Floors;
+        case BE.Ceiling _:
+          return BuiltInCategory.OST_Ceilings;
+        case BE.Column _:
+          return BuiltInCategory.OST_Columns;
+        case BE.Pipe _:
+          return BuiltInCategory.OST_PipeSegments;
+        case BE.Rebar _:
+          return BuiltInCategory.OST_Rebar;
+        case BE.Topography _: 
+          return BuiltInCategory.OST_Topography;
+        case BE.Wall _:
+          return BuiltInCategory.OST_Walls;
+        case BE.Roof _:
+          return BuiltInCategory.OST_Roofs;
+        case BE.Duct _:
+          return BuiltInCategory.OST_FabricationDuctwork;
+        case BE.CableTray _:
+          return BuiltInCategory.OST_CableTray;
+        default:
+          return BuiltInCategory.OST_GenericModel;        
+      }
+    }
 
     public object ConvertToNative(Base @object)
     {
@@ -319,8 +355,9 @@ namespace Objects.Converter.Revit
           List<GE.Mesh> displayValues = new List<GE.Mesh> { };
           var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
           //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
-          return DirectShapeToNative(meshes);
+          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
+          var cat = GetObjectCategory(@object);
+          return DirectShapeToNative(meshes, cat);
         }
         catch 
         {
