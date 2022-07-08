@@ -128,9 +128,9 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.TeklaBeamType = TeklaBeamType.Beam;
       var vol = new double();
       var area = new double();
-      beam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      beam.GetReportProperty("VOLUME", ref vol);
       speckleBeam.volume = vol;
-      beam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      beam.GetReportProperty("AREA", ref area);
       speckleBeam.area = area;
       
       var rebars = beam.GetReinforcements();
@@ -178,9 +178,9 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.applicationId = beam.Identifier.GUID.ToString();
       var vol = new double();
       var area = new double();
-      beam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      beam.GetReportProperty("VOLUME", ref vol);
       speckleBeam.volume = vol;
-      beam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      beam.GetReportProperty("AREA", ref area);
       speckleBeam.area = area;
 
       speckleBeam["units"] = units;
