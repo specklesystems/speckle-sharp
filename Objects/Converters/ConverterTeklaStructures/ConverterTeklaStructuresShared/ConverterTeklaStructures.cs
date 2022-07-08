@@ -131,7 +131,7 @@ namespace Objects.Converter.TeklaStructures
           var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
           //dynamic property = propInfo;
           //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
-          MeshToNative(meshes);
+          MeshToNative(@object, meshes);
           return true;
         }
         catch
@@ -148,7 +148,6 @@ namespace Objects.Converter.TeklaStructures
       {
         case BE.Beam o:
           BeamToNative(o);
-          
           return true;
         case BE.Area o:
           ContourPlateToNative(o);
