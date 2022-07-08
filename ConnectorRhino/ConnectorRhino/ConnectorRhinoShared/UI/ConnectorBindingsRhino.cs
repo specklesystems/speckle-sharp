@@ -533,7 +533,7 @@ namespace SpeckleRhino
     }
     private void BakeObject(ApplicationObject previewObj, ProgressViewModel progress)
     {
-      var obj = StoredObjects[previewObj.OriginalId];
+      var obj = StoredObjects[previewObj.OriginalId]; //System.Collections.Generic.KeyNotFoundException: 'The given key was not present in the dictionary.'
       var converted = previewObj.Converted;
       int bakedCount = 0;
       foreach (var convertedItem in converted)

@@ -166,7 +166,51 @@
                 Text="Report" />
             </StackPanel>
           </TabItem.Header>
-          <uc:Report />
+          <StackPanel Orientation="Vertical">
+            <m:Card
+              Margin="5,10,5,10"
+              Padding="0"
+              HorizontalAlignment="Stretch"
+              CornerRadius="25">
+              <TextBox
+                Margin="0"
+                Padding="0"
+                Classes="Solo Small"
+                Text="{Binding SearchQuery}"
+                Watermark="Search items">
+                <TextBox.InnerRightContent>
+                  <StackPanel Orientation="Horizontal">
+                    <m:FloatingButton
+                      Grid.Column="1"
+                      VerticalAlignment="Center"
+                      assists:ShadowAssist.ShadowDepth="Depth0"
+                      Background="Transparent"
+                      Classes="Mini"
+                      Command="{Binding ClearSearchCommand}"
+                      IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                      ToolTip.Tip="Clear">
+                      <Button.Content>
+                        <icons:MaterialIcon
+                          Width="15"
+                          Height="15"
+                          assists:ShadowAssist.ShadowDepth="0"
+                          Foreground="{DynamicResource MaterialDesignBody}"
+                          Kind="CloseCircle" />
+                      </Button.Content>
+                    </m:FloatingButton>
+                  </StackPanel>
+                </TextBox.InnerRightContent>
+                <TextBox.InnerLeftContent>
+                  <icons:MaterialIcon
+                    Width="15"
+                    Height="15"
+                    Margin="5,0,0,0"
+                    Kind="Search" />
+                </TextBox.InnerLeftContent>
+              </TextBox>
+            </m:Card>
+            <uc:Report />
+          </StackPanel>
         </TabItem>
 
       </TabControl>

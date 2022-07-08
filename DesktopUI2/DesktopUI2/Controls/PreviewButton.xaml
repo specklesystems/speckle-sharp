@@ -9,15 +9,13 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
   <UserControl.Styles>
-    <Style Selector="icons|MaterialIcon#previewOn">
-      <Setter Property="RenderTransform" Value="scaleX(-1)" />
-    </Style>
-    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#previewOn">
+    <Style Selector="icons|MaterialIcon">
       <Setter Property="RenderTransform" Value="scaleX(-1)" />
     </Style>
   </UserControl.Styles>
   <Grid>
     <m:FloatingButton
+      Classes="Invisible"
       VerticalAlignment="Center"
       assists:ShadowAssist.ShadowDepth="Depth0"
       Background="Transparent"

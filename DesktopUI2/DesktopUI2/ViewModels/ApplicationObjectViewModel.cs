@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Splat;
 using System.Threading.Tasks;
+using System;
 
 namespace DesktopUI2.ViewModels
 {
@@ -24,6 +25,8 @@ namespace DesktopUI2.ViewModels
     public bool Visible { get; set; } = true;
     public bool HasAlert { get; set; } = false;
     public bool PreviewEnabled { get; set; } = true;
+
+    public string SearchText { get; set; }
 
     private ConnectorBindings Bindings;
 
@@ -45,6 +48,10 @@ namespace DesktopUI2.ViewModels
       HasAlert = item.Log.Count > 1 ? true : false;
       Status = item.Status.ToString();
       ApplicationIds = isReceiver ? item.CreatedIds : new List<string>() { item.OriginalId };
+
+      var logString = item.Log.Where(o => !string.IsNullOrEmpty(o)).Count() != 0 ? String.Join(" ", Log) : "";
+      var createdIdsString = String.Join(" ", item.CreatedIds);
+      SearchText = $"{Id} {Name} {Status} {logString} {createdIdsString}";
 
       if (ApplicationIds.Count == 0) PreviewEnabled = false;
 

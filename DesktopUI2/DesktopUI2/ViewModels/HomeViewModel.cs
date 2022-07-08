@@ -385,10 +385,7 @@ namespace DesktopUI2.ViewModels
       {
 
       }
-
     }
-
-
 
     internal async void Init()
     {
@@ -434,7 +431,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
 
     public async void RemoveAccountCommand(Account account)
     {

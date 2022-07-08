@@ -16,17 +16,15 @@
   <Design.DataContext>
     <viewModels:DesignSavedStreamViewModel />
   </Design.DataContext>
-    
-  <ScrollViewer Name="activityScroller">
-    <ItemsControl Items="{Binding Report}">
+  
+  <ScrollViewer Name="reportScroller">
+    <ItemsControl Items="{Binding FilteredReport}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
             <Expander
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Stretch"
               Background="Transparent"
-              IsVisible="{Binding Visible}"
-              IsExpanded="{Binding HasAlert}"
               CornerRadius="25"
               Classes="Flat">
               <Expander.Header>

@@ -114,7 +114,6 @@ namespace DesktopUI2.ViewModels
     }
 
     private bool _isRemovingStream;
-
     public bool IsRemovingStream
     {
       get => _isRemovingStream;
@@ -125,7 +124,6 @@ namespace DesktopUI2.ViewModels
     }
 
     private bool _isExpanded;
-
     public bool IsExpanded
     {
       get => _isExpanded;
@@ -233,7 +231,36 @@ namespace DesktopUI2.ViewModels
     public List<ApplicationObjectViewModel> Report
     {
       get => _report;
-      private set => this.RaiseAndSetIfChanged(ref _report, value); 
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _report, value);
+        this.RaisePropertyChanged("FilteredReport");
+      }
+    }
+    public List<ApplicationObjectViewModel> FilteredReport
+    {
+      get
+      {
+        if (SearchQuery == "")
+          return Report;
+        else
+          return Report.Where(o => o.SearchText.ToLower().Contains(SearchQuery.ToLower())).ToList();
+      }
+    }
+
+    private string _searchQuery = "";
+    public string SearchQuery
+    {
+      get => _searchQuery;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _searchQuery, value);
+        this.RaisePropertyChanged("FilteredReport");
+      }
+    }
+    public void ClearSearchCommand()
+    {
+      SearchQuery = "";
     }
 
     private List<CommentViewModel> _comments;
@@ -559,7 +586,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
 
     private async void ScrollToBottom()
     {
