@@ -82,6 +82,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterCSIShared", "Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.shproj", "{5BBDE14E-50F8-4D6E-8E35-747667AD4A09}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterSAP2000", "Converters\ConverterCSI\ConverterSAP2000\ConverterSAP2000.csproj", "{79AA475D-7CDE-4501-90CE-9A0D9D0DB023}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterTeklaStructures", "ConverterTeklaStructures", "{98B557B0-CD26-40DE-9703-A27F07A942E3}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterTeklaStructuresShared", "Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.shproj", "{7FFDAB72-145D-4490-9892-FAC5F1D72B17}"
@@ -93,6 +94,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper6", "Converters\ConverterRhinoGh\ConverterGrasshopper6\ConverterGrasshopper6.csproj", "{1DC0A8F4-1F14-47E8-8456-9D8E9C0E6CFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper7", "Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{5A7671D6-57A1-4422-9EBB-79F3C724C0BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterDxf", "Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -248,6 +251,10 @@ Global
 		{5A7671D6-57A1-4422-9EBB-79F3C724C0BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A7671D6-57A1-4422-9EBB-79F3C724C0BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A7671D6-57A1-4422-9EBB-79F3C724C0BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -295,6 +302,7 @@ Global
 		{08EE146E-9F7A-4C82-B790-688FE4532CA7} = {98B557B0-CD26-40DE-9703-A27F07A942E3}
 		{1DC0A8F4-1F14-47E8-8456-9D8E9C0E6CFF} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{5A7671D6-57A1-4422-9EBB-79F3C724C0BA} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
+		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}

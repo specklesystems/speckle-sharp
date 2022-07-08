@@ -1,4 +1,4 @@
-<Window
+<UserControl
   x:Class="DesktopUI2.Views.Windows.Dialogs.NewStreamDialog"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,24 +6,19 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  Title="QuickOpsDialog"
-  Width="450"
-  assists:ShadowAssist.ShadowDepth="10"
-  HasSystemDecorations="False"
-  SizeToContent="Height"
   mc:Ignorable="d">
-  <Window.Styles>
+	<UserControl.Styles>
 
-    <Style Selector="ToggleSwitch[IsChecked=true]">
-      <Setter Property="Content" Value="Public stream" />
-    </Style>
+		<Style Selector="ToggleSwitch[IsChecked=true]">
+			<Setter Property="Content" Value="Public stream" />
+		</Style>
 
-    <Style Selector="ToggleSwitch[IsChecked=false]">
-      <Setter Property="Content" Value="Private stream" />
-    </Style>
+		<Style Selector="ToggleSwitch[IsChecked=false]">
+			<Setter Property="Content" Value="Private stream" />
+		</Style>
 
 
-  </Window.Styles>
+	</UserControl.Styles>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
@@ -37,9 +32,7 @@
       HorizontalAlignment="Stretch"
       VerticalAlignment="Center"
       IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
-      Items="{Binding Accounts}"
-      PlaceholderText="Select an account"
-      SelectedItem="{Binding SelectedAccount}">
+      PlaceholderText="Select an account">
       <ComboBox.ItemTemplate>
         <DataTemplate>
           <Grid ColumnDefinitions="auto,*,auto,*">
@@ -101,4 +94,4 @@
 
     </StackPanel>
   </Grid>
-</Window>
+</UserControl>

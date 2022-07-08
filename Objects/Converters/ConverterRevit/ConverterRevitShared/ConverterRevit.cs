@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -70,10 +71,16 @@ namespace Objects.Converter.Revit
 
     public ReceiveMode ReceiveMode { get; set; }
 
+
+    /// <summary>
+    /// Contains all materials in the model
+    /// </summary>
+    public Dictionary<string, Objects.Other.Material> Materials { get; private set; } = new Dictionary<string, Objects.Other.Material>();
+
     public ConverterRevit()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
-      Report.Log($"Using converter: {this.Name} v{ver}");
+      Report.Log($"Using converter: {Name} v{ver}");
     }
 
     public void SetContextDocument(object doc)
@@ -112,6 +119,10 @@ namespace Objects.Converter.Revit
           break;
         case DB.View o:
           returnObject = ViewToSpeckle(o);
+          break;
+        //NOTE: Converts all materials in the materials library
+        case DB.Material o:
+          returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
           break;
         case DB.ModelCurve o:
 
@@ -261,6 +272,28 @@ namespace Objects.Converter.Revit
         returnObject["renderMaterial"] = material;
       }
 
+      //NOTE: adds the quantities of all materials to an element
+      if (returnObject != null)
+      {
+        try
+        {
+          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
+          if (qs != null)
+          {
+            returnObject["materialQuantities"] = new List<Base>();
+            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
+          }
+          else returnObject["materialQuantities"] = null;
+
+
+        }
+        catch (System.Exception e)
+        {
+          Report.Log(e.Message);
+        }
+      }
+
+
       return returnObject;
     }
 
@@ -316,9 +349,17 @@ namespace Objects.Converter.Revit
         case Geometry.Brep o:
           return DirectShapeToNative(o);
 
-        case Geometry.Mesh o:
-          return DirectShapeToNative(o);
-
+        case Geometry.Mesh mesh:
+          switch (ToNativeMeshSetting)
+          {
+            case ToNativeMeshSettingEnum.DxfImport:
+              return MeshToDxfImport(mesh, Doc);
+            case ToNativeMeshSettingEnum.DxfImportInFamily:
+              return MeshToDxfImportFamily(mesh, Doc);
+            case ToNativeMeshSettingEnum.Default:
+            default:
+              return DirectShapeToNative(new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
+          }
         // non revit built elems
         case BE.Alignment o:
           if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
@@ -328,7 +369,7 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return DirectShapeToNative(o.displayValue);
+          return DirectShapeToNative(o.displayValue, applicationId: o.applicationId);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -354,7 +395,26 @@ namespace Objects.Converter.Revit
           return DetailCurveToNative(o);
 
         case BER.DirectShape o:
-          return DirectShapeToNative(o);
+          try
+          {
+            // Try to convert to direct shape, taking into account the current mesh settings
+            return DirectShapeToNative(o, ToNativeMeshSetting);
+          }
+          catch (FallbackToDxfException e)
+          {
+            // FallbackToDxf exception means we should attempt a DXF import instead.
+            switch (ToNativeMeshSetting)
+            {
+              case ToNativeMeshSettingEnum.DxfImport:
+                return DirectShapeToDxfImport(o); // DirectShape -> DXF
+              case ToNativeMeshSettingEnum.DxfImportInFamily:
+                return DirectShapeToDxfImportFamily(o); // DirectShape -> Family (DXF inside)
+              case ToNativeMeshSettingEnum.Default:
+              default:
+                // For anything else, try again with the default fallback (ugly meshes).
+                return DirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
+            }
+          }
 
         case BER.FreeformElement o:
           return FreeformElementToNative(o);
@@ -456,7 +516,9 @@ namespace Objects.Converter.Revit
       return @object
       switch
       {
+
         DB.DetailCurve _ => true,
+        DB.Material _ => true,
         DB.DirectShape _ => true,
         DB.FamilyInstance _ => true,
         DB.Floor _ => true,

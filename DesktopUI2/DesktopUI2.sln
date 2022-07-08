@@ -1,13 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.810.8
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "DesktopUI2\DesktopUI2.csproj", "{91326C26-47AD-4B4C-96B7-637A3ED66E8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2.Launcher", "DesktopUI2.Launcher\DesktopUI2.Launcher.csproj", "{102D8D20-4965-4CCA-A1DF-A70E967F5B51}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{B4981AA3-6688-4AA0-B659-E8B54763D1A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2.WPF", "DesktopUI2.WPF\DesktopUI2.WPF.csproj", "{4BC74929-71C6-4B5C-9325-491BAC540575}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{421B0919-F7DB-4283-A5A2-009267428776}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,22 @@ Global
 		{B4981AA3-6688-4AA0-B659-E8B54763D1A6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B4981AA3-6688-4AA0-B659-E8B54763D1A6}.Release|x86.ActiveCfg = Release|Any CPU
 		{B4981AA3-6688-4AA0-B659-E8B54763D1A6}.Release|x86.Build.0 = Release|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Debug|x86.Build.0 = Debug|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Release|x86.ActiveCfg = Release|Any CPU
+		{4BC74929-71C6-4B5C-9325-491BAC540575}.Release|x86.Build.0 = Release|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Debug|x86.Build.0 = Debug|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Release|Any CPU.Build.0 = Release|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Release|x86.ActiveCfg = Release|Any CPU
+		{421B0919-F7DB-4283-A5A2-009267428776}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

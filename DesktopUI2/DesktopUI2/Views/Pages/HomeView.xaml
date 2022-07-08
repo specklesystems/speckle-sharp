@@ -11,6 +11,7 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
+  xmlns:sc="clr-namespace:DesktopUI2.Views.Pages.SharedControls"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
   xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="550"
@@ -20,8 +21,6 @@
     <dvm:DesignHomeViewModel />
   </Design.DataContext>
   <UserControl.Resources>
-    <conv:RoleValueConverter x:Key="RoleValueConverter" />
-    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
   </UserControl.Resources>
   <UserControl.Styles>
@@ -353,7 +352,7 @@
       <!--  CREATE/ADD STREAMS  -->
       <Grid
         Grid.Row="1"
-        Margin="0,15,0,0"
+        Margin="0,15,0,5"
         ColumnDefinitions="*,*">
         <Button
           Margin="0,0,7,0"
@@ -396,9 +395,9 @@
 
       <ScrollViewer
         Grid.Row="4"
-        Padding="0,0,13,5"
+        Padding="0,5,13,5"
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
-        <StackPanel Margin="5" Orientation="Vertical">
+        <StackPanel Margin="5,0,5,5" Orientation="Vertical">
           <!--  SAVED STREAMS  -->
           <Expander
             Margin="0,7,0,0"
@@ -477,7 +476,7 @@
                       <Grid
                         Grid.Row="1"
                         Grid.Column="0"
-                        RowDefinitions="auto,auto, auto">
+                        RowDefinitions="15,15, auto">
 
 
                         <TextBlock
@@ -487,39 +486,9 @@
                           MaxLines="1"
                           Text="{Binding Stream.description}"
                           TextTrimming="CharacterEllipsis" />
-                        <Grid
-                          Grid.Row="1"
-                          Margin="0,3,0,0"
-                          ColumnDefinitions="auto,auto, auto, auto,auto,*">
-                          <TextBlock
-                            Classes="Overline"
-                            Text="{Binding Stream.id}"
-                            TextTrimming="CharacterEllipsis" />
-                          <TextBlock
-                            Grid.Column="1"
-                            Classes="Overline"
-                            Text=" - " />
-                          <TextBlock
-                            Grid.Column="2"
-                            Classes="Overline"
-                            Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
-                            TextTrimming="CharacterEllipsis" />
-                          <TextBlock
-                            Grid.Column="3"
-                            Classes="Overline"
-                            Text=" - " />
-                          <icons:MaterialIcon
-                            Grid.Column="4"
-                            Height="12"
-                            VerticalAlignment="Center"
-                            Foreground="Gray"
-                            Kind="Users"
-                            ToolTip.Tip="Collaborators" />
-                          <TextBlock
-                            Grid.Column="5"
-                            Classes="Overline"
-                            Text="{Binding Stream.collaborators.Count}" />
-                        </Grid>
+
+                        <sc:StreamDetails Grid.Row="1" />
+
                         <Grid
                           Grid.Row="2"
                           Margin="0,3,0,0"

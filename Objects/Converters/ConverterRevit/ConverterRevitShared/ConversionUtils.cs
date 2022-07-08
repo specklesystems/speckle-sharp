@@ -9,11 +9,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Speckle.Core.Kits;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
+using Line = Objects.Geometry.Line;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
+using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit
 {
@@ -181,8 +184,6 @@ namespace Objects.Converter.Revit
       speckleElement["units"] = ModelUnits;
       speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
       speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
-
-
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -218,22 +219,37 @@ namespace Objects.Converter.Revit
       return speckleParameters.GroupBy(x => x.applicationInternalName).Select(x => x.First()).ToDictionary(x => x.applicationInternalName, x => x);
     }
 
-    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip)
+    /// <summary>
+    /// Returns the value of a Revit Built-In <see cref="DB.Parameter"/> given a target <see cref="DB.Element"/> and <see cref="BuiltInParameter"/>
+    /// </summary>
+    /// <param name="elem">The <see cref="DB.Element"/> containing the Built-In <see cref="DB.Parameter"/></param>
+    /// <param name="bip">The <see cref="BuiltInParameter"/> enum name of the target parameter</param>
+    /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
     {
       var rp = elem.get_Parameter(bip);
 
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = ParameterToSpeckle(rp).value;
+      var value = ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
-      else
-        return (T)ParameterToSpeckle(rp).value;
+
+      return (T)ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
     }
 
-    //rp must HaveValue
-    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false)
+    /// <summary>
+    /// Converts a Revit Built-In <see cref="DB.Parameter"/> to a Speckle <see cref="Parameter"/>.
+    /// </summary>
+    /// <param name="rp">The Revit Built-In <see cref="DB.Parameter"/> to convert</param>
+    /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
+    /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
+    /// <returns></returns>
+    /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
+    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
     {
       var sp = new Parameter
       {
@@ -253,7 +269,7 @@ namespace Objects.Converter.Revit
           try
           {
             sp.applicationUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
-            sp.value = RevitVersionHelper.ConvertFromInternalUnits(val, rp);
+            sp.value = unitsOverride == null ? RevitVersionHelper.ConvertFromInternalUnits(val, rp) : ScaleToSpeckle(val, unitsOverride);
           }
           catch
           {
@@ -763,7 +779,8 @@ namespace Objects.Converter.Revit
         if (HasOverlappingOpening(@void, openings))
           continue;
 
-        var curveArray = CurveToNative(@void);
+        var curveArray = CurveToNative(@void, true);
+        UnboundCurveIfSingle(curveArray);
         Doc.Create.NewOpening(host, curveArray, false);
       }
     }
@@ -841,14 +858,18 @@ namespace Objects.Converter.Revit
         var poly = new Polycurve(ModelUnits);
         foreach (var segment in loop)
         {
+
           var c = segment.GetCurve();
 
           if (c == null)
           {
             continue;
           }
+          var curve = CurveToSpeckle(c);
 
-          poly.segments.Add(CurveToSpeckle(c));
+          ((Base)curve)["elementId"] = segment.ElementId.ToString();
+
+          poly.segments.Add(curve);
         }
         profiles.Add(poly);
       }
@@ -881,11 +902,11 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      var revitMaterial = element.Document.GetElement(matId) as Material;
+      var revitMaterial = element.Document.GetElement(matId) as DB.Material;
       return RenderMaterialToSpeckle(revitMaterial);
     }
 
-    public static RenderMaterial RenderMaterialToSpeckle(Material revitMaterial)
+    public static RenderMaterial RenderMaterialToSpeckle(DB.Material revitMaterial)
     {
       if (revitMaterial == null)
         return null;
@@ -907,15 +928,15 @@ namespace Objects.Converter.Revit
 
       // Try and find an existing material
       var existing = new FilteredElementCollector(Doc)
-        .OfClass(typeof(Material))
-        .Cast<Material>()
+        .OfClass(typeof(DB.Material))
+        .Cast<DB.Material>()
         .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
 
       if (existing != null) return existing.Id;
 
       // Create new material
       ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
-      Material mat = Doc.GetElement(materialId) as Material;
+      DB.Material mat = Doc.GetElement(materialId) as DB.Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
       mat.Color = new DB.Color(sysColor.R, sysColor.G, sysColor.B);
@@ -964,7 +985,7 @@ namespace Objects.Converter.Revit
 
       if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-        var mat = e.Document.GetElement(mechType.MaterialId) as Material;
+        var mat = e.Document.GetElement(mechType.MaterialId) as DB.Material;
         RenderMaterial material = RenderMaterialToSpeckle(mat);
 
         return material;
@@ -990,5 +1011,114 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
+
+
+    /// <summary>
+    /// Checks if a Speckle <see cref="Line"/> is too sort to be created in Revit.
+    /// </summary>
+    /// <remarks>
+    /// The length of the line will be computed on the spot to ensure it is accurate.
+    /// </remarks>
+    /// <param name="line">The <see cref="Line"/> to be tested.</param>
+    /// <returns>true if the line is too short, false otherwise.</returns>
+    public bool IsLineTooShort(Line line)
+    {
+      var scaleToNative = ScaleToNative(Point.Distance(line.start, line.end), line.units);
+      return scaleToNative < Doc.Application.ShortCurveTolerance;
+    }
+
+    /// <summary>
+    /// Attempts to append a Speckle <see cref="Line"/> onto a Revit <see cref="CurveArray"/>.
+    /// This method ensures the line is long enough to be supported.
+    /// It will also convert the line to Revit before appending it to the <see cref="CurveArray"/>.
+    /// </summary>
+    /// <param name="curveArray">The revit <see cref="CurveArray"/> to add the line to.</param>
+    /// <param name="line">The <see cref="Line"/> to be added.</param>
+    /// <returns>True if the line was added, false otherwise.</returns>
+    public bool TryAppendLineSafely(CurveArray curveArray, Line line)
+    {
+      if (IsLineTooShort(line))
+      {
+        Report.Log("Some lines in the CurveArray where ignored due to being smaller than the allowed curve length.");
+        return false;
+      }
+      try
+      {
+        curveArray.Append(LineToNative(line));
+        return true;
+      }
+      catch (Exception e)
+      {
+        Report.LogConversionError(e);
+        return false;
+      }
+    }
+
+
+    public bool UnboundCurveIfSingle(DB.CurveArray array)
+
+    {
+      if (array.Size != 1) return false;
+      var item = array.get_Item(0);
+      if (!item.IsBound) return false;
+      item.MakeUnbound();
+      return true;
+    }
+
+    public bool IsCurveClosed(DB.Curve nativeCurve, double tol = 1E-6)
+    {
+      var endPoint = nativeCurve.GetEndPoint(0);
+      var source = nativeCurve.GetEndPoint(1);
+      var distanceTo = endPoint.DistanceTo(source);
+      return distanceTo < tol;
+    }
+
+    public (DB.Curve, DB.Curve) SplitCurveInTwoHalves(DB.Curve nativeCurve)
+    {
+      var curveArray = new CurveArray();
+      // Revit does not like single curve loop edges, so we split them in two.
+      var start = nativeCurve.GetEndParameter(0);
+      var end = nativeCurve.GetEndParameter(1);
+      var mid = start + ((end - start) / 2);
+
+      var a = nativeCurve.Clone();
+      a.MakeBound(start, mid);
+      curveArray.Append(a);
+      var b = nativeCurve.Clone();
+      b.MakeBound(mid, end);
+      curveArray.Append(b);
+
+      return (a, b);
+
+    }
+
+    public class FallbackToDxfException : Exception
+    {
+      public FallbackToDxfException(string message) : base(message)
+      {
+      }
+
+      public FallbackToDxfException(string message, Exception innerException) : base(message, innerException)
+      {
+      }
+    }
+    
+    public ApplicationPlaceholderObject CheckForExistingObject(Base @base)
+    {
+      @base.applicationId ??= @base.id;
+      var docObj = GetExistingElementByApplicationId(@base.applicationId);
+
+      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
+        return new ApplicationPlaceholderObject
+          { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+
+      //just create new one 
+      if (docObj != null)
+      {
+        Doc.Delete(docObj.Id);
+      }
+
+      return null;
+    }
   }
 }

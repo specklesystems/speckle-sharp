@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
+using DesktopUI2.ViewModels;
 using Revit.Async;
 using Speckle.ConnectorRevit.UI;
 
@@ -15,6 +16,8 @@ namespace Speckle.ConnectorRevit.Entry
     public static UIApplication AppInstance { get; set; }
 
     public static UIControlledApplication UICtrlApp { get; set; }
+
+    public static IDockablePaneProvider Panel;
 
     public Result OnStartup(UIControlledApplication application)
     {
@@ -127,6 +130,9 @@ namespace Speckle.ConnectorRevit.Entry
       manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
       manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
 
+
+
+
       return Result.Succeeded;
     }
 
@@ -135,6 +141,8 @@ namespace Speckle.ConnectorRevit.Entry
       UICtrlApp.Idling -= Initialise;
       AppInstance = sender as UIApplication;
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+
+
 
 
 #if REVIT2019
@@ -152,8 +160,22 @@ namespace Speckle.ConnectorRevit.Entry
       SchedulerCommand.Bindings = bindings;
       OneClickSendCommand.Bindings = bindings;
       QuickShareCommand.Bindings = bindings;
-#endif
 
+      if (SpeckleRevitCommand2.UseDockablePanel)
+      {
+        //Register dockable panel
+        var viewModel = new MainViewModel(bindings);
+        Panel = new Panel
+        {
+          DataContext = viewModel
+        };
+        AppInstance.RegisterDockablePane(SpeckleRevitCommand2.PanelId, "Speckle", Panel);
+      }
+
+
+
+#endif
+      //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
     }
 
     public Result OnShutdown(UIControlledApplication application)

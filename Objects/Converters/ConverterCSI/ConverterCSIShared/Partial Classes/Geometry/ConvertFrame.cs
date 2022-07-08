@@ -180,6 +180,7 @@ namespace Objects.Converter.CSI
           }
         case eFrameDesignOrientation.Null:
           {
+            //speckleStructFrame.memberType = MemberType.Generic1D;
             speckleStructFrame.type = ElementType1D.Null;
             break;
           }

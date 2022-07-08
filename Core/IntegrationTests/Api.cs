@@ -320,6 +320,18 @@ namespace TestsIntegration
     }
     #endregion
 
+    #region comments
+
+    [Test, Order(52)]
+    public async Task StreamGetComments()
+    {
+      var res = await myClient.StreamGetActivity(streamId);
+
+      Assert.NotNull(res);
+      //Assert.AreEqual(commitId, res[0].);
+    }
+    #endregion
+
     #region send/receive bare
 
     //[Test, Order(60)]

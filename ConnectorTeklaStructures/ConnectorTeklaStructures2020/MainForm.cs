@@ -100,7 +100,7 @@ namespace Speckle.ConnectorTeklaStructures
             if (MainWindow == null)
             {
                 BuildAvaloniaApp().Start(AppMain, null);
-                var viewModel = new MainWindowViewModel(Bindings);
+                var viewModel = new MainViewModel(Bindings);
                 MainWindow = new DesktopUI2.Views.MainWindow
                 {
                     DataContext = viewModel

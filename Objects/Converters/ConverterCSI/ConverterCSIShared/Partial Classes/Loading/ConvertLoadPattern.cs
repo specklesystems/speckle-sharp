@@ -19,6 +19,10 @@ namespace Objects.Converter.CSI
       var speckleLoadCase = new LoadCase();
       speckleLoadCase.loadType = GetAndConvertCSILoadType(loadPatternName);
       speckleLoadCase.name = loadPatternName;
+
+      // load pattern name cannot be duplicated in etabs, so safe for applicationId use
+      speckleLoadCase.applicationId = loadPatternName;
+
       var selfweight = GetSelfWeightMultiplier(loadPatternName);
 
       //Encoding loadPatterns selfweight multiplier within 
@@ -27,6 +31,9 @@ namespace Objects.Converter.CSI
         var gravityVector = new Geometry.Vector(0, 0, -selfweight);
         var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
         gravityLoad.name = loadPatternName;
+
+        gravityLoad.applicationId = $"{loadPatternName}:self-weight";
+
         SpeckleModel.loads.Add(gravityLoad);
       }
       else
@@ -34,6 +41,7 @@ namespace Objects.Converter.CSI
         var gravityVector = new Geometry.Vector(0, 0, 0);
         var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
         gravityLoad.name = loadPatternName;
+        gravityLoad.applicationId = $"{loadPatternName}:self-weight";
         SpeckleModel.loads.Add(gravityLoad);
       }
       if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
@@ -55,6 +63,10 @@ namespace Objects.Converter.CSI
       var speckleLoadCase = new LoadCase();
       speckleLoadCase.loadType = GetAndConvertCSILoadType(loadPatternName);
       speckleLoadCase.name = loadPatternName;
+
+      // load pattern name cannot be duplicated in etabs, so safe for applicationId use
+      speckleLoadCase.applicationId = loadPatternName;
+
       if (!SpeckleModel.loads.Contains(speckleLoadCase)) { }
       else { SpeckleModel.loads.Add(speckleLoadCase); }
       return speckleLoadCase;

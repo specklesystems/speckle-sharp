@@ -22,6 +22,7 @@ namespace Objects.BuiltElements.Revit
     Gutters,
     Landings,
     Mass,
+    Materials,
     Railings,
     Ramps,
     Rebar,

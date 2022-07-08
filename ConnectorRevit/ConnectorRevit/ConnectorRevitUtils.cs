@@ -210,6 +210,8 @@ namespace Speckle.ConnectorRevit
       return false;
     }
 
+   
+
     //list of currently supported Categories (for sending only)
     //exact copy of the one in the ConverterRevitShared.Categories
     //until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
@@ -246,6 +248,7 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Lines,
       BuiltInCategory.OST_Mass,
       BuiltInCategory.OST_MassFloor,
+      BuiltInCategory.OST_Materials,
       BuiltInCategory.OST_MechanicalEquipment,
       BuiltInCategory.OST_Parking,
       BuiltInCategory.OST_PipeCurves,

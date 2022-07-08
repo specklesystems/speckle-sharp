@@ -29,6 +29,8 @@ namespace ConnectorGrasshopper.Objects
     public SelectKitTaskCapableComponentBase(string name, string nickname, string description, string category,
       string subCategory) : base(name, nickname, description, category, subCategory)
     {
+      Converter = null;
+      Kit = null;
     }
 
     public override void AddedToDocument(GH_Document document)
@@ -142,7 +144,15 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void BeforeSolveInstance()
     {
-      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      try
+      {
+
+        Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,$"Failed to set document context:\n\t{e.Message}");
+      }
       base.BeforeSolveInstance();
     }
 

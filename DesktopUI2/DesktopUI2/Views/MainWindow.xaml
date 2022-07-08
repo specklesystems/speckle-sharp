@@ -2,31 +2,15 @@
   x:Class="DesktopUI2.Views.MainWindow"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
-  xmlns:reactiveUi="http://reactiveui.net"
-  xmlns:vm="using:DesktopUI2.ViewModels"
+  xmlns:p="clr-namespace:DesktopUI2.Views"
   Title="{Binding TitleFull}"
   Width="400"
   Height="750"
   Icon="/Assets/icon.ico"
   mc:Ignorable="d">
 
-  <Design.DataContext>
-    <vm:MainWindowViewModel />
-  </Design.DataContext>
-
-  <reactiveUi:RoutedViewHost Grid.Row="1" Router="{Binding Router}">
-    <reactiveUi:RoutedViewHost.PageTransition>
-
-
-      <CrossFade Duration="0.15" />
-
-    </reactiveUi:RoutedViewHost.PageTransition>
-  </reactiveUi:RoutedViewHost>
+  <p:MainUserControl />
 
 </Window>

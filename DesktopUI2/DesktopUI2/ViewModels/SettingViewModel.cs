@@ -1,5 +1,9 @@
-﻿using DesktopUI2.Models.Settings;
+﻿using Avalonia.Controls.Selection;
+using DesktopUI2.Models.Settings;
 using ReactiveUI;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace DesktopUI2.ViewModels
 {
@@ -37,7 +41,5 @@ namespace DesktopUI2.ViewModels
       //restores the selected item
       Selection = setting.Selection;
     }
-
-
   }
 }

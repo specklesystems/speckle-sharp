@@ -12,6 +12,7 @@ using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
+using Dimension = Objects.Other.Dimension;
 using Ellipse = Objects.Geometry.Ellipse;
 using Hatch = Objects.Other.Hatch;
 using Line = Objects.Geometry.Line;
@@ -23,7 +24,7 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -36,11 +37,15 @@ namespace Objects.Converter.AutocadCivil
 #if AUTOCAD2021
     public static string AutocadAppName = VersionedHostApplications.Autocad2021;
 #elif AUTOCAD2022
-public static string AutocadAppName = VersionedHostApplications.Autocad2022;
+    public static string AutocadAppName = VersionedHostApplications.Autocad2022;
+#elif AUTOCAD2023
+    public static string AutocadAppName = VersionedHostApplications.Autocad2023;
 #elif CIVIL2021
     public static string AutocadAppName = VersionedHostApplications.Civil2021;
 #elif CIVIL2022
     public static string AutocadAppName = VersionedHostApplications.Civil2022;
+#elif CIVIL2023
+    public static string AutocadAppName = VersionedHostApplications.Civil2023;
 #endif
 
     public ConverterAutocadCivil()
@@ -167,6 +172,10 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               @base = SolidToSpeckle(o);
               Report.Log($"Converted Solid as Mesh");
               break;
+            case AcadDB.Dimension o:
+              @base = DimensionToSpeckle(o);
+              Report.Log($"Converted Dimension");
+              break;
             case BlockReference o:
               @base = BlockReferenceToSpeckle(o);
               Report.Log($"Converted Block Instance");
@@ -183,7 +192,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
               @base = TextToSpeckle(o);
               Report.Log($"Converted Text");
               break;
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
               Report.Log($"Converted Alignment");
@@ -278,6 +287,8 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
 
     public object ConvertToNative(Base @object)
     {
+      // determine if this object has autocad props
+      bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false; 
       object acadObj = null;
       switch (@object)
       {
@@ -360,6 +371,11 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
           Report.Log($"Created Mesh {o.id}");
           break;
 
+        case Dimension o:
+          acadObj = isFromAutoCAD ? AcadDimensionToNative(o) : DimensionToNative(o);
+          Report.Log($"Created Dimension {o.id}");
+          break;
+
         case BlockInstance o:
           acadObj = BlockInstanceToNativeDB(o, out BlockReference reference);
           Report.Log($"Created Block Instance {o.id}");
@@ -386,7 +402,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             Report.Log($"Created Alignment {o.id} as Curve");
             break;
           }
-#if (CIVIL2020 || CIVIL2021)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
           acadObj = AlignmentToNative(o);
           if (acadObj != null)
             fallback = string.Empty;
@@ -425,6 +441,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             case AcadDB.Line _:
             case AcadDB.Arc _:
             case AcadDB.Circle _:
+            case AcadDB.Dimension _:
             case AcadDB.Ellipse _:
             case AcadDB.Hatch _:
             case AcadDB.Spline _:
@@ -444,7 +461,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
             case AcadDB.MText _:
               return true;
 
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
             // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
@@ -492,6 +509,7 @@ public static string AutocadAppName = VersionedHostApplications.Autocad2022;
         //case Brep _:
         case Mesh _:
 
+        case Dimension _:
         case BlockDefinition _:
         case BlockInstance _:
         case Text _:
