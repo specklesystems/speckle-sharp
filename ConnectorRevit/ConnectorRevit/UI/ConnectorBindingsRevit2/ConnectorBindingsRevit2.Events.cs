@@ -16,6 +16,7 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
+    private string _lastSyncComment { get; set; }
     public override async void WriteStreamsToFile(List<StreamState> streams)
     {
       try
@@ -53,6 +54,7 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Application.DocumentSaved += Application_DocumentSaved;
+      RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
       RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
       RevitApp.Application.FileExported += Application_FileExported;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
@@ -60,6 +62,9 @@ namespace Speckle.ConnectorRevit.UI
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
     }
+
+
+
 
     private void Application_DocumentCreating(object sender, Autodesk.Revit.DB.Events.DocumentCreatingEventArgs e)
     {
@@ -70,9 +75,14 @@ namespace Speckle.ConnectorRevit.UI
       SendScheduledStream("export");
     }
 
+    private void Application_DocumentSynchronizingWithCentral(object sender, Autodesk.Revit.DB.Events.DocumentSynchronizingWithCentralEventArgs e)
+    {
+      _lastSyncComment = e.Comments;
+    }
+
     private void Application_DocumentSynchronizedWithCentral(object sender, Autodesk.Revit.DB.Events.DocumentSynchronizedWithCentralEventArgs e)
     {
-      SendScheduledStream("sync");
+      SendScheduledStream("sync", _lastSyncComment);
     }
 
     private void Application_DocumentSaved(object sender, Autodesk.Revit.DB.Events.DocumentSavedEventArgs e)
@@ -80,7 +90,7 @@ namespace Speckle.ConnectorRevit.UI
       SendScheduledStream("save");
     }
 
-    private async void SendScheduledStream(string slug)
+    private async void SendScheduledStream(string slug, string message = "")
     {
       try
       {
@@ -95,6 +105,9 @@ namespace Speckle.ConnectorRevit.UI
         dialog.DataContext = progress;
         dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         dialog.Show();
+
+        if (message != null)
+          stream.CommitMessage = message;
 
         await Task.Run(() => SendStream(stream, progress));
         progress.IsProgressing = false;
