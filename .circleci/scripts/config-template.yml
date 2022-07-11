@@ -15,8 +15,8 @@ commands:
       - run:
           name: Publish nuget package
           command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "a/0.0.$($env:WORFKLOW_NUM)-beta" } else { $env:CIRCLE_TAG }
-            $version = $tag.Split("/")[1]  
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORFKLOW_NUM)-beta/a" } else { $env:CIRCLE_TAG }
+            $version = $tag.Split("/")[0]  
             msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
           environment:
@@ -121,7 +121,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Build << parameters.slnname >>
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0" } else { $env:CIRCLE_TAG }
-            $semver = if($tag.Contains('/')) {$tag.Split("/")[1] } else { $tag }
+            $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
             $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
             $channel = if($semver.Contains('-')) {$semver.Split("-")[1] } else { "latest" }
             $version = "$($ver).$($env:WORKFLOW_NUM)"
