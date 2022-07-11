@@ -11,6 +11,7 @@ grasshopper:
   - build-connector-mac:
       slnname: ConnectorGrasshopper
       projname: ConnectorGrasshopper
+      installername: SpeckleGhInstall
       slug: grasshopper-mac
       converter-files: "
         Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.dll
@@ -27,6 +28,7 @@ rhino:
   - build-connector-mac:
       slnname: ConnectorRhino
       projname: ConnectorRhino7
+      installername: SpeckleRhinoInstall
       build-config: Release Mac
       slug: rhino-mac
       requires:
