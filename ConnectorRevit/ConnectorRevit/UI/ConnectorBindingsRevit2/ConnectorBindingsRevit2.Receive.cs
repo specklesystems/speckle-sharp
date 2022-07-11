@@ -24,6 +24,10 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
+    /// 
+
+
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -161,7 +165,25 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
     }
+    private List<String> GetListProperties(List<Base> objects)
+    {
+      List<String> listProperties = new List<String> { };
+      foreach (var @object in objects)
+      {
+        try
+        {
+          //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
+          var propInfo = @object.GetType().GetProperty("type").GetValue(@object) as String;
+          listProperties.Add(propInfo);
+         }
+        catch
+        {
 
+        }
+
+      }
+      return listProperties;
+    }
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
@@ -172,6 +194,14 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
+      // Get Settings for recieve on mapping 
+      var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
+      var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
+
+      if (receiveMappings == true)
+      {
+        var listProperties = GetListProperties(objects);
+      }
 
       foreach (var @base in objects)
       {
