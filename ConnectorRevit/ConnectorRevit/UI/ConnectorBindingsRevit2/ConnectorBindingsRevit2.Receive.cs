@@ -185,10 +185,81 @@ namespace Speckle.ConnectorRevit.UI
       return listProperties.Distinct().ToList();
     }
 
-    private List<String> GetHostDocumentPropeties(Document doc) {
+    private List<String> GetHostDocumentPropeties(Document doc)
+    {
       var list = new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol));
       List<String> familyType = list.Select(o => o.Name).Distinct().ToList();
       return familyType;
+    }
+
+    public static int LevenshteinDistance(string s, string t)
+    {
+      // Default algorithim for computing the similarity between strings
+      int n = s.Length;
+      int m = t.Length;
+      int[,] d = new int[n + 1, m + 1];
+      if (n == 0)
+      {
+        return m;
+      }
+      if (m == 0)
+      {
+        return n;
+      }
+      for (int i = 0; i <= n; d[i, 0] = i++)
+        ;
+      for (int j = 0; j <= m; d[0, j] = j++)
+        ;
+      for (int i = 1; i <= n; i++)
+      {
+        for (int j = 1; j <= m; j++)
+        {
+          int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+          d[i, j] = Math.Min(
+              Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+              d[i - 1, j - 1] + cost);
+        }
+      }
+      return d[n, m];
+    }
+
+    public Dictionary<String, String> returnFirstPassMap(List<String> specklePropertyList, List<String> hostPropertyList)
+    {
+      var mappings = new Dictionary<String, String> { };
+      foreach (var item in specklePropertyList)
+      {
+        List<int> listVert = new List<int> { };
+        foreach (var hostItem in hostPropertyList)
+        {
+          listVert.Add(LevenshteinDistance(item, hostItem));
+        }
+        var indexMin = listVert.IndexOf(listVert.Min());
+        mappings.Add(item, hostPropertyList[indexMin]);
+      }
+      return mappings;
+    }
+
+    public void updateRecieveObject(Dictionary<String, String> Map, List<Base> objects)
+    {
+      foreach (var @object in objects)
+      {
+
+        try
+        {
+          //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
+          var propInfo = "";
+          propInfo = @object.GetType().GetProperty("type").GetValue(@object) as String;
+          if(propInfo != ""){
+            String mappingProperty = "";
+            Map.TryGetValue(propInfo, out mappingProperty);
+            var prop = @object.GetType().GetProperty("type");
+            prop.SetValue(@object, mappingProperty);
+          }
+        }
+        catch{
+
+        }
+       }
     }
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
@@ -208,6 +279,10 @@ namespace Speckle.ConnectorRevit.UI
       {
         var listProperties = GetListProperties(objects);
         var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
+        var mappings = returnFirstPassMap(listProperties, listHostProperties);
+        //User to update logic from computer here;
+        updateRecieveObject(mappings, objects); 
+
       }
 
       foreach (var @base in objects)
