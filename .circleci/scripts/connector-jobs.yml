@@ -12,7 +12,11 @@ grasshopper:
       slnname: ConnectorGrasshopper
       projname: ConnectorGrasshopper
       slug: grasshopper-mac
-
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
+        "
 rhino:
   - build-connector:
       slnname: ConnectorRhino
@@ -27,7 +31,11 @@ rhino:
       slug: rhino-mac
       requires:
         - build-desktopui
-
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        "
 dynamo:
   - build-connector:
       slnname: ConnectorDynamo
