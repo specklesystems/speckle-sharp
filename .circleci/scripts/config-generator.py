@@ -1,16 +1,17 @@
 import json
+from typing import List
 import yaml
 import sys
 import getopt
 
 
-def runCommand(argv):
+def runCommand(argv: List[str]):
     deploy = False
     output_filepath = ".circleci/continuation-config.yml"
     arg_help = "{0} -d <deploy?> -o <output>".format(argv[0])
 
     try:
-        opts, args = getopt.getopt(argv[1:], "hd:o:")
+        opts, _ = getopt.getopt(argv[1:], "hd:o:")
     except:
         print(arg_help)
         sys.exit(2)
@@ -54,21 +55,24 @@ def setup():
         common_jobs = yaml.safe_load(cf)
 
 
-def getTagRegexString(connector_names):
-    version_regex = "([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?"
-    tags = connector_names + ["all"]
-    tagExpression = "(" + "|".join(tags) + ")"
-    return f"/^{version_regex}\\/{tagExpression}$/"
+def getTagRegexString(connector_names: List[str]):
+    # version_regex = "([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?"
+    # tags = connector_names + ["all"]
+    # tagExpression = "(" + "|".join(tags) + ")"
+    # return f"/^{version_regex}\\/{tagExpression}$/"
+
+    # Version format 'x.y.z' with optional suffix '-{SUFFIX_NAME}' and optional '/all' ending to force build all tags
+    return "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?(\\/all)?$"
 
 
-def getTagFilter(connector_names):
+def getTagFilter(connector_names: List[str]):
     return {
         "branches": {"ignore": "/.*/"},
         "tags": {"only": getTagRegexString(connector_names)},
     }
 
 
-def createConfigFile(deploy, outputPath):
+def createConfigFile(deploy: bool, outputPath: str):
     print("---- Started creating config ----")
     print(
         f"\n  -- Settings --\n  Deploy: {deploy}\n  Output path: {outputPath}\n  --\n"
@@ -82,8 +86,8 @@ def createConfigFile(deploy, outputPath):
     if "core" in params.keys():
         build_core = params["core"]
 
-    jobs_before_deploy = []
-    slugs_to_match = []
+    jobs_before_deploy: List[str] = []
+    slugs_to_match: List[str] = []
     for connector, run in params.items():
         # Add any common jobs first
         if connector in common_jobs.keys():
