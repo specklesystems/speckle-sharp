@@ -74,6 +74,7 @@ namespace Objects.Converter.Revit
         //If the current host element is not null, it means we're coming from inside a nested conversion. 
         if (CurrentHostElement != null)
         {
+          Report.Log($"symbol {familySymbol.Name} host {CurrentHostElement.Name}");
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
         }
         //Otherwise, proceed as normal.
