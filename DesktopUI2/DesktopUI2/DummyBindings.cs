@@ -358,5 +358,18 @@ namespace DesktopUI2
     {
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
     }
+
+    public override Dictionary<string, string> returnFirstPassMap(List<string> specklePropertyList, List<string> hostPropertyList)
+    {
+      return new Dictionary<string, string>
+      {
+        { "W12x19", "W12x19" },
+        { "Type1", "type123" },
+        { "anotherType", "anotherType" },
+        { "yetAnotherType", "differentType" },
+        { "short", "short" },
+        { "a very very very long type name. Oh no", "a very very very long type name. Oh no" }
+      };
+    }
   }
 }
