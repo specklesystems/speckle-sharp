@@ -175,14 +175,20 @@ namespace Speckle.ConnectorRevit.UI
           //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
           var propInfo = @object.GetType().GetProperty("type").GetValue(@object) as String;
           listProperties.Add(propInfo);
-         }
+        }
         catch
         {
 
         }
 
       }
-      return listProperties;
+      return listProperties.Distinct().ToList();
+    }
+
+    private List<String> GetHostDocumentPropeties(Document doc) {
+      var list = new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol));
+      List<String> familyType = list.Select(o => o.Name).Distinct().ToList();
+      return familyType;
     }
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
@@ -201,6 +207,7 @@ namespace Speckle.ConnectorRevit.UI
       if (receiveMappings == true)
       {
         var listProperties = GetListProperties(objects);
+        var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
       }
 
       foreach (var @base in objects)
