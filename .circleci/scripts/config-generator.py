@@ -62,7 +62,7 @@ def getTagRegexString(connector_names: List[str]):
     # return f"/^{version_regex}\\/{tagExpression}$/"
 
     # Version format 'x.y.z' with optional suffix '-{SUFFIX_NAME}' and optional '/all' ending to force build all tags
-    return "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?(\\/all)?$"
+    return "/^([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-\\w+)?(\\/all)?$/"
 
 
 def getTagFilter(connector_names: List[str]):
