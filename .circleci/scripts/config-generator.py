@@ -130,10 +130,10 @@ def createConfigFile(deploy: bool, outputPath: str):
                     jobAttrs["name"] = name
                     jobs_before_deploy.append(name)
                     print(f"    Added connector job: {name}")
-
-                # Add tags if marked for deployment
+                    # Add tags if marked for deployment
+                    if deploy:
+                        jobAttrs["installer"] = True
                 if deploy:
-                    jobAttrs["installer"] = True
                     jobAttrs["filters"] = getTagFilter([connector])
 
             # Append connector jobs to main workflow jobs
