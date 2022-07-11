@@ -24,6 +24,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel)
     {
+      Report.Log($"try convert level");
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
       bool elevationMatch = true;
       //level by name component
@@ -91,7 +92,10 @@ namespace Objects.Converter.Revit
         Report.Log($"Created Level {revitLevel.Name} {revitLevel.Id}");
       }
 
-
+      if (revitLevel == null)
+        Report.Log($"2Level is null dude!");
+      else
+        Report.Log($"2This is the level we're using {revitLevel.Name}");
       return revitLevel;
 
     }

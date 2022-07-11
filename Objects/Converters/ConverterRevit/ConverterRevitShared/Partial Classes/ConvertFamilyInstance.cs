@@ -17,6 +17,13 @@ namespace Objects.Converter.Revit
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = ConvertLevelToRevit(speckleFi.level);
+
+      if (level == null)
+        Report.Log($"1Level is null dude!");
+      else
+        Report.Log($"1This is the level we're using {level.Name}");
+
+
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
       //try update existing
@@ -74,7 +81,11 @@ namespace Objects.Converter.Revit
         //If the current host element is not null, it means we're coming from inside a nested conversion. 
         if (CurrentHostElement != null)
         {
-          Report.Log($"symbol {familySymbol.Name} host {CurrentHostElement.Name}");
+          if (level == null)
+            Report.Log($"Level is null dude!");
+          else
+            Report.Log($"This is the level we're using {level.Name}");
+          Report.Log($"bp {basePoint} symbol {familySymbol.Name} host {CurrentHostElement.Name} level {level}");
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
         }
         //Otherwise, proceed as normal.
