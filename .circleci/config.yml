@@ -29,6 +29,7 @@ jobs:
                     pattern: ".*/all$"
                     value: << pipeline.git.tag >>
           steps:
+            - run: git branch internal_circleci
             - path-filtering/set-parameters:
                 mapping: |
                   Core/.* run_core true
