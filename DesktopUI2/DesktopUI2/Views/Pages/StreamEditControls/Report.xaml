@@ -3,7 +3,6 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:c="clr-namespace:DesktopUI2.Controls"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -16,53 +15,52 @@
   <Design.DataContext>
     <viewModels:DesignSavedStreamViewModel />
   </Design.DataContext>
-  
-  <ScrollViewer Name="reportScroller">
+  <ScrollViewer Name="activityScroller">
     <ItemsControl Items="{Binding FilteredReport}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-            <Expander
-              HorizontalAlignment="Stretch"
-              HorizontalContentAlignment="Stretch"
-              Background="Transparent"
-              CornerRadius="25"
-              Classes="Flat">
-              <Expander.Header>
-                <Grid ColumnDefinitions="auto,auto,auto,*">
-                  <icons:MaterialIcon
-                    Width="15"
-                    Height="15"
-                    VerticalAlignment="Center"
-                    Foreground="{Binding IconColor}"
-                    Kind="{Binding Icon}"
-                    ToolTip.Tip="{Binding Status}" />
-                  <TextBlock
-                    Margin="10,0,0,0"
-                    Grid.Column="2"
-                    VerticalAlignment="Center"
-                    Text="{Binding Name}"
-                    Foreground="{Binding TextColor}"
-                    TextWrapping="Wrap" />
-                  <TextBlock
-                    Margin="10,0,0,0"
-                    Foreground="LightGray"
-                    VerticalAlignment="Center"
-                    Grid.Column="3"
-                    Text="{Binding Id}"
-                    TextWrapping="Wrap" />
-                  <!--  PREVIEW BTN  -->
-                  <c:PreviewButton
-                    Grid.Column="4"
-                    HorizontalAlignment="Right"/>
-                </Grid>
-              </Expander.Header>
-              <!--  REPORT ITEM BODY  -->
+          <m:ColorZone
+            Margin="0,10,0,0"
+            HorizontalAlignment="Stretch"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            CornerRadius="25"
+            Opacity="{Binding Opacity}"
+            Mode="Standard">
+            <StackPanel Orientation="Vertical">
               <Grid ColumnDefinitions="auto,auto,auto,*">
-                <ItemsControl
-                  Margin="25,0,0,10"
-                  Items="{Binding Log}" />
+                <icons:MaterialIcon
+                  Margin="10,0,0,0"
+                  Width="15"
+                  Height="15"
+                  VerticalAlignment="Center"
+                  Foreground="{DynamicResource PrimaryHueMidBrush}"
+                  Kind="{Binding Icon}"
+                  ToolTip.Tip="{Binding Status}" />
+                <TextBlock
+                  Margin="10,0,0,0"
+                  Grid.Column="2"
+                  VerticalAlignment="Center"
+                  Text="{Binding Name}"
+                  TextWrapping="Wrap" />
+                <TextBlock
+                  Margin="10,0,0,0"
+                  Foreground="Gray"
+                  VerticalAlignment="Center"
+                  Grid.Column="3"
+                  Text="{Binding Id}"
+                  TextWrapping="Wrap" />
+                <!--  PREVIEW BTN  -->
+                <c:PreviewButton
+                  Grid.Column="4"
+                  Margin="0,0,5,0"
+                  HorizontalAlignment="Right"/>
               </Grid>
-            </Expander>
+              <ItemsControl
+                IsVisible="{Binding HasLog}"
+                Margin="35,0,0,10"
+                Items="{Binding Log}" />
+            </StackPanel>
+          </m:ColorZone>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>

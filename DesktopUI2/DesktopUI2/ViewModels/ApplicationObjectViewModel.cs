@@ -19,11 +19,9 @@ namespace DesktopUI2.ViewModels
     public string Name { get; set; }
     public string Id { get; set; }
     public string Icon { get; set; }
-    public string TextColor { get; set; }
-    public string IconColor { get; set; }
     public string Status { get; set; }
-    public bool Visible { get; set; } = true;
-    public bool HasAlert { get; set; } = false;
+    public bool HasLog { get; set; } = false;
+    public double Opacity { get; set; } = 1;
     public bool PreviewEnabled { get; set; } = true;
 
     public string SearchText { get; set; }
@@ -41,15 +39,16 @@ namespace DesktopUI2.ViewModels
     {
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
+      var cleanLog = item.Log.Where(o => !string.IsNullOrEmpty(o)).ToList();
 
       Id = item.OriginalId;
       Name = item.Descriptor;
-      Log = item.Log;
-      HasAlert = item.Log.Count > 1 ? true : false;
+      Log = cleanLog.Count == 0 ? null : cleanLog;
+      HasLog = cleanLog.Count == 0 ? false : true;
       Status = item.Status.ToString();
       ApplicationIds = isReceiver ? item.CreatedIds : new List<string>() { item.OriginalId };
 
-      var logString = item.Log.Where(o => !string.IsNullOrEmpty(o)).Count() != 0 ? String.Join(" ", Log) : "";
+      var logString = cleanLog.Count() != 0 ? String.Join(" ", Log) : "";
       var createdIdsString = String.Join(" ", item.CreatedIds);
       SearchText = $"{Id} {Name} {Status} {logString} {createdIdsString}";
 
@@ -58,34 +57,26 @@ namespace DesktopUI2.ViewModels
       switch (item.Status)
       {
         case ApplicationObject.State.Created:
-          TextColor = "Black";
           Icon = "PlusThick";
-          IconColor = "Green";
           break;
         case ApplicationObject.State.Updated:
-          TextColor = "Black";
           Icon = "Refresh";
-          IconColor = "Green";
           break;
         case ApplicationObject.State.Skipped:
-          TextColor = "Grey";
           Icon = "Cancel";
-          IconColor = "Grey";
+          Opacity = 0.6;
           break;
         case ApplicationObject.State.Removed:
-          TextColor = "Black";
           Icon = "MinusThick";
-          IconColor = "Red";
+          Opacity = 0.6;
           break;
         case ApplicationObject.State.Failed:
-          TextColor = "Red";
           Icon = "Cancel";
-          IconColor = "Red";
+          Opacity = 0.6;
           break;
         default:
-          TextColor = "Black";
           Icon = "Help";
-          IconColor = "Black";
+          Opacity = 0.6;
           break;
       }
     }

@@ -597,7 +597,7 @@ namespace SpeckleRhino
             }
             break;
           case RhinoObject o:
-            previewObj.Update(createdId: o.Id.ToString());
+            previewObj.Update(status: ApplicationObject.State.Created, createdId: o.Id.ToString());
             bakedCount++;
             break;
           default:
