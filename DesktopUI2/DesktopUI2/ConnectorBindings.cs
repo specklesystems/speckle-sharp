@@ -162,8 +162,6 @@ namespace DesktopUI2
 
     public abstract List<ISetting> GetSettings();
 
-    public abstract Dictionary<string, string> returnFirstPassMap(List<string> specklePropertyList, List<string> hostPropertyList);
-
     #endregion
   }
 }

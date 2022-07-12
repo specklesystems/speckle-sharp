@@ -36,11 +36,15 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
+    public List<string> SearchResults { get; set; }
+    public Dictionary<string, string> mapping { get; set; }
+    public List<string> tabs { get; set; }
+
     public event EventHandler OnRequestClose;
 
     public MappingViewModel(Dictionary<string, string> firstPassMapping)
     {
-      
+      mapping = firstPassMapping;
     }
 
     public void Close_Click()

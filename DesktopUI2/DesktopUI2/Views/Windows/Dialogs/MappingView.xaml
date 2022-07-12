@@ -1,5 +1,5 @@
 <UserControl
-  x:Class="DesktopUI2.Views.Pages.MappingView"
+  x:Class="DesktopUI2.Views.Windows.Dialogs.MappingView"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -133,7 +133,7 @@
           <ScrollViewer
             Grid.Row="1"
             Grid.ColumnSpan="2">
-            <ItemsControl Items="{Binding types}">
+            <ItemsControl Items="{Binding mapping}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <Grid
@@ -143,12 +143,12 @@
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       TextTrimming="CharacterEllipsis"
-                      Text="{Binding}">
+                      Text="{Binding Key}">
                     </TextBlock>
                     <TextBox
                       Margin="5"
                       Grid.Column="1"
-                      Watermark="auto:W12x19"
+                      Watermark="{Binding Value}"
                       VerticalContentAlignment="Center"
                       VerticalAlignment="Center">
                     </TextBox>
@@ -210,7 +210,7 @@
           <TextBlock/>
           <TextBlock/>
         </StackPanel>
-        <StackPanel
+        <!--<StackPanel
           Grid.Row="1">
           <TextBlock
             Padding="5,5,5,0"
@@ -220,10 +220,13 @@
             BorderThickness=".5"
             BorderBrush="Gray"
             Margin="0,0,0,8"/>
-        </StackPanel>
-        <!--<TextBox
+        </StackPanel>-->
+        
+        <!-- Search Box -->
+        <TextBox
           Name="TypeSearchBox"
           Grid.Column="0"
+          Grid.Row="1"
           Margin="10"
           IsEnabled="True"
           Padding="0"
@@ -245,7 +248,7 @@
           </TextBox.InnerLeftContent>
           <TextBox.InnerRightContent>
           </TextBox.InnerRightContent>
-        </TextBox>-->
+        </TextBox>
         <!--<Button
           Margin="10"
           Height="{Binding #TypeSearchBox.Height}"

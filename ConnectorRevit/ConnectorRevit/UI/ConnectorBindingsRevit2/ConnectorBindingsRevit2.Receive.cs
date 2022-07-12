@@ -9,6 +9,8 @@ using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
+using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -24,6 +26,10 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
+    /// 
+
+
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -161,7 +167,102 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
     }
+    private List<string> GetListProperties(List<Base> objects)
+    {
+      List<string> listProperties = new List<string> { };
+      foreach (var @object in objects)
+      {
+        try
+        {
+          //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
+          var propInfo = @object.GetType().GetProperty("type").GetValue(@object) as string;
+          listProperties.Add(propInfo);
+        }
+        catch
+        {
 
+        }
+
+      }
+      return listProperties.Distinct().ToList();
+    }
+
+    private List<string> GetHostDocumentPropeties(Document doc)
+    {
+      var list = new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol));
+      List<string> familyType = list.Select(o => o.Name).Distinct().ToList();
+      return familyType;
+    }
+
+    public static int LevenshteinDistance(string s, string t)
+    {
+      // Default algorithim for computing the similarity between strings
+      int n = s.Length;
+      int m = t.Length;
+      int[,] d = new int[n + 1, m + 1];
+      if (n == 0)
+      {
+        return m;
+      }
+      if (m == 0)
+      {
+        return n;
+      }
+      for (int i = 0; i <= n; d[i, 0] = i++)
+        ;
+      for (int j = 0; j <= m; d[0, j] = j++)
+        ;
+      for (int i = 1; i <= n; i++)
+      {
+        for (int j = 1; j <= m; j++)
+        {
+          int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+          d[i, j] = Math.Min(
+              Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+              d[i - 1, j - 1] + cost);
+        }
+      }
+      return d[n, m];
+    }
+
+    public Dictionary<string, string> returnFirstPassMap(List<string> specklePropertyList, List<string> hostPropertyList)
+    {
+      var mappings = new Dictionary<string, string> { };
+      foreach (var item in specklePropertyList)
+      {
+        List<int> listVert = new List<int> { };
+        foreach (var hostItem in hostPropertyList)
+        {
+          listVert.Add(LevenshteinDistance(item, hostItem));
+        }
+        var indexMin = listVert.IndexOf(listVert.Min());
+        mappings.Add(item, hostPropertyList[indexMin]);
+      }
+      return mappings;
+    }
+
+    public void updateRecieveObject(Dictionary<string, string> Map, List<Base> objects)
+    {
+      foreach (var @object in objects)
+      {
+
+        try
+        {
+          //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
+          var propInfo = "";
+          propInfo = @object.GetType().GetProperty("type").GetValue(@object) as string;
+          if(propInfo != ""){
+            string mappingProperty = "";
+            Map.TryGetValue(propInfo, out mappingProperty);
+            var prop = @object.GetType().GetProperty("type");
+            prop.SetValue(@object, mappingProperty);
+          }
+        }
+        catch{
+
+        }
+       }
+    }
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
@@ -172,6 +273,29 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
+      // Get Settings for recieve on mapping 
+      var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
+      var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
+
+      if (receiveMappings == true)
+      {
+        var listProperties = GetListProperties(objects);
+        var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
+        var mappings = returnFirstPassMap(listProperties, listHostProperties);
+        //User to update logic from computer here;
+
+        //var vm = new MappingViewModel(mappings);
+        //var mappingView = new MappingView
+        //{
+        //  DataContext = vm
+        //};
+        //vm.OnRequestClose += (s, e) => mappingView.Close();
+        //var newMappings = await mappingView.ShowDialog<Dictionary<string,string>?>(MainWindow.Instance);
+        //System.Diagnostics.Debug.WriteLine($"new mappings {newMappings}");
+
+        updateRecieveObject(mappings, objects); 
+
+      }
 
       foreach (var @base in objects)
       {
@@ -208,6 +332,18 @@ namespace Speckle.ConnectorRevit.UI
 
       return placeholders;
     }
+
+    //public ICommand UserMappingCommand = ReactiveCommand.CreateFromTask(async () =>
+    //{
+    //  var result = await mappingView.ShowDialog();
+    //});
+
+    //private async Dictionary<string,string> OpenMapping(Dictionary<string, string> mapping)
+    //{
+    //  MainViewModel.RouterInstance.Navigate.Execute(new MappingViewModel(mapping));
+      
+    //  return mapping;
+    //}
 
     /// <summary>
     /// Recurses through the commit object and flattens it. 

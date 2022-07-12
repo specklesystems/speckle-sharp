@@ -10,7 +10,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string SearchQuery => "";
     public string Test { get; set; }
     public List<string> SearchResults { get; set; }
-    public List<string> types { get; set; }
+    public Dictionary<string,string> mapping { get; set; }
     public List<string> tabs { get; set; } 
 
     public ConnectorBindings Bindings { get; set; }
@@ -27,11 +27,12 @@ namespace DesktopUI2.ViewModels.DesignViewModels
         "Profile Sections"
        };
 
-      types = new List<string>
+      mapping = new Dictionary<string, string>
       {
-        "Brick Wall",
-        "W12x19",
-        "5in thick concrete wall"
+        { "Brick Wall", "Other Wall" },
+        { "W12x14", "W12x14" },
+        { "Floor Type", "Floor Type 2" },
+        { "Another Brick Wall", "Other Wall" },
       };
 
       SearchResults = new List<string>
