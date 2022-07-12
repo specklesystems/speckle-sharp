@@ -82,10 +82,10 @@ namespace Objects.Converter.Revit
         if (CurrentHostElement != null)
         {
           if (level == null)
-            Report.Log($"Level is null dude!");
+            level = Doc.GetElement( CurrentHostElement.LevelId ) as Level;
           else
             Report.Log($"This is the level we're using {level.Name}");
-          Report.Log($"bp {basePoint} symbol {familySymbol.Name} host {CurrentHostElement.Name} level {level}");
+          Report.Log($"bp {basePoint} symbol {familySymbol.Name} host {CurrentHostElement.Name} level {level.Name}");
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
         }
         //Otherwise, proceed as normal.
