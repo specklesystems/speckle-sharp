@@ -83,16 +83,22 @@ namespace Speckle.ConnectorRevit.UI
       };
     }
 
-    public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress)
+    public override List<string> GetHostProperties()
     {
-      progress.Report.Log("Flatten Base");
+      var list = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(FamilySymbol));
+      List<string> familyType = list.Select(o => o.Name).Distinct().ToList();
+      return familyType;
+    }
+
+    public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostProperties)
+    {
       List<Base> flattenedBase = await GetFlattenedBase(state, progress);
-      progress.Report.Log("GetListProperties");
+      
       var listProperties = GetListProperties(flattenedBase);
-      progress.Report.Log("GetHostDocumentPropeties");
-      var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
-      progress.Report.Log("returnFirstPassMap");
-      var mappings = returnFirstPassMap(listProperties, listHostProperties);
+      
+      //var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
+      
+      var mappings = returnFirstPassMap(listProperties, hostProperties);
 
       return mappings;
       //User to update logic from computer here;

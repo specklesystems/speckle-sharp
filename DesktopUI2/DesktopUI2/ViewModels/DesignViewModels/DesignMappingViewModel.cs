@@ -1,5 +1,7 @@
 ﻿using Speckle.Core.Credentials;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2.ViewModels.DesignViewModels
 {
@@ -10,12 +12,12 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string SearchQuery => "";
     public string Test { get; set; }
     public List<string> SearchResults { get; set; }
-    public Dictionary<string,string> mapping { get; set; }
+    public ObservableCollection<MappingValue> Mapping { get; set; }
     public List<string> tabs { get; set; } 
 
     public ConnectorBindings Bindings { get; set; }
 
-    public List<AccountViewModel> SelectedUsers { get; set; } = new List<AccountViewModel>();
+    public string CurrentTypeName { get; set; } = "Testing 123";
 
     public DesignMappingViewModel()
     {
@@ -27,13 +29,17 @@ namespace DesktopUI2.ViewModels.DesignViewModels
         "Profile Sections"
        };
 
-      mapping = new Dictionary<string, string>
-      {
-        { "Brick Wall", "Other Wall" },
-        { "W12x14", "W12x14" },
-        { "Floor Type", "Floor Type 2" },
-        { "Another Brick Wall", "Other Wall" },
-      };
+      Mapping = new ObservableCollection<MappingValue>
+      (new List<MappingValue>
+        {
+          new MappingValue("W12x19", "W12x19"),
+          new MappingValue("Type1", "type123"),
+          new MappingValue("anotherType", "anotherType"),
+          new MappingValue("yetAnotherType", "differentType" ),
+          new MappingValue("short", "short"),
+          new MappingValue( "a very very very long type name. Oh no", "a very very very long type name. Oh no")
+        }
+      );
 
       SearchResults = new List<string>
       {

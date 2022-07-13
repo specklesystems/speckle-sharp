@@ -19,11 +19,5 @@ namespace DesktopUI2.Views.Windows.Dialogs
     }
 
     public static MappingView Instance { get; private set; }
-
-    public Dictionary<string,string> Close_Click(object sender, RoutedEventArgs e)
-    {
-      Close();
-      return ViewModel.mapping;
-    }
   }
 }

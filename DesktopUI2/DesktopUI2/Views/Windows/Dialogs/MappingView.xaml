@@ -6,6 +6,8 @@
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
+  xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+  xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,6 +20,21 @@
   <Design.DataContext>
     <viewModels:DesignMappingViewModel />
   </Design.DataContext>
+
+  <UserControl.Styles>
+    <Style Selector="ComboBox /template/ Border">
+      <Setter Property="Background" Value="Red" />
+    </Style>
+    <Style Selector="ComboBox /template/ PathIcon#DropDownGlyph">
+      <Setter Property="Foreground" Value="Red" />
+    </Style>
+  </UserControl.Styles>
+
+  <UserControl.Resources>
+
+    <SolidColorBrush x:Key="SystemControlForegroundBaseMediumHighBrush" Color="Red" />
+    <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+  </UserControl.Resources>
 
   <Grid 
     RowDefinitions="auto,*, auto">
@@ -132,9 +149,10 @@
             Assigned To
           </TextBlock>
           <ScrollViewer
+            Name="ScrollParent"
             Grid.Row="1"
             Grid.ColumnSpan="2">
-            <ItemsControl Items="{Binding mapping}">
+            <ItemsControl Items="{Binding Mapping}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <Grid
@@ -144,20 +162,28 @@
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       TextTrimming="CharacterEllipsis"
-                      Text="{Binding Key}">
+                      Text="{Binding IncomingType}">
                     </TextBlock>
                     <TextBox
+                      IsReadOnly="True"
+                      Focusable="True"
+                      Classes="Small"
                       Margin="5"
                       Grid.Column="1"
-                      Watermark="{Binding Value}"
+                      Watermark="{Binding InitialGuess}"
+                      Text="{Binding OutgoingType}"
                       VerticalContentAlignment="Center"
                       VerticalAlignment="Center">
+                      <i:Interaction.Behaviors>
+                        <ia:EventTriggerBehavior EventName="GotFocus">
+                          <ia:InvokeCommandAction  Command="{Binding #ScrollParent.DataContext.SetCurrentTypeName}" CommandParameter="{Binding IncomingType}"/>
+                        </ia:EventTriggerBehavior>
+                      </i:Interaction.Behaviors>
                     </TextBox>
                   </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            
           </ScrollViewer>
          
         </Grid>
@@ -235,7 +261,7 @@
           BorderBrush="{Binding $self.Foreground}"
           BorderThickness="1"
           Classes="Solo"
-          Text="{Binding SearchQuery, Mode=TwoWay}"
+          Text="{Binding CurrentTypeName}"
           Watermark="Search Types in Project">
           <TextBox.InnerLeftContent>
             <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
@@ -247,15 +273,7 @@
                 Kind="Magnify" />
             </Border>
           </TextBox.InnerLeftContent>
-          <TextBox.InnerRightContent>
-          </TextBox.InnerRightContent>
         </TextBox>
-        <!--<Button
-          Margin="10"
-          Height="{Binding #TypeSearchBox.Height}"
-          Grid.Column="1">
-          Load Type
-        </Button>-->
       </Grid>
       <ScrollViewer
         Grid.Row="2"
@@ -263,20 +281,31 @@
         VerticalScrollBarVisibility="Auto">
         <StackPanel>
           <ListBox
-          Margin="0,0,0,8"
-          Classes="Chip"
-          Items="{Binding SearchResults}">
-          </ListBox>
-          
+            Margin="0,0,0,8"
+            Classes="Chip"
+            Items="{Binding SearchResults}"
+            SelectedItem="{Binding SelectedType}">
+          </ListBox> 
         </StackPanel>
       </ScrollViewer>
-      <Button
-        MaxWidth="200"
-        CornerRadius="20"
-        Margin="5"
+      <StackPanel 
+        Orientation="Horizontal"
         HorizontalAlignment="Right">
-        Done
-      </Button>
+        <Button
+          MaxWidth="200"
+          CornerRadius="20"
+          Margin="5"
+          HorizontalAlignment="Left">
+          Import
+        </Button>
+        <Button
+          MaxWidth="200"
+          CornerRadius="20"
+          Margin="5"
+          HorizontalAlignment="Right">
+          Done
+        </Button>
+      </StackPanel>
     </StackPanel>
 
   </Grid>

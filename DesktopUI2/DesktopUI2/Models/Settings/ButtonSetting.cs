@@ -31,30 +31,18 @@ namespace DesktopUI2.Models.Settings
     {
       Bindings = Locator.Current.GetService<ConnectorBindings>();
       Dictionary<string, string> initialMapping = new Dictionary<string, string>();
+      List<string> hostTypes = new List<string>();
       try
       {
-        initialMapping = await Task.Run(() => Bindings.GetInitialMapping(state, progress));
+        hostTypes = Bindings.GetHostProperties();
+        initialMapping = await Task.Run(() => Bindings.GetInitialMapping(state, progress, hostTypes));
       }
       catch
       {
 
       }
 
-      //User to update logic from computer here;
-
-      //var vm = new MappingViewModel(mappings);
-      //var mappingView = new MappingView
-      //{
-      //  DataContext = vm
-      //};
-
-      //mappingView.ShowDialog(MainWindow.Instance);
-      //vm.OnRequestClose += (s, e) => mappingView.Close();
-      //var newMappings = await mappingView.ShowDialog<Dictionary<string, string>?>(MainWindow.Instance);
-      //System.Diagnostics.Debug.WriteLine($"new mappings {newMappings}");
-
-
-      var vm = new MappingViewModel(initialMapping);
+      var vm = new MappingViewModel(initialMapping, hostTypes);
       var mappingView = new MappingView
       {
         DataContext = vm

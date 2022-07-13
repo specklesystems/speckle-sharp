@@ -381,10 +381,27 @@ namespace DesktopUI2
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
     }
 
-    public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress)
+    public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostTypes)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
       return new Dictionary<string, string>();
+    }
+
+    public override List<string> GetHostProperties()
+    {
+      return new List<string>
+      {
+        "Type1",
+        "Type2",
+        "Type3",
+        "A wiiiiiide flange",
+        "some wall maybe?",
+        "roof",
+        "other",
+        "types",
+        "are",
+        "welcome"
+      };
     }
   }
 }
