@@ -1,32 +1,9 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Metadata;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels.Share;
-using DesktopUI2.Views.Pages;
-using DesktopUI2.Views.Windows;
-using DynamicData;
-using Material.Icons;
-using Material.Icons.Avalonia;
-using ReactiveUI;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using Splat;
+﻿using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reactive;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
 {
@@ -38,11 +15,21 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
+    private bool isSearching = false;
+    private List<string> _valuesList { get; } = new List<string>();
     private string _searchQuery;
-    public string SearchQuery 
+    public string SearchQuery
     {
       get => _searchQuery;
-      set => this.RaiseAndSetIfChanged(ref _searchQuery, value);
+      set
+      {
+        isSearching = true;
+        this.RaiseAndSetIfChanged(ref _searchQuery, value);
+
+        SearchResults = new List<string>(_valuesList.Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
+        this.RaisePropertyChanged(nameof(SearchResults));
+        isSearching = false;
+      }
     }
 
     private List<string> _searchResults;
@@ -58,33 +45,20 @@ namespace DesktopUI2.ViewModels
       get => _selectedType;
       set
       {
-        Mapping.Where(i => i.IncomingType == CurrentTypeName).FirstOrDefault().OutgoingType = value;
+        SelectedMappingValue.OutgoingType = value;
         this.RaiseAndSetIfChanged(ref _selectedType, value);
       }
     }
-    //private Dictionary<string, string> _mapping;
-    //public Dictionary<string, string> Mapping 
-    //{
-    //  get => _mapping; 
-    //  set => this.RaiseAndSetIfChanged(ref _mapping, value);
-    //}
-    //private Dictionary<string, string> _initialMapping;
-    //public Dictionary<string, string> InitialMapping
-    //{
-    //  get => _initialMapping;
-    //  set => this.RaiseAndSetIfChanged(ref _initialMapping, value);
-    //}
 
     public ObservableCollection<MappingValue> Mapping { get; set; }
-    public List<string> tabs { get; set; }
 
-    private string _currentTypeName;
-    public string CurrentTypeName
+    private MappingValue _selectedMappingValue;
+    public MappingValue SelectedMappingValue
     {
-      get => _currentTypeName;
-      set => this.RaiseAndSetIfChanged(ref _currentTypeName, value);
+      get => _selectedMappingValue;
+      set => this.RaiseAndSetIfChanged(ref _selectedMappingValue, value);
     }
-    public ICommand SetCurrentTypeName { get; set; }
+    public List<string> tabs { get; set; }
 
     public MappingViewModel()
     {
@@ -116,10 +90,7 @@ namespace DesktopUI2.ViewModels
       //Mapping = InitialMapping.ToDictionary(entry => entry.Key, entry => "");
 
       Mapping = new ObservableCollection<MappingValue>(firstPassMapping.Select(kvp => new MappingValue(kvp.Key, kvp.Value)).ToList());
-      SearchResults = hostTypes;
-
-      CurrentTypeName = "dummy CurrentTypeName";
-      SetCurrentTypeName = ReactiveCommand.Create<object>(x => CurrentTypeName = (string)x);
+      _valuesList = SearchResults = hostTypes;
     }
 
     public class MappingValue : ReactiveObject

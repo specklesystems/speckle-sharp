@@ -1,5 +1,4 @@
 ﻿using DesktopUI2.Models;
-
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Reactive;

@@ -6,13 +6,11 @@
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
-  xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-  xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
-  d:DesignHeight="550"
+  d:DesignHeight="500"
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
   mc:Ignorable="d">
@@ -20,21 +18,6 @@
   <Design.DataContext>
     <viewModels:DesignMappingViewModel />
   </Design.DataContext>
-
-  <UserControl.Styles>
-    <Style Selector="ComboBox /template/ Border">
-      <Setter Property="Background" Value="Red" />
-    </Style>
-    <Style Selector="ComboBox /template/ PathIcon#DropDownGlyph">
-      <Setter Property="Foreground" Value="Red" />
-    </Style>
-  </UserControl.Styles>
-
-  <UserControl.Resources>
-
-    <SolidColorBrush x:Key="SystemControlForegroundBaseMediumHighBrush" Color="Red" />
-    <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-  </UserControl.Resources>
 
   <Grid 
     RowDefinitions="auto,*, auto">
@@ -151,8 +134,45 @@
           <ScrollViewer
             Name="ScrollParent"
             Grid.Row="1"
-            Grid.ColumnSpan="2">
-            <ItemsControl Items="{Binding Mapping}">
+            Grid.ColumnSpan="2"
+            VerticalScrollBarVisibility="Auto">
+            <ListBox 
+              Items="{Binding Mapping}"
+              SelectedItem="{Binding SelectedMappingValue}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid
+                    ColumnDefinitions="*,*">
+                    <TextBlock
+                      Margin="0"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding IncomingType}">
+                    </TextBlock>
+                    <TextBlock
+                      Name="OutgoingType"
+                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                      Focusable="False"
+                      Margin="0"
+                      Grid.Column="1"
+                      Text="{Binding OutgoingType}"
+                      VerticalAlignment="Center">
+                    </TextBlock>
+                    <TextBlock
+                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                      Focusable="False"
+                      Margin="0"
+                      Grid.Column="1"
+                      Foreground="Gray"
+                      Text="{Binding InitialGuess}"
+                      VerticalAlignment="Center">
+                    </TextBlock>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <!--<ItemsControl Items="{Binding Mapping}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <Grid
@@ -183,42 +203,12 @@
                   </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            </ItemsControl>-->
           </ScrollViewer>
          
         </Grid>
         
       </Border>
-
-      <!--<TabControl 
-        Grid.Row="0" 
-        Background="Transparent"
-        Items="{Binding tabs}">
-        <TabControl.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal">
-              <icons:MaterialIcon
-                VerticalAlignment="Center"
-                Kind="TimelineText"
-                ToolTip.Tip="Send and Receive activity" />
-              
-              <TextBlock
-                VerticalAlignment="Center"
-                Text="{Binding}" />
-              </StackPanel>
-          </DataTemplate>
-        </TabControl.ItemTemplate>
-        <TabControl.ContentTemplate>
-          <DataTemplate>
-            <Border
-              Grid.Row="1">
-              <TextBlock>
-                hey
-              </TextBlock>
-            </Border>
-          </DataTemplate>
-        </TabControl.ContentTemplate>
-      </TabControl>-->
     </Grid>
 
     <StackPanel
@@ -261,7 +251,7 @@
           BorderBrush="{Binding $self.Foreground}"
           BorderThickness="1"
           Classes="Solo"
-          Text="{Binding CurrentTypeName}"
+          Text="{Binding SearchQuery, Mode=TwoWay}"
           Watermark="Search Types in Project">
           <TextBox.InnerLeftContent>
             <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">

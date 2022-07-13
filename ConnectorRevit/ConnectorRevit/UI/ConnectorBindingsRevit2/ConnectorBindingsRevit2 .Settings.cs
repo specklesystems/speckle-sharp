@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using DesktopUI2.Views.Windows.Dialogs;
-using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -79,7 +76,7 @@ namespace Speckle.ConnectorRevit.UI
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Description = "Determines the display style of imported meshes"},
         new CheckBoxSetting{Slug = "recieve-mappings" , Name = "Toggle for Mappings", Icon = "Link", IsChecked = false,Description = "If toggled, map on recieve of Objects" },
-        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set", state=state, progress=progress},
+        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Set", state=state, progress=progress},
       };
     }
 
@@ -96,39 +93,17 @@ namespace Speckle.ConnectorRevit.UI
       
       var listProperties = GetListProperties(flattenedBase);
       
-      //var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
-      
       var mappings = returnFirstPassMap(listProperties, hostProperties);
 
       return mappings;
-      //User to update logic from computer here;
-
-      //var vm = new MappingViewModel(mappings);
-      //var mappingView = new MappingView
-      //{
-      //  DataContext = vm
-      //};
-
-      //mappingView.ShowDialog(MainWindow.Instance);
-      //vm.OnRequestClose += (s, e) => mappingView.Close();
-      //var newMappings = await mappingView.ShowDialog<Dictionary<string, string>?>(MainWindow.Instance);
-      //System.Diagnostics.Debug.WriteLine($"new mappings {newMappings}");
-
-      //updateRecieveObject(mappings, objects);
-
-      
     }
 
     public async Task<List<Base>> GetFlattenedBase(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-
-      progress.Report.Log($"kit");
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
-      progress.Report.Log($"converter");
       converter.SetContextDocument(CurrentDoc.Document);
       var previouslyReceiveObjects = state.ReceivedObjects;
-      progress.Report.Log($"previouslyReceiveObjects");
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
@@ -136,32 +111,21 @@ namespace Speckle.ConnectorRevit.UI
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
-      progress.Report.Log($"settings set");
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
-      progress.Report.Log($"transport");
 
       var stream = await state.Client.StreamGet(state.StreamId);
-      progress.Report.Log($"stream");
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         return null;
       }
-      progress.Report.Log($"no cancel");
 
       Commit myCommit = null;
 
-      progress.Report.Log($"state");
-
       // always get latest stream
-      //var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-      //myCommit = res.commits.items.FirstOrDefault();
-
       var res = await state.Client.StreamGetCommits(state.StreamId, 1);
       myCommit = res.FirstOrDefault();
-
-      progress.Report.Log($"res {res}");
 
       string referencedObject = myCommit.referencedObject;
 
@@ -179,8 +143,6 @@ namespace Speckle.ConnectorRevit.UI
           disposeTransports: true
           );
 
-      progress.Report.Log("commitObject");
-
       try
       {
         await state.Client.CommitReceived(new CommitReceivedInput
@@ -195,17 +157,6 @@ namespace Speckle.ConnectorRevit.UI
       {
         // Do nothing!
       }
-
-      
-      //if (progress.Report.OperationErrorsCount != 0)
-      //{
-      //  return state;
-      //}
-
-      //if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      //{
-      //  return null;
-      //}
 
       var flattenedObjects = FlattenCommitObject(commitObject, converter);
       return flattenedObjects;
@@ -283,31 +234,6 @@ namespace Speckle.ConnectorRevit.UI
         mappings.Add(item, hostPropertyList[indexMin]);
       }
       return mappings;
-    }
-
-    public void updateRecieveObject(Dictionary<string, string> Map, List<Base> objects)
-    {
-      foreach (var @object in objects)
-      {
-
-        try
-        {
-          //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
-          var propInfo = "";
-          propInfo = @object.GetType().GetProperty("type").GetValue(@object) as string;
-          if (propInfo != "")
-          {
-            string mappingProperty = "";
-            Map.TryGetValue(propInfo, out mappingProperty);
-            var prop = @object.GetType().GetProperty("type");
-            prop.SetValue(@object, mappingProperty);
-          }
-        }
-        catch
-        {
-
-        }
-      }
     }
   }
 }
