@@ -2,9 +2,11 @@
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -116,6 +118,26 @@ namespace DesktopUI2
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
           Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Description = "Determines the display style of imported meshes" },
+        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"} 
+      };
+    }
+
+    public void dummyCommand()
+    {
+
+    }
+
+    public override List<ISetting> GetSettings(StreamState state, ProgressViewModel progress)
+    {
+      return new List<ISetting>
+      {
+        new ListBoxSetting {Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} },
+        new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
+        new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving"},
+        new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
+          Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
+        new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Description = "Determines the display style of imported meshes" },
+        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"}
       };
     }
 
@@ -359,17 +381,10 @@ namespace DesktopUI2
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
     }
 
-    //public override Dictionary<string, string> returnFirstPassMap(List<string> specklePropertyList, List<string> hostPropertyList)
-    //{
-    //  return new Dictionary<string, string>
-    //  {
-    //    { "W12x19", "W12x19" },
-    //    { "Type1", "type123" },
-    //    { "anotherType", "anotherType" },
-    //    { "yetAnotherType", "differentType" },
-    //    { "short", "short" },
-    //    { "a very very very long type name. Oh no", "a very very very long type name. Oh no" }
-    //  };
-    //}
+    public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      return new Dictionary<string, string>();
+    }
   }
 }

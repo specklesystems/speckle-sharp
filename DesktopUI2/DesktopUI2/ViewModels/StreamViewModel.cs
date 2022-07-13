@@ -140,6 +140,8 @@ namespace DesktopUI2.ViewModels
 
     public string UrlPathSegment { get; } = "stream";
 
+    public static string Test { get; } = "stream";
+
     private Client Client { get; }
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
@@ -456,7 +458,7 @@ namespace DesktopUI2.ViewModels
 
 
         //get available settings from our bindings
-        Settings = Bindings.GetSettings();
+        Settings = Bindings.GetSettings(StreamState, Progress);
 
         //get available filters from our bindings
         AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
@@ -874,8 +876,12 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
+        List<SettingViewModel> viewModelSettings = new List<SettingViewModel>();
+        foreach(var setting in Settings)
+        {
 
-        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList(), this);
+        }
+        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x, StreamState,Progress)).ToList(), this, StreamState, Progress);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
 

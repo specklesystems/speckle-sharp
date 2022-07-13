@@ -1,0 +1,44 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Settings.ButtonSettingView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="using:DesktopUI2.ViewModels"
+  mc:Ignorable="d">
+
+
+
+  <Grid
+    Margin="10"
+    ColumnDefinitions="auto,*,auto"
+    RowDefinitions="auto, auto, auto">
+    <icons:MaterialIcon
+      Margin="0"
+      VerticalAlignment="Center"
+      Foreground="Gray"
+      Kind="InfoCircle"
+      ToolTip.Tip="{Binding Setting.Description}" />
+    <TextBlock
+      Grid.Column="1"
+      Margin="5,0"
+      VerticalAlignment="Center"
+      Text="{Binding Setting.Name, FallbackValue='Hello'}"
+      TextWrapping="Wrap"
+      ToolTip.Tip="{Binding Setting.Description}" />
+
+    <Button
+      Grid.Column="2"
+      VerticalAlignment="Center"
+      VerticalContentAlignment="Center"
+      Command="{Binding Setting.ButtonCommand}">
+        <TextBlock
+          VerticalAlignment="Center"
+          Text="{Binding Setting.ButtonText, FallbackValue='Button'}"/>
+    </Button>        
+
+  </Grid>
+
+</UserControl>

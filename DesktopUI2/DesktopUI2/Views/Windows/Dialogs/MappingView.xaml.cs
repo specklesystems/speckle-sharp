@@ -4,6 +4,7 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DesktopUI2.Views.Windows.Dialogs
 {
@@ -24,6 +25,5 @@ namespace DesktopUI2.Views.Windows.Dialogs
       Close();
       return ViewModel.mapping;
     }
-
   }
 }

@@ -4,6 +4,7 @@ using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Sentry.Reflection;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -161,6 +162,10 @@ namespace DesktopUI2
     public abstract List<MenuItem> GetCustomStreamMenuItems();
 
     public abstract List<ISetting> GetSettings();
+
+    public abstract List<ISetting> GetSettings(StreamState state, ProgressViewModel progress);
+
+    public abstract Task<Dictionary<string, string>> GetInitialMapping(StreamState state, ProgressViewModel progress);
 
     #endregion
   }
