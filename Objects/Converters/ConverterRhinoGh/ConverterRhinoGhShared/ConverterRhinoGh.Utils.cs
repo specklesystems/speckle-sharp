@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -42,6 +43,78 @@ namespace Objects.Converter.RhinoGh
       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
       return segments.Count > 1 ? segments[1] : "Unknown commit";
     }
+
+    #region app props
+    public static string RhinoPropName = "RhinoProps";
+
+    private Base GetRhinoProps(GeometryBase o, Type t, bool getParentProps = false)
+    {
+      var appProps = new Base();
+      appProps["class"] = t.Name;
+
+      // set primitive writeable props 
+      foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+      {
+        try
+        {
+          if (propInfo.GetSetMethod() != null &&
+            (propInfo.PropertyType.IsPrimitive ||
+            propInfo.PropertyType == typeof(string) ||
+            propInfo.PropertyType == typeof(decimal)))
+          {
+            var propValue = propInfo.GetValue(o);
+            if (propInfo.GetValue(o) != null)
+              appProps[propInfo.Name] = propValue;
+          }
+        }
+        catch (Exception e)
+        { }
+      }
+      if (getParentProps)
+      {
+        foreach (var propInfo in t.BaseType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+        {
+          try
+          {
+            if (propInfo.GetSetMethod() != null &&
+              (propInfo.PropertyType.IsPrimitive ||
+              propInfo.PropertyType == typeof(string) ||
+              propInfo.PropertyType == typeof(decimal)))
+            {
+              var propValue = propInfo.GetValue(o);
+              if (propInfo.GetValue(o) != null)
+                appProps[propInfo.Name] = propValue;
+            }
+          }
+          catch (Exception e)
+          { }
+        }
+      }
+
+      return appProps;
+    }
+
+    // TODO: need to determine when props should be scaled to native units!!
+    private void SetRhinoProps(object o, Type t, Base props)
+    {
+      var propNames = props.GetDynamicMembers();
+      if (o == null || propNames.Count() == 0)
+        return;
+
+      foreach (var propInfo in t.GetProperties())
+      {
+        try
+        {
+          if (propInfo.CanWrite && propNames.Contains(propInfo.Name))
+            t.InvokeMember(propInfo.Name,
+              BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty,
+              Type.DefaultBinder, o, new object[] { props[propInfo.Name] });
+        }
+        catch (Exception e)
+        { }
+      }
+    }
+    #endregion
 
     #region Units
 

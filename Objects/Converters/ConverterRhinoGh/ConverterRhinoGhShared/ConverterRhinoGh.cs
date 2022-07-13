@@ -17,6 +17,7 @@ using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
+using Dimension = Objects.Other.Dimension;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Ellipse = Objects.Geometry.Ellipse;
 using Hatch = Objects.Other.Hatch;
@@ -138,8 +139,6 @@ namespace Objects.Converter.RhinoGh
         
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
-        
-
       }
 
       switch (@object)
@@ -288,6 +287,10 @@ namespace Objects.Converter.RhinoGh
         case TextEntity o:
           @base = TextToSpeckle(o);
           Report.Log($"Converted TextEntity");
+          break;
+        case Rhino.Geometry.Dimension o:
+          @base = DimensionToSpeckle(o);
+          Report.Log($"Converted Dimension");
           break;
         default:
           Report.Log($"Skipped not supported type: {@object.GetType()}");
@@ -515,6 +518,7 @@ namespace Objects.Converter.RhinoGh
     public object ConvertToNative(Base @object)
     {
       object rhinoObj = null;
+      bool isFromRhino = @object[RhinoPropName] != null ? true : false;
       switch (@object)
       {
         case Point o:
@@ -661,6 +665,11 @@ namespace Objects.Converter.RhinoGh
         case Text o:
           rhinoObj = TextToNative(o);
           Report.Log($"Created Text {o.id}");
+          break;
+
+        case Dimension o:
+          rhinoObj = isFromRhino ? RhinoDimensionToNative(o) : DimensionToNative(o);
+          Report.Log($"Created Dimension {o.id}");
           break;
 
         case Objects.Structural.Geometry.Element1D o:
