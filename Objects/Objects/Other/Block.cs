@@ -32,24 +32,17 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Base
   {
-    /// <inheritdoc cref="GetInsertionPoint"/>
-    [JsonIgnore]
-    public Point insertionPoint => GetInsertionPoint();
+    [JsonIgnore, Obsolete("Use GetInsertionPoint method")]
+    public Point insertionPoint { get => GetInsertionPoint(); set { } }
 
     /// <inheritdoc cref="GetTransformedGeometry"/>
     [JsonIgnore]
     public List<ITransformable> transformedGeometry => GetTransformedGeometry();
 
+    /// <inheritdoc cref="GetInsertionPlane"/>
     [JsonIgnore]
     public Plane insertionPlane => GetInsertionPlane();
-
-    public Plane GetInsertionPlane()
-    {
-      var plane = new Plane(blockDefinition.basePoint,new Vector(0,0,1,units),new Vector(1,0,0,units),new Vector(0,1,0,units), units);
-      plane.TransformTo(transform, out Plane tPlane);
-      return tPlane;
-    }
-
+    
     /// <summary>
     /// The 4x4 transform matrix.
     /// </summary>
@@ -57,7 +50,6 @@ namespace Objects.Other
     /// the 3x3 sub-matrix determines scaling
     /// the 4th column defines translation, where the last value could be a divisor
     /// </remarks>
-
     public Transform transform { get; set; } = new Transform();
 
     public string units { get; set; }
@@ -89,5 +81,18 @@ namespace Objects.Other
         return res ? transformed : null;
       }).Where(b => b != null).ToList();
     }
+    
+    /// <summary>
+    /// Returns a plane representing the insertion point and orientation of this Block instance.
+    /// </summary>
+    /// <remarks>This method will skip scaling. If you need scaling, we recommend using the transform instead.</remarks>
+    /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
+    public Plane GetInsertionPlane()
+    {
+      var plane = new Plane(blockDefinition.basePoint,new Vector(0,0,1,units),new Vector(1,0,0,units),new Vector(0,1,0,units), units);
+      plane.TransformTo(transform, out Plane tPlane);
+      return tPlane;
+    }
+
   }
 }
