@@ -17,6 +17,7 @@ using Ellipse = Objects.Geometry.Ellipse;
 using Curve = Objects.Geometry.Curve;
 using Mesh = Objects.Geometry.Mesh;
 using Objects;
+using Objects.Other;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Speckle.Core.Kits;
@@ -171,10 +172,15 @@ namespace Objects.Converter.Dynamo
         PointToNative(plane.origin),
         VectorToNative(plane.xdir),
         VectorToNative(plane.ydir));
-
       return pln.SetDynamoProperties<DS.Plane>(GetDynamicMembersFromBase(plane));
     }
 
+    public CoordinateSystem TransformToNative(Transform transform)
+    {
+      return CoordinateSystem.ByMatrix(transform.value)
+        .Scale(Units.GetConversionFactor(transform.units, ModelUnits));
+    }
+    
     #endregion
 
     #region Linear
