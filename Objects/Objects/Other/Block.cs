@@ -16,7 +16,7 @@ namespace Objects.Other
   public class BlockDefinition : Base
   {
     public string name { get; set; }
-
+    
     public Point basePoint { get; set; }
 
     [DetachProperty]
@@ -25,6 +25,15 @@ namespace Objects.Other
     public string units { get; set; }
 
     public BlockDefinition() { }
+    
+    [SchemaInfo("Block Definition","A Speckle Block definition")]
+    public BlockDefinition(string name, Point basePoint, List<Base> geometry, string units)
+    {
+      this.name = name;
+      this.basePoint = basePoint;
+      this.geometry = geometry;
+      this.units = units;
+    }
   }
 
   /// <summary>
@@ -59,6 +68,12 @@ namespace Objects.Other
 
     public BlockInstance() { }
 
+    [SchemaInfo("Block Instance", "A Speckle Block Instance")]
+    public BlockInstance(BlockDefinition blockDefinition, Transform transform)
+    {
+      this.blockDefinition = blockDefinition;
+      this.transform = transform;
+    }
     /// <summary>
     /// Retrieves Instance insertion point by applying <see cref="transform"/> to <see cref="BlockDefinition.basePoint"/>
     /// </summary>
