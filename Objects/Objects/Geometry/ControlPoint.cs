@@ -4,7 +4,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
-  public class ControlPoint : Point, IHasBoundingBox, ITransformable<ControlPoint>
+  public class ControlPoint : Point, ITransformable<ControlPoint>
   {
     /// <summary>
     /// OBSOLETE - This is just here for backwards compatibility.

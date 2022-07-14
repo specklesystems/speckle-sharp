@@ -450,7 +450,7 @@ namespace Objects.Geometry
       var surfaces = new List<Surface>(Surfaces.Count);
       foreach ( var srf in Surfaces )
       {
-        srf.TransformTo(transform, out var surface);
+        srf.TransformTo(transform, out Surface surface);
         surfaces.Add(surface);
       }
 
@@ -461,7 +461,7 @@ namespace Objects.Geometry
         displayValue = displayValues,
         Surfaces = surfaces,
         Curve3D = transform.ApplyToCurves(Curve3D, out bool success3D),
-        Curve2D = transform.ApplyToCurves(Curve2D, out bool success2D),
+        Curve2D = new List<ICurve>(Curve2D),
         Vertices = transform.ApplyToPoints(Vertices),
         Edges = new List<BrepEdge>(Edges.Count),
         Loops = new List<BrepLoop>(Loops.Count),
@@ -473,7 +473,7 @@ namespace Objects.Geometry
       };
 
       foreach ( var e in Edges )
-        brep.Edges.Add(new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.Curve3dIndex,
+        brep.Edges.Add(new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex,
           e.ProxyCurveIsReversed,
           e.Domain));
 
@@ -487,7 +487,7 @@ namespace Objects.Geometry
       foreach ( var f in Faces )
         brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
 
-      return success2D && success3D;
+      return success3D;
     }
     
     #region Obsolete Members
@@ -497,6 +497,13 @@ namespace Objects.Geometry
       set => displayValue = new List<Mesh> {value};
     }
     #endregion
+
+    public bool TransformTo(Transform transform, out ITransformable transformed)
+    {
+      var res = TransformTo(transform, out Brep brep);
+      transformed = brep;
+      return res;
+    }
   }
 
   /// <summary>
