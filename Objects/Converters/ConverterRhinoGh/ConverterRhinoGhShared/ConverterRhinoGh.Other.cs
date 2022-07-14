@@ -354,26 +354,9 @@ namespace Objects.Converter.RhinoGh
 
       // get the transform
       // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
-      Transform transform = Transform.Identity;
-      double[] t = instance.transform.value;
-      if (t.Length == 16)
-      {
-        int count = 0;
-        for (int i = 0; i < 4; i++)
-        {
-          for (int j = 0; j < 4; j++)
-          {
-            if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
-              if (t[15] != 0)
-                transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], instance.units) : 1;
-              else
-                transform[i, j] = (i != 3) ? ScaleToNative(t[count], instance.units) : 1;
-            else
-              transform[i, j] = t[count];
-            count++;
-          }
-        }
-      }
+      var iT = instance.transform;
+      var units = instance.units;
+      var transform = TransformToNative(iT, units);
 
       // create the instance
       if (definition == null)
@@ -384,6 +367,29 @@ namespace Objects.Converter.RhinoGh
         return null;
 
       return Doc.Objects.FindId(instanceId) as InstanceObject;
+    }
+
+    private Transform TransformToNative(Other.Transform speckleTransform, string units)
+    {
+      var transform = Transform.Identity;
+      var t = speckleTransform.value;
+      if (t.Length != 16) return transform;
+      var count = 0;
+      for (var i = 0; i < 4; i++)
+      {
+        for (var j = 0; j < 4; j++)
+        {
+          if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
+            if (t[15] != 0)
+              transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], units) : 1;
+            else
+              transform[i, j] = (i != 3) ? ScaleToNative(t[count], units) : 1;
+          else
+            transform[i, j] = t[count];
+          count++;
+        }
+      }
+      return transform;
     }
 
     // Text

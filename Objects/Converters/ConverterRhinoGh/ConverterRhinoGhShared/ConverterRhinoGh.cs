@@ -29,6 +29,7 @@ using Polyline = Objects.Geometry.Polyline;
 using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
+using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 using View3D = Objects.BuiltElements.View3D;
 
@@ -662,7 +663,9 @@ namespace Objects.Converter.RhinoGh
         case RenderMaterial o:
           rhinoObj = RenderMaterialToNative(o);
           break;
-
+        case Transform o:
+          rhinoObj = TransformToNative(o, Units.None);
+          break;
         default:
           Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
           throw new NotSupportedException();
@@ -751,6 +754,7 @@ namespace Objects.Converter.RhinoGh
         case Brep _:
         case Surface _:
         case Structural.Geometry.Element1D _:
+        case Transform _:
           return true;
 
 #if !GRASSHOPPER
