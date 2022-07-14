@@ -2,6 +2,7 @@
 using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Objects.Geometry;
 using Speckle.Core.Logging;
@@ -31,8 +32,15 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Base
   {
-    [JsonIgnore, Obsolete("Use GetInsertionPoint method")]
-    public Point insertionPoint { get => GetInsertionPoint(); set { } }
+    /// <inheritdoc cref="GetInsertionPoint"/>
+    [JsonIgnore]
+    public Point insertionPoint => GetInsertionPoint();
+
+    /// <inheritdoc cref="GetTransformedGeometry"/>
+    [JsonIgnore]
+    public List<ITransformable> transformedGeometry => GetTransformedGeometry();
+
+
 
     /// <summary>
     /// The 4x4 transform matrix.
@@ -58,6 +66,20 @@ namespace Objects.Other
     public Point GetInsertionPoint()
     {
       return transform.ApplyToPoint(blockDefinition.basePoint);
+    }
+    
+    /// <summary>
+    /// Returns the a copy of the Block Definition's geometry transformed with this BlockInstance's transform.
+    /// </summary>
+    /// <returns>The transformed geometry for this BlockInstance.</returns>
+    public List<ITransformable> GetTransformedGeometry()
+    {
+      return blockDefinition.geometry.Select(b =>
+      {
+        if (!(b is ITransformable bt)) return null;
+        var res = bt.TransformTo(transform, out ITransformable transformed);
+        return res ? transformed : null;
+      }).Where(b => b != null).ToList();
     }
   }
 }
