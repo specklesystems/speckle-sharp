@@ -64,6 +64,7 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
+    <None Remove="Views\Settings\FieldBoxSetting.xaml" />
 	<None Remove="Views\Settings\ListBoxSettingView.xaml" />
 	<None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
@@ -176,6 +177,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\FieldBoxSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
