@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +13,8 @@ namespace DesktopUI2.ViewModels
     public string UrlPathSegment => throw new NotImplementedException();
 
     public IScreen HostScreen => throw new NotImplementedException();
+
+    public ConnectorBindings Bindings { get; set; }
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
@@ -86,9 +89,7 @@ namespace DesktopUI2.ViewModels
 
     public MappingViewModel(Dictionary<string, string> firstPassMapping, List<string> hostTypes)
     {
-      //InitialMapping = firstPassMapping;
-      //Mapping = InitialMapping.ToDictionary(entry => entry.Key, entry => "");
-
+      Bindings = Locator.Current.GetService<ConnectorBindings>();
       Mapping = new ObservableCollection<MappingValue>(firstPassMapping.Select(kvp => new MappingValue(kvp.Key, kvp.Value)).ToList());
       _valuesList = SearchResults = hostTypes;
     }
@@ -96,6 +97,7 @@ namespace DesktopUI2.ViewModels
     public class MappingValue : ReactiveObject
     {
       public string IncomingType { get; set; }
+      public bool Imported { get; set; }
 
       private string _initialGuess;
       public string InitialGuess
@@ -121,5 +123,15 @@ namespace DesktopUI2.ViewModels
         InitialGuess = inGuess;
       }
     }
+
+    public async void ImportFamily()
+    {
+      Mapping = await Bindings.ImportFamily(Mapping);
+    }
+
+    //public void Done()
+    //{
+    //  Mapping = await Bindings.ImportFamily(Mapping);
+    //}
   }
 }

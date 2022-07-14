@@ -8,8 +8,10 @@ using Speckle.Core.Kits;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
 {
@@ -399,6 +401,12 @@ namespace DesktopUI2
         "are",
         "welcome"
       };
+    }
+
+    public override async Task<ObservableCollection<MappingValue>> ImportFamily(ObservableCollection<MappingValue> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      return new ObservableCollection<MappingValue>();
     }
   }
 }

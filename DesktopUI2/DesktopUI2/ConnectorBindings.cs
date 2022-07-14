@@ -5,7 +5,9 @@ using DesktopUI2.ViewModels;
 using Sentry.Reflection;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
 {
@@ -167,6 +169,9 @@ namespace DesktopUI2
     public abstract Task<Dictionary<string, string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostTypes);
 
     public abstract List<string> GetHostProperties();
+
+    public abstract Task<ObservableCollection<MappingValue>> ImportFamily(ObservableCollection<MappingValue> Mapping);
+
     #endregion
   }
 }

@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -234,6 +238,51 @@ namespace Speckle.ConnectorRevit.UI
         mappings.Add(item, hostPropertyList[indexMin]);
       }
       return mappings;
+    }
+
+    public override async Task<ObservableCollection<MappingValue>> ImportFamily(ObservableCollection<MappingValue> Mapping)
+    {
+      FileOpenDialog dialog = new FileOpenDialog("Revit Families (*.rfa)|*.rfa");
+      dialog.ShowPreview = true;
+      var result = dialog.Show();
+
+      if (result == ItemSelectionDialogResult.Canceled)
+      {
+        return Mapping;
+      }
+
+      string path = "";
+      path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
+
+      return await RevitTask.RunAsync(app =>
+      {
+        using (var t = new Transaction(CurrentDoc.Document, $"Importing family symbols"))
+        {
+          t.Start();
+          bool symbolLoaded = false;
+
+          foreach (var mappingValue in Mapping)
+          {
+            if (!mappingValue.Imported)
+            {
+              bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(path, mappingValue.IncomingType);
+
+              if (successfullyImported)
+              {
+                mappingValue.Imported = true;
+                mappingValue.OutgoingType = mappingValue.IncomingType;
+                symbolLoaded = true;
+              }
+            }
+          }
+
+          if (symbolLoaded)
+            t.Commit();
+          else
+            t.RollBack();
+          return Mapping;
+        }
+      });
     }
   }
 }

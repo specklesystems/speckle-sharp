@@ -285,7 +285,8 @@
           MaxWidth="200"
           CornerRadius="20"
           Margin="5"
-          HorizontalAlignment="Left">
+          HorizontalAlignment="Left"
+          Command="{Binding ImportFamily}">
           Import
         </Button>
         <Button
