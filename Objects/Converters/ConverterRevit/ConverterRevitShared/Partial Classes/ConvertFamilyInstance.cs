@@ -85,8 +85,52 @@ namespace Objects.Converter.Revit
             level = Doc.GetElement( CurrentHostElement.LevelId ) as Level;
           else
             Report.Log($"This is the level we're using {level.Name}");
-          Report.Log($"bp {basePoint} symbol {familySymbol.Name} host {CurrentHostElement.Name} level {level.Name}");
-          familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+
+          Report.Log($"it all starts here");
+          if (CurrentHostElement is Wall wall)
+          {
+            Report.Log($"CurrentHostElement is Wall {wall}");
+            Report.Log($"Wall {wall.Name} {wall.Orientation}");
+
+            Options op = new Options();
+            Report.Log($"Options {op}");
+            op.ComputeReferences = true;
+            Report.Log($"compute");
+            GeometryElement wallGeom = wall.get_Geometry(op);
+            Report.Log($"GeometryElement {wallGeom}");
+            Reference faceRef = null;
+            Report.Log($"");
+
+            foreach (var geom in wallGeom)
+            {
+              Report.Log($"geom {geom}");
+              if (geom is Solid solid)
+              {
+                Report.Log($"geom is Solid {solid}");
+                FaceArray faceArray = solid.Faces;
+                foreach (Face face in faceArray)
+                {
+                  Report.Log($"face {face}");
+                  if (faceRef != null)
+                    break;
+                  if (face is PlanarFace planarFace)
+                  {
+                    if (planarFace.FaceNormal == wall.Orientation)
+                      faceRef = planarFace.Reference;
+                  }
+                }
+              }
+            }
+
+            XYZ norm = new XYZ(0, 0, 0);
+            Report.Log($"wall {wall} {HostObjectUtils.GetSideFaces(wall, ShellLayerType.Exterior).Count}");
+            Report.Log($"host el is wall: faceref {faceRef} bp {basePoint} n {norm} fs {familySymbol}");
+            familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
+          }
+          else
+          {
+            familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+          }
         }
         //Otherwise, proceed as normal.
         else
