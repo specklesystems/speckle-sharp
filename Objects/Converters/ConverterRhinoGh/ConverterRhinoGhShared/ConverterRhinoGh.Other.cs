@@ -436,7 +436,6 @@ namespace Objects.Converter.RhinoGh
     public Text TextToSpeckle(TextEntity text)
     {
       var _text = new Text();
-      Base props = null;
 
       // display value as list of polylines
       var outlines = text.CreateCurves(text.DimensionStyle, false)?.ToList();
@@ -460,7 +459,15 @@ namespace Objects.Converter.RhinoGh
       _text.units = ModelUnits;
 
       // rhino specific props
-      props = GetRhinoProps(text, typeof(TextEntity), true);
+      var excludeProps = new List<string>()
+      {
+        "Text",
+        "TextRotationRadians",
+        "PlainText",
+        "RichText",
+        "FontIndex"
+      };
+      var props = GetRhinoProps(text, typeof(TextEntity), true, excludeProps);
       var style = text.DimensionStyle.HasName ? text.DimensionStyle.Name : String.Empty;
       if (!string.IsNullOrEmpty(style)) props["DimensionStyleName"] = style;
       _text[RhinoPropName] = props;
@@ -483,10 +490,11 @@ namespace Objects.Converter.RhinoGh
       Base sourceAppProps = text[RhinoPropName] as Base;
       if (sourceAppProps != null)
       {
-        SetRhinoProps(_text, typeof(TextEntity), sourceAppProps);
-        string dimensionStyleName = sourceAppProps["DimensionStyleName"] as string != null ? sourceAppProps["DimensionStyleName"] as string : Doc.DimStyles.Current.Name;
-        DimensionStyle dimensionStyle = Doc.DimStyles.FindName(dimensionStyleName);
-        _text.DimensionStyleId = dimensionStyle.Id;
+        var scaleProps = new List<string>() { "TextHeight" };
+        SetRhinoProps(_text, typeof(TextEntity), sourceAppProps, scaleProps, text.units);
+        DimensionStyle dimensionStyle = Doc.DimStyles.FindName(sourceAppProps["DimensionStyleName"] as string ?? string.Empty);
+        if (dimensionStyle != null)
+          _text.DimensionStyleId = dimensionStyle.Id;
       }
       return _text;
     }
@@ -568,6 +576,7 @@ namespace Objects.Converter.RhinoGh
 
       if (_dimension != null && props != null)
       {
+        _dimension.units = ModelUnits;
         var style = dimension.DimensionStyle.HasName ? dimension.DimensionStyle.Name : String.Empty;
         if (!string.IsNullOrEmpty(style)) props["DimensionStyleName"] = style;
         _dimension[RhinoPropName] = props;

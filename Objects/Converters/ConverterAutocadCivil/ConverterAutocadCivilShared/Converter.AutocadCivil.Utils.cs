@@ -74,7 +74,7 @@ namespace Objects.Converter.AutocadCivil
     #region app props
     public static string AutocadPropName = "AutocadProps";
 
-    private Base GetAutoCADProps(DBObject o, Type t, bool getParentProps = false)
+    private Base GetAutoCADProps(DBObject o, Type t, bool getParentProps = false, List<string> excludedProps = null)
     {
       var appProps = new Base();
       appProps["class"] = t.Name;
@@ -84,18 +84,11 @@ namespace Objects.Converter.AutocadCivil
       {
         try
         {
-          if (propInfo.GetSetMethod() != null &&
-            (propInfo.PropertyType.IsPrimitive ||
-            propInfo.PropertyType == typeof(string) ||
-            propInfo.PropertyType == typeof(decimal)))
-          {
-            var propValue = propInfo.GetValue(o);
-            if (propInfo.GetValue(o) != null)
-              appProps[propInfo.Name] = propValue;
-          }
+          if (excludedProps != null && excludedProps.Contains(propInfo.Name)) continue;
+          if (IsMeaningfulProp(propInfo, o, out object propValue))
+            appProps[propInfo.Name] = propValue;
         }
-        catch (Exception e)
-        { }
+        catch { }
       }
       if (getParentProps)
       {
@@ -103,42 +96,58 @@ namespace Objects.Converter.AutocadCivil
         {
           try
           {
-            if (propInfo.GetSetMethod() != null &&
-              (propInfo.PropertyType.IsPrimitive ||
-              propInfo.PropertyType == typeof(string) ||
-              propInfo.PropertyType == typeof(decimal)))
-            {
-              var propValue = propInfo.GetValue(o);
-              if (propInfo.GetValue(o) != null)
-                appProps[propInfo.Name] = propValue;
-            }
+            if (excludedProps != null && excludedProps.Contains(propInfo.Name)) continue;
+            if (IsMeaningfulProp(propInfo, o, out object propValue))
+              appProps[propInfo.Name] = propValue;
           }
-          catch (Exception e)
-          { }
+          catch { }
         }
       }
 
       return appProps;
     }
+    private bool IsMeaningfulProp(PropertyInfo propInfo, DBObject o, out object value)
+    {
+      value = propInfo.GetValue(o);
+      if (propInfo.GetSetMethod() != null && value != null)
+      {
+        if (propInfo.PropertyType.IsPrimitive || propInfo.PropertyType == typeof(decimal)) return true;
+        if (propInfo.PropertyType == typeof(string) && !string.IsNullOrEmpty((string)value)) return true;
+        if (propInfo.PropertyType.BaseType.Name == "Enum") // for some reason "IsEnum" prop returns false
+        {
+          value = value.ToString();
+          return true;
+        }
+      }
+      return false;
+    }
 
-    // TODO: need to determine when props should be scaled to native units!!
-    private void SetAutoCADProps(object o, Type t, Base props)
+    private void SetAutoCADProps(object o, Type t, Base props, List<string> scaledProps = null, string units = null)
     {
       var propNames = props.GetDynamicMembers();
       if (o == null || propNames.Count() == 0)
         return;
 
-      foreach (var propInfo in t.GetProperties())
+      var typeProperties = t.GetProperties().ToList();
+      typeProperties.AddRange(t.BaseType.GetProperties().ToList());
+      foreach (var propInfo in typeProperties)
       {
-        try
+        if (propInfo.CanWrite && propNames.Contains(propInfo.Name))
         {
-          if (propInfo.CanWrite && propNames.Contains(propInfo.Name))
-            t.InvokeMember(propInfo.Name,
+          var value = props[propInfo.Name];
+          if (scaledProps != null && scaledProps.Contains(propInfo.Name))
+            value = ScaleToNative((double)value, units);
+          if (propInfo.PropertyType.BaseType.Name == "Enum")
+            value = Enum.Parse(propInfo.PropertyType, (string)value);
+          if (value != null)
+            try
+            {
+              t.InvokeMember(propInfo.Name,
               BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty,
-              Type.DefaultBinder, o, new object[] { props[propInfo.Name] });
+              Type.DefaultBinder, o, new object[] { value });
+            }
+            catch { }
         }
-        catch (Exception e)
-        { }
       }
     }
     #endregion
