@@ -116,7 +116,7 @@ namespace Objects.Other
     {
       var newCoords = ApplyToVector(new List<double> {vector.x, vector.y, vector.z});
 
-      return new Geometry.Vector(newCoords[0], newCoords[1], newCoords[2], vector.units, vector.applicationId);
+      return new Vector(newCoords[0], newCoords[1], newCoords[2], vector.units, vector.applicationId);
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ namespace Objects.Other
     /// </summary>
     public List<double> ApplyToVector(List<double> vector)
     {
-      var newPoint = new List<double>(4) {vector[ 0 ], vector[ 1 ], vector[ 2 ]};
+      var newPoint = new List<double>(4) {vector[ 0 ], vector[ 1 ], vector[ 2 ], 1};
       for ( var i = 0; i < 16; i += 4 )
         newPoint[ i / 4 ] = newPoint[ 0 ] * value[ i ] + newPoint[ 1 ] * value[ i + 1 ] +
                             newPoint[ 2 ] * value[ i + 2 ];

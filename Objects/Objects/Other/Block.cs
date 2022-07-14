@@ -40,7 +40,15 @@ namespace Objects.Other
     [JsonIgnore]
     public List<ITransformable> transformedGeometry => GetTransformedGeometry();
 
+    [JsonIgnore]
+    public Plane insertionPlane => GetInsertionPlane();
 
+    public Plane GetInsertionPlane()
+    {
+      var plane = new Plane(blockDefinition.basePoint,new Vector(0,0,1,units),new Vector(1,0,0,units),new Vector(0,1,0,units), units);
+      plane.TransformTo(transform, out Plane tPlane);
+      return tPlane;
+    }
 
     /// <summary>
     /// The 4x4 transform matrix.

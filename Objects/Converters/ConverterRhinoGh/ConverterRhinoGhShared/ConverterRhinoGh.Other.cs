@@ -369,8 +369,9 @@ namespace Objects.Converter.RhinoGh
       return Doc.Objects.FindId(instanceId) as InstanceObject;
     }
 
-    private Transform TransformToNative(Other.Transform speckleTransform, string units)
+    public Transform TransformToNative(Other.Transform speckleTransform, string units = null)
     {
+      var u = units ?? speckleTransform.units;
       var transform = Transform.Identity;
       var t = speckleTransform.value;
       if (t.Length != 16) return transform;
@@ -381,9 +382,9 @@ namespace Objects.Converter.RhinoGh
         {
           if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
             if (t[15] != 0)
-              transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], units) : 1;
+              transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], u) : 1;
             else
-              transform[i, j] = (i != 3) ? ScaleToNative(t[count], units) : 1;
+              transform[i, j] = (i != 3) ? ScaleToNative(t[count], u) : 1;
           else
             transform[i, j] = t[count];
           count++;
@@ -392,6 +393,17 @@ namespace Objects.Converter.RhinoGh
       return transform;
     }
 
+    public Other.Transform TransformToSpeckle(Transform t, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      var transformArray = new double[] {
+        t.M00, t.M01, t.M02, t.M03,
+        t.M10, t.M11, t.M12, t.M13,
+        t.M20, t.M21, t.M22, t.M23,
+        t.M30, t.M31, t.M32, t.M33 };
+      return new Other.Transform(transformArray, ModelUnits);
+    }
+    
     // Text
     public Text TextToSpeckle(TextEntity text)
     {
