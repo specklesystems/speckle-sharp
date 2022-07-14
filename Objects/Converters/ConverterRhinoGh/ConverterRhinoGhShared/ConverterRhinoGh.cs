@@ -235,6 +235,10 @@ namespace Objects.Converter.RhinoGh
           @base = MeshToSpeckle(o);
           Report.Log($"Converted Mesh");
           break;
+        case RH.Transform o:
+          @base = TransformToSpeckle(o);
+          Report.Log("Converter Transform");
+          break;
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
@@ -715,6 +719,7 @@ namespace Objects.Converter.RhinoGh
         case RH.Extrusion _:
         case RH.Brep _:
         case NurbsSurface _:
+        case RH.Transform _:
           return true;
 
 #if !GRASSHOPPER
