@@ -25,6 +25,8 @@ namespace DesktopUI2
     public string ConnectorName =>
       System.Reflection.Assembly.GetAssembly(GetType()).GetNameAndVersion().Name;
 
+    public string MappingSelectionValue { get; set; } = "default";
+
     //public List<StreamState> SavedStreamStates = new List<StreamState>();
 
     #region delegates
@@ -171,7 +173,6 @@ namespace DesktopUI2
     public abstract List<string> GetHostProperties();
 
     public abstract Task<ObservableCollection<MappingValue>> ImportFamily(ObservableCollection<MappingValue> Mapping);
-
     #endregion
   }
 }

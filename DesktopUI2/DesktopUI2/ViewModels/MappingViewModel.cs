@@ -1,10 +1,13 @@
-﻿using ReactiveUI;
+﻿using Avalonia;
+using Newtonsoft.Json;
+using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Xml.Serialization;
 
 namespace DesktopUI2.ViewModels
 {
@@ -13,6 +16,8 @@ namespace DesktopUI2.ViewModels
     public string UrlPathSegment => throw new NotImplementedException();
 
     public IScreen HostScreen => throw new NotImplementedException();
+
+    public event EventHandler OnRequestClose;
 
     public ConnectorBindings Bindings { get; set; }
 
@@ -129,9 +134,12 @@ namespace DesktopUI2.ViewModels
       Mapping = await Bindings.ImportFamily(Mapping);
     }
 
-    //public void Done()
-    //{
-    //  Mapping = await Bindings.ImportFamily(Mapping);
-    //}
+    public void Done()
+    {
+      Dictionary<string, string> mappingDict = Mapping.ToDictionary(x => x.IncomingType, x => x.OutgoingType ?? x.InitialGuess);
+      var json = JsonConvert.SerializeObject(mappingDict);
+      Bindings.MappingSelectionValue = json;
+      OnRequestClose(this, new EventArgs());
+    }
   }
 }

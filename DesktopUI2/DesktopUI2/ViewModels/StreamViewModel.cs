@@ -876,12 +876,8 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        List<SettingViewModel> viewModelSettings = new List<SettingViewModel>();
-        foreach(var setting in Settings)
-        {
-
-        }
-        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x, StreamState,Progress)).ToList(), this, StreamState, Progress);
+        
+        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x, StreamState,Progress)).ToList(), this);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
 
@@ -889,6 +885,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception e)
       {
+        Progress.Report.Log($"Something Sad happened :( {e}");
       }
 
 

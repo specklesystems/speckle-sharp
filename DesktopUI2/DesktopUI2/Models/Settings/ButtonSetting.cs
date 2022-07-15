@@ -18,14 +18,16 @@ namespace DesktopUI2.Models.Settings
     public string Description { get; set; }
     public Dictionary<string, string> mapping = new Dictionary<string, string>();
     public string ButtonText { get; set; }
-    public string Selection 
+    public string Selection { get; set; }
+
+    public string JsonSelection
     {
-      get;
-      //get
-      //{
-      //  return Bindings.Get
-      //}
-      set; 
+      get
+      {
+        string val = Bindings.MappingSelectionValue;
+        Selection = val;
+        return val;
+      }
     }
     public Type ViewType { get; } = typeof(ButtonSettingView);
     public StreamState state { get; set; }
@@ -52,7 +54,7 @@ namespace DesktopUI2.Models.Settings
       {
         DataContext = vm
       };
-
+      vm.OnRequestClose += (s, e) => mappingView.Close();
       mappingView.Show();
     }
     //public Dictionary<string, string> deseralizedSelection(string s)

@@ -9,6 +9,7 @@ using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using Newtonsoft.Json;
 using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -30,6 +31,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      progress.Report.Log($"start recieve");
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
       converter.SetContextDocument(CurrentDoc.Document);
@@ -202,17 +204,51 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
       // Get Settings for recieve on mapping 
-      var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
-      var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
+      //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
+      //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
 
-      //if (receiveMappings == true)
+      try
+      {
+        ButtonSetting mappingSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "mapping") as ButtonSetting);
+        var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(mappingSetting.JsonSelection);
+        updateRecieveObject(mappingDict, objects);
+      }
+      catch (Exception ex)
+      {
+        progress.Report.Log($"Could not update objects with user-defined type mapping {ex}");
+      }
+
+      //try
       //{
-      //  var listProperties = GetListProperties(objects);
-      //  var listHostProperties = GetHostDocumentPropeties(CurrentDoc.Document);
-      //  var mappings = returnFirstPassMap(listProperties, listHostProperties);
-      //  //User to update logic from computer here;
+      //  //var mappingDict = JsonConvert.DeserializeObject(mappingSetting.JsonSelection) as Dictionary<string, string>;
+      //  progress.Report.Log($"mappingDict {mappingSetting.JsonSelection}");
+      //}
+      //catch
+      //{
 
-      //  updateRecieveObject(mappings, objects); 
+      //}
+
+      //try
+      //{
+      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(mappingSetting.JsonSelection);
+      //  progress.Report.Log($"mappingDict {mappingDict}");
+      //}
+      //catch
+      //{
+
+      //}
+
+      //try
+      //{
+      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(mappingSetting.JsonSelection);
+      //  foreach (var item in mappingDict)
+      //  {
+      //    progress.Report.Log($"DESERIALIZED DICT {item.Key} {item.Value}");
+      //  }
+      //}
+      //catch
+      //{
+
       //}
 
       foreach (var @base in objects)

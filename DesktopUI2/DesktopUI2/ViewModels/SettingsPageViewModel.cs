@@ -1,6 +1,7 @@
 ﻿using DesktopUI2.Models;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 
 namespace DesktopUI2.ViewModels
@@ -33,13 +34,11 @@ namespace DesktopUI2.ViewModels
       _streamViewModel = streamViewModel;
     }
 
-    public SettingsPageViewModel(IScreen screen, List<SettingViewModel> settings, StreamViewModel streamViewModel, StreamState localState, ProgressViewModel localProgress)
+    public void SaveCommand()
     {
-      HostScreen = screen;
-      Settings = settings;
-      _streamViewModel = streamViewModel;
-      state = localState;
-      progress = localProgress;
+      _streamViewModel.Settings = Settings.Select(x => x.Setting).ToList();
+
+      MainViewModel.RouterInstance.NavigateBack.Execute();
     }
   }
 }

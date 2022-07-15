@@ -86,6 +86,11 @@ namespace Speckle.ConnectorRevit.UI
 
     public override List<string> GetHostProperties()
     {
+      ElementClassFilter familySymbolFilter = new ElementClassFilter(typeof(FamilySymbol));
+      ElementClassFilter wallTypeFilter = new ElementClassFilter(typeof(WallType));
+      LogicalAndFilter filter = new LogicalAndFilter(familySymbolFilter, wallTypeFilter);
+      //var list = new FilteredElementCollector(CurrentDoc.Document).WherePasses(filter);
+
       var list = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(FamilySymbol));
       List<string> familyType = list.Select(o => o.Name).Distinct().ToList();
       return familyType;
