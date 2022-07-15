@@ -1,5 +1,6 @@
 ﻿using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -11,6 +12,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -51,9 +53,9 @@ namespace Speckle.ConnectorCSI.UI
         return null;
       }
 
-      var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
-      var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-
+      var modelToleranceSettings = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as NumericUpDownWithComboBoxSetting);
+      var modelToleranceValue = modelToleranceSettings != null ? modelToleranceSettings.Value: "0.0";
+      var modelTolernaceUnits = modelToleranceSettings != null ? modelToleranceSettings.Selection: "mm";
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 

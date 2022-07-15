@@ -31,7 +31,7 @@
     <NumericUpDown
       Grid.Column="2"
       HorizontalAlignment="Right"
-      Value="{Binding Setting.Selection}" 
+      Value="{Binding Setting.Value}" 
       ShowButtonSpinner ="{Binding Setting.ShowButtonSpinner, FallbackValue = 'False'}"
       Minimum ="{Binding Setting.Minimum, FallbackValue = '0'}"
       Watermark = "{Binding Setting.Watermark, FallbackValue = '0.0'}"/>
