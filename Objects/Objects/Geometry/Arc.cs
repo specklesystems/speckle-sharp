@@ -209,14 +209,15 @@ namespace Objects.Geometry
     public bool TransformTo(Transform transform, out Arc transformed)
     {
       plane.TransformTo(transform, out Plane pln);
-      transformed = new Arc(pln,transform.ApplyToPoint(startPoint),transform.ApplyToPoint(endPoint), angleRadians, units);
+      var arc = new Arc(pln,transform.ApplyToPoint(startPoint),transform.ApplyToPoint(endPoint), angleRadians, units);
+      arc.domain = domain;
+      transformed = arc;
       return true;
     }
 
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Arc arc);
-      arc.domain = domain;
       transformed = arc;
       return res;
     }
