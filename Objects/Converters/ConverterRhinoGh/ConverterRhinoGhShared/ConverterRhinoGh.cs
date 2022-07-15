@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rhino.Display;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -235,10 +236,17 @@ namespace Objects.Converter.RhinoGh
           @base = MeshToSpeckle(o);
           Report.Log($"Converted Mesh");
           break;
+        
+# if GRASSHOPPER
         case RH.Transform o:
           @base = TransformToSpeckle(o);
           Report.Log("Converter Transform");
           break;
+        case DisplayMaterial o:
+          @base = DisplayMaterialToSpeckle(o);
+          break;
+#endif
+        
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
@@ -665,7 +673,11 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case RenderMaterial o:
-          rhinoObj = RenderMaterialToNative(o);
+          #if GRASSHOPPER
+            rhinoObj = RenderMaterialToDisplayMaterial(o);
+          #else
+            rhinoObj = RenderMaterialToNative(o);
+          #endif
           break;
         case Transform o:
           rhinoObj = TransformToNative(o);
@@ -719,11 +731,15 @@ namespace Objects.Converter.RhinoGh
         case RH.Extrusion _:
         case RH.Brep _:
         case NurbsSurface _:
-        case RH.Transform _:
           return true;
-
-#if !GRASSHOPPER
-        // This types are not supported in GH!
+        
+#if GRASSHOPPER
+        // This types are ONLY supported in GH!
+        case RH.Transform _:
+        case DisplayMaterial _:
+          return true;
+#else
+        // This types are NOT supported in GH!
         case ViewInfo _:
         case InstanceDefinition _:
         case InstanceObject _:
@@ -759,10 +775,12 @@ namespace Objects.Converter.RhinoGh
         case Brep _:
         case Surface _:
         case Structural.Geometry.Element1D _:
-        case Transform _:
           return true;
-
-#if !GRASSHOPPER
+#if GRASSHOPPER
+        case Transform _:
+        case RenderMaterial _:
+          return true;
+#else
         // This types are not supported in GH!
         case Pointcloud _:
         case DisplayStyle _:
@@ -772,7 +790,6 @@ namespace Objects.Converter.RhinoGh
         case BlockDefinition _:
         case BlockInstance _:
         case Alignment _:
-        case RenderMaterial _:
         case Text _:
           return true;
 #endif

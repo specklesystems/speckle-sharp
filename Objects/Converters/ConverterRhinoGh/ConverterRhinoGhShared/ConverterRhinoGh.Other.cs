@@ -369,6 +369,29 @@ namespace Objects.Converter.RhinoGh
       return Doc.Objects.FindId(instanceId) as InstanceObject;
     }
 
+    public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)
+    {
+      var rhinoMaterial = new Material
+      {
+        Name = material.name,
+        DiffuseColor = Color.FromArgb(material.diffuse),
+        EmissionColor = Color.FromArgb(material.emissive),
+        Transparency = 1 - material.opacity
+      };
+      var displayMaterial = new DisplayMaterial(rhinoMaterial);
+      return displayMaterial;
+    }
+    
+    
+    public RenderMaterial DisplayMaterialToSpeckle(DisplayMaterial material)
+    {
+      var speckleMaterial = new RenderMaterial();
+      speckleMaterial.diffuse = material.Diffuse.ToArgb();
+      speckleMaterial.emissive = material.Emission.ToArgb();
+      speckleMaterial.opacity = 1.0 - material.Transparency;
+      return speckleMaterial;
+    }
+    
     public Transform TransformToNative(Other.Transform speckleTransform, string units = null)
     {
       var u = units ?? speckleTransform.units;
