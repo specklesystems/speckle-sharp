@@ -42,17 +42,6 @@ namespace Objects.Other
       transform.value[12] = -basePoint.z;
       return transform;
     }
-    public List<ITransformable> GetGeometryRelativeToBasePoint()
-    {
-      var transform = GetBasePointTransform();
-      
-      return geometry.Select(b =>
-      {
-        if (!(b is ITransformable bt)) return null;
-        var res = bt.TransformTo(transform, out ITransformable transformed);
-        return res ? transformed : null;
-      }).Where(b => b != null).ToList();
-    }
   }
 
   /// <summary>
