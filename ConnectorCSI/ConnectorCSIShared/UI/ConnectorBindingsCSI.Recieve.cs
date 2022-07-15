@@ -29,6 +29,12 @@ namespace Speckle.ConnectorCSI.UI
       converter.SetContextDocument(Model);
       Exceptions.Clear();
       //var previouslyRecieveObjects = state.ReceivedObjects;
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
+
 
       if (converter == null)
       {
@@ -44,6 +50,10 @@ namespace Speckle.ConnectorCSI.UI
       {
         return null;
       }
+
+      var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
+      var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
+
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 

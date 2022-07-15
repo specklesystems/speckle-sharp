@@ -13,11 +13,15 @@ namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
+    private List<ISetting> CurrentSettings { get; set; }
+
     public override List<ISetting> GetSettings()
     {
+      List<string> unitOptions = new List<string>() { "in", "ft", "mm", "m" };
+
       return new List<ISetting>
       {
-        new FieldBoxSetting {Slug = "model-tolerance", Name = "Model Tolerance (model units)", Icon ="LocationSearching" , Description = "Set the grid tolerance for the receiving of points in this Model"},
+        new NumericUpDownWithComboBoxSetting {Slug = "model-tolerance", Name = "Model Tolerance (model units)", Icon ="LocationSearching" , Description = "Set the grid tolerance for the receiving of points in this Model",Value = "0.0", Values = unitOptions},
       };
 
     }

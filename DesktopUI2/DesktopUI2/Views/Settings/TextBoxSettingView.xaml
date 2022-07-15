@@ -1,5 +1,5 @@
-<UserControl
-  x:Class="DesktopUI2.Views.Settings.FieldBoxSettingView"
+﻿<UserControl 
+  x:Class="DesktopUI2.Views.Settings.TextBoxSettingView"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -28,13 +28,11 @@
       Text="{Binding Setting.Name, FallbackValue='sample setting'}"
       TextWrapping="Wrap"
       ToolTip.Tip="" />
-    <NumberBox Grid.Column ="2"
-      HorizontalAlignment ="Right"
-      Value="{x:Bind Path=ViewModel.NumberBoxValue, Mode=TwoWay}" />
-    <!--<CheckBox
+    <TextBox
       Grid.Column="2"
       HorizontalAlignment="Right"
-      IsChecked="{Binding Setting.IsChecked}" />-->
+      Text="{Binding Setting.Selection}" 
+      Watermark = "{Binding Setting.Watermark, FallbackValue = 'sample text input'}"/>
 
   </Grid>
 </UserControl>

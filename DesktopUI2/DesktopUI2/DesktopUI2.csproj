@@ -64,9 +64,10 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
-    <None Remove="Views\Settings\FieldBoxSetting.xaml" />
 	<None Remove="Views\Settings\ListBoxSettingView.xaml" />
 	<None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
+	<None Remove="Views\Settings\NumericUpDownWithComboBoxSettingView.xaml" />
+	<None Remove="Views\Settings\TextBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
@@ -179,9 +180,6 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\FieldBoxSetting.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -212,6 +210,12 @@
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <EmbeddedResource Include="Views\Settings\NumericUpDownWithComboBoxSettingView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Settings\TextBoxSettingView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -290,6 +294,18 @@
     </Compile>
 	<Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
 		<DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\Settings\NumericInputDropDownSettingView.cs">
+	  <SubType>Code</SubType>
+	  <DependentUpon>NumericInputDropDownSettingView.xaml.cs</DependentUpon>
+	</Compile>
+	<Compile Update="Views\Settings\NumericDropDownSettingView.xaml.cs">
+	  <SubType>Code</SubType>
+	  <DependentUpon>NumericDropDownSettingView.xaml.cs</DependentUpon>
+	</Compile>
+	<Compile Update="Views\Settings\TextBoxSettingView.cs">
+	  <SubType>Code</SubType>
+	  <DependentUpon>TextBoxSettingView.xaml.cs</DependentUpon>
 	</Compile>
     <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
       <DependentUpon>AddAccountDialog.xaml</DependentUpon>

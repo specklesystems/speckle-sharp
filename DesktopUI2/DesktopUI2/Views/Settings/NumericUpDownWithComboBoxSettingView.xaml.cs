@@ -1,12 +1,12 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace DesktopUI2.Views.Settings
 {
-  public partial class FieldBoxSettingView : UserControl
+  public partial class NumericUpDownWithComboBoxSettingView : UserControl
   {
-    public FieldBoxSettingView()
+    public NumericUpDownWithComboBoxSettingView()
     {
       InitializeComponent();
     }
