@@ -20,6 +20,7 @@ using Dimension = Objects.Other.Dimension;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
 using Line = Objects.Geometry.Line;
+using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using Text = Objects.Other.Text;
@@ -513,26 +514,19 @@ namespace Objects.Converter.RhinoGh
         "Text",
         "PlainText",
         "RichText" };
-
-      // create text
-      TextEntity text = null;
-      var textPlane = dimension.Plane;
-      textPlane.Translate(new Vector3d(dimension.TextPosition.X, dimension.TextPosition.Y, 0));
-      if (dimension.TextHasRtfFormatting)
-        text = TextEntity.CreateWithRichText(dimension.RichText, textPlane, dimension.DimensionStyle, dimension.TextIsWrapped, dimension.TextModelWidth, dimension.TextRotationRadians);
-      else
-        text = TextEntity.Create(dimension.PlainText, textPlane, dimension.DimensionStyle, dimension.TextIsWrapped, dimension.TextModelWidth, dimension.TextRotationRadians);
-      var _text = TextToSpeckle(text);
+      Point3d textPoint = new Point3d();
 
       switch (dimension)
       {
         case LinearDimension o:
-          if (o.Get3dPoints(out Point3d extensionStart, out Point3d extensionEnd, out Point3d linearStartArrow, out Point3d linearEndArrow, out Point3d linearDimPoint, out Point3d linearTextPoint))
+          if (o.Get3dPoints(out Point3d linearStart, out Point3d linearEnd, out Point3d linearStartArrow, out Point3d linearEndArrow, out Point3d linearDimPoint, out textPoint))
           {
-            var linearDimension = new DistanceDimension() { units = ModelUnits, text = _text, measurement = dimension.NumericValue };
-            linearDimension.direction = VectorToSpeckle(o.Plane.XAxis);
+            var linearDimension = new DistanceDimension() { units = ModelUnits, measurement = dimension.NumericValue };
+            var normal = new Vector3d(linearEnd.X - linearStart.X, linearEnd.Y - linearStart.Y, linearEnd.Z - linearStart.Z);
+            normal.Rotate(Math.PI / 2, Vector3d.ZAxis);
+            linearDimension.direction = VectorToSpeckle(normal);
             linearDimension.position = PointToSpeckle(linearDimPoint);
-            linearDimension.measured = new List<Point>() { PointToSpeckle(extensionStart), PointToSpeckle(extensionEnd) };
+            linearDimension.measured = new List<Point>() { PointToSpeckle(linearStart), PointToSpeckle(linearEnd) };
             if (o.GetDisplayLines(o.DimensionStyle, o.DimensionScale, out IEnumerable<Rhino.Geometry.Line> lines))
               linearDimension.displayValue = lines.Select(l => LineToSpeckle(l) as ICurve).ToList();
 
@@ -541,12 +535,14 @@ namespace Objects.Converter.RhinoGh
           }
           break;
         case AngularDimension o:
-          if (o.Get3dPoints(out Point3d angularCenter, out Point3d defStart, out Point3d defEnd, out Point3d angularStartArrow, out Point3d angularEndArrow, out Point3d angularDimPoint, out Point3d angularTextPoint))
+          if (o.Get3dPoints(out Point3d angularCenter, out Point3d angularStart, out Point3d angularEnd, out Point3d angularStartArrow, out Point3d angularEndArrow, out Point3d angularDimPoint, out textPoint))
           {
-            var arc = new Rhino.Geometry.Arc(defStart, angularDimPoint, defEnd);
-            var angularDimension = new AngleDimension() { units = ModelUnits, text = _text, measurement = (Math.PI / 180) * dimension.NumericValue };
+            var lineStart = LineToSpeckle(new Rhino.Geometry.Line(angularCenter, angularStart));
+            var lineEnd = LineToSpeckle(new Rhino.Geometry.Line(angularCenter, angularEnd));
+
+            var angularDimension = new AngleDimension() { units = ModelUnits, measurement = (Math.PI / 180) * dimension.NumericValue };
             angularDimension.position = PointToSpeckle(angularDimPoint);
-            angularDimension.measured = ArcToSpeckle(arc);
+            angularDimension.measured = new List<Line>() { lineStart, lineEnd};
             if (o.GetDisplayLines(o.DimensionStyle, o.DimensionScale, out Rhino.Geometry.Line[] lines, out Rhino.Geometry.Arc[] arcs))
             {
               angularDimension.displayValue = lines.Select(l => LineToSpeckle(l) as ICurve).ToList();
@@ -560,13 +556,13 @@ namespace Objects.Converter.RhinoGh
         case OrdinateDimension o:
           if (o.Get3dPoints(out Point3d basePoint, out Point3d ordinateDefPoint, out Point3d leader, out Point3d kink1Point, out Point3d kink2Point))
           {
-            var ordinateDimension = new DistanceDimension() { units = ModelUnits, text = _text, measurement = dimension.NumericValue };
-            ordinateDimension.direction = o.Plane.XAxis == Vector3d.XAxis ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
+            var ordinateDimension = new DistanceDimension() { units = ModelUnits, measurement = dimension.NumericValue };
+            ordinateDimension.direction = Math.Round(Math.Abs(ordinateDefPoint.X - basePoint.X) - o.NumericValue) == 0 ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
             ordinateDimension.position = PointToSpeckle(leader);
             ordinateDimension.measured = new List<Point>() { PointToSpeckle(basePoint), PointToSpeckle(ordinateDefPoint) };
             if (o.GetDisplayLines(o.DimensionStyle, o.DimensionScale, out IEnumerable<Rhino.Geometry.Line> lines))
               ordinateDimension.displayValue = lines.Select(l => LineToSpeckle(l) as ICurve).ToList();
-
+            textPoint = new Point3d(o.Plane.OriginX + o.TextPosition.X, o.Plane.OriginZ + o.TextPosition.Y, o.Plane.OriginZ);
             props = Utilities.GetApplicationProps(o, typeof(OrdinateDimension), true, ignore);
             _dimension = ordinateDimension;
           }
@@ -574,12 +570,13 @@ namespace Objects.Converter.RhinoGh
         case RadialDimension o:
           if (o.Get3dPoints(out Point3d radialCenter, out Point3d radius, out Point3d radialDimPoint, out Point3d kneePoint))
           {
-            var radialDimension = new LengthDimension() { units = ModelUnits, text = _text, measurement = dimension.NumericValue };
+            var radialDimension = new LengthDimension() { units = ModelUnits, measurement = dimension.NumericValue };
             radialDimension.position = PointToSpeckle(radialDimPoint);
             radialDimension.measured = LineToSpeckle(new Rhino.Geometry.Line(radialCenter, radius));
             if (o.GetDisplayLines(o.DimensionStyle, o.DimensionScale, out IEnumerable<Rhino.Geometry.Line> lines))
               radialDimension.displayValue = lines.Select(l => LineToSpeckle(l) as ICurve).ToList();
 
+            textPoint = new Point3d(o.Plane.OriginX + o.TextPosition.X, o.Plane.OriginZ + o.TextPosition.Y, o.Plane.OriginZ);
             props = Utilities.GetApplicationProps(o, typeof(RadialDimension), true, ignore);
             _dimension = radialDimension;
           }
@@ -588,8 +585,15 @@ namespace Objects.Converter.RhinoGh
 
       if (_dimension != null && props != null)
       {
+        // set text values
+        _dimension.value = dimension.PlainText;
+        _dimension.richText = dimension.RichText;
+        _dimension.textPosition = PointToSpeckle(textPoint);
+        
+        // set rhino props
         var style = dimension.DimensionStyle.HasName ? dimension.DimensionStyle.Name : String.Empty;
         if (!string.IsNullOrEmpty(style)) props["DimensionStyleName"] = style;
+        props["plane"] = PlaneToSpeckle(dimension.Plane);
         _dimension[RhinoPropName] = props;
       }
       return _dimension;
@@ -602,37 +606,51 @@ namespace Objects.Converter.RhinoGh
       if (sourceAppProps == null) return DimensionToNative(dimension);
 
       var position = PointToNative(dimension.position).Location;
-      var plane = new Rhino.Geometry.Plane(position, Vector3d.ZAxis);
+      var plane = sourceAppProps["plane"] as Plane != null ? PlaneToNative(sourceAppProps["plane"] as Plane) : new Rhino.Geometry.Plane(position, Vector3d.ZAxis);
 
-      string dimensionStyleName = sourceAppProps["DimensionStyleName"] as string ?? Doc.DimStyles.Current.Name;
-      DimensionStyle dimensionStyle = Doc.DimStyles.FindName(dimensionStyleName);
+      string dimensionStyleName = sourceAppProps["DimensionStyleName"] as string;
+      DimensionStyle dimensionStyle = Doc.DimStyles.FindName(dimensionStyleName) ?? Doc.DimStyles.Current;
 
       string className = sourceAppProps != null ? sourceAppProps["class"] as string : string.Empty;
       switch (className)
       {
         case "LinearDimension":
-          _dimension = DimensionToNative(dimension);
+          DistanceDimension linearDimension = dimension as DistanceDimension;
+          var start = PointToNative(linearDimension.measured[0]).Location;
+          var end = PointToNative(linearDimension.measured[1]).Location;
+          bool isRotated = sourceAppProps["AnnotationType"] as string == AnnotationType.Rotated.ToString() ? true : false ;
+          if (isRotated)
+            _dimension = LinearDimension.Create(AnnotationType.Rotated, dimensionStyle, plane, Vector3d.XAxis, start, end, position, 0);
+          else
+            _dimension = LinearDimension.Create(AnnotationType.Aligned, dimensionStyle, plane, Vector3d.XAxis, start, end, position, 0);
           Utilities.SetApplicationProps(_dimension, typeof(LinearDimension), sourceAppProps);
           break;
         case "AngularDimension":
-          _dimension = DimensionToNative(dimension);
+          AngleDimension angleDimension = dimension as AngleDimension;
+          if (angleDimension.measured.Count < 2) return null;
+          var angularCenter = PointToNative(angleDimension.measured[0].start).Location;
+          var angularStart = PointToNative(angleDimension.measured[0].end).Location;
+          var angularEnd = PointToNative(angleDimension.measured[1].end).Location;
+          _dimension = AngularDimension.Create(dimensionStyle, plane, Vector3d.XAxis, angularCenter, angularStart, angularEnd, position);
           Utilities.SetApplicationProps(_dimension, typeof(AngularDimension), sourceAppProps);
           break;
         case "OrdinateDimension":
           var ordinateSpeckle = dimension as DistanceDimension;
-          if (ordinateSpeckle == null || ordinateSpeckle.measured.Count < 2 || ordinateSpeckle.direction == null) goto default;
+          if (ordinateSpeckle == null || ordinateSpeckle.measured.Count < 2 || ordinateSpeckle.direction == null) return null;
           var ordinateBase = PointToNative(ordinateSpeckle.measured[0]).Location;
           var ordinateDefining = PointToNative(ordinateSpeckle.measured[1]).Location;
-          var direction = VectorToNative(ordinateSpeckle.direction);
-          var measuredDirection = direction == Vector3d.XAxis ? OrdinateDimension.MeasuredDirection.Xaxis : OrdinateDimension.MeasuredDirection.Yaxis;
-          double kink1 = sourceAppProps["KinkOffset1"] as double? ?? 0;
-          double kink2 = sourceAppProps["KinkOffset2"] as double? ?? 0;
-          _dimension = OrdinateDimension.Create(dimensionStyle, plane, measuredDirection, ordinateBase, ordinateDefining, position, kink1, kink2);
+          var kinkOffset1 = sourceAppProps["KinkOffset1"] as double? ?? 0;
+          var kinkOffset2 = sourceAppProps["KinkOffset2"] as double? ?? 0;
+          bool isXDirection = VectorToNative(ordinateSpeckle.direction).IsParallelTo(Vector3d.XAxis) == 0 ? false : true;
+          if (isXDirection)
+            _dimension = OrdinateDimension.Create(dimensionStyle, plane, OrdinateDimension.MeasuredDirection.Xaxis, ordinateBase, ordinateDefining, position, kinkOffset1, kinkOffset2);
+          else
+            _dimension = OrdinateDimension.Create(dimensionStyle, plane, OrdinateDimension.MeasuredDirection.Yaxis, ordinateBase, ordinateDefining, position, kinkOffset1, kinkOffset2);
           Utilities.SetApplicationProps(_dimension, typeof(OrdinateDimension), sourceAppProps);
           break;
         case "RadialDimension":
           var radialSpeckle = dimension as LengthDimension;
-          if (radialSpeckle == null || radialSpeckle.measured as Line == null) goto default;
+          if (radialSpeckle == null || radialSpeckle.measured as Line == null) return null;
           var radialLine = LineToNative(radialSpeckle.measured as Line);
           _dimension = RadialDimension.Create(dimensionStyle, AnnotationType.Radius, plane, radialLine.PointAtStart, radialLine.PointAtEnd, position);
           Utilities.SetApplicationProps(_dimension, typeof(RadialDimension), sourceAppProps);
@@ -643,7 +661,7 @@ namespace Objects.Converter.RhinoGh
       }
 
       _dimension.DimensionStyleId = dimensionStyle.Id;
-      var textPosition = PointToNative(dimension.text.plane.origin).Location;
+      var textPosition = PointToNative(dimension.textPosition).Location;
       _dimension.TextPosition = new Point2d(textPosition.X - plane.OriginX, textPosition.Y - plane.OriginY);
       return _dimension;
     }
@@ -662,7 +680,7 @@ namespace Objects.Converter.RhinoGh
           {
             case Line l: 
               var radialLine = LineToNative(l);
-              var radialDimension = RadialDimension.Create(style, AnnotationType.Radius, plane, radialLine.PointAtStart, radialLine.PointAtEnd, position); ;
+              var radialDimension = RadialDimension.Create(style, AnnotationType.Radius, plane, radialLine.PointAtStart, radialLine.PointAtEnd, position);
               _dimension = radialDimension;
               break;
             default: // all other curve length types will have to return a generic annotation
@@ -670,10 +688,12 @@ namespace Objects.Converter.RhinoGh
           }
           break;
         case AngleDimension o:
-          if (o.measured is null) return null;
-          var arc = ArcToNative(o.measured).Arc;
-          var offset = position.DistanceTo(arc.ClosestPoint(position));
-          _dimension = new AngularDimension(arc, offset);
+          if (o.measured.Count < 2) return null;
+
+          var angularCenter = PointToNative(o.measured[0].start).Location;
+          var angularStart = PointToNative(o.measured[0].end).Location;
+          var angularEnd = PointToNative(o.measured[1].end).Location;
+          _dimension = AngularDimension.Create(style, plane, Vector3d.XAxis, angularCenter, angularStart, angularEnd, position);
           break;
         case DistanceDimension o:
           if (o.measured.Count < 2) return null;
@@ -699,23 +719,13 @@ namespace Objects.Converter.RhinoGh
       if (_dimension != null)
       {
         // set text properties
-        var text = TextToNative(dimension.text);
-        _dimension = SetDimensionTextProperties(_dimension, text);
-        var textPosition = PointToNative(dimension.text.plane.origin).Location;
+        _dimension.PlainText = dimension.value;
+        if (!string.IsNullOrEmpty(dimension.richText)) _dimension.RichText = dimension.richText;
+        var textPosition = PointToNative(dimension.textPosition).Location;
         _dimension.TextPosition = new Point2d(textPosition.X - plane.OriginX, textPosition.Y - plane.OriginY);
       }
 
       return _dimension;
-    }
-
-    private Rhino.Geometry.Dimension SetDimensionTextProperties(Rhino.Geometry.Dimension dimension, TextEntity text)
-    {
-      dimension.PlainText = text.PlainText;
-      if (text.TextHasRtfFormatting) dimension.RichText = text.RichText;
-      dimension.TextIsWrapped = text.TextIsWrapped;
-      dimension.TextRotationRadians = text.TextRotationRadians;
-      dimension.TextHeight = text.TextHeight;
-      return dimension;
     }
 
     public Color4f ARBGToColor4f(int argb)

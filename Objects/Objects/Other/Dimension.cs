@@ -22,14 +22,24 @@ namespace Objects.Other
     public double measurement { get; set; }
 
     /// <summary>
-    /// The text of the dimension.
+    /// The text of the dimension, without any formatting
     /// </summary>
-    public Text text { get; set; }
+    public string value { get; set; }
+
+    /// <summary>
+    /// The text of the dimension, with rtf formatting
+    /// </summary>
+    public string richText { get; set; }
 
     /// <summary>
     /// The position of the dimension
     /// </summary>
     public Point position { get; set; }
+
+    /// <summary>
+    /// The position of the text of the dimension
+    /// </summary>
+    public Point textPosition { get; set; }
 
     /// <summary>
     /// Curves representing the annotation 
@@ -87,9 +97,9 @@ namespace Objects.Other
     /// The objects being measured.
     /// </summary>
     /// <remarks>
-    /// For angle dimensions, this is an arc.
+    /// For angle dimensions, this is two lines
     /// </remarks>
-    public Arc measured { get; set; }
+    public List<Line> measured { get; set; }
 
     public AngleDimension() { }
   }
