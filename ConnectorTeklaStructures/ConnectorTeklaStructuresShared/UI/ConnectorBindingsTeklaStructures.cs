@@ -35,7 +35,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
         return;
       }
 
-      var selection = GetSelectedObjects();
+     // var selection = GetSelectedObjects();
       //TO DO
 
 
