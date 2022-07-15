@@ -354,7 +354,7 @@ namespace Objects.Converter.Dynamo
         var arc = DS.Arc.ByCenterPointStartPointSweepAngle(
           basePlane.Origin,
           startPoint,
-          a.angleRadians.Value.ToDegrees(),
+          a.angleRadians.ToDegrees(),
           basePlane.Normal
         );
         return arc.SetDynamoProperties<DS.Arc>(GetDynamicMembersFromBase(a));

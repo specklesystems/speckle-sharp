@@ -34,6 +34,26 @@ namespace Objects.Other
       this.geometry = geometry;
       this.units = units;
     }
+
+    public Transform GetBasePointTransform()
+    {
+      var transform = new Transform();
+      transform.value[3] = -basePoint.x;
+      transform.value[7] = -basePoint.y;
+      transform.value[12] = -basePoint.z;
+      return transform;
+    }
+    public List<ITransformable> GetGeometryRelativeToBasePoint()
+    {
+      var transform = GetBasePointTransform();
+      
+      return geometry.Select(b =>
+      {
+        if (!(b is ITransformable bt)) return null;
+        var res = bt.TransformTo(transform, out ITransformable transformed);
+        return res ? transformed : null;
+      }).Where(b => b != null).ToList();
+    }
   }
 
   /// <summary>
@@ -41,7 +61,7 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Base
   {
-    [JsonIgnore, Obsolete("Use GetInsertionPoint method")]
+    [JsonIgnore, Obsolete("Use GetInsertionPoint method"), SchemaIgnore]
     public Point insertionPoint { get => GetInsertionPoint(); set { } }
 
     /// <inheritdoc cref="GetTransformedGeometry"/>
@@ -72,7 +92,9 @@ namespace Objects.Other
     public BlockInstance(BlockDefinition blockDefinition, Transform transform)
     {
       this.blockDefinition = blockDefinition;
-      this.transform = transform;
+      // Add base translation to transform. This assumes the transform is based on the world origin,
+      // whereas the instance transform assumes it contains the basePoint translation already.
+      this.transform = transform * blockDefinition.GetBasePointTransform();
     }
     /// <summary>
     /// Retrieves Instance insertion point by applying <see cref="transform"/> to <see cref="BlockDefinition.basePoint"/>
@@ -89,11 +111,22 @@ namespace Objects.Other
     /// <returns>The transformed geometry for this BlockInstance.</returns>
     public List<ITransformable> GetTransformedGeometry()
     {
-      return blockDefinition.geometry.Select(b =>
+      return blockDefinition.geometry.SelectMany(b =>
       {
-        if (!(b is ITransformable bt)) return null;
-        var res = bt.TransformTo(transform, out ITransformable transformed);
-        return res ? transformed : null;
+        switch (b)
+        {
+          case BlockInstance bi:
+            return bi.GetTransformedGeometry().Select(b =>
+            {
+              b.TransformTo(transform, out var childTransformed);
+              return childTransformed;
+            });
+          case ITransformable bt:
+            var res = bt.TransformTo(transform, out var transformed);
+            return new List<ITransformable>{res ? transformed : null};
+          default:
+            return null;
+        }
       }).Where(b => b != null).ToList();
     }
     
