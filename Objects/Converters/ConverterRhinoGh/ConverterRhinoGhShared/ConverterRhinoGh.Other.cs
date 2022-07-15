@@ -662,7 +662,7 @@ namespace Objects.Converter.RhinoGh
 
       _dimension.DimensionStyleId = dimensionStyle.Id;
       var textPosition = PointToNative(dimension.textPosition).Location;
-      _dimension.TextPosition = new Point2d(textPosition.X - plane.OriginX, textPosition.Y - plane.OriginY);
+      _dimension.TextPosition = new Point2d(textPosition.X - _dimension.Plane.OriginX, textPosition.Y - _dimension.Plane.OriginY);
       return _dimension;
     }
 
@@ -700,18 +700,17 @@ namespace Objects.Converter.RhinoGh
 
           var start = PointToNative(o.measured[0]).Location;
           var end = PointToNative(o.measured[1]).Location;
-          var startpt = new Point2d(start.X - plane.OriginX, start.Y - plane.OriginY);
-          var endpt = new Point2d(end.X - plane.OriginX, end.Y - plane.OriginY);
           var normal = VectorToNative(o.direction);
           var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z);
 
-          var linearDimension = new LinearDimension(plane, startpt, endpt, new Point2d(0,0));
-          if (!normal.IsPerpendicularTo(dir))
+          if (normal.IsPerpendicularTo(dir))
+            _dimension = LinearDimension.Create(AnnotationType.Aligned, style, plane, Vector3d.XAxis, start, end, position, 0);
+          else
           {
-            dir.PerpendicularTo(dir);
-            linearDimension.Rotate(Vector3d.VectorAngle(dir, normal), Vector3d.ZAxis, position);
+            dir.Rotate(Math.PI / 2, Vector3d.ZAxis);
+            var rotationAngle = Vector3d.VectorAngle(dir, normal);
+            _dimension = LinearDimension.Create(AnnotationType.Rotated, style, plane, Vector3d.XAxis, start, end, position, rotationAngle);
           }
-          _dimension = linearDimension;  
           break;
         default:
           break;
@@ -722,7 +721,7 @@ namespace Objects.Converter.RhinoGh
         _dimension.PlainText = dimension.value;
         if (!string.IsNullOrEmpty(dimension.richText)) _dimension.RichText = dimension.richText;
         var textPosition = PointToNative(dimension.textPosition).Location;
-        _dimension.TextPosition = new Point2d(textPosition.X - plane.OriginX, textPosition.Y - plane.OriginY);
+        _dimension.TextPosition = new Point2d(textPosition.X - _dimension.Plane.OriginX, textPosition.Y - _dimension.Plane.OriginY);
       }
 
       return _dimension;

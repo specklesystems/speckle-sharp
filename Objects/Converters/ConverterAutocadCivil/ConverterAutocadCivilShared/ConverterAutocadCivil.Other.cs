@@ -677,6 +677,9 @@ namespace Objects.Converter.AutocadCivil
     {
       Dimension _dimension = null;
       Base props = null;
+      var ignore = new List<string>() {
+        "DimensionText",
+        "Measurement" };
 
       switch (dimension)
       {
@@ -686,7 +689,7 @@ namespace Objects.Converter.AutocadCivil
           alignedDimension.direction = VectorToSpeckle(alignedNormal);
           alignedDimension.position = PointToSpeckle(o.DimLinePoint);
           alignedDimension.measured = new List<Point>() { PointToSpeckle(o.XLine1Point), PointToSpeckle(o.XLine2Point) };
-          props = Utilities.GetApplicationProps(o, typeof(AlignedDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(AlignedDimension), true, ignore);
           _dimension = alignedDimension;
           break;
         case RotatedDimension o:
@@ -695,7 +698,7 @@ namespace Objects.Converter.AutocadCivil
           rotatedDimension.direction = VectorToSpeckle(rotatedNormal.RotateBy(o.Rotation, Vector3d.ZAxis));
           rotatedDimension.position = PointToSpeckle(o.DimLinePoint);
           rotatedDimension.measured = new List<Point>() { PointToSpeckle(o.XLine1Point), PointToSpeckle(o.XLine2Point) };
-          props = Utilities.GetApplicationProps(o, typeof(RotatedDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(RotatedDimension), true, ignore);
           _dimension = rotatedDimension;
           break;
         case OrdinateDimension o:
@@ -703,28 +706,28 @@ namespace Objects.Converter.AutocadCivil
           ordinateDimension.direction = o.UsingXAxis ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
           ordinateDimension.position = PointToSpeckle(o.LeaderEndPoint);
           ordinateDimension.measured = new List<Point>() { PointToSpeckle(o.Origin), PointToSpeckle(o.DefiningPoint) };
-          props = Utilities.GetApplicationProps(o, typeof(OrdinateDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(OrdinateDimension), true, ignore);
           _dimension = ordinateDimension;
           break;
         case RadialDimension o:
           var radialDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement};
           radialDimension.measured = LineToSpeckle(new Line3d(o.Center, o.ChordPoint));
           radialDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
-          props = Utilities.GetApplicationProps(o, typeof(RadialDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(RadialDimension), true, ignore);
           _dimension = radialDimension;
           break;
         case DiametricDimension o:
           var diametricDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
           diametricDimension.measured = LineToSpeckle(new Line3d(o.FarChordPoint, o.ChordPoint));
           diametricDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
-          props = Utilities.GetApplicationProps(o, typeof(DiametricDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(DiametricDimension), true, ignore);
           _dimension = diametricDimension;
           break;
         case ArcDimension o:
           var arcDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
           arcDimension.measured = ArcToSpeckle(new CircularArc3d(o.XLine1Point, o.ArcPoint, o.XLine2Point));
           arcDimension.position = PointToSpeckle(o.ArcPoint);
-          props = Utilities.GetApplicationProps(o, typeof(ArcDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(ArcDimension), true, ignore);
           _dimension = arcDimension;
           break;
         case LineAngularDimension2 o:
@@ -733,7 +736,7 @@ namespace Objects.Converter.AutocadCivil
           var line2 = new Line3d(o.XLine2Start, o.XLine2End);
           lineAngularDimension.measured = new List<Line>() { LineToSpeckle(line1), LineToSpeckle(line2) };
           lineAngularDimension.position = PointToSpeckle(o.ArcPoint);
-          props = Utilities.GetApplicationProps(o, typeof(LineAngularDimension2), true);
+          props = Utilities.GetApplicationProps(o, typeof(LineAngularDimension2), true, ignore);
           _dimension = lineAngularDimension;
           break;
         case Point3AngularDimension o:
@@ -742,7 +745,7 @@ namespace Objects.Converter.AutocadCivil
           var point2 = new Line3d(o.ArcPoint, o.XLine2Point);
           pointAngularDimension.measured = new List<Line>() { LineToSpeckle(point1), LineToSpeckle(point2) };
           pointAngularDimension.position = PointToSpeckle(o.ArcPoint);
-          props = Utilities.GetApplicationProps(o, typeof(Point3AngularDimension), true);
+          props = Utilities.GetApplicationProps(o, typeof(Point3AngularDimension), true, ignore);
           _dimension = pointAngularDimension;
           break;
       }
