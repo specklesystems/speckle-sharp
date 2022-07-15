@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using Arc = Objects.Geometry.Arc;
 using Vector = Objects.Geometry.Vector;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
@@ -23,7 +24,7 @@ namespace Objects.Other
     /// <summary>
     /// The text of the dimension.
     /// </summary>
-    public string text { get; set; }
+    public Text text { get; set; }
 
     /// <summary>
     /// The position of the dimension
@@ -86,9 +87,9 @@ namespace Objects.Other
     /// The objects being measured.
     /// </summary>
     /// <remarks>
-    /// For angle dimensions, these are representated as two lines.
+    /// For angle dimensions, this is an arc.
     /// </remarks>
-    public List<Line> measured { get; set; }
+    public Arc measured { get; set; }
 
     public AngleDimension() { }
   }
