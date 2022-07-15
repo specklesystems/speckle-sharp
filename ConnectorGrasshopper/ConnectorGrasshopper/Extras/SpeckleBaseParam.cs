@@ -38,7 +38,7 @@ namespace ConnectorGrasshopper.Extras
         {
         }
         
-        public SpeckleBaseParam() : this("Speckle Base", "SB","Base object for Speckle",GH_ParamAccess.item)
+        public SpeckleBaseParam() : this("Speckle Object", "SO","Base object for Speckle",GH_ParamAccess.item)
         {
             
         }
