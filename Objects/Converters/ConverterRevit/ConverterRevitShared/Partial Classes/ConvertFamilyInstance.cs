@@ -89,43 +89,56 @@ namespace Objects.Converter.Revit
           Report.Log($"it all starts here");
           if (CurrentHostElement is Wall wall)
           {
-            Report.Log($"CurrentHostElement is Wall {wall}");
-            Report.Log($"Wall {wall.Name} {wall.Orientation}");
+            Doc.Regenerate();
+            //Report.Log($"CurrentHostElement is Wall {wall}");
+            //Report.Log($"Wall {wall.Name} {wall.Orientation}");
 
-            Options op = new Options();
-            Report.Log($"Options {op}");
-            op.ComputeReferences = true;
-            Report.Log($"compute");
-            GeometryElement wallGeom = wall.get_Geometry(op);
-            Report.Log($"GeometryElement {wallGeom}");
-            Reference faceRef = null;
-            Report.Log($"");
+            //Options op = new Options();
+            //Report.Log($"Options {op}");
+            //op.ComputeReferences = true;
+            //Report.Log($"compute");
+            //GeometryElement wallGeom = wall.get_Geometry(op);
+            //Report.Log($"GeometryElement {wallGeom}");
+            //Reference faceRef = null;
+            //Report.Log($"");
 
-            foreach (var geom in wallGeom)
-            {
-              Report.Log($"geom {geom}");
-              if (geom is Solid solid)
-              {
-                Report.Log($"geom is Solid {solid}");
-                FaceArray faceArray = solid.Faces;
-                foreach (Face face in faceArray)
-                {
-                  Report.Log($"face {face}");
-                  if (faceRef != null)
-                    break;
-                  if (face is PlanarFace planarFace)
-                  {
-                    if (planarFace.FaceNormal == wall.Orientation)
-                      faceRef = planarFace.Reference;
-                  }
-                }
-              }
-            }
+            //foreach (var geom in wallGeom)
+            //{
+            //  Report.Log($"geom {geom}");
+            //  if (geom is Solid solid)
+            //  {
+            //    Report.Log($"geom is Solid {solid}");
+            //    FaceArray faceArray = solid.Faces;
+            //    foreach (Face face in faceArray)
+            //    {
+            //      Report.Log($"face {face}");
+            //      if (faceRef != null)
+            //        break;
+            //      if (face is PlanarFace planarFace)
+            //      {
+            //        if (planarFace.FaceNormal == wall.Orientation)
+            //          faceRef = planarFace.Reference;
+            //      }
+            //    }
+            //  }
+            //}
+
+            Reference faceRef = HostObjectUtils.GetSideFaces(wall, ShellLayerType.Interior)[0];
 
             XYZ norm = new XYZ(0, 0, 0);
             Report.Log($"wall {wall} {HostObjectUtils.GetSideFaces(wall, ShellLayerType.Exterior).Count}");
             Report.Log($"host el is wall: faceref {faceRef} bp {basePoint} n {norm} fs {familySymbol}");
+            
             familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
+
+#if REVIT2022
+            if (familySymbol.Family.GetParameter(ParameterTypeId.FamilyAllowCutWithVoids).AsInteger() == 1)
+              InstanceVoidCutUtils.AddInstanceVoidCut(Doc, wall, familyInstance);
+
+            Parameter lvlParam = familyInstance.GetParameter(ParameterTypeId.InstanceScheduleOnlyLevelParam);
+            lvlParam.Set(level.Id);
+#endif
+            
           }
           else
           {
@@ -271,7 +284,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
-      #region sub elements capture
+#region sub elements capture
 
       var subElementIds = revitFi.GetSubComponentIds();
       var convertedSubElements = new List<Base>();
@@ -296,7 +309,7 @@ namespace Objects.Converter.Revit
         speckleFi.elements = convertedSubElements;
       }
 
-      #endregion
+#endregion
 
       // TODO:
       // revitFi.GetSubelements();
