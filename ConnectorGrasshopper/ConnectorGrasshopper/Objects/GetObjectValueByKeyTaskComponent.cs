@@ -84,7 +84,7 @@ namespace ConnectorGrasshopper.Objects
           }
         default:
           Params.Output[0].Access = GH_ParamAccess.item;
-          DA.SetData(0, GH_Convert.ToGoo(value));
+          DA.SetData(0, Extras.Utilities.WrapInGhType(value));
           break;
       }
 
