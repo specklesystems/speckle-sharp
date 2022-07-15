@@ -27,12 +27,11 @@ namespace Objects.Other
     public BlockDefinition() { }
     
     [SchemaInfo("Block Definition","A Speckle Block definition")]
-    public BlockDefinition(string name, Point basePoint, List<Base> geometry, string units)
+    public BlockDefinition(string name, List<Base> geometry, Point basePoint = null )
     {
       this.name = name;
-      this.basePoint = basePoint;
+      this.basePoint = basePoint ?? new Point();
       this.geometry = geometry;
-      this.units = units;
     }
 
     public Transform GetBasePointTransform()

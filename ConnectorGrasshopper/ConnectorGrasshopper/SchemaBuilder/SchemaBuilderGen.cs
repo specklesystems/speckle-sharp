@@ -78,7 +78,7 @@ public class BlockDefinitionSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("91f1164e-b519-d72f-d64b-e68bb14836e3");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.BlockDefinition.ctor(System.String,Objects.Geometry.Point,System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.String)","Objects.Other.BlockDefinition");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.BlockDefinition.ctor(System.String,System.Collections.Generic.List`1[Speckle.Core.Models.Base],Objects.Geometry.Point)","Objects.Other.BlockDefinition");
         base.AddedToDocument(document);
     }
 }
@@ -1296,6 +1296,19 @@ public class Material1SchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.Materials.Material");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class MaterialQuantitySchemaComponent: CreateSchemaObjectBase {
+     
+    public MaterialQuantitySchemaComponent(): base("MaterialQuantity", "MaterialQuantity", "Creates the quantity of a material", "Speckle 2 BIM", "Objects.Other") { }
+    
+    public override Guid ComponentGuid => new Guid("c94a9777-99bb-d501-281a-c10300309038");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.MaterialQuantity.ctor(Objects.Other.Material,System.Double,System.Double,System.String)","Objects.Other.MaterialQuantity");
         base.AddedToDocument(document);
     }
 }
