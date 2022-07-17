@@ -684,7 +684,7 @@ namespace Objects.Converter.AutocadCivil
       switch (dimension)
       {
         case AlignedDimension o:
-          var alignedDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          var alignedDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = false };
           var alignedNormal = new Vector3d(o.XLine2Point.X - o.XLine1Point.X, o.XLine2Point.Y - o.XLine1Point.Y, o.XLine2Point.Z - o.XLine1Point.Z).GetPerpendicularVector();
           alignedDimension.direction = VectorToSpeckle(alignedNormal);
           alignedDimension.position = PointToSpeckle(o.DimLinePoint);
@@ -693,7 +693,7 @@ namespace Objects.Converter.AutocadCivil
           _dimension = alignedDimension;
           break;
         case RotatedDimension o:
-          var rotatedDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          var rotatedDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = false };
           var rotatedNormal = new Vector3d(o.XLine2Point.X - o.XLine1Point.X, o.XLine2Point.Y - o.XLine1Point.Y, o.XLine2Point.Z - o.XLine1Point.Z).GetPerpendicularVector();
           rotatedDimension.direction = VectorToSpeckle(rotatedNormal.RotateBy(o.Rotation, Vector3d.ZAxis));
           rotatedDimension.position = PointToSpeckle(o.DimLinePoint);
@@ -702,7 +702,7 @@ namespace Objects.Converter.AutocadCivil
           _dimension = rotatedDimension;
           break;
         case OrdinateDimension o:
-          var ordinateDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          var ordinateDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = true};
           ordinateDimension.direction = o.UsingXAxis ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
           ordinateDimension.position = PointToSpeckle(o.LeaderEndPoint);
           ordinateDimension.measured = new List<Point>() { PointToSpeckle(o.Origin), PointToSpeckle(o.DefiningPoint) };
@@ -711,14 +711,14 @@ namespace Objects.Converter.AutocadCivil
           break;
         case RadialDimension o:
           var radialDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement};
-          radialDimension.measured = LineToSpeckle(new Line3d(o.Center, o.ChordPoint));
+          radialDimension.measured = new Line(PointToSpeckle(o.Center), PointToSpeckle(o.ChordPoint), ModelUnits);
           radialDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
           props = Utilities.GetApplicationProps(o, typeof(RadialDimension), true, ignore);
           _dimension = radialDimension;
           break;
         case DiametricDimension o:
           var diametricDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
-          diametricDimension.measured = LineToSpeckle(new Line3d(o.FarChordPoint, o.ChordPoint));
+          diametricDimension.measured = new Line(PointToSpeckle(o.FarChordPoint), PointToSpeckle(o.ChordPoint), ModelUnits);
           diametricDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
           props = Utilities.GetApplicationProps(o, typeof(DiametricDimension), true, ignore);
           _dimension = diametricDimension;
@@ -732,18 +732,18 @@ namespace Objects.Converter.AutocadCivil
           break;
         case LineAngularDimension2 o:
           var lineAngularDimension = new AngleDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
-          var line1 = new Line3d(o.XLine1Start, o.XLine1End);
-          var line2 = new Line3d(o.XLine2Start, o.XLine2End);
-          lineAngularDimension.measured = new List<Line>() { LineToSpeckle(line1), LineToSpeckle(line2) };
+          var line1 = new Line(PointToSpeckle(o.XLine1Start), PointToSpeckle(o.XLine1End), ModelUnits);
+          var line2 = new Line(PointToSpeckle(o.XLine2Start), PointToSpeckle(o.XLine2End), ModelUnits);
+          lineAngularDimension.measured = new List<Line>() { line1, line2 };
           lineAngularDimension.position = PointToSpeckle(o.ArcPoint);
           props = Utilities.GetApplicationProps(o, typeof(LineAngularDimension2), true, ignore);
           _dimension = lineAngularDimension;
           break;
         case Point3AngularDimension o:
           var pointAngularDimension = new AngleDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
-          var point1 = new Line3d(o.ArcPoint, o.XLine1Point);
-          var point2 = new Line3d(o.ArcPoint, o.XLine2Point);
-          pointAngularDimension.measured = new List<Line>() { LineToSpeckle(point1), LineToSpeckle(point2) };
+          var point1 = new Line(PointToSpeckle(o.ArcPoint), PointToSpeckle(o.XLine1Point), ModelUnits);
+          var point2 = new Line(PointToSpeckle(o.ArcPoint), PointToSpeckle(o.XLine2Point), ModelUnits);
+          pointAngularDimension.measured = new List<Line>() { point1, point2 };
           pointAngularDimension.position = PointToSpeckle(o.ArcPoint);
           props = Utilities.GetApplicationProps(o, typeof(Point3AngularDimension), true, ignore);
           _dimension = pointAngularDimension;
@@ -882,6 +882,7 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.Dimension DimensionToNative(Dimension dimension)
     {
       AcadDB.Dimension _dimension = null;
+      var style = Doc.Database.Dimstyle;
       var position = PointToNative(dimension.position);
       switch (dimension)
       {
@@ -889,20 +890,23 @@ namespace Objects.Converter.AutocadCivil
           switch (o.measured)
           {
             case Arc a:
-              var arc = ArcToNative(a);
+              var arcCenter = PointToNative(a.plane.origin);
+              var arcStart = PointToNative(a.startPoint);
+              var arcEnd = PointToNative(a.endPoint);
               try
               {
-                var arcDimension = new ArcDimension(arc.Center, arc.StartPoint, arc.EndPoint, position, dimension.value, Doc.Database.Dimstyle);
+                var arcDimension = new ArcDimension(arcCenter, arcStart, arcEnd, position, dimension.value, style);
                 _dimension = arcDimension;
               }
               catch { }
               break;
             case Line l:
-              var radialLine = LineToNative(l);
-              double leaderLength = radialLine.EndPoint.DistanceTo(position);
+              var radialStart = PointToNative(l.start);
+              var radialEnd = PointToNative(l.end);
+              double leaderLength = radialEnd.DistanceTo(position);
               try
               {
-                var radialDimension = new RadialDimension(radialLine.StartPoint, radialLine.EndPoint, leaderLength, dimension.value, Doc.Database.Dimstyle);
+                var radialDimension = new RadialDimension(radialStart, radialEnd, leaderLength, dimension.value, style);
                 _dimension = radialDimension;
               }
               catch { }
@@ -910,35 +914,43 @@ namespace Objects.Converter.AutocadCivil
           }
           break;
         case AngleDimension o:
-          if (o.measured.Count < 2) break;
-          var lineStart = LineToNative(o.measured[0] as Line);
-          var lineEnd = LineToNative(o.measured[1] as Line);
           try
           {
-            var lineAngularDimension = new LineAngularDimension2(lineStart.StartPoint, lineStart.EndPoint, lineEnd.StartPoint, lineEnd.EndPoint, position, dimension.value, Doc.Database.Dimstyle);
-            _dimension = lineAngularDimension;
+            if (o.measured.Count < 2) break;
+            var line1Start = PointToNative(o.measured[0].start);
+            var line1End = PointToNative(o.measured[0].end);
+            var line2Start = PointToNative(o.measured[1].start);
+            var line2End = PointToNative(o.measured[1].end);
+            if (Math.Round(line1Start.DistanceTo(line2Start), 3) == 0)
+              _dimension = new Point3AngularDimension(line1Start, line1End, line2End, position, dimension.value, style);
+            else
+              _dimension = new LineAngularDimension2(line1Start, line1End, line2Start, line2End, position, dimension.value, style);
           }
           catch { }
           break;
         case DistanceDimension o:
           if (o.measured.Count < 2) break;
-          // see if the dimension direction is perpendicular to the line between the two measured points
-          var start = PointToNative(o.measured[0]);
-          var end = PointToNative(o.measured[1]);
-          var normal = VectorToNative(o.direction);
-          var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z);
           try
           {
-            if (normal.IsPerpendicularTo(dir))
+            var start = PointToNative(o.measured[0]);
+            var end = PointToNative(o.measured[1]);
+            var normal = VectorToNative(o.direction);
+
+            if (o.isOrdinate)
             {
-              var alignedDimension = new AlignedDimension(start, end, position, dimension.value, Doc.Database.Dimstyle);
-              _dimension = alignedDimension;
+              bool useXAxis = normal.IsParallelTo(Vector3d.XAxis) ? true : false;
+              var ordinateDimension = new OrdinateDimension(useXAxis, end, position, dimension.value, style);
+              ordinateDimension.Origin = start;
+              _dimension = ordinateDimension;
             }
             else
             {
-              var angle = dir.GetPerpendicularVector().GetAngleTo(normal);
-              var rotatedDimension = new RotatedDimension(angle, start, end, position, dimension.value, Doc.Database.Dimstyle);
-              _dimension = rotatedDimension;
+              var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
+              var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
+              if (dir.IsParallelTo(normal))
+                _dimension = new AlignedDimension(start, end, position, dimension.value, style);
+              else
+                _dimension = new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
             }
           }
           catch { }
@@ -946,6 +958,8 @@ namespace Objects.Converter.AutocadCivil
         default:
           break;
       }
+      //if (_dimension != null)
+       // _dimension.TextPosition = PointToNative(dimension.textPosition);
       return _dimension;
     }
     private ObjectId GetDimensionStyle(string styleName)

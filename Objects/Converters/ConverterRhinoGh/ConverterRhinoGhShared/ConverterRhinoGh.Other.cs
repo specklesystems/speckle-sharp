@@ -521,8 +521,9 @@ namespace Objects.Converter.RhinoGh
         case LinearDimension o:
           if (o.Get3dPoints(out Point3d linearStart, out Point3d linearEnd, out Point3d linearStartArrow, out Point3d linearEndArrow, out Point3d linearDimPoint, out textPoint))
           {
-            var linearDimension = new DistanceDimension() { units = ModelUnits, measurement = dimension.NumericValue };
-            var normal = new Vector3d(linearEnd.X - linearStart.X, linearEnd.Y - linearStart.Y, linearEnd.Z - linearStart.Z);
+            var linearDimension = new DistanceDimension() { units = ModelUnits, measurement = dimension.NumericValue, isOrdinate = false };
+
+            var normal = new Vector3d(linearEndArrow.X - linearStartArrow.X, linearEndArrow.Y - linearStartArrow.Y, linearEndArrow.Z - linearStartArrow.Z);
             normal.Rotate(Math.PI / 2, Vector3d.ZAxis);
             linearDimension.direction = VectorToSpeckle(normal);
             linearDimension.position = PointToSpeckle(linearDimPoint);
@@ -556,7 +557,7 @@ namespace Objects.Converter.RhinoGh
         case OrdinateDimension o:
           if (o.Get3dPoints(out Point3d basePoint, out Point3d ordinateDefPoint, out Point3d leader, out Point3d kink1Point, out Point3d kink2Point))
           {
-            var ordinateDimension = new DistanceDimension() { units = ModelUnits, measurement = dimension.NumericValue };
+            var ordinateDimension = new DistanceDimension() { units = ModelUnits, measurement = dimension.NumericValue, isOrdinate = true };
             ordinateDimension.direction = Math.Round(Math.Abs(ordinateDefPoint.X - basePoint.X) - o.NumericValue) == 0 ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
             ordinateDimension.position = PointToSpeckle(leader);
             ordinateDimension.measured = new List<Point>() { PointToSpeckle(basePoint), PointToSpeckle(ordinateDefPoint) };
@@ -697,19 +698,28 @@ namespace Objects.Converter.RhinoGh
           break;
         case DistanceDimension o:
           if (o.measured.Count < 2) return null;
-
           var start = PointToNative(o.measured[0]).Location;
           var end = PointToNative(o.measured[1]).Location;
           var normal = VectorToNative(o.direction);
-          var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z);
-
-          if (normal.IsPerpendicularTo(dir))
-            _dimension = LinearDimension.Create(AnnotationType.Aligned, style, plane, Vector3d.XAxis, start, end, position, 0);
+          if (o.isOrdinate)
+          {
+            bool isXDirection = normal.IsParallelTo(Vector3d.XAxis) == 0 ? false : true;
+            if (isXDirection)
+              _dimension = OrdinateDimension.Create(style, plane, OrdinateDimension.MeasuredDirection.Xaxis, start, end, position, 0, 0);
+            else
+              _dimension = OrdinateDimension.Create(style, plane, OrdinateDimension.MeasuredDirection.Yaxis, start, end, position, 0, 0);
+          }
           else
           {
-            dir.Rotate(Math.PI / 2, Vector3d.ZAxis);
-            var rotationAngle = Vector3d.VectorAngle(dir, normal);
-            _dimension = LinearDimension.Create(AnnotationType.Rotated, style, plane, Vector3d.XAxis, start, end, position, rotationAngle);
+            var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z);
+            if (normal.IsPerpendicularTo(dir))
+              _dimension = LinearDimension.Create(AnnotationType.Aligned, style, plane, Vector3d.XAxis, start, end, position, 0);
+            else
+            {
+              dir.Rotate(Math.PI / 2, Vector3d.ZAxis);
+              var rotationAngle = Vector3d.VectorAngle(dir, normal);
+              _dimension = LinearDimension.Create(AnnotationType.Rotated, style, plane, Vector3d.XAxis, start, end, position, rotationAngle);
+            }
           }
           break;
         default:

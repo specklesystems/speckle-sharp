@@ -62,6 +62,13 @@ namespace Objects.Other
     public Vector direction { get; set; }
 
     /// <summary>
+    /// Indicates if this dimension is an ordinate dimension
+    /// </summary>
+    /// <remarks> Ordinate dimensions (measuring distance between two points exclusively along the x or y axis) 
+    /// are in practice drawn with different conventions than linear dimensions, and are treated as a special subset of them.</remarks>
+    public bool isOrdinate { get; set; }
+
+    /// <summary>
     /// The objects being measured.
     /// </summary>
     /// <remarks>
