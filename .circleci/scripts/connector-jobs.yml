@@ -34,8 +34,9 @@ rhino:
   - build-connector-mac:
       slnname: ConnectorRhino
       projname: ConnectorRhino7
-      installername: SpeckleRhinoInstall
       build-config: Release Mac
+      installername: SpeckleGhInstall
+      installer: true
       slug: grasshopper-mac
       requires:
         - build-desktopui
