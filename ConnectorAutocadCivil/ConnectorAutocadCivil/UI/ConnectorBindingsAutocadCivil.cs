@@ -138,7 +138,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return new List<MenuItem>();
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
+    {
+      throw new NotImplementedException();
+    }
+
+    public override void ResetDocument()
     {
       throw new NotImplementedException();
     }
@@ -146,6 +151,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region receiving 
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -485,6 +494,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
+    public override async void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();

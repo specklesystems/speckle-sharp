@@ -695,8 +695,9 @@ namespace Objects.Converter.AutocadCivil
       return curve;
     }
     // handles polycurves with spline segments: bakes segments individually and then joins
-    public AcadDB.Curve PolycurveSplineToNativeDB(Polycurve polycurve)
+    public AcadDB.Curve PolycurveSplineToNativeDB(Polycurve polycurve, out List<string> notes)
     {
+      notes = new List<string>();
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
 
       Entity first = null;
@@ -721,7 +722,8 @@ namespace Objects.Converter.AutocadCivil
       }
       catch (Exception e)
       {
-        Report.ConversionLog.Add("Could not join Polycurve segments: segments converted individually.");
+        notes.Add($"Could not join segments: {e.Message}");
+        notes.Add($"Converted as individual curve segments.");
         return null;
       }
     }
@@ -1012,7 +1014,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _surface;
     }
-    public Mesh SurfaceToSpeckle(AcadDB.Surface surface, string units = null)
+    public Mesh SurfaceToSpeckle(AcadDB.Surface surface, out List<string> notes, string units = null)
     {
       var u = units ?? ModelUnits;
 
@@ -1021,7 +1023,7 @@ namespace Objects.Converter.AutocadCivil
         case AcadDB.PlaneSurface _:
         case AcadDB.NurbSurface _:
         default: // return mesh for now
-          var displayMesh = GetMeshFromSolidOrSurface(surface: surface);
+          var displayMesh = GetMeshFromSolidOrSurface(out notes, surface: surface);
           return displayMesh;
       }
     }
@@ -1093,9 +1095,9 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Region
-    public Mesh RegionToSpeckle(Region region, string units = null)
+    public Mesh RegionToSpeckle(Region region, out List<string> notes, string units = null)
     {
-      return GetMeshFromSolidOrSurface(region: region);
+      return GetMeshFromSolidOrSurface(out notes, region: region);
     }
 
     // Box
@@ -1213,9 +1215,9 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Brep
-    public Mesh SolidToSpeckle(Solid3d solid, string units = null)
+    public Mesh SolidToSpeckle(Solid3d solid, out List<string> notes, string units = null)
     {
-      return GetMeshFromSolidOrSurface(solid: solid);
+      return GetMeshFromSolidOrSurface(out notes, solid: solid);
 
       /* Not in use currently: needs development on trims
       // make brep
@@ -1505,7 +1507,6 @@ namespace Objects.Converter.AutocadCivil
             _mesh.AppendFaceRecord(face);
             tr.AddNewlyCreatedDBObject(face, true);
           }
-          
         }
 
         tr.Commit();
@@ -1514,11 +1515,12 @@ namespace Objects.Converter.AutocadCivil
       return _mesh;
     }
     // Based on Kean Walmsley's blog post on mesh conversion using Brep API
-    private Mesh GetMeshFromSolidOrSurface(Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
+    private Mesh GetMeshFromSolidOrSurface(out List<string> notes, Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
     {
       Mesh mesh = null;
       double volume = 0;
       double area = 0;
+      notes = new List<string>();
 
       AcadBRep.Brep brep = null;
       Box bbox = null;
@@ -1600,7 +1602,7 @@ namespace Objects.Converter.AutocadCivil
         }
         catch(Exception e)
         {
-          Report.LogConversionError(e);
+          notes.Add(e.Message);
         }
       }
 
