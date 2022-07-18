@@ -1,0 +1,138 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Settings.MultiSelectBoxSettingView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="using:DesktopUI2.ViewModels"
+  mc:Ignorable="d">
+
+  <Design.DataContext>
+    <vm:SettingViewModel />
+  </Design.DataContext>
+
+  <Grid
+    Margin="10"
+    ColumnDefinitions="auto,1*,1*"
+    RowDefinitions="auto, auto, auto">
+    <icons:MaterialIcon
+      Margin="0"
+      VerticalAlignment="Center"
+      Foreground="Gray"
+      Kind="InfoCircle"
+      ToolTip.Tip="{Binding Setting.Description}" />
+    <TextBlock
+      Grid.Column="1"
+      Margin="5,0"
+      VerticalAlignment="Center"
+      Text="{Binding Setting.Name, FallbackValue='Hello'}"
+      TextWrapping="Wrap"
+      ToolTip.Tip="{Binding Setting.Description}" />
+
+    <StackPanel Grid.Column="2" Grid.RowSpan="2">
+      <Grid>
+        <TextBlock 
+          Margin="5"
+          TextWrapping="Wrap"
+          MinHeight="16"
+          Text="{Binding Setting.Selection}"/>
+        <DropDown 
+          Name="PopupParent"
+          VerticalAlignment="Bottom"
+          Margin="0">
+          
+        </DropDown>
+        <Popup
+          Name="PopupBody"
+          Opacity="100"
+          WindowManagerAddShadowHint="False"
+          IsOpen="{Binding #PopupParent.IsDropDownOpen}"
+          Width="{Binding #PopupParent.Bounds.Width}"
+          PlacementAnchor="Top"
+          PlacementMode="Bottom"
+          PlacementTarget="{Binding #PopupParent}">
+          <Border
+            Background="{DynamicResource MaterialDesignCardBackground}"
+            BorderThickness="0"
+            BorderBrush="Gray"
+            CornerRadius="5">
+            <StackPanel>
+              <ListBox
+                Items="{Binding Setting.Values}"
+                Selection="{Binding Setting.SelectionModel}"
+                SelectionMode="Multiple,Toggle">
+              </ListBox>
+              <!-- button to create custom value -->
+              <!--<Button>
+                + Custom
+              </Button>-->
+              <!-- this button corrosponds to commented 
+              block below -->
+            </StackPanel>
+          </Border>
+        </Popup>
+      </Grid>
+    </StackPanel>
+
+    <!-- This code is for the option to add more customizable 
+    options such a walls or structural framing of a specific material,
+    family, or type -->
+    <!-- Change isvisible from {Binding Setting.AddCustom}
+    to True in order to have a better debug experience-->
+    <!--<StackPanel 
+      Grid.Row="2" 
+      Grid.ColumnSpan="3"
+      IsVisible="{Binding Setting.AddCustom}">
+      <Grid ColumnDefinitions="auto, 1*">
+
+        <TextBox
+          Grid.Column="1"
+          Margin="0,8"
+          IsEnabled="{Binding #Category.Text}"
+          Padding="0"
+          assists:TextFieldAssist.CornerRadius="32"
+          BorderBrush="{Binding $self.Foreground}"
+          BorderThickness="1"
+          Classes="Solo"
+          Text="{Binding Setting.SearchQuery, Mode=TwoWay}"
+          Watermark="Material, Family, or Type">
+          <TextBox.InnerLeftContent>
+            <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Kind="Magnify" />
+            </Border>
+          </TextBox.InnerLeftContent>
+          <TextBox.InnerRightContent>
+
+          </TextBox.InnerRightContent>
+        </TextBox>
+      </Grid>
+
+      <ScrollViewer
+        Grid.Row="2"
+        MaxHeight="180"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <ListBox
+          x:Name="ItemsListBox"
+          x:Class=""
+          Margin="0,0,0,8"
+          Classes="Chip"
+          Items="{Binding Setting.SearchResults2}"
+          Selection="{Binding Setting.SearchSelectionModel}"
+          SelectionMode="Multiple, Toggle">
+        </ListBox>
+        <TextBlock Text="{Binding Setting.Test}"/>
+        </StackPanel>
+       </ScrollViewer>
+    </StackPanel>-->
+
+  </Grid>
+
+</UserControl>

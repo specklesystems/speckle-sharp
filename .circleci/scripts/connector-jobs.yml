@@ -1,0 +1,146 @@
+# This file contains the individual jobs each connector must run to build/deploy.
+# Each application should have its own entry as a list of jobs.
+# These jobs will be pulled into the 'config-template.yml' file when needed.
+# The name of each build step will be set using the "slug"
+
+rhino:
+  - build-connector:
+      slnname: ConnectorRhino
+      dllname: SpeckleConnectorRhino.rhp
+      slug: rhino
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorRhino
+      dllname: SpeckleConnectorRhino.rhp
+      slug: grasshopper
+      requires:
+        - build-desktopui
+  - build-connector-mac:
+      slnname: ConnectorRhino
+      projname: ConnectorRhino7
+      installername: SpeckleRhinoInstall
+      build-config: Release Mac
+      slug: rhino-mac
+      requires:
+        - build-desktopui
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
+        "
+  - build-connector-mac:
+      slnname: ConnectorRhino
+      projname: ConnectorRhino7
+      build-config: Release Mac
+      installername: SpeckleGhInstall
+      installer: true
+      slug: grasshopper-mac
+      requires:
+        - build-desktopui
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
+        "
+dynamo:
+  - build-connector:
+      slnname: ConnectorDynamo
+      dllname: SpeckleConnectorDynamo.dll
+      slug: dynamo
+
+revit:
+  - build-connector:
+      slnname: ConnectorRevit
+      dllname: SpeckleConnectorRevit.dll
+      slug: revit
+      requires:
+        - build-desktopui
+
+autocadcivil:
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: autocad
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: civil3d
+      requires:
+        - build-desktopui
+
+microstation:
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorMicroStation.dll
+      slug: microstation
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorOpenBuildings.dll
+      slug: openbuildings
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorOpenRail.dll
+      slug: openrail
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorMicroStation
+      dllname: SpeckleConnectorOpenRoads.dll
+      slug: openroads
+
+teklastructures:
+  - build-connector:
+      slnname: ConnectorTeklaStructures
+      dllname: SpeckleConnectorTeklaStructures.dll
+      slug: teklastructures
+      requires:
+        - build-desktopui
+
+csi:
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: etabs
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: sap2000
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: safe
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: csibridge
+      requires:
+        - build-desktopui
+
+archicad:
+  - setup-archicad-dev:
+      requires:
+        - get-ci-tools
+  - build-connector:
+      requires:
+        - setup-archicad-dev
+        - build-desktopui
+      slnname: ConnectorArchicad
+      dllname: ConnectorArchicad.dll
+      slug: archicad

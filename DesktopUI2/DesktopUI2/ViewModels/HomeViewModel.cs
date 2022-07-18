@@ -688,6 +688,10 @@ namespace DesktopUI2.ViewModels
 
     private void ChangeTheme(bool isDark)
     {
+
+      if (Application.Current == null)
+        return;
+
       var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
       var theme = materialTheme.CurrentTheme;
 

@@ -4,12 +4,16 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    // CAUTION: this string needs to have the same values as in the connector
+    const string StructuralFraming = "Structural Framing";
+
     public List<ApplicationPlaceholderObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
 
@@ -76,8 +80,17 @@ namespace Objects.Converter.Revit
       if (revitBeam == null)
       {
         revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
-        StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 0);
-        StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 1);
+        // check for disallow join for beams in user settings
+        // currently, this setting only applies to beams being created
+        if (Settings.ContainsKey("disallow-join"))
+        {
+          List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+          if (joinSettings.Contains(StructuralFraming))
+          {
+            StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 0);
+            StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 1);
+          }
+        }
       }
 
       //reference level, only for beams

@@ -493,7 +493,7 @@ namespace SpeckleRhino
             continue;
           }
 
-          // attach user strings and dictionaries
+          // attach user strings, dictionaries, and name
           var userStrings = obj.Attributes.GetUserStrings();
           var userStringDict = userStrings.AllKeys.ToDictionary(k => k, k => userStrings[k]);
           converted[UserStrings] = userStringDict;
@@ -501,6 +501,8 @@ namespace SpeckleRhino
           var userDict = new Dictionary<string, object>();
           ParseArchivableToDictionary(userDict, obj.Attributes.UserDictionary);
           converted[UserDictionary] = userDict;
+
+          if (obj.HasName) converted["name"] = obj.Name;
 
           if (obj is InstanceObject)
             containerName = "Blocks";

@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -42,6 +43,10 @@ namespace Objects.Converter.RhinoGh
       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
       return segments.Count > 1 ? segments[1] : "Unknown commit";
     }
+
+    #region app props
+    public static string RhinoPropName = "RhinoProps";
+    #endregion
 
     #region Units
 

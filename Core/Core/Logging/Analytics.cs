@@ -98,10 +98,10 @@ namespace Speckle.Core.Logging
     /// <param name="customProperties">Additional parameters to pass to the event</param>
     public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null)
     {
-      if (account == null)
-        TrackEvent("unknown", "https://speckle.xyz/", eventName, customProperties);
-      else
-        TrackEvent(account.userInfo.email, account.serverInfo.url, eventName, customProperties);
+      string email = account?.userInfo?.email ?? "unknown";
+      string url = account?.serverInfo?.url ?? "https://speckle.xyz/";
+
+      TrackEvent(email, url, eventName, customProperties);
     }
 
     /// <summary>

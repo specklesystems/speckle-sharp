@@ -10,12 +10,14 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rhino.Display;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
+using Dimension = Objects.Other.Dimension;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Ellipse = Objects.Geometry.Ellipse;
 using Hatch = Objects.Other.Hatch;
@@ -29,6 +31,7 @@ using Polyline = Objects.Geometry.Polyline;
 using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
+using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 using View3D = Objects.BuiltElements.View3D;
 
@@ -136,8 +139,6 @@ namespace Objects.Converter.RhinoGh
         
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
-        
-
       }
 
       switch (@object)
@@ -234,6 +235,17 @@ namespace Objects.Converter.RhinoGh
           @base = MeshToSpeckle(o);
           Report.Log($"Converted Mesh");
           break;
+        
+# if GRASSHOPPER
+        case RH.Transform o:
+          @base = TransformToSpeckle(o);
+          Report.Log("Converter Transform");
+          break;
+        case DisplayMaterial o:
+          @base = DisplayMaterialToSpeckle(o);
+          break;
+#endif
+        
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
@@ -275,6 +287,10 @@ namespace Objects.Converter.RhinoGh
         case TextEntity o:
           @base = TextToSpeckle(o);
           Report.Log($"Converted TextEntity");
+          break;
+        case Rhino.Geometry.Dimension o:
+          @base = DimensionToSpeckle(o);
+          Report.Log($"Converted Dimension");
           break;
         default:
           Report.Log($"Skipped not supported type: {@object.GetType()}");
@@ -502,6 +518,7 @@ namespace Objects.Converter.RhinoGh
     public object ConvertToNative(Base @object)
     {
       object rhinoObj = null;
+      bool isFromRhino = @object[RhinoPropName] != null ? true : false;
       switch (@object)
       {
         case Point o:
@@ -650,6 +667,11 @@ namespace Objects.Converter.RhinoGh
           Report.Log($"Created Text {o.id}");
           break;
 
+        case Dimension o:
+          rhinoObj = isFromRhino ? RhinoDimensionToNative(o) : DimensionToNative(o);
+          Report.Log($"Created Dimension {o.id}");
+          break;
+
         case Objects.Structural.Geometry.Element1D o:
           rhinoObj = element1DToNative(o);
           Report.Log($"Created Element1D with line {o.id}");
@@ -660,9 +682,15 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case RenderMaterial o:
-          rhinoObj = RenderMaterialToNative(o);
+          #if GRASSHOPPER
+            rhinoObj = RenderMaterialToDisplayMaterial(o);
+          #else
+            rhinoObj = RenderMaterialToNative(o);
+          #endif
           break;
-
+        case Transform o:
+          rhinoObj = TransformToNative(o);
+          break;
         default:
           Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
           throw new NotSupportedException();
@@ -713,13 +741,19 @@ namespace Objects.Converter.RhinoGh
         case RH.Brep _:
         case NurbsSurface _:
           return true;
-
-#if !GRASSHOPPER
-        // This types are not supported in GH!
+        
+#if GRASSHOPPER
+        // This types are ONLY supported in GH!
+        case RH.Transform _:
+        case DisplayMaterial _:
+          return true;
+#else
+        // This types are NOT supported in GH!
         case ViewInfo _:
         case InstanceDefinition _:
         case InstanceObject _:
         case TextEntity _:
+        case RH.Dimension _: 
           return true;
 #endif
         default:
@@ -752,8 +786,11 @@ namespace Objects.Converter.RhinoGh
         case Surface _:
         case Structural.Geometry.Element1D _:
           return true;
-
-#if !GRASSHOPPER
+#if GRASSHOPPER
+        case Transform _:
+        case RenderMaterial _:
+          return true;
+#else
         // This types are not supported in GH!
         case Pointcloud _:
         case DisplayStyle _:
@@ -763,8 +800,8 @@ namespace Objects.Converter.RhinoGh
         case BlockDefinition _:
         case BlockInstance _:
         case Alignment _:
-        case RenderMaterial _:
         case Text _:
+        case Dimension _:
           return true;
 #endif
 
