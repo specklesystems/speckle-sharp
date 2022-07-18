@@ -1,17 +1,19 @@
-using Grasshopper.Kernel.Types;
-using Objects.Geometry;
-using Objects.Primitive;
-using Rhino.Geometry;
-using Rhino.Display;
-using Rhino.DocObjects;
-using Rhino.Geometry.Collections;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+
+using Rhino.Geometry;
+using Rhino.Display;
+using Rhino.DocObjects;
+using Rhino.Render;
+using RH = Rhino.DocObjects;
+
+using Speckle.Core.Models;
+using Speckle.Core.Kits;
 using Utilities = Speckle.Core.Models.Utilities;
+
+using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
@@ -24,11 +26,8 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using Text = Objects.Other.Text;
-using RH = Rhino.DocObjects;
+using Transform = Objects.Other.Transform;
 using RenderMaterial = Objects.Other.RenderMaterial;
-using Rhino;
-using Rhino.Render;
-using Objects.Other;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -206,9 +205,9 @@ namespace Objects.Converter.RhinoGh
       // retrieve hatch loops
       var loops = new List<HatchLoop>();
       foreach (var outer in hatch.Get3dCurves(true).ToList())
-        loops.Add(new HatchLoop(CurveToSpeckle(outer), Other.HatchLoopType.Outer));
+        loops.Add(new HatchLoop(CurveToSpeckle(outer), HatchLoopType.Outer));
       foreach (var inner in hatch.Get3dCurves(false).ToList())
-        loops.Add(new HatchLoop(CurveToSpeckle(inner), Other.HatchLoopType.Inner));
+        loops.Add(new HatchLoop(CurveToSpeckle(inner), HatchLoopType.Inner));
 
       _hatch.loops = loops;
       _hatch.scale = hatch.PatternScale;
@@ -226,7 +225,7 @@ namespace Objects.Converter.RhinoGh
         return HatchPattern.Defaults.Solid;
     }
 
-    public BlockDefinition BlockDefinitionToSpeckle(RH.InstanceDefinition definition)
+    public BlockDefinition BlockDefinitionToSpeckle(InstanceDefinition definition)
     {
       var geometry = new List<Base>();
       foreach (var obj in definition.GetObjects())
@@ -333,7 +332,7 @@ namespace Objects.Converter.RhinoGh
 
     // Rhino convention seems to order the origin of the vector space last instead of first
     // This results in a transposed transformation matrix - may need to be addressed later
-    public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
+    public BlockInstance BlockInstanceToSpeckle(InstanceObject instance)
     {
       var t = instance.InstanceXform;
       var transformArray = new double[] {
@@ -346,7 +345,7 @@ namespace Objects.Converter.RhinoGh
 
       var _instance = new BlockInstance()
       {
-        transform = new Other.Transform(transformArray, ModelUnits),
+        transform = new Transform(transformArray, ModelUnits),
         blockDefinition = def,
         units = ModelUnits
       };
@@ -378,7 +377,7 @@ namespace Objects.Converter.RhinoGh
 
     public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)
     {
-      var rhinoMaterial = new Material
+      var rhinoMaterial = new RH.Material
       {
         Name = material.name,
         DiffuseColor = Color.FromArgb(material.diffuse),
@@ -399,10 +398,10 @@ namespace Objects.Converter.RhinoGh
       return speckleMaterial;
     }
     
-    public Transform TransformToNative(Other.Transform speckleTransform, string units = null)
+    public Rhino.Geometry.Transform TransformToNative(Transform speckleTransform, string units = null)
     {
       var u = units ?? speckleTransform.units;
-      var transform = Transform.Identity;
+      var transform = Rhino.Geometry.Transform.Identity;
       var t = speckleTransform.value;
       if (t.Length != 16) return transform;
       var count = 0;
@@ -423,7 +422,7 @@ namespace Objects.Converter.RhinoGh
       return transform;
     }
 
-    public Other.Transform TransformToSpeckle(Transform t, string units = null)
+    public Transform TransformToSpeckle(Rhino.Geometry.Transform t, string units = null)
     {
       var u = units ?? ModelUnits;
       var transformArray = new double[] {
@@ -431,7 +430,7 @@ namespace Objects.Converter.RhinoGh
         t.M10, t.M11, t.M12, t.M13,
         t.M20, t.M21, t.M22, t.M23,
         t.M30, t.M31, t.M32, t.M33 };
-      return new Other.Transform(transformArray, ModelUnits);
+      return new Transform(transformArray, ModelUnits);
     }
     
     // Text
