@@ -354,26 +354,9 @@ namespace Objects.Converter.RhinoGh
 
       // get the transform
       // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
-      Transform transform = Transform.Identity;
-      double[] t = instance.transform.value;
-      if (t.Length == 16)
-      {
-        int count = 0;
-        for (int i = 0; i < 4; i++)
-        {
-          for (int j = 0; j < 4; j++)
-          {
-            if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
-              if (t[15] != 0)
-                transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], instance.units) : 1;
-              else
-                transform[i, j] = (i != 3) ? ScaleToNative(t[count], instance.units) : 1;
-            else
-              transform[i, j] = t[count];
-            count++;
-          }
-        }
-      }
+      var iT = instance.transform;
+      var units = instance.units;
+      var transform = TransformToNative(iT, units);
 
       // create the instance
       if (definition == null)
@@ -386,6 +369,64 @@ namespace Objects.Converter.RhinoGh
       return Doc.Objects.FindId(instanceId) as InstanceObject;
     }
 
+    public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)
+    {
+      var rhinoMaterial = new Material
+      {
+        Name = material.name,
+        DiffuseColor = Color.FromArgb(material.diffuse),
+        EmissionColor = Color.FromArgb(material.emissive),
+        Transparency = 1 - material.opacity
+      };
+      var displayMaterial = new DisplayMaterial(rhinoMaterial);
+      return displayMaterial;
+    }
+    
+    
+    public RenderMaterial DisplayMaterialToSpeckle(DisplayMaterial material)
+    {
+      var speckleMaterial = new RenderMaterial();
+      speckleMaterial.diffuse = material.Diffuse.ToArgb();
+      speckleMaterial.emissive = material.Emission.ToArgb();
+      speckleMaterial.opacity = 1.0 - material.Transparency;
+      return speckleMaterial;
+    }
+    
+    public Transform TransformToNative(Other.Transform speckleTransform, string units = null)
+    {
+      var u = units ?? speckleTransform.units;
+      var transform = Transform.Identity;
+      var t = speckleTransform.value;
+      if (t.Length != 16) return transform;
+      var count = 0;
+      for (var i = 0; i < 4; i++)
+      {
+        for (var j = 0; j < 4; j++)
+        {
+          if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
+            if (t[15] != 0)
+              transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], u) : 1;
+            else
+              transform[i, j] = (i != 3) ? ScaleToNative(t[count], u) : 1;
+          else
+            transform[i, j] = t[count];
+          count++;
+        }
+      }
+      return transform;
+    }
+
+    public Other.Transform TransformToSpeckle(Transform t, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      var transformArray = new double[] {
+        t.M00, t.M01, t.M02, t.M03,
+        t.M10, t.M11, t.M12, t.M13,
+        t.M20, t.M21, t.M22, t.M23,
+        t.M30, t.M31, t.M32, t.M33 };
+      return new Other.Transform(transformArray, ModelUnits);
+    }
+    
     // Text
     public Text TextToSpeckle(TextEntity text)
     {
