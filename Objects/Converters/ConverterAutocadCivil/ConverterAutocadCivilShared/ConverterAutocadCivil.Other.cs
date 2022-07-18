@@ -337,7 +337,7 @@ namespace Objects.Converter.AutocadCivil
       BlockReference br = new BlockReference(insertionPoint, definitionId);
       br.BlockTransform = convertedTransform;
       // add attributes if there are any
-      var attributes = instance["attributes"] as Dictionary<string, string>;
+      var attributes = instance["attributes"] as Dictionary<string, object>;
       if (attributes != null)
       {
         // TODO: figure out how to add attributes
@@ -355,10 +355,6 @@ namespace Objects.Converter.AutocadCivil
     }
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
-      // skip if this is from an external reference
-      if (record.IsFromExternalReference)
-        return null;
-
       // get geometry
       var geometry = new List<Base>();
       foreach (ObjectId id in record)
