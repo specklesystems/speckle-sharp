@@ -139,15 +139,14 @@ namespace Speckle.Core.Transports.ServerUtils
       {
         using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
         {
-          while (reader.Peek() > 0)
+          string line;
+          while ((line = reader.ReadLine()) != null)
           {
             if (CancellationToken.IsCancellationRequested)
               return;
 
-            var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             onObjectCallback(pcs[0], pcs[1]);
-
           }
         }
       }
