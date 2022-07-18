@@ -17,6 +17,7 @@ namespace DesktopUI2.Models.Settings
     public ConnectorBindings Bindings { get; set; }
     public string Description { get; set; }
     public Dictionary<string, string> mapping = new Dictionary<string, string>();
+
     public string ButtonText { get; set; }
     public string Selection { get; set; }
 
@@ -36,26 +37,38 @@ namespace DesktopUI2.Models.Settings
 
     public async void ButtonCommand()
     {
+      progress.Report.Log("button command");
       Bindings = Locator.Current.GetService<ConnectorBindings>();
-      Dictionary<string, string> initialMapping = new Dictionary<string, string>();
+      Dictionary<string, List<KeyValuePair<string,string>>> initialMapping = new Dictionary<string, List<KeyValuePair<string, string>>>();
       List<string> hostTypes = new List<string>();
+      Dictionary<string, List<string>> hostTypesDict = new Dictionary<string, List<string>>();
       try
       {
-        hostTypes = Bindings.GetHostProperties();
-        initialMapping = await Task.Run(() => Bindings.GetInitialMapping(state, progress, hostTypes));
+        //hostTypes = Bindings.GetHostProperties();
+        hostTypesDict = Bindings.GetHostTypes();
+        progress.Report.Log($"host type Dict keys {String.Join(",", hostTypesDict.Keys)}");
+        progress.Report.Log($"host type Dict values {String.Join(",", hostTypesDict.Values)}");
+        initialMapping = await Task.Run(() => Bindings.GetInitialMapping(state, progress, hostTypesDict));
       }
-      catch
+      catch (Exception ex)
       {
-
+        progress.Report.Log($"Exception occured {ex}");
       }
 
-      var vm = new MappingViewModel(initialMapping, hostTypes);
-      var mappingView = new MappingView
+      try
       {
-        DataContext = vm
-      };
-      vm.OnRequestClose += (s, e) => mappingView.Close();
-      mappingView.Show();
+        var vm = new MappingViewModel(initialMapping, hostTypesDict, progress);
+        var mappingView = new MappingView
+        {
+          DataContext = vm
+        };
+        vm.OnRequestClose += (s, e) => mappingView.Close();
+        mappingView.Show();
+      }
+      catch (Exception ex)
+      {
+        progress.Report.Log($"Exception occured {ex}");
+      }
     }
     //public Dictionary<string, string> deseralizedSelection(string s)
     //{

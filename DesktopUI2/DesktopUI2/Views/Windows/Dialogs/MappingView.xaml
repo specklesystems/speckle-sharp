@@ -20,7 +20,7 @@
   </Design.DataContext>
 
   <Grid 
-    RowDefinitions="auto,*, auto">
+    RowDefinitions="auto,*,auto">
     <!-- Page Header -->
     <Border
       Margin="0,0,0,7"
@@ -28,7 +28,7 @@
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
       <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
-        <m:FloatingButton
+        <!--<m:FloatingButton
           VerticalAlignment="Center"
           assists:ShadowAssist.ShadowDepth="0"
           Background="Transparent"
@@ -36,7 +36,6 @@
           Command="{Binding GoBack}"
           ToolTip.Tip="Back">
           <Button.Content>
-
             <Viewbox
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
@@ -47,10 +46,8 @@
                 Foreground="{DynamicResource MaterialDesignBody}"
                 Kind="ChevronLeft" />
             </Viewbox>
-
           </Button.Content>
-
-        </m:FloatingButton>
+        </m:FloatingButton>-->
         <Grid
           Grid.Column="1"
           Margin="15,0,0,0"
@@ -89,30 +86,28 @@
               <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
             </Style>
           </Menu.Styles>
-
         </Menu>
-
-
       </Grid>
     </Border>
 
     <Grid
       Grid.Row="1"
-      RowDefinitions="auto,auto,auto"
       ColumnDefinitions="auto, *">
-      <ListBox
-        BorderThickness="1"
-        BorderBrush="Gray"
-        CornerRadius="20"
-        Margin="10"
-        Background="{DynamicResource MaterialDesignCardBackground}"
-        Grid.Column="0"
-        Items="{Binding tabs}">
-        
-      </ListBox>
+      <Grid
+        RowDefinitions="auto,*">
+        <ListBox
+          BorderThickness="1"
+          BorderBrush="Gray"
+          CornerRadius="20"
+          Margin="10"
+          Background="{DynamicResource MaterialDesignCardBackground}"
+          Grid.Column="0"
+          SelectedItem="{Binding SelectedCategory}"
+          Items="{Binding Mapping.Keys}">
+        </ListBox>
+      </Grid>
       <Border
         Grid.Column="1"
-        
         Margin="0,0,10,0">
         <Grid
           ColumnDefinitions="*,*"
@@ -136,42 +131,44 @@
             Grid.Row="1"
             Grid.ColumnSpan="2"
             VerticalScrollBarVisibility="Auto">
-            <ListBox 
-              Items="{Binding Mapping}"
-              SelectedItem="{Binding SelectedMappingValue}">
-              <ListBox.ItemTemplate>
-                <DataTemplate>
-                  <Grid
-                    ColumnDefinitions="*,*">
-                    <TextBlock
-                      Margin="0"
-                      Grid.Column="0"
-                      VerticalAlignment="Center"
-                      TextTrimming="CharacterEllipsis"
-                      Text="{Binding IncomingType}">
-                    </TextBlock>
-                    <TextBlock
-                      Name="OutgoingType"
-                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                      Focusable="False"
-                      Margin="0"
-                      Grid.Column="1"
-                      Text="{Binding OutgoingType}"
-                      VerticalAlignment="Center">
-                    </TextBlock>
-                    <TextBlock
-                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                      Focusable="False"
-                      Margin="0"
-                      Grid.Column="1"
-                      Foreground="Gray"
-                      Text="{Binding InitialGuess}"
-                      VerticalAlignment="Center">
-                    </TextBlock>
-                  </Grid>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
+            <StackPanel>
+              <ListBox 
+                Items="{Binding VisibleMappingValues}"
+                SelectedItem="{Binding SelectedMappingValue}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Grid
+                      ColumnDefinitions="*,*">
+                      <TextBlock
+                        Margin="0"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding IncomingType}">
+                      </TextBlock>
+                      <TextBlock
+                        Name="OutgoingType"
+                        IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                        Focusable="False"
+                        Margin="0"
+                        Grid.Column="1"
+                        Text="{Binding OutgoingType}"
+                        VerticalAlignment="Center">
+                      </TextBlock>
+                      <TextBlock
+                        IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                        Focusable="False"
+                        Margin="0"
+                        Grid.Column="1"
+                        Foreground="Gray"
+                        Text="{Binding InitialGuess}"
+                        VerticalAlignment="Center">
+                      </TextBlock>
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
             <!--<ItemsControl Items="{Binding Mapping}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -217,13 +214,8 @@
       Grid.ColumnSpan="3">
       <Grid 
         ColumnDefinitions="*, auto"
-        RowDefinitions="auto, auto, auto">
+        RowDefinitions="auto, auto">
         <StackPanel Orientation="Horizontal">
-          <TextBlock
-            Margin="10"
-            FontWeight="Bold">
-            Suggested Type:
-          </TextBlock>
           <TextBlock/>
           <TextBlock/>
         </StackPanel>

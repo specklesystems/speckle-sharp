@@ -380,10 +380,22 @@ namespace DesktopUI2
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
     }
 
-    public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostTypes)
+    //public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostTypes)
+    //{
+    //  await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+    //  return new Dictionary<string, string>();
+    //}
+
+    //public override async Task<Dictionary<string, string>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string,List<string>> hostTypes)
+    //{
+    //  await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+    //  return new Dictionary<string, string>();
+    //}
+
+    public override async Task<Dictionary<string, List<KeyValuePair<string, string>>>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string, List<string>> hostTypes)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
-      return new Dictionary<string, string>();
+      return new Dictionary<string, List<KeyValuePair<string, string>>>();
     }
 
     public override List<string> GetHostProperties()
@@ -403,10 +415,20 @@ namespace DesktopUI2
       };
     }
 
-    public override async Task<ObservableCollection<MappingValue>> ImportFamily(ObservableCollection<MappingValue> Mapping)
+    public override Dictionary<string, List<string>> GetHostTypes()
+    {
+      return new Dictionary<string, List<string>>
+      {
+        { "Materials", new List<string>{"brick","sheep","wheat","stone" } },
+        { "Floors", new List<string>{"concrete","tile"} },
+        { "Walls", new List<string>{"brick","gyp","shearwall1" } }
+      };
+    }
+
+    public override async Task<Dictionary<string, ObservableCollection<MappingValue>>> ImportFamily(Dictionary<string, ObservableCollection<MappingValue>> Mapping)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
-      return new ObservableCollection<MappingValue>();
+      return new Dictionary<string, ObservableCollection<MappingValue>>();
     }
   }
 }
