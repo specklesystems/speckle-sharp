@@ -10,7 +10,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Geometry
 {
-  public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable, IDisplayValue<Polyline>
+  public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Curve>, IDisplayValue<Polyline>
   {
     public int degree { get; set; }
 
@@ -126,10 +126,10 @@ namespace Objects.Geometry
       return curve;
     }
 
-    public bool TransformTo(Transform transform, out ITransformable curve)
+    public bool TransformTo(Transform transform, out Curve transformed)
     {
       var result = displayValue.TransformTo(transform, out ITransformable polyline);
-      curve = new Curve
+      transformed = new Curve
       {
         degree = degree,
         periodic = periodic,
@@ -140,10 +140,18 @@ namespace Objects.Geometry
         displayValue = ( Polyline ) polyline,
         closed = closed,
         units =  units,
-        applicationId = applicationId
+        applicationId = applicationId,
+        domain = domain != null ? new Interval{start = domain.start, end = domain.end} : null
       };
 
       return result;
+    }
+
+    public bool TransformTo(Transform transform, out ITransformable transformed)
+    {
+      var res = TransformTo(transform, out Curve curve);
+      transformed = curve;
+      return res;
     }
   }
 }

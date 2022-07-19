@@ -97,7 +97,7 @@ namespace Speckle.DesktopUI.Utils
           {
             id = "123",
             name = "main",
-            commits = new Commits()
+            commits = new Speckle.Core.Api.Commits()
             {
               items = new List<Commit>()
               {
@@ -131,7 +131,7 @@ namespace Speckle.DesktopUI.Utils
           {
             id = "123",
             name = "main",
-            commits = new Commits()
+            commits = new Core.Api.Commits()
             {
               items = new List<Commit>()
               {

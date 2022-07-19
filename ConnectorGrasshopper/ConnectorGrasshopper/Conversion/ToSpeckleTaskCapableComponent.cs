@@ -94,7 +94,7 @@ namespace ConnectorGrasshopper.Conversion
         }
 
         if (converted.GetType().IsSimpleType())
-          return new GH_ObjectWrapper(converted);
+          return Extras.Utilities.WrapInGhType(converted);
 
         return new GH_SpeckleBase { Value = converted as Base };
       }

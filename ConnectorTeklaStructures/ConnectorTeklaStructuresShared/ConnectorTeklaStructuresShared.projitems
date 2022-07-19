@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.ClientOperations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Receive.cs" />

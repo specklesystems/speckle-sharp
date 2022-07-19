@@ -38,7 +38,7 @@ namespace Objects
   /// Interface for transformable objects.
   /// </summary>
   /// <typeparam name="T"></typeparam>
-  public interface ITransformable<T> where T : ITransformable<T>
+  public interface ITransformable<T>: ITransformable where T : ITransformable<T>
   {
     bool TransformTo(Transform transform, out T transformed);
   }

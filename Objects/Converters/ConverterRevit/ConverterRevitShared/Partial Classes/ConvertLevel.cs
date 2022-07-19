@@ -43,7 +43,9 @@ namespace Objects.Converter.Revit
       var hasLevelWithSameName = docLevels.Any(x => x.Name == speckleLevel.name);
       Level existingLevelWithSameElevation = null;
       if (elevationMatch)
-        docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)speckleLevelElevation) < TOLERANCE);
+      {
+        existingLevelWithSameElevation = docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)speckleLevelElevation) < TOLERANCE);
+      }
 
       //a level that had been previously received
       var revitLevel = GetExistingElementByApplicationId(speckleLevel.applicationId) as DB.Level;
