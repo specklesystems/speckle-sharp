@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
 using ReactiveUI;
 using Splat;
@@ -17,7 +18,7 @@ namespace DesktopUI2.ViewModels
 
     public IScreen HostScreen => throw new NotImplementedException();
 
-    public event EventHandler OnRequestClose;
+    //public event EventHandler OnRequestClose;
 
     public ConnectorBindings Bindings { get; set; }
 
@@ -81,30 +82,20 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _visibleMappingValues, value);
     }
 
-    //public ObservableCollection<MappingValue> visibleMappingValues { get; set; }
-
     private MappingValue _selectedMappingValue;
     public MappingValue SelectedMappingValue
     {
       get => _selectedMappingValue;
       set => this.RaiseAndSetIfChanged(ref _selectedMappingValue, value);
     }
-    public List<string> tabs { get; set; }
 
+    //this constructor is purely for xaml design purposes
     public MappingViewModel()
     {
-      //  var x = new List<MappingValue>
-      //  {
-      //    new MappingValue("W12x19", "W12x19"),
-      //    new MappingValue("Type1", "type123"),
-      //    new MappingValue("anotherType", "anotherType"),
-      //    new MappingValue("yetAnotherType", "differentType" ),
-      //    new MappingValue("short", "short"),
-      //    new MappingValue( "a very very very long type name. Oh no", "a very very very long type name. Oh no");
-      //  }
+
       Mapping = new Dictionary<string, ObservableCollection<MappingValue>>
       {
-        { 
+        {
           "Materials", new ObservableCollection<MappingValue>
           (
             new List<MappingValue>
@@ -116,9 +107,9 @@ namespace DesktopUI2.ViewModels
               new MappingValue("short", "short"),
               new MappingValue( "a very very very long type name. Oh no", "a very very very long type name. Oh no")
             }
-          ) 
+          )
         },
-        { 
+        {
           "Beams", new ObservableCollection<MappingValue>
           (
             new List<MappingValue>
@@ -130,7 +121,7 @@ namespace DesktopUI2.ViewModels
               new MappingValue("short", "short"),
               new MappingValue( "a very very very long type name. Oh no", "a very very very long type name. Oh no")
             }
-          ) 
+          )
         },
         {
           "Columns", new ObservableCollection<MappingValue>
@@ -143,8 +134,19 @@ namespace DesktopUI2.ViewModels
           )
         },
       };
+
+      _valuesList = new Dictionary<string, List<string>>
+      {
+        { "Materials", new List<string>{"brick","sheep","wheat","stone" } },
+        { "Beams", new List<string>{"concrete","tile"} },
+        { "Columns", new List<string>{"brick","gyp","shearwall1" } }
+      };
+
+      var kv = Mapping.First();
+      SelectedCategory = kv.Key;
+      //visibleMappingValues = Mapping[SelectedCategory];
     }
-        
+
 
     public MappingViewModel(Dictionary<string, List<KeyValuePair<string,string>>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress)
     {
@@ -245,10 +247,14 @@ namespace DesktopUI2.ViewModels
           }
         }
       }
+      MappingViewDialog.Instance.Close(mappingDict);
+      //OnRequestClose(this, new EventArgs());
+      //return mappingDict;
       //Dictionary<string, string> mappingDict = Mapping.ToDictionary(x => x.IncomingType, x => x.OutgoingType ?? x.InitialGuess);
-      var json = JsonConvert.SerializeObject(mappingDict);
-      Bindings.MappingSelectionValue = json;
-      OnRequestClose(this, new EventArgs());
+      //var json = JsonConvert.SerializeObject(mappingDict);
+      //Bindings.MappingSelectionValue = json;
+      
+      //OnRequestClose(this, new EventArgs());
     }
   }
 }

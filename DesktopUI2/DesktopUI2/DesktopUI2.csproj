@@ -72,6 +72,7 @@
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
+    <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
     <None Remove="Views\Windows\Report.xaml" />
@@ -207,6 +208,9 @@
     <AvaloniaXaml Include="Views\Windows\Dialogs\Dialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\MappingViewDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\NewStreamDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -312,6 +316,9 @@
     </Compile>
     <Compile Update="Views\Windows\Dialogs\Dialog.xaml.cs">
       <DependentUpon>Dialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\MappingViewDialog.xaml.cs">
+      <DependentUpon>MappingViewDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\NewStreamDialog.xaml.cs">
       <DependentUpon>NewStreamDialog.xaml</DependentUpon>

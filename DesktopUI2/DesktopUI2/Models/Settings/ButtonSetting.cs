@@ -64,12 +64,12 @@ namespace DesktopUI2.Models.Settings
         {
           DataContext = vm
         };
-        vm.OnRequestClose += (s, e) =>
-        {
-          windowOpen = false;
-          mappingView.Close();
-        };
-        ApplicationLifetime
+        //vm.OnRequestClose += (s, e) =>
+        //{
+        //  windowOpen = false;
+        //  mappingView.Close();
+        //};
+
         mappingView.Show();
         while (windowOpen)
         {

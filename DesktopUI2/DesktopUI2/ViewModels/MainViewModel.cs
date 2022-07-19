@@ -1,4 +1,5 @@
-﻿using DesktopUI2.ViewModels.Share;
+﻿using Avalonia.Controls;
+using DesktopUI2.ViewModels.Share;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Pages.ShareControls;
 using DesktopUI2.Views.Windows.Dialogs;
@@ -33,8 +34,8 @@ namespace DesktopUI2.ViewModels
       get => _dialogBody != null ? 1 : 0;
     }
 
-    private DialogUserControl _dialogBody;
-    public DialogUserControl DialogBody
+    private UserControl _dialogBody;
+    public UserControl DialogBody
     {
       get => _dialogBody;
       set  {

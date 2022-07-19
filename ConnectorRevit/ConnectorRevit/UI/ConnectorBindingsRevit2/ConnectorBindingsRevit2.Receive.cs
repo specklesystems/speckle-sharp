@@ -9,6 +9,7 @@ using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
 using Revit.Async;
 using Speckle.Core.Api;
@@ -18,6 +19,7 @@ using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
+  [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
   public partial class ConnectorBindingsRevit2
   {
     /// <summary>
@@ -105,7 +107,20 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
+      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+      converter.ReceiveMode = state.ReceiveMode;
+      // needs to be set for editing to work 
+      converter.SetPreviousContextObjects(previouslyReceiveObjects);
+      // needs to be set for openings in floors and roofs to work
+      converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
 
+      // update flattened objects if the user has custom mappings
+      //flattenedObjects = await UpdateForCustomMappingAsync(state, progress, flattenedObjects);
+
+
+      progress.Report.Log($"flattedObjects {flattenedObjects}");
+
+      flattenedObjects = await RevitTask.RunAsync(() => UpdateForCustomMappingAsync(state, progress, flattenedObjects));
 
       await RevitTask.RunAsync(app =>
       {
@@ -115,14 +130,8 @@ namespace Speckle.ConnectorRevit.UI
           failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
           failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
-
           t.Start();
-          var flattenedObjects = FlattenCommitObject(commitObject, converter);
-          converter.ReceiveMode = state.ReceiveMode;
-          // needs to be set for editing to work 
-          converter.SetPreviousContextObjects(previouslyReceiveObjects);
-          // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
+
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
@@ -137,7 +146,9 @@ namespace Speckle.ConnectorRevit.UI
 
           state.ReceivedObjects = newPlaceholderObjects;
 
+          progress.Report.Log($"commiting");
           t.Commit();
+          progress.Report.Log($"commited {t.HasEnded()} {t.GetStatus()}");
           progress.Report.Merge(converter.Report);
         }
 
@@ -168,7 +179,62 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    public void updateRecieveObject(Dictionary<string, List<KeyValuePair<string,string>>> Map, List<Base> objects)
+    public async Task<List<Base>> UpdateForCustomMappingAsync(StreamState state, ProgressViewModel progress, List<Base> flattenedBase)
+    {
+      //// Get Settings for recieve on mapping 
+      //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
+      //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
+
+      //if (!receiveMappings)
+      //  return flattenedBase;
+
+      Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
+      Dictionary<string, List<KeyValuePair<string, string>>> initialMapping = GetInitialMapping2(flattenedBase, progress, hostTypesDict);
+
+      MappingViewDialog mappingView = null;
+      try
+      {
+        var vm = new MappingViewModel(initialMapping, hostTypesDict, progress);
+        mappingView = new MappingViewDialog
+        {
+          DataContext = vm
+        };
+      }
+      catch (Exception ex)
+      {
+        progress.Report.Log($"Could not show dialog {ex}");
+      }
+      try
+      {
+        Dictionary<string, List<KeyValuePair<string, string>>> newMapping = await mappingView.ShowDialog<Dictionary<string, List<KeyValuePair<string, string>>>>();
+
+        progress.Report.Log($"newmapping {newMapping}");
+
+        List<Base> newFlatBase = updateRecieveObject(newMapping, flattenedBase);
+
+        progress.Report.Log($"newflatbase {newFlatBase}");
+        return flattenedBase;
+      }
+      catch (Exception ex)
+      {
+        progress.Report.Log($"Could not make new mapping {ex}");
+      }
+      
+      progress.Report.Log($"how did this work?");
+      return flattenedBase;
+    }
+
+    public Dictionary<string, List<KeyValuePair<string, string>>> GetInitialMapping2(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostProperties)
+    {
+      var listProperties = GetListProperties(flattenedBase, progress);
+
+      var mappings = returnFirstPassMap(listProperties, hostProperties, progress);
+
+      return mappings;
+    }
+
+
+    public List<Base> updateRecieveObject(Dictionary<string, List<KeyValuePair<string,string>>> Map, List<Base> objects)
     {
       foreach (var @object in objects)
       {
@@ -221,6 +287,7 @@ namespace Speckle.ConnectorRevit.UI
 
         }
       }
+      return objects;
     }
 
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
@@ -237,16 +304,37 @@ namespace Speckle.ConnectorRevit.UI
       //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
       //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
 
-      try
-      {
-        ButtonSetting mappingSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "mapping") as ButtonSetting);
-        var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, List<KeyValuePair<string,string>>>>(mappingSetting.JsonSelection);
-        updateRecieveObject(mappingDict, objects);
-      }
-      catch (Exception ex)
-      {
-        progress.Report.Log($"Could not update objects with user-defined type mapping {ex}");
-      }
+      //try
+      //{
+      //  var vm = new MappingViewModel();
+      //  var mappingView = new MappingViewDialog
+      //  {
+      //    DataContext = vm
+      //  };
+
+
+      //  await mappingView.ShowDialog();
+      //  //var dialog = new MappingViewDialog();
+      //  //await dialog.ShowDialog();
+      //}
+      //catch (Exception ex)
+      //{
+      //  progress.Report.Log($"Could show dialog {ex}");
+      //}
+
+      //try
+      //{
+
+      //  var dialog = new MappingViewDialog();
+      //  var result = await dialog.ShowDialog<string>();
+      //  ButtonSetting mappingSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "mapping") as ButtonSetting);
+      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, List<KeyValuePair<string,string>>>>(mappingSetting.JsonSelection);
+      //  updateRecieveObject(mappingDict, objects);
+      //}
+      //catch (Exception ex)
+      //{
+      //  progress.Report.Log($"Could not update objects with user-defined type mapping {ex}");
+      //}
 
       //try
       //{
