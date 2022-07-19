@@ -141,9 +141,9 @@ namespace Speckle.ConnectorRevit.UI
       returnDict["Columns"] = types;
 
       // Misc
-      //list = collector.Excluding(exclusionFilterIds);
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //returnDict["Miscellaneous"] = types;
+      list = collector.Excluding(exclusionFilterIds);
+      types = list.Select(o => o.Name).Distinct().ToList();
+      returnDict["Miscellaneous"] = types;
 
       return returnDict;
     }
@@ -307,22 +307,26 @@ namespace Speckle.ConnectorRevit.UI
           }
 
           // try to get the material
-          if (@object["materialQuantites"] is List<string> mats)
+          if (@object["materialQuantites"] is List<Base> mats)
           {
             foreach (var mat in mats)
             {
-              if (returnDict.ContainsKey("Materials"))
+              if (mat["material"] is Base b)
               {
-                returnDict["Materials"].Add(mat);
-              }
-              else
-              {
-                returnDict["Materials"] = new List<string> { mat };
+                if (b["name"] is string matName)
+                {
+                  if (returnDict.ContainsKey("Materials"))
+                  {
+                    returnDict["Materials"].Add(matName);
+                  }
+                  else
+                  {
+                    returnDict["Materials"] = new List<string> { matName };
+                  }
+                }
               }
             }
           }
-
-          progress.Report.Log($"speckle type {speckleType} type category {typeCategory}");
         }
         catch
         {

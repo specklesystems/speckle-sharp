@@ -168,7 +168,7 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    public void updateRecieveObject(Dictionary<string, string> Map, List<Base> objects)
+    public void updateRecieveObject(Dictionary<string, List<KeyValuePair<string,string>>> Map, List<Base> objects)
     {
       foreach (var @object in objects)
       {
@@ -177,11 +177,41 @@ namespace Speckle.ConnectorRevit.UI
         {
           //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
           var propInfo = "";
+          string speckleType = "";
+          try
+          {
+            speckleType = @object.speckle_type.Split(':')[0];
+          }
+          catch
+          {
+            speckleType = @object.speckle_type;
+          }
+
+          string typeCategory = "";
+
+          switch (speckleType)
+          {
+            case "Objects.BuiltElements.Floor":
+              typeCategory = "Floors";
+              break;
+            case "Objects.BuiltElements.Wall":
+              typeCategory = "Walls";
+              break;
+            case "Objects.BuiltElements.Beam":
+              typeCategory = "Framing";
+              break;
+            case "Objects.BuiltElements.Column":
+              typeCategory = "Columns";
+              break;
+            default:
+              typeCategory = "Miscellaneous";
+              break;
+          }
           propInfo = @object.GetType().GetProperty("type").GetValue(@object) as string;
           if (propInfo != "")
           {
             string mappingProperty = "";
-            Map.TryGetValue(propInfo, out mappingProperty);
+            mappingProperty = Map[typeCategory].Where(i => i.Key == propInfo).First().Value;
             var prop = @object.GetType().GetProperty("type");
             prop.SetValue(@object, mappingProperty);
           }
@@ -210,7 +240,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         ButtonSetting mappingSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "mapping") as ButtonSetting);
-        var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(mappingSetting.JsonSelection);
+        var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, List<KeyValuePair<string,string>>>>(mappingSetting.JsonSelection);
         updateRecieveObject(mappingDict, objects);
       }
       catch (Exception ex)

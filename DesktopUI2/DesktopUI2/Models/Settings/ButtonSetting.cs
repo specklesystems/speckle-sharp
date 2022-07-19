@@ -1,4 +1,5 @@
-﻿using DesktopUI2.ViewModels;
+﻿using Avalonia;
+using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Settings;
 using DesktopUI2.Views.Windows.Dialogs;
 using Splat;
@@ -55,6 +56,7 @@ namespace DesktopUI2.Models.Settings
         progress.Report.Log($"Exception occured {ex}");
       }
 
+      var windowOpen = true;
       try
       {
         var vm = new MappingViewModel(initialMapping, hostTypesDict, progress);
@@ -62,8 +64,18 @@ namespace DesktopUI2.Models.Settings
         {
           DataContext = vm
         };
-        vm.OnRequestClose += (s, e) => mappingView.Close();
+        vm.OnRequestClose += (s, e) =>
+        {
+          windowOpen = false;
+          mappingView.Close();
+        };
+        ApplicationLifetime
         mappingView.Show();
+        while (windowOpen)
+        {
+          await Task.Delay(TimeSpan.FromMilliseconds(1000));
+          //mappingView.Show();
+        }
       }
       catch (Exception ex)
       {

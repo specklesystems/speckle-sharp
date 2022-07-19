@@ -224,12 +224,25 @@ namespace DesktopUI2.ViewModels
 
     public void Done()
     {
-      Dictionary<string, string> mappingDict = new Dictionary<string, string>();
+      Dictionary<string, List<KeyValuePair<string,string>>> mappingDict = new Dictionary<string, List<KeyValuePair<string, string>>>();
       foreach (var category in Mapping.Keys)
       {
-        foreach (var kvp in Mapping[category])
+        foreach (var mappingValue in Mapping[category])
         {
-          mappingDict[kvp.IncomingType] = kvp.OutgoingType ?? kvp.IncomingType;
+          if (mappingDict.ContainsKey(category))
+          {
+            mappingDict[category].Add(new KeyValuePair<string, string>(mappingValue.IncomingType, mappingValue.OutgoingType ?? mappingValue.InitialGuess));
+          }
+          else
+          {
+            mappingDict[category] = new List<KeyValuePair<string, string>>
+            {
+              new KeyValuePair<string, string>
+              (
+                mappingValue.IncomingType, mappingValue.OutgoingType ?? mappingValue.InitialGuess
+              )
+            };
+          }
         }
       }
       //Dictionary<string, string> mappingDict = Mapping.ToDictionary(x => x.IncomingType, x => x.OutgoingType ?? x.InitialGuess);
