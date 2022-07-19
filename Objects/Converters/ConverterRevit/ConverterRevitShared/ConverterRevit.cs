@@ -104,6 +104,9 @@ namespace Objects.Converter.Revit
       Base returnObject = null;
       switch (@object)
       {
+        case DB.Document o:
+          returnObject = ModelToSpeckle(o);
+          break;
         case DB.DetailCurve o:
           returnObject = DetailCurveToSpeckle(o);
           break;
@@ -270,8 +273,15 @@ namespace Objects.Converter.Revit
           && returnObject["renderMaterial"] == null
           && returnObject["displayValue"] == null)
       {
-        var material = GetElementRenderMaterial(@object as DB.Element);
-        returnObject["renderMaterial"] = material;
+        try
+        {
+          var material = GetElementRenderMaterial(@object as DB.Element);
+          returnObject["renderMaterial"] = material;
+        }
+        catch ( Exception e )
+        {
+          // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
+        }
       }
 
       //NOTE: adds the quantities of all materials to an element
