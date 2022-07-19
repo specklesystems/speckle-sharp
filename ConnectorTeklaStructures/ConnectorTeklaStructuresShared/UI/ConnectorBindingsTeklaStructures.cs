@@ -21,26 +21,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public ConnectorBindingsTeklaStructures(Model model)
     {
       Model = model;
-      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-      SelectionTimer.Start();
-    }
-
-    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      if (Model == null)
-      {
-        return;
-      }
-
-      // Commented out because not doing anything and causes freeze up on big selections
-      //var selection = GetSelectedObjects();
-      //TO DO
-
-
-      //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
-      //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
-
+ 
     }
 
     public override List<ReceiveMode> GetReceiveModes()
