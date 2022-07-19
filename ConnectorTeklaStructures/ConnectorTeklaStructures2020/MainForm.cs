@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 using Avalonia;
@@ -20,18 +13,6 @@ using DesktopUI2.Views;
 using Assembly = System.Reflection.Assembly;
 using Speckle.ConnectorTeklaStructures.UI;
 using System.Threading;
-
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-
-using Tekla.Structures.Model;
-using Tekla.Structures.Dialog;
-
-using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
-using Assembly = System.Reflection.Assembly;
-using Speckle.ConnectorTeklaStructures.UI;
 
 namespace Speckle.ConnectorTeklaStructures
 {
@@ -112,7 +93,7 @@ namespace Speckle.ConnectorTeklaStructures
             if (MainWindow == null)
             {
                 BuildAvaloniaApp().Start(AppMain, null);
-                var viewModel = new MainWindowViewModel(Bindings);
+                var viewModel = new MainViewModel(Bindings);
                 MainWindow = new DesktopUI2.Views.MainWindow
                 {
                     DataContext = viewModel
@@ -139,5 +120,10 @@ namespace Speckle.ConnectorTeklaStructures
             {
             }
         }
+
+    private void MainForm_Load(object sender, EventArgs e)
+    {
+
     }
+  }
 }
