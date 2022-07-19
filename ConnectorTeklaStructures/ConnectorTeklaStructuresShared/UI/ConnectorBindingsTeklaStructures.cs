@@ -21,9 +21,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public ConnectorBindingsTeklaStructures(Model model)
     {
       Model = model;
+ 
     }
-
-  
 
     public override List<ReceiveMode> GetReceiveModes()
     {

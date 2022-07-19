@@ -46,9 +46,9 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.displayMesh = GetMeshFromSolid(solid);
       var vol = new double();
       var area = new double();
-      PolyBeam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      PolyBeam.GetReportProperty("VOLUME", ref vol);
       speckleBeam.volume = vol;
-      PolyBeam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      PolyBeam.GetReportProperty("AREA", ref area);
       speckleBeam.area = area;
 
       return speckleBeam;
