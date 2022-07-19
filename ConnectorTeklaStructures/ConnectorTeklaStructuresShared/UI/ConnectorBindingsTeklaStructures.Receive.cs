@@ -19,10 +19,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
   {
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
-    }
     #region receiving
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
@@ -32,6 +28,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var converter = kit.LoadConverter(ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
       converter.SetContextDocument(Model);
       //var previouslyRecieveObjects = state.ReceivedObjects;
+
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
 
       if (converter == null)
       {

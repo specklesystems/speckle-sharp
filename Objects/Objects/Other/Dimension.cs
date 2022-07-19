@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using Arc = Objects.Geometry.Arc;
 using Vector = Objects.Geometry.Vector;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
@@ -21,14 +22,24 @@ namespace Objects.Other
     public double measurement { get; set; }
 
     /// <summary>
-    /// The text of the dimension.
+    /// The text of the dimension, without any formatting
     /// </summary>
-    public string text { get; set; }
+    public string value { get; set; }
+
+    /// <summary>
+    /// The text of the dimension, with rtf formatting
+    /// </summary>
+    public string richText { get; set; }
 
     /// <summary>
     /// The position of the dimension
     /// </summary>
     public Point position { get; set; }
+
+    /// <summary>
+    /// The position of the text of the dimension
+    /// </summary>
+    public Point textPosition { get; set; }
 
     /// <summary>
     /// Curves representing the annotation 
@@ -49,6 +60,13 @@ namespace Objects.Other
     /// The unitized normal of the dimension.
     /// </summary>
     public Vector direction { get; set; }
+
+    /// <summary>
+    /// Indicates if this dimension is an ordinate dimension
+    /// </summary>
+    /// <remarks> Ordinate dimensions (measuring distance between two points exclusively along the x or y axis) 
+    /// are in practice drawn with different conventions than linear dimensions, and are treated as a special subset of them.</remarks>
+    public bool isOrdinate { get; set; }
 
     /// <summary>
     /// The objects being measured.
@@ -86,7 +104,7 @@ namespace Objects.Other
     /// The objects being measured.
     /// </summary>
     /// <remarks>
-    /// For angle dimensions, these are representated as two lines.
+    /// For angle dimensions, this is two lines
     /// </remarks>
     public List<Line> measured { get; set; }
 

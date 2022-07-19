@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Other
 {
@@ -21,9 +22,26 @@ namespace Objects.Other
     public double opacity { get; set; } = 1;
     public double metalness { get; set; } = 0;
     public double roughness { get; set; } = 1;
+    
+    [SchemaIgnore]
     public int diffuse { get; set; } = Color.LightGray.ToArgb();
+    [SchemaIgnore]
     public int emissive { get; set; } = Color.Black.ToArgb();
 
+    [JsonIgnore]
+    public Color diffuseColor
+    {
+      get => Color.FromArgb(diffuse);
+      set => diffuse = value.ToArgb();
+    }
+    
+    [JsonIgnore]
+    public Color emissiveColor
+    {
+      get => Color.FromArgb(emissive);
+      set => diffuse = value.ToArgb();
+    }
+    
     public RenderMaterial() { }
 
     [SchemaInfo("RenderMaterial", "Creates a render material.", "BIM", "Other")]

@@ -1,0 +1,56 @@
+﻿<#@ template language="C#" #>
+<#@ output extension=".xml"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#
+	var buildPath = $@".\bin\Debug";
+	var files = Directory.EnumerateFiles(buildPath, "*.dll");
+	var x = 4;
+
+#><?xml version="1.0" encoding="utf-8"?>
+<TEP Version="1.0">
+
+	<Product Id="SpeckleTeklaConnector" UpgradeCode="B61394A0-BFC9-4A5A-9F85-F4FB89F6E857" Version="2.6" Language="1033"
+		Name="Speckle Connector Tekla Structures" Manufacturer="Speckle"  Description= "This extension adds Speckle"
+		IconPath="%TEPDEFINITIONFILEFOLDER%\logo.png" Type = "Environment">
+		<TeklaVersions>
+			<TeklaVersion Name="2099.1"/>
+			<MinTeklaVersion Name="2020.0"/>
+			<MaxTeklaVersion Name="2099.1"/>
+		</TeklaVersions>
+	</Product>
+	 
+	<SourcePathVariables>
+		<SourcePathVariable Id="TepOutputFolder" Value="%TEPDEFINITIONFILEFOLDER%\output" Comment="This provides the location where the package builder is to save the package."/>
+		<SourcePathVariable Id="BinariesFolder" Value="%TEPDEFINITIONFILEFOLDER%\ConnectorTeklaStructures2021\bin\Release"/>
+    </SourcePathVariables>
+
+	<TargetPathVariables>
+		<PathVariable Id="ModelPluginsDirectory" Value="%ENVDIR%\extensions\plugins\tekla\model\"/>
+		<PathVariable Id="ModelApplicationsDirectory" Value="%ENVDIR%\extensions\applications\tekla\model\"/>
+		<PathVariable Id="ExtensionsDir" Value="%commonEnvFolder%\extensions\"/>
+		<PathVariable Id="BinariesTargetDirectory" Value="%ExtensionsDir%\Speckle2Tekla\"/>
+		<PathVariable Id="BitmapsDirectory" Value="%ENVDIR%\..\bitmaps\"/>
+		<PathVariable Id="AttributeFileDirectory" Value="%commonEnvFolder%\system\"/>
+		<PathVariable Id="CommonMacroDirectory" Value="%commonEnvFolder%\macros\modeling\"/>
+	</TargetPathVariables>
+
+	<Component Id="TheExtensionComponent" Guid="7709FE25-5293-4BBF-AB37-13F72C6F6CCB">
+		<File Id="Icon" Source="%BinariesFolder%\et_element_Speckle.ConnectorTeklaStructures.bmp" Target="%BitmapsDirectory%"/>
+<#
+   foreach (var path in files)
+   {
+#>
+		<File Id="<#= Path.GetFileName(path) #>" Source="<#= "%BinariesFolder%\\"  + Path.GetFileName(path) #>" Target="%BinariesTargetDirectory%"/>
+<#
+   }
+#> </Component>
+
+	<Feature Id="TheExtensionFeature" Title="ExtensionFeature">
+		<ComponentRef ReferenceId="TheExtensionComponent" />
+	</Feature>
+
+ </TEP>

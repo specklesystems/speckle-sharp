@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-
-using Rhino;
-using Rhino.Commands;
-using Rhino.PlugIns;
-
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
-
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using System.IO;
-using DesktopUI2;
-using System.Threading;
+using Rhino;
+using Rhino.Commands;
 
 namespace SpeckleRhino
 {
@@ -32,7 +25,7 @@ namespace SpeckleRhino
 
     public static Window MainWindow { get; private set; }
 
-    
+
 
     private static CancellationTokenSource Lifetime = null;
 
@@ -53,7 +46,7 @@ namespace SpeckleRhino
       return AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new X11PlatformOptions { UseGpu = false })
-      .With(new AvaloniaNativePlatformOptions{ UseGpu = false, UseDeferredRendering = true })
+      .With(new AvaloniaNativePlatformOptions { UseGpu = false, UseDeferredRendering = true })
       .With(new MacOSPlatformOptions { ShowInDock = false, DisableDefaultApplicationMenuItems = true, DisableNativeMenus = true })
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
       .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
@@ -63,6 +56,12 @@ namespace SpeckleRhino
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
+
+
+#if DEBUG
+      SpeckleRhinoConnectorPlugin.Instance.Init();
+#endif
+
 #if MAC
       CreateOrFocusSpeckle();
 #endif

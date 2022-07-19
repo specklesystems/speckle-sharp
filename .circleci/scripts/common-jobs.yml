@@ -1,0 +1,4 @@
+core:
+  - test-core:
+      requires:
+        - build-core
