@@ -11,6 +11,7 @@ using BE = Objects.BuiltElements;
 using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 using Tekla.Structures;
+using GE = Objects.Geometry;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -27,6 +28,8 @@ namespace Objects.Converter.TeklaStructures
     public string Description => "Default Speckle Kit for TeklaStructures";
 
     public string Name => nameof(ConverterTeklaStructures);
+
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public string Author => "Speckle";
 
@@ -59,6 +62,8 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToNative(Base @object)
     {
+
+
       switch (@object)
       {
         case BE.Beam b:
@@ -84,6 +89,7 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToSpeckle(object @object)
     {
+
       //return @object
       switch (@object)
       {
@@ -115,6 +121,29 @@ namespace Objects.Converter.TeklaStructures
 
     public object ConvertToNative(Base @object)
     {
+
+      Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
+      if (bool.Parse(recieveModelMesh) == true)
+      {
+        try
+        {
+          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
+          //dynamic property = propInfo;
+          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+          MeshToNative(@object, meshes);
+          return true;
+        }
+        catch
+        {
+
+        }
+
+
+
+      }
+
+
       switch (@object)
       {
         case BE.Beam o:
@@ -218,7 +247,7 @@ namespace Objects.Converter.TeklaStructures
 
     public void SetConverterSettings(object settings)
     {
-      throw new NotImplementedException("This converter does not have any settings.");
+      Settings = settings as Dictionary<string, string>;
     }
   }
 }

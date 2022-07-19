@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TEP Version="1.0">
+
+	<Product Id="SpeckleTeklaConnector" UpgradeCode="B61394A0-BFC9-4A5A-9F85-F4FB89F6E857" Version="2.6" Language="1033"
+		Name="Speckle Connector Tekla Structures" Manufacturer="Speckle"  Description= "This extension adds Speckle"
+		IconPath="%TEPDEFINITIONFILEFOLDER%\logo.png" Type = "Environment">
+		<TeklaVersions>
+			<TeklaVersion Name="2099.1"/>
+			<MinTeklaVersion Name="2020.0"/>
+			<MaxTeklaVersion Name="2099.1"/>
+		</TeklaVersions>
+	</Product>
+	 
+	<SourcePathVariables>
+		<SourcePathVariable Id="TepOutputFolder" Value="%TEPDEFINITIONFILEFOLDER%\output" Comment="This provides the location where the package builder is to save the package."/>
+		<SourcePathVariable Id="BinariesFolder" Value="%TEPDEFINITIONFILEFOLDER%\ConnectorTeklaStructures2021\bin\Release"/>
+    </SourcePathVariables>
+
+	<TargetPathVariables>
+		<PathVariable Id="ModelPluginsDirectory" Value="%ENVDIR%\extensions\plugins\tekla\model\"/>
+		<PathVariable Id="ModelApplicationsDirectory" Value="%ENVDIR%\extensions\applications\tekla\model\"/>
+		<PathVariable Id="ExtensionsDir" Value="%commonEnvFolder%\extensions\"/>
+		<PathVariable Id="BinariesTargetDirectory" Value="%ExtensionsDir%\Speckle2Tekla\"/>
+		<PathVariable Id="BitmapsDirectory" Value="%ENVDIR%\..\bitmaps\"/>
+		<PathVariable Id="AttributeFileDirectory" Value="%commonEnvFolder%\system\"/>
+		<PathVariable Id="CommonMacroDirectory" Value="%commonEnvFolder%\macros\modeling\"/>
+	</TargetPathVariables>
+
+	<Component Id="TheExtensionComponent" Guid="7709FE25-5293-4BBF-AB37-13F72C6F6CCB">
+		<File Id="Icon" Source="%BinariesFolder%\et_element_Speckle.ConnectorTeklaStructures.bmp" Target="%BitmapsDirectory%"/>
+		<File Id="Avalonia.Animation.dll" Source="%BinariesFolder%\Avalonia.Animation.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Base.dll" Source="%BinariesFolder%\Avalonia.Base.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Controls.DataGrid.dll" Source="%BinariesFolder%\Avalonia.Controls.DataGrid.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Controls.dll" Source="%BinariesFolder%\Avalonia.Controls.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.DesignerSupport.dll" Source="%BinariesFolder%\Avalonia.DesignerSupport.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Desktop.dll" Source="%BinariesFolder%\Avalonia.Desktop.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.DesktopRuntime.dll" Source="%BinariesFolder%\Avalonia.DesktopRuntime.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Diagnostics.dll" Source="%BinariesFolder%\Avalonia.Diagnostics.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Dialogs.dll" Source="%BinariesFolder%\Avalonia.Dialogs.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.dll" Source="%BinariesFolder%\Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.FreeDesktop.dll" Source="%BinariesFolder%\Avalonia.FreeDesktop.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Input.dll" Source="%BinariesFolder%\Avalonia.Input.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Interactivity.dll" Source="%BinariesFolder%\Avalonia.Interactivity.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Layout.dll" Source="%BinariesFolder%\Avalonia.Layout.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Markup.dll" Source="%BinariesFolder%\Avalonia.Markup.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Markup.Xaml.dll" Source="%BinariesFolder%\Avalonia.Markup.Xaml.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.MicroCom.dll" Source="%BinariesFolder%\Avalonia.MicroCom.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Native.dll" Source="%BinariesFolder%\Avalonia.Native.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.OpenGL.dll" Source="%BinariesFolder%\Avalonia.OpenGL.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.ReactiveUI.dll" Source="%BinariesFolder%\Avalonia.ReactiveUI.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Remote.Protocol.dll" Source="%BinariesFolder%\Avalonia.Remote.Protocol.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Skia.dll" Source="%BinariesFolder%\Avalonia.Skia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Styling.dll" Source="%BinariesFolder%\Avalonia.Styling.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Themes.Default.dll" Source="%BinariesFolder%\Avalonia.Themes.Default.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Themes.Fluent.dll" Source="%BinariesFolder%\Avalonia.Themes.Fluent.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Visuals.dll" Source="%BinariesFolder%\Avalonia.Visuals.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Win32.dll" Source="%BinariesFolder%\Avalonia.Win32.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.X11.dll" Source="%BinariesFolder%\Avalonia.X11.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="DesktopUI2.dll" Source="%BinariesFolder%\DesktopUI2.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="DialogHost.Avalonia.dll" Source="%BinariesFolder%\DialogHost.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="DynamicData.dll" Source="%BinariesFolder%\DynamicData.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Client.Abstractions.dll" Source="%BinariesFolder%\GraphQL.Client.Abstractions.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Client.Abstractions.Websocket.dll" Source="%BinariesFolder%\GraphQL.Client.Abstractions.Websocket.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Client.dll" Source="%BinariesFolder%\GraphQL.Client.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Primitives.dll" Source="%BinariesFolder%\GraphQL.Primitives.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="HarfBuzzSharp.dll" Source="%BinariesFolder%\HarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="JetBrains.Annotations.dll" Source="%BinariesFolder%\JetBrains.Annotations.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="libHarfBuzzSharp.dll" Source="%BinariesFolder%\libHarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="libSkiaSharp.dll" Source="%BinariesFolder%\libSkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Avalonia.dll" Source="%BinariesFolder%\Material.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Colors.dll" Source="%BinariesFolder%\Material.Colors.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.DataGrid.dll" Source="%BinariesFolder%\Material.DataGrid.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Dialog.dll" Source="%BinariesFolder%\Material.Dialog.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Icons.Avalonia.dll" Source="%BinariesFolder%\Material.Icons.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Icons.dll" Source="%BinariesFolder%\Material.Icons.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Ripple.dll" Source="%BinariesFolder%\Material.Ripple.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Styles.dll" Source="%BinariesFolder%\Material.Styles.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="MathNet.Numerics.dll" Source="%BinariesFolder%\MathNet.Numerics.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="MathNet.Spatial.dll" Source="%BinariesFolder%\MathNet.Spatial.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.Bcl.AsyncInterfaces.dll" Source="%BinariesFolder%\Microsoft.Bcl.AsyncInterfaces.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.CSharp.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.CSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.CSharp.Scripting.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.CSharp.Scripting.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.Scripting.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.Scripting.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Newtonsoft.Json.dll" Source="%BinariesFolder%\Newtonsoft.Json.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Objects.dll" Source="%BinariesFolder%\Objects.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="PolygonMesher.dll" Source="%BinariesFolder%\PolygonMesher.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="ReactiveUI.dll" Source="%BinariesFolder%\ReactiveUI.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Sentry.dll" Source="%BinariesFolder%\Sentry.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SkiaSharp.dll" Source="%BinariesFolder%\SkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Speckle.Newtonsoft.Json.dll" Source="%BinariesFolder%\Speckle.Newtonsoft.Json.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SpeckleConnectorTeklaStructures.dll" Source="%BinariesFolder%\SpeckleConnectorTeklaStructures.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SpeckleCore2.dll" Source="%BinariesFolder%\SpeckleCore2.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Splat.dll" Source="%BinariesFolder%\Splat.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Stylet.dll" Source="%BinariesFolder%\Stylet.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Buffers.dll" Source="%BinariesFolder%\System.Buffers.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Collections.Immutable.dll" Source="%BinariesFolder%\System.Collections.Immutable.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.ComponentModel.Annotations.dll" Source="%BinariesFolder%\System.ComponentModel.Annotations.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Data.Common.dll" Source="%BinariesFolder%\System.Data.Common.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Data.SQLite.dll" Source="%BinariesFolder%\System.Data.SQLite.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Diagnostics.StackTrace.dll" Source="%BinariesFolder%\System.Diagnostics.StackTrace.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Diagnostics.Tracing.dll" Source="%BinariesFolder%\System.Diagnostics.Tracing.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Drawing.Common.dll" Source="%BinariesFolder%\System.Drawing.Common.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Globalization.Extensions.dll" Source="%BinariesFolder%\System.Globalization.Extensions.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.IO.Compression.dll" Source="%BinariesFolder%\System.IO.Compression.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Memory.dll" Source="%BinariesFolder%\System.Memory.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Net.Http.dll" Source="%BinariesFolder%\System.Net.Http.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Net.Sockets.dll" Source="%BinariesFolder%\System.Net.Sockets.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Net.WebSockets.Client.Managed.dll" Source="%BinariesFolder%\System.Net.WebSockets.Client.Managed.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Numerics.Vectors.dll" Source="%BinariesFolder%\System.Numerics.Vectors.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Reactive.dll" Source="%BinariesFolder%\System.Reactive.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Reflection.Metadata.dll" Source="%BinariesFolder%\System.Reflection.Metadata.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Runtime.CompilerServices.Unsafe.dll" Source="%BinariesFolder%\System.Runtime.CompilerServices.Unsafe.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Runtime.Serialization.Primitives.dll" Source="%BinariesFolder%\System.Runtime.Serialization.Primitives.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Security.Cryptography.Algorithms.dll" Source="%BinariesFolder%\System.Security.Cryptography.Algorithms.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Security.Principal.Windows.dll" Source="%BinariesFolder%\System.Security.Principal.Windows.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Security.SecureString.dll" Source="%BinariesFolder%\System.Security.SecureString.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Text.Encoding.CodePages.dll" Source="%BinariesFolder%\System.Text.Encoding.CodePages.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Text.Encodings.Web.dll" Source="%BinariesFolder%\System.Text.Encodings.Web.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Text.Json.dll" Source="%BinariesFolder%\System.Text.Json.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Threading.Overlapped.dll" Source="%BinariesFolder%\System.Threading.Overlapped.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Threading.Tasks.Extensions.dll" Source="%BinariesFolder%\System.Threading.Tasks.Extensions.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.ValueTuple.dll" Source="%BinariesFolder%\System.ValueTuple.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Xml.XPath.XDocument.dll" Source="%BinariesFolder%\System.Xml.XPath.XDocument.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Application.Library.dll" Source="%BinariesFolder%\Tekla.Application.Library.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Analysis.dll" Source="%BinariesFolder%\Tekla.Structures.Analysis.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Catalogs.dll" Source="%BinariesFolder%\Tekla.Structures.Catalogs.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Datatype.dll" Source="%BinariesFolder%\Tekla.Structures.Datatype.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Dialog.dll" Source="%BinariesFolder%\Tekla.Structures.Dialog.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.dll" Source="%BinariesFolder%\Tekla.Structures.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Drawing.dll" Source="%BinariesFolder%\Tekla.Structures.Drawing.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Model.dll" Source="%BinariesFolder%\Tekla.Structures.Model.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Plugins.dll" Source="%BinariesFolder%\Tekla.Structures.Plugins.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tmds.DBus.dll" Source="%BinariesFolder%\Tmds.DBus.dll" Target="%BinariesTargetDirectory%"/>
+ </Component>
+
+	<Feature Id="TheExtensionFeature" Title="ExtensionFeature">
+		<ComponentRef ReferenceId="TheExtensionComponent" />
+	</Feature>
+
+ </TEP>
