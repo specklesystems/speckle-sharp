@@ -142,8 +142,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - speckle-sharp-ci-tools/Installers
 
   deploy-connector-new:
-    docker:
-      - image: cimg/base:2021.01
+    macos:
+      xcode: 12.5.1
     parameters:
       slug:
         type: string
@@ -151,6 +151,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
     steps:
       - checkout
+      - run:
+          name: Install dotnet
+          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
       - attach_workspace:
           at: ./
       - run:
