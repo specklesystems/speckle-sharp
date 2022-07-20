@@ -135,8 +135,32 @@ namespace Speckle.Core.Models
   public class ProgressReport
   {
     #region Conversion
-    public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
+    /// <summary>
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> ConversionErrors { get; } = new List<Exception>();
+    private readonly object ConversionErrorsLock = new object();
+    public string ConversionErrorsString
+    {
+      get
+      {
+        lock (ConversionErrorsLock)
+          return string.Join("\n", ConversionErrors.Select(x => x.Message).Distinct());
+      }
+    }
 
+    public int ConversionErrorsCount => ConversionErrors.Count;
+
+    public void LogConversionError(Exception exception)
+    {
+      lock (ConversionErrorsLock)
+        ConversionErrors.Add(exception);
+    }
+    public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
+    public void Log(string str)
+    {
+
+    }
     public void Log(ApplicationObject obj)
     {
       var _reportObject = UpdateReportObject(obj); 
@@ -200,12 +224,19 @@ namespace Speckle.Core.Models
     {
       lock(OperationErrorsLock)
         OperationErrors.AddRange(report.OperationErrors);
+
       // update report object notes
-      foreach (var _reportObject in report.ReportObjects)
-        if (GetReportObject(_reportObject.OriginalId, out int index))
-          foreach (var logItem in _reportObject.Log)
-            if (!ReportObjects[index].Log.Contains(logItem))
-              ReportObjects[index].Log.Add(logItem);
+      foreach (var item in ReportObjects)
+      {
+        var ids = new List<string> { item.OriginalId };
+        if (item.Fallback.Count > 0) ids.AddRange(item.Fallback.Select(o => o.OriginalId));
+
+        foreach (var id in ids)
+          if (report.GetReportObject(id, out int index))
+            foreach (var logItem in report.ReportObjects[index].Log)
+              if (!item.Log.Contains(logItem))
+                item.Log.Add(logItem);
+      }
     }
   }
 }

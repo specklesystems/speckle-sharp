@@ -246,32 +246,30 @@ namespace SpeckleRhino
 
         int count = 0;
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
-        Preview = FlattenCommitObject(commitObject, commitLayerName, progress, ref count);
+        Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
         
         // Convert preview objects
         foreach (var previewObj in Preview)
         {
           previewObj.CreatedIds = new List<string>() { previewObj.OriginalId }; // temporary store speckle id as created id for Preview report selection to work
-          previewObj.Converted = previewObj.Convertible ? 
-            ConvertObject(previewObj, progress) :
-            previewObj.Fallback.SelectMany(f => ConvertObject(f, progress)).ToList();
 
-          // reporting
-          if (!previewObj.Convertible)
+          previewObj.Status = ApplicationObject.State.Converting;
+          progress.Report.Log(previewObj);
+          previewObj.Converted = previewObj.Convertible ? ConvertObject(previewObj) : previewObj.Fallback.SelectMany(o => ConvertObject(o)).ToList();
+
+          if (previewObj.Converted == null || previewObj.Converted.Count == 0)
           {
-            if (previewObj.Converted.Count == 0)
-              previewObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving objects of type {previewObj.Descriptor} not supported in Rhino and no valid fallback values found");
-            else
-              previewObj.Update(status: ApplicationObject.State.Created, logItem: $"Receiving objects of type {previewObj.Descriptor} not supported in Rhino, converting to {previewObj.Converted.Count} fallback values instead");
+            previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
           }
           else
           {
-            previewObj.Update(status: ApplicationObject.State.Created);
+            previewObj.Status = ApplicationObject.State.Created;
+            if (!previewObj.Convertible)
+              previewObj.Update(logItem: $"Converted unsupported object to {previewObj.Converted.Count} fallback values");
           }
           progress.Report.Log(previewObj);
         }
-
         progress.Report.Merge(Converter.Report);
 
         // undo notes edit
@@ -332,29 +330,37 @@ namespace SpeckleRhino
         {
           // flatten the commit object to retrieve children objs
           int count = 0;
-          Preview = FlattenCommitObject(commitObject, commitLayerName, progress, ref count);
+          Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
 
-          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-            return;
+          // convert
+          foreach (var previewObj in Preview)
+          {
+            previewObj.Status = ApplicationObject.State.Converting;
+            progress.Report.Log(previewObj);
+            previewObj.Converted = previewObj.Convertible ? ConvertObject(previewObj) : previewObj.Fallback.SelectMany(o => ConvertObject(o)).ToList();
+            
+            if (previewObj.Converted == null || previewObj.Converted.Count == 0)
+              previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
+            else
+              if (!previewObj.Convertible)
+                previewObj.Update(logItem: $"Converted unsupported object to {previewObj.Converted.Count} fallback values");
+
+            progress.Report.Log(previewObj);
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+              return;
+          }
+          progress.Report.Merge(Converter.Report);
         }
 
         if (progress.Report.OperationErrorsCount != 0)
           return;
 
-        // bake preview objects
         foreach (var previewObj in Preview)
         {
-          if (previewObj.Converted == null || previewObj.Converted.Count == 0)
-          {
-            if (previewObj.Convertible)
-              previewObj.Converted = ConvertObject(previewObj, progress);
-            else
-              previewObj.Converted = previewObj.Fallback.SelectMany(o => ConvertObject(o, progress)).ToList();
-          }
-
+          // bake
           previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
-          if (previewObj.Converted != null)
-            BakeObject(previewObj, progress);
+          BakeObject(previewObj);
+          progress.Report.Log(previewObj);
 
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             return;
@@ -367,7 +373,6 @@ namespace SpeckleRhino
         Doc.Notes = segments[0];
       });
 
-      progress.Report.Merge(Converter.Report);
       Doc.Views.Redraw();
       Doc.EndUndoRecord(undoRecord);
 
@@ -417,13 +422,14 @@ namespace SpeckleRhino
     }
 
     // Recurses through the commit object and flattens it. Returns list of Preview objects
-    private List<ApplicationObject> FlattenCommitObject(object obj, string layer, ProgressViewModel progress, ref int count, bool foundConvertibleMember = false)
+    private List<ApplicationObject> FlattenCommitObject(object obj, string layer, ref int count, bool foundConvertibleMember = false)
     {
       var objects = new List<ApplicationObject>();
 
       if (obj is Base @base)
       {
-        var appObj = new ApplicationObject(@base.id, @base.speckle_type) { Container = layer };
+        var speckleType = @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        var appObj = new ApplicationObject(@base.id, speckleType) { Container = layer };
         if (Converter.CanConvertToNative(@base))
         {
           appObj.Convertible = true;
@@ -440,7 +446,7 @@ namespace SpeckleRhino
           bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
           {
-            var fallbackObjects = FlattenCommitObject(@base["displayValue"], layer, progress, ref count, foundConvertibleMember);
+            var fallbackObjects = FlattenCommitObject(@base["displayValue"], layer, ref count, foundConvertibleMember);
             if (fallbackObjects.Count > 0)
             {
               appObj.Fallback.AddRange(fallbackObjects);
@@ -449,7 +455,10 @@ namespace SpeckleRhino
             }
           }
           if (hasFallback)
+          {
             objects.Add(appObj);
+            StoredObjects.Add(@base.id, @base);
+          }
 
           // handle any children elements, these are added as separate previewObjects
           List<string> props = @base.GetDynamicMembers().ToList();
@@ -464,8 +473,9 @@ namespace SpeckleRhino
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
             string rhLayerName = objLayerName.StartsWith($"{layer}{Layer.PathSeparator}") ? objLayerName : $"{layer}{Layer.PathSeparator}{objLayerName}";
 
-            var nestedObjects = FlattenCommitObject(@base[prop], rhLayerName, progress, ref count, foundConvertibleMember);
-            if (nestedObjects.Count > 0)
+            var nestedObjects = FlattenCommitObject(@base[prop], rhLayerName, ref count, foundConvertibleMember);
+            var validNestedObjects = nestedObjects.Where(o => o.Convertible == true || o.Fallback.Count > 0)?.ToList();
+            if (validNestedObjects != null && validNestedObjects.Count > 0)
             {
               objects.AddRange(nestedObjects);
               foundConvertibleMember = true;
@@ -486,7 +496,7 @@ namespace SpeckleRhino
       {
         count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, layer, progress, ref count));
+          objects.AddRange(FlattenCommitObject(listObj, layer, ref count));
         return objects;
       }
 
@@ -494,7 +504,7 @@ namespace SpeckleRhino
       {
         count = 0;
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, layer, progress, ref count));
+          objects.AddRange(FlattenCommitObject(kvp.Value, layer, ref count));
         return objects;
       }
 
@@ -502,21 +512,14 @@ namespace SpeckleRhino
     }
 
     // conversion and bake
-    private List<object> ConvertObject(ApplicationObject previewObj, ProgressViewModel progress)
+    private List<object> ConvertObject(ApplicationObject previewObj)
     {
       var obj = StoredObjects[previewObj.OriginalId];
       var convertedList = new List<object>();
 
-      // add preview object report object to progress for converter
-      previewObj.Status = ApplicationObject.State.Converting;
-      progress.Report.Log(previewObj);
-
       var converted = Converter.ConvertToNative(obj);
       if (converted == null)
-      {
-        previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion of {obj.speckle_type} returned Null");
         return convertedList;
-      }
 
       //Iteratively flatten any lists
       void FlattenConvertedObject(object item)
@@ -531,12 +534,11 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(ApplicationObject previewObj, ProgressViewModel progress)
+    private void BakeObject(ApplicationObject previewObj)
     {
-      var obj = StoredObjects[previewObj.OriginalId]; //System.Collections.Generic.KeyNotFoundException: 'The given key was not present in the dictionary.'
-      var converted = previewObj.Converted;
+      var obj = StoredObjects[previewObj.OriginalId];
       int bakedCount = 0;
-      foreach (var convertedItem in converted)
+      foreach (var convertedItem in previewObj.Converted)
       {
         switch (convertedItem)
         {
@@ -606,10 +608,9 @@ namespace SpeckleRhino
       }
 
       if (bakedCount == 0)
-        previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not create object {obj.id} of type {obj.speckle_type}");
+        previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
       else
         previewObj.Update(status: ApplicationObject.State.Created);
-      progress.Report.Log(previewObj);
     }
 
     #endregion

@@ -5,17 +5,12 @@ using System.Linq;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using Rhino.Display;
 using RH = Rhino.Geometry;
 using Grasshopper.Kernel.Types;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Rhino.Display;
-using ReportObject = Speckle.Core.Models.ProgressReport.ReportObject;
-
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
@@ -68,7 +63,6 @@ namespace Objects.Converter.RhinoGh
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
-      //Report.Log($"Using converter: {Name} v{ver}");
     }
     public string Description => "Default Speckle Kit for Rhino & Grasshopper";
     public string Name => nameof(ConverterRhinoGh);
@@ -91,6 +85,7 @@ namespace Objects.Converter.RhinoGh
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
+
     public void SetConverterSettings(object settings)
     {
       var s = (MeshSettings)settings;
@@ -100,12 +95,10 @@ namespace Objects.Converter.RhinoGh
     public void SetContextDocument(object doc)
     {
       Doc = (RhinoDoc)doc;
-      //Report.Log($"Using document: {Doc.Path}");
-      //Report.Log($"Using units: {ModelUnits}");
     }
 
     // speckle user string for custom schemas
-    string SpeckleSchemaKey = "SpeckleSchema";
+    private string SpeckleSchemaKey = "SpeckleSchema";
 
     public RH.Mesh GetRhinoRenderMesh(RhinoObject rhinoObj)
     {
