@@ -142,11 +142,11 @@ def createConfigFile(deploy: bool, outputPath: str):
 
     # Modify jobs for deployment
     if deploy:
-        # deploy_job = {}
-        # deploy_job["filters"] = getTagFilter(slugs_to_match)
-        # deploy_job["requires"] = jobs_before_deploy
-        # main_workflow["jobs"] += [{"deploy-connectors": deploy_job}]
-        # print("Added deploy job: deployment")
+        deploy_job = {}
+        deploy_job["filters"] = getTagFilter(slugs_to_match)
+        deploy_job["requires"] = jobs_before_deploy
+        main_workflow["jobs"] += [{"deploy-connectors": deploy_job}]
+        print("Added deploy job: deployment")
 
         if "get-ci-tools" in main_workflow["jobs"]:
             main_workflow["jobs"].remove("get-ci-tools")
@@ -177,7 +177,7 @@ def getNewDeployJob(jobName: str):
     deployJob: Dict[str, Any] = {
         "slug": slug,
         "os": "Mac" if hasMac else "Win",
-        "requires": [jobName],
+        "requires": ["deploy-connectors", jobName],
     }
     return {"deploy-connector-new": deployJob}
 
