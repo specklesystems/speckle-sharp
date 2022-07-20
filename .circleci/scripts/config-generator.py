@@ -176,6 +176,7 @@ def getNewDeployJob(jobName: str):
     hasMac = slug.find("-mac") != -1
     deployJob: Dict[str, Any] = {
         "slug": slug,
+        "name": slug + "-deploy",
         "os": "Mac" if hasMac else "Win",
         "requires": ["deploy-connectors", jobName],
         "filters": getTagFilter([jobName]),
