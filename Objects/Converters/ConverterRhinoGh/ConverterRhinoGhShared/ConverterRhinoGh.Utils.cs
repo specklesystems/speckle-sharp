@@ -34,7 +34,7 @@ namespace Objects.Converter.RhinoGh
       if (parsedSchema.Length > 2) // there is incorrect formatting in the schema string!
         return null;
       if (parsedSchema.Length == 2)
-        args = parsedSchema[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToArray();
+        args = parsedSchema[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)?.Select(o => o.Trim())?.ToArray();
       return parsedSchema[0].Trim();
     }
 
