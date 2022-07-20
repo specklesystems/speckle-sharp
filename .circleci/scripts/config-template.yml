@@ -151,14 +151,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
     steps:
       - checkout
-      - run:
-          name: Install dotnet
-          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
       - attach_workspace:
           at: ./
       - run:
+          name: Install dotnet
+          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+      - run:
           name: Install Speckle.Manager.Feed
-          command: dotnet tool install --global Speckle.Manager.Feed
+          command: ~/.dotnet/dotnet tool install --global Speckle.Manager.Feed
       - run:
           name: Upload new version
           command: |
