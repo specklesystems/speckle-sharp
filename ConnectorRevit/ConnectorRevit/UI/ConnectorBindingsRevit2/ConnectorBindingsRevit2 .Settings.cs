@@ -32,6 +32,10 @@ namespace Speckle.ConnectorRevit.UI
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
+    const string noMapping = "None";
+    const string everyReceive = "Every Receive";
+    const string forNewTypes = "When Unmapped Types are Detected";
+
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
@@ -62,6 +66,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
       List<string> prettyMeshOptions = new List<string>() { defaultValue, dxf, familyDxf };
+      List<string> mappingOptions = new List<string>() { noMapping, everyReceive, forNewTypes };
 
       // find project base point and survey point. these don't always have name props, so store them under custom strings
       var basePoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
@@ -79,8 +84,9 @@ namespace Speckle.ConnectorRevit.UI
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Description = "Determines the display style of imported meshes"},
-        new CheckBoxSetting{Slug = "recieve-mappings" , Name = "Toggle for Mappings", Icon = "Link", IsChecked = false,Description = "If toggled, map on recieve of Objects" },
-        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Set", state=state, progress=progress},
+        new ListBoxSetting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = mappingOptions, Description = "Sends or receives stream objects in relation to this document point"},
+        //new CheckBoxSetting{Slug = "recieve-mappings" , Name = "Toggle for Mappings", Icon = "Link", IsChecked = false,Description = "If toggled, map on recieve of Objects" },
+        //new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Set", state=state, progress=progress},
       };
     }
 
@@ -141,6 +147,7 @@ namespace Speckle.ConnectorRevit.UI
       returnDict["Columns"] = types;
 
       // Misc
+      collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
       list = collector.Excluding(exclusionFilterIds);
       types = list.Select(o => o.Name).Distinct().ToList();
       returnDict["Miscellaneous"] = types;

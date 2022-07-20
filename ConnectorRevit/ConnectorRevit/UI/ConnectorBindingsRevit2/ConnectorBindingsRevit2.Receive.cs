@@ -29,8 +29,6 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns></returns>
     /// 
 
-
-
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       progress.Report.Log($"start recieve");
@@ -114,7 +112,7 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
 
-      // update flattened objects if the user has custom mappings
+      //// update flattened objects if the user has custom mappings
       //flattenedObjects = await UpdateForCustomMappingAsync(state, progress, flattenedObjects);
 
 
@@ -181,11 +179,11 @@ namespace Speckle.ConnectorRevit.UI
 
     public async Task<List<Base>> UpdateForCustomMappingAsync(StreamState state, ProgressViewModel progress, List<Base> flattenedBase)
     {
-      //// Get Settings for recieve on mapping 
-      //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
-      //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
+      // Get Settings for recieve on mapping 
+      //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as ListBoxSetting);
+      //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : null;
 
-      //if (!receiveMappings)
+      //if (receiveMappings == )
       //  return flattenedBase;
 
       Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
@@ -238,7 +236,6 @@ namespace Speckle.ConnectorRevit.UI
     {
       foreach (var @object in objects)
       {
-
         try
         {
           //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
