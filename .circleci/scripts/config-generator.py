@@ -178,7 +178,7 @@ def getNewDeployJob(jobName: str):
         "slug": slug,
         "name": slug + "-deploy",
         "os": "Mac" if hasMac else "Win",
-        "requires": [jobName],
+        "requires": ["deploy-connectors", jobName],
         "filters": getTagFilter([jobName]),
     }
     return {"deploy-connector-new": deployJob}
