@@ -1,5 +1,6 @@
 import json
-from typing import List
+from re import S
+from typing import Any, Dict, List
 import yaml
 import sys
 import getopt
@@ -145,8 +146,8 @@ def createConfigFile(deploy: bool, outputPath: str):
         deploy_job["filters"] = getTagFilter(slugs_to_match)
         deploy_job["requires"] = jobs_before_deploy
         main_workflow["jobs"] += [{"deploy-connectors": deploy_job}]
-
         print("Added deploy job: deployment")
+
         if "get-ci-tools" in main_workflow["jobs"]:
             main_workflow["jobs"].remove("get-ci-tools")
 
@@ -161,11 +162,24 @@ def createConfigFile(deploy: bool, outputPath: str):
                 jobAttrs["filters"] = getTagFilter(slugs_to_match)
                 print(f"Added missing filter to job: {x[0]}")
 
+        for jobName in jobs_before_deploy:
+            main_workflow["jobs"] += [getNewDeployJob(jobName)]
     # Output continuation file
     with open(outputPath, "w") as file:
         yaml.dump(config, file, sort_keys=False)
 
     print("---- Finished creating config ----")
+
+
+def getNewDeployJob(jobName: str):
+    slug = jobName.split("-build")[0]
+    hasMac = slug.find("-mac") != -1
+    deployJob: Dict[str, Any] = {
+        "slug": slug,
+        "os": "Mac" if hasMac else "Win",
+        "requires": ["deploy-connectors", jobName],
+    }
+    return {"deploy-connector-new": deployJob}
 
 
 if __name__ == "__main__":

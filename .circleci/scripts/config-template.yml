@@ -136,10 +136,49 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           shell: cmd.exe #does not work in powershell
           environment:
             SLUG: << parameters.slug >>
+      - run:
+          name: Deploy?
+          command:
+            | # stop job if not triggered by deployment workflow (parameters.installer == false)
+            if (-Not [System.Convert]::ToBoolean('<< parameters.installer >>') ) { 
+            circleci-agent step halt 
+            Write-Host "Job stopped gracefully"
+            } else { Write-Host "Job continuing" }
+      - run:
+          name: Install Speckle.Manager.Feed
+          run: dotnet tool install --global Speckle.Manager.Feed
+      - run:
+          name: Upload new version
+          run: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
+            addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe
       - persist_to_workspace:
           root: ./
           paths:
             - speckle-sharp-ci-tools/Installers
+
+  deploy-connector-new:
+    docker:
+      - image: cimg/base:2021.01
+    parameters:
+      slug:
+        type: string
+      os:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Install Speckle.Manager.Feed
+          run: dotnet tool install --global Speckle.Manager.Feed
+      - run:
+          name: Upload new version
+          run: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
+            speckle.manager.feed addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>-$SEMVER.exe
 
   build-connector-mac:
     macos:
