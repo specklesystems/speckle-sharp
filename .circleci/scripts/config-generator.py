@@ -32,7 +32,7 @@ def runCommand(argv: List[str]):
         elif opt in ("-o", "--output"):
             output_filepath = arg
 
-    createConfigFile(deploy, output_filepath)
+    createConfigFile(True, output_filepath)
 
 
 def setup():
@@ -178,6 +178,7 @@ def getNewDeployJob(jobName: str):
         "slug": slug,
         "os": "Mac" if hasMac else "Win",
         "requires": ["deploy-connectors", jobName],
+        "filters": getTagFilter([jobName]),
     }
     return {"deploy-connector-new": deployJob}
 
