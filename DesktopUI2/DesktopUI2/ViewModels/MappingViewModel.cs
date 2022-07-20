@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 namespace DesktopUI2.ViewModels
@@ -189,32 +190,33 @@ namespace DesktopUI2.ViewModels
       progress.Report.Log($"SearchResults {SearchResults}");
     }
 
-    public class MappingValue
+    [DataContract]
+    public class MappingValue : ReactiveObject
     {
+      [DataMember]
       public string IncomingType { get; set; }
       public bool Imported { get; set; }
-      public string InitialGuess { get; set; }
-      public string OutgoingType { get; set; }
-      public string OutgoingFamily { get; set; }
 
-      //private string _initialGuess;
-      //public string InitialGuess
-      //{
-      //  get => _initialGuess;
-      //  set => this.RaiseAndSetIfChanged(ref _initialGuess, value);
-      //}
-      //private string _outgoingType;
-      //public string OutgoingType
-      //{
-      //  get => _outgoingType;
-      //  set => this.RaiseAndSetIfChanged(ref _outgoingType, value);
-      //}
-      //private string _outgoingFamily;
-      //public string OutgoingFamily
-      //{
-      //  get => _outgoingFamily;
-      //  set => this.RaiseAndSetIfChanged(ref _outgoingFamily, value);
-      //}
+      private string _initialGuess;
+      [DataMember]
+      public string InitialGuess
+      {
+        get => _initialGuess;
+        set => this.RaiseAndSetIfChanged(ref _initialGuess, value);
+      }
+      private string _outgoingType;
+      [DataMember]
+      public string OutgoingType
+      {
+        get => _outgoingType;
+        set => this.RaiseAndSetIfChanged(ref _outgoingType, value);
+      }
+      private string _outgoingFamily;
+      public string OutgoingFamily
+      {
+        get => _outgoingFamily;
+        set => this.RaiseAndSetIfChanged(ref _outgoingFamily, value);
+      }
       public MappingValue(string inType, string inGuess)
       {
         IncomingType = inType;
