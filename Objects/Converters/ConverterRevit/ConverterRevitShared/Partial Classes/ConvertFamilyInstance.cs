@@ -18,11 +18,6 @@ namespace Objects.Converter.Revit
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = ConvertLevelToRevit(speckleFi.level);
 
-      if (level == null)
-        Report.Log($"1Level is null dude!");
-      else
-        Report.Log($"1This is the level we're using {level.Name}");
-
 
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
@@ -98,47 +93,42 @@ namespace Objects.Converter.Revit
             if (CurrentHostElement is Wall wall)
             {
               Doc.Regenerate();
-              //Report.Log($"CurrentHostElement is Wall {wall}");
-              //Report.Log($"Wall {wall.Name} {wall.Orientation}");
 
               Options op = new Options();
-              Report.Log($"Options {op}");
               op.ComputeReferences = true;
-              Report.Log($"compute");
               GeometryElement wallGeom = wall.get_Geometry(op);
-              Report.Log($"GeometryElement {wallGeom}");
               Reference faceRef = null;
-              Report.Log($"");
 
               foreach (var geom in wallGeom)
               {
-                Report.Log($"geom {geom}");
                 if (geom is Solid solid)
                 {
-                  Report.Log($"geom is Solid {solid}");
                   FaceArray faceArray = solid.Faces;
+
+                  double planeDist = double.PositiveInfinity;
                   foreach (Face face in faceArray)
                   {
-                    Report.Log($"face {face}");
-                    if (faceRef != null)
-                      break;
                     if (face is PlanarFace planarFace)
                     {
-                      if (Math.Abs(wall.Orientation.X) == 1)
-                      { }
-                        faceRef = planarFace.Reference;
+                      //if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
+                      //{ 
+                        double newPlaneDist = ComputePlaneDistance(planarFace.Origin, planarFace.FaceNormal, basePoint);
+                        if (newPlaneDist < planeDist)
+                        {
+                          planeDist = newPlaneDist;
+                          faceRef = planarFace.Reference;
+                        }
+                      //}
                     }
                   }
                 }
               }
-              //Reference faceRef = HostObjectUtils.GetSideFaces(wall, ShellLayerType.Interior)[0];
+
+              // last resort, just guess a face
+              if (faceRef == null)
+                faceRef = HostObjectUtils.GetSideFaces(wall, ShellLayerType.Interior)[0];
 
               XYZ norm = new XYZ(0, 0, 0);
-
-
-              Report.Log($"wall {wall} {HostObjectUtils.GetSideFaces(wall, ShellLayerType.Exterior).Count}");
-              Report.Log($"host el is wall: faceref {faceRef} bp {basePoint} n {norm} fs {familySymbol}");
-
               familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
 
 #if REVIT2022
@@ -347,5 +337,26 @@ namespace Objects.Converter.Revit
       }
       return subElements;
     }
+
+    private double ComputePlaneDistance(XYZ planeOrigin, XYZ planeNormal, XYZ point)
+    {
+      // D = nx*ox + ny+oy nz+oz
+      // where planeNormal = {nx,ny,nz} and planeOrigin = {ox,oy,oz}
+      double D = planeNormal.X * planeOrigin.X + planeNormal.Y * planeOrigin.Y + planeNormal.Z * planeOrigin.Z;
+      double PointD = planeNormal.X * point.X + planeNormal.Y * point.Y + planeNormal.Z * point.Z;
+      double value = Math.Abs(D - PointD);
+
+      //Report.Log($"point {point}");
+      return value;
+    }
+
+    //private bool NormalsAlign(XYZ normal1, XYZ normal2)
+    //{
+    //  var isXNormAligned = Math.Abs(Math.Abs(normal1.X) - Math.Abs(normal2.X)) < TOLERANCE;
+    //  var isYNormAligned = Math.Abs(Math.Abs(normal1.Y) - Math.Abs(normal2.Y)) < TOLERANCE;
+    //  var isZNormAligned = Math.Abs(Math.Abs(normal1.Z) - Math.Abs(normal2.Z)) < TOLERANCE;
+
+    //  return isXNormAligned && isYNormAligned && isZNormAligned;
+    //}
   }
 }
