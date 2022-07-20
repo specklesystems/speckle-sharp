@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -110,15 +111,18 @@ namespace Objects.Converter.Revit
                   {
                     if (face is PlanarFace planarFace)
                     {
-                      //if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
-                      //{ 
+                      // some family instance base points may lie on the intersection of faces
+                      // this makes it so family instance families can only be placed on the
+                      // faces of walls
+                      if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
+                      {
                         double newPlaneDist = ComputePlaneDistance(planarFace.Origin, planarFace.FaceNormal, basePoint);
                         if (newPlaneDist < planeDist)
                         {
                           planeDist = newPlaneDist;
                           faceRef = planarFace.Reference;
                         }
-                      //}
+                      }
                     }
                   }
                 }
@@ -350,13 +354,13 @@ namespace Objects.Converter.Revit
       return value;
     }
 
-    //private bool NormalsAlign(XYZ normal1, XYZ normal2)
-    //{
-    //  var isXNormAligned = Math.Abs(Math.Abs(normal1.X) - Math.Abs(normal2.X)) < TOLERANCE;
-    //  var isYNormAligned = Math.Abs(Math.Abs(normal1.Y) - Math.Abs(normal2.Y)) < TOLERANCE;
-    //  var isZNormAligned = Math.Abs(Math.Abs(normal1.Z) - Math.Abs(normal2.Z)) < TOLERANCE;
+    private bool NormalsAlign(XYZ normal1, XYZ normal2)
+    {
+      var isXNormAligned = Math.Abs(Math.Abs(normal1.X) - Math.Abs(normal2.X)) < TOLERANCE;
+      var isYNormAligned = Math.Abs(Math.Abs(normal1.Y) - Math.Abs(normal2.Y)) < TOLERANCE;
+      var isZNormAligned = Math.Abs(Math.Abs(normal1.Z) - Math.Abs(normal2.Z)) < TOLERANCE;
 
-    //  return isXNormAligned && isYNormAligned && isZNormAligned;
-    //}
+      return isXNormAligned && isYNormAligned && isZNormAligned;
+    }
   }
 }
