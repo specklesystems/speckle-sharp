@@ -120,7 +120,7 @@ namespace Speckle.ConnectorRevit.UI
 
       try
       {
-        flattenedObjects = await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, flattenedObjects));
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, flattenedObjects));
       }
       catch (Exception ex)
       {
@@ -185,22 +185,27 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    public async Task<List<Base>> UpdateForCustomMapping(StreamState state, ProgressViewModel progress, List<Base> flattenedBase)
+    public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, List<Base> flattenedBase)
     {
       // Get Settings for recieve on mapping 
       var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as MappingSeting);
       var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : "";
 
       Dictionary<string, List<MappingValue>> settingsMapping = null;
-      if (receiveMappingsModelsSetting.HasJson)
+      if (receiveMappingsModelsSetting.MappingJson != null)
         settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(receiveMappingsModelsSetting.MappingJson);
 
       if (receiveMappings == noMapping)
-        return flattenedBase;
+        return;
       else if (receiveMappings == everyReceive)
       {
         Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
-        Dictionary<string, List<MappingValue>> initialMapping = GetInitialMapping(flattenedBase, progress, hostTypesDict);
+
+        UpdateMappingForNewObjects(settingsMapping, flattenedBase, hostTypesDict);
+        Dictionary<string, List<MappingValue>> initialMapping = settingsMapping;
+        if (initialMapping == null)
+          initialMapping = GetInitialMapping(flattenedBase, progress, hostTypesDict);
+
 
         try
         {
@@ -220,7 +225,7 @@ namespace Speckle.ConnectorRevit.UI
           List<Base> newFlatBase = updateRecieveObject(newMapping, flattenedBase);
 
           //progress.Report.Log($"newflatbase {newFlatBase}");
-          return newFlatBase;
+          return;
         }
         catch (Exception ex)
         {
@@ -228,14 +233,40 @@ namespace Speckle.ConnectorRevit.UI
         }
 
         progress.Report.Log($"how did this work?");
-        return flattenedBase;
+        return;
       }
       //else if (receiveMappings == forNewTypes)
       //{
 
       //}
+    }
 
-      return flattenedBase;
+    public void UpdateMappingForNewObjects(Dictionary<string, List<MappingValue>> settingsMapping, List<Base> flattenedBase, Dictionary<string, List<string>> hostTypesDict)
+    {
+      if (settingsMapping == null)
+        return;
+
+      List<Base> objectsWithNewTypes = new List<Base>();
+      var loopValues = settingsMapping.Values;
+      foreach (var obj in flattenedBase)
+      {
+        var type = obj.GetType().GetProperty("type").GetValue(obj) as string;
+        bool containsObj = false;
+        foreach (var mapValueList in loopValues)
+        {
+          if (mapValueList.Any(i => i.IncomingType == type))
+          {
+            containsObj = true;
+            break;
+          }
+        }
+        if (!containsObj)
+        {
+          string category = GetTypeCategory(obj);
+          string mappedValue = GetMappedValue(hostTypesDict, category, type);
+          settingsMapping[category].Add(new MappingValue(type, mappedValue, inNewType: true));
+        }
+      } 
     }
 
     public Dictionary<string, List<MappingValue>> GetInitialMapping(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostProperties)
@@ -256,20 +287,7 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.Log($"cat {category}");
         foreach (var speckleType in specklePropertyDict[category])
         {
-          string mappedValue = "";
-          List<int> listVert = new List<int> { };
-          progress.Report.Log($"rev types {String.Join(",", hostPropertyList[category])}");
-
-          // if this count is zero, then there aren't any types of this category loaded into the project
-          if (hostPropertyList[category].Count != 0)
-          {
-            foreach (var revitType in hostPropertyList[category])
-            {
-              listVert.Add(LevenshteinDistance(speckleType, revitType));
-            }
-            progress.Report.Log($"lev dist {String.Join(",", listVert)}");
-            mappedValue = hostPropertyList[category][listVert.IndexOf(listVert.Min())];
-          }
+          string mappedValue = GetMappedValue(hostPropertyList, category, speckleType);
 
           if (mappings.ContainsKey(category))
           {
@@ -291,6 +309,24 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
       return mappings;
+    }
+
+    public string GetMappedValue(Dictionary<string, List<string>> hostPropertyList, string category, string speckleType)
+    {
+      string mappedValue = "";
+      List<int> listVert = new List<int> { };
+
+      // if this count is zero, then there aren't any types of this category loaded into the project
+      if (hostPropertyList[category].Count != 0)
+      {
+        foreach (var revitType in hostPropertyList[category])
+        {
+          listVert.Add(LevenshteinDistance(speckleType, revitType));
+        }
+        mappedValue = hostPropertyList[category][listVert.IndexOf(listVert.Min())];
+      }
+
+      return mappedValue;
     }
 
     public static int LevenshteinDistance(string s, string t)

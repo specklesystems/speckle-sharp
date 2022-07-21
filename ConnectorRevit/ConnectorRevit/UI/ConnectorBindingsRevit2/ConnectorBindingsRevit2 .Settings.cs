@@ -328,6 +328,42 @@ namespace Speckle.ConnectorRevit.UI
       return returnDict;
     }
 
+    public string GetTypeCategory(Base obj)
+    {
+      string speckleType = null;
+
+      try
+      {
+        speckleType = obj.speckle_type.Split(':')[0];
+      }
+      catch
+      {
+        speckleType = obj.speckle_type;
+      }
+
+      string typeCategory = "";
+
+      switch (speckleType)
+      {
+        case "Objects.BuiltElements.Floor":
+          typeCategory = "Floors";
+          break;
+        case "Objects.BuiltElements.Wall":
+          typeCategory = "Walls";
+          break;
+        case "Objects.BuiltElements.Beam":
+          typeCategory = "Framing";
+          break;
+        case "Objects.BuiltElements.Column":
+          typeCategory = "Columns";
+          break;
+        default:
+          typeCategory = "Miscellaneous";
+          break;
+      }
+      return typeCategory;
+    }
+
     //private List<string> GetHostDocumentPropeties(Document doc)
     //{
     //  var list = new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol));

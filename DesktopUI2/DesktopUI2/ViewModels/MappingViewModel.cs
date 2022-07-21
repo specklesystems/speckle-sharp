@@ -202,6 +202,7 @@ namespace DesktopUI2.ViewModels
       [DataMember]
       public string IncomingType { get; set; }
       public bool Imported { get; set; }
+      public bool NewType { get; set; } = false;
 
       private string _initialGuess;
       [DataMember]
@@ -223,10 +224,11 @@ namespace DesktopUI2.ViewModels
         get => _outgoingFamily;
         set => this.RaiseAndSetIfChanged(ref _outgoingFamily, value);
       }
-      public MappingValue(string inType, string inGuess)
+      public MappingValue(string inType, string inGuess, bool inNewType = false)
       {
         IncomingType = inType;
         InitialGuess = inGuess;
+        NewType = inNewType;
       }
     }
 

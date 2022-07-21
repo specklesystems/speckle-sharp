@@ -14,7 +14,7 @@ namespace DesktopUI2.Models.Settings
 
     public bool HasJson { get; set; } = false;
 
-    private string _mappingJson;
+    private string _mappingJson = null;
     public string MappingJson
     {
       get => _mappingJson;
