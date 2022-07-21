@@ -161,7 +161,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>-$SEMVER.exe
+            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.exe
 
   build-connector-mac:
     macos:
@@ -243,7 +243,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Copy to installer location
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
       - persist_to_workspace:
           root: ./
