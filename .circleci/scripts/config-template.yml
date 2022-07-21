@@ -142,29 +142,24 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - speckle-sharp-ci-tools/Installers
 
   deploy-connector-new:
-    macos:
-      xcode: 12.5.1
-    parameters:
-      slug:
-        type: string
-      os:
-        type: string
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
-      - attach_workspace:
-          at: ./
       - run:
-          name: Install dotnet
-          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-      - run:
-          name: Install Speckle.Manager.Feed
-          command: ~/.dotnet/dotnet tool install --global Speckle.Manager.Feed
+          name: Install Manager Feed CLI
+          command: dotnet tool install --global Speckle.Manager.Feed
       - run:
           name: Upload new version
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
-            /Users/distiller/.dotnet/tools/speckle.manager.feed addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>-$SEMVER.exe
+            /root/.dotnet/tools/Speckle.Manager.Feed addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>-$SEMVER.exe
+    parameters:
+      slug:
+        type: string
+      os:
+        type: string
 
   build-connector-mac:
     macos:

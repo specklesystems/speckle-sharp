@@ -51,16 +51,6 @@ jobs:
             python .circleci/scripts/config-generator.py -d ${CIRCLE_TAG:-none} -o .circleci/continuation-config.yml
       - continuation/continue:
           configuration_path: .circleci/continuation-config.yml # use newly generated config to continue
-  test-cli:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
-    steps:
-      - checkout
-      - run:
-          name: Install dotnet
-          command: |
-            dotnet tool install --global Speckle.Manager.Feed
-            /root/.dotnet/tools/Speckle.Manager.Feed addVersion
 workflows:
   setup:
     jobs:
@@ -73,5 +63,3 @@ workflows:
               ignore: /.*/
             tags:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?(\/all)?$/
-      - test-cli:
-          name: Feed CLI Test
