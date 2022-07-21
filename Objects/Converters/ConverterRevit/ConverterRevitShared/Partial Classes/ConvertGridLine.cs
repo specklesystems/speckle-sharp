@@ -11,14 +11,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> GridLineToNative(GridLine speckleGridline)
+    public ApplicationObject GridLineToNative(GridLine speckleGridline)
     {
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
       var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
       if (revitGrid != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitGrid.UniqueId, existingObject: revitGrid);
-        return new List<ApplicationObject>{ appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitGrid.UniqueId, convertedItem: revitGrid);
+        return appObj;
       }
 
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
@@ -65,7 +65,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              Report.LogConversionError(new Exception($"Error setting grid endpoints {speckleGridline.id}."));
+              appObj.Update(logItem: $"Error setting grid endpoints: {e.Message}");
             }
             isUpdate = true;
           }
@@ -80,7 +80,10 @@ namespace Objects.Converter.Revit
         else if (curve is Line l)
           revitGrid = Grid.Create(Doc, l);
         else
-          throw new Speckle.Core.Logging.SpeckleException("Failed to create GridLine, curve type not supported for Grid: " + curve.GetType().FullName);
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve type {curve.GetType().FullName} not supported for Grid");
+          return appObj;
+        }
       }
 
       if (!string.IsNullOrEmpty(speckleGridline.label))
@@ -91,8 +94,8 @@ namespace Objects.Converter.Revit
       }
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: state, createdId: revitGrid.UniqueId, existingObject: revitGrid);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: state, createdId: revitGrid.UniqueId, convertedItem: revitGrid);
+      return appObj;
     }
 
     public GridLine GridLineToSpeckle(DB.Grid revitGridLine)
@@ -107,6 +110,5 @@ namespace Objects.Converter.Revit
       Report.Log($"Converted GridLine {revitGridLine.Id}");
       return speckleGridline;
     }
-
   }
 }

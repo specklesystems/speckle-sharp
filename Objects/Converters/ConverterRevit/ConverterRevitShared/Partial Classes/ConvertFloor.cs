@@ -12,14 +12,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> FloorToNative(BuiltElements.Floor speckleFloor)
+    public ApplicationObject FloorToNative(BuiltElements.Floor speckleFloor)
     {
       var appObj = new ApplicationObject(speckleFloor.id, speckleFloor.speckle_type) { applicationId = speckleFloor.applicationId };
 
       if (speckleFloor.outline == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Floor is missing an outline.");
-        return new List<ApplicationObject> { appObj };
+        return appObj;
       }
 
       bool structural = false;
@@ -48,8 +48,8 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
       }
 
       if (docObj != null)
@@ -111,12 +111,9 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitFloor, speckleFloor);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitFloor.UniqueId, existingObject: revitFloor);
-      var placeholders = new List<ApplicationObject>() { appObj };
-
-      var hostedElements = SetHostedElements(speckleFloor, revitFloor);
-      placeholders.AddRange(hostedElements);
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitFloor.UniqueId, convertedItem: revitFloor);
+      appObj = SetHostedElements(speckleFloor, revitFloor, appObj);
+      return appObj;
     }
 
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor)

@@ -36,13 +36,13 @@ namespace Objects.Converter.Revit
     }
 
 #if REVIT2022
-    public List<ApplicationObject> CeilingToNative(Ceiling speckleCeiling)
+    public ApplicationObject CeilingToNative(Ceiling speckleCeiling)
     {
       var appObj = new ApplicationObject(speckleCeiling.id, speckleCeiling.speckle_type) { applicationId = speckleCeiling.applicationId };
       if (speckleCeiling.outline == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Missing an outline curve.");
-        return new List<ApplicationObject> { appObj };
+        return appObj;
       }
 
       var outline = CurveToNative(speckleCeiling.outline);
@@ -70,8 +70,8 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
       }
    
       if (docObj != null)
@@ -97,13 +97,9 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitCeiling, speckleCeiling);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitCeiling.UniqueId, existingObject: revitCeiling);
-      var placeholders = new List<ApplicationObject>{ appObj };
-
-      var hostedElements = SetHostedElements(speckleCeiling, revitCeiling);
-      placeholders.AddRange(hostedElements);
-
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitCeiling.UniqueId, convertedItem: revitCeiling);
+      appObj = SetHostedElements(speckleCeiling, revitCeiling, appObj);
+      return appObj;
     }
 #endif
   }

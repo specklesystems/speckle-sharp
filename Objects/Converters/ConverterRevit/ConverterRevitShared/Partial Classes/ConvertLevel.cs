@@ -89,12 +89,12 @@ namespace Objects.Converter.Revit
       return revitLevel;
     }
 
-    public List<ApplicationObject> LevelToNative(BuiltElements.Level speckleLevel)
+    public ApplicationObject LevelToNative(BuiltElements.Level speckleLevel)
     {
       var revitLevel = ConvertLevelToRevit(speckleLevel, out ApplicationObject.State state);
       var appObj = new ApplicationObject(speckleLevel.id, speckleLevel.speckle_type) { applicationId = speckleLevel.applicationId};
-      appObj.Update(status: state, createdId: revitLevel.UniqueId, existingObject: revitLevel);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: state, createdId: revitLevel.UniqueId, convertedItem: revitLevel);
+      return appObj;
     }
 
     public RevitLevel LevelToSpeckle(DB.Level revitLevel)

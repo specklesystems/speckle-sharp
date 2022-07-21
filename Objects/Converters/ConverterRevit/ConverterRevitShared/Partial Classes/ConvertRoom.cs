@@ -10,14 +10,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> RoomToNative(Room speckleRoom)
+    public ApplicationObject RoomToNative(Room speckleRoom)
     {
       var appObj = new ApplicationObject(speckleRoom.id, speckleRoom.speckle_type) { applicationId = speckleRoom.applicationId };
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
       if (revitRoom != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.CreatedIds.Add(revitRoom.UniqueId); appObj.ExistingObject = revitRoom;
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitRoom.UniqueId, convertedItem: revitRoom);
+        return appObj;
       }
        
       var level = ConvertLevelToRevit(speckleRoom.level, out ApplicationObject.State levelState);
@@ -36,8 +36,8 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitRoom, speckleRoom);
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: state, createdId: revitRoom.UniqueId, existingObject: revitRoom);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: state, createdId: revitRoom.UniqueId, convertedItem: revitRoom);
+      return appObj;
     }
 
     public BuiltElements.Room RoomToSpeckle(DB.Room revitRoom)

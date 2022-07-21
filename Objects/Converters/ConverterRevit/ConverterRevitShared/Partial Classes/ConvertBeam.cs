@@ -14,14 +14,21 @@ namespace Objects.Converter.Revit
     // CAUTION: this string needs to have the same values as in the connector
     const string StructuralFraming = "Structural Framing";
 
-    public List<ApplicationObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public ApplicationObject BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
+      //try update existing 
+      var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
       var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
 
       if (speckleBeam.baseLine == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Beams are currently supported.");
-        return new List<ApplicationObject> { appObj };
+        return appObj;
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
@@ -37,14 +44,6 @@ namespace Objects.Converter.Revit
 
       level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine), out ApplicationObject.State levelState);
       var isUpdate = false;
-      //try update existing 
-      var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
-      
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
-      }
 
       if (docObj != null)
       {
@@ -98,11 +97,8 @@ namespace Objects.Converter.Revit
 
       // TODO: get sub families, it's a family! 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: state, createdId: revitBeam.UniqueId, existingObject: revitBeam);
-      var placeholders = new List<ApplicationObject>() { appObj };
-
-      // TODO: nested elements.
-      return placeholders;
+      appObj.Update(status: state, createdId: revitBeam.UniqueId, convertedItem: revitBeam);
+      return appObj;
     }
 
     private Base BeamToSpeckle(DB.FamilyInstance revitBeam)

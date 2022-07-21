@@ -15,11 +15,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> AnalyticalNodeToNative(Node speckleNode)
+    public ApplicationObject AnalyticalNodeToNative(Node speckleNode)
     {
-      List<ApplicationObject> placeholderObjects = new List<ApplicationObject> { };
-
-      return placeholderObjects;
+      return new ApplicationObject(speckleNode.id, speckleNode.speckle_type) { applicationId = speckleNode.applicationId};
     }
 
     private Node AnalyticalNodeToSpeckle(ReferencePoint revitNode)

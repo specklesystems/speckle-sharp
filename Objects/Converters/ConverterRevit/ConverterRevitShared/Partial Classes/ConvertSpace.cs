@@ -11,14 +11,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> SpaceToNative(Space speckleSpace)
+    public ApplicationObject SpaceToNative(Space speckleSpace)
     {
       var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
       if (revitSpace != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitSpace.UniqueId, existingObject: revitSpace);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitSpace.UniqueId, convertedItem: revitSpace);
+        return appObj;
       }
 
       var levelState = ApplicationObject.State.Unknown;
@@ -82,8 +82,8 @@ namespace Objects.Converter.Revit
       }
 
       SetInstanceParameters(revitSpace, speckleSpace);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSpace.UniqueId, existingObject: revitSpace);
-      return new List<ApplicationObject>() { appObj };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSpace.UniqueId, convertedItem: revitSpace);
+      return appObj;
     }
 
     public BuiltElements.Space SpaceToSpeckle(DB.Space revitSpace)

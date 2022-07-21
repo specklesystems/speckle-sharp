@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
         return appObj;
       }
 
@@ -57,7 +57,7 @@ namespace Objects.Converter.Revit
       if (speckleSurface is RevitTopography rt)
         SetInstanceParameters(revitSurface, rt);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSurface.UniqueId, existingObject: revitSurface);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSurface.UniqueId, convertedItem: revitSurface);
       return appObj;
     }
 

@@ -13,10 +13,17 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> DuctToNative(BuiltElements.Duct speckleDuct)
+    public ApplicationObject DuctToNative(BuiltElements.Duct speckleDuct)
     {
       var speckleRevitDuct = speckleDuct as RevitDuct;
+      var docObj = GetExistingElementByApplicationId(speckleDuct.applicationId);
       var appObj = new ApplicationObject(speckleDuct.id, speckleDuct.speckle_type) { applicationId = speckleDuct.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
+      
       var systemFamily = (speckleRevitDuct != null) ? speckleRevitDuct.systemName : "";
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType()
           .OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();
@@ -24,7 +31,7 @@ namespace Objects.Converter.Revit
       if (system == null)
       {
         system = types.FirstOrDefault();
-        Report.LogConversionError(new Exception($"Duct type {systemFamily} not found; replaced with {system.Name}"));
+        appObj.Update(logItem: $"Duct type {systemFamily} not found; replaced with {system.Name}");
       }
 
       Element duct = null;
@@ -54,15 +61,8 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        appObj.Update(logItem: $"Duct BaseCurve of type ${speckleDuct.baseCurve.GetType()} cannot be used to create a Revit Duct");
-      }
-
-      var docObj = GetExistingElementByApplicationId(((Base)speckleDuct).applicationId);
-      
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Duct BaseCurve of type ${speckleDuct.baseCurve.GetType()} cannot be used to create a Revit Duct");
+        return appObj;
       }
 
       // deleting instead of updating for now!
@@ -80,8 +80,8 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: duct.UniqueId, existingObject: duct);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: duct.UniqueId, convertedItem: duct);
+      return appObj;
     }
 
     public BuiltElements.Duct DuctToSpeckle(DB.Mechanical.Duct revitDuct)

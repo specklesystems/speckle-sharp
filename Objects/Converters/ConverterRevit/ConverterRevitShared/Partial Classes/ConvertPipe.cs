@@ -13,13 +13,21 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> PipeToNative(BuiltElements.Pipe specklePipe)
+    public ApplicationObject PipeToNative(BuiltElements.Pipe specklePipe)
     {
       var speckleRevitPipe = specklePipe as RevitPipe;
+
+      // check to see if pipe already exists in the doc
+      var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
       var appObj = new ApplicationObject(specklePipe.id, specklePipe.speckle_type) { applicationId = specklePipe.applicationId };
-      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
 
       // get system info
+      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
       var systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType()
        .OfClass(typeof(DB.Plumbing.PipingSystemType)).ToElements().Cast<ElementType>().ToList();
       var systemFamily = speckleRevitPipe?.systemType ?? "";
@@ -29,15 +37,6 @@ namespace Objects.Converter.Revit
       {
         system = systemTypes.FirstOrDefault();
         appObj.Update(logItem: $"Pipe type {systemFamily} not found; replaced with {system.Name}");
-      }
-
-      // check to see if pipe already exists in the doc
-      var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
-
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
       }
 
       Element pipe = null;
@@ -91,8 +90,8 @@ namespace Objects.Converter.Revit
           pipe = flexPolyPipe;
           break;
         default:
-          Report.LogConversionError(new Exception($"Pipe BaseCurve of type ${specklePipe.baseCurve.GetType()} cannot be used to create a Revit Pipe"));
-          break;
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve of type {specklePipe.baseCurve.GetType()} cannot be used to create a Revit Pipe");
+          return appObj;
       }
 
       if (speckleRevitPipe != null)
@@ -100,8 +99,8 @@ namespace Objects.Converter.Revit
 
       TrySetParam(pipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM, specklePipe.diameter, specklePipe.units);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: pipe.UniqueId, existingObject: pipe);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: pipe.UniqueId, convertedItem: pipe);
+      return appObj;
     }
 
     public BuiltElements.Pipe PipeToSpeckle(DB.Plumbing.Pipe revitPipe)

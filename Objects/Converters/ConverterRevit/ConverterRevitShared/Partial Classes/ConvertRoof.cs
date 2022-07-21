@@ -13,14 +13,20 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> RoofToNative(Roof speckleRoof)
+    public ApplicationObject RoofToNative(Roof speckleRoof)
     {
+      var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
       var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type) { applicationId = speckleRoof.applicationId };
-
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
+      
       if (speckleRoof.outline == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only outline based Roof are currently supported.");
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof outline was null");
+        return appObj;
       }
 
       DB.RoofBase revitRoof = null;
@@ -36,13 +42,6 @@ namespace Objects.Converter.Revit
 
       var roofType = GetElementType<RoofType>(speckleRoof);
 
-      var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
-      }
- 
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
@@ -113,7 +112,7 @@ namespace Objects.Converter.Revit
           }
         default:
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof");
-          return new List<ApplicationObject> { appObj };
+          return  appObj;
       }
 
       Doc.Regenerate();
@@ -130,12 +129,9 @@ namespace Objects.Converter.Revit
       if (speckleRevitRoof != null)
         SetInstanceParameters(revitRoof, speckleRevitRoof);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, existingObject: revitRoof);
-      var placeholders = new List<ApplicationObject> { appObj };
-
-      var hostedElements = SetHostedElements(speckleRoof, revitRoof);
-      placeholders.AddRange(hostedElements);
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, convertedItem: revitRoof);
+      appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
+      return appObj;
     }
 
     private Roof RoofToSpeckle(DB.RoofBase revitRoof)

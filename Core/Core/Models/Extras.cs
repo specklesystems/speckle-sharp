@@ -116,9 +116,6 @@ namespace Speckle.Core.Models
     [JsonIgnore]
     public List<object> Converted { get; set; } // the converted objects
 
-    [JsonIgnore]
-    public object ExistingObject { get; set; } // object in the application that shares the same application id
-
     public ApplicationObject(string id, string type) 
     {
       OriginalId = id;
@@ -126,14 +123,15 @@ namespace Speckle.Core.Models
       Status = State.Unknown;
     }
 
-    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, List<string> log = null, string logItem = null, object existingObject = null)
+    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, List<string> log = null, string logItem = null, List<object> converted = null, object convertedItem = null)
     {
       if (createdIds != null) createdIds.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(o => CreatedIds.Add(o));
       if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
       if (status.HasValue) Status = status.Value;
       if (log != null) log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
       if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem)) Log.Add(logItem);
-      if (existingObject != null) ExistingObject = existingObject;
+      if (convertedItem != null) Converted.Add(convertedItem);
+      if (converted != null) converted.Where(o => o != null)?.ToList().ForEach(o => Converted.Add(o));
     }
   }
 
@@ -242,9 +240,17 @@ namespace Speckle.Core.Models
 
         foreach (var id in ids)
           if (report.GetReportObject(id, out int index))
+          {
             foreach (var logItem in report.ReportObjects[index].Log)
               if (!item.Log.Contains(logItem))
                 item.Log.Add(logItem);
+            foreach (var createdId in report.ReportObjects[index].CreatedIds)
+              if (!item.CreatedIds.Contains(createdId))
+                item.CreatedIds.Add(createdId);
+            foreach (var convertedItem in report.ReportObjects[index].Converted)
+              if (!item.Converted.Contains(convertedItem))
+                item.Converted.Add(convertedItem);
+          }
       }
     }
   }

@@ -97,9 +97,8 @@ namespace Objects.Converter.Revit
 
     }
 
-    public List<ApplicationObject> SetHostedElements(Base @base, HostObject host)
+    public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)
     {
-      var placeholders = new List<ApplicationObject>();
       if (@base["elements"] != null && @base["elements"] is List<Base> elements)
       {
         CurrentHostElement = host;
@@ -108,25 +107,28 @@ namespace Objects.Converter.Revit
         {
           if (obj == null) continue;
 
-          if (!CanConvertToNative(obj)) continue;
+          if (!CanConvertToNative(obj))
+          {
+            appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
+            continue;
+          }
 
           try
           {
             var res = ConvertToNative(obj);
             if (res is ApplicationObject apl)
-              placeholders.Add(apl);
-            else if (res is List<ApplicationObject> apls)
-              placeholders.AddRange(apls);
+              appObj.Update(createdIds: apl.CreatedIds, convertedItem: apl.Converted);
           }
           catch (Exception e)
           {
-            throw (new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
+            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type}: \n{e.Message}");
+            continue;
           }
         }
 
         CurrentHostElement = null; // unset the current host element.
       }
-      return placeholders;
+      return appObj;
     }
 
     #endregion
@@ -842,13 +844,11 @@ namespace Objects.Converter.Revit
         var poly = new Polycurve(ModelUnits);
         foreach (var segment in loop)
         {
-
           var c = segment.GetCurve();
 
           if (c == null)
-          {
             continue;
-          }
+
           var curve = CurveToSpeckle(c);
 
           ((Base)curve)["elementId"] = segment.ElementId.ToString();
@@ -1094,7 +1094,7 @@ namespace Objects.Converter.Revit
 
       if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
         return new ApplicationObject(@base.id, @base.speckle_type)
-          { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, ExistingObject = docObj };
+          { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, Converted = new List<object> { docObj } };
 
       //just create new one 
       if (docObj != null)

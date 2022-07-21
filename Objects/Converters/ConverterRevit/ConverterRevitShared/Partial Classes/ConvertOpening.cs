@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleOpening.id, speckleOpening.speckle_type) { applicationId = speckleOpening.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
         return appObj;
       }
 
@@ -40,7 +40,11 @@ namespace Objects.Converter.Revit
             if (!(hostElement is Wall))
             {
               // Try with the opening wall if it exists
-              if (rwo.host == null) throw new SpeckleException($"Hosted wall openings require a host wall");
+              if (rwo.host == null)
+              {
+                appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Host wall was null");
+                return appObj;
+              }
               Element existingElement;
               try
               {
@@ -48,18 +52,25 @@ namespace Objects.Converter.Revit
               }
               catch (Exception e)
               {
-                throw new SpeckleException($"Could not find the provided host wall by it's element id.", e);
+                appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find the host wall: {e.Message}");
+                return appObj;
               }
 
               if (!(existingElement is Wall wall))
-                throw new SpeckleException($"The provided host element is not a wall.");
+              {
+                appObj.Update(status: ApplicationObject.State.Failed, logItem: $"The host is not a wall");
+                return appObj;
+              }
 
               hostElement = wall;
             }
 
             var poly = rwo.outline as Polyline;
             if (poly == null || !(poly.GetPoints().Count == 4 && poly.closed))
-              throw new SpeckleException($"Curve outline for wall opening must be a rectangle-shaped polyline.");
+            {
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve outline for wall opening must be a rectangle-shaped polyline");
+              return appObj;
+            }
 
             var points = poly.GetPoints().Select(PointToNative).ToList();
             revitOpening = Doc.Create.NewOpening((Wall)hostElement, points[0], points[2]);
@@ -69,7 +80,10 @@ namespace Objects.Converter.Revit
         case RevitVerticalOpening rvo:
           {
             if (CurrentHostElement == null)
-              throw new SpeckleException($"Hosted vertical openings require a host family");
+            {
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Hosted vertical openings require a host family");
+              return appObj;
+            }
             revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
             break;
           }
@@ -89,15 +103,17 @@ namespace Objects.Converter.Revit
           {
             var speckleOpeningOutline = speckleOpening.outline as Polyline;
             if (speckleOpeningOutline == null)
-              throw new SpeckleException("Cannot create opening, outline must be a rectangle-shaped polyline.");
-
+            {
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: "Outline must be a rectangle-shaped polyline");
+              return appObj;
+            }
             var points = speckleOpeningOutline.GetPoints().Select(PointToNative).ToList();
             revitOpening = Doc.Create.NewOpening(CurrentHostElement as Wall, points[0], points[2]);
           }
           else
           {
-            Report.LogConversionError(new Exception("Cannot create Opening, opening type not supported"));
-            throw new SpeckleException("Opening type not supported");
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: "Opening type not supported");
+            return appObj;
           }
           break;
       }
@@ -105,7 +121,7 @@ namespace Objects.Converter.Revit
       if (speckleOpening is RevitOpening ro)
         SetInstanceParameters(revitOpening, ro);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitOpening.UniqueId, existingObject: revitOpening);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitOpening.UniqueId, convertedItem: revitOpening);
       return appObj;
     }
 

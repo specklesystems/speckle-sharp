@@ -108,7 +108,7 @@ namespace Objects.Converter.Revit
       revitDs.SetShape(converted);
       revitDs.Name = speckleDs.name;
       SetInstanceParameters(revitDs, speckleDs);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, existingObject: revitDs);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
       return appObj;
     }
 
@@ -157,7 +157,7 @@ namespace Objects.Converter.Revit
             break;
         }
       }
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, existingObject: revitDs);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
       return appObj;
     }
 
@@ -199,7 +199,7 @@ namespace Objects.Converter.Revit
       revitDs.SetShape(converted);
       revitDs.Name = "Mesh " + applicationId;
       appObj.applicationId = applicationId;
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, existingObject: revitDs);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
       return appObj;
     }
 

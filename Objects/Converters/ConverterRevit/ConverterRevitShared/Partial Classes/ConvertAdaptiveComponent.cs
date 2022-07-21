@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type) { applicationId = speckleAc.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
         return appObj;
       }
 
@@ -63,12 +63,12 @@ namespace Objects.Converter.Revit
       if (revitAc == null)
         revitAc = AdaptiveComponentInstanceUtils.CreateAdaptiveComponentInstance(Doc, familySymbol);
 
-      SetAdaptivePoints(revitAc, speckleAc.basePoints);
+      SetAdaptivePoints(revitAc, speckleAc.basePoints, out List<string> notes);
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
       SetInstanceParameters(revitAc, speckleAc);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status:state, createdId: revitAc.UniqueId, existingObject: revitAc);
+      appObj.Update(status:state, createdId: revitAc.UniqueId, convertedItem: revitAc, log: notes);
       return appObj;
     }
 
@@ -85,13 +85,14 @@ namespace Objects.Converter.Revit
       return speckleAc;
     }
 
-    private void SetAdaptivePoints(DB.FamilyInstance revitAc, List<Point> points)
+    private void SetAdaptivePoints(DB.FamilyInstance revitAc, List<Point> points, out List<string> notes)
     {
+      notes = new List<string>();
       var pointIds = AdaptiveComponentInstanceUtils.GetInstancePlacementPointElementRefIds(revitAc).ToList();
 
       if (pointIds.Count != points.Count)
       {
-        Report.LogConversionError(new Exception("Adaptive family error\nWrong number of points supplied to adaptive family"));
+        notes.Add("Adaptive family error: wrong number of points supplied");
         return;
       }
 

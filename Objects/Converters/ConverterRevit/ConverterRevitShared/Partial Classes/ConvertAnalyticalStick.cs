@@ -15,12 +15,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> AnalyticalStickToNative(Element1D speckleStick)
+    public ApplicationObject AnalyticalStickToNative(Element1D speckleStick)
     {
-      List<ApplicationObject> placeholderObjects = new List<ApplicationObject> { };
+      ApplicationObject appObj = null;
       XYZ offset1 = VectorToNative(speckleStick.end1Offset);
       XYZ offset2 = VectorToNative(speckleStick.end2Offset);
-      List<ApplicationObject> placeholders = new List<ApplicationObject> { };
 
       switch (speckleStick.type)
       {
@@ -29,34 +28,29 @@ namespace Objects.Converter.Revit
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
           revitBeam.baseLine = speckleStick.baseLine;
-          //Beam beam = new Beam(speckleStick.baseLine);
-          placeholders = BeamToNative(revitBeam);
-          DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)placeholders[0].ExistingObject;
-
+          appObj = BeamToNative(revitBeam);
+          DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBeam, speckleStick, offset1, offset2);
-          //analyticalModel.
-          return placeholders;
+
+          return appObj;
         case ElementType1D.Brace:
           RevitBrace revitBrace = new RevitBrace();
           revitBrace.type = speckleStick.property.name.Replace('X', 'x');
           revitBrace.baseLine = speckleStick.baseLine;
-          //Brace brace = new Brace(speckleStick.baseLine);
-          placeholders = BraceToNative(revitBrace);
-          DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)placeholders[0].ExistingObject;
+          appObj = BraceToNative(revitBrace);
+          DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBrace, speckleStick, offset1, offset2);
-          return placeholders;
+          return appObj;
         case ElementType1D.Column:
           RevitColumn revitColumn = new RevitColumn();
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
-          placeholders = ColumnToNative(revitColumn);
-          DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)placeholders[0].ExistingObject;
+          appObj = ColumnToNative(revitColumn);
+          DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitColumn, speckleStick, offset1, offset2);
-          return placeholders;
-          //Column column = new Column(speckleStick.baseLine);
-          return ColumnToNative(revitColumn);
+          return appObj;
       }
-      return placeholderObjects;
+      return appObj;
     }
 
     private void SetAnalyticalPros(Element element, Element1D element1d, XYZ offset1, XYZ offset2)

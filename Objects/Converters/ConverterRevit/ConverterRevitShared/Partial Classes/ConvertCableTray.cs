@@ -11,11 +11,19 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> CableTrayToNative(BuiltElements.CableTray speckleCableTray)
+    public ApplicationObject CableTrayToNative(BuiltElements.CableTray speckleCableTray)
     {
       var speckleRevitCableTray = speckleCableTray as RevitCableTray;
-      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray);
+
+      var docObj = GetExistingElementByApplicationId((speckleCableTray).applicationId);
       var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
+
+      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray);
 
       Element cableTray = null;
       if (speckleCableTray.baseCurve is Line)
@@ -29,14 +37,8 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        appObj.Update(logItem: $"BaseCurve of type ${speckleCableTray.baseCurve.GetType()} cannot be used to create a Revit CableTray");
-      }
-
-      var docObj = GetExistingElementByApplicationId(((Base)speckleCableTray).applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"BaseCurve of type ${speckleCableTray.baseCurve.GetType()} cannot be used to create a Revit CableTray");
+        return appObj;
       }
 
       // deleting instead of updating for now!
@@ -51,8 +53,8 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(cableTray, speckleRevitCableTray);
       }
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: cableTray.UniqueId, existingObject: cableTray);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: cableTray.UniqueId, convertedItem: cableTray);
+      return appObj;
     }
 
     public BuiltElements.CableTray CableTrayToSpeckle(DB.Electrical.CableTray revitCableTray)

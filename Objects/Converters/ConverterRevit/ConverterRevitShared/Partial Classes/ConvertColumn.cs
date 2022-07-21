@@ -13,14 +13,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> ColumnToNative(Column speckleColumn)
+    public ApplicationObject ColumnToNative(Column speckleColumn)
     {
       var appObj = new ApplicationObject(speckleColumn.id, speckleColumn.speckle_type) { applicationId = speckleColumn.applicationId };
 
       if (speckleColumn.baseLine == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Beams are currently supported.");
-        return new List<ApplicationObject> { appObj };
+        return appObj;
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn);
@@ -59,8 +59,8 @@ namespace Objects.Converter.Revit
       
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
       }
 
       bool isUpdate = false;
@@ -126,11 +126,13 @@ namespace Objects.Converter.Revit
       }
 
       if (revitColumn == null)
-        throw (new Exception($"Failed to create column for {speckleColumn.applicationId}."));
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "revit column was null");
+        return appObj;
+      }
 
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
-
 
       if (speckleRevitColumn != null)
       {
@@ -148,9 +150,9 @@ namespace Objects.Converter.Revit
       }
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: state, createdId: revitColumn.UniqueId, existingObject: revitColumn);
+      appObj.Update(status: state, createdId: revitColumn.UniqueId, convertedItem: revitColumn);
       // TODO: nested elements.
-      return new List<ApplicationObject> { appObj };
+      return appObj;
     }
 
     /// <summary>

@@ -12,7 +12,7 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
     //TODO: might need to clean this up and split the ConversionLog.Addic by beam, FI, etc...
-    public List<ApplicationObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
+    public ApplicationObject FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
@@ -24,8 +24,8 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type) { applicationId = speckleFi.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
       }
 
       if (docObj != null)
@@ -100,11 +100,11 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(familyInstance, speckleFi);
       if (speckleFi.mirrored)
-        Report.ConversionErrors.Add(new Exception($"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so. (speckle object id: {speckleFi.id}"));
+        appObj.Update(logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so.");
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: state, createdId: familyInstance.UniqueId, existingObject: familyInstance);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
+      return appObj;
     }
 
     /// <summary>

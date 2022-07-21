@@ -12,10 +12,17 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> WireToNative(BuiltElements.Wire speckleWire)
+    public ApplicationObject WireToNative(BuiltElements.Wire speckleWire)
     {
       var speckleRevitWire = speckleWire as RevitWire;
+
+      var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
       var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type) { applicationId = speckleWire.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
 
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"
         ? DB.Electrical.WiringType.Chamfer
@@ -40,20 +47,12 @@ namespace Objects.Converter.Revit
               break;
             default:  // what other curves should be supported? currently just the ones you can create from revit
               appObj.Update(logItem: $"Wire segment geometry of type {segment.GetType()} not currently supported");
-              new SpeckleException($"Wire segment geometry of type {segment.GetType()} not currently supported");
               break;
           }
         }
       }
 
       DB.Electrical.Wire wire = null;
-      var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
-        return new List<ApplicationObject>() { appObj };
-      }
-
       if (docObj != null)
       {
         wire = (DB.Electrical.Wire)docObj;
@@ -78,10 +77,15 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitWire != null)
         SetInstanceParameters(wire, speckleRevitWire);
+      else
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Creation returned null");
+        return appObj;
+      }
 
       var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: status, createdId: wire.UniqueId, existingObject: wire);
-      return new List<ApplicationObject> { appObj };
+      appObj.Update(status: status, createdId: wire.UniqueId, convertedItem: wire);
+      return appObj;
     }
 
     public BuiltElements.Wire WireToSpeckle(DB.Electrical.Wire revitWire)

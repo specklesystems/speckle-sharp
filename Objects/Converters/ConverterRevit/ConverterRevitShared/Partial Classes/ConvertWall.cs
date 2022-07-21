@@ -16,21 +16,20 @@ namespace Objects.Converter.Revit
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
-    public List<ApplicationObject> WallToNative(BuiltElements.Wall speckleWall)
+    public ApplicationObject WallToNative(BuiltElements.Wall speckleWall)
     {
+      var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
       var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, convertedItem: revitWall);
+        return appObj;
+      }
 
       if (speckleWall.baseLine == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Walls are currently supported.");
-        return new List<ApplicationObject> { appObj };
-      }
-
-      var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
-      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, existingObject: revitWall);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Baseline was null");
+        return appObj;
       }
 
       var wallType = GetElementType<WallType>(speckleWall);
@@ -70,8 +69,8 @@ namespace Objects.Converter.Revit
       }
       if (revitWall == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "revit wall was null");
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Creation returned null");
+        return appObj;
       }
 
       //is structural update
@@ -123,13 +122,11 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitWall, speckleWall);
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: state, createdId: revitWall.UniqueId, existingObject: revitWall);
+      appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
       
       var placeholders = new List<ApplicationObject>() { appObj };
-      var hostedElements = SetHostedElements(speckleWall, revitWall);
-      placeholders.AddRange(hostedElements);
-
-      return placeholders;
+      appObj = SetHostedElements(speckleWall, revitWall, appObj);
+      return appObj;
     }
 
     public Base WallToSpeckle(DB.Wall revitWall)

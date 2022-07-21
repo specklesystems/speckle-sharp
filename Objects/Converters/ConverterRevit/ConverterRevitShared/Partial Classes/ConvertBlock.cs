@@ -74,13 +74,13 @@ namespace Objects.Converter.Revit
       var ids = new List<ElementId>();
       breps.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).ExistingObject as DB.DirectShape;
+        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
           ids.Add(ds.Id);
       });
       meshes.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).ExistingObject as DB.DirectShape;
+        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
           ids.Add(ds.Id);
         ids.Add(ds.Id);

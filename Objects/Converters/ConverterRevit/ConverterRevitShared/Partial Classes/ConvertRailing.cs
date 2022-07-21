@@ -9,29 +9,28 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
+    public ApplicationObject RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
     {
-      var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
-      
-      if (speckleRailing.path == null)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Railings are currently supported.");
-        return new List<ApplicationObject> { appObj };
-      }
-
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
+      var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
       if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitRailing.UniqueId, existingObject: revitRailing);
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitRailing.UniqueId, convertedItem: revitRailing);
+        return appObj;
+      }
+     
+      if (speckleRailing.path == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Path was null");
+        return appObj;
       }
 
       var railingType = GetElementType<RailingType>(speckleRailing);
       Level level = ConvertLevelToRevit(speckleRailing.level, out ApplicationObject.State levelState);
       if (level == null) //we currently don't support railings hosted on stairs, and these have null level
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "level was null");
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Level was null");
+        return appObj;
       }
 
       var baseCurve = CurveArrayToCurveLoop(CurveToNative(speckleRailing.path));
@@ -45,8 +44,8 @@ namespace Objects.Converter.Revit
       }
       if (revitRailing == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "could not create revit railing");
-        return new List<ApplicationObject> { appObj };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Creation returned null");
+        return appObj;
       }
 
       if (revitRailing.GetTypeId() != railingType.Id)
@@ -64,9 +63,9 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitRailing, speckleRailing);
 
       var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: status, createdId: revitRailing.UniqueId, existingObject: revitRailing);
+      appObj.Update(status: status, createdId: revitRailing.UniqueId, convertedItem: revitRailing);
       Doc.Regenerate();
-      return new List<ApplicationObject> { appObj };
+      return appObj;
     }
 
     //TODO: host railings, where possible

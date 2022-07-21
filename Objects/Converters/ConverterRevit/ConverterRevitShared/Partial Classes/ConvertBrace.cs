@@ -9,7 +9,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationObject> BraceToNative(Brace speckleBrace)
+    public ApplicationObject BraceToNative(Brace speckleBrace)
     {
       //reuse ConversionLog.Addic in Beam class, at these are basically the same thing
       if (speckleBrace is RevitBrace rb)

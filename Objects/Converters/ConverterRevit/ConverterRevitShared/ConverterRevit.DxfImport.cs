@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
       }
 
       var el = CreateDxfImport(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, existingObject: el);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
     
@@ -46,7 +46,7 @@ namespace Objects.Converter.Revit
       }
 
       var el = CreateDxfImportFamily(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, existingObject: el);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
     
@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
       }
 
       var el = CreateDxfImport(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}.dxf", 1, doc);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, existingObject: el);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
     
@@ -78,7 +78,7 @@ namespace Objects.Converter.Revit
       }
       
       var el = CreateDxfImportFamily(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}", 1, doc);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, existingObject: el);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
 
@@ -99,7 +99,7 @@ namespace Objects.Converter.Revit
         1, 
         doc);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, existingObject: el);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
 
@@ -120,7 +120,7 @@ namespace Objects.Converter.Revit
         1,
         doc);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, existingObject: el);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
     

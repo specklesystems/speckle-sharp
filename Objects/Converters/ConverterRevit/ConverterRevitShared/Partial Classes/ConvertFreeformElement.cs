@@ -60,13 +60,14 @@ namespace Objects.Converter.Revit
       catch { }
 
       var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, existingObject: freeform);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, convertedItem: freeform);
       SetInstanceParameters(freeform, freeformElement);
       return appObj;
     }
 
-    public List<ApplicationObject> FreeformElementToNativeFamily(Brep brep, Category cat = null)
+    public ApplicationObject FreeformElementToNativeFamily(Brep brep, Category cat = null)
     {
+      var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
       var solids = new List<DB.Solid>();
       try
       {
@@ -79,40 +80,33 @@ namespace Objects.Converter.Revit
         solids.AddRange(meshes);
       }
 
-      var applicationPlaceholders = new List<ApplicationObject>();
-
       foreach (var s in solids)
       {
         var form = DB.FreeFormElement.Create(Doc, s);
         if (cat != null)
           form.Subcategory = cat;
-        var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
-        appObj.Update(status: ApplicationObject.State.Created, createdId: form.UniqueId, existingObject: s);
-        applicationPlaceholders.Add(appObj);
+        appObj.Update(createdId: form.UniqueId, convertedItem: s);
       }
 
-      return applicationPlaceholders;
+      return appObj;
     }
 
-    public List<ApplicationObject> FreeformElementToNativeFamily(Geometry.Mesh mesh)
+    public ApplicationObject FreeformElementToNativeFamily(Geometry.Mesh mesh)
     {
+      var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var solids = new List<DB.Solid>();
       var d = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid);
       var revitMmesh =
           d.Select(m => m as DB.Solid);
       solids.AddRange(revitMmesh);
 
-      var applicationPlaceholders = new List<ApplicationObject>();
-
       foreach (var s in solids)
       {
         var form = DB.FreeFormElement.Create(Doc, s);
-        var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
-        appObj.Update(status: ApplicationObject.State.Created, createdId: form.UniqueId, existingObject: s);
-        applicationPlaceholders.Add(appObj);
+        appObj.Update(createdId: form.UniqueId, convertedItem: s);
       }
 
-      return applicationPlaceholders;
+      return appObj;
     }
 
     private IEnumerable<Solid> GetSolidMeshes(IEnumerable<Mesh> meshes)
@@ -152,7 +146,7 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(freeform, brep);
       
-      appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, existingObject: freeform);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, convertedItem: freeform);
       return appObj;
     }
 
