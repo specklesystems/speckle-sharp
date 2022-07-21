@@ -174,7 +174,7 @@ namespace Speckle.DesktopUI.Streams
       {
         try
         {
-          var res = await StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput()
+          var res = await StreamState.Client.StreamUpdatePermission(new StreamUpdatePermissionInput()
           {
             role = Role.Role,
             streamId = StreamState.Stream.id,
