@@ -61,7 +61,7 @@ jobs:
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+            curl -sSL https://dot.net/v1/dotnet-install.sh --channel=6.0.7 | bash /dev/stdin
             ~/.dotnet/dotnet tool install --global Speckle.Manager.Feed
             /Users/distiller/.dotnet/tools/speckle.manager.feed addVersion
 workflows:
