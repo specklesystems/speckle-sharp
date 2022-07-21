@@ -27,7 +27,7 @@
   </Design.DataContext>
 
   <Grid
-    MinHeight="500"
+    MinHeight="600"
     RowDefinitions="auto, auto,*,auto">
     <!-- Page Header -->
     <Border
@@ -36,26 +36,6 @@
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
       <Grid Margin="15" ColumnDefinitions="auto,auto,auto, auto">
-        <!--<m:FloatingButton
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="0"
-          Background="Transparent"
-          Classes=""
-          Command="{Binding GoBack}"
-          ToolTip.Tip="Back">
-          <Button.Content>
-            <Viewbox
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch"
-              Stretch="Fill">
-              <icons:MaterialIcon
-                Width="24"
-                Height="24"
-                Foreground="{DynamicResource MaterialDesignBody}"
-                Kind="ChevronLeft" />
-            </Viewbox>
-          </Button.Content>
-        </m:FloatingButton>-->
         <TextBlock
           Classes="Grotesk"
           FontSize="20"
@@ -71,50 +51,6 @@
           Items="{Binding Mapping.Keys}"/>
       </Grid>
     </Border>
-
-    <!--<Grid
-      Grid.Row="1"
-      ColumnDefinitions="*,auto,*">
-      <Border
-        Background="{DynamicResource MaterialDesignCardBackground}"
-        assists:ShadowAssist.ShadowDepth="Depth1"
-        Grid.Column="1"
-        Margin="10"
-        Padding="10,5,10,5"
-        CornerRadius="32"
-        BorderBrush="Black"
-        BorderThickness="0">
-        <Grid
-          ColumnDefinitions="auto,auto"
-          HorizontalAlignment="Left"
-          VerticalAlignment="Center">
-          <TextBlock
-            VerticalAlignment="Center"
-            Text="Category: "/>
-          <ComboBox
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            Padding="10,0,30,0"
-            SelectedItem="{Binding SelectedCategory}"
-            Items="{Binding Mapping.Keys}"/>
-        </Grid>
-      </Border>
-    </Grid>-->
-
-
-      <!--<Grid
-        RowDefinitions="auto,*">
-        <ListBox
-          BorderThickness="1"
-          BorderBrush="Gray"
-          CornerRadius="20"
-          Margin="10"
-          Background="{DynamicResource MaterialDesignCardBackground}"
-          Grid.Column="0"
-          SelectedItem="{Binding SelectedCategory}"
-          Items="{Binding Mapping.Keys}">
-        </ListBox>
-      </Grid>-->
 
     <Grid
       Margin="15,0,15,0"
@@ -148,7 +84,7 @@
           Background="{DynamicResource MaterialDesignCardBackground}"
           assists:ShadowAssist.ShadowDepth="Depth2">
         <StackPanel>
-          <ListBox
+          <ListBox ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             Items="{Binding VisibleMappingValues}"
             SelectedItem="{Binding SelectedMappingValue}">
             <ListBox.ItemTemplate>
@@ -186,38 +122,6 @@
           </ListBox>
         </StackPanel>
         </Border>
-        <!--<ItemsControl Items="{Binding Mapping}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Grid
-                ColumnDefinitions="*,*">
-                <TextBlock
-                  Margin="5"
-                  Grid.Column="0"
-                  VerticalAlignment="Center"
-                  TextTrimming="CharacterEllipsis"
-                  Text="{Binding IncomingType}">
-                </TextBlock>
-                <TextBox
-                  IsReadOnly="True"
-                  Focusable="True"
-                  Classes="Small"
-                  Margin="5"
-                  Grid.Column="1"
-                  Watermark="{Binding InitialGuess}"
-                  Text="{Binding OutgoingType}"
-                  VerticalContentAlignment="Center"
-                  VerticalAlignment="Center">
-                  <i:Interaction.Behaviors>
-                    <ia:EventTriggerBehavior EventName="GotFocus">
-                      <ia:InvokeCommandAction  Command="{Binding #ScrollParent.DataContext.SetCurrentTypeName}" CommandParameter="{Binding IncomingType}"/>
-                    </ia:EventTriggerBehavior>
-                  </i:Interaction.Behaviors>
-                </TextBox>
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>-->
       </ScrollViewer>
     </Grid>
 
@@ -233,17 +137,6 @@
           <TextBlock/>
           <TextBlock/>
         </StackPanel>
-        <!--<StackPanel
-          Grid.Row="1">
-          <TextBlock
-            Padding="5,5,5,0"
-            HorizontalAlignment="Center"
-            Text="Search Results"/>
-          <Border
-            BorderThickness=".5"
-            BorderBrush="Gray"
-            Margin="0,0,0,8"/>
-        </StackPanel>-->
 
         <!-- Search Box -->
         <TextBox
@@ -258,7 +151,7 @@
           BorderThickness="1"
           Classes="Solo"
           Text="{Binding SearchQuery, Mode=TwoWay}"
-          Watermark="Search Types in Project">
+          Watermark="{Binding VisibleMappingValues.Count}">
           <TextBox.InnerLeftContent>
             <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
               <icons:MaterialIcon

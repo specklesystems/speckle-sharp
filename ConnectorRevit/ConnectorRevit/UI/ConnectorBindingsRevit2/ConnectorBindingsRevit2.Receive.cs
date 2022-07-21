@@ -195,57 +195,50 @@ namespace Speckle.ConnectorRevit.UI
       if (receiveMappingsModelsSetting.MappingJson != null)
         settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(receiveMappingsModelsSetting.MappingJson);
 
-      if (receiveMappings == noMapping)
+      if (receiveMappings == noMapping || receiveMappings == null)
         return;
-      else if (receiveMappings == everyReceive)
+      else
       {
         Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
 
-        UpdateMappingForNewObjects(settingsMapping, flattenedBase, hostTypesDict);
-        Dictionary<string, List<MappingValue>> initialMapping = settingsMapping;
-        if (initialMapping == null)
-          initialMapping = GetInitialMapping(flattenedBase, progress, hostTypesDict);
-
+        bool newTypesExist = UpdateMappingForNewObjects(settingsMapping, flattenedBase, hostTypesDict);
+        Dictionary<string, List<MappingValue>> Mapping = settingsMapping;
+        if (Mapping == null)
+          Mapping = GetInitialMapping(flattenedBase, progress, hostTypesDict);
 
         try
         {
-          var vm = new MappingViewModel(initialMapping, hostTypesDict, progress);
-          MappingViewDialog mappingView = new MappingViewDialog
+          // show custom mapping dialog if the settings corrospond to what is being received
+          if (newTypesExist || receiveMappings == everyReceive)
           {
-            DataContext = vm
-          };
 
-          Dictionary<string, List<MappingValue>> newMapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
+            var vm = new MappingViewModel(Mapping, hostTypesDict, progress, newTypesExist);
+            MappingViewDialog mappingView = new MappingViewDialog
+            {
+              DataContext = vm
+            };
 
-          //var newMapping = await mappingView.ShowDialog<Dictionary<string,MappingValue>>();
+            Mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
 
-          receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(newMapping);
-          progress.Report.Log($"newmapping serialized {receiveMappingsModelsSetting.MappingJson}");
+            receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(Mapping); ;
 
-          List<Base> newFlatBase = updateRecieveObject(newMapping, flattenedBase);
-
-          //progress.Report.Log($"newflatbase {newFlatBase}");
-          return;
+          }
+          updateRecieveObject(Mapping, flattenedBase);
         }
         catch (Exception ex)
         {
           progress.Report.Log($"Could not make new mapping {ex}");
         }
-
-        progress.Report.Log($"how did this work?");
-        return;
       }
-      //else if (receiveMappings == forNewTypes)
-      //{
-
-      //}
     }
 
-    public void UpdateMappingForNewObjects(Dictionary<string, List<MappingValue>> settingsMapping, List<Base> flattenedBase, Dictionary<string, List<string>> hostTypesDict)
+    public bool UpdateMappingForNewObjects(Dictionary<string, List<MappingValue>> settingsMapping, List<Base> flattenedBase, Dictionary<string, List<string>> hostTypesDict)
     {
+      // no existing mappings exist
       if (settingsMapping == null)
-        return;
+        return true;
 
+      bool newTypesExist = false;
       List<Base> objectsWithNewTypes = new List<Base>();
       var loopValues = settingsMapping.Values;
       foreach (var obj in flattenedBase)
@@ -262,11 +255,16 @@ namespace Speckle.ConnectorRevit.UI
         }
         if (!containsObj)
         {
+          newTypesExist = true;
           string category = GetTypeCategory(obj);
           string mappedValue = GetMappedValue(hostTypesDict, category, type);
-          settingsMapping[category].Add(new MappingValue(type, mappedValue, inNewType: true));
+          if (settingsMapping.ContainsKey(category))
+            settingsMapping[category].Add(new MappingValue(type, mappedValue, true));
+          else
+            settingsMapping[category] = new List<MappingValue> { new MappingValue(type, mappedValue, true) };
         }
-      } 
+      }
+      return newTypesExist;
     }
 
     public Dictionary<string, List<MappingValue>> GetInitialMapping(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostProperties)
@@ -360,45 +358,16 @@ namespace Speckle.ConnectorRevit.UI
       return d[n, m];
     }
 
-    public List<Base> updateRecieveObject(Dictionary<string, List<MappingValue>> Map, List<Base> objects)
+    public void updateRecieveObject(Dictionary<string, List<MappingValue>> Map, List<Base> objects)
     {
       foreach (var @object in objects)
       {
         try
         {
           //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
-          var propInfo = "";
-          string speckleType = "";
-          try
-          {
-            speckleType = @object.speckle_type.Split(':')[0];
-          }
-          catch
-          {
-            speckleType = @object.speckle_type;
-          }
-
-          string typeCategory = "";
-
-          switch (speckleType)
-          {
-            case "Objects.BuiltElements.Floor":
-              typeCategory = "Floors";
-              break;
-            case "Objects.BuiltElements.Wall":
-              typeCategory = "Walls";
-              break;
-            case "Objects.BuiltElements.Beam":
-              typeCategory = "Framing";
-              break;
-            case "Objects.BuiltElements.Column":
-              typeCategory = "Columns";
-              break;
-            default:
-              typeCategory = "Miscellaneous";
-              break;
-          }
-          propInfo = @object.GetType().GetProperty("type").GetValue(@object) as string;
+          var propInfo = @object.GetType().GetProperty("type").GetValue(@object) as string;
+          string typeCategory = GetTypeCategory(@object);
+         
           if (propInfo != "")
           {
             string mappingProperty = "";
@@ -413,7 +382,6 @@ namespace Speckle.ConnectorRevit.UI
 
         }
       }
-      return objects;
     }
 
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)

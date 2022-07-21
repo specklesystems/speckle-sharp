@@ -25,6 +25,8 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
+    public const string UnmappedKey = "New Incoming Types";
+
     private bool isSearching = false;
     private Dictionary<string,List<string>> _valuesList { get; } = new Dictionary<string, List<string>>();
     private string _searchQuery;
@@ -69,8 +71,20 @@ namespace DesktopUI2.ViewModels
       get => _selectedCategory;
       set
       {
-        VisibleMappingValues = new List<MappingValue>(Mapping[value]);
         this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+        if (value == UnmappedKey)
+        {
+          var tempList = new List<MappingValue>();
+          foreach (var key in Mapping.Keys)
+          {
+            tempList.AddRange(Mapping[key].Where(i => i.NewType == true));
+          }
+          VisibleMappingValues = tempList;
+        }
+        else
+        {
+          VisibleMappingValues = new List<MappingValue>(Mapping[value]);
+        }
         SearchQuery = "";
         SearchResults = _valuesList[value];
       }
@@ -90,6 +104,8 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _selectedMappingValue, value);
     }
 
+    public List<MappingValue> Test { get; set; }
+
     //this constructor is purely for xaml design purposes
     public MappingViewModel()
     {
@@ -104,7 +120,7 @@ namespace DesktopUI2.ViewModels
               new MappingValue("W12x19", "W12x19"),
               new MappingValue("Type1", "type123"),
               new MappingValue("anotherType", "anotherType"),
-              new MappingValue("yetAnotherType", "differentType" ),
+              new MappingValue("yetAnotherType", "differentType", true),
               new MappingValue("short", "short"),
               new MappingValue( "a very very very long type name. Oh no", "a very very very long type name. Oh no")
             }
@@ -117,7 +133,7 @@ namespace DesktopUI2.ViewModels
             {
               new MappingValue("W12x19", "W12x19"),
               new MappingValue("Wood Beam", "type123"),
-              new MappingValue("Glulam", "anotherType"),
+              new MappingValue("Glulam", "anotherType", true),
               new MappingValue("Conc Beam", "differentType" ),
               new MappingValue("short", "short"),
               new MappingValue( "a very very very long type name. Oh no", "a very very very long type name. Oh no")
@@ -130,11 +146,13 @@ namespace DesktopUI2.ViewModels
             new List<MappingValue>
             {
               new MappingValue("W12x19", "W12x19"),
-              new MappingValue("col", "type123"),
+              new MappingValue("col", "type123", true),
             }
           )
         },
       };
+
+      Mapping[UnmappedKey] = new List<MappingValue>();
 
       _valuesList = new Dictionary<string, List<string>>
       {
@@ -145,11 +163,12 @@ namespace DesktopUI2.ViewModels
 
       var kv = Mapping.First();
       SelectedCategory = kv.Key;
+
       //visibleMappingValues = Mapping[SelectedCategory];
     }
 
 
-    public MappingViewModel(Dictionary<string, List<MappingValue>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress)
+    public MappingViewModel(Dictionary<string, List<MappingValue>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress, bool newTypesExist = false)
     {
       progress.Report.Log($"host type Dict keys {String.Join(",", hostTypesDict.Keys)}");
       progress.Report.Log($"host type Dict values {String.Join(",", hostTypesDict.Values)}");
@@ -160,12 +179,25 @@ namespace DesktopUI2.ViewModels
       Mapping = new Dictionary<string, List<MappingValue>>();
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
-      //foreach (var category in firstPassMapping.Keys)
-      //{
-      //  Mapping[category] = new List<MappingValue>(firstPassMapping[category]);
-      //}
-
       Mapping = firstPassMapping;
+      _valuesList = hostTypesDict;
+
+      if (newTypesExist)
+      {
+        // add key so it will show up in categories list
+        Mapping[UnmappedKey] = new List<MappingValue>();
+
+        //create master list of project types
+        var tempList = new List<string>();
+        foreach (var key in _valuesList.Keys)
+        {
+          tempList.AddRange(_valuesList[key]);
+        }
+        _valuesList[UnmappedKey] = tempList;
+      }
+
+      progress.Report.Log($"firstpass keys {String.Join(",", Mapping.Keys)}");
+      progress.Report.Log($"firstpass values {String.Join(",", Mapping.Values)}");
 
       //foreach (var category in firstPassMapping.Keys)
       //{
@@ -184,9 +216,12 @@ namespace DesktopUI2.ViewModels
       //}
 
       progress.Report.Log($"Mapping {Mapping}");
-      _valuesList = hostTypesDict;
 
-      SelectedCategory = Mapping.Keys.First();
+
+      if (Mapping.ContainsKey(UnmappedKey))
+        SelectedCategory = UnmappedKey;
+      else
+        SelectedCategory = Mapping.Keys.First();
       progress.Report.Log($"SelectedCategory {SelectedCategory}");
       VisibleMappingValues = new List<MappingValue>(Mapping[Mapping.Keys.First()]);
       progress.Report.Log($"visibleMappingValues {VisibleMappingValues}");
@@ -202,7 +237,7 @@ namespace DesktopUI2.ViewModels
       [DataMember]
       public string IncomingType { get; set; }
       public bool Imported { get; set; }
-      public bool NewType { get; set; } = false;
+      public bool NewType { get; set; }
 
       private string _initialGuess;
       [DataMember]

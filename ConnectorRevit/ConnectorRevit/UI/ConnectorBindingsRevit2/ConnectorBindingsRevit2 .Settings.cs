@@ -32,9 +32,9 @@ namespace Speckle.ConnectorRevit.UI
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
-    const string noMapping = "None";
-    const string everyReceive = "Every Receive";
-    const string forNewTypes = "When Unmapped Types are Detected";
+    const string noMapping = "Never (default)";
+    const string everyReceive = "Always";
+    const string forNewTypes = "For New Types";
 
     public override List<ISetting> GetSettings()
     {
