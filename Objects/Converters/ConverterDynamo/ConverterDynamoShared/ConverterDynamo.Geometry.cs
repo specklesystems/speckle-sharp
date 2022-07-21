@@ -18,6 +18,7 @@ using Curve = Objects.Geometry.Curve;
 using Mesh = Objects.Geometry.Mesh;
 using Objects;
 using Objects.Other;
+using Objects.Utils;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Speckle.Core.Kits;
@@ -762,29 +763,31 @@ namespace Objects.Converter.Dynamo
       var points = ArrayToPointList(mesh.vertices, mesh.units);
       List<IndexGroup> faces = new List<IndexGroup>();
       int i = 0;
-
-      while (i < mesh.faces.Count)
+      var faceIndices = new List<int>(mesh.faces);
+      while (i < faceIndices.Count)
       {
-        if (mesh.faces[i] == 0)
+        if (faceIndices[i] == 0 || faceIndices[i] == 3)
         {
           // triangle
-          var ig = IndexGroup.ByIndices((uint)mesh.faces[i + 1], (uint)mesh.faces[i + 2], (uint)mesh.faces[i + 3]);
+          var ig = IndexGroup.ByIndices((uint)faceIndices[i + 1], (uint)faceIndices[i + 2], (uint)faceIndices[i + 3]);
           faces.Add(ig);
           i += 4;
         }
-        else if (mesh.faces[i] == 1)
+        else if (faceIndices[i] == 1 || faceIndices[i] == 4)
         {
           // quad
-          var ig = IndexGroup.ByIndices((uint)mesh.faces[i + 1], (uint)mesh.faces[i + 2], (uint)mesh.faces[i + 3],
-            (uint)mesh.faces[i + 4]);
+          var ig = IndexGroup.ByIndices((uint)faceIndices[i + 1], (uint)faceIndices[i + 2], (uint)faceIndices[i + 3],
+            (uint)faceIndices[i + 4]);
           faces.Add(ig);
           i += 5;
         }
         else
         {
           // Ngon!
-          return null;
+          var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh);
+          faceIndices.AddRange(triangleFaces);
         }
+
       }
 
       var dsMesh = DS.Mesh.ByPointsFaceIndices(points, faces);

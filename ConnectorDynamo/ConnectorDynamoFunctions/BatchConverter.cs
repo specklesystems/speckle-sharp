@@ -204,7 +204,7 @@ namespace Speckle.ConnectorDynamo.Functions
       // case 2: it's a wrapper Base
       //       2a: if there's only one member unpack it
       //       2b: otherwise return dictionary of unpacked members
-      var members = @base.GetDynamicMembers();
+      var members = @base.GetMemberNames();
 
       if (members.Count() == 1)
       {
