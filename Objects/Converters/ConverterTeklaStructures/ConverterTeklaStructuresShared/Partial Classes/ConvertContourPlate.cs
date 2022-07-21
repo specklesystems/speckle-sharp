@@ -70,7 +70,7 @@ namespace Objects.Converter.TeklaStructures
       GetAllUserProperties(specklePlate, plate);
 
       var solid = plate.GetSolid();
-      specklePlate.displayMesh = GetMeshFromSolid(solid);
+      specklePlate.displayValue = new List<Mesh>{ GetMeshFromSolid(solid)};
       var rebars = plate.GetReinforcements();
       if (rebars != null)
       {
