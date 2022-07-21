@@ -253,6 +253,27 @@ namespace Speckle.Core.Credentials
     }
 
     /// <summary>
+    /// Changes the default account
+    /// </summary>
+    /// <returns></returns>
+    public static void ChangeDefaultAccount(string id)
+    {
+      foreach (var account in GetAccounts())
+      {
+        if (account.id != id)
+        {
+          account.isDefault = false;
+        }
+        else
+        {
+          account.isDefault = true;
+        }
+
+        AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+      }
+    }
+
+    /// <summary>
     /// Removes an account
     /// </summary>
     /// <param name="id">ID of the account to remove</param>
