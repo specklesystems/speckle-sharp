@@ -118,7 +118,7 @@ namespace Speckle.ConnectorRevit.UI
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
           {
-            progress.Report.LogConversionError(new Exception("fatal error: receive cancelled by user"));
+            progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
             t.RollBack();
             return;
           }

@@ -130,20 +130,12 @@ namespace Objects.Converter.Revit
           returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
           break;
         case DB.ModelCurve o:
-
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
-          {
             returnObject = RoomBoundaryLineToSpeckle(o);
-          }
           else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
-          {
             returnObject = SpaceSeparationLineToSpeckle(o);
-          }
           else
-          {
             returnObject = ModelCurveToSpeckle(o);
-          }
-
           break;
         case DB.Opening o:
           returnObject = OpeningToSpeckle(o);
@@ -229,10 +221,7 @@ namespace Objects.Converter.Revit
           break;
         case DB.ReferencePoint o:
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
-          {
             returnObject = AnalyticalNodeToSpeckle(o);
-
-          }
           break;
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
@@ -296,8 +285,6 @@ namespace Objects.Converter.Revit
             (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
           }
           else returnObject["materialQuantities"] = null;
-
-
         }
         catch (System.Exception e)
         {
@@ -305,16 +292,13 @@ namespace Objects.Converter.Revit
         }
       }
 
-
       return returnObject;
     }
 
     private string GetElemInfo(object o)
     {
       if (o is Element e)
-      {
         return $", name: {e.Name}, id: {e.UniqueId}";
-      }
 
       return "";
     }
@@ -526,7 +510,7 @@ namespace Objects.Converter.Revit
           return PipeToNative(o);
 
         case BE.Wire o:
-          return WireToNative(o, out List<string> notes);
+          return WireToNative(o);
 
         case BE.CableTray o:
           return CableTrayToNative(o);
@@ -642,7 +626,6 @@ namespace Objects.Converter.Revit
           _ => false
         };
       }
-
 
       //Project Document
       var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
