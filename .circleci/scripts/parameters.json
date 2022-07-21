@@ -1,11 +1,11 @@
 {
-  "core": false,
+  "core": true,
   "rhino": true,
-  "revit": false,
-  "dynamo": false,
-  "csi": false,
-  "autocadcivil": false,
-  "microstation": false,
-  "archicad": false,
-  "teklastructures": false
+  "revit": true,
+  "dynamo": true,
+  "csi": true,
+  "autocadcivil": true,
+  "microstation": true,
+  "archicad": true,
+  "teklastructures": true
 }

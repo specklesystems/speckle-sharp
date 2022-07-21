@@ -151,6 +151,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
     steps:
       - checkout
+      - attach_workspace:
+          at: ./
       - run:
           name: Install Manager Feed CLI
           command: dotnet tool install --global Speckle.Manager.Feed

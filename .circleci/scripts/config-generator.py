@@ -11,6 +11,7 @@ def runCommand(argv: List[str]):
     output_filepath = ".circleci/continuation-config.yml"
     arg_help = "{0} -d <deploy?> -o <output>".format(argv[0])
 
+    print(argv)
     try:
         opts, _ = getopt.getopt(argv[1:], "hd:o:")
     except:
@@ -29,6 +30,7 @@ def runCommand(argv: List[str]):
                 "false",
                 "f",
             ]
+            print("deploy arg -- " + str(arg) + " -- " + str(deploy))
         elif opt in ("-o", "--output"):
             output_filepath = arg
 
