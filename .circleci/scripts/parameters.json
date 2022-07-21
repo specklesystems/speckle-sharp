@@ -1,7 +1,6 @@
 {
   "core": true,
   "rhino": true,
-  "grasshopper": true,
   "revit": true,
   "dynamo": true,
   "csi": true,

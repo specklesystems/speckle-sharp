@@ -51,7 +51,6 @@ jobs:
             python .circleci/scripts/config-generator.py -d ${CIRCLE_TAG:-none} -o .circleci/continuation-config.yml
       - continuation/continue:
           configuration_path: .circleci/continuation-config.yml # use newly generated config to continue
-
 workflows:
   setup:
     jobs:
