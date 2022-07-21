@@ -60,7 +60,7 @@ jobs:
           name: Install dotnet
           command: |
             dotnet tool install --global Speckle.Manager.Feed
-            /root/.dotnet/tools/speckle.manager.feed addVersion
+            /root/.dotnet/tools/Speckle.Manager.Feed addVersion
 workflows:
   setup:
     jobs:
