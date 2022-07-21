@@ -144,6 +144,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
   deploy-connector-new:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
+    parameters:
+      slug:
+        type: string
+      os:
+        type: string
     steps:
       - checkout
       - run:
@@ -154,12 +159,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
-            /root/.dotnet/tools/Speckle.Manager.Feed addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>-$SEMVER.exe
-    parameters:
-      slug:
-        type: string
-      os:
-        type: string
+            /root/.dotnet/tools/Speckle.Manager.Feed addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >>
 
   build-connector-mac:
     macos:
