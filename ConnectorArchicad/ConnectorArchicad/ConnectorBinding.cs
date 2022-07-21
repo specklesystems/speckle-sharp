@@ -87,9 +87,19 @@ namespace Archicad.Launcher
       return new List<StreamState>();
     }
 
+    public override void ResetDocument()
+    {
+      throw new NotImplementedException();
+    }
+
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
@@ -105,14 +115,19 @@ namespace Archicad.Launcher
       return state;
     }
 
-    public override void SelectClientObjects(string args) { }
+    public override void SelectClientObjects(List<string> args, bool deselect = false) 
+    {
+      throw new NotImplementedException();
+    }
 
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       if (state.Filter is null)
-      {
         return null;
-      }
 
       state.SelectedObjectIds = state.Filter.Selection;
 

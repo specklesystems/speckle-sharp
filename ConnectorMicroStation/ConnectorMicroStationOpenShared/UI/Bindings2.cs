@@ -165,8 +165,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
 #endif
 
-
-
       return filterList;
     }
 
@@ -186,7 +184,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return new List<MenuItem>();
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
       throw new NotImplementedException();
     }
@@ -267,9 +265,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       // invoke conversions on the main thread via control
       int count = 0;
       var flattenedObjects = FlattenCommitObject(commitObject, converter, ref count);
-      List<ApplicationPlaceholderObject> newPlaceholderObjects;
+      List<ApplicationObject> newPlaceholderObjects;
       if (Control.InvokeRequired)
-        newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
+        newPlaceholderObjects = (List<ApplicationObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
       else
         newPlaceholderObjects = ConvertAndBakeReceivedObjects(flattenedObjects, converter, state, progress);
 
@@ -301,10 +299,10 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       return state;
     }
 
-    delegate List<ApplicationPlaceholderObject> NativeConversionAndBakeDelegate(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress);
-    private List<ApplicationPlaceholderObject> ConvertAndBakeReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
+    delegate List<ApplicationObject> NativeConversionAndBakeDelegate(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress);
+    private List<ApplicationObject> ConvertAndBakeReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
       Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
@@ -326,9 +324,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         {
           var convRes = converter.ConvertToNative(@base);
 
-          if (convRes is ApplicationPlaceholderObject placeholder)
+          if (convRes is ApplicationObject placeholder)
             placeholders.Add(placeholder);
-          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+          else if (convRes is List<ApplicationObject> placeholderList)
             placeholders.AddRange(placeholderList);
 
           // creating new elements, not updating existing!
@@ -422,7 +420,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     }
 
     //delete previously sent object that are no longer in this stream
-    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
     {
       foreach (var obj in previouslyReceiveObjects)
       {
@@ -430,12 +428,10 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           continue;
 
         // get the model object from id               
-        ulong id = Convert.ToUInt64(obj.ApplicationGeneratedId);
+        ulong id = Convert.ToUInt64(obj.CreatedIds.FirstOrDefault());
         var element = Model.FindElementById((ElementId)id);
         if (element != null)
-        {
           element.DeleteFromModel();
-        }
       }
     }
     #endregion
@@ -841,6 +837,21 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         Control.Invoke(new WriteStateDelegate(StreamStateManager2.WriteStreamStateList), new object[] { File, DocumentStreams });
       else
         StreamStateManager2.WriteStreamStateList(File, DocumentStreams);
+    }
+
+    public override void ResetDocument()
+    {
+      throw new NotImplementedException();
+    }
+
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
+
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
     }
     #endregion
   }

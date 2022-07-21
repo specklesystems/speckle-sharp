@@ -3,7 +3,6 @@ using Speckle.Core.Models;
 
 namespace Speckle.Core.Kits
 {
-
   public interface ISpeckleConverter
   {
     string Description { get; }
@@ -95,7 +94,6 @@ namespace Speckle.Core.Kits
     public void SetConverterSettings(object settings);
 
   }
-
 
   public enum ReceiveMode
   {

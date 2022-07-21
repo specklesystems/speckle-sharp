@@ -305,9 +305,9 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
       var flattenedObjects = FlattenCommitObject(commitObject, converter);
 
-      List<ApplicationPlaceholderObject> newPlaceholderObjects;
+      List<ApplicationObject> newPlaceholderObjects;
       if (Control.InvokeRequired)
-        newPlaceholderObjects = (List<ApplicationPlaceholderObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state });
+        newPlaceholderObjects = (List<ApplicationObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state });
       else
         newPlaceholderObjects = ConvertAndBakeReceivedObjects(flattenedObjects, converter, state);
 
@@ -347,7 +347,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
     {
       foreach (var obj in previouslyReceiveObjects)
       {
@@ -355,20 +355,18 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           continue;
 
         // get the model object from id               
-        ulong id = Convert.ToUInt64(obj.ApplicationGeneratedId);
+        ulong id = Convert.ToUInt64(obj.CreatedIds.FirstOrDefault());
         var element = Model.FindElementById((ElementId)id);
         if (element != null)
-        {
           element.DeleteFromModel();
-        }
       }
     }
 
-    delegate List<ApplicationPlaceholderObject> NativeConversionAndBakeDelegate(List<Base> objects, ISpeckleConverter converter, StreamState state);
+    delegate List<ApplicationObject> NativeConversionAndBakeDelegate(List<Base> objects, ISpeckleConverter converter, StreamState state);
 
-    private List<ApplicationPlaceholderObject> ConvertAndBakeReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
+    private List<ApplicationObject> ConvertAndBakeReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
@@ -392,11 +390,11 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
           var convRes = converter.ConvertToNative(@base);
 
-          if (convRes is ApplicationPlaceholderObject placeholder)
+          if (convRes is ApplicationObject placeholder)
           {
             placeholders.Add(placeholder);
           }
-          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
+          else if (convRes is List<ApplicationObject> placeholderList)
           {
             placeholders.AddRange(placeholderList);
           }

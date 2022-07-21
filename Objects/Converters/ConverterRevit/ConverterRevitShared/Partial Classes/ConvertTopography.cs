@@ -10,12 +10,15 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationPlaceholderObject TopographyToNative(Topography speckleSurface)
+    public ApplicationObject TopographyToNative(Topography speckleSurface)
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
-
+      var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject { applicationId = speckleSurface.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return appObj;
+      }
 
       var pts = new List<XYZ>();
       var facets = new List<PolymeshFacet>();
@@ -43,9 +46,8 @@ namespace Objects.Converter.Revit
       }
 
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
+
       TopographySurface revitSurface = null;
 #if !REVIT2019
       revitSurface = TopographySurface.Create(Doc, pts, facets);
@@ -53,11 +55,10 @@ namespace Objects.Converter.Revit
       revitSurface = TopographySurface.Create(Doc, pts);
 #endif
       if (speckleSurface is RevitTopography rt)
-      {
         SetInstanceParameters(revitSurface, rt);
-      }
-      Report.Log($"Created Topography {revitSurface.Id}");
-      return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId, NativeObject = revitSurface };
+
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSurface.UniqueId, existingObject: revitSurface);
+      return appObj;
     }
 
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)

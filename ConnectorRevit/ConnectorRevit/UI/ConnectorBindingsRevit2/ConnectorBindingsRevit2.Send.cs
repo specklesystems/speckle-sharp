@@ -17,6 +17,12 @@ namespace Speckle.ConnectorRevit.UI
   {
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
+
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
     /// the Server and the local DB, and creates a commit with the objects.
@@ -48,7 +54,7 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.UniqueId }).ToList());
+      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
 
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
@@ -80,8 +86,7 @@ namespace Speckle.ConnectorRevit.UI
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
 
-
-          placeholders.Add(new ApplicationPlaceholderObject { applicationId = revitElement.UniqueId, ApplicationGeneratedId = revitElement.UniqueId });
+          placeholders.Add(new ApplicationObject(revitElement.UniqueId, revitElement.GetType().ToString()) { applicationId = revitElement.UniqueId });
 
           convertedCount++;
 

@@ -14,12 +14,14 @@ namespace Objects.Converter.Revit
     // CAUTION: this string needs to have the same values as in the connector
     const string StructuralFraming = "Structural Framing";
 
-    public List<ApplicationPlaceholderObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
+    public List<ApplicationObject> BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
-      
+      var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
+
       if (speckleBeam.baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Beams are currently supported.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Beams are currently supported.");
+        return new List<ApplicationObject> { appObj };
       }
 
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
@@ -29,22 +31,20 @@ namespace Objects.Converter.Revit
 
       //comes from revit or schema builder, has these props
       var speckleRevitBeam = speckleBeam as RevitBeam;
-
       if (speckleRevitBeam != null)
-      {
         if (level != null)
-        {
           level = GetLevelByName(speckleRevitBeam.level.name);
-        }
-      }
 
-      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine));
+      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine), out ApplicationObject.State levelState);
       var isUpdate = false;
       //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
-
+      
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } }; ;
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
 
       if (docObj != null)
       {
@@ -54,9 +54,8 @@ namespace Objects.Converter.Revit
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
-          {
             Doc.Delete(docObj.Id);
-          }
+
           else
           {
             revitBeam = (DB.FamilyInstance)docObj;
@@ -64,9 +63,7 @@ namespace Objects.Converter.Revit
 
             // check for a type change
             if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
-            {
               revitBeam.ChangeTypeId(familySymbol.Id);
-            }
           }
           isUpdate = true;
         }
@@ -97,17 +94,14 @@ namespace Objects.Converter.Revit
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
       if (speckleRevitBeam != null)
-      {
         SetInstanceParameters(revitBeam, speckleRevitBeam);
-      }
 
       // TODO: get sub families, it's a family! 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleBeam.applicationId, ApplicationGeneratedId = revitBeam.UniqueId, NativeObject = revitBeam } };
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: revitBeam.UniqueId, existingObject: revitBeam);
+      var placeholders = new List<ApplicationObject>() { appObj };
 
       // TODO: nested elements.
-
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} AdaptiveComponent {revitBeam.Id}");
-
       return placeholders;
     }
 

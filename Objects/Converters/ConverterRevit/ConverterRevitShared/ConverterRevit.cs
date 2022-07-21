@@ -47,13 +47,13 @@ namespace Objects.Converter.Revit
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> PreviousContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
@@ -92,8 +92,8 @@ namespace Objects.Converter.Revit
       Report.Log($"Using units: {ModelUnits}");
     }
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -368,15 +368,12 @@ namespace Objects.Converter.Revit
           //dynamic property = propInfo;
           //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
           var cat = GetObjectCategory(@object);
-          return DirectShapeToNative(meshes, cat);
+          return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, cat);
         }
         catch 
         {
 
         }
-
-        
-
       }
       //Family Document
       if (Doc.IsFamilyDocument)
@@ -426,18 +423,17 @@ namespace Objects.Converter.Revit
               return MeshToDxfImportFamily(mesh, Doc);
             case ToNativeMeshSettingEnum.Default:
             default:
-              return DirectShapeToNative(new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
+              return DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
           }
         // non revit built elems
         case BE.Alignment o:
           if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
-          {
             return ModelCurveToNative(o.baseCurve);
-          }
+
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return DirectShapeToNative(o.displayValue, applicationId: o.applicationId);
+          return DirectShapeToNative(new ApplicationObject(o.id, o.speckle_type), o.displayValue, applicationId: o.applicationId);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -530,7 +526,7 @@ namespace Objects.Converter.Revit
           return PipeToNative(o);
 
         case BE.Wire o:
-          return WireToNative(o);
+          return WireToNative(o, out List<string> notes);
 
         case BE.CableTray o:
           return CableTrayToNative(o);

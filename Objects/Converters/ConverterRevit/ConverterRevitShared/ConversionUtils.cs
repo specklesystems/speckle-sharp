@@ -97,33 +97,26 @@ namespace Objects.Converter.Revit
 
     }
 
-    public List<ApplicationPlaceholderObject> SetHostedElements(Base @base, HostObject host)
+    public List<ApplicationObject> SetHostedElements(Base @base, HostObject host)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       if (@base["elements"] != null && @base["elements"] is List<Base> elements)
       {
         CurrentHostElement = host;
 
         foreach (var obj in elements)
         {
-          if (obj == null)
-          {
-            continue;
-          }
+          if (obj == null) continue;
 
           if (!CanConvertToNative(obj)) continue;
 
           try
           {
             var res = ConvertToNative(obj);
-            if (res is ApplicationPlaceholderObject apl)
-            {
+            if (res is ApplicationObject apl)
               placeholders.Add(apl);
-            }
-            else if (res is List<ApplicationPlaceholderObject> apls)
-            {
+            else if (res is List<ApplicationObject> apls)
               placeholders.AddRange(apls);
-            }
           }
           catch (Exception e)
           {
@@ -396,7 +389,7 @@ namespace Objects.Converter.Revit
               if (rp.Definition.Name.ToLower().Contains("name"))
               {
                 var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
-                Report.ConversionLog.Add($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+                Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
                 rp.Set(temp);
               }
               else
@@ -489,9 +482,7 @@ namespace Objects.Converter.Revit
       if (match != null)
       {
         if (match is FamilySymbol fs && !fs.IsActive)
-        {
           fs.Activate();
-        }
 
         return (T)(object)match;
       }
@@ -504,9 +495,7 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
-          {
             fs.Activate();
-          }
 
           return (T)(object)match;
         }
@@ -520,9 +509,7 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
-          {
             fs.Activate();
-          }
 
           return (T)(object)match;
         }
@@ -653,9 +640,8 @@ namespace Objects.Converter.Revit
       }
       else
       {
-
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.ApplicationGeneratedId);
+        element = Doc.GetElement(@ref.CreatedIds.FirstOrDefault());
       }
 
       return element;
@@ -772,7 +758,7 @@ namespace Objects.Converter.Revit
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
-      openings.AddRange(ContextObjects.Where(x => x.NativeObject is RevitShaft).Select(x => x.NativeObject).Cast<RevitShaft>());
+      openings.AddRange(ContextObjects.Where(x => x.ExistingObject is RevitShaft).Select(x => x.ExistingObject).Cast<RevitShaft>());
 
       foreach (var @void in speckleElement["voids"] as List<ICurve>)
       {
@@ -788,12 +774,10 @@ namespace Objects.Converter.Revit
     private bool HasOverlappingOpening(ICurve @void, List<RevitOpening> openings)
     {
       foreach (RevitOpening opening in openings)
-      {
         if (CurvesOverlap(@void, opening.outline))
           return true;
-      }
+      
       return false;
-
     }
 
     private bool CurvesOverlap(ICurve icurveA, ICurve icurveB)
@@ -1103,20 +1087,18 @@ namespace Objects.Converter.Revit
       }
     }
     
-    public ApplicationPlaceholderObject CheckForExistingObject(Base @base)
+    public ApplicationObject CheckForExistingObject(Base @base)
     {
       @base.applicationId ??= @base.id;
       var docObj = GetExistingElementByApplicationId(@base.applicationId);
 
       if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-          { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+        return new ApplicationObject(@base.id, @base.speckle_type)
+          { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, ExistingObject = docObj };
 
       //just create new one 
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       return null;
     }

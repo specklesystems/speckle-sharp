@@ -8,7 +8,6 @@ using System.Linq;
 namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
-
   {
     public override List<string> GetSelectedObjects()
     {
@@ -20,14 +19,11 @@ namespace Speckle.ConnectorCSI.UI
       {
         (string typeName, string name) = item;
         if (ConnectorCSIUtils.IsTypeCSIAPIUsable(typeName))
-        {
           names.Add(string.Concat(typeName, ": ", name));
-        }
       }
       if (names.Count == 0)
-      {
         return new List<string>() { };
-      }
+
       return names;
     }
 
@@ -49,30 +45,29 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       return new List<ISelectionFilter>()
-            {
-            new AllSelectionFilter {Slug="all",  Name = "Everything",
-                Icon = "CubeScan", Description = "Selects all document objects." },
-            new ListSelectionFilter {Slug="type", Name = "Categories",
-                Icon = "Category", Values = objectTypes,
-                Description="Adds all objects belonging to the selected types"},
-        //new PropertySelectionFilter{
-        //  Slug="param",
-        //  Name = "Param",
-        //  Description="Adds  all objects satisfying the selected parameter",
-        //  Icon = "FilterList",
-        //  HasCustomProperty = false,
-        //  Values = objectNames,
-        //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        //},
+        {
+        new AllSelectionFilter {Slug="all",  Name = "Everything",
+            Icon = "CubeScan", Description = "Selects all document objects." },
+        new ListSelectionFilter {Slug="type", Name = "Categories",
+            Icon = "Category", Values = objectTypes,
+            Description="Adds all objects belonging to the selected types"},
+    //new PropertySelectionFilter{
+    //  Slug="param",
+    //  Name = "Param",
+    //  Description="Adds  all objects satisfying the selected parameter",
+    //  Icon = "FilterList",
+    //  HasCustomProperty = false,
+    //  Values = objectNames,
+    //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
+    //},
             
-            new ManualSelectionFilter(),
-            new ListSelectionFilter { Slug = "group", Name = "Group",
-            Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
-            };
-            
+        new ManualSelectionFilter(),
+        new ListSelectionFilter { Slug = "group", Name = "Group",
+        Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
+        };
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
       throw new NotImplementedException();
     }
@@ -89,20 +84,17 @@ namespace Speckle.ConnectorCSI.UI
           return GetSelectedObjects();
         case "all":
           if (ConnectorCSIUtils.ObjectIDsTypesAndNames == null)
-          {
             ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
-          }
+
           selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
                       .Select(pair => pair.Key).ToList());
           return selection;
 
-
         case "type":
           var typeFilter = filter as ListSelectionFilter;
           if (ConnectorCSIUtils.ObjectIDsTypesAndNames == null)
-          {
             ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
-          }
+
           foreach (var type in typeFilter.Selection)
           {
             selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
@@ -111,17 +103,15 @@ namespace Speckle.ConnectorCSI.UI
                 .ToList());
           }
           return selection;
+
         case "group":
           //Clear objects first
           Model.SelectObj.ClearSelection();
           var groupFilter = filter as ListSelectionFilter;
           foreach (var group in groupFilter.Selection)
-          {
             Model.SelectObj.Group(group);
-          }
+
           return GetSelectedObjects();
-
-
 
           /// CSI doesn't list fields of different objects. 
           /// For "param" search, maybe search over the name of

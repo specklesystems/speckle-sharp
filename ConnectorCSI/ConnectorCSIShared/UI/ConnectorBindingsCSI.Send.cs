@@ -16,9 +16,11 @@ using SCT = Speckle.Core.Transports;
 namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
-
   {
-    #region sending
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
@@ -34,9 +36,7 @@ namespace Speckle.ConnectorCSI.UI
       int objCount = 0;
 
       if (state.Filter != null)
-      {
         state.SelectedObjectIds = GetSelectionFilterObjects(state.Filter);
-      }
 
       var totalObjectCount = state.SelectedObjectIds.Count();
 
@@ -51,7 +51,6 @@ namespace Speckle.ConnectorCSI.UI
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
 
-
       //if( commitObj["@Stories"] == null)
       //{
       //    commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "CSI"));
@@ -60,9 +59,7 @@ namespace Speckle.ConnectorCSI.UI
       foreach (var applicationId in state.SelectedObjectIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        {
           return null;
-        }
 
         Base converted = null;
         string containerName = string.Empty;
@@ -78,7 +75,6 @@ namespace Speckle.ConnectorCSI.UI
           continue;
         }
 
-
         var typeAndName = ConnectorCSIUtils.ObjectIDsTypesAndNames
             .Where(pair => pair.Key == applicationId)
             .Select(pair => pair.Value).FirstOrDefault();
@@ -91,7 +87,6 @@ namespace Speckle.ConnectorCSI.UI
           progress.Report.LogConversionError(exception);
           continue;
         }
-
 
         //if (converted != null)
         //{
@@ -109,24 +104,15 @@ namespace Speckle.ConnectorCSI.UI
 
       Base ElementCount = converter.ConvertToSpeckle(("ElementsCount", "CSI"));
       if (ElementCount.applicationId != null)
-      {
         objCount = Convert.ToInt32(ElementCount.applicationId);
-      }
       else
-      {
         objCount = 0;
-      }
-
 
       if (commitObj["@Model"] == null)
-      {
         commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "CSI"));
-      }
-
+      
       if (commitObj["AnalysisResults"] == null)
-      {
         commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "CSI"));
-      }
 
       progress.Report.Merge(converter.Report);
 
@@ -137,9 +123,7 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       var streamId = state.StreamId;
       var client = state.Client;
@@ -161,12 +145,8 @@ namespace Speckle.ConnectorCSI.UI
           disposeTransports: true
           );
 
-
       if (progress.Report.OperationErrorsCount != 0)
-      {
-        //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
         return null;
-      }
 
       var actualCommit = new CommitCreateInput
       {
@@ -184,7 +164,6 @@ namespace Speckle.ConnectorCSI.UI
         var commitId = await client.CommitCreate(actualCommit);
         state.PreviousCommitId = commitId;
         return commitId;
-
       }
       catch (Exception e)
       {
@@ -194,7 +173,5 @@ namespace Speckle.ConnectorCSI.UI
       return null;
       //return state;
     }
-
-    #endregion
   }
 }

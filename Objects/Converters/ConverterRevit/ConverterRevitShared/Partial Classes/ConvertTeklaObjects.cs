@@ -18,9 +18,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> TeklaBeamToNative(BuiltElements.TeklaStructures.TeklaBeam teklaBeam, StructuralType structuralType = StructuralType.Beam)
+    public List<ApplicationObject> TeklaBeamToNative(BuiltElements.TeklaStructures.TeklaBeam teklaBeam, StructuralType structuralType = StructuralType.Beam)
     {
-      List<ApplicationPlaceholderObject> placeholders = new List<ApplicationPlaceholderObject> { };
+      List<ApplicationObject> placeholders = new List<ApplicationObject> { };
 
       RevitBeam revitBeam = new RevitBeam();
       //This only works for CSIC sections now for sure. Need to test on other sections

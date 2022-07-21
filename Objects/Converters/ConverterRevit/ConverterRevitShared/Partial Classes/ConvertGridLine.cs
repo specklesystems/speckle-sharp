@@ -7,22 +7,19 @@ using System.Linq;
 
 using DB = Autodesk.Revit.DB;
 
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
-
-    public List<ApplicationPlaceholderObject> GridLineToNative(GridLine speckleGridline)
+    public List<ApplicationObject> GridLineToNative(GridLine speckleGridline)
     {
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
+      var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
       if (revitGrid != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleGridline.applicationId, ApplicationGeneratedId = revitGrid.UniqueId, NativeObject = revitGrid}
-      }; ;
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitGrid.UniqueId, existingObject: revitGrid);
+        return new List<ApplicationObject>{ appObj };
+      }
 
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
 
@@ -31,9 +28,8 @@ namespace Objects.Converter.Revit
       if (revitGrid != null)
       {
         if (revitGrid.IsCurved)
-        {
           Doc.Delete(revitGrid.Id); //not sure how to modify arc grids
-        }
+
         else
         {
           //dim's magic from 1.0
@@ -94,18 +90,9 @@ namespace Objects.Converter.Revit
           revitGrid.Name = speckleGridline.label;
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleGridline.applicationId,
-        ApplicationGeneratedId = revitGrid.UniqueId,
-        NativeObject = revitGrid
-        }
-      };
-
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} GridLine {revitGrid.Id}");
-      return placeholders;
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: revitGrid.UniqueId, existingObject: revitGrid);
+      return new List<ApplicationObject> { appObj };
     }
 
     public GridLine GridLineToSpeckle(DB.Grid revitGridLine)

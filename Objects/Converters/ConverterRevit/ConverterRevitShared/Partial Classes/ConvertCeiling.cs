@@ -20,12 +20,10 @@ namespace Objects.Converter.Revit
       speckleCeiling.type = revitCeiling.Document.GetElement(revitCeiling.GetTypeId()).Name;
       speckleCeiling.outline = profiles[0];
       if (profiles.Count > 1)
-      {
         speckleCeiling.voids = profiles.Skip(1).ToList();
-      }
+
       speckleCeiling.offset = GetParamValue<double>(revitCeiling, BuiltInParameter.CEILING_HEIGHTABOVELEVEL_PARAM);
       speckleCeiling.level = ConvertAndCacheLevel(revitCeiling, BuiltInParameter.LEVEL_PARAM);
-
 
       GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM", "CEILING_HEIGHTABOVELEVEL_PARAM" });
 
@@ -38,54 +36,53 @@ namespace Objects.Converter.Revit
     }
 
 #if REVIT2022
-    public List<ApplicationPlaceholderObject> CeilingToNative(Ceiling speckleCeiling)
+    public List<ApplicationObject> CeilingToNative(Ceiling speckleCeiling)
     {
+      var appObj = new ApplicationObject(speckleCeiling.id, speckleCeiling.speckle_type) { applicationId = speckleCeiling.applicationId };
       if (speckleCeiling.outline == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Ceiling is missing an outline curve.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Missing an outline curve.");
+        return new List<ApplicationObject> { appObj };
       }
 
       var outline = CurveToNative(speckleCeiling.outline);
       var profile = new CurveLoop();
       foreach (DB.Curve segment in outline)
-      {
         profile.Append(segment);
-      }
 
       DB.Level level = null;
       double slope = 0;
       DB.Line slopeDirection = null;
+      var levelState = ApplicationObject.State.Unknown;
       if (speckleCeiling is RevitCeiling speckleRevitCeiling)
       {
-        level = ConvertLevelToRevit(speckleRevitCeiling.level);
+        level = ConvertLevelToRevit(speckleRevitCeiling.level, out levelState);
         slope = speckleRevitCeiling.slope;
         slopeDirection = (speckleRevitCeiling.slopeDirection != null) ? LineToNative(speckleRevitCeiling.slopeDirection) : null;
       }
       else
       {
-        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
       }
 
       var ceilingType = GetElementType<CeilingType>(speckleCeiling);
 
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleCeiling.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } };
-      if (docObj != null)
       {
-        Doc.Delete(docObj.Id);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
       }
+   
+      if (docObj != null)
+        Doc.Delete(docObj.Id);
 
       DB.Ceiling revitCeiling;
       
       if (slope != 0 && slopeDirection != null)
-      {
         revitCeiling = DB.Ceiling.Create(Doc, new List<CurveLoop> { profile }, ceilingType.Id, level.Id, slopeDirection, slope);
-      }
       else
-      {
         revitCeiling = DB.Ceiling.Create(Doc, new List<CurveLoop> { profile }, ceilingType.Id, level.Id);
-      }
 
       Doc.Regenerate();
 
@@ -95,16 +92,17 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        Report.LogConversionError(new Exception($"Could not create openings in ceiling {speckleCeiling.applicationId}", ex));
+        appObj.Update(logItem: $"Could not create openings: {ex.Message}");
       }
 
       SetInstanceParameters(revitCeiling, speckleCeiling);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleCeiling.applicationId, ApplicationGeneratedId = revitCeiling.UniqueId, NativeObject = revitCeiling } };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitCeiling.UniqueId, existingObject: revitCeiling);
+      var placeholders = new List<ApplicationObject>{ appObj };
 
       var hostedElements = SetHostedElements(speckleCeiling, revitCeiling);
       placeholders.AddRange(hostedElements);
-      Report.Log($"Created Ceiling {revitCeiling.Id}");
+
       return placeholders;
     }
 #endif

@@ -17,9 +17,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> StructuralModelToNative(Model speckleStructModel)
+    public List<ApplicationObject> StructuralModelToNative(Model speckleStructModel)
     {
-      List<ApplicationPlaceholderObject> placeholderObjects = new List<ApplicationPlaceholderObject> { };
+      List<ApplicationObject> placeholderObjects = new List<ApplicationObject> { };
       foreach (Node node in speckleStructModel.nodes)
       {
         var Application = AnalyticalNodeToNative(node);
@@ -39,12 +39,8 @@ namespace Objects.Converter.Revit
             else { var Application = AnalyticalStickToNative((Element1D)element);
               placeholderObjects.Concat(Application);
             }
-
-
-            
           }
           catch { }
-
         }
         else
         {

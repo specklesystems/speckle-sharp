@@ -12,9 +12,10 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> WireToNative(BuiltElements.Wire speckleWire)
+    public List<ApplicationObject> WireToNative(BuiltElements.Wire speckleWire)
     {
       var speckleRevitWire = speckleWire as RevitWire;
+      var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type) { applicationId = speckleWire.applicationId };
 
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"
         ? DB.Electrical.WiringType.Chamfer
@@ -38,6 +39,7 @@ namespace Objects.Converter.Revit
               points.AddRange(PointListToNative(line.value));
               break;
             default:  // what other curves should be supported? currently just the ones you can create from revit
+              appObj.Update(logItem: $"Wire segment geometry of type {segment.GetType()} not currently supported");
               new SpeckleException($"Wire segment geometry of type {segment.GetType()} not currently supported");
               break;
           }
@@ -46,13 +48,11 @@ namespace Objects.Converter.Revit
 
       DB.Electrical.Wire wire = null;
       var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
-
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleWire.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject>() { appObj };
+      }
 
       if (docObj != null)
       {
@@ -71,7 +71,7 @@ namespace Objects.Converter.Revit
           wire.SetVertex(i, points[i]);
         }
       var isUpdate = wire != null;
-      // crete a new one if there isn't one to update
+      // create a new one if there isn't one to update
       wire ??= DB.Electrical.Wire.Create(Doc, wireType.Id, Doc.ActiveView.Id,
         wiringType,
         points, null, null);
@@ -79,13 +79,9 @@ namespace Objects.Converter.Revit
       if (speckleRevitWire != null)
         SetInstanceParameters(wire, speckleRevitWire);
 
-      var placeholders = new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleWire.applicationId, ApplicationGeneratedId = wire.UniqueId, NativeObject = wire}
-      };
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} Wire {wire.Id}");
-      return placeholders;
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: wire.UniqueId, existingObject: wire);
+      return new List<ApplicationObject> { appObj };
     }
 
     public BuiltElements.Wire WireToSpeckle(DB.Electrical.Wire revitWire)

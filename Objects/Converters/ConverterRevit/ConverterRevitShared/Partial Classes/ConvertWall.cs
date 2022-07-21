@@ -16,31 +16,36 @@ namespace Objects.Converter.Revit
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
-    public List<ApplicationPlaceholderObject> WallToNative(BuiltElements.Wall speckleWall)
+    public List<ApplicationObject> WallToNative(BuiltElements.Wall speckleWall)
     {
+      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+
       if (speckleWall.baseLine == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleWall.applicationId}. Only line based Walls are currently supported.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Walls are currently supported.");
+        return new List<ApplicationObject> { appObj };
       }
 
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
       if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleWall.applicationId, ApplicationGeneratedId = revitWall.UniqueId, NativeObject = revitWall } }; ;
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, existingObject: revitWall);
+        return new List<ApplicationObject> { appObj };
+      }
 
       var wallType = GetElementType<WallType>(speckleWall);
       Level level = null;
+      var levelState = ApplicationObject.State.Unknown;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
       if (speckleWall is RevitWall speckleRevitWall)
       {
-        level = ConvertLevelToRevit(speckleRevitWall.level);
+        level = ConvertLevelToRevit(speckleRevitWall.level, out levelState);
         structural = speckleRevitWall.structural;
       }
       else
-      {
-        level = ConvertLevelToRevit(LevelFromCurve(baseCurve));
-      }
+        level = ConvertLevelToRevit(LevelFromCurve(baseCurve), out levelState);
 
       //if it's a new element, we don't need to update certain properties
       bool isUpdate = true;
@@ -65,7 +70,8 @@ namespace Objects.Converter.Revit
       }
       if (revitWall == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleWall.applicationId}.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "revit wall was null");
+        return new List<ApplicationObject> { appObj };
       }
 
       //is structural update
@@ -85,9 +91,8 @@ namespace Objects.Converter.Revit
         var offset = level.Elevation - newz;
         var newCurve = baseCurve;
         if (Math.Abs(offset) > TOLERANCE) // level and curve are not at the same height
-        {
           newCurve = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, offset)));
-        }
+
         ((LocationCurve)revitWall.Location).Curve = newCurve;
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
@@ -96,13 +101,11 @@ namespace Objects.Converter.Revit
       if (speckleWall is RevitWall spklRevitWall)
       {
         if (spklRevitWall.flipped != revitWall.Flipped)
-        {
           revitWall.Flip();
-        }
 
         if (spklRevitWall.topLevel != null)
         {
-          var topLevel = ConvertLevelToRevit(spklRevitWall.topLevel);
+          var topLevel = ConvertLevelToRevit(spklRevitWall.topLevel, out levelState);
           TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, topLevel);
         }
         else
@@ -115,40 +118,25 @@ namespace Objects.Converter.Revit
 
       }
       else // Set wall unconnected height.
-      {
         TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
-      }
 
       SetInstanceParameters(revitWall, speckleWall);
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleWall.applicationId,
-        ApplicationGeneratedId = revitWall.UniqueId,
-        NativeObject = revitWall
-        }
-      };
-
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: revitWall.UniqueId, existingObject: revitWall);
+      
+      var placeholders = new List<ApplicationObject>() { appObj };
       var hostedElements = SetHostedElements(speckleWall, revitWall);
       placeholders.AddRange(hostedElements);
-
-
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} Wall {revitWall.Id}");
-
 
       return placeholders;
     }
 
     public Base WallToSpeckle(DB.Wall revitWall)
     {
-
       var baseGeometry = LocationToSpeckle(revitWall);
       if (baseGeometry is Geometry.Point)
-      {
         return RevitElementToSpeckle(revitWall);
-      }
 
       RevitWall speckleWall = new RevitWall();
       speckleWall.family = revitWall.WallType.FamilyName.ToString();
@@ -161,7 +149,6 @@ namespace Objects.Converter.Revit
       speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
-
 
       if (revitWall.CurtainGrid == null)
       {
@@ -192,9 +179,7 @@ namespace Objects.Converter.Revit
             ["@displayValue"] = mullionsMesh
           });
         }
-
         speckleWall.elements = elements;
-
       }
 
       GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>

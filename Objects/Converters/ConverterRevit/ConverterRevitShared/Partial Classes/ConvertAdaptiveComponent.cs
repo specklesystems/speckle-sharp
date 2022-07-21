@@ -11,19 +11,22 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationPlaceholderObject AdaptiveComponentToNative(AdaptiveComponent speckleAc)
+    public ApplicationObject AdaptiveComponentToNative(AdaptiveComponent speckleAc)
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
-
+      var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type) { applicationId = speckleAc.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj }; ;
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return appObj;
+      }
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
       DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
       if (familySymbol.FamilyName != familyName)
       {
-        Report.LogConversionError(new Exception($"Could not find adaptive component {familyName}"));
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find adaptive component {familyName}");
+        return appObj;
       }
 
       DB.FamilyInstance revitAc = null;
@@ -37,9 +40,8 @@ namespace Objects.Converter.Revit
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familyName != revitType.FamilyName)
-          {
             Doc.Delete(docObj.Id);
-          }
+
           else
           {
             revitAc = (DB.FamilyInstance)docObj;
@@ -59,18 +61,15 @@ namespace Objects.Converter.Revit
 
       //create family instance
       if (revitAc == null)
-      {
         revitAc = AdaptiveComponentInstanceUtils.CreateAdaptiveComponentInstance(Doc, familySymbol);
-      }
 
       SetAdaptivePoints(revitAc, speckleAc.basePoints);
       AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);
 
       SetInstanceParameters(revitAc, speckleAc);
-
-      Report.Log($"Successfully {(isUpdate ? "updated" : "created")} AdaptiveComponent {revitAc.Id}");
-
-      return new ApplicationPlaceholderObject { applicationId = speckleAc.applicationId, ApplicationGeneratedId = revitAc.UniqueId, NativeObject = revitAc };
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status:state, createdId: revitAc.UniqueId, existingObject: revitAc);
+      return appObj;
     }
 
     private AdaptiveComponent AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
@@ -103,7 +102,6 @@ namespace Objects.Converter.Revit
         point.Position = PointToNative(points[i]);
       }
     }
-
 
     private List<Point> GetAdaptivePoints(DB.FamilyInstance revitAc)
     {

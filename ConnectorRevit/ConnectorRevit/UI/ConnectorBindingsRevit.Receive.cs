@@ -97,7 +97,7 @@ namespace Speckle.ConnectorRevit.UI
           // needs to be set for editing to work 
           converter.SetPreviousContextObjects(previouslyReceiveObjects);
           // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
+          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList());
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
@@ -148,25 +148,22 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
     {
       foreach (var obj in previouslyReceiveObjects)
       {
         if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
-        var element = CurrentDoc.Document.GetElement(obj.ApplicationGeneratedId);
+        var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
         if (element != null)
-        {
           CurrentDoc.Document.Delete(element.Id);
-        }
-
       }
     }
 
-    private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
+    private List<ApplicationObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
@@ -188,14 +185,10 @@ namespace Speckle.ConnectorRevit.UI
           }, System.Windows.Threading.DispatcherPriority.Background);
 
           var convRes = converter.ConvertToNative(@base);
-          if (convRes is ApplicationPlaceholderObject placeholder)
-          {
+          if (convRes is ApplicationObject placeholder)
             placeholders.Add(placeholder);
-          }
-          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
-          {
+          else if (convRes is List<ApplicationObject> placeholderList)
             placeholders.AddRange(placeholderList);
-          }
         }
         catch (Exception e)
         {
@@ -254,8 +247,5 @@ namespace Speckle.ConnectorRevit.UI
 
       return objects;
     }
-
-
-
   }
 }

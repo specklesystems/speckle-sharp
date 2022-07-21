@@ -54,7 +54,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetFileName() => CurrentDoc.Document.Title;
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
       throw new NotImplementedException();
     }
@@ -77,6 +77,11 @@ namespace Speckle.ConnectorRevit.UI
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
       return new List<MenuItem>();
+    }
+
+    public override void ResetDocument()
+    {
+      throw new NotImplementedException();
     }
   }
 }

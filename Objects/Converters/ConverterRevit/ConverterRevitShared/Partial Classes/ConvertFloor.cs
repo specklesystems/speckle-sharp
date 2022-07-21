@@ -12,11 +12,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> FloorToNative(BuiltElements.Floor speckleFloor)
+    public List<ApplicationObject> FloorToNative(BuiltElements.Floor speckleFloor)
     {
+      var appObj = new ApplicationObject(speckleFloor.id, speckleFloor.speckle_type) { applicationId = speckleFloor.applicationId };
+
       if (speckleFloor.outline == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Floor is missing an outline.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Floor is missing an outline.");
+        return new List<ApplicationObject> { appObj };
       }
 
       bool structural = false;
@@ -27,14 +30,14 @@ namespace Objects.Converter.Revit
       DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
-        level = ConvertLevelToRevit(speckleRevitFloor.level);
+        level = ConvertLevelToRevit(speckleRevitFloor.level, out ApplicationObject.State state);
         structural = speckleRevitFloor.structural;
         slope = speckleRevitFloor.slope;
         slopeDirection = (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
       }
       else
       {
-        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out ApplicationObject.State state);
       }
 
       var floorType = GetElementType<FloorType>(speckleFloor);
@@ -44,16 +47,13 @@ namespace Objects.Converter.Revit
       // This would only work if the floors have the same number (and type!!!) of outline curves. 
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleFloor.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
 
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       DB.Floor revitFloor = null;
 #if (REVIT2019 || REVIT2020 || REVIT2021)
@@ -74,9 +74,8 @@ namespace Objects.Converter.Revit
 
 #else
      if (floorType == null)
-      {
         throw new SpeckleException("Floor needs a floor type");
-      }
+
       else
       {
         //from revit 2022 we can create openings in the floors!
@@ -90,14 +89,12 @@ namespace Objects.Converter.Revit
           }   
         }
 
-
         if (slope != 0 && slopeDirection != null)
           revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, slopeDirection, slope);
         if (revitFloor == null)
           revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id);
       }
 #endif
-
 
       Doc.Regenerate();
 
@@ -108,17 +105,17 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        Report.LogConversionError(new Exception($"Could not create openings in floor {speckleFloor.applicationId}", ex));
+        appObj.Update(logItem: $"Could not create openings: {ex.Message}");
       }
       #endif
 
       SetInstanceParameters(revitFloor, speckleFloor);
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleFloor.applicationId, ApplicationGeneratedId = revitFloor.UniqueId, NativeObject = revitFloor } };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitFloor.UniqueId, existingObject: revitFloor);
+      var placeholders = new List<ApplicationObject>() { appObj };
 
       var hostedElements = SetHostedElements(speckleFloor, revitFloor);
       placeholders.AddRange(hostedElements);
-      Report.Log($"Created Floor {revitFloor.Id}");
       return placeholders;
     }
 
@@ -160,11 +157,9 @@ namespace Objects.Converter.Revit
         foreach (var curve in crvloop)
         {
           var c = curve;
-
           if (c == null)
-          {
             continue;
-          }
+
           poly.segments.Add(CurveToSpeckle(c));
         }
         profiles.Add(poly);

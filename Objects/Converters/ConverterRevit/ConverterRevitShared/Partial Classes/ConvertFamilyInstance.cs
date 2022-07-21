@@ -12,21 +12,22 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
     //TODO: might need to clean this up and split the ConversionLog.Addic by beam, FI, etc...
-    public List<ApplicationPlaceholderObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
+    public List<ApplicationObject> FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
     {
       DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
-      DB.Level level = ConvertLevelToRevit(speckleFi.level);
+      DB.Level level = ConvertLevelToRevit(speckleFi.level, out ApplicationObject.State levelState);
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
       //try update existing
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
+      var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type) { applicationId = speckleFi.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleFi.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      }; ;
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
+
       if (docObj != null)
       {
         try
@@ -35,9 +36,7 @@ namespace Objects.Converter.Revit
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
-          {
             Doc.Delete(docObj.Id);
-          }
           else
           {
             familyInstance = (DB.FamilyInstance)docObj;
@@ -53,9 +52,7 @@ namespace Objects.Converter.Revit
 
             // check for a type change
             if (speckleFi.type != null && speckleFi.type != revitType.Name)
-            {
               familyInstance.ChangeTypeId(familySymbol.Id);
-            }
 
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
@@ -73,28 +70,21 @@ namespace Objects.Converter.Revit
       {
         //If the current host element is not null, it means we're coming from inside a nested conversion. 
         if (CurrentHostElement != null)
-        {
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
-        }
+
         //Otherwise, proceed as normal.
         else
-        {
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
-        }
       }
 
       //required for face flipping to work!
       Doc.Regenerate();
 
       if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
-      {
         familyInstance.flipHand();
-      }
 
       if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
-      {
         familyInstance.flipFacing();
-      }
 
       // NOTE: do not check for the CanRotate prop as it doesn't work (at least on some families I tried)!
       // some point based families don't have a rotation, so keep this in a try catch
@@ -110,21 +100,11 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(familyInstance, speckleFi);
       if (speckleFi.mirrored)
-      {
         Report.ConversionErrors.Add(new Exception($"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so. (speckle object id: {speckleFi.id}"));
-      }
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleFi.applicationId,
-        ApplicationGeneratedId = familyInstance.UniqueId,
-        NativeObject = familyInstance
-        }
-      };
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} FamilyInstance ({familyInstance.Category.Name}) {familyInstance.Id}");
-      return placeholders;
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: familyInstance.UniqueId, existingObject: familyInstance);
+      return new List<ApplicationObject> { appObj };
     }
 
     /// <summary>
@@ -134,15 +114,12 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
     {
-
       if (!ShouldConvertHostedElement(revitFi, revitFi.Host))
         return null;
 
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
-      {
         return AdaptiveComponentToSpeckle(revitFi);
-      }
 
       //these elements come when the curtain wall is generated
       //let's not send them to speckle unless we realize they are needed!
@@ -159,27 +136,19 @@ namespace Objects.Converter.Revit
       if (Categories.beamCategories.Contains(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
-        {
           return BeamToSpeckle(revitFi);
-        }
         else if (revitFi.StructuralType == StructuralType.Brace)
-        {
           return BraceToSpeckle(revitFi);
-        }
       }
 
       //columns
       if (Categories.columnCategories.Contains(revitFi.Category) || revitFi.StructuralType == StructuralType.Column)
-      {
         return ColumnToSpeckle(revitFi);
-      }
 
       var baseGeometry = LocationToSpeckle(revitFi);
       var basePoint = baseGeometry as Point;
       if (basePoint == null)
-      {
         return RevitElementToSpeckle(revitFi);
-      }
 
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
       var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
@@ -197,21 +166,15 @@ namespace Objects.Converter.Revit
       speckleFi.mirrored = revitFi.Mirrored;
 
       if (revitFi.Location is LocationPoint)
-      {
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
-      }
 
       speckleFi.displayValue = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitFi);
 
       if (material != null)
-      {
         foreach (var mesh in speckleFi.displayValue)
-        {
           mesh["renderMaterial"] = material;
-        }
-      }
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
@@ -261,9 +224,7 @@ namespace Objects.Converter.Revit
         var element = familyInstance.Document.GetElement(id);
         subElements.Add(element);
         if (element is Autodesk.Revit.DB.FamilyInstance)
-        {
           subElements.AddRange(GetAllFamSubElements(element as DB.FamilyInstance));
-        }
       }
       return subElements;
     }

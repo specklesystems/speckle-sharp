@@ -20,13 +20,10 @@ namespace Speckle.ConnectorCSI.UI
       Model = model;
     }
 
-
-
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Create };
     }
-
 
     #region boilerplate
     public override string GetActiveViewName()
@@ -65,12 +62,12 @@ namespace Speckle.ConnectorCSI.UI
       throw new NotImplementedException();
     }
 
+    public override void ResetDocument()
+    {
+      throw new NotImplementedException();
+    }
 
     #endregion
-
-
-
-
 
   }
 }

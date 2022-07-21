@@ -24,56 +24,53 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public List<ApplicationPlaceholderObject> AlignmentToNative(Alignment alignment)
+    public List<ApplicationObject> AlignmentToNative(Alignment alignment)
     {
       var docObj = GetExistingElementByApplicationId(alignment.applicationId);
+      var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = alignment.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
 
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       var curves = CurveToNative(alignment.curves);
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       var curveEnumerator = curves.GetEnumerator();
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
         var baseCurve = curveEnumerator.Current as DB.Curve;
         DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
         var lineStyles = revitCurve.GetLineStyleIds().First();
-        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = alignment.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
-        Report.Log($"Created Alignment {revitCurve.Id}");
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, existingObject: revitCurve);
+        placeholders.Add(appObj);
       }
 
       return placeholders;
     }
 
-    public List<ApplicationPlaceholderObject> ModelCurveToNative(ModelCurve speckleCurve)
+    public List<ApplicationObject> ModelCurveToNative(ModelCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
+
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       var curves = CurveToNative(speckleCurve.baseCurve);
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       var curveEnumerator = curves.GetEnumerator();
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
@@ -83,35 +80,32 @@ namespace Objects.Converter.Revit
         var lineStyles = revitCurve.GetLineStyleIds();
         var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
         if (lineStyleId != null)
-        {
           revitCurve.LineStyle = Doc.GetElement(lineStyleId);
-        }
-        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
-        Report.Log($"Created ModelCurve {revitCurve.Id}");
+
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, existingObject: revitCurve);
+        placeholders.Add(appObj);
       }
 
       return placeholders;
     }
 
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public List<ApplicationPlaceholderObject> ModelCurveToNative(ICurve speckleLine)
+    public List<ApplicationObject> ModelCurveToNative(ICurve speckleLine)
     {
       // if it comes from GH it doesn't have an applicationId, the use the hash id
       if ((speckleLine as Base).applicationId == null)
         (speckleLine as Base).applicationId = (speckleLine as Base).id;
 
       var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
+      var appObj = new ApplicationObject(((Base)speckleLine).id, ((Base)speckleLine).speckle_type) { applicationId = ((Base)speckleLine).applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = (speckleLine as Base).applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
 
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       try
       {
@@ -119,22 +113,21 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        if (e.Message.Contains("lies outside")) // this happens if curves are very far from origin
-        {
-          Report.LogConversionError(e); return null;
-        }
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
         if (speckleLine is IDisplayValue<Geometry.Polyline> d)
           return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(),
             speckleLine);
         else
-          return new List<ApplicationPlaceholderObject>();
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          return new List<ApplicationObject> { appObj };
+        }
       }
     }
 
-    public List<ApplicationPlaceholderObject> ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
+    public List<ApplicationObject> ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       while (curveEnum.MoveNext() && curveEnum.Current != null)
       {
         var curve = curveEnum.Current as DB.Curve;
@@ -143,21 +136,13 @@ namespace Objects.Converter.Revit
         DB.ModelCurve revitCurve = null;
 
         if (Doc.IsFamilyDocument)
-        {
           revitCurve = Doc.FamilyCreate.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
-        }
         else
-        {
           revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
-        }
 
-        Report.Log($"Created ModelCurve {revitCurve.Id}");
-        placeholders.Add(new ApplicationPlaceholderObject()
-        {
-          applicationId = (speckleLine as Base).applicationId,
-          ApplicationGeneratedId = revitCurve.UniqueId,
-          NativeObject = revitCurve
-        });
+        var appObj = new ApplicationObject(((Base)speckleLine).id, ((Base)speckleLine).speckle_type) { applicationId = ((Base)speckleLine).applicationId };
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, existingObject: revitCurve);
+        placeholders.Add(appObj);
       }
 
       return placeholders;
@@ -173,23 +158,22 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public List<ApplicationPlaceholderObject> DetailCurveToNative(DetailCurve speckleCurve)
+    public List<ApplicationObject> DetailCurveToNative(DetailCurve speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      }; ;
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return new List<ApplicationObject> { appObj };
+      }
+
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>() { appObj };
       var crvEnum = CurveToNative(speckleCurve.baseCurve).GetEnumerator();
       while (crvEnum.MoveNext() && crvEnum.Current != null)
       {
@@ -201,7 +185,8 @@ namespace Objects.Converter.Revit
         }
         catch (Exception)
         {
-          throw (new Exception($"Detail curve creation failed\nView is not valid for detail curve creation."));
+          appObj.Update(logItem: $"Detail curve creation failed\nView is not valid for detail curve creation.");
+          continue;
         }
 
         var lineStyles = revitCurve.GetLineStyleIds();
@@ -210,12 +195,11 @@ namespace Objects.Converter.Revit
         {
           revitCurve.LineStyle = Doc.GetElement(lineStyleId);
         }
-        placeholders.Add(new ApplicationPlaceholderObject() { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve });
-        Report.Log($"Created DetailCurve {revitCurve.Id}");
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, existingObject: revitCurve);
+        placeholders.Add(appObj);
       }
 
       return placeholders;
-
     }
 
     public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
@@ -228,34 +212,33 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public ApplicationPlaceholderObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
+    public ApplicationObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return appObj;
+      }
+
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       //delete and re-create line
       //TODO: check if can be modified
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       try
       {
         var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
-        Report.Log($"Created RoomBoundaryLine {revitCurve.Id}");
-        return new ApplicationPlaceholderObject()
-        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = revitCurve.UniqueId, NativeObject = revitCurve };
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, existingObject: revitCurve);
       }
       catch (Exception)
       {
-        throw (new Exception("Room boundary line creation failed\nView is not valid for room boundary line creation."));
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "View is not valid for room boundary line creation.");
       }
-
-
+      return appObj;
     }
 
     public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
@@ -268,12 +251,16 @@ namespace Objects.Converter.Revit
       return speckleCurve;
     }
 
-    public ApplicationPlaceholderObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
+    public ApplicationObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
+      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return appObj;
+      }
+
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       // try update existing (update model curve geometry curve based on speckle curve)
@@ -286,12 +273,10 @@ namespace Objects.Converter.Revit
           var speckleGeom = baseCurve.get_Item(0);
           bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
           if (!fullOverlap)
-          {
             docCurve.SetGeometryCurve(speckleGeom, false);
-          }
-          Report.Log($"Updated SpaceSeparationLine {docCurve.Id}");
-          return new ApplicationPlaceholderObject()
-          { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = docCurve.UniqueId, NativeObject = docCurve };
+
+          appObj.Update(status: ApplicationObject.State.Updated, createdId: docCurve.UniqueId, existingObject: docCurve);
+          return appObj;
         }
         catch
         {
@@ -303,14 +288,13 @@ namespace Objects.Converter.Revit
       try
       {
         var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
-        Report.Log($"Created SpaceSeparationLine {res.Id}");
-        return new ApplicationPlaceholderObject()
-        { applicationId = speckleCurve.applicationId, ApplicationGeneratedId = res.UniqueId, NativeObject = res };
+        appObj.Update(status: ApplicationObject.State.Created, createdId: res.UniqueId, existingObject: res);
       }
       catch (Exception)
       {
-        throw (new Exception("Space separation line creation failed\nView is not valid for space separation line creation."));
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "View is not valid for space separation line creation.");
       }
+      return appObj;
     }
 
     /// <summary>
@@ -338,19 +322,16 @@ namespace Objects.Converter.Revit
 
       // If Z Values are equal the Plane is XY
       if (startPoint.Z == endPoint.Z)
-      {
-        plane = CreatePlane(XYZ.BasisZ, startPoint);
-      }
+        plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, startPoint);
+
       // If X Values are equal the Plane is YZ
       else if (startPoint.X == endPoint.X)
-      {
-        plane = CreatePlane(XYZ.BasisX, startPoint);
-      }
+        plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisX, startPoint);
+
       // If Y Values are equal the Plane is XZ
       else if (startPoint.Y == endPoint.Y)
-      {
-        plane = CreatePlane(XYZ.BasisY, startPoint);
-      }
+        plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisY, startPoint);
+
       // Otherwise the Planes Normal Vector is not X,Y or Z.
       // We draw lines from the Origin to each Point and use the Plane this one spans up.
       else
@@ -364,10 +345,6 @@ namespace Objects.Converter.Revit
       }
 
       return SketchPlane.Create(doc, plane);
-    }
-    private DB.Plane CreatePlane(XYZ basis, XYZ startPoint)
-    {
-      return DB.Plane.CreateByNormalAndOrigin(basis, startPoint);
     }
   }
 }

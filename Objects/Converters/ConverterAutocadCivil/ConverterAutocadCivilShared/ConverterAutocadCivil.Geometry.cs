@@ -695,9 +695,8 @@ namespace Objects.Converter.AutocadCivil
       return curve;
     }
     // handles polycurves with spline segments: bakes segments individually and then joins
-    public AcadDB.Curve PolycurveSplineToNativeDB(Polycurve polycurve, out List<string> notes)
+    public AcadDB.Curve PolycurveSplineToNativeDB(Polycurve polycurve)
     {
-      notes = new List<string>();
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
 
       Entity first = null;
@@ -722,8 +721,6 @@ namespace Objects.Converter.AutocadCivil
       }
       catch (Exception e)
       {
-        notes.Add($"Could not join segments: {e.Message}");
-        notes.Add($"Converted as individual curve segments.");
         return null;
       }
     }

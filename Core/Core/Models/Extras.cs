@@ -89,7 +89,7 @@ namespace Speckle.Core.Models
     {
       Converting, // Speckle object is in the process of being converted to an Application Object
       Created, // Speckle object is created from an ApplicationObject or ApplicationObject is created from Speckle Object
-      Skipped, // Speckle or Application is not going to be sent or received
+      Skipped, // Speckle or Application object is not going to be sent or received
       Updated, // Application object is replacing an existing object in the application
       Failed, // Tried to convert & send or convert & bake but something went wrong
       Removed, //Removed object from application
@@ -116,19 +116,24 @@ namespace Speckle.Core.Models
     [JsonIgnore]
     public List<object> Converted { get; set; } // the converted objects
 
+    [JsonIgnore]
+    public object ExistingObject { get; set; } // object in the application that shares the same application id
+
     public ApplicationObject(string id, string type) 
     {
       OriginalId = id;
       Descriptor = type;
+      Status = State.Unknown;
     }
 
-    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, List<string> log = null, string logItem = null)
+    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, List<string> log = null, string logItem = null, object existingObject = null)
     {
       if (createdIds != null) createdIds.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(o => CreatedIds.Add(o));
       if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
       if (status.HasValue) Status = status.Value;
       if (log != null) log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
       if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem)) Log.Add(logItem);
+      if (existingObject != null) ExistingObject = existingObject;
     }
   }
 
@@ -230,6 +235,10 @@ namespace Speckle.Core.Models
       {
         var ids = new List<string> { item.OriginalId };
         if (item.Fallback.Count > 0) ids.AddRange(item.Fallback.Select(o => o.OriginalId));
+
+        if (item.Status == ApplicationObject.State.Unknown)
+          if (report.GetReportObject(item.OriginalId, out int originalIndex))
+            item.Status = report.ReportObjects[originalIndex].Status;
 
         foreach (var id in ids)
           if (report.GetReportObject(id, out int index))

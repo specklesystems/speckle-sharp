@@ -13,14 +13,17 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationPlaceholderObject OpeningToNative(BuiltElements.Opening speckleOpening)
+    public ApplicationObject OpeningToNative(BuiltElements.Opening speckleOpening)
     {
       var baseCurves = CurveToNative(speckleOpening.outline);
 
       var docObj = GetExistingElementByApplicationId(speckleOpening.applicationId);
+      var appObj = new ApplicationObject(speckleOpening.id, speckleOpening.speckle_type) { applicationId = speckleOpening.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-        { applicationId = speckleOpening.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, existingObject: docObj);
+        return appObj;
+      }
 
       if (docObj != null)
         Doc.Delete(docObj.Id);
@@ -73,8 +76,8 @@ namespace Objects.Converter.Revit
 
         case RevitShaft rs:
           {
-            var bottomLevel = ConvertLevelToRevit(rs.bottomLevel);
-            var topLevel = ConvertLevelToRevit(rs.topLevel);
+            var bottomLevel = ConvertLevelToRevit(rs.bottomLevel, out ApplicationObject.State bottomState);
+            var topLevel = ConvertLevelToRevit(rs.topLevel, out ApplicationObject.State topState);
             revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
             TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height, rs.units);
 
@@ -96,22 +99,14 @@ namespace Objects.Converter.Revit
             Report.LogConversionError(new Exception("Cannot create Opening, opening type not supported"));
             throw new SpeckleException("Opening type not supported");
           }
-
           break;
       }
 
       if (speckleOpening is RevitOpening ro)
-      {
         SetInstanceParameters(revitOpening, ro);
-      }
 
-      Report.Log($"Created Opening {revitOpening.Id}");
-      return new ApplicationPlaceholderObject
-      {
-        NativeObject = revitOpening,
-        applicationId = speckleOpening.applicationId,
-        ApplicationGeneratedId = revitOpening.UniqueId
-      };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitOpening.UniqueId, existingObject: revitOpening);
+      return appObj;
     }
 
     public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
@@ -144,7 +139,6 @@ namespace Objects.Converter.Revit
         {
           //we can ignore vertical openings because they will be created when we try re-create voids in the roof / ceiling / floor outline
           return null;
-          //speckleOpening = new RevitVerticalOpening();
         }
         else
         {
@@ -163,12 +157,8 @@ namespace Objects.Converter.Revit
         var poly = new Polycurve(ModelUnits);
         poly.segments = new List<ICurve>();
         foreach (DB.Curve curve in revitOpening.BoundaryCurves)
-        {
           if (curve != null)
-          {
             poly.segments.Add(CurveToSpeckle(curve));
-          }
-        }
 
         speckleOpening.outline = poly;
       }

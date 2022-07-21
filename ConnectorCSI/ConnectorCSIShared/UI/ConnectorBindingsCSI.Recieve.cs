@@ -15,9 +15,12 @@ using System.Threading.Tasks;
 namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
-
   {
-    #region receiving
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Exceptions.Clear();
@@ -41,9 +44,7 @@ namespace Speckle.ConnectorCSI.UI
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
@@ -76,9 +77,7 @@ namespace Speckle.ConnectorCSI.UI
                 );
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return state;
-      }
 
       try
       {
@@ -97,14 +96,10 @@ namespace Speckle.ConnectorCSI.UI
 
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return state;
-      }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
@@ -116,15 +111,12 @@ namespace Speckle.ConnectorCSI.UI
         progress.Update(conversionProgressDict);
       };
 
-
       var commitObjs = FlattenCommitObject(commitObject, converter);
       foreach (var commitObj in commitObjs)
       {
         BakeObject(commitObj, state, converter);
         updateProgressAction?.Invoke();
       }
-
-
 
       try
       {
@@ -142,11 +134,6 @@ namespace Speckle.ConnectorCSI.UI
       return state;
     }
 
-
-
-
-
-
     /// <summary>
     /// conversion to native
     /// </summary>
@@ -157,7 +144,6 @@ namespace Speckle.ConnectorCSI.UI
     {
       try
       {
-
         converter.ConvertToNative(obj);
       }
       catch (Exception e)
@@ -183,15 +169,12 @@ namespace Speckle.ConnectorCSI.UI
         if (converter.CanConvertToNative(@base))
         {
           objects.Add(@base);
-
           return objects;
         }
         else
         {
           foreach (var prop in @base.GetDynamicMembers())
-          {
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          }
           return objects;
         }
       }
@@ -199,24 +182,19 @@ namespace Speckle.ConnectorCSI.UI
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-        {
           objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-        {
           objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
         return objects;
       }
 
       return objects;
     }
 
-    #endregion
   }
 }

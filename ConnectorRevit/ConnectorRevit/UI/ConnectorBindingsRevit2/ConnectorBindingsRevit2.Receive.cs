@@ -19,6 +19,11 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit2
   {
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -43,9 +48,7 @@ namespace Speckle.ConnectorRevit.UI
       var stream = await state.Client.StreamGet(state.StreamId);
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       Commit myCommit = null;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
@@ -90,16 +93,10 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       if (progress.Report.OperationErrorsCount != 0)
-      {
         return state;
-      }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
-
-
 
       await RevitTask.RunAsync(app =>
       {
@@ -116,7 +113,7 @@ namespace Speckle.ConnectorRevit.UI
           // needs to be set for editing to work 
           converter.SetPreviousContextObjects(previouslyReceiveObjects);
           // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
+          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId, ExistingObject = x }).ToList());
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
@@ -138,33 +135,28 @@ namespace Speckle.ConnectorRevit.UI
       });
 
       if (converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
-      {
-        // the commit is being rolled back
-        return null;
-      }
+        return null; // the commit is being rolled back
 
       return state;
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(List<ApplicationPlaceholderObject> previouslyReceiveObjects, List<ApplicationPlaceholderObject> newPlaceholderObjects)
+    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
     {
       foreach (var obj in previouslyReceiveObjects)
       {
         if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
-        var element = CurrentDoc.Document.GetElement(obj.ApplicationGeneratedId);
+        var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
         if (element != null)
-        {
           CurrentDoc.Document.Delete(element.Id);
-        }
       }
     }
 
-    private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
+    private List<ApplicationObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
+      var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
@@ -190,14 +182,10 @@ namespace Speckle.ConnectorRevit.UI
             continue;
 
           var convRes = converter.ConvertToNative(@base);
-          if (convRes is ApplicationPlaceholderObject placeholder)
-          {
+          if (convRes is ApplicationObject placeholder)
             placeholders.Add(placeholder);
-          }
-          else if (convRes is List<ApplicationPlaceholderObject> placeholderList)
-          {
+          else if (convRes is List<ApplicationObject> placeholderList)
             placeholders.AddRange(placeholderList);
-          }
         }
         catch (Exception e)
         {
@@ -223,15 +211,12 @@ namespace Speckle.ConnectorRevit.UI
         if (converter.CanConvertToNative(@base))
         {
           objects.Add(@base);
-
           return objects;
         }
         else
         {
           foreach (var prop in @base.GetDynamicMembers())
-          {
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          }
           return objects;
         }
       }
@@ -239,18 +224,14 @@ namespace Speckle.ConnectorRevit.UI
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-        {
           objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-        {
           objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
         return objects;
       }
 

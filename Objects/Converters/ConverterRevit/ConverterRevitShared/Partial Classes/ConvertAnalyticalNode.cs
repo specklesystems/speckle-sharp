@@ -15,12 +15,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> AnalyticalNodeToNative(Node speckleNode)
+    public List<ApplicationObject> AnalyticalNodeToNative(Node speckleNode)
     {
-            List<ApplicationPlaceholderObject> placeholderObjects = new List<ApplicationPlaceholderObject> { };
+      List<ApplicationObject> placeholderObjects = new List<ApplicationObject> { };
 
-            return placeholderObjects;
-      
+      return placeholderObjects;
     }
 
     private Node AnalyticalNodeToSpeckle(ReferencePoint revitNode)
@@ -29,7 +28,7 @@ namespace Objects.Converter.Revit
       var localAxis = new Plane(PointToSpeckle(cs.Origin), VectorToSpeckle(cs.BasisZ), VectorToSpeckle(cs.BasisX), VectorToSpeckle(cs.BasisY));
       var basePoint = PointToSpeckle(cs.Origin); // alternative to revitNode.Position
                                                  //var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
-            var speckleNode = new Node();
+      var speckleNode = new Node();
 
       GetAllRevitParamsAndIds(speckleNode, revitNode);
 
@@ -62,12 +61,9 @@ namespace Objects.Converter.Revit
         case BoundaryConditionsType.Area:
           var loops = revitBoundary.GetLoops();
           foreach (var loop in loops)
-          {
             foreach (var areaCurve in loop)
-            {
               points.Add(areaCurve.GetEndPoint(1));
-            }
-          }
+
           points = points.Distinct().ToList();
           state = GetParamValue<int>(revitBoundary, BuiltInParameter.BOUNDARY_PARAM_PRESET_AREA);
           break;
@@ -75,13 +71,11 @@ namespace Objects.Converter.Revit
           break;
       }
 
-
-
       var restraint = GetRestraintCode(revitBoundary, restraintType, state);
 
       foreach (var point in points)
       {
-                var speckleNode = new Node();
+        var speckleNode = new Node();
         //var speckleNode = new Node(PointToSpeckle(point), null, restraint, localAxis);
 
         GetAllRevitParamsAndIds(speckleNode, revitBoundary);
@@ -97,7 +91,6 @@ namespace Objects.Converter.Revit
 
       return speckleBoundaryCondition;
     }
-
 
     private Restraint GetRestraintCode(DB.Element elem, BoundaryConditionsType type, int presetState)
     {
@@ -208,8 +201,5 @@ namespace Objects.Converter.Revit
 
       return restraint;
     }
-
   }
-
-
 }
