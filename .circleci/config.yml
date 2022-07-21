@@ -52,19 +52,15 @@ jobs:
       - continuation/continue:
           configuration_path: .circleci/continuation-config.yml # use newly generated config to continue
   test-cli:
-    macos:
-      xcode: 12.5.1
+    docker:
+      - image: microsoft/dotnet:sdk
     steps:
       - checkout
-      - attach_workspace:
-          at: ./
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-            ~/.dotnet/dotnet tool install --global Speckle.Manager.Feed
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --runtime dotnet
-            /Users/distiller/.dotnet/tools/speckle.manager.feed addVersion
+            dotnet tool install --global Speckle.Manager.Feed
+            speckle.manager.feed addVersion
 workflows:
   setup:
     jobs:
