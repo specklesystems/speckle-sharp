@@ -213,7 +213,7 @@ namespace DesktopUI2.ViewModels.Share
         {
           try
           {
-            await _stream.StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = "stream:contributor" });
+            await _stream.StreamState.Client.StreamUpdatePermission(new StreamUpdatePermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = "stream:contributor" });
           }
           catch (Exception e)
           {

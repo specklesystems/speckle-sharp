@@ -532,9 +532,9 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="permissionInput"></param>
     /// <returns></returns>
-    public Task<bool> StreamGrantPermission(StreamGrantPermissionInput permissionInput)
+    public Task<bool> StreamUpdatePermission(StreamUpdatePermissionInput permissionInput)
     {
-      return StreamGrantPermission(CancellationToken.None, permissionInput);
+      return StreamUpdatePermission(CancellationToken.None, permissionInput);
     }
 
     /// <summary>
@@ -543,7 +543,7 @@ namespace Speckle.Core.Api
     /// <param name="cancellationToken"></param>
     /// <param name="permissionInput"></param>
     /// <returns></returns>
-    public async Task<bool> StreamGrantPermission(CancellationToken cancellationToken, StreamGrantPermissionInput permissionInput)
+    public async Task<bool> StreamUpdatePermission(CancellationToken cancellationToken, StreamUpdatePermissionInput permissionInput)
     {
       try
       {
@@ -551,8 +551,8 @@ namespace Speckle.Core.Api
         {
           Query =
           @"
-          mutation streamGrantPermission($permissionParams: StreamGrantPermissionInput!) {
-            streamGrantPermission(permissionParams:$permissionParams)
+          mutation streamUpdatePermission($permissionParams: StreamUpdatePermissionInput!) {
+            streamUpdatePermission(permissionParams:$permissionParams)
           }",
           Variables = new
           {
@@ -565,7 +565,7 @@ namespace Speckle.Core.Api
         if (res.Errors != null)
           throw new SpeckleException("Could not grant permission", res.Errors);
 
-        return (bool)res.Data["streamGrantPermission"];
+        return (bool)res.Data["streamUpdatePermission"];
       }
       catch (Exception e)
       {

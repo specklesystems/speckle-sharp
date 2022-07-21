@@ -108,10 +108,10 @@ namespace TestsIntegration
     }
 
     [Test, Order(30)]
-    public async Task StreamGrantPermission()
+    public async Task StreamUpdatePermission()
     {
-      var res = await myClient.StreamGrantPermission(
-        new StreamGrantPermissionInput
+      var res = await myClient.StreamUpdatePermission(
+        new StreamUpdatePermissionInput
         {
           streamId = streamId,
           userId = secondUserAccount.userInfo.id,
