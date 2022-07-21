@@ -202,7 +202,7 @@ namespace Objects.Converter.Dynamo
       l.length = line.Length;
       try
       {
-        l.bbox = BoxToSpeckle(line.BoundingBox.ToCuboid(), u);
+        l.bbox = BoxToSpeckle(line.BoundingBox, u);
       }
       catch { }
       return l;
@@ -240,7 +240,7 @@ namespace Objects.Converter.Dynamo
       };
       CopyProperties(poly, polygon);
       poly.length = polygon.Length;
-      poly.bbox = BoxToSpeckle(polygon.BoundingBox.ToCuboid(), u);
+      poly.bbox = BoxToSpeckle(polygon.BoundingBox, u);
       return poly;
     }
 
@@ -291,7 +291,7 @@ namespace Objects.Converter.Dynamo
         var myCircle = new Circle(PlaneToSpeckle(plane, u), circ.Radius, u);
         CopyProperties(myCircle, circ);
         myCircle.length = circ.Length;
-        myCircle.bbox = BoxToSpeckle(circ.BoundingBox.ToCuboid(), u);
+        myCircle.bbox = BoxToSpeckle(circ.BoundingBox, u);
         return myCircle;
       }
     }
@@ -337,7 +337,8 @@ namespace Objects.Converter.Dynamo
 
         CopyProperties(arc, a);
         arc.length = a.Length;
-        arc.bbox = BoxToSpeckle(a.BoundingBox.ToCuboid(), u);
+
+        arc.bbox = BoxToSpeckle(a.BoundingBox);
         return arc;
       }
     }
@@ -383,7 +384,7 @@ namespace Objects.Converter.Dynamo
         CopyProperties(ellipse, e);
 
         ellipse.length = e.Length;
-        ellipse.bbox = BoxToSpeckle(e.BoundingBox.ToCuboid(), u);
+        ellipse.bbox = BoxToSpeckle(e.BoundingBox, u);
 
         return ellipse;
       }
@@ -439,7 +440,7 @@ namespace Objects.Converter.Dynamo
       CopyProperties(ellipArc, arc);
 
       ellipArc.length = arc.Length;
-      ellipArc.bbox = BoxToSpeckle(arc.BoundingBox.ToCuboid(), u);
+      ellipArc.bbox = BoxToSpeckle(arc.BoundingBox, u);
 
       return ellipArc;
     }
@@ -461,7 +462,7 @@ namespace Objects.Converter.Dynamo
 
         CopyProperties(poly, polycurve);
         poly.length = polycurve.Length;
-        poly.bbox = BoxToSpeckle(polycurve.BoundingBox.ToCuboid(), u);
+        poly.bbox = BoxToSpeckle(polycurve.BoundingBox, u);
 
         return poly;
       }
@@ -473,7 +474,7 @@ namespace Objects.Converter.Dynamo
         spkPolycurve.segments = polycurve.Curves().Select(c => (ICurve)CurveToSpeckle(c, u)).ToList();
 
         spkPolycurve.length = polycurve.Length;
-        spkPolycurve.bbox = BoxToSpeckle(polycurve.BoundingBox.ToCuboid(), u);
+        spkPolycurve.bbox = BoxToSpeckle(polycurve.BoundingBox, u);
 
         return spkPolycurve;
       }
@@ -633,7 +634,7 @@ namespace Objects.Converter.Dynamo
         spkCurve.closed = curve.IsClosed;
         spkCurve.domain = new Interval(curve.StartParameter(), curve.EndParameter());
         spkCurve.length = curve.Length;
-        spkCurve.bbox = BoxToSpeckle(curve.BoundingBox.ToCuboid(), u);
+        spkCurve.bbox = BoxToSpeckle(curve.BoundingBox, u);
 
         speckleCurve = spkCurve;
       }
@@ -807,6 +808,17 @@ namespace Objects.Converter.Dynamo
         return Cuboid.ByCorners(cLow, cHigh);
     }
 
+    public Box BoxToSpeckle(BoundingBox box, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      return new Box(
+        PlaneToSpeckle(box.ContextCoordinateSystem.XYPlane),
+        new Interval(box.MinPoint.X, box.MaxPoint.X),
+        new Interval(box.MinPoint.Y, box.MaxPoint.Y),
+        new Interval(box.MinPoint.Z, box.MaxPoint.Z),
+        u
+      );
+    }
     public Box BoxToSpeckle(Cuboid box, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -880,7 +892,7 @@ namespace Objects.Converter.Dynamo
       result.closedV = surface.ClosedInV;
 
       result.area = surface.Area;
-      result.bbox = BoxToSpeckle(surface.BoundingBox.ToCuboid(), u);
+      result.bbox = BoxToSpeckle(surface.BoundingBox, u);
 
       return result;
     }
