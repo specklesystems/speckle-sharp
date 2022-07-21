@@ -22,7 +22,7 @@ using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+  
   public partial class ConnectorBindingsRevit2
   {
     /// <summary>
@@ -31,7 +31,6 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state"></param>
     /// <returns></returns>
     /// 
-
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       progress.Report.Log($"start recieve");
@@ -192,8 +191,12 @@ namespace Speckle.ConnectorRevit.UI
       var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : "";
 
       Dictionary<string, List<MappingValue>> settingsMapping = null;
+      bool isFirstTimeReceiving = false;
+
       if (receiveMappingsModelsSetting.MappingJson != null)
         settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(receiveMappingsModelsSetting.MappingJson);
+      else
+        isFirstTimeReceiving = true;
 
       if (receiveMappings == noMapping || receiveMappings == null)
         return;
@@ -212,7 +215,7 @@ namespace Speckle.ConnectorRevit.UI
           if (newTypesExist || receiveMappings == everyReceive)
           {
 
-            var vm = new MappingViewModel(Mapping, hostTypesDict, progress, newTypesExist);
+            var vm = new MappingViewModel(Mapping, hostTypesDict, progress, newTypesExist && !isFirstTimeReceiving);
             MappingViewDialog mappingView = new MappingViewDialog
             {
               DataContext = vm
@@ -269,9 +272,9 @@ namespace Speckle.ConnectorRevit.UI
 
     public Dictionary<string, List<MappingValue>> GetInitialMapping(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostProperties)
     {
-      var listProperties = GetListProperties(flattenedBase, progress);
+      var flattenedBaseTypes = GetFlattenedBaseTypes(flattenedBase, progress);
 
-      var mappings = returnFirstPassMap(listProperties, hostProperties, progress);
+      var mappings = returnFirstPassMap(flattenedBaseTypes, hostProperties, progress);
 
       return mappings;
     }
@@ -384,6 +387,155 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
+    public Dictionary<string, List<string>> GetHostTypes()
+    {
+      // WARNING : The keys in this dictionary must match those found in GetFlattenedBaseTypes
+      var returnDict = new Dictionary<string, List<string>>();
+      var collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
+      List<ElementId> exclusionFilterIds = new List<ElementId>();
+
+      FilteredElementCollector list = null;
+      List<string> types = null;
+
+      // Materials
+      list = collector.OfClass(typeof(Autodesk.Revit.DB.Material));
+      types = list.Select(o => o.Name).Distinct().ToList();
+      exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
+      returnDict["Materials"] = types;
+
+      // Floors
+      collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
+      list = collector.OfClass(typeof(FloorType));
+      types = list.Select(o => o.Name).Distinct().ToList();
+      exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
+      returnDict["Floors"] = types;
+
+      // Walls
+      collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
+      list = collector.OfClass(typeof(WallType));
+      types = list.Select(o => o.Name).Distinct().ToList();
+      exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
+      returnDict["Walls"] = types;
+
+      // Framing
+      collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
+      list = collector.OfClass(typeof(FamilySymbol)).OfCategory(BuiltInCategory.OST_StructuralFraming);
+      types = list.Select(o => o.Name).Distinct().ToList();
+      exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
+      returnDict["Framing"] = types;
+
+      // Columns
+      collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
+      var filter = new ElementMulticategoryFilter(new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns });
+      list = collector.OfClass(typeof(FamilySymbol)).WherePasses(filter);
+      types = list.Select(o => o.Name).Distinct().ToList();
+      exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
+      returnDict["Columns"] = types;
+
+      // Misc
+      collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
+      list = collector.Excluding(exclusionFilterIds);
+      types = list.Select(o => o.Name).Distinct().ToList();
+      returnDict["Miscellaneous"] = types;
+
+      return returnDict;
+    }
+
+    private Dictionary<string, List<string>> GetFlattenedBaseTypes(List<Base> objects, ProgressViewModel progress)
+    {
+      var returnDict = new Dictionary<string, List<string>>();
+
+      foreach (var @object in objects)
+      {
+        try
+        {
+          //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
+          var type = @object.GetType().GetProperty("type").GetValue(@object) as string;
+          string typeCategory = GetTypeCategory(@object);
+
+
+          if (returnDict.ContainsKey(typeCategory))
+          {
+            returnDict[typeCategory].Add(type);
+          }
+          else
+          {
+            returnDict[typeCategory] = new List<string> { type };
+          }
+
+          // try to get the material
+          if (@object["materialQuantites"] is List<Base> mats)
+          {
+            foreach (var mat in mats)
+            {
+              if (mat["material"] is Base b)
+              {
+                if (b["name"] is string matName)
+                {
+                  if (returnDict.ContainsKey("Materials"))
+                  {
+                    returnDict["Materials"].Add(matName);
+                  }
+                  else
+                  {
+                    returnDict["Materials"] = new List<string> { matName };
+                  }
+                }
+              }
+            }
+          }
+        }
+        catch
+        {
+
+        }
+      }
+
+      var newDictionary = returnDict.ToDictionary(entry => entry.Key, entry => entry.Value);
+      foreach (var key in newDictionary.Keys)
+      {
+        progress.Report.Log($"key {key} value {String.Join(",", returnDict[key])}");
+        returnDict[key] = returnDict[key].Distinct().ToList();
+      }
+      return returnDict;
+    }
+
+    public string GetTypeCategory(Base obj)
+    {
+      // WARNING : The keys in this dictionary must match those found in GetHostTypes
+      string speckleType;
+      try
+      {
+        speckleType = obj.speckle_type.Split(':')[0];
+      }
+      catch
+      {
+        speckleType = obj.speckle_type;
+      }
+
+      string typeCategory = "";
+
+      switch (speckleType)
+      {
+        case "Objects.BuiltElements.Floor":
+          typeCategory = "Floors";
+          break;
+        case "Objects.BuiltElements.Wall":
+          typeCategory = "Walls";
+          break;
+        case "Objects.BuiltElements.Beam":
+          typeCategory = "Framing";
+          break;
+        case "Objects.BuiltElements.Column":
+          typeCategory = "Columns";
+          break;
+        default:
+          typeCategory = "Miscellaneous";
+          break;
+      }
+      return typeCategory;
+    }
+
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
     {
       var placeholders = new List<ApplicationPlaceholderObject>();
@@ -393,75 +545,6 @@ namespace Speckle.ConnectorRevit.UI
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-
-      // Get Settings for recieve on mapping 
-      //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as CheckBoxSetting);
-      //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.IsChecked : false;
-
-      //try
-      //{
-      //  var vm = new MappingViewModel();
-      //  var mappingView = new MappingViewDialog
-      //  {
-      //    DataContext = vm
-      //  };
-
-
-      //  await mappingView.ShowDialog();
-      //  //var dialog = new MappingViewDialog();
-      //  //await dialog.ShowDialog();
-      //}
-      //catch (Exception ex)
-      //{
-      //  progress.Report.Log($"Could show dialog {ex}");
-      //}
-
-      //try
-      //{
-
-      //  var dialog = new MappingViewDialog();
-      //  var result = await dialog.ShowDialog<string>();
-      //  ButtonSetting mappingSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "mapping") as ButtonSetting);
-      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(mappingSetting.JsonSelection);
-      //  updateRecieveObject(mappingDict, objects);
-      //}
-      //catch (Exception ex)
-      //{
-      //  progress.Report.Log($"Could not update objects with user-defined type mapping {ex}");
-      //}
-
-      //try
-      //{
-      //  //var mappingDict = JsonConvert.DeserializeObject(mappingSetting.JsonSelection) as Dictionary<string, string>;
-      //  progress.Report.Log($"mappingDict {mappingSetting.JsonSelection}");
-      //}
-      //catch
-      //{
-
-      //}
-
-      //try
-      //{
-      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(mappingSetting.JsonSelection);
-      //  progress.Report.Log($"mappingDict {mappingDict}");
-      //}
-      //catch
-      //{
-
-      //}
-
-      //try
-      //{
-      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(mappingSetting.JsonSelection);
-      //  foreach (var item in mappingDict)
-      //  {
-      //    progress.Report.Log($"DESERIALIZED DICT {item.Key} {item.Value}");
-      //  }
-      //}
-      //catch
-      //{
-
-      //}
 
       foreach (var @base in objects)
       {

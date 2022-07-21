@@ -11,19 +11,11 @@ namespace DesktopUI2.Models.Settings
 {
   public class MappingSeting : ListBoxSetting
   {
-
-    public bool HasJson { get; set; } = false;
-
     private string _mappingJson = null;
     public string MappingJson
     {
       get => _mappingJson;
-      set
-      {
-        if (value != null && value != "")
-          HasJson = true;
-        _mappingJson = value;
-      }
+      set => _mappingJson = value;
     }
   }
 }

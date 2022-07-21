@@ -121,20 +121,6 @@ namespace DesktopUI2
       };
     }
 
-    public override List<ISetting> GetSettings(StreamState state, ProgressViewModel progress)
-    {
-      return new List<ISetting>
-      {
-        new ListBoxSetting {Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} },
-        new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
-        new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving"},
-        new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
-          Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
-        new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Description = "Determines the display style of imported meshes" },
-        //new MappingSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"}
-      };
-    }
-
     public override List<StreamState> GetStreamsInFile()
     {
       var collection = new List<StreamState>();
@@ -373,33 +359,6 @@ namespace DesktopUI2
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
-    }
-
-    public override List<string> GetHostProperties()
-    {
-      return new List<string>
-      {
-        "Type1",
-        "Type2",
-        "Type3",
-        "A wiiiiiide flange",
-        "some wall maybe?",
-        "roof",
-        "other",
-        "types",
-        "are",
-        "welcome"
-      };
-    }
-
-    public override Dictionary<string, List<string>> GetHostTypes()
-    {
-      return new Dictionary<string, List<string>>
-      {
-        { "Materials", new List<string>{"brick","sheep","wheat","stone" } },
-        { "Floors", new List<string>{"concrete","tile"} },
-        { "Walls", new List<string>{"brick","gyp","shearwall1" } }
-      };
     }
 
     public override async Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string, List<MappingValue>> Mapping)

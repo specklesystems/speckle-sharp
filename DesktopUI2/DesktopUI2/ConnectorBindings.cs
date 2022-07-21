@@ -166,12 +166,6 @@ namespace DesktopUI2
 
     public abstract List<ISetting> GetSettings();
 
-    public abstract List<ISetting> GetSettings(StreamState state, ProgressViewModel progress);
-
-    public abstract List<string> GetHostProperties();
-
-    public abstract Dictionary<string, List<string>> GetHostTypes();
-
     public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string,List<MappingValue>> Mapping);
     #endregion
   }

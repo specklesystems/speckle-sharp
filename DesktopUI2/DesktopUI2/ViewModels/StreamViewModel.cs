@@ -458,7 +458,7 @@ namespace DesktopUI2.ViewModels
 
 
         //get available settings from our bindings
-        Settings = Bindings.GetSettings(StreamState, Progress);
+        Settings = Bindings.GetSettings();
 
         //get available filters from our bindings
         AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));

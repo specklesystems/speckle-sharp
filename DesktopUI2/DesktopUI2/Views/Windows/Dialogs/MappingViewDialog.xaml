@@ -151,7 +151,7 @@
           BorderThickness="1"
           Classes="Solo"
           Text="{Binding SearchQuery, Mode=TwoWay}"
-          Watermark="{Binding VisibleMappingValues.Count}">
+          Watermark="Search Types in Project">
           <TextBox.InnerLeftContent>
             <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
               <icons:MaterialIcon
