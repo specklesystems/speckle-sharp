@@ -61,7 +61,7 @@ jobs:
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --runtime
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --runtime dotnet
             dotnet tool install --global Speckle.Manager.Feed
             cat << \EOF >> ~/.bash_profile
             export PATH="$PATH:/Users/distiller/.dotnet/tools"
