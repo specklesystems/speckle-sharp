@@ -53,7 +53,7 @@ jobs:
           configuration_path: .circleci/continuation-config.yml # use newly generated config to continue
   test-cli:
     docker:
-      - image: microsoft/dotnet:sdk
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
       - run:
