@@ -54,11 +54,6 @@ jobs:
   test-cli:
     macos:
       xcode: 12.5.1
-    parameters:
-      slug:
-        type: string
-      os:
-        type: string
     steps:
       - checkout
       - attach_workspace:
@@ -69,15 +64,6 @@ jobs:
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
             ~/.dotnet/dotnet tool install --global Speckle.Manager.Feed
             /Users/distiller/.dotnet/tools/speckle.manager.feed addVersion
-      - run:
-          name: Install Speckle.Manager.Feed
-          command:
-      - run:
-          name: Upload new version
-          command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/[a-zA-Z-]*\///')
-            /Users/distiller/.dotnet/tools/speckle.manager.feed addVersion -s << parameters.slug >> -v $SEMVER -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-$SEMVER.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>-$SEMVER.exe
 workflows:
   setup:
     jobs:
