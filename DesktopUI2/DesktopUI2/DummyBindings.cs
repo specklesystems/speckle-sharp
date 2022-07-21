@@ -117,13 +117,8 @@ namespace DesktopUI2
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
           Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Description = "Determines the display style of imported meshes" },
-        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"} 
+        new MappingSeting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = new List<string>() {"none", "alot", "some"}, Description = "Sends or receives stream objects in relation to this document point"},
       };
-    }
-
-    public void dummyCommand()
-    {
-
     }
 
     public override List<ISetting> GetSettings(StreamState state, ProgressViewModel progress)
@@ -136,7 +131,7 @@ namespace DesktopUI2
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
           Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Description = "Determines the display style of imported meshes" },
-        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"}
+        //new MappingSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"}
       };
     }
 
@@ -380,24 +375,6 @@ namespace DesktopUI2
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
     }
 
-    //public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostTypes)
-    //{
-    //  await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
-    //  return new Dictionary<string, string>();
-    //}
-
-    //public override async Task<Dictionary<string, string>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string,List<string>> hostTypes)
-    //{
-    //  await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
-    //  return new Dictionary<string, string>();
-    //}
-
-    public override async Task<Dictionary<string, List<KeyValuePair<string, string>>>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string, List<string>> hostTypes)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
-      return new Dictionary<string, List<KeyValuePair<string, string>>>();
-    }
-
     public override List<string> GetHostProperties()
     {
       return new List<string>
@@ -425,10 +402,10 @@ namespace DesktopUI2
       };
     }
 
-    public override async Task<Dictionary<string, ObservableCollection<MappingValue>>> ImportFamily(Dictionary<string, ObservableCollection<MappingValue>> Mapping)
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string, List<MappingValue>> Mapping)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
-      return new Dictionary<string, ObservableCollection<MappingValue>>();
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

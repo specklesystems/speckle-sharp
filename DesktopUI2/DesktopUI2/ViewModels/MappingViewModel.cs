@@ -61,7 +61,7 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    public Dictionary<string,ObservableCollection<MappingValue>> Mapping { get; set; }
+    public Dictionary<string,List<MappingValue>> Mapping { get; set; }
 
     private string _selectedCategory;
     public string SelectedCategory
@@ -94,10 +94,10 @@ namespace DesktopUI2.ViewModels
     public MappingViewModel()
     {
 
-      Mapping = new Dictionary<string, ObservableCollection<MappingValue>>
+      Mapping = new Dictionary<string, List<MappingValue>>
       {
         {
-          "Materials", new ObservableCollection<MappingValue>
+          "Materials", new List<MappingValue>
           (
             new List<MappingValue>
             {
@@ -111,7 +111,7 @@ namespace DesktopUI2.ViewModels
           )
         },
         {
-          "Beams", new ObservableCollection<MappingValue>
+          "Beams", new List<MappingValue>
           (
             new List<MappingValue>
             {
@@ -125,7 +125,7 @@ namespace DesktopUI2.ViewModels
           )
         },
         {
-          "Columns", new ObservableCollection<MappingValue>
+          "Columns", new List<MappingValue>
           (
             new List<MappingValue>
             {
@@ -149,7 +149,7 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    public MappingViewModel(Dictionary<string, List<KeyValuePair<string,string>>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress)
+    public MappingViewModel(Dictionary<string, List<MappingValue>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress)
     {
       progress.Report.Log($"host type Dict keys {String.Join(",", hostTypesDict.Keys)}");
       progress.Report.Log($"host type Dict values {String.Join(",", hostTypesDict.Values)}");
@@ -157,25 +157,31 @@ namespace DesktopUI2.ViewModels
       progress.Report.Log($"firstpass keys {String.Join(",", firstPassMapping.Keys)}");
       progress.Report.Log($"firstpass values {String.Join(",", firstPassMapping.Values)}");
 
-      Mapping = new Dictionary<string, ObservableCollection<MappingValue>>();
+      Mapping = new Dictionary<string, List<MappingValue>>();
       Bindings = Locator.Current.GetService<ConnectorBindings>();
-      foreach (var category in firstPassMapping.Keys)
-      {
-        progress.Report.Log($"category");
-        foreach (var kvp in firstPassMapping[category])
-        {
-          progress.Report.Log($"kvp {kvp.Key}");
-          progress.Report.Log($"kvp {kvp.Value}");
-          if (Mapping.ContainsKey(category))
-          {
-            Mapping[category].Add(new MappingValue(kvp.Key, kvp.Value));
-          }
-          else
-          {
-            Mapping[category] = new ObservableCollection<MappingValue> { new MappingValue(kvp.Key, kvp.Value) };
-          }
-        }
-      }
+
+      //foreach (var category in firstPassMapping.Keys)
+      //{
+      //  Mapping[category] = new List<MappingValue>(firstPassMapping[category]);
+      //}
+
+      Mapping = firstPassMapping;
+
+      //foreach (var category in firstPassMapping.Keys)
+      //{
+      //  progress.Report.Log($"category");
+      //  foreach (var kvp in firstPassMapping[category])
+      //  {
+      //    if (Mapping.ContainsKey(category))
+      //    {
+      //      Mapping[category].Add(new MappingValue(kvp.InitialGuess, kvp.Value));
+      //    }
+      //    else
+      //    {
+      //      Mapping[category] = new List<MappingValue> { new MappingValue(kvp.InitialGuess, kvp.Value) };
+      //    }
+      //  }
+      //}
 
       progress.Report.Log($"Mapping {Mapping}");
       _valuesList = hostTypesDict;
@@ -184,7 +190,7 @@ namespace DesktopUI2.ViewModels
       progress.Report.Log($"SelectedCategory {SelectedCategory}");
       VisibleMappingValues = new List<MappingValue>(Mapping[Mapping.Keys.First()]);
       progress.Report.Log($"visibleMappingValues {VisibleMappingValues}");
-      //Mapping = new Dictionary<string,ObservableCollection<MappingValue>>(firstPassMapping.Select(kvp => new MappingValue(kvp.Key, kvp.Value)).ToList());
+      //Mapping = new Dictionary<string,List<MappingValue>>(firstPassMapping.Select(kvp => new MappingValue(kvp.Key, kvp.Value)).ToList());
       //_valuesList = hostTypesDict;
       SearchResults = _valuesList[SelectedCategory];
       progress.Report.Log($"SearchResults {SearchResults}");
@@ -224,6 +230,36 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    //public class MappingValue : ReactiveObject
+    //{
+    //  public string IncomingType { get; set; }
+    //  public bool Imported { get; set; }
+
+    //  private string _initialGuess;
+    //  public string InitialGuess
+    //  {
+    //    get => _initialGuess;
+    //    set => this.RaiseAndSetIfChanged(ref _initialGuess, value);
+    //  }
+    //  private string _outgoingType;
+    //  public string OutgoingType
+    //  {
+    //    get => _outgoingType;
+    //    set => this.RaiseAndSetIfChanged(ref _outgoingType, value);
+    //  }
+    //  private string _outgoingFamily;
+    //  public string OutgoingFamily
+    //  {
+    //    get => _outgoingFamily;
+    //    set => this.RaiseAndSetIfChanged(ref _outgoingFamily, value);
+    //  }
+    //  public MappingValue(string inType, string inGuess)
+    //  {
+    //    IncomingType = inType;
+    //    InitialGuess = inGuess;
+    //  }
+    //}
+
     public async void ImportFamily()
     {
       Mapping = await Bindings.ImportFamily(Mapping);
@@ -231,34 +267,39 @@ namespace DesktopUI2.ViewModels
 
     public void Done()
     {
-      Dictionary<string, List<KeyValuePair<string,string>>> mappingDict = new Dictionary<string, List<KeyValuePair<string, string>>>();
-      foreach (var category in Mapping.Keys)
-      {
-        foreach (var mappingValue in Mapping[category])
-        {
-          if (mappingDict.ContainsKey(category))
-          {
-            mappingDict[category].Add(new KeyValuePair<string, string>(mappingValue.IncomingType, mappingValue.OutgoingType ?? mappingValue.InitialGuess));
-          }
-          else
-          {
-            mappingDict[category] = new List<KeyValuePair<string, string>>
-            {
-              new KeyValuePair<string, string>
-              (
-                mappingValue.IncomingType, mappingValue.OutgoingType ?? mappingValue.InitialGuess
-              )
-            };
-          }
-        }
-      }
-      MappingViewDialog.Instance.Close(mappingDict);
+      //Dictionary<string, List<MappingValue>> mappingDict = new Dictionary<string, List<MappingValue>>();
+      //foreach (var category in Mapping.Keys)
+      //{
+      //  foreach (var mappingValue in Mapping[category])
+      //  {
+      //    if (mappingDict.ContainsKey(category))
+      //    {
+      //      mappingDict[category].Add(new MappingValue(mappingValue.IncomingType, mappingValue.OutgoingType ?? mappingValue.InitialGuess));
+      //    }
+      //    else
+      //    {
+      //      mappingDict[category] = new List<MappingValue>
+      //      {
+      //        new MappingValue
+      //        (
+      //          mappingValue.IncomingType, mappingValue.OutgoingType ?? mappingValue.InitialGuess
+      //        )
+      //      };
+      //    }
+      //  }
+      //}
+      //var json = JsonConvert.SerializeObject(Mapping);
+      //Bindings.MappingSelectionValue = json;
+
+      MappingViewDialog.Instance.Close(Mapping);
+      //MappingViewDialog.Instance.Close(Mapping);
+
       //OnRequestClose(this, new EventArgs());
       //return mappingDict;
       //Dictionary<string, string> mappingDict = Mapping.ToDictionary(x => x.IncomingType, x => x.OutgoingType ?? x.InitialGuess);
       //var json = JsonConvert.SerializeObject(mappingDict);
       //Bindings.MappingSelectionValue = json;
-      
+
       //OnRequestClose(this, new EventArgs());
     }
   }

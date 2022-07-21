@@ -58,7 +58,7 @@ namespace Speckle.ConnectorRevit.UI
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Description = "Determines the display style of imported meshes"},
         new CheckBoxSetting{Slug = "recieve-mappings" , Name = "Toggle for Mappings", Icon = "Link", IsChecked = false,Description = "If toggled, map on recieve of Objects" },
-        new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"},
+        //new MappingSeting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Not Set"},
       };
     }
 
@@ -84,7 +84,7 @@ namespace Speckle.ConnectorRevit.UI
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Description = "Determines the display style of imported meshes"},
-        new ListBoxSetting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = mappingOptions, Description = "Sends or receives stream objects in relation to this document point"},
+        new MappingSeting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = mappingOptions, Description = "Sends or receives stream objects in relation to this document point"},
         //new CheckBoxSetting{Slug = "recieve-mappings" , Name = "Toggle for Mappings", Icon = "Link", IsChecked = false,Description = "If toggled, map on recieve of Objects" },
         //new ButtonSetting {Slug = "mapping", Name = "Custom Type Mappings", Icon ="ChartTimelineVarient", ButtonText="Set", state=state, progress=progress},
       };
@@ -153,28 +153,6 @@ namespace Speckle.ConnectorRevit.UI
       returnDict["Miscellaneous"] = types;
 
       return returnDict;
-    }
-
-    //public override async Task<Dictionary<string,string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostProperties)
-    //{
-    //  List<Base> flattenedBase = await GetFlattenedBase(state, progress);
-
-    //  var listProperties = GetListProperties(flattenedBase);
-
-    //  var mappings = returnFirstPassMap(listProperties, hostProperties);
-
-    //  return mappings;
-    //}
-
-    public override async Task<Dictionary<string, List<KeyValuePair<string,string>>>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string,List<string>> hostProperties)
-    {
-      List<Base> flattenedBase = await GetFlattenedBase(state, progress);
-
-      var listProperties = GetListProperties(flattenedBase, progress);
-
-      var mappings = returnFirstPassMap(listProperties, hostProperties, progress);
-
-      return mappings;
     }
 
     public async Task<List<Base>> GetFlattenedBase(StreamState state, ProgressViewModel progress)
@@ -356,146 +334,5 @@ namespace Speckle.ConnectorRevit.UI
     //  List<string> familyType = list.Select(o => o.Name).Distinct().ToList();
     //  return familyType;
     //}
-
-    public static int LevenshteinDistance(string s, string t)
-    {
-      // Default algorithim for computing the similarity between strings
-      int n = s.Length;
-      int m = t.Length;
-      int[,] d = new int[n + 1, m + 1];
-      if (n == 0)
-      {
-        return m;
-      }
-      if (m == 0)
-      {
-        return n;
-      }
-      for (int i = 0; i <= n; d[i, 0] = i++)
-        ;
-      for (int j = 0; j <= m; d[0, j] = j++)
-        ;
-      for (int i = 1; i <= n; i++)
-      {
-        for (int j = 1; j <= m; j++)
-        {
-          int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-          d[i, j] = Math.Min(
-              Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-              d[i - 1, j - 1] + cost);
-        }
-      }
-      return d[n, m];
-    }
-
-    //public Dictionary<string, string> returnFirstPassMap(List<string> specklePropertyList, List<string> hostPropertyList)
-    //{
-    //  var mappings = new Dictionary<string, string> { };
-    //  foreach (var item in specklePropertyList)
-    //  {
-    //    List<int> listVert = new List<int> { };
-    //    foreach (var hostItem in hostPropertyList)
-    //    {
-    //      listVert.Add(LevenshteinDistance(item, hostItem));
-    //    }
-    //    var indexMin = listVert.IndexOf(listVert.Min());
-    //    mappings.Add(item, hostPropertyList[indexMin]);
-    //  }
-    //  return mappings;
-    //}
-
-    public Dictionary<string, List<KeyValuePair<string, string>>> returnFirstPassMap(Dictionary<string, List<string>> specklePropertyDict, Dictionary<string,List<string>> hostPropertyList, ProgressViewModel progress)
-    {
-      progress.Report.Log($"firstPassMap");
-      var mappings = new Dictionary<string, List<KeyValuePair<string, string>>> { };
-      foreach (var category in specklePropertyDict.Keys)
-      {
-        progress.Report.Log($"cat {category}");
-        foreach (var speckleType in specklePropertyDict[category])
-        {
-          string mappedValue = "";
-          List<int> listVert = new List<int> { };
-          progress.Report.Log($"rev types {String.Join(",", hostPropertyList[category])}");
-
-          // if this count is zero, then there aren't any types of this category loaded into the project
-          if (hostPropertyList[category].Count != 0)
-          {
-            foreach (var revitType in hostPropertyList[category])
-            {
-              listVert.Add(LevenshteinDistance(speckleType, revitType));
-            }
-            progress.Report.Log($"lev dist {String.Join(",", listVert)}");
-            mappedValue = hostPropertyList[category][listVert.IndexOf(listVert.Min())];
-          }
-
-          if (mappings.ContainsKey(category))
-          {
-            mappings[category].Add(new KeyValuePair<string, string>
-              (
-                speckleType, mappedValue
-              ));
-          }
-          else
-          {
-            mappings[category] = new List<KeyValuePair<string, string>>
-              {
-                new KeyValuePair<string,string>
-                (
-                  speckleType, mappedValue
-                )
-              };
-          }
-        }
-      }
-      return mappings;
-    }
-
-    public override async Task<Dictionary<string, ObservableCollection<MappingValue>>> ImportFamily(Dictionary<string, ObservableCollection<MappingValue>> Mapping)
-    {
-      FileOpenDialog dialog = new FileOpenDialog("Revit Families (*.rfa)|*.rfa");
-      dialog.ShowPreview = true;
-      var result = dialog.Show();
-
-      if (result == ItemSelectionDialogResult.Canceled)
-      {
-        return Mapping;
-      }
-
-      string path = "";
-      path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
-
-      return await RevitTask.RunAsync(app =>
-      {
-        using (var t = new Transaction(CurrentDoc.Document, $"Importing family symbols"))
-        {
-          t.Start();
-          bool symbolLoaded = false;
-
-          foreach (var category in Mapping.Keys)
-          {
-            foreach (var mappingValue in Mapping[category])
-            {
-              if (!mappingValue.Imported)
-              {
-                bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(path, mappingValue.IncomingType);
-
-                if (successfullyImported)
-                {
-                  mappingValue.Imported = true;
-                  mappingValue.OutgoingType = mappingValue.IncomingType;
-                  symbolLoaded = true;
-                }
-              }
-            }
-          }
-
-          if (symbolLoaded)
-            t.Commit();
-          else
-            t.RollBack();
-          return Mapping;
-        }
-      });
-    }
   }
 }

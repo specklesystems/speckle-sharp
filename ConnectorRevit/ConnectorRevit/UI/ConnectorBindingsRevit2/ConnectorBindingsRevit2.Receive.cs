@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -16,6 +18,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -112,13 +115,18 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
 
-      //// update flattened objects if the user has custom mappings
-      //flattenedObjects = await UpdateForCustomMappingAsync(state, progress, flattenedObjects);
-
-
+      // update flattened objects if the user has custom mappings
       progress.Report.Log($"flattedObjects {flattenedObjects}");
 
-      flattenedObjects = await RevitTask.RunAsync(() => UpdateForCustomMappingAsync(state, progress, flattenedObjects));
+      try
+      {
+        flattenedObjects = await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, flattenedObjects));
+      }
+      catch (Exception ex)
+      {
+        progress.Report.Log($" new mappings failed :( {ex}");
+      }
+
 
       await RevitTask.RunAsync(app =>
       {
@@ -177,52 +185,60 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    public async Task<List<Base>> UpdateForCustomMappingAsync(StreamState state, ProgressViewModel progress, List<Base> flattenedBase)
+    public async Task<List<Base>> UpdateForCustomMapping(StreamState state, ProgressViewModel progress, List<Base> flattenedBase)
     {
       // Get Settings for recieve on mapping 
-      //var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as ListBoxSetting);
-      //var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : null;
+      var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-mappings") as MappingSeting);
+      var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : "";
 
-      //if (receiveMappings == )
-      //  return flattenedBase;
+      Dictionary<string, List<MappingValue>> settingsMapping = null;
+      if (receiveMappingsModelsSetting.HasJson)
+        settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(receiveMappingsModelsSetting.MappingJson);
 
-      Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
-      Dictionary<string, List<KeyValuePair<string, string>>> initialMapping = GetInitialMapping2(flattenedBase, progress, hostTypesDict);
-
-      MappingViewDialog mappingView = null;
-      try
+      if (receiveMappings == noMapping)
+        return flattenedBase;
+      else if (receiveMappings == everyReceive)
       {
-        var vm = new MappingViewModel(initialMapping, hostTypesDict, progress);
-        mappingView = new MappingViewDialog
+        Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
+        Dictionary<string, List<MappingValue>> initialMapping = GetInitialMapping(flattenedBase, progress, hostTypesDict);
+
+        try
         {
-          DataContext = vm
-        };
-      }
-      catch (Exception ex)
-      {
-        progress.Report.Log($"Could not show dialog {ex}");
-      }
-      try
-      {
-        Dictionary<string, List<KeyValuePair<string, string>>> newMapping = await mappingView.ShowDialog<Dictionary<string, List<KeyValuePair<string, string>>>>();
+          var vm = new MappingViewModel(initialMapping, hostTypesDict, progress);
+          MappingViewDialog mappingView = new MappingViewDialog
+          {
+            DataContext = vm
+          };
 
-        progress.Report.Log($"newmapping {newMapping}");
+          Dictionary<string, List<MappingValue>> newMapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
 
-        List<Base> newFlatBase = updateRecieveObject(newMapping, flattenedBase);
+          //var newMapping = await mappingView.ShowDialog<Dictionary<string,MappingValue>>();
 
-        progress.Report.Log($"newflatbase {newFlatBase}");
+          receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(newMapping);
+          progress.Report.Log($"newmapping serialized {receiveMappingsModelsSetting.MappingJson}");
+
+          List<Base> newFlatBase = updateRecieveObject(newMapping, flattenedBase);
+
+          //progress.Report.Log($"newflatbase {newFlatBase}");
+          return newFlatBase;
+        }
+        catch (Exception ex)
+        {
+          progress.Report.Log($"Could not make new mapping {ex}");
+        }
+
+        progress.Report.Log($"how did this work?");
         return flattenedBase;
       }
-      catch (Exception ex)
-      {
-        progress.Report.Log($"Could not make new mapping {ex}");
-      }
-      
-      progress.Report.Log($"how did this work?");
+      //else if (receiveMappings == forNewTypes)
+      //{
+
+      //}
+
       return flattenedBase;
     }
 
-    public Dictionary<string, List<KeyValuePair<string, string>>> GetInitialMapping2(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostProperties)
+    public Dictionary<string, List<MappingValue>> GetInitialMapping(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostProperties)
     {
       var listProperties = GetListProperties(flattenedBase, progress);
 
@@ -231,8 +247,84 @@ namespace Speckle.ConnectorRevit.UI
       return mappings;
     }
 
+    public Dictionary<string, List<MappingValue>> returnFirstPassMap(Dictionary<string, List<string>> specklePropertyDict, Dictionary<string, List<string>> hostPropertyList, ProgressViewModel progress)
+    {
+      progress.Report.Log($"firstPassMap");
+      var mappings = new Dictionary<string, List<MappingValue>> { };
+      foreach (var category in specklePropertyDict.Keys)
+      {
+        progress.Report.Log($"cat {category}");
+        foreach (var speckleType in specklePropertyDict[category])
+        {
+          string mappedValue = "";
+          List<int> listVert = new List<int> { };
+          progress.Report.Log($"rev types {String.Join(",", hostPropertyList[category])}");
 
-    public List<Base> updateRecieveObject(Dictionary<string, List<KeyValuePair<string,string>>> Map, List<Base> objects)
+          // if this count is zero, then there aren't any types of this category loaded into the project
+          if (hostPropertyList[category].Count != 0)
+          {
+            foreach (var revitType in hostPropertyList[category])
+            {
+              listVert.Add(LevenshteinDistance(speckleType, revitType));
+            }
+            progress.Report.Log($"lev dist {String.Join(",", listVert)}");
+            mappedValue = hostPropertyList[category][listVert.IndexOf(listVert.Min())];
+          }
+
+          if (mappings.ContainsKey(category))
+          {
+            mappings[category].Add(new MappingValue
+              (
+                speckleType, mappedValue
+              ));
+          }
+          else
+          {
+            mappings[category] = new List<MappingValue>
+              {
+                new MappingValue
+                (
+                  speckleType, mappedValue
+                )
+              };
+          }
+        }
+      }
+      return mappings;
+    }
+
+    public static int LevenshteinDistance(string s, string t)
+    {
+      // Default algorithim for computing the similarity between strings
+      int n = s.Length;
+      int m = t.Length;
+      int[,] d = new int[n + 1, m + 1];
+      if (n == 0)
+      {
+        return m;
+      }
+      if (m == 0)
+      {
+        return n;
+      }
+      for (int i = 0; i <= n; d[i, 0] = i++)
+        ;
+      for (int j = 0; j <= m; d[0, j] = j++)
+        ;
+      for (int i = 1; i <= n; i++)
+      {
+        for (int j = 1; j <= m; j++)
+        {
+          int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+          d[i, j] = Math.Min(
+              Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+              d[i - 1, j - 1] + cost);
+        }
+      }
+      return d[n, m];
+    }
+
+    public List<Base> updateRecieveObject(Dictionary<string, List<MappingValue>> Map, List<Base> objects)
     {
       foreach (var @object in objects)
       {
@@ -274,7 +366,8 @@ namespace Speckle.ConnectorRevit.UI
           if (propInfo != "")
           {
             string mappingProperty = "";
-            mappingProperty = Map[typeCategory].Where(i => i.Key == propInfo).First().Value;
+            MappingValue mappingWithMatchingType = Map[typeCategory].Where(i => i.IncomingType == propInfo).First();
+            mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
             var prop = @object.GetType().GetProperty("type");
             prop.SetValue(@object, mappingProperty);
           }
@@ -325,7 +418,7 @@ namespace Speckle.ConnectorRevit.UI
       //  var dialog = new MappingViewDialog();
       //  var result = await dialog.ShowDialog<string>();
       //  ButtonSetting mappingSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "mapping") as ButtonSetting);
-      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, List<KeyValuePair<string,string>>>>(mappingSetting.JsonSelection);
+      //  var mappingDict = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(mappingSetting.JsonSelection);
       //  updateRecieveObject(mappingDict, objects);
       //}
       //catch (Exception ex)
@@ -455,6 +548,54 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       return objects;
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      FileOpenDialog dialog = new FileOpenDialog("Revit Families (*.rfa)|*.rfa");
+      dialog.ShowPreview = true;
+      var result = dialog.Show();
+
+      if (result == ItemSelectionDialogResult.Canceled)
+      {
+        return Mapping;
+      }
+
+      string path = "";
+      path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
+
+      return await RevitTask.RunAsync(app =>
+      {
+        using (var t = new Transaction(CurrentDoc.Document, $"Importing family symbols"))
+        {
+          t.Start();
+          bool symbolLoaded = false;
+
+          foreach (var category in Mapping.Keys)
+          {
+            foreach (var mappingValue in Mapping[category])
+            {
+              if (!mappingValue.Imported)
+              {
+                bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(path, mappingValue.IncomingType);
+
+                if (successfullyImported)
+                {
+                  mappingValue.Imported = true;
+                  mappingValue.OutgoingType = mappingValue.IncomingType;
+                  symbolLoaded = true;
+                }
+              }
+            }
+          }
+
+          if (symbolLoaded)
+            t.Commit();
+          else
+            t.RollBack();
+          return Mapping;
+        }
+      });
     }
   }
 }

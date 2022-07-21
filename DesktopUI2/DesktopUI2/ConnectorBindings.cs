@@ -168,17 +168,11 @@ namespace DesktopUI2
 
     public abstract List<ISetting> GetSettings(StreamState state, ProgressViewModel progress);
 
-    //public abstract Task<Dictionary<string, string>> GetInitialMapping(StreamState state, ProgressViewModel progress, List<string> hostTypes);
-
-    //public abstract Task<Dictionary<string, string>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string,List<string>> hostTypes);
-
-    public abstract Task<Dictionary<string, List<KeyValuePair<string,string>>>> GetInitialMapping(StreamState state, ProgressViewModel progress, Dictionary<string, List<string>> hostTypes);
-
     public abstract List<string> GetHostProperties();
 
     public abstract Dictionary<string, List<string>> GetHostTypes();
 
-    public abstract Task<Dictionary<string, ObservableCollection<MappingValue>>> ImportFamily(Dictionary<string,ObservableCollection<MappingValue>> Mapping);
+    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string,List<MappingValue>> Mapping);
     #endregion
   }
 }
