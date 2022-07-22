@@ -137,9 +137,73 @@ namespace Speckle.Core.Models
 
   public class ProgressReport
   {
+    public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
+
+    public void Log(ApplicationObject obj)
+    {
+      var _reportObject = UpdateReportObject(obj);
+      if (_reportObject == null)
+        ReportObjects.Add(obj);
+    }
+
+    public ApplicationObject UpdateReportObject(ApplicationObject obj)
+    {
+      if (GetReportObject(obj.OriginalId, out int index))
+      {
+        ReportObjects[index].Update(status: obj.Status, createdIds: obj.CreatedIds, log: obj.Log);
+        return ReportObjects[index];
+      }
+      else return null;
+    }
+
+    public bool GetReportObject(string id, out int index)
+    {
+      var _reportObject = ReportObjects.Where(o => o.OriginalId == id)?.FirstOrDefault();
+      index = _reportObject != null ? ReportObjects.IndexOf(_reportObject) : -1;
+      return index == -1 ? false : true;
+    }
+
     #region Conversion
     /// <summary>
-    /// Keeps track of errors in the operations of send/receive.
+    /// Keeps track of the conversion process
+    /// </summary>
+    public List<string> ConversionLog { get; } = new List<string>();
+
+    private readonly object ConversionLogLock = new object();
+    public string ConversionLogString
+    {
+      get
+      {
+        var summary = "";
+        lock (ConversionLogLock)
+        {
+          var converted = ConversionLog.Count(x => x.ToLowerInvariant().Contains("converted"));
+          var created = ConversionLog.Count(x => x.ToLowerInvariant().Contains("created"));
+          var skipped = ConversionLog.Count(x => x.ToLowerInvariant().Contains("skipped"));
+          var failed = ConversionLog.Count(x => x.ToLowerInvariant().Contains("failed"));
+          var updated = ConversionLog.Count(x => x.ToLowerInvariant().Contains("updated"));
+
+          summary += converted > 0 ? $"CONVERTED: {converted}\n" : "";
+          summary += created > 0 ? $"CREATED: {created}\n" : "";
+          summary += updated > 0 ? $"UPDATED: {updated}\n" : "";
+          summary += skipped > 0 ? $"SKIPPED: {skipped}\n" : "";
+          summary += failed > 0 ? $"FAILED: {failed}\n" : "";
+          summary = !string.IsNullOrEmpty(summary) ? $"SUMMARY\n\n{summary}\n\n" : "";
+
+          return summary + string.Join("\n", ConversionLog);
+        }
+      }
+    }
+
+    public void Log(string text)
+    {
+      var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
+      lock (ConversionLogLock)
+        ConversionLog.Add(time + " " + text);
+    }
+
+    /// <summary>
+    /// Keeps track of errors in the conversions.
     /// </summary>
     public List<Exception> ConversionErrors { get; } = new List<Exception>();
     private readonly object ConversionErrorsLock = new object();
@@ -158,45 +222,8 @@ namespace Speckle.Core.Models
     {
       lock (ConversionErrorsLock)
         ConversionErrors.Add(exception);
+      Log(exception.Message);
     }
-    public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
-    public void Log(string str)
-    {
-
-    }
-    public void Log(ApplicationObject obj)
-    {
-      var _reportObject = UpdateReportObject(obj); 
-      if (_reportObject == null)
-        ReportObjects.Add(obj);
-    }
-    public ApplicationObject UpdateReportObject(ApplicationObject obj)
-    {
-      if (GetReportObject(obj.OriginalId, out int index))
-      {
-        ReportObjects[index].Update(status: obj.Status, createdIds: obj.CreatedIds, log: obj.Log);
-        return ReportObjects[index];
-      }
-      else return null;
-    }
-    public bool GetReportObject(string id, out int index)
-    {
-      var _reportObject = ReportObjects.Where(o => o.OriginalId == id)?.FirstOrDefault();
-      index = _reportObject != null ? ReportObjects.IndexOf(_reportObject) : -1;
-      return index == -1 ? false : true;
-    }
-
-    public int GetConversionTotal(ApplicationObject.State action)
-    {
-      var actionObjects = ReportObjects.Where(o => o.Status == action);
-      return actionObjects == null ? 0 : actionObjects.Count();
-    }
-
-    /// <summary>
-    /// Keeps track of items selected in the Report
-    /// </summary>
-    public List<string> Selection { get; set; } = new List<string>();
-
     #endregion
 
     #region Operation

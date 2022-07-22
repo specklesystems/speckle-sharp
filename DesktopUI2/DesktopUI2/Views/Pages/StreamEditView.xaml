@@ -167,7 +167,11 @@
             </StackPanel>
           </TabItem.Header>
           <StackPanel Orientation="Vertical">
+            <ItemsControl
+                Margin="35,0,0,10"
+                Items="{Binding Log}" />
             <m:Card
+              IsVisible="{Binding HasReportItems}"
               Margin="5,10,5,10"
               Padding="0"
               HorizontalAlignment="Stretch"

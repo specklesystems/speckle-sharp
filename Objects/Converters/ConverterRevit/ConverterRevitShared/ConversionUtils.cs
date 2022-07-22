@@ -760,7 +760,9 @@ namespace Objects.Converter.Revit
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
-      openings.AddRange(ContextObjects.Where(x => x.ExistingObject is RevitShaft).Select(x => x.ExistingObject).Cast<RevitShaft>());
+      var shafts = new List<RevitShaft>();
+      ContextObjects.ForEach(o => shafts.AddRange(o.Converted.Where(c => c is RevitShaft).Cast<RevitShaft>()));
+      openings.AddRange(shafts);
 
       foreach (var @void in speckleElement["voids"] as List<ICurve>)
       {

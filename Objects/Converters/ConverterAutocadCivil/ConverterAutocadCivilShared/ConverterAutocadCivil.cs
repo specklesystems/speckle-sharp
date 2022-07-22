@@ -292,7 +292,7 @@ namespace Objects.Converter.AutocadCivil
         case Polycurve o:
           bool convertAsSpline = (o.segments.Where(s => !(s is Line) && !(s is Arc)).Count() > 0) ? true : false;
           if (!convertAsSpline) convertAsSpline = IsPolycurvePlanar(o) ? false : true;
-          acadObj = convertAsSpline ? PolycurveSplineToNativeDB(o, out notes) : PolycurveToNativeDB(o);
+          acadObj = convertAsSpline ? PolycurveSplineToNativeDB(o) : PolycurveToNativeDB(o);
           break;
 
         case Curve o:

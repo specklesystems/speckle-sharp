@@ -124,7 +124,7 @@ namespace ConverterRevitTests
       for (var i = 0; i < spkElems.Count; i++)
       {
         var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
-        var destElement = (T)((ApplicationObject)resEls[i]).ExistingObject;
+        var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
         assert(sourceElem, destElement);
       }
 
@@ -177,7 +177,7 @@ namespace ConverterRevitTests
       for (var i = 0; i < revitEls.Count; i++)
       {
         var sourceElem = (T)(object)fixture.RevitElements[i];
-        var destElement = (T)((ApplicationObject)resEls[i]).ExistingObject;
+        var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
 
         assert(sourceElem, (T)destElement);
       }

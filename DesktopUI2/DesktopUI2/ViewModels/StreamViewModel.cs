@@ -235,6 +235,8 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _report, value);
         this.RaisePropertyChanged("FilteredReport");
+        this.RaisePropertyChanged("HasReportItems");
+        this.RaisePropertyChanged("Log");
       }
     }
     public List<ApplicationObjectViewModel> FilteredReport
@@ -245,6 +247,19 @@ namespace DesktopUI2.ViewModels
           return Report;
         else
           return Report.Where(o => o.SearchText.ToLower().Contains(SearchQuery.ToLower())).ToList();
+      }
+    }
+    public bool HasReportItems
+    {
+      get { return (Progress.Report.ReportObjects == null || Progress.Report.ReportObjects.Count == 0) ? false : true; }
+    }
+    public List<string> Log
+    {
+      get
+      {
+        List<string> logItems = new List<string> { Progress.Report.ConversionLogString };
+        logItems.AddRange(Progress.Report.ConversionLog);
+        return logItems;
       }
     }
 
