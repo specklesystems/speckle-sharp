@@ -104,16 +104,17 @@ namespace Objects.Other
         switch (b)
         {
           case BlockInstance bi:
-            return bi.GetTransformedGeometry().Select(b =>
+            return bi.GetTransformedGeometry()?.Select(b =>
             {
-              b.TransformTo(transform, out var childTransformed);
+              ITransformable childTransformed = null;
+              b?.TransformTo(transform, out childTransformed);
               return childTransformed;
             });
           case ITransformable bt:
             var res = bt.TransformTo(transform, out var transformed);
             return new List<ITransformable>{res ? transformed : null};
           default:
-            return null;
+            return new List<ITransformable>();
         }
       }).Where(b => b != null).ToList();
     }
