@@ -89,8 +89,6 @@ namespace Objects.Converter.Revit
         {
           if (level == null)
             level = Doc.GetElement(CurrentHostElement.LevelId) as Level;
-          else
-            Report.Log($"This is the level we're using {level.Name}");
 
           // there are two (i think) main types of hosted elements which can be found with family.familyplacementtype
           // the two placement types for hosted elements are onelevelbasedhosted and workplanebased
@@ -101,6 +99,8 @@ namespace Objects.Converter.Revit
           }
           else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
           {
+            if (CurrentHostElement == null)
+              Report.ConversionErrors.Add(new Exception($"Object with ID {speckleFi.id} is work plane based, but does not have a host element"));
             if (CurrentHostElement is Wall wall)
             {
               Doc.Regenerate();
@@ -153,6 +153,11 @@ namespace Objects.Converter.Revit
                 InstanceVoidCutUtils.AddInstanceVoidCut(Doc, wall, familyInstance);
               if (lvlParams.ElementAtOrDefault(0) != null)
                 lvlParams[0].Set(level.Id);
+            }
+            else if (CurrentHostElement is Floor floor)
+            {
+              // TODO: support hosted elements on floors. Should be very similar to above implementation
+              Report.ConversionErrors.Add(new Exception($"Work Plane based families on floors to be supported soon"));
             }
           }
           else
