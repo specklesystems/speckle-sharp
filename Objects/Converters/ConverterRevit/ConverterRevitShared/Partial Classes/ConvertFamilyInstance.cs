@@ -52,7 +52,17 @@ namespace Objects.Converter.Revit
             //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
             //this means the Z coord of an element will only be set by its Level 
             //and by additional parameters as sill height, base offset etc
-            (familyInstance.Location as LocationPoint).Point = new XYZ(basePoint.X, basePoint.Y, (familyInstance.Location as LocationPoint).Point.Z);
+            var newLocationPoint = new XYZ(basePoint.X, basePoint.Y, (familyInstance.Location as LocationPoint).Point.Z);
+
+            (familyInstance.Location as LocationPoint).Point = newLocationPoint;
+
+            // BAND AID FIX ALERT
+            // this is one of the stranger issues I've encountered. When I set the location of a family instance
+            // it mostly works fine, but every so often it goes to a different location than the one I set
+            // it seems like just reassigning the location to the same thing we just assigned it to works
+            // I don't know why this is happening
+            if ((familyInstance.Location as LocationPoint).Point != newLocationPoint)
+              (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
             if (speckleFi.type != null && speckleFi.type != revitType.Name)
