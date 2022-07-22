@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
       {
         new ApplicationPlaceholderObject
           {applicationId = speckleFi.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      }; ;
+      };
       if (docObj != null)
       {
         try
@@ -135,7 +135,7 @@ namespace Objects.Converter.Revit
               XYZ norm = new XYZ(0, 0, 0);
               familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
 
-               // parameters
+              // parameters
               IList<Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
               IList<Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
 
@@ -144,7 +144,6 @@ namespace Objects.Converter.Revit
               if (lvlParams.ElementAtOrDefault(0) != null)
                 lvlParams[0].Set(level.Id);
             }
-
           }
           else
           {
