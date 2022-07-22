@@ -187,6 +187,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ArchiCAD", "ArchiCAD", "{DF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorArchicad", "ConnectorArchicad\ConnectorArchicad\ConnectorArchicad.csproj", "{D163D710-B946-4D50-8833-BD8B9941033A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2023", "ConnectorAutocadCivil\ConnectorAutocad2023\ConnectorAutocad2023.csproj", "{F4BFB155-7BA9-4E46-8240-9C825060C904}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2023", "ConnectorAutocadCivil\ConnectorCivil2023\ConnectorCivil2023.csproj", "{2639E37D-80D3-415A-B4D1-20D7F321F27F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{02a24dd8-e0ca-4657-baa7-b033a4563709}*SharedItemsImports = 5
@@ -725,6 +729,22 @@ Global
 		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|x64.ActiveCfg = Release|Any CPU
 		{D163D710-B946-4D50-8833-BD8B9941033A}.Release|x64.Build.0 = Release|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Debug|x64.Build.0 = Debug|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Release|x64.ActiveCfg = Release|Any CPU
+		{F4BFB155-7BA9-4E46-8240-9C825060C904}.Release|x64.Build.0 = Release|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Debug|x64.Build.0 = Debug|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Release|x64.ActiveCfg = Release|Any CPU
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -818,6 +838,8 @@ Global
 		{586A5A37-93F6-427E-8DF8-C10DB4D6822A} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
 		{DF1B3505-793C-4073-975B-04C81CC3CDC4} = {DD7DA7E3-FBB7-4216-852B-A4A5BF3AB9AB}
 		{D163D710-B946-4D50-8833-BD8B9941033A} = {DF1B3505-793C-4073-975B-04C81CC3CDC4}
+		{F4BFB155-7BA9-4E46-8240-9C825060C904} = {890F3257-FCC2-4ED8-9180-22B3641B494C}
+		{2639E37D-80D3-415A-B4D1-20D7F321F27F} = {890F3257-FCC2-4ED8-9180-22B3641B494C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}

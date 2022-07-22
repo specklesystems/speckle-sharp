@@ -20,6 +20,7 @@ using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Spiral = Objects.Geometry.Spiral;
+using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Dynamo
@@ -176,7 +177,9 @@ namespace Objects.Converter.Dynamo
 
         case Box o:
           return BoxToNative(o);
-
+        
+        case Transform o:
+          return TransformToNative(o);
         default:
           throw new NotSupportedException();
       }
@@ -275,6 +278,7 @@ namespace Objects.Converter.Dynamo
         case Brep _:
         case Mesh _:
         case Box _:
+        case Transform _:
           return true;
 
         default:

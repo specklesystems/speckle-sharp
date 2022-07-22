@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -33,7 +34,7 @@ namespace Objects.Converter.RhinoGh
       if (parsedSchema.Length > 2) // there is incorrect formatting in the schema string!
         return null;
       if (parsedSchema.Length == 2)
-        args = parsedSchema[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToArray();
+        args = parsedSchema[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)?.Select(o => o.Trim())?.ToArray();
       return parsedSchema[0].Trim();
     }
 
@@ -42,6 +43,10 @@ namespace Objects.Converter.RhinoGh
       var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
       return segments.Count > 1 ? segments[1] : "Unknown commit";
     }
+
+    #region app props
+    public static string RhinoPropName = "RhinoProps";
+    #endregion
 
     #region Units
 

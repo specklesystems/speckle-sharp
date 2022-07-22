@@ -1,0 +1,366 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.4.0
+  aws-s3: circleci/aws-s3@2.0.0
+  codecov: codecov/codecov@3.2.2
+  wait-for: cobli/wait-for@0.0.2
+
+commands:
+  packandpublish:
+    parameters:
+      projectfilepath:
+        type: string
+    steps:
+      - run:
+          name: Publish nuget package
+          command: |
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORFKLOW_NUM)-beta/a" } else { $env:CIRCLE_TAG }
+            $version = $tag.Split("/")[0]  
+            msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
+            dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
+  build-core:
+    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: Build Core
+          command: dotnet build Core/Core.sln -c Release -v q
+
+  test-core:
+    docker:
+      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
+      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
+      # Node, redis, postgres and speckle-server images for test server
+      - image: "cimg/node:16.15"
+      - image: "cimg/redis:6.2"
+      - image: "cimg/postgres:14.2"
+        environment:
+          POSTGRES_DB: speckle2_test
+          POSTGRES_PASSWORD: speckle
+          POSTGRES_USER: speckle
+      - image: "speckle/speckle-server:latest"
+        command: ["bash", "-c", "/wait && node bin/www"]
+        environment:
+          POSTGRES_URL: "localhost"
+          POSTGRES_USER: "speckle"
+          POSTGRES_PASSWORD: "speckle"
+          POSTGRES_DB: "speckle2_test"
+          REDIS_URL: "redis://localhost"
+          SESSION_SECRET: "keyboard cat"
+          STRATEGY_LOCAL: "true"
+          CANONICAL_URL: "http://localhost:3000"
+          WAIT_HOSTS: localhost:5432, localhost:6379
+          DISABLE_FILE_UPLOADS: "true"
+    steps:
+      - checkout
+      - run:
+          name: Unit Test
+          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - run:
+          name: Integration Tests # The integration tests are runinng on our test sevrer
+          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - store_test_results:
+          path: TestResults
+      - store_artifacts:
+          path: TestResults
+
+      - codecov/upload
+
+  build-objects:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: Restore Objects
+          command: nuget restore Objects/Objects.sln
+      - run:
+          name: Build Objects
+          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+
+  build-desktopui:
+    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: Build DesktopUI2
+          command: dotnet build DesktopUI2/DesktopUI2.sln -c Release -v q
+
+  build-connector: # Reusable job for basic connectors
+    executor:
+      name: win/default
+      shell: powershell.exe
+    parameters:
+      slnname:
+        type: string
+      dllname:
+        type: string
+      slug:
+        type: string
+        default: ""
+      installer:
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Restore << parameters.slnname >>
+          command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
+      - run:
+          name: Build << parameters.slnname >>
+          command: |
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0" } else { $env:CIRCLE_TAG }
+            $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
+            $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
+            $channel = if($semver.Contains('-')) {$semver.Split("-")[1] } else { "latest" }
+            $version = "$($ver).$($env:WORKFLOW_NUM)"
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver  
+            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+
+      - run: # Creates the inno installer
+          name: Build Installer
+          command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
+          shell: cmd.exe #does not work in powershell
+          environment:
+            SLUG: << parameters.slug >>
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - speckle-sharp-ci-tools/Installers
+
+  deploy-connector-new:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
+    parameters:
+      slug:
+        type: string
+      os:
+        type: string
+      extension:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Install Manager Feed CLI
+          command: dotnet tool install --global Speckle.Manager.Feed
+      - run:
+          name: Upload new version
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
+
+  build-connector-mac:
+    macos:
+      xcode: 12.5.1
+    parameters:
+      slnname:
+        type: string
+      projname:
+        type: string
+        default: ""
+      slug:
+        type: string
+        default: ""
+      installer:
+        type: boolean
+        default: false
+      converter-files:
+        type: string
+        default: ""
+      installername:
+        type: string
+        default: ""
+      build-config:
+        type: string
+        default: Release
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Install mono
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
+      - run:
+          name: Build << parameters.slnname >>
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            VER=$(echo "$SEMVER" | sed -e 's/-beta//')
+            VERSION=$(echo $VER.$WORKFLOW_NUM)
+            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+            CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
+            mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
+            if [ "${CIRCLE_TAG}" ]; then echo "version: $SEMVER" > "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$CHANNEL.yml"; fi
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+
+      # Compress build files
+      - run:
+          name: Install dotnet
+          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+      - run:
+          name: Zip Objects Kit files
+          command: |
+            zip -j Objects.zip << parameters.converter-files >>
+      - run:
+          name: Zip Connector files
+          command: |
+            cd << parameters.slnname >>/<< parameters.projname >>/bin/
+            zip -r <<parameters.slug>>.zip ./
+      # Create installer
+      - run:
+          name: Copy files to installer
+          command: |
+            mkdir -p speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles/
+            cp Objects.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+            cp << parameters.slnname >>/<< parameters.projname >>/bin/<<parameters.slug>>.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+      - run:
+          name: Build Mac installer
+          command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release
+      - run:
+          name: Zip installer
+          command: |
+            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/
+            zip -r <<parameters.slug>>.zip ./
+      - store_artifacts:
+          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip
+      - run:
+          name: Copy to installer location
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - speckle-sharp-ci-tools/Installers
+
+  get-ci-tools: # Clones our ci tools and persists them to the workspace
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - run: # Could not get ssh to work, so using a personal token
+          name: Clone
+          command: git clone https://$GITHUB_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - speckle-sharp-ci-tools
+
+  setup-archicad-dev: # get Archicad dev kit
+    executor:
+      name: win/default
+      shell: bash.exe
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: install cmake
+          command: |
+            choco install cmake
+      - run:
+          name: extract devkit
+          command: |
+            cd speckle-sharp-ci-tools/Resources
+            unzip Archicad25DevKit.zip -d Archicad25DevKit
+      - run:
+          name: cmake AddOn
+          command: |
+            cd ConnectorArchicad/AddOn
+            mkdir Build
+            export PATH=$PATH:"C:\Program Files\CMake\bin"
+            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+      - run:
+          name: msbuild AddOn
+          command: |
+            cd ConnectorArchicad/AddOn
+            "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe" "Build/Speckle Connector.sln" -property:Configuration=Release
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ConnectorArchicad/AddOn/Build
+
+  deploy-connectors: # Uploads all installers found to S3
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: List contents
+          command: ls -R speckle-sharp-ci-tools/Installers
+      - aws-s3/copy:
+          arguments: "--recursive --endpoint=https://$SPACES_REGION.digitaloceanspaces.com --acl public-read"
+          aws-access-key-id: SPACES_KEY
+          aws-region: SPACES_REGION
+          aws-secret-access-key: SPACES_SECRET
+          from: '"speckle-sharp-ci-tools/Installers/"'
+          to: s3://speckle-releases/installers/
+
+# The main workflows for our monorepo pipeline.
+# There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.
+# These parameters are set by the 'selective-ci' job.
+workflows:
+  build:
+    jobs:
+      - get-ci-tools
+      - build-core:
+          requires:
+            - get-ci-tools
+      - build-objects:
+          requires:
+            - build-core
+      - build-desktopui:
+          requires:
+            - build-core
+  nuget:
+    jobs:
+      # CORE Nuget Publish
+      - build-core:
+          name: nuget-deploy-core
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-core|nugets)?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: Core/Core.sln
+      - build-objects:
+          name: nuget-deploy-objects
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-objects|nugets)?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: Objects/Objects.sln
+      - build-desktopui:
+          name: nuget-deploy-desktopui
+          filters:
+            branches:
+              ignore: /.*/ # For testing only: /ci\/.*/
+            tags:
+              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-dui|nugets)?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj

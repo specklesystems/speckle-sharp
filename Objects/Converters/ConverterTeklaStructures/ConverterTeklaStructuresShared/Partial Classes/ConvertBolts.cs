@@ -135,7 +135,7 @@ namespace Objects.Converter.TeklaStructures
       GetAllUserProperties(speckleTeklaBolt, Bolts);
 
       var solid = Bolts.GetSolid();
-      speckleTeklaBolt.displayMesh = GetMeshFromSolid(solid);
+      speckleTeklaBolt.displayValue = new List<Mesh> { GetMeshFromSolid(solid) };
 
       return speckleTeklaBolt;
     }

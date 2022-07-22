@@ -35,7 +35,7 @@ namespace Objects.Converter.TeklaStructures
             GetAllUserProperties(speckleTeklaPolygonWeld, welds);
 
             var solid = welds.GetSolid();
-            speckleTeklaPolygonWeld.displayMesh = GetMeshFromSolid(solid);
+            speckleTeklaPolygonWeld.displayValue = new List<Mesh> { GetMeshFromSolid(solid) };
             return speckleTeklaPolygonWeld;
         }
     }

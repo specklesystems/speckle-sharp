@@ -41,7 +41,6 @@ namespace Objects.Converter.TeklaStructures
     public TeklaContourPlate ContourPlateToSpeckle(Tekla.Structures.Model.ContourPlate plate)
     {
       var specklePlate = new TeklaContourPlate();
-      var units = GetUnitsFromModel();
       specklePlate.name = plate.Name;
       specklePlate.profile = GetContourPlateProfile(plate.Profile.ProfileString);
       specklePlate.material = GetMaterial(plate.Material.MaterialString);
@@ -71,7 +70,7 @@ namespace Objects.Converter.TeklaStructures
       GetAllUserProperties(specklePlate, plate);
 
       var solid = plate.GetSolid();
-      specklePlate.displayMesh = GetMeshFromSolid(solid);
+      specklePlate.displayValue = new List<Mesh>{ GetMeshFromSolid(solid)};
       var rebars = plate.GetReinforcements();
       if (rebars != null)
       {

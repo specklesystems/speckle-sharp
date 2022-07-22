@@ -152,5 +152,11 @@ namespace Objects.Geometry
       vector = transform.ApplyToVector(this);
       return true;
     }
+
+    public bool TransformTo(Transform transform, out ITransformable transformed)
+    {
+      transformed = transform.ApplyToVector(this);
+      return true;
+    }
   }
 }

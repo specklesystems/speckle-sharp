@@ -363,3 +363,6 @@ ConnectorDynamo/ConnectorDynamo/dist/
 *.rhl
 
 speckle-sharp-ci-tools
+
+.circleci/continuation-config.yml
+.circleci/contiuation-config.yml

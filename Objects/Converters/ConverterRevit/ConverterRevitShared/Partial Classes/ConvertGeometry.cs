@@ -902,7 +902,7 @@ namespace Objects.Converter.Revit
       using var builder = new BRepBuilder(bRepType);
 
       builder.SetAllowShortEdges();
-
+      builder.AllowRemovalOfProblematicFaces();
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
       {

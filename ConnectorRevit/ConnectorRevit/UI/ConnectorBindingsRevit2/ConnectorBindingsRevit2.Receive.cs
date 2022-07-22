@@ -172,7 +172,6 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting);
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
-
       foreach (var @base in objects)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
