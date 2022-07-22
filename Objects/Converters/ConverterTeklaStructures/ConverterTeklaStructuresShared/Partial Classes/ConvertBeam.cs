@@ -146,7 +146,7 @@ namespace Objects.Converter.TeklaStructures
       GetAllUserProperties(speckleBeam, beam);
 
       var solid = beam.GetSolid();
-      speckleBeam.displayMesh = GetMeshFromSolid(solid);
+      speckleBeam.displayValue = new List<Mesh>{ GetMeshFromSolid(solid)};
       return speckleBeam;
     }
     /// <summary>

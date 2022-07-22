@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Speckle.Newtonsoft.Json;
+
 using Speckle.Core.Models;
 using Objects.Geometry;
 
@@ -8,7 +14,9 @@ namespace Objects.BuiltElements.TeklaStructures
 {
   public class Welds : Base
   {
-    public Mesh displayMesh { get; set; }
+
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
     public string mainObjectId { get; set; }
     public string secondaryObjectId { get; set; }
     public double sizeAbove { get; set; }
@@ -23,6 +31,15 @@ namespace Objects.BuiltElements.TeklaStructures
     public TeklaWeldType typeBelow { get; set; }
     public TeklaWeldIntermittentType intermittentType { get; set; }
 
+
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh
+    {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> { value };
+    }
+    #endregion
     public Welds() { }
 
   }
