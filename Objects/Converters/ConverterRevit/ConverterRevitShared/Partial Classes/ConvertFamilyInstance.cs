@@ -135,13 +135,14 @@ namespace Objects.Converter.Revit
               XYZ norm = new XYZ(0, 0, 0);
               familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
 
-#if REVIT2022
-            if (familySymbol.Family.GetParameter(ParameterTypeId.FamilyAllowCutWithVoids).AsInteger() == 1)
-              InstanceVoidCutUtils.AddInstanceVoidCut(Doc, wall, familyInstance);
+               // parameters
+              IList<Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
+              IList<Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
 
-            Parameter lvlParam = familyInstance.GetParameter(ParameterTypeId.InstanceScheduleOnlyLevelParam);
-            lvlParam.Set(level.Id);
-#endif
+              if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
+                InstanceVoidCutUtils.AddInstanceVoidCut(Doc, wall, familyInstance);
+              if (lvlParams.ElementAtOrDefault(0) != null)
+                lvlParams[0].Set(level.Id);
             }
 
           }
