@@ -70,6 +70,7 @@
             TextTrimming="CharacterEllipsis" />
           <sc:StreamDetails Grid.Row="1" />
         </Grid>
+        <!--  TEMPORARILY DISABLED  -->
         <m:FloatingButton
           Grid.Column="2"
           VerticalAlignment="Center"
@@ -77,6 +78,7 @@
           Background="Transparent"
           Classes="Mini"
           Command="{Binding ShareCommand}"
+          IsVisible="False"
           ToolTip.Tip="Share">
           <Button.Content>
             <icons:MaterialIcon
