@@ -103,7 +103,6 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_StructuralFoundation,
       BuiltInCategory.OST_StructuralFraming,
       BuiltInCategory.OST_PathRein,
-      BuiltInCategory.OST_Rebar,
       BuiltInCategory.OST_StructuralStiffener,
       BuiltInCategory.OST_StructuralTruss,
       BuiltInCategory.OST_SwitchSystem,
