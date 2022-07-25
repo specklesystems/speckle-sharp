@@ -117,7 +117,7 @@ namespace Objects.Converter.Revit
           {
             var res = ConvertToNative(obj);
             if (res is ApplicationObject apl)
-              appObj.Update(createdIds: apl.CreatedIds, convertedItem: apl.Converted);
+              appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
           }
           catch (Exception e)
           {
