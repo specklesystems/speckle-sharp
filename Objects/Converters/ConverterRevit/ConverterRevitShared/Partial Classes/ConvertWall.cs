@@ -124,7 +124,6 @@ namespace Objects.Converter.Revit
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
       
-      var placeholders = new List<ApplicationObject>() { appObj };
       appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }

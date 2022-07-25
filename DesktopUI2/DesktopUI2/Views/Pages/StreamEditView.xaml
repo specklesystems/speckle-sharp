@@ -166,11 +166,18 @@
                 Text="Report" />
             </StackPanel>
           </TabItem.Header>
-          <StackPanel Orientation="Vertical">
-            <ItemsControl
+      
+          <Grid
+            RowDefinitions="auto,*">
+            <ScrollViewer
+              IsVisible="{Binding !HasReportItems}"
+              Grid.Row="1">
+              <TextBlock
                 Margin="35,0,0,10"
-                Items="{Binding Log}" />
+                Text="{Binding Log}" />
+            </ScrollViewer>
             <m:Card
+              Grid.Row="0"
               IsVisible="{Binding HasReportItems}"
               Margin="5,10,5,10"
               Padding="0"
@@ -213,8 +220,9 @@
                 </TextBox.InnerLeftContent>
               </TextBox>
             </m:Card>
-            <uc:Report />
-          </StackPanel>
+            <uc:Report Grid.Row="1" />
+          </Grid>
+
         </TabItem>
 
       </TabControl>

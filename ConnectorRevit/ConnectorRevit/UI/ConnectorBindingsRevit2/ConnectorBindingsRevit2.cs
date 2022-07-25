@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -56,7 +57,24 @@ namespace Speckle.ConnectorRevit.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
+      if (selection != null)
+      {
+        if (!deselect)
+        {
+          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
+          if (currentSelection != null) currentSelection.AddRange(selection);
+          else currentSelection = selection;
+          CurrentDoc.Selection.SetElementIds(currentSelection);
+          CurrentDoc.ShowElements(currentSelection);
+        }
+        else
+        {
+          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
+          CurrentDoc.Selection.SetElementIds(updatedSelection);
+          CurrentDoc.ShowElements(updatedSelection);
+        }
+      }
     }
 
     public override List<StreamState> GetStreamsInFile()

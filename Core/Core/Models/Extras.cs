@@ -114,7 +114,7 @@ namespace Speckle.Core.Models
     public List<string> Log { get; set; } = new List<string>(); // conversion notes or other important info, exposed to user
 
     [JsonIgnore]
-    public List<object> Converted { get; set; } // the converted objects
+    public List<object> Converted { get; set; } = new List<object>();// the converted objects
 
     public ApplicationObject(string id, string type) 
     {
@@ -254,6 +254,9 @@ namespace Speckle.Core.Models
     {
       lock(OperationErrorsLock)
         OperationErrors.AddRange(report.OperationErrors);
+
+      lock (ConversionLogLock)
+        ConversionLog.AddRange(report.ConversionLog);
 
       // update report object notes
       foreach (var item in ReportObjects)

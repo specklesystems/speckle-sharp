@@ -253,13 +253,11 @@ namespace DesktopUI2.ViewModels
     {
       get { return (Progress.Report.ReportObjects == null || Progress.Report.ReportObjects.Count == 0) ? false : true; }
     }
-    public List<string> Log
+    public string Log
     {
       get
       {
-        List<string> logItems = new List<string> { Progress.Report.ConversionLogString };
-        logItems.AddRange(Progress.Report.ConversionLog);
-        return logItems;
+        return Progress.Report.ConversionLogString;
       }
     }
 

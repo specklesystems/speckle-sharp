@@ -15,7 +15,7 @@
   <Design.DataContext>
     <viewModels:DesignSavedStreamViewModel />
   </Design.DataContext>
-  <ScrollViewer Name="activityScroller">
+  <ScrollViewer>
     <ItemsControl Items="{Binding FilteredReport}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>

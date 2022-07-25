@@ -138,7 +138,6 @@ namespace Speckle.ConnectorRevit.UI
           state.ReceivedObjects = newPlaceholderObjects;
 
           t.Commit();
-          progress.Report.Merge(converter.Report);
         }
 
       });
@@ -193,10 +192,14 @@ namespace Speckle.ConnectorRevit.UI
 
           var convRes = converter.ConvertToNative(@base);
           if (convRes is ApplicationObject placeholder)
-            placeholders.Add(placeholder);
-          else if (convRes is List<ApplicationObject> placeholderList)
           {
-            placeholders.AddRange(placeholderList);
+            placeholders.Add(placeholder);
+            obj.Update(status: placeholder.Status, createdIds: placeholder.CreatedIds, converted: placeholder.Converted, log: placeholder.Log);
+            progress.Report.Log(obj);
+          } 
+          else
+          {
+
           }
         }
         catch (Exception e)

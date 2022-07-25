@@ -429,7 +429,7 @@ namespace SpeckleRhino
       if (obj is Base @base)
       {
         var speckleType = @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        var appObj = new ApplicationObject(@base.id, speckleType) { Container = layer };
+        var appObj = new ApplicationObject(@base.id, speckleType) { applicationId = @base.applicationId, Container = layer };
         if (Converter.CanConvertToNative(@base))
         {
           appObj.Convertible = true;
