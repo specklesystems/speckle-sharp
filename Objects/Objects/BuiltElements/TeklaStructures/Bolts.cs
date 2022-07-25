@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.Text;
 using Speckle.Core.Models;
 using Objects.Geometry;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Speckle.Newtonsoft.Json;
+
 
 namespace Objects.BuiltElements.TeklaStructures
 {
   public class Bolts : Base
   {
-    public Mesh displayMesh { get; set; }
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
+
     public Point firstPosition { get; set; }
     public Point secondPosition { get; set; }
 
@@ -21,6 +29,15 @@ namespace Objects.BuiltElements.TeklaStructures
     public List<Point> coordinates { get; set; }
     public List<string> boltedPartsIds { get; set; } = new List<string>(); // First guid is PartToBeBolted, second guid is PartToBoltTo, any others are OtherPartsToBolt
 
+
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh
+    {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> { value };
+    }
+    #endregion
     public Bolts() { }
 
   }

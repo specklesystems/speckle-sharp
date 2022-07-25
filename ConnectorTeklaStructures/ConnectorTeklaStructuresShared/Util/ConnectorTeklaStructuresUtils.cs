@@ -6,6 +6,8 @@ using Speckle.Core.Logging;
 using System.Linq;
 using Speckle.ConnectorTeklaStructures.UI;
 using Tekla.Structures.Model;
+using Speckle.Core.Models;
+
 namespace Speckle.ConnectorTeklaStructures.Util
 {
   class ConnectorTeklaStructuresUtils
@@ -37,6 +39,7 @@ namespace Speckle.ConnectorTeklaStructures.Util
       }
       return _categories;
     }
+        
 
     #region Get List Names
 

@@ -20,8 +20,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCableTray.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectTeklaMeshElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterialQuantities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRebar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBrace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBlock.cs" />
