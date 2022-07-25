@@ -31,31 +31,43 @@ namespace Objects.Converter.CSI
         Property1DToNative(element1D.property);
         Model.PropFrame.GetNameList(ref number, ref properties);
       }
+      Point end1node;
+      Point end2node;
       if (baseline != null)
       {
-        Point end1node = baseline.start;
-        Point end2node = baseline.end;
-        if (properties.Contains(element1D.property.name))
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
-        }
-        else
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
-        }
+        end1node = baseline.start;
+        end2node = baseline.end;
       }
       else
       {
-        Point end1node = element1D.end1Node.basePoint;
-        Point end2node = element1D.end2Node.basePoint;
-        if (properties.Contains(element1D.property.name))
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
-        }
-        else
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
-        }
+        end1node = element1D.end1Node.basePoint;
+        end2node = element1D.end2Node.basePoint;
+      }
+
+      if (properties.Contains(element1D.property.name))
+      {
+        Model.FrameObj.AddByCoord(
+          ScaleToNative(end1node.x, end1node.units),
+          ScaleToNative(end1node.y, end1node.units),
+          ScaleToNative(end1node.z, end1node.units),
+          ScaleToNative(end2node.x, end2node.units),
+          ScaleToNative(end2node.y, end2node.units),
+          ScaleToNative(end2node.z, end2node.units),
+          ref newFrame,
+          element1D.property.name
+        );
+      }
+      else
+      {
+        Model.FrameObj.AddByCoord(
+          ScaleToNative(end1node.x, end1node.units),
+          ScaleToNative(end1node.y, end1node.units),
+          ScaleToNative(end1node.z, end1node.units),
+          ScaleToNative(end2node.x, end2node.units),
+          ScaleToNative(end2node.y, end2node.units),
+          ScaleToNative(end2node.z, end2node.units),
+          ref newFrame
+        );
       }
 
       bool[] end1Release = null;
