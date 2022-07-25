@@ -313,6 +313,7 @@ namespace Objects.Converter.AutocadCivil
 
       return instance;
     }
+    
     public string BlockInstanceToNativeDB(BlockInstance instance, out BlockReference reference, bool AppendToModelSpace = true)
     {
       string result = null;
@@ -408,12 +409,31 @@ namespace Objects.Converter.AutocadCivil
           if (dynamicBlock != null) fullName = dynamicBlock.Name;
         }
 
+        var descriptiveProps = new List<string>();
         foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
-          curVisibilityName = prop.Value is double o ? o.ToString() : (string)prop.Value;
-        if (!string.IsNullOrEmpty(curVisibilityName)) fullName = $"{fullName}_{curVisibilityName}";
+          if (prop.VisibleInCurrentVisibilityState && !prop.ReadOnly && IsSimpleType(prop.Value, out string value))
+            descriptiveProps.Add(value);
+
+        if (descriptiveProps.Count > 0) fullName = $"{fullName}_{String.Join("_", descriptiveProps.ToArray())}";
       }
 
       return fullName;
+    }
+    private bool IsSimpleType(object value, out string stringValue)
+    {
+      stringValue = String.Empty;
+      var type = value.GetType();
+      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+      {
+        // nullable type, check if the nested type is simple.
+        return IsSimpleType(type.GetGenericArguments()[0], out stringValue);
+      }
+      if (type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal)))
+      {
+        stringValue = value.ToString();
+        return true;
+      }
+      return false;
     }
 
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
