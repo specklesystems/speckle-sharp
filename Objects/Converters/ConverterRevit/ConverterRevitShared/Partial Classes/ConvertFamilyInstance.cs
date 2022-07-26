@@ -164,6 +164,15 @@ namespace Objects.Converter.Revit
           {
             Report.ConversionErrors.Add(new Exception($"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}"));
           }
+          // try a catch all solution as a last resort
+          if (familyInstance == null)
+          {
+            try
+            {
+              familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+            }
+            catch { }
+          }
         }
         //Otherwise, proceed as normal.
         else
