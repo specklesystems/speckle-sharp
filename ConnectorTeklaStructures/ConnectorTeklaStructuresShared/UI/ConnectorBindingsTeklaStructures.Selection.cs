@@ -1,8 +1,11 @@
 ﻿using DesktopUI2;
+using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.UI
@@ -51,6 +54,16 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
             new ManualSelectionFilter(),
             };
+    }
+
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      throw new NotImplementedException();
+    }
+
+    public override void ResetDocument()
+    {
+      throw new NotImplementedException();
     }
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
