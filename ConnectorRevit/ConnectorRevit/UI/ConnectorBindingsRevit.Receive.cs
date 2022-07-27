@@ -97,7 +97,7 @@ namespace Speckle.ConnectorRevit.UI
           // needs to be set for editing to work 
           converter.SetPreviousContextObjects(previouslyReceiveObjects);
           // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList());
+          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationObject(x.id, ConnectorRevitUtils.SimplifySpeckleType(x.speckle_type)) { applicationId = x.applicationId }).ToList());
           var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)

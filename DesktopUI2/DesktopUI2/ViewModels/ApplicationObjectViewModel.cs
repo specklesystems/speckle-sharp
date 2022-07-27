@@ -14,13 +14,13 @@ namespace DesktopUI2.ViewModels
 {
   public class ApplicationObjectViewModel : ReactiveObject
   {
-    public List<string> Log { get; set; }
+    public string Log { get; set; }
     public List<string> ApplicationIds { get; set; }
     public string Name { get; set; }
     public string Id { get; set; }
     public string Icon { get; set; }
+    public string Color { get; set; } = "Gray";
     public string Status { get; set; }
-    public bool HasLog { get; set; } = false;
     public double Opacity { get; set; } = 1;
     public bool PreviewEnabled { get; set; } = true;
 
@@ -43,8 +43,7 @@ namespace DesktopUI2.ViewModels
 
       Id = item.OriginalId;
       Name = item.Descriptor;
-      Log = cleanLog.Count == 0 ? null : cleanLog;
-      HasLog = cleanLog.Count == 0 ? false : true;
+      Log = cleanLog.Count == 0 ? null : string.Join("\n", cleanLog);
       Status = item.Status.ToString();
       ApplicationIds = isReceiver ? item.CreatedIds : new List<string>() { item.OriginalId };
 
@@ -72,6 +71,7 @@ namespace DesktopUI2.ViewModels
           break;
         case ApplicationObject.State.Failed:
           Icon = "Cancel";
+          Color = "Red";
           Opacity = 0.6;
           break;
         default:

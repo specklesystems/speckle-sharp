@@ -35,9 +35,10 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private Base BraceToSpeckle(DB.FamilyInstance myFamily)
+    private Base BraceToSpeckle(DB.FamilyInstance myFamily, out List<string> notes)
     {
-      var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
+      notes = new List<string>();
+      var myBeam = BeamToSpeckle(myFamily, out notes) as RevitBeam;
 
       var myBrace = new RevitBrace()
       {

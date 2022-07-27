@@ -107,7 +107,6 @@ namespace Objects.Converter.Revit
       //speckleGridline.elementId = revitCurve.Id.ToString(); this would need a RevitGridLine element
       speckleGridline.applicationId = revitGridLine.UniqueId;
       speckleGridline.units = ModelUnits;
-      Report.Log($"Converted GridLine {revitGridLine.Id}");
       return speckleGridline;
     }
   }

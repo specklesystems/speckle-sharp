@@ -61,7 +61,7 @@ namespace ConverterRevitTests
       xru.RunInTransaction(() =>
       {
         converter.SetContextDocument(fixture.NewDoc);
-        native = converter.BrepToDirectShape(brep);
+        native = converter.BrepToDirectShape(brep, out List<string>notes);
       }, fixture.NewDoc).Wait();
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
@@ -87,7 +87,7 @@ namespace ConverterRevitTests
       if (!(geo.First() is Solid solid))
         throw new Exception("DS was not composed of a solid.");
       var converted = converter.BrepToSpeckle(solid, fixture.NewDoc);
-      var nativeconverted = converter.BrepToNative(converted);
+      var nativeconverted = converter.BrepToNative(converted, out List<string> notes);
       Assert.NotNull(nativeconverted);
     }
 

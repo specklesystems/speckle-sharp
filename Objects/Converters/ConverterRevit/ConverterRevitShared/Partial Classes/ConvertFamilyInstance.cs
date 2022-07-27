@@ -112,8 +112,9 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="revitFi"></param>
     /// <returns></returns>
-    public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi)
+    public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi, out List<string> notes)
     {
+      notes = new List<string>();
       if (!ShouldConvertHostedElement(revitFi, revitFi.Host))
         return null;
 
@@ -136,19 +137,19 @@ namespace Objects.Converter.Revit
       if (Categories.beamCategories.Contains(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
-          return BeamToSpeckle(revitFi);
+          return BeamToSpeckle(revitFi, out notes);
         else if (revitFi.StructuralType == StructuralType.Brace)
-          return BraceToSpeckle(revitFi);
+          return BraceToSpeckle(revitFi, out notes);
       }
 
       //columns
       if (Categories.columnCategories.Contains(revitFi.Category) || revitFi.StructuralType == StructuralType.Column)
-        return ColumnToSpeckle(revitFi);
+        return ColumnToSpeckle(revitFi, out notes);
 
       var baseGeometry = LocationToSpeckle(revitFi);
       var basePoint = baseGeometry as Point;
       if (basePoint == null)
-        return RevitElementToSpeckle(revitFi);
+        return RevitElementToSpeckle(revitFi, out notes);
 
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
       var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
@@ -207,7 +208,6 @@ namespace Objects.Converter.Revit
 
       // TODO:
       // revitFi.GetSubelements();
-      Report.Log($"Converted FamilyInstance {revitFi.Id}");
       return speckleFi;
     }
 

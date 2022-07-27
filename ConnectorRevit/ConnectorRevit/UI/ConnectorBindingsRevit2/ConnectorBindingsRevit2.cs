@@ -21,6 +21,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public Timer SelectionTimer;
 
+    public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
 
     public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
 
@@ -72,7 +73,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
           CurrentDoc.Selection.SetElementIds(updatedSelection);
-          CurrentDoc.ShowElements(updatedSelection);
+          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
         }
       }
     }

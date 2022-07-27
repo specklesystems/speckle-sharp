@@ -68,12 +68,13 @@ namespace Objects.Converter.Revit
 
       speckleDs.baseGeometries.ToList().ForEach(b =>
       {
+        var notes = new List<string>();
         switch (b)
         {
           case Brep brep:
             try
             {
-              var solid = BrepToNative(brep);
+              var solid = BrepToNative(brep, out notes);
               converted.Add(solid);
             }
             catch (Exception e)
@@ -133,7 +134,8 @@ namespace Objects.Converter.Revit
 
       try
       {
-        var solid = BrepToNative(brep);
+        var solid = BrepToNative(brep, out List<string> notes);
+        if (notes.Count > 0) appObj.Update(log: notes);
         if (solid == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "brep returned null");

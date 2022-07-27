@@ -30,7 +30,6 @@ namespace Objects.Converter.Revit
       GetHostedElements(speckleCeiling, revitCeiling);
 
       speckleCeiling.displayValue = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      Report.Log($"Converted BuildingPad {revitCeiling.Id}");
 
       return speckleCeiling;
     }

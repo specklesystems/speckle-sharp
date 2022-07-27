@@ -26,7 +26,8 @@ namespace Objects.Converter.Revit
           case Brep brep:
             try
             {
-              var solid = BrepToNative(geom as Brep);
+              var solid = BrepToNative(geom as Brep, out List<string> brepNotes);
+              if (brepNotes.Count > 0) appObj.Update(log: brepNotes);
               solids.Add(solid);
             }
             catch (Exception e)
@@ -71,7 +72,8 @@ namespace Objects.Converter.Revit
       var solids = new List<DB.Solid>();
       try
       {
-        var solid = BrepToNative(brep);
+        var solid = BrepToNative(brep, out List<string> brepNotes);
+        if (brepNotes.Count > 0) appObj.Update(log: brepNotes);
         solids.Add(solid);
       }
       catch (Exception e)
@@ -122,7 +124,8 @@ namespace Objects.Converter.Revit
       var solids = new List<DB.Solid>();
       try
       {
-        var solid = BrepToNative(brep);
+        var solid = BrepToNative(brep, out List<string> brepNotes);
+        if (brepNotes.Count > 0) appObj.Update(log: brepNotes);
         solids.Add(solid);
       }
       catch (Exception e)
@@ -130,8 +133,8 @@ namespace Objects.Converter.Revit
         solids.AddRange(GetSolidMeshes(brep.displayValue));
       }
 
-      var tempPath = CreateFreeformElementFamily(solids, brep.id, out List<string> notes);
-      appObj.Update(log: notes);
+      var tempPath = CreateFreeformElementFamily(solids, brep.id, out List<string> freeformNotes);
+      if (freeformNotes.Count > 0) appObj.Update(log: freeformNotes);
       if (tempPath == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);

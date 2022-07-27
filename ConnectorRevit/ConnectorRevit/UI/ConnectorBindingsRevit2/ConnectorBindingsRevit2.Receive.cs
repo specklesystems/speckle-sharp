@@ -223,8 +223,7 @@ namespace Speckle.ConnectorRevit.UI
 
       if (obj is Base @base)
       {
-        var speckleType = @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-        var appObj = new ApplicationObject(@base.id, speckleType) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+        var appObj = new ApplicationObject(@base.id, ConnectorRevitUtils.SimplifySpeckleType(@base.speckle_type)){ applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
 
         if (converter.CanConvertToNative(@base))
         {

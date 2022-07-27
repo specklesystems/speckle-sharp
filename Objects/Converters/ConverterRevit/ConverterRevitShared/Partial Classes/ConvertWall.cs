@@ -128,11 +128,12 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    public Base WallToSpeckle(DB.Wall revitWall)
+    public Base WallToSpeckle(DB.Wall revitWall, out List<string> notes)
     {
+      notes = new List<string>();
       var baseGeometry = LocationToSpeckle(revitWall);
       if (baseGeometry is Geometry.Point)
-        return RevitElementToSpeckle(revitWall);
+        return RevitElementToSpeckle(revitWall, out notes);
 
       RevitWall speckleWall = new RevitWall();
       speckleWall.family = revitWall.WallType.FamilyName.ToString();
@@ -153,7 +154,7 @@ namespace Objects.Converter.Revit
           var wallMembers = revitWall.GetStackedWallMemberIds().Select(id => (Wall)revitWall.Document.GetElement(id));
           speckleWall.elements = new List<Base>();
           foreach (var wall in wallMembers)
-            speckleWall.elements.Add(WallToSpeckle(wall));
+            speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
         }
 
         speckleWall.displayValue = GetElementDisplayMesh(revitWall,
@@ -189,7 +190,6 @@ namespace Objects.Converter.Revit
       });
 
       GetHostedElements(speckleWall, revitWall);
-      Report.Log($"Converted Wall {revitWall.Id}");
 
       return speckleWall;
     }

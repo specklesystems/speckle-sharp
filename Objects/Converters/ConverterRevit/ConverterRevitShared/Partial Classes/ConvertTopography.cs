@@ -66,7 +66,6 @@ namespace Objects.Converter.Revit
       var speckleTopo = new RevitTopography();
       speckleTopo.displayValue = GetElementMesh(revitTopo);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
-      Report.Log($"Converted Topography {revitTopo.Id}");
       return speckleTopo;
     }
   }

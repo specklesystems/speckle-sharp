@@ -192,8 +192,9 @@ namespace Objects.Converter.Revit
 
     }
 
-    public Base ColumnToSpeckle(DB.FamilyInstance revitColumn)
+    public Base ColumnToSpeckle(DB.FamilyInstance revitColumn, out List<string> notes)
     {
+      notes = new List<string>();
       var symbol = revitColumn.Document.GetElement(revitColumn.GetTypeId()) as FamilySymbol;
 
       var speckleColumn = new RevitColumn();
@@ -220,7 +221,7 @@ namespace Objects.Converter.Revit
       }
 
       if (baseLine == null)
-        return RevitElementToSpeckle(revitColumn);
+        return RevitElementToSpeckle(revitColumn, out notes);
 
       speckleColumn.baseLine = baseLine; //all speckle columns should be line based
 

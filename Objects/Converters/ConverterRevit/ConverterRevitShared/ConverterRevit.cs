@@ -102,6 +102,8 @@ namespace Objects.Converter.Revit
     public Base ConvertToSpeckle(object @object)
     {
       Base returnObject = null;
+      List<string> notes = new List<string>();
+      string id = @object is Element element ? element.UniqueId : string.Empty;
       switch (@object)
       {
         case DB.Document o:
@@ -114,7 +116,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = FamilyInstanceToSpeckle(o);
+          returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o);
@@ -153,14 +155,13 @@ namespace Objects.Converter.Revit
           returnObject = TopographyToSpeckle(o);
           break;
         case DB.Wall o:
-          returnObject = WallToSpeckle(o);
+          returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = DuctToSpeckle(o);
+          returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
           returnObject = DuctToSpeckle(o);
-          Report.Log($"Converted FlexDuct {o.Id}");
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
@@ -170,7 +171,6 @@ namespace Objects.Converter.Revit
           break;
         case DB.Plumbing.FlexPipe o:
           returnObject = PipeToSpeckle(o);
-          Report.Log($"Converted FlexPipe {o.Id}");
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
@@ -246,12 +246,9 @@ namespace Objects.Converter.Revit
           var el = @object as Element;
           if (el.IsElementSupported())
           {
-            returnObject = RevitElementToSpeckle(el);
-            Report.Log($"Converted {el.Category.Name} {el.Id}");
+            returnObject = RevitElementToSpeckle(el, out notes);
             break;
           }
-
-          Report.Log($"Skipped not supported type: {@object.GetType()}{GetElemInfo(@object)}");
           returnObject = null;
           break;
       }
@@ -291,6 +288,11 @@ namespace Objects.Converter.Revit
           Report.Log(e.Message);
         }
       }
+
+      // log 
+      var logItem = ContextObjects.Where(o => o.OriginalId == id).FirstOrDefault();
+      if (logItem != null && notes.Count > 0)
+        logItem.Update(log: notes);
 
       return returnObject;
     }

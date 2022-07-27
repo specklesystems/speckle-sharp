@@ -101,14 +101,15 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    private Base BeamToSpeckle(DB.FamilyInstance revitBeam)
+    private Base BeamToSpeckle(DB.FamilyInstance revitBeam, out List<string> notes)
     {
+      notes = new List<string>();
       var baseGeometry = LocationToSpeckle(revitBeam);
       var baseLine = baseGeometry as ICurve;
       if (baseLine == null)
       {
-        Report.Log($"Beam has no valid baseline, converting as generic element {revitBeam.Id}");
-        return RevitElementToSpeckle(revitBeam);
+        notes.Add($"Beam has no valid baseline, converting as generic element");
+        return RevitElementToSpeckle(revitBeam, out notes);
       }
       var symbol = revitBeam.Document.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
 
@@ -121,7 +122,6 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
-      Report.Log($"Converted Beam {revitBeam.Id}");
       return speckleBeam;
     }
   }

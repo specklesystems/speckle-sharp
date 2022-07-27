@@ -428,7 +428,7 @@ namespace SpeckleRhino
 
       if (obj is Base @base)
       {
-        var speckleType = @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        var speckleType =  @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         var appObj = new ApplicationObject(@base.id, speckleType) { applicationId = @base.applicationId, Container = layer };
         if (Converter.CanConvertToNative(@base))
         {
@@ -681,7 +681,7 @@ namespace SpeckleRhino
           converted = Converter.ConvertToSpeckle(obj);
           if (converted == null)
           {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion of {obj.ObjectType} returned Null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
             progress.Report.Log(reportObj);
             continue;
           }

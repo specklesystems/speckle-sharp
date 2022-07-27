@@ -136,7 +136,6 @@ namespace Objects.Converter.Revit
       speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleFloor, revitFloor);
-      Report.Log($"Converted Floor {revitFloor.Id}");
       return speckleFloor;
     }
 

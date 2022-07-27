@@ -107,7 +107,6 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleLevel, revitLevel);
 
-      Report.Log($"Converted Level {revitLevel.Id}");
       return speckleLevel;
     }
 

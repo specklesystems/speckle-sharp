@@ -20,7 +20,6 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
-      Report.Log($"Converted ModelCurve {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -147,7 +146,6 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
-      Report.Log($"Converted DetailCurve {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -198,7 +196,6 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
-      Report.Log($"Converted RoomBoundaryLine {revitCurve.Id}");
       return speckleCurve;
     }
 
@@ -237,7 +234,6 @@ namespace Objects.Converter.Revit
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
-      Report.Log($"Converted SpaceSeparationLine {revitCurve.Id}");
       return speckleCurve;
     }
 

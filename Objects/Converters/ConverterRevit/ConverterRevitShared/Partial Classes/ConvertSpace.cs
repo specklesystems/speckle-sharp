@@ -109,7 +109,6 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 
       speckleSpace.displayValue = GetElementDisplayMesh(revitSpace);
-      Report.Log($"Converted Space {revitSpace.Id}");
 
       return speckleSpace;
     }

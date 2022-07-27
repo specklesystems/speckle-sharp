@@ -12,8 +12,6 @@ using Objects.Structural.Materials;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
-
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
@@ -30,7 +28,6 @@ namespace Objects.Converter.Revit
       appObj = BeamToNative(revitBeam);
       //DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)placeholders[0].NativeObject;
       return appObj;
-
     }
   }
 }

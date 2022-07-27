@@ -188,7 +188,6 @@ namespace Objects.Converter.Revit
       speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleRoof, revitRoof);
-      Report.Log($"Converted Roof {revitRoof.Id}");
       return speckleRoof;
     }
 
