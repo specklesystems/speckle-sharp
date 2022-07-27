@@ -305,11 +305,27 @@ namespace Speckle.Core.Models
   {
     public string fileName { get; set; }
     public string fileType { get; set; }
-    public string filePath { get; set; }
+
+
+    private string _hash;
+    private bool hashExpired = true;
+
+    private string _filePath;
+    public string filePath { get => _filePath; set { _filePath = value; hashExpired = true; } }
+
+    /// <summary>
+    /// For blobs, the id is the same as the file hash. 
+    /// </summary>
+    public override string id { get => GetFileHash(); set => base.id = value; }
 
     public string GetFileHash()
     {
-      return Utilities.hashFile(filePath);
+      if((hashExpired || _hash == null) && filePath != null)
+      {
+        _hash = Utilities.hashFile(filePath);
+      }
+
+      return _hash;
     }
 
   }

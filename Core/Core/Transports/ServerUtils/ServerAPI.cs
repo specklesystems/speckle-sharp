@@ -335,21 +335,20 @@ namespace Speckle.Core.Transports.ServerUtils
       // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
     }
 
-    public async Task<List<string>> UploadBlobs(string streamId, List<(string, string)> blobs)
+    public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
     {
-      // TODO
       var multipartFormDataContent = new MultipartFormDataContent();
-      var streams = new List<FileStream>();
-      foreach (var (_, filePath) in blobs)
+      var streams = new List<Stream>();
+      foreach (var (id, filePath) in blobs)
       {
         var fileName = Path.GetFileName(filePath);
         var fileExt = Path.GetExtension(filePath);
         var stream = File.OpenRead(filePath);
         streams.Add(stream);
         var fsc = new StreamContent(stream);
-        var hash = new Blob() { filePath = filePath }.GetFileHash();
+        var hash = id.Split(':')[1];
 
-        multipartFormDataContent.Add(fsc, hash, fileName);
+        multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
       }
 
       var message = new HttpRequestMessage()
@@ -365,15 +364,16 @@ namespace Speckle.Core.Transports.ServerUtils
         while (ShouldRetry(response))
           response = await Client.SendAsync(message, CancellationToken);
         response.EnsureSuccessStatusCode();
+        //var responseString = await response.Content.ReadAsStringAsync();
+        //var parsed = JsonConvert.DeserializeObject<BlobUploadResult>(responseString);
+
+        foreach (var stream in streams) stream.Dispose();
       }
       catch (Exception ex)
       {
-        var copy = ex;
-        foreach (var stream in streams)
-          stream.Dispose();
+        foreach (var stream in streams) stream.Dispose();
         throw ex;
       }
-      return new List<string>() { "foo", "bar" };
     }
 
     private bool ShouldRetry(HttpResponseMessage serverResponse)
@@ -391,6 +391,18 @@ namespace Speckle.Core.Transports.ServerUtils
     public void Dispose()
     {
       Client.Dispose();
+    }
+
+    private class BlobUploadResult
+    {
+      public List<BlobUploadResultItem> uploadResults { get; set; }
+    }
+
+    private class BlobUploadResultItem
+    {
+      public string blobId { get; set; }
+      public string formKey { get; set; }
+      public string fileName { get; set; }
     }
   }
 

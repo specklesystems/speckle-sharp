@@ -39,6 +39,7 @@ namespace TestsIntegration
 
       var test = objectId;
       Assert.IsNotNull(test);
+
     }
 
     [Test]
@@ -47,6 +48,9 @@ namespace TestsIntegration
       var myObject = Fixtures.GenerateSimpleObject();
       myObject["blob"] = Fixtures.GenerateBlob();
       var objectId = await Operations.Send(myObject, new List<ITransport> { transport });
+
+      var receivedObject = await Operations.Receive(objectId, transport, );
+      var cp = receivedObject;
     }
   }
 }

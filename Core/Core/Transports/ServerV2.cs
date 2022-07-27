@@ -45,6 +45,8 @@ namespace Speckle.Core.Transports
     private bool IsWriteComplete = false;
     private Thread SendingThread = null;
     private object SendBufferLock = new object();
+
+    // TODO: make send buffer more flexible to accept blobs too, otherwise we'll be computing blob hashes twice
     private List<(string, string)> SendBuffer = new List<(string, string)>();
 
     private bool ErrorState = false;
@@ -93,7 +95,11 @@ namespace Speckle.Core.Transports
         try
         {
           string rootObjectJson = await api.DownloadSingleObject(StreamId, id);
-          List<string> childrenIds = ParseChildrenIds(rootObjectJson);
+          List<string> allIds = ParseChildrenIds(rootObjectJson);
+
+          List<string> childrenIds = allIds.Where(id => !id.Contains("blob:")).ToList();
+          List<string> blobIds = allIds.Where(id => id.Contains("blob:")).ToList();
+
           onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
 
           // Check which children are not already in the local transport
@@ -164,11 +170,13 @@ namespace Speckle.Core.Transports
     {
       if (String.IsNullOrEmpty(StreamId) || obj == null)
         throw new Exception("Invalid parameters to SaveBlob");
+      var hash = obj.GetFileHash();
+
       lock (SendBufferLock)
       {
         if (ErrorState)
           return;
-        SendBuffer.Add(("blob", obj.filePath));
+        SendBuffer.Add(($"blob:{hash}", obj.filePath));
       }
     }
 
@@ -273,8 +281,8 @@ namespace Speckle.Core.Transports
         }
         try
         {
-          List<(string,string)> bufferObjects = buffer.Where(tuple => tuple.Item1 != "blob").ToList();
-          List<(string,string)> bufferBlobs = buffer.Where(tuple => tuple.Item1 == "blob").ToList();
+          List<(string,string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList(); // TODO: probably not efficient, see note on send buffer prop
+          List<(string,string)> bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
 
           List<string> objectIds = new List<string>(bufferObjects.Count);
 

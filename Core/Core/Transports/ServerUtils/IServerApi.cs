@@ -17,6 +17,6 @@ namespace Speckle.Core.Transports.ServerUtils
 
     public Task UploadObjects(string streamId, List<(string, string)> objects);
 
-    public Task<List<string>> UploadBlobs(string streamId, List<(string, string)> objects);
+    public Task UploadBlobs(string streamId, List<(string, string)> objects);
   }
 }
