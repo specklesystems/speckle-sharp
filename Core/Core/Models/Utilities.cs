@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -33,6 +34,19 @@ namespace Speckle.Core.Models
         default:
           return Utilities.md5(input).Substring(0, HashLength);
 
+      }
+    }
+
+    public static string hashFile(string filePath, HashingFuctions func = HashingFuctions.SHA256)
+    {
+      HashAlgorithm hashAlgorithm = SHA256.Create();
+      if (func == HashingFuctions.MD5)
+        hashAlgorithm = MD5.Create();
+
+      using (var stream = File.OpenRead(filePath))
+      {
+        var hash = hashAlgorithm.ComputeHash(stream);
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
       }
     }
 

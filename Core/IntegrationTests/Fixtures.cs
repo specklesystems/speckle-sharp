@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using System.Text;
-using System.Net.Mime;
+using Speckle.Core.Models;
 
 namespace TestsIntegration
 {
@@ -67,6 +66,36 @@ namespace TestsIntegration
       acc.userInfo.id = user1.id;
 
       return acc;
+    }
+
+    public static Base GenerateSimpleObject()
+    {
+      var @base = new Base();
+      @base["foo"] = "foo";
+      @base["bar"] = "bar";
+      @base["baz"] = "baz";
+
+      return @base;
+    }
+
+    public static Base GenerateNestedObject()
+    {
+      var @base = new Base();
+      @base["foo"] = "foo";
+      @base["bar"] = "bar";
+      @base["@baz"] = new Base();
+      ((Base)@base["@baz"])["mux"] = "mux";
+      ((Base)@base["@baz"])["qux"] = "qux";
+
+      return @base;
+    }
+
+    public static Blob GenerateBlob()
+    {
+      var blob = new Blob();
+      // TODO: remove local file dependency
+      blob.filePath = Path.Combine("/Users/dim/Downloads", "email-header.png");
+      return blob;
     }
   }
 

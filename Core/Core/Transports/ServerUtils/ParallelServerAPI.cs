@@ -14,6 +14,7 @@ namespace Speckle.Core.Transports.ServerUtils
     DownloadObjects,
     HasObjects,
     UploadObjects,
+    UploadBlobs,
     _NoOp
   }
 
@@ -127,6 +128,12 @@ namespace Speckle.Core.Transports.ServerUtils
                 // TODO: pass errors?
                 tcs.SetResult(null);
                 break;
+              case ServerApiOperation.UploadBlobs:
+                (string ubStreamId, List<(string, string)> ubBlobs) = ((string, List<(string, string)>))inputValue;
+                api.UploadBlobs(ubStreamId, ubBlobs).Wait();
+                tcs.SetResult(null);
+                break;
+
             }
           }
           catch (Exception e)
@@ -253,6 +260,14 @@ namespace Speckle.Core.Transports.ServerUtils
       }
       await Task.WhenAll(tasks.ToArray());
       // Console.WriteLine($"ParallelServerApi::UploadObjects({objects.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
+    }
+
+    public async Task<List<string>> UploadBlobs(string streamId, List<(string, string)> blobs)
+    {
+      EnsureStarted();
+      Task<object> op = QueueOperation(ServerApiOperation.UploadBlobs, (streamId, blobs));
+      object result = await op;
+      return result as List<string>;
     }
 
     public void Dispose()
