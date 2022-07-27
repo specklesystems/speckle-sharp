@@ -186,7 +186,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
     #endregion
 
@@ -841,17 +841,18 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
     public override void ResetDocument()
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      return null;
+      // TODO!
     }
     #endregion
   }

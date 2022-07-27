@@ -69,7 +69,7 @@ namespace Speckle.ConnectorCSI.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     private List<string> GetSelectionFilterObjects(ISelectionFilter filter)

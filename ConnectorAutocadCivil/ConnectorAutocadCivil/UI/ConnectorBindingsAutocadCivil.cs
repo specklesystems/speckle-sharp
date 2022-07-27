@@ -140,12 +140,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override void ResetDocument()
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     #endregion
@@ -153,7 +153,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #region receiving 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      return null;
+      // TODO!
     }
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
@@ -496,7 +497,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #region sending
     public override async void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {

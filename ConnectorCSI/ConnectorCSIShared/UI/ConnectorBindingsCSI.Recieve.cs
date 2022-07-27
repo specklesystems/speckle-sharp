@@ -18,7 +18,8 @@ namespace Speckle.ConnectorCSI.UI
   {
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      return null;
+      // TODO!
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)

@@ -27,12 +27,11 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
       //var converter = new ConverterTeklaStructures();
       var converter = kit.LoadConverter(ConnectorTeklaStructuresUtils.TeklaStructuresAppName);

@@ -58,17 +58,18 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      return null;
+      // TODO!
     }
 
     public override void ResetDocument()
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     private List<ModelObject> GetSelectionFilterObjects(ISelectionFilter filter)

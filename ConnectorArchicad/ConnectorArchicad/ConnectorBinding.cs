@@ -89,7 +89,7 @@ namespace Archicad.Launcher
 
     public override void ResetDocument()
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override List<ReceiveMode> GetReceiveModes()
@@ -99,16 +99,15 @@ namespace Archicad.Launcher
 
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      return null;
+      // TODO!
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
       if (commitObject is null)
-      {
         return null;
-      }
 
       state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, progress.CancellationTokenSource.Token);
 
@@ -117,12 +116,12 @@ namespace Archicad.Launcher
 
     public override void SelectClientObjects(List<string> args, bool deselect = false) 
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {

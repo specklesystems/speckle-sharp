@@ -100,7 +100,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override void ResetDocument()
     {
-      throw new NotImplementedException();
+      // TODO!
     }
   }
 }

@@ -260,7 +260,7 @@ namespace DesktopUI2
 
     public override void SelectClientObjects(List<string> objs, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)

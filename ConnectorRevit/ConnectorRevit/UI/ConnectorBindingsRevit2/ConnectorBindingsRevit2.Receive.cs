@@ -24,7 +24,8 @@ namespace Speckle.ConnectorRevit.UI
 
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      return null;
+      // TODO!
     }
 
     /// <summary>

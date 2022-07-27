@@ -484,7 +484,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
     public override void SelectClientObjects(string args)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     delegate void SetContextDelegate(object session);

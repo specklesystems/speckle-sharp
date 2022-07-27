@@ -19,12 +19,11 @@ namespace Speckle.ConnectorCSI.UI
   {
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
       //var converter = new ConverterCSI();
       var appName = GetHostAppVersion(Model);
