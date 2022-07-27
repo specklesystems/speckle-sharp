@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 
@@ -96,7 +97,7 @@ namespace Speckle.Core.Transports.ServerUtils
       }
 
       List<string> crtRequest = new List<string>();
-      foreach(string id in objectIds)
+      foreach (string id in objectIds)
       {
         if (crtRequest.Count >= BATCH_SIZE_GET_OBJECTS)
         {
@@ -162,7 +163,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
       Dictionary<string, bool> ret = new Dictionary<string, bool>();
       List<string> crtBatch = new List<string>(BATCH_SIZE_HAS_OBJECTS);
-      foreach(string objectId in objectIds)
+      foreach (string objectId in objectIds)
       {
         crtBatch.Add(objectId);
         if (crtBatch.Count >= BATCH_SIZE_HAS_OBJECTS)
@@ -202,7 +203,7 @@ namespace Speckle.Core.Transports.ServerUtils
       Dictionary<string, bool> hasObjects = new Dictionary<string, bool>();
 
       JObject doc = JObject.Parse(hasObjectsJson);
-      foreach(KeyValuePair<string, JToken> prop in doc)
+      foreach (KeyValuePair<string, JToken> prop in doc)
         hasObjects[prop.Key] = (bool)prop.Value;
 
       // Console.WriteLine($"ServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
@@ -222,7 +223,7 @@ namespace Speckle.Core.Transports.ServerUtils
       List<(string, string)> crtMultipart = new List<(string, string)>();
       int crtMultipartSize = 0;
 
-      foreach((string id, string json) in objects)
+      foreach ((string id, string json) in objects)
       {
         int objSize = Encoding.UTF8.GetByteCount(json);
         if (objSize > MAX_OBJECT_SIZE)
@@ -321,7 +322,7 @@ namespace Speckle.Core.Transports.ServerUtils
       }
       message.Content = multipart;
       HttpResponseMessage response = null;
-      while(ShouldRetry(response))
+      while (ShouldRetry(response))
         response = await Client.SendAsync(message, CancellationToken);
       response.EnsureSuccessStatusCode();
 
@@ -332,6 +333,47 @@ namespace Speckle.Core.Transports.ServerUtils
       //   totalObjCount += ttt.Count;
       // }
       // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
+    }
+
+    public async Task<List<string>> UploadBlobs(string streamId, List<(string, string)> blobs)
+    {
+      // TODO
+      var multipartFormDataContent = new MultipartFormDataContent();
+      var streams = new List<FileStream>();
+      foreach (var (_, filePath) in blobs)
+      {
+        var fileName = Path.GetFileName(filePath);
+        var fileExt = Path.GetExtension(filePath);
+        var stream = File.OpenRead(filePath);
+        streams.Add(stream);
+        var fsc = new StreamContent(stream);
+        var hash = new Blob() { filePath = filePath }.GetFileHash();
+
+        multipartFormDataContent.Add(fsc, hash, fileName);
+      }
+
+      var message = new HttpRequestMessage()
+      {
+        RequestUri = new Uri($"/api/stream/{streamId}/blob", UriKind.Relative),
+        Method = HttpMethod.Post,
+        Content = multipartFormDataContent
+      };
+
+      try
+      {
+        HttpResponseMessage response = null;
+        while (ShouldRetry(response))
+          response = await Client.SendAsync(message, CancellationToken);
+        response.EnsureSuccessStatusCode();
+      }
+      catch (Exception ex)
+      {
+        var copy = ex;
+        foreach (var stream in streams)
+          stream.Dispose();
+        throw ex;
+      }
+      return new List<string>() { "foo", "bar" };
     }
 
     private bool ShouldRetry(HttpResponseMessage serverResponse)

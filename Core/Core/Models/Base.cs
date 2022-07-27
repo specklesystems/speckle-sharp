@@ -127,16 +127,16 @@ namespace Speckle.Core.Models
           int chunkSize = -1;
           var match = chunkSyntax.Match(propName);
           int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
-          
+
           var asList = @base[propName] as IList;
-          if(chunkSize != -1 && asList != null)
+          if (chunkSize != -1 && asList != null)
           {
             count += asList.Count / chunkSize;
             continue;
           }
 
           var asArr = @base[propName] as Array;
-          if(chunkSize != -1 && asArr != null)
+          if (chunkSize != -1 && asArr != null)
           {
             count += asArr.Length / chunkSize;
             continue;
@@ -284,5 +284,19 @@ namespace Speckle.Core.Models
         return __type;
       }
     }
+  }
+
+
+  public class Blob : Base
+  {
+    public string fileName { get; set; }
+    public string fileType { get; set; }
+    public string filePath { get; set; }
+
+    public string GetFileHash()
+    {
+      return Utilities.hashFile(filePath);
+    }
+
   }
 }

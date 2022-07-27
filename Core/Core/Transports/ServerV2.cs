@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Transports.ServerUtils;
 using Speckle.Newtonsoft.Json.Linq;
 
@@ -18,7 +20,7 @@ namespace Speckle.Core.Transports
     }
   }
 
-  public class ServerTransportV2 : IDisposable, ICloneable, ITransport
+  public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapableTransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
     public CancellationToken CancellationToken { get; set; }
@@ -37,18 +39,27 @@ namespace Speckle.Core.Transports
 
     public ParallelServerApi Api { get; private set; }
 
+    public string BlobStorageFolder { get; set; }
+
     private bool ShouldSendThreadRun = false;
     private bool IsWriteComplete = false;
     private Thread SendingThread = null;
     private object SendBufferLock = new object();
     private List<(string, string)> SendBuffer = new List<(string, string)>();
+
     private bool ErrorState = false;
 
-    public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60)
+    public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60, string blobStorageFolder = null)
     {
       Account = account;
       CancellationToken = CancellationToken.None;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
+
+      if(blobStorageFolder == null)
+      {
+        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Blobs");
+      }
+      Directory.CreateDirectory(BlobStorageFolder);
     }
 
     private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
@@ -149,6 +160,23 @@ namespace Speckle.Core.Transports
       SaveObject(id, sourceTransport.GetObject(id));
     }
 
+    public void SaveBlob(Blob obj)
+    {
+      if (String.IsNullOrEmpty(StreamId) || obj == null)
+        throw new Exception("Invalid parameters to SaveBlob");
+      lock (SendBufferLock)
+      {
+        if (ErrorState)
+          return;
+        SendBuffer.Add(("blob", obj.filePath));
+      }
+    }
+
+    public void GetBlob(Blob obj)
+    {
+      throw new NotImplementedException();
+    }
+
     public void BeginWrite()
     {
       if (ShouldSendThreadRun || SendingThread != null)
@@ -245,23 +273,36 @@ namespace Speckle.Core.Transports
         }
         try
         {
-          List<string> objectIds = new List<string>(buffer.Count);
-          foreach ((string id, string json) in buffer)
-            objectIds.Add(id);
+          List<(string,string)> bufferObjects = buffer.Where(tuple => tuple.Item1 != "blob").ToList();
+          List<(string,string)> bufferBlobs = buffer.Where(tuple => tuple.Item1 == "blob").ToList();
+
+          List<string> objectIds = new List<string>(bufferObjects.Count);
+
+          foreach ((string id, string json) in bufferObjects)
+          {
+            if (id != "blob")
+            {
+              objectIds.Add(id);
+            }
+          }
 
           Dictionary<string, bool> hasObjects = await Api.HasObjects(StreamId, objectIds);
-
           List<(string, string)> newObjects = new List<(string, string)>();
-          foreach ((string id, string json) in buffer)
+          foreach ((string id, string json) in bufferObjects)
+          {
             if (!hasObjects[id])
+            {
               newObjects.Add((id, json));
+            }
+          }
 
           // Report the objects that are already on the server
           OnProgressAction?.Invoke(TransportName, hasObjects.Count - newObjects.Count);
 
           await Api.UploadObjects(StreamId, newObjects);
 
-          
+          // TODO: Has blobs check
+          await Api.UploadBlobs(StreamId, bufferBlobs);
         }
         catch(Exception ex)
         {
