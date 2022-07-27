@@ -335,15 +335,16 @@ namespace DesktopUI2
         catch (Exception e)
         {
           //TODO
-          //state.Errors.Add(e);
+          progress.Report.LogConversionError(e);
         }
 
         progress.Update(pd);
       }
 
       // Mock some errors
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < 100; i++)
       {
+        progress.Report.Log($"Hello this is a sample line {i}");
         try
         {
           throw new Exception($"Number {i} fail");
@@ -376,7 +377,7 @@ namespace DesktopUI2
           return;
         }
 
-        //progress.Report.Log("Done fake task " + i);
+        progress.Report.Log("Done fake task " + i);
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;
@@ -420,7 +421,7 @@ namespace DesktopUI2
           return null;
         }
 
-        //progress.Report.Log("Done fake task " + i);
+        progress.Report.Log("Done fake task " + i);
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;

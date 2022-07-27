@@ -3,13 +3,13 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Speckle.Core.Kits;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -780,7 +780,7 @@ namespace Objects.Converter.Revit
       foreach (RevitOpening opening in openings)
         if (CurvesOverlap(@void, opening.outline))
           return true;
-      
+
       return false;
     }
 
@@ -880,7 +880,7 @@ namespace Objects.Converter.Revit
     #region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
-      var matId = element.GetMaterialIds(false).FirstOrDefault();
+      var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
 
       if (matId == null)
       {
@@ -1088,7 +1088,7 @@ namespace Objects.Converter.Revit
       {
       }
     }
-    
+
     public ApplicationObject CheckForExistingObject(Base @base)
     {
       @base.applicationId ??= @base.id;
@@ -1096,7 +1096,7 @@ namespace Objects.Converter.Revit
 
       if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
         return new ApplicationObject(@base.id, @base.speckle_type)
-          { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, Converted = new List<object> { docObj } };
+        { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, Converted = new List<object> { docObj } };
 
       //just create new one 
       if (docObj != null)
