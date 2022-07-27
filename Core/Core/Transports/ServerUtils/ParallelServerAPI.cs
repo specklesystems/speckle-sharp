@@ -262,12 +262,11 @@ namespace Speckle.Core.Transports.ServerUtils
       // Console.WriteLine($"ParallelServerApi::UploadObjects({objects.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
     }
 
-    public async Task<List<string>> UploadBlobs(string streamId, List<(string, string)> blobs)
+    public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
     {
       EnsureStarted();
       Task<object> op = QueueOperation(ServerApiOperation.UploadBlobs, (streamId, blobs));
-      object result = await op;
-      return result as List<string>;
+      await op;
     }
 
     public void Dispose()

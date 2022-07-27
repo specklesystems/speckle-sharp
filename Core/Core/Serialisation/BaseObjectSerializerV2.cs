@@ -165,7 +165,7 @@ namespace Speckle.Core.Serialisation
 
       Dictionary<string, object> convertedBase = new Dictionary<string, object>();
       Dictionary<string, int> closure = new Dictionary<string, int>();
-      if (computeClosures || inheritedDetachInfo.IsDetachable)
+      if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
         ParentClosures.Add(closure);
 
       List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
@@ -210,18 +210,28 @@ namespace Speckle.Core.Serialisation
         convertedBase[prop.Key] = convertedValue;
       }
 
-      convertedBase["id"] = ComputeId(convertedBase);
+      if (baseObj is Blob blob)
+      {
+        convertedBase["id"] = blob.id;
+        //closure[$"blob:{blob.id}"] = depth;
+      }
+      else
+      {
+        convertedBase["id"] = ComputeId(convertedBase);
+      }
 
       if (closure.Count > 0)
         convertedBase["__closure"] = closure;
-      if (computeClosures || inheritedDetachInfo.IsDetachable)
+      if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
         ParentClosures.RemoveAt(ParentClosures.Count - 1);
 
       ParentObjects.Remove(baseObj);
 
-      if (baseObj is Blob blob)
+      if (baseObj is Blob myBlob)
       {
-        StoreBlob(blob);
+        StoreBlob(myBlob);
+        string json = Dict2Json(convertedBase);
+        UpdateParentClosures("blob:" + convertedBase["id"] as string);
         return convertedBase;
       }
 
@@ -312,7 +322,7 @@ namespace Speckle.Core.Serialisation
 
       foreach (var transport in WriteTransports)
       {
-        if(transport is IBlobCapableTransport blobTransport)
+        if (transport is IBlobCapableTransport blobTransport)
         {
           hasBlobTransport = true;
           blobTransport.SaveBlob(obj);
