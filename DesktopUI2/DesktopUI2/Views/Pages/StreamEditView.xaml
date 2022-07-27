@@ -106,7 +106,7 @@
       Grid.Row="1"
       Margin="15,0"
       RowDefinitions="*,auto,auto">
-      <!--  ACTIVITY & COMMENTS & REPORT -->
+      <!--  ACTIVITY & COMMENTS & REPORT  -->
 
       <TabControl Grid.Row="0" Background="Transparent">
         <TabItem>
@@ -149,7 +149,7 @@
           </TabItem.Header>
           <uc:Comments />
         </TabItem>
-          
+
         <!--  REPORT  -->
         <TabItem>
           <TabItem.Header>
@@ -166,23 +166,18 @@
                 Text="Report" />
             </StackPanel>
           </TabItem.Header>
-      
-          <Grid
-            RowDefinitions="auto,*">
-            <ScrollViewer
-              IsVisible="{Binding !HasReportItems}"
-              Grid.Row="1">
-              <TextBlock
-                Margin="35,0,0,10"
-                Text="{Binding Log}" />
+
+          <Grid RowDefinitions="auto,*">
+            <ScrollViewer Grid.Row="1" IsVisible="{Binding !HasReportItems}">
+              <TextBlock Margin="35,0,0,10" Text="{Binding Log}" />
             </ScrollViewer>
             <m:Card
               Grid.Row="0"
-              IsVisible="{Binding HasReportItems}"
               Margin="5,10,5,10"
               Padding="0"
               HorizontalAlignment="Stretch"
-              CornerRadius="25">
+              CornerRadius="25"
+              IsVisible="{Binding HasReportItems}">
               <TextBox
                 Margin="0"
                 Padding="0"
@@ -220,7 +215,7 @@
                 </TextBox.InnerLeftContent>
               </TextBox>
             </m:Card>
-            <uc:Report Grid.Row="1" />
+            <uc:Report Grid.Row="1" IsVisible="{Binding HasReportItems}" />
           </Grid>
 
         </TabItem>
