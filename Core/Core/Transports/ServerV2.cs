@@ -57,9 +57,9 @@ namespace Speckle.Core.Transports
       CancellationToken = CancellationToken.None;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
 
-      if(blobStorageFolder == null)
+      if (blobStorageFolder == null)
       {
-        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Blobs");
+        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle/Blobs");
       }
       Directory.CreateDirectory(BlobStorageFolder);
     }
@@ -74,7 +74,8 @@ namespace Speckle.Core.Transports
       TimeoutSeconds = timeoutSeconds;
 
       Api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds);
-      Api.OnBatchSent = (num, size) => {
+      Api.OnBatchSent = (num, size) =>
+      {
         OnProgressAction?.Invoke(TransportName, num);
         TotalSentBytes += size;
         SavedObjectCount += num;
@@ -89,7 +90,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
         return null;
 
-      using(ParallelServerApi api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds))
+      using (ParallelServerApi api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds))
       {
         api.CancellationToken = CancellationToken;
         try
@@ -98,9 +99,9 @@ namespace Speckle.Core.Transports
           List<string> allIds = ParseChildrenIds(rootObjectJson);
 
           List<string> childrenIds = allIds.Where(id => !id.Contains("blob:")).ToList();
-          List<string> blobIds = allIds.Where(id => id.Contains("blob:")).ToList();
+          List<string> blobIds = allIds.Where(id => id.Contains("blob:")).Select(id => id.Remove(0,5)).ToList();
 
-          onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
+          onTotalChildrenCountKnown?.Invoke(childrenIds.Count + blobIds.Count);
 
           // Check which children are not already in the local transport
           var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
@@ -118,6 +119,12 @@ namespace Speckle.Core.Transports
 
           await targetTransport.WriteComplete();
           targetTransport.EndWrite();
+
+          //var blobsFoundMap = await api.HasBlobs(blobIds); // TODO
+          await api.DownloadBlobs(StreamId, blobIds, () =>
+          {
+            OnProgressAction?.Invoke(TransportName, 1);
+          });
 
           return rootObjectJson;
         }
@@ -204,7 +211,7 @@ namespace Speckle.Core.Transports
     {
       while (true)
       {
-        lock(SendBufferLock)
+        lock (SendBufferLock)
         {
           if (IsWriteComplete || ErrorState)
             return;
@@ -281,8 +288,8 @@ namespace Speckle.Core.Transports
         }
         try
         {
-          List<(string,string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList(); // TODO: probably not efficient, see note on send buffer prop
-          List<(string,string)> bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
+          List<(string, string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList(); // TODO: probably not efficient, see note on send buffer prop
+          List<(string, string)> bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
 
           List<string> objectIds = new List<string>(bufferObjects.Count);
 
@@ -312,7 +319,7 @@ namespace Speckle.Core.Transports
           // TODO: Has blobs check
           await Api.UploadBlobs(StreamId, bufferBlobs);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
           OnErrorAction?.Invoke(TransportName, ex);
           lock (SendBufferLock)

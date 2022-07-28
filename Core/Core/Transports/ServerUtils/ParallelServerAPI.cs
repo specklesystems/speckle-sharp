@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace Speckle.Core.Transports.ServerUtils
     HasObjects,
     UploadObjects,
     UploadBlobs,
+    DownloadBlobs,
+    HasBlobs,
     _NoOp
   }
 
@@ -34,13 +37,23 @@ namespace Speckle.Core.Transports.ServerUtils
 
     private BlockingCollection<(ServerApiOperation, object, TaskCompletionSource<object>)> Tasks;
 
-    public ParallelServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60, int numThreads = 4, int numBufferedOperations = 8)
+    public string BlobStorageFolder { get; set; }
+
+    public ParallelServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60, int numThreads = 4, int numBufferedOperations = 8, string blobStorageFolder = null)
     {
       BaseUri = baseUri;
       AuthToken = authorizationToken;
       TimeoutSeconds = timeoutSeconds;
       NumThreads = numThreads;
       CancellationToken = CancellationToken.None;
+
+      if (blobStorageFolder == null)
+      {
+        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle/Blobs");
+      }
+      Directory.CreateDirectory(BlobStorageFolder);
+
+      BlobStorageFolder = blobStorageFolder;
 
       Tasks = new BlockingCollection<(ServerApiOperation, object, TaskCompletionSource<object>)>(numBufferedOperations);
     }
@@ -88,11 +101,11 @@ namespace Speckle.Core.Transports.ServerUtils
 
     private void ThreadMain()
     {
-      using (ServerApi api = new ServerApi(BaseUri, AuthToken, TimeoutSeconds))
+      using (ServerApi serialApi = new ServerApi(BaseUri, AuthToken, TimeoutSeconds))
       {
-        api.OnBatchSent = (num, size) => { lock (CallbackLock) OnBatchSent(num, size); };
-        api.CancellationToken = CancellationToken;
-        api.CompressPayloads = CompressPayloads;
+        serialApi.OnBatchSent = (num, size) => { lock (CallbackLock) OnBatchSent(num, size); };
+        serialApi.CancellationToken = CancellationToken;
+        serialApi.CompressPayloads = CompressPayloads;
 
         while (true)
         {
@@ -108,29 +121,34 @@ namespace Speckle.Core.Transports.ServerUtils
             {
               case ServerApiOperation.DownloadSingleObject:
                 (string dsoStreamId, string dsoObjectId) = ((string, string))inputValue;
-                var dsoResult = api.DownloadSingleObject(dsoStreamId, dsoObjectId).Result;
+                var dsoResult = serialApi.DownloadSingleObject(dsoStreamId, dsoObjectId).Result;
                 tcs.SetResult(dsoResult);
                 break;
               case ServerApiOperation.DownloadObjects:
                 (string doStreamId, List<string> doObjectIds, CbObjectDownloaded doCallback) = ((string, List<string>, CbObjectDownloaded))inputValue;
-                api.DownloadObjects(doStreamId, doObjectIds, doCallback).Wait();
+                serialApi.DownloadObjects(doStreamId, doObjectIds, doCallback).Wait();
                 // TODO: pass errors?
                 tcs.SetResult(null);
                 break;
               case ServerApiOperation.HasObjects:
                 (string hoStreamId, List<string> hoObjectIds) = ((string, List<string>))inputValue;
-                var hoResult = api.HasObjects(hoStreamId, hoObjectIds).Result;
+                var hoResult = serialApi.HasObjects(hoStreamId, hoObjectIds).Result;
                 tcs.SetResult(hoResult);
                 break;
               case ServerApiOperation.UploadObjects:
                 (string uoStreamId, List<(string, string)> uoObjects) = ((string, List<(string, string)>))inputValue;
-                api.UploadObjects(uoStreamId, uoObjects).Wait();
+                serialApi.UploadObjects(uoStreamId, uoObjects).Wait();
                 // TODO: pass errors?
                 tcs.SetResult(null);
                 break;
               case ServerApiOperation.UploadBlobs:
                 (string ubStreamId, List<(string, string)> ubBlobs) = ((string, List<(string, string)>))inputValue;
-                api.UploadBlobs(ubStreamId, ubBlobs).Wait();
+                serialApi.UploadBlobs(ubStreamId, ubBlobs).Wait();
+                tcs.SetResult(null);
+                break;
+              case ServerApiOperation.DownloadBlobs:
+                (string dbStreamId, List<string> blobIds, CbBlobdDownloaded cb) = ((string, List<string>, CbBlobdDownloaded))inputValue;
+                serialApi.DownloadBlobs(dbStreamId, blobIds, cb).Wait();
                 tcs.SetResult(null);
                 break;
 
@@ -266,6 +284,13 @@ namespace Speckle.Core.Transports.ServerUtils
     {
       EnsureStarted();
       Task<object> op = QueueOperation(ServerApiOperation.UploadBlobs, (streamId, blobs));
+      await op;
+    }
+
+    public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
+    {
+      EnsureStarted();
+      Task<object> op = QueueOperation(ServerApiOperation.DownloadBlobs, (streamId, blobIds, onBlobDownloaded));
       await op;
     }
 
