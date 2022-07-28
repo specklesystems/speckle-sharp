@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.0.3" />
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.2" />
     <PackageReference Include="Speckle.Civil3D.API" Version="2021.0.2" />
   </ItemGroup>
 

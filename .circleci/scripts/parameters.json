@@ -1,0 +1,11 @@
+{
+  "core": true,
+  "rhino": true,
+  "revit": true,
+  "dynamo": true,
+  "csi": true,
+  "autocadcivil": true,
+  "microstation": true,
+  "archicad": true,
+  "teklastructures": true
+}

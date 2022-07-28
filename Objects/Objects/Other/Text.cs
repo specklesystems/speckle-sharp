@@ -14,7 +14,6 @@ namespace Objects.Other
   /// </summary>
   public class Text : Base, IDisplayValue<List<Polyline>>
   {
-    public List<ICurve> curves { get; set; }
     public List<Polyline> displayValue { get; set; } = new List<Polyline>();
     public Plane plane { get; set; } // origin should be center
     public double rotation { get; set; } = 0; // using radians

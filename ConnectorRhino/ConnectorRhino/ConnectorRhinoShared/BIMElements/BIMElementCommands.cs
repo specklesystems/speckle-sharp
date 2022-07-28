@@ -154,7 +154,6 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        string selectedSchema = "";
         var selectedObjects = GetObjectSelection();
         if (selectedObjects == null)
           return Result.Cancel;
@@ -164,6 +163,7 @@ namespace SpeckleRhino
         var getOpt = new GetOption();
         getOpt.SetCommandPrompt("Select BIM type. Press Enter when done");
         List<string> schemas = Enum.GetNames(typeof(SchemaObjectFilter.SupportedSchema)).ToList();
+        string selectedSchema = schemas[0];
         int schemaListOptionIndex = getOpt.AddOptionList("Type", schemas, 0);
 
         // Get options

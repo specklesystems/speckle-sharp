@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,6 +16,7 @@ using Rhino.Geometry;
 using System.Threading;
 using Rhino;
 using Microsoft.CSharp.RuntimeBinder;
+using Rhino.Display;
 
 namespace ConnectorGrasshopper.Extras
 {
@@ -213,14 +215,18 @@ namespace ConnectorGrasshopper.Extras
       {
         case Base @base:
           return new GH_SpeckleBase(@base);
-        case string str:
-          return new GH_String(str);
-        case double dbl:
-          return new GH_Number(dbl);
-        case int i:
-          return new GH_Integer(i);
+        case DisplayMaterial dm:
+          return new GH_Material(dm);
+        case Color c:
+          return new GH_Colour(c);
+        case Transform t:
+          return new GH_Transform(t);
+        case GH_ObjectWrapper ow:
+          return WrapInGhType(ow.Value); // Unwrap generic object wrappers and try to make them specific.
+        case IGH_Goo goo:
+          return goo; // Assume any other IGH_Goo is properly wrapped
         default:
-          return new GH_ObjectWrapper(obj);
+          return GH_Convert.ToGoo(obj) ?? new GH_ObjectWrapper(obj); // Ensure that a GH_Goo is always returned
       }
     }
 
@@ -349,7 +355,7 @@ namespace ConnectorGrasshopper.Extras
     /// <returns>An <see cref="IGH_Goo"/> instance holding the converted object. </returns>
     public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter, bool recursive = false)
     {
-      if (converter == null) return new GH_ObjectWrapper(value);
+      if (converter == null) return WrapInGhType(value);
       if (value == null)
         return null;
 
@@ -365,11 +371,7 @@ namespace ConnectorGrasshopper.Extras
           try
           {
             var converted = converter.ConvertToNative(@base);
-            var geomgoo = GH_Convert.ToGoo(converted);
-            if (geomgoo != null)
-              return geomgoo;
-            var goo = new GH_ObjectWrapper { Value = converted };
-            return goo;
+            return WrapInGhType(converted);
           }
           catch (Exception e)
           {
@@ -399,7 +401,7 @@ namespace ConnectorGrasshopper.Extras
         var i = (Enum)value;
         return new GH_ObjectWrapper { Value = i };
       }
-      return new GH_ObjectWrapper(value);
+      return WrapInGhType(value);
     }
 
     /// <summary>
@@ -548,7 +550,7 @@ namespace ConnectorGrasshopper.Extras
       if (Converter != null && Converter.CanConvertToNative(@base))
       {
         var converted = Converter.ConvertToNative(@base);
-        data.Append(GH_Convert.ToGoo(converted));
+        data.Append(WrapInGhType(converted));
       }
       else if (unwrap && @base.GetDynamicMembers().Count() == 1 && (@base["@data"] != null || @base["@Data"] != null))
       {

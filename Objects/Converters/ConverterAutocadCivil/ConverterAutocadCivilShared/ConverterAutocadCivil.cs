@@ -387,10 +387,7 @@ namespace Objects.Converter.AutocadCivil
           break;
 
         case Text o:
-          bool isMText = o["isMText"] as bool? ?? true;
-          if (!isMText)
-            acadObj = DBTextToNative(o);
-          acadObj = MTextToNative(o);
+          acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           Report.Log($"Created Text {o.id}");
           break;
 

@@ -189,7 +189,11 @@ namespace Objects.Converter.AutocadCivil
     {
       var _line = new Line3d(PointToNative(line.start), PointToNative(line.end));
       if (line.domain != null)
-        _line.SetInterval(IntervalToNative(line.domain));
+        try
+        {
+          _line.SetInterval(IntervalToNative(line.domain));
+        }
+        catch { }
       return _line;
     }
     public Line LineToSpeckle(AcadDB.Line line, string units = null)

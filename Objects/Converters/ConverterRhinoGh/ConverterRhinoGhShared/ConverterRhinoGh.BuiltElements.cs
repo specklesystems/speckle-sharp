@@ -243,7 +243,7 @@ namespace Objects.Converter.RhinoGh
 
     public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
     {
-      if (args.Length == 0)
+      if (args == null || args.Length == 0)
         return null;
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
@@ -254,7 +254,7 @@ namespace Objects.Converter.RhinoGh
 
     public RV.DirectShape ExtrusionToDirectShape(RH.Extrusion extrusion, string[] args)
     {
-      if (args.Length == 0)
+      if (args == null || args.Length == 0)
         return null;
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
@@ -265,7 +265,7 @@ namespace Objects.Converter.RhinoGh
 
     public RV.DirectShape MeshToDirectShape(RH.Mesh mesh, string[] args)
     {
-      if (args.Length == 0)
+      if (args == null || args.Length == 0)
         return null;
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;

@@ -22,7 +22,7 @@ namespace Objects.Converter.TeklaStructures
     {
 
       var Rebar = new TeklaRebar();
-      Rebar.displayMesh = GetMeshFromSolid(rebarGroup.GetSolid());
+      Rebar.displayValue = new List<Mesh> { GetMeshFromSolid(rebarGroup.GetSolid()) };
       foreach (Polygon polygon in rebarGroup.Polygons){
         var polyline = ToSpecklePolyline(polygon);
         Rebar.curves.Add(polyline);

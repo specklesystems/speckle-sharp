@@ -107,30 +107,30 @@ namespace TestsIntegration
       Assert.IsTrue(res);
     }
 
-    [Test, Order(30)]
-    public async Task StreamGrantPermission()
-    {
-      var res = await myClient.StreamGrantPermission(
-        new StreamGrantPermissionInput
-        {
-          streamId = streamId,
-          userId = secondUserAccount.userInfo.id,
-          role = "stream:owner"
-        }
-      );
+    // [Test, Order(30)]
+    // public async Task StreamGrantPermission()
+    // {
+    //   var res = await myClient.StreamGrantPermission(
+    //     new StreamGrantPermissionInput
+    //     {
+    //       streamId = streamId,
+    //       userId = secondUserAccount.userInfo.id,
+    //       role = "stream:owner"
+    //     }
+    //   );
 
-      Assert.IsTrue(res);
-    }
+    //   Assert.IsTrue(res);
+    // }
 
-    [Test, Order(40)]
-    public async Task StreamRevokePermission()
-    {
-      var res = await myClient.StreamRevokePermission(
-        new StreamRevokePermissionInput { streamId = streamId, userId = secondUserAccount.userInfo.id }
-      );
+    // [Test, Order(40)]
+    // public async Task StreamRevokePermission()
+    // {
+    //   var res = await myClient.StreamRevokePermission(
+    //     new StreamRevokePermissionInput { streamId = streamId, userId = secondUserAccount.userInfo.id }
+    //   );
 
-      Assert.IsTrue(res);
-    }
+    //   Assert.IsTrue(res);
+    // }
 
     [Test, Order(41)]
     public async Task StreamInviteCreate()
@@ -345,7 +345,7 @@ namespace TestsIntegration
     //  myObject["@Points"] = ptsList;
 
     //  var otherTransport = new ServerTransport(firstUserAccount, null);
-    //  otherTransport.StreamId = 
+    //  otherTransport.StreamId =
 
     //  objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, disposeTransports: true);
     //}

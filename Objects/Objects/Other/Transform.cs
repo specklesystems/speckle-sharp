@@ -18,7 +18,10 @@ namespace Objects.Other
   /// </remarks>
   public class Transform : Base
   {
-    public double[ ] value { get; set; } = {1d, 0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 1d};
+    public double[ ] value { get; set; } = { 1d, 0d, 0d, 0d,
+                                             0d, 1d, 0d, 0d,
+                                             0d, 0d, 1d, 0d,
+                                             0d, 0d, 0d, 1d };
 
     public string units { get; set; }
 
@@ -46,6 +49,26 @@ namespace Objects.Other
     }
 
     /// <summary>
+    /// Construct a transform given the x, y, and z bases and the translation vector
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="z"></param>
+    /// <param name="translation"></param>
+    /// <param name="units"></param>
+    public Transform(double[ ] x, double[ ] y, double[ ] z, double[ ] translation, string units = null)
+    {
+      this.units = units;
+      value = new[ ]
+      {
+        x[ 0 ], y[ 0 ], z[ 0 ], translation[ 0 ],
+        x[ 1 ], y[ 1 ], z[ 1 ], translation[ 1 ],
+        x[ 2 ], y[ 2 ], z[ 2 ], translation[ 2 ],
+        0d, 0d, 0d, 1d
+      };
+    }
+
+    /// <summary>
     /// Get the translation, scaling, and units out of the
     /// </summary>
     /// <param name="scaling">The 3x3 sub-matrix</param>
@@ -68,7 +91,7 @@ namespace Objects.Other
           $"Cannot apply transform as the points list is malformed: expected length to be multiple of 3");
       var transformed = new List<double>(points.Count);
       for ( var i = 0; i < points.Count; i += 3 )
-        transformed.AddRange(ApplyToPoint(new List<double>(3) {points[ i ], points[ i + 1 ], points[ i + 2 ]}));
+        transformed.AddRange(ApplyToPoint(new List<double>(3) { points[ i ], points[ i + 1 ], points[ i + 2 ] }));
 
       return transformed;
     }
@@ -92,8 +115,8 @@ namespace Objects.Other
     public Point ApplyToPoint(Point point)
     {
       var (x, y, z, units) = point;
-      var newCoords = ApplyToPoint(new List<double> {x, y, z});
-      return new Point(newCoords[0], newCoords[1], newCoords[2], point.units, point.applicationId);
+      var newCoords = ApplyToPoint(new List<double> { x, y, z });
+      return new Point(newCoords[ 0 ], newCoords[ 1 ], newCoords[ 2 ], point.units, point.applicationId);
     }
 
     /// <summary>
@@ -103,10 +126,13 @@ namespace Objects.Other
     {
       var transformed = new List<double>();
       for ( var i = 0; i < 16; i += 4 )
-        transformed.Add(point[ 0 ] * value[ i ] + point[ 1 ] * value[ i + 1 ] + point[ 2 ] * value[ i + 2 ] + value[ i + 3 ]);
+        transformed.Add(point[ 0 ] * value[ i ] + point[ 1 ] * value[ i + 1 ] + point[ 2 ] * value[ i + 2 ] +
+                        value[ i + 3 ]);
 
       return new List<double>(3)
-        {transformed[ 0 ] / transformed[ 3 ], transformed[ 1 ] / transformed[ 3 ], transformed[ 2 ] / transformed[ 3 ]};
+      {
+        transformed[ 0 ] / transformed[ 3 ], transformed[ 1 ] / transformed[ 3 ], transformed[ 2 ] / transformed[ 3 ]
+      };
     }
 
     /// <summary>
@@ -114,9 +140,9 @@ namespace Objects.Other
     /// </summary>
     public Vector ApplyToVector(Vector vector)
     {
-      var newCoords = ApplyToVector(new List<double> {vector.x, vector.y, vector.z});
+      var newCoords = ApplyToVector(new List<double> { vector.x, vector.y, vector.z });
 
-      return new Geometry.Vector(newCoords[0], newCoords[1], newCoords[2], vector.units, vector.applicationId);
+      return new Geometry.Vector(newCoords[ 0 ], newCoords[ 1 ], newCoords[ 2 ], vector.units, vector.applicationId);
     }
 
     /// <summary>
@@ -124,13 +150,14 @@ namespace Objects.Other
     /// </summary>
     public List<double> ApplyToVector(List<double> vector)
     {
-      var newPoint = new List<double>(4) {vector[ 0 ], vector[ 1 ], vector[ 2 ]};
+      var newPoint = new List<double>(4) {vector[ 0 ], vector[ 1 ], vector[ 2 ], 1};
+
       for ( var i = 0; i < 16; i += 4 )
         newPoint[ i / 4 ] = newPoint[ 0 ] * value[ i ] + newPoint[ 1 ] * value[ i + 1 ] +
                             newPoint[ 2 ] * value[ i + 2 ];
 
       return new List<double>(3)
-        {newPoint[ 0 ], newPoint[ 1 ], newPoint[ 2 ]};
+        { newPoint[ 0 ], newPoint[ 1 ], newPoint[ 2 ] };
     }
 
     /// <summary>
@@ -146,11 +173,12 @@ namespace Objects.Other
         if ( curve is ITransformable c )
         {
           c.TransformTo(this, out ITransformable tc);
-          transformed.Add(( ICurve ) tc);
+          transformed.Add(( ICurve )tc);
         }
         else
           success = false;
       }
+
       return transformed;
     }
 
