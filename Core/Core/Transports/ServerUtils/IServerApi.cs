@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Speckle.Core.Transports.ServerUtils
 {
   public delegate void CbObjectDownloaded(string id, string json);
+  public delegate void CbBlobdDownloaded();
 
   internal interface IServerApi
   {
@@ -18,5 +19,7 @@ namespace Speckle.Core.Transports.ServerUtils
     public Task UploadObjects(string streamId, List<(string, string)> objects);
 
     public Task UploadBlobs(string streamId, List<(string, string)> objects);
+
+    public Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobCallback);
   }
 }

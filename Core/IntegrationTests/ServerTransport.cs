@@ -49,7 +49,7 @@ namespace TestsIntegration
       myObject["blob"] = Fixtures.GenerateBlob();
       var objectId = await Operations.Send(myObject, new List<ITransport> { transport });
 
-      var receivedObject = await Operations.Receive(objectId, transport, );
+      var receivedObject = await Operations.Receive(objectId, transport);
       var cp = receivedObject;
     }
   }
