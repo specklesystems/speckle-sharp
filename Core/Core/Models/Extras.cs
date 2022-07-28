@@ -95,25 +95,61 @@ namespace Speckle.Core.Models
       Unknown
     }
 
-    public string Container { get; set; } // the document location of the object in the application
+    /// <summary>
+    /// The container for the object in the native application
+    /// </summary>
+    public string Container { get; set; }
 
-    public bool Convertible { get; set; } // is the object conversion supported by the converter
+    /// <summary>
+    /// Indicates if conversion is supported by the converter
+    /// </summary>
+    public bool Convertible { get; set; }
 
+    /// <summary>
+    /// The fallback values if direct conversion is not available, typically displayValue
+    /// </summary>
     [JsonIgnore]
-    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>(); // the fallback base if direct conversion is not supported, output corresponding base during flatten
-    
-    public string OriginalId { get; set; } // the original object id (speckle or application)
+    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>(); 
 
-    public string Descriptor { get; set; } // a descriptive name for the object - use object type
+    /// <summary>
+    /// The Speckle id (on receive) or native id (on send)
+    /// </summary>
+    /// <remarks>
+    /// Used to retrieve this object in <code>ProgressReport.GetReportObject()</code>, typically to pass between connectors and converters
+    /// </remarks>
+    public string OriginalId { get; set; }
 
-    public List<string> CreatedIds { get; set; } = new List<string>(); // the created object ids (speckle or application)
+    /// <summary>
+    /// A descriptive string to describe the object. Use the object type as default.
+    /// </summary>
+    public string Descriptor { get; set; }
 
-    public State Status { get; set; } // status of the object, for report categorization
+    /// <summary>
+    /// The created object ids associated with this object
+    /// </summary>
+    /// <remarks>
+    /// On send, this is currently left empty as generating Speckle ids would be performance expensive
+    /// </remarks>
+    public List<string> CreatedIds { get; set; } = new List<string>();
 
-    public List<string> Log { get; set; } = new List<string>(); // conversion notes or other important info, exposed to user
+    /// <summary>
+    /// Conversion status of object
+    /// </summary>
+    public State Status { get; set; }
 
+    /// <summary>
+    /// Conversion notes or other important information to expose to the user
+    /// </summary>
+    public List<string> Log { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Converted objects corresponding to this object
+    /// </summary>
+    /// <remarks>
+    /// Used during receive for convenience, corresponds to CreatedIds
+    /// </remarks>
     [JsonIgnore]
-    public List<object> Converted { get; set; } = new List<object>();// the converted objects
+    public List<object> Converted { get; set; } = new List<object>();
 
     public ApplicationObject(string id, string type) 
     {

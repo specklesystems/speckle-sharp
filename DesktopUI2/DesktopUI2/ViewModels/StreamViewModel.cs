@@ -557,6 +557,15 @@ namespace DesktopUI2.ViewModels
       Report = report;
     }
 
+    public async void CopyReportCommand()
+    {
+      var reportObjectSummaries = FilteredReport.Select(o => o.GetSummary()).ToArray();
+      var summary = string.Join("\n", reportObjectSummaries);
+
+      await Avalonia.Application.Current.Clipboard.SetTextAsync(summary);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Copy Report" } });
+    }
+
     private async void GetActivity()
     {
       try

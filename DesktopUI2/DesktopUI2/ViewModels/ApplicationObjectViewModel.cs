@@ -81,6 +81,12 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public string GetSummary()
+    {
+      var summary = new string[2] { $"{Name} {Id} {Status}", Log };
+      return string.Join("\n", summary);
+    }
+
     public async void PreviewCommand()
     {
       PreviewOn = !PreviewOn;

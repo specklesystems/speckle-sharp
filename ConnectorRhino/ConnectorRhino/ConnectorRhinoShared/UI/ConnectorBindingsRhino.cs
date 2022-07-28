@@ -745,7 +745,7 @@ namespace SpeckleRhino
         }
 
         // log report object
-        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Successfully converted Rhino {obj.ObjectType} to Speckle {converted.speckle_type}");
+        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
         progress.Report.Log(reportObj);
 
         objCount++;
