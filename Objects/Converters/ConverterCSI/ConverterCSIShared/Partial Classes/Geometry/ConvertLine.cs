@@ -15,7 +15,15 @@ namespace Objects.Converter.CSI
       string newFrame = "";
       Point end1node = line.start;
       Point end2node = line.end;
-      Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
+      Model.FrameObj.AddByCoord(
+        ScaleToNative(end1node.x, end1node.units),
+        ScaleToNative(end1node.y, end1node.units),
+        ScaleToNative(end1node.z, end1node.units),
+        ScaleToNative(end2node.x, end2node.units),
+        ScaleToNative(end2node.y, end2node.units),
+        ScaleToNative(end2node.z, end2node.units),
+        ref newFrame
+      );
       return line.applicationId;
     }
 
