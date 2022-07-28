@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -41,6 +42,8 @@ namespace Speckle.Core.Serialisation
     private object CallbackLock = new object();
 
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
+
+    public string BlobStorageFolder { get; set; }
 
     public BaseObjectDeserializerV2()
     {
@@ -287,7 +290,14 @@ namespace Speckle.Core.Serialisation
         }
       }
 
-      foreach(MethodInfo onDeserialized in onDeserializedCallbacks)
+      if(baseObj is Blob b && BlobStorageFolder != null)
+      {
+        var fileName = b.filePath.Split('/').Last();
+        var filePath = Path.Combine(BlobStorageFolder, $"{b.id.Substring(0, 10)}-{fileName}");
+        b.filePath = filePath;
+      }
+
+      foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
       {
         onDeserialized.Invoke(baseObj, new object[] { null });
       }
