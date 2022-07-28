@@ -134,8 +134,9 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    private Roof RoofToSpeckle(DB.RoofBase revitRoof)
+    private Roof RoofToSpeckle(DB.RoofBase revitRoof, out List<string> notes)
     {
+      notes = new List<string>();
       var profiles = GetProfiles(revitRoof);
 
       var speckleRoof = new RevitRoof();
@@ -187,7 +188,8 @@ namespace Objects.Converter.Revit
 
       speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      GetHostedElements(speckleRoof, revitRoof);
+      GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
+      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleRoof;
     }
 

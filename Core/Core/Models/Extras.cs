@@ -150,7 +150,9 @@ namespace Speckle.Core.Models
     {
       if (GetReportObject(obj.OriginalId, out int index))
       {
-        ReportObjects[index].Update(status: obj.Status, createdIds: obj.CreatedIds, log: obj.Log);
+        ReportObjects[index].Update(createdIds: obj.CreatedIds, log: obj.Log);
+        if (obj.Status != ApplicationObject.State.Unknown)
+          ReportObjects[index].Update(status: obj.Status);
         return ReportObjects[index];
       }
       else return null;

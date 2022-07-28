@@ -12,8 +12,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    private RevitCeiling CeilingToSpeckle(DB.Ceiling revitCeiling)
+    private RevitCeiling CeilingToSpeckle(DB.Ceiling revitCeiling, out List<string> notes)
     {
+      notes = new List<string>();
       var profiles = GetProfiles(revitCeiling);
 
       var speckleCeiling = new RevitCeiling();
@@ -27,7 +28,8 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM", "CEILING_HEIGHTABOVELEVEL_PARAM" });
 
-      GetHostedElements(speckleCeiling, revitCeiling);
+      GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
+      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
 
       speckleCeiling.displayValue = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 

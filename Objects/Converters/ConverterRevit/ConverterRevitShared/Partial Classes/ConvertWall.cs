@@ -189,8 +189,8 @@ namespace Objects.Converter.Revit
         "WALL_STRUCTURAL_SIGNIFICANT"
       });
 
-      GetHostedElements(speckleWall, revitWall);
-
+      GetHostedElements(speckleWall, revitWall, out List<string> hostedNotes);
+      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleWall;
     }
 

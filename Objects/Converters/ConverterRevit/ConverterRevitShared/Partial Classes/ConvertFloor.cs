@@ -116,8 +116,9 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    private RevitFloor FloorToSpeckle(DB.Floor revitFloor)
+    private RevitFloor FloorToSpeckle(DB.Floor revitFloor, out List<string> notes)
     {
+      notes = new List<string>();
       var profiles = GetProfiles(revitFloor);
 
       var speckleFloor = new RevitFloor();
@@ -135,7 +136,8 @@ namespace Objects.Converter.Revit
 
       speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      GetHostedElements(speckleFloor, revitFloor);
+      GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
+      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleFloor;
     }
 

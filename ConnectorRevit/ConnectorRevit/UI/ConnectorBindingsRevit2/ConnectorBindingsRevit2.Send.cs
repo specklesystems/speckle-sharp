@@ -42,6 +42,7 @@ namespace Speckle.ConnectorRevit.UI
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       Converter.SetContextDocument(CurrentDoc.Document);
+      Converter.Report.ReportObjects.Clear();
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
@@ -63,7 +64,6 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       Converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
-
       var commitObject = Converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -74,7 +74,17 @@ namespace Speckle.ConnectorRevit.UI
       foreach (var revitElement in selectedObjects)
       {
         var type = revitElement.GetType().ToString();
-        var reportObj = new ApplicationObject(revitElement.UniqueId, type) { applicationId = revitElement.UniqueId, Status = ApplicationObject.State.Unknown };
+        // get the report object
+        // for hosted elements, they may have already been converted and added to the converter report
+        bool alreadyConverted = Converter.Report.GetReportObject(revitElement.UniqueId, out int index);
+        var reportObj = alreadyConverted ?
+          Converter.Report.ReportObjects[index] :
+          new ApplicationObject(revitElement.UniqueId, type) { applicationId = revitElement.UniqueId };
+        if (alreadyConverted)
+        {
+          progress.Report.Log(reportObj);
+          continue;
+        }
         try
         {
           if (revitElement == null)
@@ -98,8 +108,6 @@ namespace Speckle.ConnectorRevit.UI
 
           convertedCount++;
 
-          //hosted elements will be returned as `null` by the ConvertToSpeckle method 
-          //since they are handled when converting their parents
           if (conversionResult == null)
           {
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");

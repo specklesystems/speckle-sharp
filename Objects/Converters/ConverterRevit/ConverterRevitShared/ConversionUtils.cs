@@ -49,8 +49,9 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="host"></param>
     /// <param name="base"></param>
-    public void GetHostedElements(Base @base, HostObject host)
+    public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
+      notes = new List<string>();
       var hostedElementIds = host.FindInserts(true, true, true, true);
       var convertedHostedElements = new List<Base>();
 
@@ -75,26 +76,36 @@ namespace Objects.Converter.Revit
 
         ContextObjects.RemoveAt(isSelectedInContextObjects);
 
+        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString()) ;
         if (CanConvertToSpeckle(element))
         {
           var obj = ConvertToSpeckle(element);
-
           if (obj != null)
           {
+            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
             convertedHostedElements.Add(obj);
             ConvertedObjectsList.Add(obj.applicationId);
           }
+          else
+          {
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          }
         }
+        else
+        {
+          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Conversion not supported");
+        }
+        Report.Log(reportObj);
       }
 
       if (convertedHostedElements.Any())
       {
+        notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
         if (@base["elements"] == null || !(@base["elements"] is List<Base>))
           @base["elements"] = new List<Base>();
 
         (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
       }
-
     }
 
     public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)

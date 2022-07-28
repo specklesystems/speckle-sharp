@@ -119,7 +119,7 @@ namespace Objects.Converter.Revit
           returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
-          returnObject = FloorToSpeckle(o);
+          returnObject = FloorToSpeckle(o, out notes);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -143,7 +143,7 @@ namespace Objects.Converter.Revit
           returnObject = OpeningToSpeckle(o);
           break;
         case DB.RoofBase o:
-          returnObject = RoofToSpeckle(o);
+          returnObject = RoofToSpeckle(o, out notes);
           break;
         case DB.Area o:
           returnObject = AreaToSpeckle(o);
@@ -205,7 +205,7 @@ namespace Objects.Converter.Revit
           returnObject = RebarToSpeckle(o);
           break;
         case DB.Ceiling o:
-          returnObject = CeilingToSpeckle(o);
+          returnObject = CeilingToSpeckle(o, out notes);
           break;
         case DB.PointCloudInstance o:
           returnObject = PointcloudToSpeckle(o);
@@ -285,14 +285,14 @@ namespace Objects.Converter.Revit
         }
         catch (System.Exception e)
         {
-          Report.Log(e.Message);
+          notes.Add(e.Message);
         }
       }
 
       // log 
-      var logItem = ContextObjects.Where(o => o.OriginalId == id).FirstOrDefault();
-      if (logItem != null && notes.Count > 0)
-        logItem.Update(log: notes);
+      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
+      if (reportObj != null && notes.Count > 0)
+        reportObj.Update(log: notes);
 
       return returnObject;
     }

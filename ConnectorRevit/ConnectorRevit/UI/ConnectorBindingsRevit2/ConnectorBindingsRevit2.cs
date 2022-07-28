@@ -66,8 +66,12 @@ namespace Speckle.ConnectorRevit.UI
           var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
           if (currentSelection != null) currentSelection.AddRange(selection);
           else currentSelection = selection;
-          CurrentDoc.Selection.SetElementIds(currentSelection);
-          CurrentDoc.ShowElements(currentSelection);
+          try
+          {
+            CurrentDoc.Selection.SetElementIds(currentSelection);
+            CurrentDoc.ShowElements(currentSelection);
+          }
+          catch (Exception e) { }
         }
         else
         {
