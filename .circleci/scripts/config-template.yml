@@ -16,7 +16,7 @@ commands:
           name: Publish nuget package
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORFKLOW_NUM)-beta/a" } else { $env:CIRCLE_TAG }
-            $version = $tag.Split("/")[0]  
+            $version = $tag.Split("/")[1]  
             msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
           environment:
