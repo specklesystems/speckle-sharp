@@ -1,8 +1,10 @@
 ﻿using DesktopUI2;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.UI
@@ -54,6 +56,11 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
             new ManualSelectionFilter(),
             };
+    }
+
+    public override Task<Dictionary<string, List<MappingViewModel.MappingValue>>> ImportFamily(Dictionary<string, List<MappingViewModel.MappingValue>> Mapping)
+    {
+      throw new NotImplementedException();
     }
 
     public override void SelectClientObjects(string args)
