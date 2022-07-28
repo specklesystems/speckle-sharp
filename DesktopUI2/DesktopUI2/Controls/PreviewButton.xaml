@@ -20,7 +20,6 @@
       assists:ShadowAssist.ShadowDepth="Depth0"
       Background="Transparent"
       Command="{Binding PreviewCommand}"
-      IsEnabled="{Binding PreviewEnabled}"
       ToolTip.Tip="Preview objects to send or receive">
       <Button.Content>
         <Panel>

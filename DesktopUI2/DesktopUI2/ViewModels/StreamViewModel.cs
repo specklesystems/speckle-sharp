@@ -40,7 +40,6 @@ namespace DesktopUI2.ViewModels
 
     public ICommand RemoveSavedStreamCommand { get; }
 
-    public bool PreviewEnabled => true;
     private bool previewOn = false;
     public bool PreviewOn
     {
@@ -557,15 +556,6 @@ namespace DesktopUI2.ViewModels
       Report = report;
     }
 
-    public async void CopyReportCommand()
-    {
-      var reportObjectSummaries = FilteredReport.Select(o => o.GetSummary()).ToArray();
-      var summary = string.Join("\n", reportObjectSummaries);
-
-      await Avalonia.Application.Current.Clipboard.SetTextAsync(summary);
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Copy Report" } });
-    }
-
     private async void GetActivity()
     {
       try
@@ -745,6 +735,14 @@ namespace DesktopUI2.ViewModels
     }
 
     #region commands
+    public async void CopyReportCommand()
+    {
+      var reportObjectSummaries = FilteredReport.Select(o => o.GetSummary()).ToArray();
+      var summary = string.Join("\n", reportObjectSummaries);
+
+      await Avalonia.Application.Current.Clipboard.SetTextAsync(summary);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Copy Report" } });
+    }
 
     public void ShareCommand()
     {
@@ -973,6 +971,15 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(SelectedCommit))]
     [DependsOn(nameof(IsReceiver))]
     private bool CanReceiveCommand(object parameter)
+    {
+      return IsReady();
+    }
+
+    [DependsOn(nameof(SelectedBranch))]
+    [DependsOn(nameof(SelectedCommit))]
+    [DependsOn(nameof(SelectedFilter))]
+    [DependsOn(nameof(IsReceiver))]
+    private bool CanPreviewCommand(object parameter)
     {
       return IsReady();
     }
