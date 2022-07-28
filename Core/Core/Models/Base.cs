@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
@@ -303,10 +304,6 @@ namespace Speckle.Core.Models
 
   public class Blob : Base
   {
-    public string fileName { get; set; }
-    public string fileType { get; set; }
-
-
     private string _hash;
     private bool hashExpired = true;
 
@@ -314,7 +311,7 @@ namespace Speckle.Core.Models
     public string filePath { get => _filePath; set { _filePath = value; hashExpired = true; } }
 
     /// <summary>
-    /// For blobs, the id is the same as the file hash. 
+    /// For blobs, the id is the same as the file hash. Please note, when deserialising, the id will be set from the original hash generated on sending.
     /// </summary>
     public override string id { get => GetFileHash(); set => base.id = value; }
 
@@ -326,6 +323,12 @@ namespace Speckle.Core.Models
       }
 
       return _hash;
+    }
+
+    [OnDeserialized]
+    internal void OnDeserialized(StreamingContext context)
+    {
+      hashExpired = false;
     }
 
   }

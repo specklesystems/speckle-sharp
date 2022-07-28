@@ -213,7 +213,6 @@ namespace Speckle.Core.Serialisation
       if (baseObj is Blob blob)
       {
         convertedBase["id"] = blob.id;
-        //closure[$"blob:{blob.id}"] = depth;
       }
       else
       {
@@ -230,8 +229,7 @@ namespace Speckle.Core.Serialisation
       if (baseObj is Blob myBlob)
       {
         StoreBlob(myBlob);
-        string json = Dict2Json(convertedBase);
-        UpdateParentClosures("blob:" + convertedBase["id"] as string);
+        UpdateParentClosures($"blob:{convertedBase["id"]}");
         return convertedBase;
       }
 
