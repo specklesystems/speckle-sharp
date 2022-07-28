@@ -81,15 +81,14 @@ namespace Speckle.Core.Models
 
   /// <summary>
   /// A simple wrapper to keep track of the relationship between speckle objects and their host-application siblings in cases where the
-  /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationObject.ApplicationGeneratedId"/> (ie, on receiving operations). 
+  /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationObject.CreatedIds"/> (ie, on receiving operations). 
   /// </summary>
   public class ApplicationObject : Base
   {
     public enum State
     {
-      Converting, // Speckle object is in the process of being converted to an Application Object
-      Created, // Speckle object is created from an ApplicationObject or ApplicationObject is created from Speckle Object
-      Skipped, // Speckle or Application object is not going to be sent or received
+      Created, // Speckle object created on send, or native objects created on receive
+      Skipped, // Speckle or Application object is not going to be sent or received 
       Updated, // Application object is replacing an existing object in the application
       Failed, // Tried to convert & send or convert & bake but something went wrong
       Removed, //Removed object from application

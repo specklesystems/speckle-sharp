@@ -254,8 +254,14 @@ namespace SpeckleRhino
         {
           previewObj.CreatedIds = new List<string>() { previewObj.OriginalId }; // temporary store speckle id as created id for Preview report selection to work
 
-          previewObj.Status = ApplicationObject.State.Converting;
-          progress.Report.Log(previewObj);
+          var storedObj = StoredObjects[previewObj.OriginalId];
+          if (storedObj.speckle_type.Contains("Block") || storedObj.speckle_type.Contains("View"))
+          {
+            var status = previewObj.Convertible ? ApplicationObject.State.Created : ApplicationObject.State.Skipped;
+            previewObj.Update(status: status, logItem: "No preview available");
+            progress.Report.Log(previewObj);
+            continue;
+          }
           previewObj.Converted = previewObj.Convertible ? ConvertObject(previewObj) : previewObj.Fallback.SelectMany(o => ConvertObject(o)).ToList();
 
           if (previewObj.Converted == null || previewObj.Converted.Count == 0)
@@ -335,8 +341,6 @@ namespace SpeckleRhino
           // convert
           foreach (var previewObj in Preview)
           {
-            previewObj.Status = ApplicationObject.State.Converting;
-            progress.Report.Log(previewObj);
             previewObj.Converted = previewObj.Convertible ? ConvertObject(previewObj) : previewObj.Fallback.SelectMany(o => ConvertObject(o)).ToList();
             
             if (previewObj.Converted == null || previewObj.Converted.Count == 0)
@@ -616,7 +620,7 @@ namespace SpeckleRhino
     #endregion
 
     #region sending
-    public override async void PreviewSend(StreamState state, ProgressViewModel progress)
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
       Doc.Objects.UnselectAll(false);
@@ -675,7 +679,6 @@ namespace SpeckleRhino
             progress.Report.Log(reportObj);
             continue;
           }
-          reportObj.Update(status: ApplicationObject.State.Converting);
 
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(obj);
@@ -709,7 +712,6 @@ namespace SpeckleRhino
         else if (viewIndex != -1)
         {
           ViewInfo view = Doc.NamedViews[viewIndex];
-          reportObj.Update(status: ApplicationObject.State.Converting);
           Converter.Report.Log(reportObj); // Log object so converter can access
           converted = Converter.ConvertToSpeckle(view);
           if (converted == null)
