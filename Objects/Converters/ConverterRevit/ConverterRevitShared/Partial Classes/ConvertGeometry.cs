@@ -22,6 +22,7 @@ using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
+using Transform = Objects.Other.Transform;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
 
@@ -108,6 +109,14 @@ namespace Objects.Converter.Revit
       _pointcloud.colors = points.Select(o => o.Color).ToList();
       _pointcloud.units = u;
       _pointcloud.bbox = BoxToSpeckle(boundingBox, u);
+
+      // GetAllRevitParamsAndIds(_pointcloud, pointcloud);
+      // var scale = GetParamValue<double>(pointcloud, BuiltInParameter.POINTCLOUDTYPE_SCALE); not sure why this returns default
+
+      // if this pointcloud has a scale, transform it
+      var scale = GetElementParams(pointcloud, false).Where(o => o.Key == "POINTCLOUDTYPE_SCALE")?.Select(o => o.Value.value)?.FirstOrDefault() as double? ?? 1;
+      if (scale != 1)
+        _pointcloud.TransformTo(new Transform(scale, u), out _pointcloud);
 
       return _pointcloud;
     }

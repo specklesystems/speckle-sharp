@@ -151,7 +151,7 @@ namespace Objects.Converter.Revit
     /// potential conflicts when setting them back on the element</param>
     public void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
-      var instParams = GetInstanceParams(revitElement, exclusions);
+      var instParams = GetElementParams(revitElement, false, exclusions);
       var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement);  //ignore type props of levels..!
       var allParams = new Dictionary<string, Parameter>();
 
@@ -188,10 +188,6 @@ namespace Objects.Converter.Revit
 
     //private List<string> alltimeExclusions = new List<string> { 
     //  "ELEM_CATEGORY_PARAM" };
-    private Dictionary<string, Parameter> GetInstanceParams(DB.Element element, List<string> exclusions)
-    {
-      return GetElementParams(element, false, exclusions);
-    }
     private Dictionary<string, Parameter> GetTypeParams(DB.Element element)
     {
       var elementType = element.Document.GetElement(element.GetTypeId());
