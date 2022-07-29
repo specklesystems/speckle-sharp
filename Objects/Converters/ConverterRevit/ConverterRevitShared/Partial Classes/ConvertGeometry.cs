@@ -22,6 +22,7 @@ using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
+using Transform = Objects.Other.Transform;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
 
@@ -100,11 +101,12 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       var boundingBox = pointcloud.get_BoundingBox(null);
-      var filter = PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, boundingBox.Min) });
+      var transform = pointcloud.GetTransform();
+      var filter = PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, transform.Origin) });
       var points = pointcloud.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error
 
       var _pointcloud = new Pointcloud();
-      _pointcloud.points = points.Select(o => PointToSpeckle(o, u)).SelectMany(o => new List<double>() { o.x, o.y, o.z }).ToList();
+      _pointcloud.points = points.Select(o => PointToSpeckle(transform.OfPoint(o), u)).SelectMany(o => new List<double>() { o.x, o.y, o.z }).ToList();
       _pointcloud.colors = points.Select(o => o.Color).ToList();
       _pointcloud.units = u;
       _pointcloud.bbox = BoxToSpeckle(boundingBox, u);
