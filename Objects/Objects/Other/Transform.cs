@@ -69,23 +69,6 @@ namespace Objects.Other
     }
 
     /// <summary>
-    /// Construct a transform with a scaling factor
-    /// </summary>
-    /// <param name="scale"></param>
-    /// <param name="units"></param>
-    public Transform(double scale, string units = null)
-    {
-      this.units = units;
-      value = new[]
-      {
-        scale, 0d, 0d, 0d,
-        0d, scale, 0d, 0d,
-        0d, 0d, scale, 0d,
-        0d, 0d, 0d, 1d
-      };
-    }
-
-    /// <summary>
     /// Get the translation, scaling, and units out of the
     /// </summary>
     /// <param name="scaling">The 3x3 sub-matrix</param>
