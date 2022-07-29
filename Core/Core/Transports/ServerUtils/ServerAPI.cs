@@ -41,16 +41,10 @@ namespace Speckle.Core.Transports.ServerUtils
     /// </summary>
     public Action<int, int> OnBatchSent { get; set; }
 
-    public ServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60, string blobStorageFolder = null)
+    public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
     {
       BaseUri = baseUri;
       CancellationToken = CancellationToken.None;
-
-      if (blobStorageFolder == null)
-      {
-        blobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle/Blobs");
-      }
-      Directory.CreateDirectory(blobStorageFolder);
 
       BlobStorageFolder = blobStorageFolder;
 
@@ -388,41 +382,37 @@ namespace Speckle.Core.Transports.ServerUtils
     public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
     {
 
-      //using (var client = new HttpClient())
-      //{
-      //  using (var s = client.GetStreamAsync("https://via.placeholder.com/150"))
-      //  {
-      //    using (var fs = new FileStream("localfile.jpg", FileMode.OpenOrCreate))
-      //    {
-      //      s.Result.CopyTo(fs);
-      //    }
-      //  }
-      //}
-      foreach(var blobId in blobIds)
+      foreach (var blobId in blobIds)
       {
-        //var url = $"{BaseUri.TrimEnd('/')}/stream/{streamId}/blob/{blobId}";
-
-        var blobMessage = new HttpRequestMessage()
+        try
         {
-          RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
-          Method = HttpMethod.Get,
-        };
+          var blobMessage = new HttpRequestMessage()
+          {
+            RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
+            Method = HttpMethod.Get,
+          };
 
-        var response = await Client.SendAsync(blobMessage, CancellationToken);
-        IEnumerable<string> cdHeaderValues;
+          var response = await Client.SendAsync(blobMessage, CancellationToken);
+          IEnumerable<string> cdHeaderValues;
+          response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
 
-        response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
-        var cdHeader = cdHeaderValues.First();
-        var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
-        
-        string fileLocation = Path.Combine(BlobStorageFolder, $"{blobId.Substring(0,10)}-{fileName}");
-        using(var fs = new FileStream(fileLocation, FileMode.OpenOrCreate))
-        {
-          await response.Content.CopyToAsync(fs);
+          var cdHeader = cdHeaderValues.First();
+          var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
+
+          string fileLocation = Path.Combine(BlobStorageFolder, $"{blobId.Substring(0, Blob.LocalHashPrefixLength)}-{fileName}");
+          using (var fs = new FileStream(fileLocation, FileMode.OpenOrCreate))
+          {
+            await response.Content.CopyToAsync(fs);
+          }
+
+          onBlobDownloaded();
         }
-        onBlobDownloaded();
+        catch (Exception ex)
+        {
+          throw new Exception($"Failed to download blob {blobId}", ex);
+        }
       }
-      
+
 
     }
 

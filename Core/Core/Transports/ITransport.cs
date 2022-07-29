@@ -88,6 +88,7 @@ namespace Speckle.Core.Transports
 
     public void SaveBlob(Blob obj);
 
-    public void GetBlob(Blob obj);
+    // NOTE: not needed, should be implemented in "CopyObjectsAndChildren"
+    //public void GetBlob(Blob obj);
   }
 }

@@ -327,8 +327,9 @@ namespace Speckle.Core.Serialisation
         }
       }
 
+      if (!hasBlobTransport)
+        throw new Exception("Object tree contains a Blob (file), but the serialiser has no blob saving capable transports.");
     }
-
 
     // (propertyInfo, isDetachable, isChunkable, chunkSize, JsonPropertyAttribute)
     private List<(PropertyInfo, PropertyAttributeInfo)> GetTypedPropertiesWithCache(Base baseObj)

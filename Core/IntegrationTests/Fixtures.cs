@@ -90,12 +90,18 @@ namespace TestsIntegration
       return @base;
     }
 
-    public static Blob GenerateBlob()
+    public static Blob[] GenerateBlobs()
     {
-      var blob = new Blob();
       // TODO: remove local file dependency
+      var blob = new Blob();
       blob.filePath = Path.Combine("/Users/dim/Downloads", "email-header.png");
-      return blob;
+
+      var blob2 = new Blob();
+      blob2.filePath = Path.Combine("/Users/dim/Downloads", "2015_09.pdf");
+
+      var blob3 = new Blob();
+      blob3.filePath = Path.Combine("/Users/dim/Downloads", "comments.gif");
+      return new Blob[] {blob, blob2, blob3};
     }
   }
 

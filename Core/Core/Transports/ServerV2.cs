@@ -59,7 +59,9 @@ namespace Speckle.Core.Transports
 
       if (blobStorageFolder == null)
       {
-        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle/Blobs");
+        // TODO: uncomment bottom line and revert to stream based blobs?
+        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs");
+        //BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs/{streamId}");
       }
       Directory.CreateDirectory(BlobStorageFolder);
     }
@@ -73,7 +75,7 @@ namespace Speckle.Core.Transports
       AuthorizationToken = authorizationToken;
       TimeoutSeconds = timeoutSeconds;
 
-      Api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds);
+      Api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds);
       Api.OnBatchSent = (num, size) =>
       {
         OnProgressAction?.Invoke(TransportName, num);
@@ -90,7 +92,7 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
         return null;
 
-      using (ParallelServerApi api = new ParallelServerApi(BaseUri, AuthorizationToken, TimeoutSeconds))
+      using (ParallelServerApi api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds))
       {
         api.CancellationToken = CancellationToken;
         try
@@ -99,7 +101,7 @@ namespace Speckle.Core.Transports
           List<string> allIds = ParseChildrenIds(rootObjectJson);
 
           List<string> childrenIds = allIds.Where(id => !id.Contains("blob:")).ToList();
-          List<string> blobIds = allIds.Where(id => id.Contains("blob:")).Select(id => id.Remove(0,5)).ToList();
+          List<string> blobIds = allIds.Where(id => id.Contains("blob:")).Select(id => id.Remove(0, 5)).ToList();
 
           onTotalChildrenCountKnown?.Invoke(childrenIds.Count + blobIds.Count);
 
@@ -120,8 +122,17 @@ namespace Speckle.Core.Transports
           await targetTransport.WriteComplete();
           targetTransport.EndWrite();
 
-          //var blobsFoundMap = await api.HasBlobs(blobIds); // TODO
-          await api.DownloadBlobs(StreamId, blobIds, () =>
+          var localBlobTrimmedHashes = Directory.GetFiles(BlobStorageFolder)
+            .Select(fileName => fileName.Split(Path.DirectorySeparatorChar).Last())
+            .Where(fileName => fileName.Length > 10)
+            .Select(fileName => fileName.Substring(0, Blob.LocalHashPrefixLength))
+            .ToList();
+
+          var newBlobIds = blobIds
+            .Where(id => !localBlobTrimmedHashes.Contains(id.Substring(0, Blob.LocalHashPrefixLength)))
+            .ToList();
+
+          await api.DownloadBlobs(StreamId, newBlobIds, () =>
           {
             OnProgressAction?.Invoke(TransportName, 1);
           });
@@ -185,11 +196,6 @@ namespace Speckle.Core.Transports
           return;
         SendBuffer.Add(($"blob:{hash}", obj.filePath));
       }
-    }
-
-    public void GetBlob(Blob obj)
-    {
-      throw new NotImplementedException();
     }
 
     public void BeginWrite()
