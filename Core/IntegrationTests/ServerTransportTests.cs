@@ -39,14 +39,13 @@ namespace TestsIntegration
 
       var test = objectId;
       Assert.IsNotNull(test);
-
     }
 
     [Test]
     public async Task SendObjectWithBlob()
     {
       var myObject = Fixtures.GenerateSimpleObject();
-      myObject["blob"] = Fixtures.GenerateBlob();
+      myObject["blobs"] = Fixtures.GenerateBlobs();
       var objectId = await Operations.Send(myObject, new List<ITransport> { transport });
 
       var receivedObject = await Operations.Receive(objectId, transport);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -317,5 +318,13 @@ namespace Speckle.Core.Models
       hashExpired = false;
     }
 
+    public string getLocalDestinationPath(string blobStorageFolder)
+    {
+      var fileName = filePath.Split('/').Last();
+      return Path.Combine(blobStorageFolder, $"{id.Substring(0, 10)}-{fileName}");
+    }
+
+    [JsonIgnore]
+    public static int LocalHashPrefixLength = 20;
   }
 }

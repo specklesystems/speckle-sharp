@@ -292,9 +292,7 @@ namespace Speckle.Core.Serialisation
 
       if(baseObj is Blob b && BlobStorageFolder != null)
       {
-        var fileName = b.filePath.Split('/').Last();
-        var filePath = Path.Combine(BlobStorageFolder, $"{b.id.Substring(0, 10)}-{fileName}");
-        b.filePath = filePath;
+        b.filePath = b.getLocalDestinationPath(BlobStorageFolder);
       }
 
       foreach (MethodInfo onDeserialized in onDeserializedCallbacks)

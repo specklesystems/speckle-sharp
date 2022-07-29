@@ -39,19 +39,13 @@ namespace Speckle.Core.Transports.ServerUtils
 
     public string BlobStorageFolder { get; set; }
 
-    public ParallelServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60, int numThreads = 4, int numBufferedOperations = 8, string blobStorageFolder = null)
+    public ParallelServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60, int numThreads = 4, int numBufferedOperations = 8)
     {
       BaseUri = baseUri;
       AuthToken = authorizationToken;
       TimeoutSeconds = timeoutSeconds;
       NumThreads = numThreads;
       CancellationToken = CancellationToken.None;
-
-      if (blobStorageFolder == null)
-      {
-        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle/Blobs");
-      }
-      Directory.CreateDirectory(BlobStorageFolder);
 
       BlobStorageFolder = blobStorageFolder;
 
@@ -101,7 +95,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
     private void ThreadMain()
     {
-      using (ServerApi serialApi = new ServerApi(BaseUri, AuthToken, TimeoutSeconds))
+      using (ServerApi serialApi = new ServerApi(BaseUri, AuthToken, BlobStorageFolder, TimeoutSeconds))
       {
         serialApi.OnBatchSent = (num, size) => { lock (CallbackLock) OnBatchSent(num, size); };
         serialApi.CancellationToken = CancellationToken;
