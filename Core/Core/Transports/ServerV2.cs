@@ -46,7 +46,7 @@ namespace Speckle.Core.Transports
     private Thread SendingThread = null;
     private object SendBufferLock = new object();
 
-    // TODO: make send buffer more flexible to accept blobs too, otherwise we'll be computing blob hashes twice
+    // TODO: make send buffer more flexible to accept blobs too
     private List<(string, string)> SendBuffer = new List<(string, string)>();
 
     private bool ErrorState = false;
@@ -59,9 +59,8 @@ namespace Speckle.Core.Transports
 
       if (blobStorageFolder == null)
       {
-        // TODO: uncomment bottom line and revert to stream based blobs?
-        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs");
-        //BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs/{streamId}");
+        //BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs");
+        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs/{streamId}");
       }
       Directory.CreateDirectory(BlobStorageFolder);
     }
@@ -103,7 +102,11 @@ namespace Speckle.Core.Transports
           List<string> childrenIds = allIds.Where(id => !id.Contains("blob:")).ToList();
           List<string> blobIds = allIds.Where(id => id.Contains("blob:")).Select(id => id.Remove(0, 5)).ToList();
 
-          onTotalChildrenCountKnown?.Invoke(childrenIds.Count + blobIds.Count);
+          onTotalChildrenCountKnown?.Invoke(allIds.Count);
+
+          //
+          // Objects download
+          //
 
           // Check which children are not already in the local transport
           var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
@@ -122,6 +125,9 @@ namespace Speckle.Core.Transports
           await targetTransport.WriteComplete();
           targetTransport.EndWrite();
 
+          //
+          // Blobs download
+          //
           var localBlobTrimmedHashes = Directory.GetFiles(BlobStorageFolder)
             .Select(fileName => fileName.Split(Path.DirectorySeparatorChar).Last())
             .Where(fileName => fileName.Length > 10)
@@ -294,7 +300,7 @@ namespace Speckle.Core.Transports
         }
         try
         {
-          List<(string, string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList(); // TODO: probably not efficient, see note on send buffer prop
+          List<(string, string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList();
           List<(string, string)> bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
 
           List<string> objectIds = new List<string>(bufferObjects.Count);
@@ -323,6 +329,7 @@ namespace Speckle.Core.Transports
           await Api.UploadObjects(StreamId, newObjects);
 
           // TODO: Has blobs check
+          List<string> newBlobs = await Api.HasBlobs(StreamId, bufferBlobs);
           await Api.UploadBlobs(StreamId, bufferBlobs);
         }
         catch (Exception ex)
