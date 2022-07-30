@@ -98,7 +98,7 @@ namespace Speckle.Core.Kits
     }
 
     /// <summary>
-    /// TODO: Returns all the kits with potential converters for the software app. 
+    /// Returns all the kits with potential converters for the software app. 
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>

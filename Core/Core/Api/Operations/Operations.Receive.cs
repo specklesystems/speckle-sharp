@@ -100,9 +100,7 @@ namespace Speckle.Core.Api
 
       // First we try and get the object from the local transport. If it's there, we assume all its children are there, and proceed with deserialisation. 
       // This assumption is hard-wired into the SDK. Read below. 
-      //var objString = localTransport.GetObject(objectId);
-
-      string objString = null;// TODO: hack to bypass local transport
+      var objString = localTransport.GetObject(objectId);
 
       if (objString != null)
       {

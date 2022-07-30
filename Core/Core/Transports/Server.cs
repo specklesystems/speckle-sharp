@@ -18,10 +18,6 @@ namespace Speckle.Core.Transports
 {
   /// <summary>
   /// Sends data to a speckle server. 
-  /// TODOs:
-  /// - gzip
-  /// - preflight deltas on sending data
-  /// - preflight deltas on receving/copying data to an existing transport? 
   /// </summary>
   public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {

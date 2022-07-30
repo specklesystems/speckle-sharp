@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -140,12 +141,15 @@ namespace Speckle.Core.Transports.ServerUtils
                 serialApi.UploadBlobs(ubStreamId, ubBlobs).Wait();
                 tcs.SetResult(null);
                 break;
+              case ServerApiOperation.HasBlobs:
+                (string hbStreamId, List<(string, string)> hBlobs) = ((string, List<(string, string)>))inputValue;
+                var hasBlobResult = serialApi.HasBlobs(hbStreamId, hBlobs.Select(b => b.Item2).ToList()).Result;
+                break;
               case ServerApiOperation.DownloadBlobs:
                 (string dbStreamId, List<string> blobIds, CbBlobdDownloaded cb) = ((string, List<string>, CbBlobdDownloaded))inputValue;
                 serialApi.DownloadBlobs(dbStreamId, blobIds, cb).Wait();
                 tcs.SetResult(null);
                 break;
-
             }
           }
           catch (Exception e)
@@ -175,9 +179,7 @@ namespace Speckle.Core.Transports.ServerUtils
     }
 
     public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
-    {
-      // Stopwatch sw = new Stopwatch(); sw.Start(); // TODO: remove
-      
+    {      
       EnsureStarted();
       List<Task<object>> tasks = new List<Task<object>>();
       List<List<string>> splitObjectsIds;
@@ -200,8 +202,6 @@ namespace Speckle.Core.Transports.ServerUtils
         foreach (KeyValuePair<string, bool> kv in taskResult)
           ret[kv.Key] = kv.Value;
       }
-
-      // Console.WriteLine($"ParallelServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
 
       return ret;
     }
@@ -286,6 +286,14 @@ namespace Speckle.Core.Transports.ServerUtils
       EnsureStarted();
       Task<object> op = QueueOperation(ServerApiOperation.DownloadBlobs, (streamId, blobIds, onBlobDownloaded));
       await op;
+    }
+
+    public async Task<List<string>> HasBlobs(string streamId, List<(string,string)> blobs)
+    {
+      EnsureStarted();
+      Task<object> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
+      var res = await op;
+      return res as List<string>;
     }
 
     public void Dispose()

@@ -329,17 +329,14 @@ namespace Speckle.Core.Transports.ServerUtils
         response = await Client.SendAsync(message, CancellationToken);
       response.EnsureSuccessStatusCode();
 
-      // // TODO: remove
-      // int totalObjCount = 0;
-      // foreach(var ttt in multipartedObjects)
-      // {
-      //   totalObjCount += ttt.Count;
-      // }
       // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
     }
 
     public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
     {
+      if (CancellationToken.IsCancellationRequested) return;
+      if (blobs.Count == 0) return;
+
       var multipartFormDataContent = new MultipartFormDataContent();
       var streams = new List<Stream>();
       foreach (var (id, filePath) in blobs)
@@ -367,8 +364,6 @@ namespace Speckle.Core.Transports.ServerUtils
         while (ShouldRetry(response))
           response = await Client.SendAsync(message, CancellationToken);
         response.EnsureSuccessStatusCode();
-        //var responseString = await response.Content.ReadAsStringAsync();
-        //var parsed = JsonConvert.DeserializeObject<BlobUploadResult>(responseString);
 
         foreach (var stream in streams) stream.Dispose();
       }
@@ -377,6 +372,22 @@ namespace Speckle.Core.Transports.ServerUtils
         foreach (var stream in streams) stream.Dispose();
         throw ex;
       }
+    }
+
+    public async Task<List<string>> HasBlobs(string streamId, List<string> blobIds)
+    {
+      if (CancellationToken.IsCancellationRequested) return new List<string>();
+      var payload = JsonConvert.SerializeObject(blobIds);
+      var uri = new Uri($"/api/stream/{streamId}/blob/diff", UriKind.Relative);
+
+      HttpResponseMessage response = null;
+      while (ShouldRetry(response))
+        response = await Client.PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken);
+      response.EnsureSuccessStatusCode();
+
+      var responseString = await response.Content.ReadAsStringAsync();
+      var parsed = JsonConvert.DeserializeObject<List<string>>(responseString);
+      return parsed;
     }
 
     public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
@@ -405,6 +416,7 @@ namespace Speckle.Core.Transports.ServerUtils
             await response.Content.CopyToAsync(fs);
           }
 
+          response.Dispose();
           onBlobDownloaded();
         }
         catch (Exception ex)

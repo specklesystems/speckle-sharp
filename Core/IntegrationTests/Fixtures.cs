@@ -90,7 +90,7 @@ namespace TestsIntegration
       return @base;
     }
 
-    public static Blob[] GenerateBlobs()
+    public static Blob[] GenerateThreeBlobs()
     {
       // TODO: remove local file dependency
       var blob = new Blob();
