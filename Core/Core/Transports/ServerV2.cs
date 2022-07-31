@@ -15,7 +15,7 @@ namespace Speckle.Core.Transports
 {
   public class ServerTransport : ServerTransportV2
   {
-    public ServerTransport(Account account, string streamId, int timeoutSeconds = 60) : base(account, streamId, timeoutSeconds)
+    public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string blobStorageFolder = null) : base(account, streamId, timeoutSeconds, blobStorageFolder)
     {
     }
   }
@@ -56,11 +56,12 @@ namespace Speckle.Core.Transports
       Account = account;
       CancellationToken = CancellationToken.None;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
-
+      
       if (blobStorageFolder == null)
       {
         //BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs");
-        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs/{streamId}");
+        var accountHost = new Uri(account.serverInfo.url).Host;
+        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs/{accountHost}/{streamId}");
       }
       Directory.CreateDirectory(BlobStorageFolder);
     }
@@ -305,7 +306,7 @@ namespace Speckle.Core.Transports
 
           List<string> objectIds = new List<string>(bufferObjects.Count);
 
-          foreach ((string id, string json) in bufferObjects)
+          foreach ((string id, _) in bufferObjects)
           {
             if (id != "blob")
             {
@@ -315,11 +316,11 @@ namespace Speckle.Core.Transports
 
           Dictionary<string, bool> hasObjects = await Api.HasObjects(StreamId, objectIds);
           List<(string, string)> newObjects = new List<(string, string)>();
-          foreach ((string id, string json) in bufferObjects)
+          foreach ((string id, object json) in bufferObjects)
           {
             if (!hasObjects[id])
             {
-              newObjects.Add((id, json));
+              newObjects.Add((id, json as string));
             }
           }
 
@@ -328,9 +329,16 @@ namespace Speckle.Core.Transports
 
           await Api.UploadObjects(StreamId, newObjects);
 
-          // TODO: Has blobs check
-          List<string> newBlobs = await Api.HasBlobs(StreamId, bufferBlobs);
-          await Api.UploadBlobs(StreamId, bufferBlobs);
+          if (bufferBlobs.Count != 0)
+          {
+            var blobIdsToUpload = await Api.HasBlobs(StreamId, bufferBlobs);
+            var formattedIds = blobIdsToUpload.Select(id => $"blob:{id}").ToList();
+            var newBlobs = bufferBlobs.Where(tuple => formattedIds.IndexOf(tuple.Item1) != -1).ToList();
+            if (newBlobs.Count != 0)
+            {
+              await Api.UploadBlobs(StreamId, newBlobs);
+            }
+          }
         }
         catch (Exception ex)
         {
