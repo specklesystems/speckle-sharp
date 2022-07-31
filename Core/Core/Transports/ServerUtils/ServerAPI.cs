@@ -342,7 +342,6 @@ namespace Speckle.Core.Transports.ServerUtils
       foreach (var (id, filePath) in blobs)
       {
         var fileName = Path.GetFileName(filePath);
-        var fileExt = Path.GetExtension(filePath);
         var stream = File.OpenRead(filePath);
         streams.Add(stream);
         var fsc = new StreamContent(stream);
@@ -425,14 +424,7 @@ namespace Speckle.Core.Transports.ServerUtils
         }
       }
 
-
     }
-
-    //private bool HasBlobs(List<string> blobIds)
-    //{
-    //  string path = Path.Combine(BlobStorageFolder, "/index");
-    //  File.ReadAllLines(path);
-    //}
 
     private bool ShouldRetry(HttpResponseMessage serverResponse)
     {

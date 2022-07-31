@@ -143,7 +143,8 @@ namespace Speckle.Core.Transports.ServerUtils
                 break;
               case ServerApiOperation.HasBlobs:
                 (string hbStreamId, List<(string, string)> hBlobs) = ((string, List<(string, string)>))inputValue;
-                var hasBlobResult = serialApi.HasBlobs(hbStreamId, hBlobs.Select(b => b.Item2).ToList()).Result;
+                var hasBlobResult = serialApi.HasBlobs(hbStreamId, hBlobs.Select(b => b.Item1.Split(':')[1]).ToList()).Result;
+                tcs.SetResult(hasBlobResult);
                 break;
               case ServerApiOperation.DownloadBlobs:
                 (string dbStreamId, List<string> blobIds, CbBlobdDownloaded cb) = ((string, List<string>, CbBlobdDownloaded))inputValue;

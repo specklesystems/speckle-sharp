@@ -50,6 +50,10 @@ namespace TestsIntegration
       myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
       var sentObjectId = await Operations.Send(myObject, new List<ITransport> { transport });
+
+      // NOTE: used to debug diffing
+      await Operations.Send(myObject, new List<ITransport> { transport });
+
       var receivedObject = await Operations.Receive(sentObjectId, transport);
 
       var allFiles = Directory.GetFiles(transport.BlobStorageFolder)
@@ -59,7 +63,7 @@ namespace TestsIntegration
         .ToList();
 
       // Check that there are three downloaded blobs! 
-      Assert.AreEqual(blobPaths.Count, 3);
+      Assert.AreEqual(3, blobPaths.Count);
 
       var blobs = (receivedObject["blobs"] as List<object>).Cast<Blob>().ToList();
       // Check that we have three blobs
@@ -68,6 +72,8 @@ namespace TestsIntegration
       Assert.IsTrue(blobs[0].filePath.Contains(transport.BlobStorageFolder));
       Assert.IsTrue(blobs[1].filePath.Contains(transport.BlobStorageFolder));
       Assert.IsTrue(blobs[2].filePath.Contains(transport.BlobStorageFolder));
+
+     
     }
   }
 }
