@@ -74,6 +74,7 @@ namespace TestsIntegration
       @base["foo"] = "foo";
       @base["bar"] = "bar";
       @base["baz"] = "baz";
+      @base["now"] = DateTime.Now.ToString();
 
       return @base;
     }
