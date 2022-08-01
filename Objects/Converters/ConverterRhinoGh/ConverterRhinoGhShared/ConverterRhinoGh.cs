@@ -297,12 +297,14 @@ namespace Objects.Converter.RhinoGh
           throw new NotSupportedException();
       }
 
+      if (@base is null) return @base;
+
+      if (@object is RhinoObject _ro)
+        GetUserInfo(@base, _ro);
       if (material != null)
         @base["renderMaterial"] = material;
-
       if (style != null)
         @base["displayStyle"] = style;
-
       if (schema != null)
       {
         schema["renderMaterial"] = material;
@@ -513,7 +515,6 @@ namespace Objects.Converter.RhinoGh
     {
       return objects.Select(x => ConvertToSpeckleStr(x)).ToList();
     }
-
 
     public object ConvertToNative(Base @object)
     {
