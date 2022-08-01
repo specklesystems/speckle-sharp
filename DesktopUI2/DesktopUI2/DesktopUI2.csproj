@@ -217,12 +217,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.16" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.16" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.16" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.16" />
-    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.97-nightly" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
+    <PackageReference Include="Avalonia" Version="0.10.17" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.17" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.17" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.98-nightly" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="1.1.10" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Native\" />
