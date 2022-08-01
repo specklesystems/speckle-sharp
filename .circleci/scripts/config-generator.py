@@ -177,7 +177,7 @@ def getNewDeployJob(jobName: str):
     slug = jobName.split("-build")[0]
     isMac = slug.find("-mac") != -1
     deployJob: Dict[str, Any] = {
-        "slug": slug,
+        "slug": slug.split("-mac")[0] if isMac else slug,
         "name": slug + "-deploy",
         "os": "OSX" if isMac else "Win",
         "extension": "zip" if isMac else "exe",
