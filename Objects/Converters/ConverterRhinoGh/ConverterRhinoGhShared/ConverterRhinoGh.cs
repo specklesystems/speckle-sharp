@@ -122,6 +122,7 @@ namespace Objects.Converter.RhinoGh
       RenderMaterial material = null;
       RH.Mesh displayMesh = null;
       DisplayStyle style = null;
+      ObjectAttributes attributes = null;
       Base @base = null;
       Base schema = null;
       if (@object is RhinoObject ro)
@@ -131,10 +132,12 @@ namespace Objects.Converter.RhinoGh
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro) ?? ConvertToSpeckleStr(ro);
-        
+
+        attributes = ro.Attributes;
+
         // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
         // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
-        if(ro is BrepObject || ro is ExtrusionObject)
+        if (ro is BrepObject || ro is ExtrusionObject)
           displayMesh = GetRhinoRenderMesh(ro);
         
         if (!(@object is InstanceObject)) // block instance check
@@ -297,12 +300,14 @@ namespace Objects.Converter.RhinoGh
           throw new NotSupportedException();
       }
 
+      if (@base is null) return @base;
+
+      if (attributes != null)
+        GetUserInfo(@base, attributes);
       if (material != null)
         @base["renderMaterial"] = material;
-
       if (style != null)
         @base["displayStyle"] = style;
-
       if (schema != null)
       {
         schema["renderMaterial"] = material;
@@ -513,7 +518,6 @@ namespace Objects.Converter.RhinoGh
     {
       return objects.Select(x => ConvertToSpeckleStr(x)).ToList();
     }
-
 
     public object ConvertToNative(Base @object)
     {

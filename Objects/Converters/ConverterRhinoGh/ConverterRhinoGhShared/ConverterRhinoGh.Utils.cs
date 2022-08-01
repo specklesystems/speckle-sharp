@@ -1,16 +1,17 @@
-﻿using Grasshopper.Kernel.Types;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Drawing;
+
+using Rhino;
+using Rhino.DocObjects;
+using Grasshopper.Kernel.Types;
+
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Objects.Geometry;
 using Objects.Primitive;
 using Objects.Other;
-using Rhino;
-using Rhino.Geometry;
-using Rhino.DocObjects;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -46,6 +47,64 @@ namespace Objects.Converter.RhinoGh
 
     #region app props
     public static string RhinoPropName = "RhinoProps";
+    private static string UserStrings = "userStrings";
+    private static string UserDictionary = "userDictionary";
+
+    /// <summary>
+    /// Attaches user strings, user dictionaries, and object name from a RhinoObject to  Base
+    /// </summary>
+    /// <param name="obj">The converted Base object to attach info to</param>
+    /// <param name="nativeObj">The Rhino object containing info</param>
+    /// <returns></returns>
+    public void GetUserInfo(Base obj, ObjectAttributes attributes)
+    {
+      var userStringsBase = new Base();
+      var userDictionaryBase = new Base();
+
+      var userStrings = attributes.GetUserStrings();
+      userStrings.AllKeys.ToList().ForEach(k => userStringsBase[k] = userStrings[k]);
+      ParseArchivableToDictionary(userDictionaryBase, attributes.UserDictionary);
+
+      obj[UserStrings] = userStringsBase;
+      obj[UserDictionary] = userDictionaryBase;
+
+      if (!string.IsNullOrEmpty(attributes.Name)) obj["name"] = attributes.Name;
+    }
+
+    /// <summary>
+    /// Copies an ArchivableDictionary to a Base
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="dict"></param>
+    private void ParseArchivableToDictionary(Base target, Rhino.Collections.ArchivableDictionary dict)
+    {
+      foreach (var key in dict.Keys)
+      {
+        var obj = dict[key];
+        switch (obj)
+        {
+          case Rhino.Collections.ArchivableDictionary o:
+            var nested = new Base();
+            ParseArchivableToDictionary(nested, o);
+            target[key] = nested;
+            continue;
+
+          case double _:
+          case bool _:
+          case int _:
+          case string _:
+          case IEnumerable<double> _:
+          case IEnumerable<bool> _:
+          case IEnumerable<int> _:
+          case IEnumerable<string> _:
+            target[key] = obj;
+            continue;
+
+          default:
+            continue;
+        }
+      }
+    }
     #endregion
 
     #region Units

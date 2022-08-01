@@ -396,14 +396,8 @@ namespace SpeckleRhino
         // assign layer
         attributes.LayerIndex = bakeLayer.Index;
 
-        // handle user strings
-        if (obj[UserStrings] is Dictionary<string, object> userStrings)
-          foreach (var key in userStrings.Keys)
-            attributes.SetUserString(key, userStrings[key] as string);
-
-        // handle user dictionaries
-        if (obj[UserDictionary] is Dictionary<string, object> dict)
-          ParseDictionaryToArchivable(attributes.UserDictionary, dict);
+        // handle user info
+        SetUserInfo(obj, attributes);
 
         Guid id = Doc.Objects.Add(convertedRH, attributes);
 
@@ -426,6 +420,19 @@ namespace SpeckleRhino
           }
         }
       }
+    }
+
+    private void SetUserInfo(Base obj, ObjectAttributes attributes)
+    {
+      if (obj[UserStrings] is Base userStrings)
+        foreach (var key in userStrings.GetMemberNames())
+          attributes.SetUserString(key, userStrings[key] as string);
+
+      if (obj[UserDictionary] is Base userDictionary)
+        ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
+
+      var name = obj["name"] as string;
+      if (name != null) attributes.Name = name;
     }
 
     #endregion
@@ -492,17 +499,6 @@ namespace SpeckleRhino
             progress.Report.LogConversionError(exception);
             continue;
           }
-
-          // attach user strings, dictionaries, and name
-          var userStrings = obj.Attributes.GetUserStrings();
-          var userStringDict = userStrings.AllKeys.ToDictionary(k => k, k => userStrings[k]);
-          converted[UserStrings] = userStringDict;
-
-          var userDict = new Dictionary<string, object>();
-          ParseArchivableToDictionary(userDict, obj.Attributes.UserDictionary);
-          converted[UserDictionary] = userDict;
-
-          if (obj.HasName) converted["name"] = obj.Name;
 
           if (obj is InstanceObject)
             containerName = "Blocks";
@@ -617,97 +613,6 @@ namespace SpeckleRhino
       //return state;
     }
 
-    /// <summary>
-    /// Copies an ArchivableDictionary to a Dictionary
-    /// </summary>
-    /// <param name="target"></param>
-    /// <param name="dict"></param>
-    private void ParseArchivableToDictionary(Dictionary<string, object> target, Rhino.Collections.ArchivableDictionary dict)
-    {
-      foreach (var key in dict.Keys)
-      {
-        var obj = dict[key];
-        switch (obj)
-        {
-          case Rhino.Collections.ArchivableDictionary o:
-            var nested = new Dictionary<string, object>();
-            ParseArchivableToDictionary(nested, o);
-            target[key] = nested;
-            continue;
-
-          case double _:
-          case bool _:
-          case int _:
-          case string _:
-          case IEnumerable<double> _:
-          case IEnumerable<bool> _:
-          case IEnumerable<int> _:
-          case IEnumerable<string> _:
-            target[key] = obj;
-            continue;
-
-          default:
-            continue;
-        }
-      }
-    }
-
-    /// <summary>
-    /// Copies a Dictionary to an ArchivableDictionary
-    /// </summary>
-    /// <param name="target"></param>
-    /// <param name="dict"></param>
-    private void ParseDictionaryToArchivable(Rhino.Collections.ArchivableDictionary target, Dictionary<string, object> dict)
-    {
-      foreach (var key in dict.Keys)
-      {
-        var obj = dict[key];
-        switch (obj)
-        {
-          case Dictionary<string, object> o:
-            var nested = new Rhino.Collections.ArchivableDictionary();
-            ParseDictionaryToArchivable(nested, o);
-            target.Set(key, nested);
-            continue;
-
-          case double o:
-            target.Set(key, o);
-            continue;
-
-          case bool o:
-            target.Set(key, o);
-            continue;
-
-          case int o:
-            target.Set(key, o);
-            continue;
-
-          case string o:
-            target.Set(key, o);
-            continue;
-
-          case IEnumerable<double> o:
-            target.Set(key, o);
-            continue;
-
-          case IEnumerable<bool> o:
-            target.Set(key, o);
-            continue;
-
-          case IEnumerable<int> o:
-            target.Set(key, o);
-            continue;
-
-          case IEnumerable<string> o:
-            target.Set(key, o);
-            continue;
-
-          default:
-            continue;
-        }
-      }
-    }
-
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
     {
       var objs = new List<string>();
@@ -742,6 +647,63 @@ namespace SpeckleRhino
       }
 
       return objs;
+    }
+
+
+    /// <summary>
+    /// Copies a Base to an ArchivableDictionary
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="dict"></param>
+    private void ParseDictionaryToArchivable(Rhino.Collections.ArchivableDictionary target, Base @base)
+    {
+      foreach (var prop in @base.GetMemberNames())
+      {
+        var obj = @base[prop];
+        switch (obj)
+        {
+          case Base o:
+            var nested = new Rhino.Collections.ArchivableDictionary();
+            ParseDictionaryToArchivable(nested, o);
+            target.Set(prop, nested);
+            continue;
+
+          case double o:
+            target.Set(prop, o);
+            continue;
+
+          case bool o:
+            target.Set(prop, o);
+            continue;
+
+          case int o:
+            target.Set(prop, o);
+            continue;
+
+          case string o:
+            target.Set(prop, o);
+            continue;
+
+          case IEnumerable<double> o:
+            target.Set(prop, o);
+            continue;
+
+          case IEnumerable<bool> o:
+            target.Set(prop, o);
+            continue;
+
+          case IEnumerable<int> o:
+            target.Set(prop, o);
+            continue;
+
+          case IEnumerable<string> o:
+            target.Set(prop, o);
+            continue;
+
+          default:
+            continue;
+        }
+      }
     }
 
     private string RemoveInvalidDynamicPropChars(string str)
