@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -20,6 +21,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public Timer SelectionTimer;
 
+    public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
 
     public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
 
@@ -54,9 +56,30 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetFileName() => CurrentDoc.Document.Title;
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
+      if (selection != null)
+      {
+        if (!deselect)
+        {
+          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
+          if (currentSelection != null) currentSelection.AddRange(selection);
+          else currentSelection = selection;
+          try
+          {
+            CurrentDoc.Selection.SetElementIds(currentSelection);
+            CurrentDoc.ShowElements(currentSelection);
+          }
+          catch (Exception e) { }
+        }
+        else
+        {
+          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
+          CurrentDoc.Selection.SetElementIds(updatedSelection);
+          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
+        }
+      }
     }
 
     public override List<StreamState> GetStreamsInFile()
@@ -77,6 +100,11 @@ namespace Speckle.ConnectorRevit.UI
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
       return new List<MenuItem>();
+    }
+
+    public override void ResetDocument()
+    {
+      // TODO!
     }
   }
 }

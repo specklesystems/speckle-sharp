@@ -385,10 +385,7 @@ namespace DesktopUI2.ViewModels
       {
 
       }
-
     }
-
-
 
     internal async void Init()
     {
@@ -434,7 +431,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
 
     public async void RemoveAccountCommand(Account account)
     {
@@ -554,11 +550,8 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
-
       var dialog = new NewStreamDialog(Accounts);
       var result = await dialog.ShowDialog<bool>();
-
-
 
       if (result)
       {
@@ -683,7 +676,6 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
-
     }
 
     private void ChangeTheme(bool isDark)
@@ -701,10 +693,7 @@ namespace DesktopUI2.ViewModels
         theme.SetBaseTheme(Theme.Dark);
 
       materialTheme.CurrentTheme = theme;
-
-
     }
-
 
     public void RefreshCommand()
     {
@@ -712,9 +701,5 @@ namespace DesktopUI2.ViewModels
       ApiUtils.ClearCache();
       Init();
     }
-
-
   }
-
-
 }

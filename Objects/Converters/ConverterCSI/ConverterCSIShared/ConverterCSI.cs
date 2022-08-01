@@ -302,12 +302,12 @@ namespace Objects.Converter.CSI
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
 
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
+    public void SetContextObjects(List<ApplicationObject> objects)
     {
       throw new NotImplementedException();
     }
 
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects)
+    public void SetPreviousContextObjects(List<ApplicationObject> objects)
     {
       throw new NotImplementedException();
     }

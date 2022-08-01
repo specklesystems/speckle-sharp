@@ -3,13 +3,13 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Speckle.Core.Kits;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -49,8 +49,9 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="host"></param>
     /// <param name="base"></param>
-    public void GetHostedElements(Base @base, HostObject host)
+    public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
+      notes = new List<string>();
       var hostedElementIds = host.FindInserts(true, true, true, true);
       var convertedHostedElements = new List<Base>();
 
@@ -75,65 +76,70 @@ namespace Objects.Converter.Revit
 
         ContextObjects.RemoveAt(isSelectedInContextObjects);
 
+        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString()) ;
         if (CanConvertToSpeckle(element))
         {
           var obj = ConvertToSpeckle(element);
-
           if (obj != null)
           {
+            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
             convertedHostedElements.Add(obj);
             ConvertedObjectsList.Add(obj.applicationId);
           }
+          else
+          {
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          }
         }
+        else
+        {
+          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Conversion not supported");
+        }
+        Report.Log(reportObj);
       }
 
       if (convertedHostedElements.Any())
       {
+        notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
         if (@base["elements"] == null || !(@base["elements"] is List<Base>))
           @base["elements"] = new List<Base>();
 
         (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
       }
-
     }
 
-    public List<ApplicationPlaceholderObject> SetHostedElements(Base @base, HostObject host)
+    public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)
     {
-      var placeholders = new List<ApplicationPlaceholderObject>();
       if (@base["elements"] != null && @base["elements"] is List<Base> elements)
       {
         CurrentHostElement = host;
 
         foreach (var obj in elements)
         {
-          if (obj == null)
+          if (obj == null) continue;
+
+          if (!CanConvertToNative(obj))
           {
+            appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
             continue;
           }
-
-          if (!CanConvertToNative(obj)) continue;
 
           try
           {
             var res = ConvertToNative(obj);
-            if (res is ApplicationPlaceholderObject apl)
-            {
-              placeholders.Add(apl);
-            }
-            else if (res is List<ApplicationPlaceholderObject> apls)
-            {
-              placeholders.AddRange(apls);
-            }
+            if (res is ApplicationObject apl)
+              appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
           }
           catch (Exception e)
           {
-            throw (new Exception($"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"));
+            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type}: \n{e.Message}");
+            continue;
           }
         }
 
         CurrentHostElement = null; // unset the current host element.
       }
-      return placeholders;
+      return appObj;
     }
 
     #endregion
@@ -392,7 +398,7 @@ namespace Objects.Converter.Revit
               if (rp.Definition.Name.ToLower().Contains("name"))
               {
                 var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
-                Report.ConversionLog.Add($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+                Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
                 rp.Set(temp);
               }
               else
@@ -485,9 +491,7 @@ namespace Objects.Converter.Revit
       if (match != null)
       {
         if (match is FamilySymbol fs && !fs.IsActive)
-        {
           fs.Activate();
-        }
 
         return (T)(object)match;
       }
@@ -500,9 +504,7 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
-          {
             fs.Activate();
-          }
 
           return (T)(object)match;
         }
@@ -516,9 +518,7 @@ namespace Objects.Converter.Revit
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
-          {
             fs.Activate();
-          }
 
           return (T)(object)match;
         }
@@ -649,9 +649,8 @@ namespace Objects.Converter.Revit
       }
       else
       {
-
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.ApplicationGeneratedId);
+        element = Doc.GetElement(@ref.CreatedIds.FirstOrDefault());
       }
 
       return element;
@@ -768,7 +767,9 @@ namespace Objects.Converter.Revit
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
-      openings.AddRange(ContextObjects.Where(x => x.NativeObject is RevitShaft).Select(x => x.NativeObject).Cast<RevitShaft>());
+      var shafts = new List<RevitShaft>();
+      ContextObjects.ForEach(o => shafts.AddRange(o.Converted.Where(c => c is RevitShaft).Cast<RevitShaft>()));
+      openings.AddRange(shafts);
 
       foreach (var @void in speckleElement["voids"] as List<ICurve>)
       {
@@ -784,12 +785,10 @@ namespace Objects.Converter.Revit
     private bool HasOverlappingOpening(ICurve @void, List<RevitOpening> openings)
     {
       foreach (RevitOpening opening in openings)
-      {
         if (CurvesOverlap(@void, opening.outline))
           return true;
-      }
-      return false;
 
+      return false;
     }
 
     private bool CurvesOverlap(ICurve icurveA, ICurve icurveB)
@@ -854,13 +853,11 @@ namespace Objects.Converter.Revit
         var poly = new Polycurve(ModelUnits);
         foreach (var segment in loop)
         {
-
           var c = segment.GetCurve();
 
           if (c == null)
-          {
             continue;
-          }
+
           var curve = CurveToSpeckle(c);
 
           ((Base)curve)["elementId"] = segment.ElementId.ToString();
@@ -890,7 +887,7 @@ namespace Objects.Converter.Revit
     #region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
-      var matId = element.GetMaterialIds(false).FirstOrDefault();
+      var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
 
       if (matId == null)
       {
@@ -1098,21 +1095,19 @@ namespace Objects.Converter.Revit
       {
       }
     }
-    
-    public ApplicationPlaceholderObject CheckForExistingObject(Base @base)
+
+    public ApplicationObject CheckForExistingObject(Base @base)
     {
       @base.applicationId ??= @base.id;
       var docObj = GetExistingElementByApplicationId(@base.applicationId);
 
       if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject
-          { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+        return new ApplicationObject(@base.id, @base.speckle_type)
+        { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, Converted = new List<object> { docObj } };
 
       //just create new one 
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       return null;
     }

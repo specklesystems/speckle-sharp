@@ -292,56 +292,6 @@
                   </m:FloatingButton>
                 </Grid>
               </m:ColorZone>
-              <!--  REPORT  -->
-              <m:ColorZone
-                Grid.Row="3"
-                Margin="0,10,0,0"
-                assists:ShadowAssist.ShadowDepth="Depth0"
-                CornerRadius="25"
-                IsVisible="{Binding ShowReport}"
-                Mode="Accent">
-
-                <Grid ColumnDefinitions="*, auto">
-                  <Button
-                    Margin="0,0,3,0"
-                    VerticalAlignment="Center"
-                    CornerRadius="25,0,0,25"
-                    Classes="Flat"
-                    Command="{Binding OpenReportCommand}"
-                    ToolTip.Tip="Open Report">
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock
-                        VerticalAlignment="Center"
-                        Classes="Overline"
-                        FontWeight="Medium"
-                        Foreground="White"
-                        Text="Some elements have warnings, please check the report"
-                        TextWrapping="Wrap" />
-                      <icons:MaterialIcon
-                        Margin="5,0"
-                        VerticalAlignment="Center"
-                        Foreground="White"
-                        Kind="TextBox" />
-                    </StackPanel>
-                  </Button>
-                  <m:FloatingButton
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    Classes="Mini"
-                    Command="{Binding CloseReportNotificationCommand}"
-                    ToolTip.Tip="Close notification">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="White"
-                        Kind="Close" />
-
-                    </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
-              </m:ColorZone>
             </Grid>
           </Grid>
           <Grid IsVisible="{Binding IsRemovingStream, FallbackValue=False}">

@@ -885,10 +885,10 @@ namespace Objects.Converter.Revit
       return result;
     }
     
-    public Solid BrepToNative(Brep brep)
+    public Solid BrepToNative(Brep brep, out List<string> notes)
     {
       //Make sure face references are calculated by revit
-
+      notes = new List<string>();
       var bRepType = BRepType.OpenShell;
       switch (brep.Orientation)
       {
@@ -956,6 +956,7 @@ namespace Objects.Converter.Revit
                 }
                 catch (Exception e)
                 {
+                  notes.Add($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}: {e.Message}");
                   throw new SpeckleException($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)}  on brep with id {brep.id}\n   Reason: {e.Message}", false);
                 }
               }
@@ -963,6 +964,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
+              notes.Add(e.Message);
               if (e is SpeckleException) throw;
               throw new SpeckleException($"Failed to create loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
             }
@@ -972,6 +974,7 @@ namespace Objects.Converter.Revit
         catch (Exception e)
         {
           builder.Dispose();
+          notes.Add(e.Message);
           if (e is SpeckleException) throw;
           throw new SpeckleException($"Failed to create face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
         }
@@ -990,6 +993,7 @@ namespace Objects.Converter.Revit
     public Brep BrepToSpeckle(Solid solid, Document d, string units = null)
     {
 #if REVIT2019 || REVIT2020
+
       throw new Speckle.Core.Logging.SpeckleException("Converting BREPs to Speckle is currently only supported in Revit 2021 and above.");
 #else
       // TODO: Incomplete implementation!!
@@ -1196,19 +1200,23 @@ namespace Objects.Converter.Revit
       public List<int> orientation;
     }
 
-    public DirectShape BrepToDirectShape(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public DirectShape BrepToDirectShape(Brep brep, out List<string> notes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
       var revitDs = DirectShape.CreateElement(Doc, new ElementId(cat));
-
+      notes = new List<string>();
       try
       {
-        var solid = BrepToNative(brep);
-        if (solid == null) throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid");
+        var solid = BrepToNative(brep, out notes);
+        if (solid == null)
+        {
+          notes.Add("Solid conversion returned null");
+          throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid");
+        }
         revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)
       {
-        Report.LogConversionError(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
+        notes.Add($"Failed to convert brep, using display value meshes instead.");
         var meshes = brep.displayValue.SelectMany(m => MeshToNative(m));
         revitDs.SetShape(meshes.ToArray());
       }

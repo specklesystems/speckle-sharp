@@ -82,7 +82,7 @@ namespace Speckle.ConnectorRevit.UI
       var docs = new List<Document>();
 
       // Get settings and return empty list if we should not send linked models
-      var sendLinkedModels = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
+      var sendLinkedModels = CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
       if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
         return docs;
 

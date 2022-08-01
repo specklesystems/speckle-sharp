@@ -107,9 +107,7 @@ namespace SpeckleRhino
           List<SupportedSchema> schemasToTest = GetValidSchemas(obj);
           foreach (var testSchema in schemasToTest)
             if (IsViableSchemaObject(testSchema, obj))
-            {
               SchemaDictionary[testSchema.ToString()].Add(obj); break;
-            }
         }
       }
     }
@@ -190,9 +188,7 @@ namespace SpeckleRhino
           {
             Mesh mesh = obj.Geometry as Mesh;
             if (!mesh.IsClosed)
-            {
               return true;
-            }
           }
           catch { }
           break;

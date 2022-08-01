@@ -53,10 +53,8 @@ namespace Objects.Converter.Revit
       return polycurve;
     }
 
-    public List<ApplicationPlaceholderObject> AnalyticalSurfaceToNative(Element2D speckleElement)
+    public ApplicationObject AnalyticalSurfaceToNative(Element2D speckleElement)
     {
-
-      List<ApplicationPlaceholderObject> placeholderObjects = new List<ApplicationPlaceholderObject> { };
       switch (speckleElement.property.type)
       {
         case Structural.PropertyType2D.Wall:
@@ -69,16 +67,12 @@ namespace Objects.Converter.Revit
           var topLevel = LevelFromPoint(PointToNative(topNode.basePoint));
           RevitWall revitWall = new RevitWall(speckleElement.property.name, speckleElement.property.name, baseline, bottemLevel, topLevel);
           return WallToNative(revitWall);
-          break;
         default:
           var polycurve = PolycurveFromTopology(speckleElement.topology);
           var level = LevelFromPoint(PointToNative(speckleElement.topology[0].basePoint));
           RevitFloor revitFloor = new RevitFloor(speckleElement.property.name, speckleElement.property.name, polycurve, level);
           return FloorToNative(revitFloor);
-          break;
       }
-      return placeholderObjects;
-
     }
 
 #if !REVIT2023
@@ -264,13 +258,9 @@ namespace Objects.Converter.Revit
 #else
     private Element2D AnalyticalSurfaceToSpeckle(AnalyticalPanel revitSurface)
     {
-
-
       var speckleElement2D = new Element2D();
 
       var structuralElement = revitSurface;
-
-
 
       var mark = GetParamValue<string>(structuralElement, BuiltInParameter.ALL_MODEL_MARK);
       speckleElement2D.name = mark;
@@ -293,12 +283,10 @@ namespace Objects.Converter.Revit
         }
 
         displayLine.segments.Add(CurveToSpeckle(loop));
-
       }
 
       speckleElement2D.topology = edgeNodes;
       //speckleElement2D["displayValue"] = displayLine;
-
 
       //speckleElement2D.voids = voidNodes;
 

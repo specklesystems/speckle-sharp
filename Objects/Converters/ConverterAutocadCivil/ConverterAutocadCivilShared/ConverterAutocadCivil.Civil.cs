@@ -636,7 +636,7 @@ namespace Objects.Converter.AutocadCivil
 
       _structure.location = PointToSpeckle(structure.Location, ModelUnits);
       _structure.pipeIds = pipeIds;
-      _structure.displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody) };
+      _structure.displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody, out List<string> notes) };
       _structure.units = ModelUnits;
 
       // assign additional structure props
@@ -670,7 +670,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameterOrWidth;
       _pipe.length = pipe.Length3DToInsideEdge;
-      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody) };
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody, out List<string> notes) };
       _pipe.units = ModelUnits;
 
       // assign additional pipe props
@@ -709,7 +709,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameter;
       _pipe.length = pipe.Length3DCenterToCenter;
-      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Get3dBody()) };
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Get3dBody(), out List<string> notes) };
       _pipe.units = ModelUnits;
 
       // assign additional pipe props
