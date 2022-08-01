@@ -31,6 +31,11 @@ namespace Objects.Converter.Revit
       Level level = null;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
+      List<string> joinSettings = new List<string>();
+      if (Settings.ContainsKey("disallow-join"))
+      {
+        joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+      }
 
       if (speckleWall is RevitWall speckleRevitWall)
       {
@@ -48,19 +53,15 @@ namespace Objects.Converter.Revit
       {
         isUpdate = false;
         revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
-        if (Settings.ContainsKey("disallow-join"))
+        if (joinSettings.Contains(StructuralWalls) && structural)
         {
-          List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
-          if (joinSettings.Contains(StructuralWalls) && structural)
-          {
-            WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
-            WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
-          }
-          if (joinSettings.Contains(ArchitecturalWalls) && !structural)
-          {
-            WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
-            WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
-          }
+          WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
+          WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
+        }
+        if (joinSettings.Contains(ArchitecturalWalls) && !structural)
+        {
+          WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
+          WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
         }
       }
       if (revitWall == null)
@@ -76,6 +77,13 @@ namespace Objects.Converter.Revit
 
       if (isUpdate)
       {
+        // walls behave very strangly while joined
+        // if a wall is joined and you try to move it to a location where it isn't touching the joined wall,
+        // then it will move only one end of the wall and the other will stay joined
+        // therefore, disallow joins while changing the wall and then reallow the joins if need be
+        WallUtils.DisallowWallJoinAtEnd(revitWall, 0);
+        WallUtils.DisallowWallJoinAtEnd(revitWall, 1);
+
         //NOTE: updating an element location can be buggy if the baseline and level elevation don't match
         //Let's say the first time an element is created its base point/curve is @ 10m and the Level is @ 0m
         //the element will be created @ 0m
@@ -91,6 +99,19 @@ namespace Objects.Converter.Revit
         ((LocationCurve)revitWall.Location).Curve = newCurve;
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+
+
+        // now that we've moved the wall, rejoin the wall ends
+        if (!joinSettings.Contains(StructuralWalls) && structural)
+        {
+          WallUtils.AllowWallJoinAtEnd(revitWall, 0);
+          WallUtils.AllowWallJoinAtEnd(revitWall, 1);
+        }
+        if (!joinSettings.Contains(ArchitecturalWalls) && !structural)
+        {
+          WallUtils.AllowWallJoinAtEnd(revitWall, 0);
+          WallUtils.AllowWallJoinAtEnd(revitWall, 1);
+        }
       }
 
       if (speckleWall is RevitWall spklRevitWall)

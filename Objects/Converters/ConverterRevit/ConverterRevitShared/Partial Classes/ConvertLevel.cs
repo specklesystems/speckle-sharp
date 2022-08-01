@@ -93,7 +93,6 @@ namespace Objects.Converter.Revit
         Report.Log($"Created Level {revitLevel.Name} {revitLevel.Id}");
       }
 
-
       return revitLevel;
 
     }
