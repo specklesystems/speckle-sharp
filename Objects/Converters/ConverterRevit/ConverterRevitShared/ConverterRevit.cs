@@ -99,144 +99,144 @@ namespace Objects.Converter.Revit
       Settings = settings as Dictionary<string, string>;
     }
 
-    public Base ConvertToSpeckle(object @object)
-    {
-      Base returnObject = null;
-      switch (@object)
-      {
-        case DB.Document o:
-          returnObject = ModelToSpeckle(o);
-          break;
-        case DB.DetailCurve o:
-          returnObject = DetailCurveToSpeckle(o);
-          break;
-        case DB.DirectShape o:
-          returnObject = DirectShapeToSpeckle(o);
-          break;
-        case DB.FamilyInstance o:
-          returnObject = FamilyInstanceToSpeckle(o);
-          break;
-        case DB.Floor o:
-          returnObject = FloorToSpeckle(o);
-          break;
-        case DB.Level o:
-          returnObject = LevelToSpeckle(o);
-          break;
-        case DB.View o:
-          returnObject = ViewToSpeckle(o);
-          break;
-        //NOTE: Converts all materials in the materials library
-        case DB.Material o:
-          returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
-          break;
-        case DB.ModelCurve o:
+        public Base ConvertToSpeckle(object @object)
+        {
+            Base returnObject = null;
+            switch (@object)
+            {
+                case DB.Document o:
+                    returnObject = ModelToSpeckle(o);
+                    break;
+                case DB.DetailCurve o:
+                    returnObject = DetailCurveToSpeckle(o);
+                    break;
+                case DB.DirectShape o:
+                    returnObject = DirectShapeToSpeckle(o);
+                    break;
+                case DB.FamilyInstance o:
+                    returnObject = FamilyInstanceToSpeckle(o);
+                    break;
+                case DB.Floor o:
+                    returnObject = FloorToSpeckle(o);
+                    break;
+                case DB.Level o:
+                    returnObject = LevelToSpeckle(o);
+                    break;
+                case DB.View o:
+                    returnObject = ViewToSpeckle(o);
+                    break;
+                //NOTE: Converts all materials in the materials library
+                case DB.Material o:
+                    returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
+                    break;
+                case DB.ModelCurve o:
 
-          if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
-          {
-            returnObject = RoomBoundaryLineToSpeckle(o);
-          }
-          else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
-          {
-            returnObject = SpaceSeparationLineToSpeckle(o);
-          }
-          else
-          {
-            returnObject = ModelCurveToSpeckle(o);
-          }
+                    if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
+                    {
+                        returnObject = RoomBoundaryLineToSpeckle(o);
+                    }
+                    else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
+                    {
+                        returnObject = SpaceSeparationLineToSpeckle(o);
+                    }
+                    else
+                    {
+                        returnObject = ModelCurveToSpeckle(o);
+                    }
 
-          break;
-        case DB.Opening o:
-          returnObject = OpeningToSpeckle(o);
-          break;
-        case DB.RoofBase o:
-          returnObject = RoofToSpeckle(o);
-          break;
-        case DB.Area o:
-          returnObject = AreaToSpeckle(o);
-          break;
-        case DB.Architecture.Room o:
-          returnObject = RoomToSpeckle(o);
-          break;
-        case DB.Architecture.TopographySurface o:
-          returnObject = TopographyToSpeckle(o);
-          break;
-        case DB.Wall o:
-          returnObject = WallToSpeckle(o);
-          break;
-        case DB.Mechanical.Duct o:
-          returnObject = DuctToSpeckle(o);
-          break;
-        case DB.Mechanical.FlexDuct o:
-          returnObject = DuctToSpeckle(o);
-          Report.Log($"Converted FlexDuct {o.Id}");
-          break;
-        case DB.Mechanical.Space o:
-          returnObject = SpaceToSpeckle(o);
-          break;
-        case DB.Plumbing.Pipe o:
-          returnObject = PipeToSpeckle(o);
-          break;
-        case DB.Plumbing.FlexPipe o:
-          returnObject = PipeToSpeckle(o);
-          Report.Log($"Converted FlexPipe {o.Id}");
-          break;
-        case DB.Electrical.Wire o:
-          returnObject = WireToSpeckle(o);
-          break;
-        case DB.Electrical.CableTray o:
-          returnObject = CableTrayToSpeckle(o);
-          break;
-        //these should be handled by curtain walls
-        case DB.CurtainGridLine _:
-          returnObject = null;
-          break;
-        case DB.Architecture.BuildingPad o:
-          returnObject = BuildingPadToSpeckle(o);
-          break;
-        case DB.Architecture.Stairs o:
-          returnObject = StairToSpeckle(o);
-          break;
-        //these are handled by Stairs
-        case DB.Architecture.StairsRun _:
-          returnObject = null;
-          break;
-        case DB.Architecture.StairsLanding _:
-          returnObject = null;
-          break;
-        case DB.Architecture.Railing o:
-          returnObject = RailingToSpeckle(o);
-          break;
-        case DB.Architecture.TopRail _:
-          returnObject = null;
-          break;
-        case DB.Structure.Rebar o:
-          returnObject = RebarToSpeckle(o);
-          break;
-        case DB.Ceiling o:
-          returnObject = CeilingToSpeckle(o);
-          break;
-        case DB.PointCloudInstance o:
-          returnObject = PointcloudToSpeckle(o);
-          break;
-        case DB.ProjectInfo o:
-          returnObject = ProjectInfoToSpeckle(o);
-          break;
-        case DB.ElementType o:
-          returnObject = ElementTypeToSpeckle(o);
-          break;
-        case DB.Grid o:
-          returnObject = GridLineToSpeckle(o);
-          break;
-        case DB.ReferencePoint o:
-          if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
-          {
-            returnObject = AnalyticalNodeToSpeckle(o);
+                    break;
+                case DB.Opening o:
+                    returnObject = OpeningToSpeckle(o);
+                    break;
+                case DB.RoofBase o:
+                    returnObject = RoofToSpeckle(o);
+                    break;
+                case DB.Area o:
+                    returnObject = AreaToSpeckle(o);
+                    break;
+                case DB.Architecture.Room o:
+                    returnObject = RoomToSpeckle(o);
+                    break;
+                case DB.Architecture.TopographySurface o:
+                    returnObject = TopographyToSpeckle(o);
+                    break;
+                case DB.Wall o:
+                    returnObject = WallToSpeckle(o);
+                    break;
+                case DB.Mechanical.Duct o:
+                    returnObject = DuctToSpeckle(o);
+                    break;
+                case DB.Mechanical.FlexDuct o:
+                    returnObject = DuctToSpeckle(o);
+                    Report.Log($"Converted FlexDuct {o.Id}");
+                    break;
+                case DB.Mechanical.Space o:
+                    returnObject = SpaceToSpeckle(o);
+                    break;
+                case DB.Plumbing.Pipe o:
+                    returnObject = PipeToSpeckle(o);
+                    break;
+                case DB.Plumbing.FlexPipe o:
+                    returnObject = PipeToSpeckle(o);
+                    Report.Log($"Converted FlexPipe {o.Id}");
+                    break;
+                case DB.Electrical.Wire o:
+                    returnObject = WireToSpeckle(o);
+                    break;
+                case DB.Electrical.CableTray o:
+                    returnObject = CableTrayToSpeckle(o);
+                    break;
+                //these should be handled by curtain walls
+                case DB.CurtainGridLine _:
+                    returnObject = null;
+                    break;
+                case DB.Architecture.BuildingPad o:
+                    returnObject = BuildingPadToSpeckle(o);
+                    break;
+                case DB.Architecture.Stairs o:
+                    returnObject = StairToSpeckle(o);
+                    break;
+                //these are handled by Stairs
+                case DB.Architecture.StairsRun _:
+                    returnObject = null;
+                    break;
+                case DB.Architecture.StairsLanding _:
+                    returnObject = null;
+                    break;
+                case DB.Architecture.Railing o:
+                    returnObject = RailingToSpeckle(o);
+                    break;
+                case DB.Architecture.TopRail _:
+                    returnObject = null;
+                    break;
+                case DB.Structure.Rebar o:
+                    returnObject = RebarToSpeckle(o);
+                    break;
+                case DB.Ceiling o:
+                    returnObject = CeilingToSpeckle(o);
+                    break;
+                case DB.PointCloudInstance o:
+                    returnObject = PointcloudToSpeckle(o);
+                    break;
+                case DB.ProjectInfo o:
+                    returnObject = ProjectInfoToSpeckle(o);
+                    break;
+                case DB.ElementType o:
+                    returnObject = ElementTypeToSpeckle(o);
+                    break;
+                case DB.Grid o:
+                    returnObject = GridLineToSpeckle(o);
+                    break;
+                case DB.ReferencePoint o:
+                    if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
+                    {
+                        returnObject = AnalyticalNodeToSpeckle(o);
 
-          }
-          break;
-        case DB.Structure.BoundaryConditions o:
-          returnObject = BoundaryConditionsToSpeckle(o);
-          break;
+                    }
+                    break;
+                case DB.Structure.BoundaryConditions o:
+                    returnObject = BoundaryConditionsToSpeckle(o);
+                    break;
 #if REVIT2023
         case DB.Structure.AnalyticalMember o:
           returnObject = AnalyticalStickToSpeckle(o);
@@ -245,65 +245,80 @@ namespace Objects.Converter.Revit
           returnObject = AnalyticalSurfaceToSpeckle(o);
           break;
 #else
-        case DB.Structure.AnalyticalModelStick o:
-          returnObject = AnalyticalStickToSpeckle(o);
-          break;
-        case DB.Structure.AnalyticalModelSurface o:
-          returnObject = AnalyticalSurfaceToSpeckle(o);
-          break;
+                case DB.Structure.AnalyticalModelStick o:
+                    returnObject = AnalyticalStickToSpeckle(o);
+                    break;
+                case DB.Structure.AnalyticalModelSurface o:
+                    returnObject = AnalyticalSurfaceToSpeckle(o);
+                    break;
 #endif
-        default:
-          // if we don't have a direct conversion, still try to send this element as a generic RevitElement
-          var el = @object as Element;
-          if (el.IsElementSupported())
-          {
-            returnObject = RevitElementToSpeckle(el);
-            Report.Log($"Converted {el.Category.Name} {el.Id}");
-            break;
-          }
+                default:
+                    // if we don't have a direct conversion, still try to send this element as a generic RevitElement
+                    var el = @object as Element;
+                    if (el.IsElementSupported())
+                    {
+                        returnObject = RevitElementToSpeckle(el);
+                        Report.Log($"Converted {el.Category.Name} {el.Id}");
+                        break;
+                    }
 
-          Report.Log($"Skipped not supported type: {@object.GetType()}{GetElemInfo(@object)}");
-          returnObject = null;
-          break;
-      }
+                    Report.Log($"Skipped not supported type: {@object.GetType()}{GetElemInfo(@object)}");
+                    returnObject = null;
+                    break;
+            }
 
-      // NOTE: Only try generic method assignment if there is no existing render material from conversions;
-      // we might want to try later on to capture it more intelligently from inside conversion routines.
-      if (returnObject != null
-          && returnObject["renderMaterial"] == null
-          && returnObject["displayValue"] == null)
-      {
-        try
-        {
-          var material = GetElementRenderMaterial(@object as DB.Element);
-          returnObject["renderMaterial"] = material;
-        }
-        catch ( Exception e )
-        {
-          // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
-        }
-      }
+            // NOTE: Only try generic method assignment if there is no existing render material from conversions;
+            // we might want to try later on to capture it more intelligently from inside conversion routines.
+            if (returnObject != null
+                && returnObject["renderMaterial"] == null
+                && returnObject["displayValue"] == null)
+            {
+                try
+                {
+                    var material = GetElementRenderMaterial(@object as DB.Element);
+                    returnObject["renderMaterial"] = material;
+                }
+                catch (Exception e)
+                {
+                    // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
+                }
+            }
 
-      //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null)
-      {
-        try
-        {
-          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
-          if (qs != null)
-          {
-            returnObject["materialQuantities"] = new List<Base>();
-            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
-          }
-          else returnObject["materialQuantities"] = null;
+            //NOTE: adds the quantities of all materials to an element
+            if (returnObject != null)
+            {
+                try
+                {
+                    var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
+                    if (qs != null)
+                    {
+                        returnObject["materialQuantities"] = new List<Base>();
+                        (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
+                    }
+                    else returnObject["materialQuantities"] = null;
 
 
-        }
-        catch (System.Exception e)
-        {
-          Report.Log(e.Message);
-        }
-      }
+                }
+                catch (System.Exception e)
+                {
+                    Report.Log(e.Message);
+                }
+            }
+
+            //Node: Adds the Revit phase parameter "Phase creatd" to the stream
+
+            if (returnObject != null)
+            {
+                try
+                {
+                    if (TryGetPhaseParameter(@object as DB.Element,out string phase)) returnObject["Phase"] = phase;
+                    else returnObject["Phase"] = null;
+                }
+                catch (System.Exception e)
+                {
+                    Report.Log(e.Message);
+                }
+            }
 
 
       return returnObject;

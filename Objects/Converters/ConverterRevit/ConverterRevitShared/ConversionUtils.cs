@@ -476,6 +476,23 @@ namespace Objects.Converter.Revit
       }
     }
 
+
+    private bool  TryGetPhaseParameter(DB.Element elem, out string phase)
+    {
+            try
+            {
+                Phase ph = elem.Document.GetElement(elem.CreatedPhaseId) as Phase;
+                phase = ph.Name;
+                return true;
+            }
+            catch(Exception e)
+            {
+                phase = null;
+                return false;
+            }
+
+    }
+
     #endregion
 
     #region  element types
