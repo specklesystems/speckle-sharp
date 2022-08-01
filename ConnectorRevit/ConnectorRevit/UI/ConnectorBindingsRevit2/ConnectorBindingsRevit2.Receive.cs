@@ -197,7 +197,7 @@ namespace Speckle.ConnectorRevit.UI
             placeholders.Add(placeholder);
             obj.Update(status: placeholder.Status, createdIds: placeholder.CreatedIds, converted: placeholder.Converted, log: placeholder.Log);
             progress.Report.Log(obj);
-          } 
+          }
           else
           {
 
@@ -224,7 +224,7 @@ namespace Speckle.ConnectorRevit.UI
 
       if (obj is Base @base)
       {
-        var appObj = new ApplicationObject(@base.id, ConnectorRevitUtils.SimplifySpeckleType(@base.speckle_type)){ applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+        var appObj = new ApplicationObject(@base.id, ConnectorRevitUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
 
         if (converter.CanConvertToNative(@base))
         {

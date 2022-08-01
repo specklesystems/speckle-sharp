@@ -195,7 +195,7 @@
           assists:ShadowAssist.ShadowDepth="Depth0"
           Background="Transparent"
           Command="{Binding SaveCommand}"
-          IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+          IsEnabled="{Binding !Progress.IsProgressing}"
           ToolTip.Tip="Save this sender to the file without sending">
           <Button.Content>
             <icons:MaterialIcon
@@ -207,7 +207,7 @@
 
           </Button.Content>
         </m:FloatingButton>
-          
+
         <!--  PREVIEW BTN  -->
         <c:PreviewButton />
 
