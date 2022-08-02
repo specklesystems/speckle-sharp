@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using DesktopUI2.ViewModels;
 using Revit.Async;
@@ -17,17 +18,13 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static UIControlledApplication UICtrlApp { get; set; }
 
-    public static IDockablePaneProvider Panel;
-
     public Result OnStartup(UIControlledApplication application)
     {
       //Always initialize RevitTask ahead of time within Revit API context
       RevitTask.Initialize(application);
 
       UICtrlApp = application;
-      // Fires an init event, where we can get the UIApp
-      UICtrlApp.Idling += Initialise;
-
+      UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
       string tabName = "Speckle";
 
       try
@@ -136,13 +133,11 @@ namespace Speckle.ConnectorRevit.Entry
       return Result.Succeeded;
     }
 
-    private void Initialise(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
+    private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
     {
-      UICtrlApp.Idling -= Initialise;
-      AppInstance = sender as UIApplication;
+
+      AppInstance = new UIApplication(sender as Application);
       AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-
-
 
 
 #if REVIT2019
@@ -152,7 +147,6 @@ namespace Speckle.ConnectorRevit.Entry
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
 #else
       //DUI2 - pre build app, so that it's faster to open up
-      SpeckleRevitCommand2.uiapp = AppInstance;
       SpeckleRevitCommand2.InitAvalonia();
       var bindings = new ConnectorBindingsRevit2(AppInstance);
       bindings.RegisterAppEvents();
@@ -161,18 +155,9 @@ namespace Speckle.ConnectorRevit.Entry
       OneClickSendCommand.Bindings = bindings;
       QuickShareCommand.Bindings = bindings;
 
-      if (SpeckleRevitCommand2.UseDockablePanel)
-      {
-        //Register dockable panel
-        var viewModel = new MainViewModel(bindings);
-        Panel = new Panel
-        {
-          DataContext = viewModel
-        };
-        AppInstance.RegisterDockablePane(SpeckleRevitCommand2.PanelId, "Speckle", Panel);
-      }
 
 
+      SpeckleRevitCommand2.RegisterPane();
 
 #endif
       //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
