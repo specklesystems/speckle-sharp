@@ -23,7 +23,7 @@ namespace Objects.Organization
     /// <summary>
     /// The elements contained
     /// </summary>
-    public List<Base> elements { get; set; }
+    public List<NetworkElement> elements { get; set; }
 
     /// <summary>
     /// The connections between <see cref="elements"/>
@@ -31,5 +31,6 @@ namespace Objects.Organization
     public List<NetworkLink> links { get; set; }
 
     public Network() { }
+
   }
 }

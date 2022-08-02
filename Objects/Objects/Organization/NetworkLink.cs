@@ -15,19 +15,26 @@ namespace Objects.Organization
     public string name { get; set; }
 
     /// <summary>
-    /// The index of the network elements that this link connects
+    /// The index of the elements in <see cref="network"/> that belong to this link
     /// </summary>
-    public List<int> connections { get; set; }
+    public List<int> elementIndices { get; set; }
+
+    [JsonIgnore] public Network network { get; set; }
 
     public NetworkLink() { }
+
+    /// <summary>
+    /// Retrieves the elements for this link
+    /// </summary>
+    [JsonIgnore] public List<NetworkElement> elements => elementIndices.Select(i => network.elements[i]).ToList();
   }
 }
 namespace Objects.Organization.Revit
 {
-  public class RevitNetworkLink : Base
+  public class RevitNetworkLink : NetworkLink
   {
     /// <summary>
-    /// The shape of the <see cref="NetworkLink"/> at each <see cref="NetworkLink.connections"/>
+    /// The shape of the <see cref="NetworkLink"/> at each <see cref="NetworkLink.elementIndices"/>
     /// </summary>
     public List<NetworkLinkShape> shapes { get; set; } // should this just be one shape or can a link have 2?
 
