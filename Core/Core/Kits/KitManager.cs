@@ -24,7 +24,7 @@ namespace Speckle.Core.Kits
         if (_kitsFolder != null)
           return _kitsFolder;
 
-        var local = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
+        var local = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), "AppData", "Roaming", "Speckle", "Kits");
         var system = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "Speckle", "Kits");
 
         if (Assembly.GetAssembly(typeof(KitManager)).Location.Contains("ProgramData"))
