@@ -28,7 +28,7 @@ namespace DesktopUI2.ViewModels
     public const string UnmappedKey = "New Incoming Types";
 
     private bool isSearching = false;
-    private Dictionary<string,List<string>> _valuesList { get; } = new Dictionary<string, List<string>>();
+    private Dictionary<string,List<string>> _hostTypeValuesDict { get; } = new Dictionary<string, List<string>>();
     private string _searchQuery;
     public string SearchQuery
     {
@@ -38,7 +38,7 @@ namespace DesktopUI2.ViewModels
         isSearching = true;
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
 
-        SearchResults = new List<string>(_valuesList[SelectedCategory].Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
+        SearchResults = new List<string>(_hostTypeValuesDict[SelectedCategory].Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList());
         this.RaisePropertyChanged(nameof(SearchResults));
         isSearching = false;
       }
@@ -86,7 +86,7 @@ namespace DesktopUI2.ViewModels
           VisibleMappingValues = new List<MappingValue>(Mapping[value]);
         }
         SearchQuery = "";
-        SearchResults = _valuesList[value];
+        SearchResults = _hostTypeValuesDict[value];
       }
     }
 
@@ -152,7 +152,7 @@ namespace DesktopUI2.ViewModels
 
       Mapping[UnmappedKey] = new List<MappingValue>();
 
-      _valuesList = new Dictionary<string, List<string>>
+      _hostTypeValuesDict = new Dictionary<string, List<string>>
       {
         { "Materials", new List<string>{"brick","sheep","wheat","stone" } },
         { "Beams", new List<string>{"concrete","tile"} },
@@ -170,20 +170,22 @@ namespace DesktopUI2.ViewModels
       Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       Mapping = firstPassMapping;
-      _valuesList = hostTypesDict;
+      _hostTypeValuesDict = hostTypesDict;
+
+      // make sure hostTypeValuesDict has a key for each value category
+      foreach (var key in Mapping.Keys)
+      {
+        if (!_hostTypeValuesDict.ContainsKey(key))
+        {
+          _hostTypeValuesDict.Add(key, _hostTypeValuesDict["master"]);
+        }
+      }
 
       if (newTypesExist)
       {
         // add key so it will show up in categories list
         Mapping[UnmappedKey] = new List<MappingValue>();
-
-        //create master list of project types
-        var tempList = new List<string>();
-        foreach (var key in _valuesList.Keys)
-        {
-          tempList.AddRange(_valuesList[key]);
-        }
-        _valuesList[UnmappedKey] = tempList;
+        _hostTypeValuesDict[UnmappedKey] = _hostTypeValuesDict["master"];
       }
 
       if (Mapping.ContainsKey(UnmappedKey))
@@ -191,8 +193,6 @@ namespace DesktopUI2.ViewModels
       else
         SelectedCategory = Mapping.Keys.First();
 
-      //VisibleMappingValues = new List<MappingValue>(Mapping[Mapping.Keys.First()]);
-      //SearchResults = _valuesList[SelectedCategory];
     }
 
     [DataContract]

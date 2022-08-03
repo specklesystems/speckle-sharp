@@ -36,12 +36,18 @@
       assists:ShadowAssist.ShadowDepth="Depth2"
       Background="{DynamicResource MaterialDesignCardBackground}">
       <Grid Margin="15" ColumnDefinitions="auto,auto,auto, auto">
+        <Grid.Styles>
+          <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+          </Style>
+        </Grid.Styles>
         <TextBlock
           Classes="Grotesk"
           FontSize="20"
           Text="Category: "
           TextTrimming="CharacterEllipsis" />
         <ComboBox
+          Width="250"
           Grid.Column="1"
           VerticalAlignment="Center"
           FontSize="100"
