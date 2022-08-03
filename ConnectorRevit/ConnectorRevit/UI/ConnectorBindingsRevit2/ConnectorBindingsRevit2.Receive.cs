@@ -206,15 +206,17 @@ namespace Speckle.ConnectorRevit.UI
       {
         progress.Report.Log($"GetHostTypes");
         Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
+        Dictionary<string, List<string>> incomingTypesDict = GetIncomingTypes(flattenedBase, progress, sourceApp);
 
         progress.Report.Log($"UpdateMappingForNewObjects");
-        bool newTypesExist = UpdateMappingForNewObjects(settingsMapping, flattenedBase, hostTypesDict, progress);
+        bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
+        //bool newTypesExist = UpdateMappingForNewObjects(settingsMapping, flattenedBase, hostTypesDict, progress);
         progress.Report.Log($"GetInitialMapping");
         Dictionary<string, List<MappingValue>> Mapping = settingsMapping;
         if (Mapping == null)
         {
           progress.Report.Log($"Mapping null");
-          Mapping = GetInitialMapping(flattenedBase, progress, hostTypesDict, sourceApp);
+          Mapping = returnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
         }
 
         progress.Report.Log($"InitialMapping");
@@ -280,18 +282,15 @@ namespace Speckle.ConnectorRevit.UI
       return newTypesExist;
     }
 
-    public Dictionary<string, List<MappingValue>> GetInitialMapping(List<Base> flattenedBase, ProgressViewModel progress, Dictionary<string, List<string>> hostTypes, string sourceApp)
-    {
-      progress.Report.Log($"GetFlattenedBaseTypes");
-      var flattenedBaseTypes = GetFlattenedBaseTypes(flattenedBase, progress, sourceApp);
+    //public Dictionary<string, List<MappingValue>> GetInitialMapping(Dictionary<string, List<string>> incomingTypes, ProgressViewModel progress, Dictionary<string, List<string>> hostTypes, string sourceApp)
+    //{
+    //  progress.Report.Log($"returnFirstPassMap");
+    //  var mappings = returnFirstPassMap(incomingTypes, hostTypes, progress);
 
-      progress.Report.Log($"returnFirstPassMap");
-      var mappings = returnFirstPassMap(flattenedBaseTypes, hostTypes, progress);
+    //  progress.Report.Log($"returnFirstPassMap Done");
 
-      progress.Report.Log($"returnFirstPassMap Done");
-
-      return mappings;
-    }
+    //  return mappings;
+    //}
 
     public Dictionary<string, List<MappingValue>> returnFirstPassMap(Dictionary<string, List<string>> flattenedBaseTypes, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
     {
@@ -544,7 +543,7 @@ namespace Speckle.ConnectorRevit.UI
       return returnDict;
     }
 
-    private Dictionary<string, List<string>> GetFlattenedBaseTypes(List<Base> objects, ProgressViewModel progress, string sourceApp)
+    private Dictionary<string, List<string>> GetIncomingTypes(List<Base> objects, ProgressViewModel progress, string sourceApp)
     {
       progress.Report.Log($"num objs {objects.Count} ");
       var returnDict = new Dictionary<string, List<string>>();
@@ -592,48 +591,6 @@ namespace Speckle.ConnectorRevit.UI
             type = @object.GetType().GetProperty("type").GetValue(@object) as string;
             break;
         }
-        //try
-        //{
-        //  //currently implemented only for Revit objects ~ object models need a bit of refactor for this to be a cleaner code
-        //  type = @object.GetType().GetProperty("type").GetValue(@object) as string;
-        //  string typeCategory = GetTypeCategory(@object);
-
-
-        //  if (returnDict.ContainsKey(typeCategory))
-        //  {
-        //    returnDict[typeCategory].Add(type);
-        //  }
-        //  else
-        //  {
-        //    returnDict[typeCategory] = new List<string> { type };
-        //  }
-
-        //  // try to get the material
-        //  if (@object["materialQuantites"] is List<Base> mats)
-        //  {
-        //    foreach (var mat in mats)
-        //    {
-        //      if (mat["material"] is Base b)
-        //      {
-        //        if (b["name"] is string matName)
-        //        {
-        //          if (returnDict.ContainsKey("Materials"))
-        //          {
-        //            returnDict["Materials"].Add(matName);
-        //          }
-        //          else
-        //          {
-        //            returnDict["Materials"] = new List<string> { matName };
-        //          }
-        //        }
-        //      }
-        //    }
-        //  }
-        //}
-        //catch
-        //{
-
-        //}
       }
 
       var newDictionary = returnDict.ToDictionary(entry => entry.Key, entry => entry.Value);
@@ -650,6 +607,43 @@ namespace Speckle.ConnectorRevit.UI
       string speckleType = obj.speckle_type.Split('.').LastOrDefault();
 
       return speckleType;
+    }
+
+    public bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
+    {
+      // no existing mappings exist
+      if (settingsMapping == null)
+        return true;
+
+      bool newTypesExist = false;
+      List<Base> objectsWithNewTypes = new List<Base>();
+
+      foreach (var typeCategory in incomingTypesDict.Keys)
+      {
+        if (!settingsMapping.ContainsKey(typeCategory) && incomingTypesDict[typeCategory].Count > 0)
+        {
+          newTypesExist = true;
+          settingsMapping[typeCategory] = new List<MappingValue>();
+          foreach (var type in incomingTypesDict[typeCategory])
+          {
+            string mappedValue = GetMappedValue(hostTypesDict, typeCategory, type, progress);
+            settingsMapping[typeCategory].Add(new MappingValue(type, mappedValue, true));
+          }
+        }
+        else if (settingsMapping.ContainsKey(typeCategory))
+        {
+          foreach (var type in incomingTypesDict[typeCategory])
+          {
+            if (!settingsMapping[typeCategory].Any(i => i.IncomingType == type))
+            {
+              newTypesExist = true;
+              string mappedValue = GetMappedValue(hostTypesDict, typeCategory, type, progress);
+              settingsMapping[typeCategory].Add(new MappingValue(type, mappedValue, true));
+            }
+          }
+        }
+      }
+      return newTypesExist;
     }
 
     private List<ApplicationPlaceholderObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state, ProgressViewModel progress)
