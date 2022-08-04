@@ -190,7 +190,6 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _branches, value);
     }
 
-
     private Commit _selectedCommit;
     public Commit SelectedCommit
     {
@@ -568,7 +567,6 @@ namespace DesktopUI2.ViewModels
         {
           var avm = new ActivityViewModel(a, Client);
           activity.Add(avm);
-
         }
         Activity = activity;
         ScrollToBottom();
@@ -589,7 +587,6 @@ namespace DesktopUI2.ViewModels
         {
           var cvm = new CommentViewModel(c, Stream.id, Client);
           comments.Add(cvm);
-
         }
         Comments = comments;
       }
@@ -610,9 +607,7 @@ namespace DesktopUI2.ViewModels
           {
             var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
             if (scroller != null)
-            {
               scroller.ScrollToEnd();
-            }
           });
         }
       }
@@ -748,6 +743,7 @@ namespace DesktopUI2.ViewModels
     {
       MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
     }
+
     public void CloseNotificationCommand()
     {
       Notification = "";
@@ -844,6 +840,9 @@ namespace DesktopUI2.ViewModels
             await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
           }
           GetReport();
+          // todo: activate report tab
+          var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
+          tabControl.SelectedIndex = tabControl.ItemCount - 1;
         }
         catch (Exception ex)
         {

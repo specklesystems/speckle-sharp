@@ -108,7 +108,7 @@
       RowDefinitions="*,auto,auto">
       <!--  ACTIVITY & COMMENTS & REPORT  -->
 
-      <TabControl Grid.Row="0" Background="Transparent">
+      <TabControl Grid.Row="0" Background="Transparent" Name="tabStreamEdit">
         <TabItem>
           <TabItem.Header>
             <StackPanel Orientation="Horizontal">
