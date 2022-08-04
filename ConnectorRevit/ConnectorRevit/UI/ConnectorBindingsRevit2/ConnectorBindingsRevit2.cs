@@ -78,5 +78,61 @@ namespace Speckle.ConnectorRevit.UI
     {
       return new List<MenuItem>();
     }
+
+    // WARNING: Everything in the 'interop' section must match a corrosponding element in the converter
+    // which can be found in the namespace commented above the element
+    #region interop
+
+    // Objects.Structural.Geometry
+    public enum ElementType1D
+    {
+      Beam,
+      Brace,
+      Bar,
+      Column,
+      Rod,
+      Spring,
+      Tie,
+      Strut,
+      Link,
+      Damper,
+      Cable,
+      Spacer,
+      Other,
+      Null
+    }
+
+    // Objects.Structural
+    public enum PropertyType2D
+    {
+      Stress,
+      Fabric,
+      Plate,
+      Shell,
+      Curved,
+      Wall,
+      Strain,
+      Axi,
+      Load
+    }
+
+    // Objects.Structural.Geometry
+    public enum ElementType2D
+    {
+      Quad4,
+      Quad8,
+      Triangle3,
+      Triangle6
+    }
+
+    // Objects.Structural.Geometry
+    public enum ElementType3D
+    {
+      Brick8,
+      Wedge6,
+      Pyramid5,
+      Tetra4
+    }
+    #endregion
   }
 }

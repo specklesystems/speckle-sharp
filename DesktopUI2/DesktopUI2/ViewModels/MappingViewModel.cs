@@ -26,6 +26,7 @@ namespace DesktopUI2.ViewModels
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
     public const string UnmappedKey = "New Incoming Types";
+    private string TypeCatMisc = "Miscellaneous";
 
     private bool isSearching = false;
     private Dictionary<string,List<string>> _hostTypeValuesDict { get; } = new Dictionary<string, List<string>>();
@@ -177,7 +178,7 @@ namespace DesktopUI2.ViewModels
       {
         if (!_hostTypeValuesDict.ContainsKey(key))
         {
-          _hostTypeValuesDict.Add(key, _hostTypeValuesDict["master"]);
+          _hostTypeValuesDict.Add(key, _hostTypeValuesDict[TypeCatMisc]);
         }
       }
 
@@ -185,7 +186,7 @@ namespace DesktopUI2.ViewModels
       {
         // add key so it will show up in categories list
         Mapping[UnmappedKey] = new List<MappingValue>();
-        _hostTypeValuesDict[UnmappedKey] = _hostTypeValuesDict["master"];
+        _hostTypeValuesDict[UnmappedKey] = _hostTypeValuesDict[TypeCatMisc];
       }
 
       if (Mapping.ContainsKey(UnmappedKey))

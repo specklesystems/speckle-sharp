@@ -575,11 +575,16 @@ namespace Objects.Converter.Revit
       // match the type only for when we auto assign it
       if (match == null && !string.IsNullOrEmpty(type))
       {
-#if REVIT2022
-          match = types.FirstOrDefault(x => x.GetParameter(ParameterTypeId.SymbolNameParam).AsValueString() == type);
-
-          Report.Log($"Type {type} match {match}");
-#endif
+        match = types.FirstOrDefault(x =>
+        {
+          var symbolType = x.GetParameters("Type");
+          var symbolTypeName = x.GetParameters("Type Name");
+          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString().ToLower() == type.ToLower())
+            return true;
+          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString().ToLower() == type.ToLower())
+            return true;
+          return false;
+        });
       }
 
       if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
