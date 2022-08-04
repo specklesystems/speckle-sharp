@@ -105,7 +105,7 @@ namespace Speckle.ConnectorRevit.Entry
         TaskDialog mainDialog = new TaskDialog("Dockable Panel Issue");
         mainDialog.MainInstruction = "Dockable Panel Issue";
         mainDialog.MainContent =
-            "Revit cannot properly register Dockable Panels when launched double-clicking a Revit file. "
+            "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
             + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
 
 
