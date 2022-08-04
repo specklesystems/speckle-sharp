@@ -38,7 +38,7 @@
       <Grid Margin="15" ColumnDefinitions="auto,auto,auto, auto">
         <Grid.Styles>
           <Style Selector="TextBlock">
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="15"/>
           </Style>
         </Grid.Styles>
         <TextBlock

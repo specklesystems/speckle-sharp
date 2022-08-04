@@ -237,7 +237,8 @@ namespace Speckle.ConnectorRevit.UI
             receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(Mapping); ;
 
           }
-          updateRecieveObject(Mapping, flattenedBase);
+          //updateRecieveObject(Mapping, flattenedBase);
+          SetMappedValues(Mapping, flattenedBase, progress, sourceApp);
         }
         catch (Exception ex)
         {
@@ -246,51 +247,6 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.Log($"new mapping success");
       }
     }
-
-    public bool UpdateMappingForNewObjects(Dictionary<string, List<MappingValue>> settingsMapping, List<Base> flattenedBase, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress)
-    {
-      // no existing mappings exist
-      if (settingsMapping == null)
-        return true;
-
-      bool newTypesExist = false;
-      List<Base> objectsWithNewTypes = new List<Base>();
-      var loopValues = settingsMapping.Values;
-      foreach (var obj in flattenedBase)
-      {
-        var type = obj.GetType().GetProperty("type").GetValue(obj) as string;
-        bool containsObj = false;
-        foreach (var mapValueList in loopValues)
-        {
-          if (mapValueList.Any(i => i.IncomingType == type))
-          {
-            containsObj = true;
-            break;
-          }
-        }
-        if (!containsObj)
-        {
-          newTypesExist = true;
-          string category = GetTypeCategory(obj);
-          string mappedValue = GetMappedValue(hostTypesDict, category, type, progress);
-          if (settingsMapping.ContainsKey(category))
-            settingsMapping[category].Add(new MappingValue(type, mappedValue, true));
-          else
-            settingsMapping[category] = new List<MappingValue> { new MappingValue(type, mappedValue, true) };
-        }
-      }
-      return newTypesExist;
-    }
-
-    //public Dictionary<string, List<MappingValue>> GetInitialMapping(Dictionary<string, List<string>> incomingTypes, ProgressViewModel progress, Dictionary<string, List<string>> hostTypes, string sourceApp)
-    //{
-    //  progress.Report.Log($"returnFirstPassMap");
-    //  var mappings = returnFirstPassMap(incomingTypes, hostTypes, progress);
-
-    //  progress.Report.Log($"returnFirstPassMap Done");
-
-    //  return mappings;
-    //}
 
     public Dictionary<string, List<MappingValue>> returnFirstPassMap(Dictionary<string, List<string>> flattenedBaseTypes, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
     {
@@ -321,35 +277,9 @@ namespace Speckle.ConnectorRevit.UI
                 )
               };
           }
-          progress.Report.Log($"worked");
         }
       }
 
-      //foreach (var category in flattenedBaseTypes.Keys)
-      //{
-      //  foreach (var speckleType in flattenedBaseTypes[category])
-      //  {
-      //    string mappedValue = GetMappedValue(hostTypes, category, speckleType);
-
-      //    if (mappings.ContainsKey(category))
-      //    {
-      //      mappings[category].Add(new MappingValue
-      //        (
-      //          speckleType, mappedValue
-      //        ));
-      //    }
-      //    else
-      //    {
-      //      mappings[category] = new List<MappingValue>
-      //        {
-      //          new MappingValue
-      //          (
-      //            speckleType, mappedValue
-      //          )
-      //        };
-      //    }
-      //  }
-      //}
       progress.Report.Log($"mapping.Keys {string.Join(",", mappings.Keys)}");
       return mappings;
     }
@@ -366,17 +296,11 @@ namespace Speckle.ConnectorRevit.UI
       else
         hostCategory = "master";
 
-      progress.Report.Log($"host cat {hostCategory} speckletype {speckleType}");
-
       foreach (var revitType in hostTypes[hostCategory])
       {
         listVert.Add(LevenshteinDistance(speckleType, revitType));
       }
 
-      progress.Report.Log($"list vert len {listVert.Count} ");
-      progress.Report.Log($"list vert min {listVert.Min()} ");
-      progress.Report.Log($"list min index {listVert.IndexOf(listVert.Min())} ");
-      progress.Report.Log($"min index {listVert.IndexOf(listVert.Min())} count {hostTypes[hostCategory].Count}");
       mappedValue = hostTypes[hostCategory][listVert.IndexOf(listVert.Min())];
 
       return mappedValue;
@@ -491,55 +415,6 @@ namespace Speckle.ConnectorRevit.UI
         returnDict[customType.key] = types;
       }
 
-      // WARNING : The keys in this dictionary must match those found in GetFlattenedBaseTypes
-      //var returnDict = new Dictionary<string, List<string>>();
-      //var collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-      //List<ElementId> exclusionFilterIds = new List<ElementId>();
-
-      //FilteredElementCollector list = null;
-      //List<string> types = null;
-
-      //// Materials
-      //list = collector.OfClass(typeof(Autodesk.Revit.DB.Material));
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-      //returnDict["Materials"] = types;
-
-      //// Floors
-      //collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-      //list = collector.OfClass(typeof(FloorType));
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-      //returnDict["Floors"] = types;
-
-      //// Walls
-      //collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-      //list = collector.OfClass(typeof(WallType));
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-      //returnDict["Walls"] = types;
-
-      //// Framing
-      //collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-      //list = collector.OfClass(typeof(FamilySymbol)).OfCategory(BuiltInCategory.OST_StructuralFraming);
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-      //returnDict["Framing"] = types;
-
-      //// Columns
-      //collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-      //var filter = new ElementMulticategoryFilter(new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns });
-      //list = collector.OfClass(typeof(FamilySymbol)).WherePasses(filter);
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-      //returnDict["Columns"] = types;
-
-      //// Misc
-      //collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-      //list = collector.Excluding(exclusionFilterIds);
-      //types = list.Select(o => o.Name).Distinct().ToList();
-      //returnDict["Miscellaneous"] = types;
-
       return returnDict;
     }
 
@@ -567,13 +442,13 @@ namespace Speckle.ConnectorRevit.UI
                 if (!returnDict.ContainsKey(typeCategory))
                   returnDict[typeCategory] = new List<string>();
 
-                if (el.GetMemberNames().Contains("property") && el["property"] is Base prope)
+                if (el.GetMemberNames().Contains("property") && el["property"] is Base prop)
                 {
-                  if (prope.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prope["name"] as string))
+                  if (prop.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
                   {
-                    if (!returnDict[typeCategory].Contains(prope["name"] as string))
+                    if (!returnDict[typeCategory].Contains(prop["name"] as string))
                     {
-                      returnDict[typeCategory].Add(prope["name"] as string);
+                      returnDict[typeCategory].Add(prop["name"] as string);
                     }
                   }
                 }
@@ -600,6 +475,66 @@ namespace Speckle.ConnectorRevit.UI
         returnDict[key] = returnDict[key].Distinct().ToList();
       }
       return returnDict;
+    }
+
+    private void SetMappedValues(Dictionary<string,List<MappingValue>> userMap, List<Base> objects, ProgressViewModel progress, string sourceApp)
+    {
+      progress.Report.Log($"num objs {objects.Count} host app {sourceApp}");
+      string typeCategory = null;
+
+      foreach (var @object in objects)
+      {
+        string type = null;
+
+        switch (sourceApp.ToLower())
+        {
+          case "autocad":
+            type = @object.GetType().GetProperty("type").GetValue(@object) as string;
+            break;
+          case "etabs":
+            progress.Report.Log($"etabs");
+
+            if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
+            {
+              progress.Report.Log($"els is list base");
+              List<string> mappedValues = new List<string>();
+              foreach (var el in els)
+              {
+                typeCategory = GetTypeCategory(el);
+                progress.Report.Log($"type cat {typeCategory}");
+                if (!userMap.ContainsKey(typeCategory))
+                  continue;
+
+                if (el.GetMemberNames().Contains("property") && el["property"] is Base prop)
+                {
+                  progress.Report.Log($"prop is base");
+                  if (prop.GetMemberNames().Contains("name") && prop.GetType().GetProperty("name") is System.Reflection.PropertyInfo info)
+                  {
+                    if (mappedValues.Contains(info.GetValue(prop) as string))
+                      continue;
+
+                    progress.Report.Log($"i'm updating {info.GetValue(prop) as string}");
+
+
+                    MappingValue mappingWithMatchingType = userMap[typeCategory].Where(i => i.IncomingType == info.GetValue(prop) as string).First();
+                    string mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
+
+                    info.SetValue(prop, mappingProperty);
+                    mappedValues.Add(mappingProperty);
+                  }
+                }
+              }
+            }
+            break;
+          case "revit":
+            typeCategory = GetTypeCategory(@object);
+
+            break;
+          case "rhino":
+            type = @object.GetType().GetProperty("type").GetValue(@object) as string;
+            break;
+        }
+      }
     }
 
     public string GetTypeCategory(Base obj)

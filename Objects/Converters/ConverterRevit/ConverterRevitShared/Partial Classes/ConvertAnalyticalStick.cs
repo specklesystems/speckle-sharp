@@ -27,6 +27,7 @@ namespace Objects.Converter.Revit
       switch (speckleStick.type)
       {
         case ElementType1D.Beam:
+          Report.Log($"element 1d prop name {speckleStick.property.name}");
           RevitBeam revitBeam = new RevitBeam();
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
