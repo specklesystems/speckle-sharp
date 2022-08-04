@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -493,6 +494,7 @@ namespace Speckle.ConnectorRevit.UI
     private Dictionary<string, List<string>> GetIncomingTypes(List<Base> objects, ProgressViewModel progress, string sourceApp)
     {
       progress.Report.Log($"num objs {objects.Count} ");
+      progress.Report.Log($"source app no nums {Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty)}");
       var returnDict = new Dictionary<string, List<string>>();
       string typeCategory = null;
 
@@ -500,7 +502,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         string type = null;
         
-        switch (sourceApp.ToLower())
+        switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "autocad":
             type = @object.GetType().GetProperty("type").GetValue(@object) as string;
@@ -519,9 +521,7 @@ namespace Speckle.ConnectorRevit.UI
                   if (prop.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
                   {
                     if (!returnDict[typeCategory].Contains(prop["name"] as string))
-                    {
                       returnDict[typeCategory].Add(prop["name"] as string);
-                    }
                   }
                 }
               }
@@ -537,9 +537,24 @@ namespace Speckle.ConnectorRevit.UI
           case "rhino":
             type = @object.GetType().GetProperty("type").GetValue(@object) as string;
             break;
+          case "teklastructures":
+            typeCategory = GetTypeCategory(@object, progress);
+            if (!returnDict.ContainsKey(typeCategory))
+              returnDict[typeCategory] = new List<string>();
+
+            if (@object.GetMemberNames().Contains("profile") && @object["profile"] is Base profile)
+            {
+              if (profile.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(profile["name"] as string))
+              {
+                if (!returnDict[typeCategory].Contains(profile["name"] as string))
+                  returnDict[typeCategory].Add(profile["name"] as string);
+              }
+            }
+            break;
         }
       }
 
+      // make sure list types in list are distinct
       var newDictionary = returnDict.ToDictionary(entry => entry.Key, entry => entry.Value);
       foreach (var key in newDictionary.Keys)
       {
@@ -553,12 +568,13 @@ namespace Speckle.ConnectorRevit.UI
     {
       progress.Report.Log($"num objs {objects.Count} host app {sourceApp}");
       string typeCategory = null;
+      List<string> mappedValues = new List<string>();
 
       foreach (var @object in objects)
       {
         string type = null;
 
-        switch (sourceApp.ToLower())
+        switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "autocad":
             type = @object.GetType().GetProperty("type").GetValue(@object) as string;
@@ -568,7 +584,6 @@ namespace Speckle.ConnectorRevit.UI
 
             if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
             {
-              List<string> mappedValues = new List<string>();
               foreach (var el in els)
               {
                 typeCategory = GetTypeCategory(el, progress);
@@ -594,10 +609,44 @@ namespace Speckle.ConnectorRevit.UI
             break;
           case "revit":
             typeCategory = GetTypeCategory(@object, progress);
+            if (!userMap.ContainsKey(typeCategory))
+              continue;
+
+            if (@object.GetMemberNames().Contains("type") && @object.GetType().GetProperty("type") is System.Reflection.PropertyInfo revType)
+            {
+              if (mappedValues.Contains(revType.GetValue(@object) as string))
+                continue;
+
+              MappingValue mappingWithMatchingType = userMap[typeCategory].Where(i => i.IncomingType == revType.GetValue(@object) as string).First();
+              string mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
+
+              revType.SetValue(@object, mappingProperty);
+              mappedValues.Add(mappingProperty);
+            }
 
             break;
           case "rhino":
             type = @object.GetType().GetProperty("type").GetValue(@object) as string;
+            break;
+          case "teklastructures":
+            typeCategory = GetTypeCategory(@object, progress);
+            if (!userMap.ContainsKey(typeCategory))
+              continue;
+
+            if (@object.GetMemberNames().Contains("profile") && @object["profile"] is Base profile)
+            {
+              if (profile.GetMemberNames().Contains("name") && profile.GetType().GetProperty("name") is System.Reflection.PropertyInfo info)
+              {
+                if (mappedValues.Contains(info.GetValue(profile) as string))
+                  continue;
+
+                MappingValue mappingWithMatchingType = userMap[typeCategory].Where(i => i.IncomingType == info.GetValue(profile) as string).First();
+                string mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
+
+                info.SetValue(profile, mappingProperty);
+                mappedValues.Add(mappingProperty);
+              }
+            }
             break;
         }
       }
