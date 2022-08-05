@@ -3,13 +3,13 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Speckle.Core.Kits;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -51,7 +51,7 @@ namespace Objects.Converter.Revit
     /// <param name="base"></param>
     public void GetHostedElements(Base @base, HostObject host)
     {
-      var hostedElementIds = host.FindInserts(true, true, true, true);
+      var hostedElementIds = host.FindInserts(true, false, false, false);
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -1102,7 +1102,7 @@ namespace Objects.Converter.Revit
       {
       }
     }
-    
+
     public ApplicationPlaceholderObject CheckForExistingObject(Base @base)
     {
       @base.applicationId ??= @base.id;
@@ -1110,7 +1110,7 @@ namespace Objects.Converter.Revit
 
       if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
         return new ApplicationPlaceholderObject
-          { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+        { applicationId = @base.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
 
       //just create new one 
       if (docObj != null)
