@@ -155,7 +155,13 @@ namespace DesktopUI2.ViewModels
 
       _hostTypeValuesDict = new Dictionary<string, List<string>>
       {
-        { "Materials", new List<string>{"brick","sheep","wheat","stone" } },
+        { "Materials", new List<string>{
+          "brick","sheep","wheat","stone","brick","sheep","wheat","stone","brick","sheep","wheat","stone",
+          "brick","sheep","wheat","stone","brick","sheep","wheat","stone","brick","sheep","wheat","stone",
+          "brick","sheep","wheat","stone","brick","sheep","wheat","stone","brick","sheep","wheat","stone",
+          "brick","sheep","wheat","stone","brick","sheep","wheat","stone","brick","sheep","wheat","stone",
+          "brick","sheep","wheat","stone","brick","sheep","wheat","stone","brick","sheep","wheat","stone",
+        } },
         { "Beams", new List<string>{"concrete","tile"} },
         { "Columns", new List<string>{"brick","gyp","shearwall1" } }
       };

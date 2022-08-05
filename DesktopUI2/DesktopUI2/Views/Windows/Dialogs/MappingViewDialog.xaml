@@ -108,7 +108,7 @@
                     Name="OutgoingType"
                     IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                     Focusable="False"
-                    Margin="5"
+                    Margin="0"
                     Grid.Column="1"
                     Text="{Binding OutgoingType}"
                     VerticalAlignment="Center">
@@ -172,7 +172,7 @@
       </Grid>
       <ScrollViewer
         Grid.Row="2"
-        MaxHeight="180"
+        MaxHeight="110"
         VerticalScrollBarVisibility="Auto">
         <StackPanel>
           <ListBox
