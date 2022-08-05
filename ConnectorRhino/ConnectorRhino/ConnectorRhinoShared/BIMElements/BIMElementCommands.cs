@@ -134,13 +134,26 @@ namespace SpeckleRhino
       }
     }
 
+    public class CreateTopography : Command
+    {
+      public override string EnglishName => "CreateTopography";
+
+      protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+      {
+        var selectedObjects = GetObjectSelection(ObjectType.Mesh);
+        if (selectedObjects == null)
+          return Result.Cancel;
+        ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Topography.ToString(), doc, false);
+        return Result.Success;
+      }
+    }
+
     public class CreateDirectShape : Command
     {
       public override string EnglishName => "CreateDirectShape";
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        string selectedSchema = "";
         var selectedObjects = GetObjectSelection();
         if (selectedObjects == null)
           return Result.Cancel;
@@ -150,6 +163,7 @@ namespace SpeckleRhino
         var getOpt = new GetOption();
         getOpt.SetCommandPrompt("Select BIM type. Press Enter when done");
         List<string> schemas = Enum.GetNames(typeof(SchemaObjectFilter.SupportedSchema)).ToList();
+        string selectedSchema = schemas[0];
         int schemaListOptionIndex = getOpt.AddOptionList("Type", schemas, 0);
 
         // Get options

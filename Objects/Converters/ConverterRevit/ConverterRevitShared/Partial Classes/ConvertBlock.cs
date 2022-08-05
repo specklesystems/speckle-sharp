@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
         switch (geometry)
         {
           case Brep brep:
-            var success = brep.TransformTo(transform, out var tbrep);
+            var success = brep.TransformTo(transform, out Brep tbrep);
             if (success)
               breps.Add(tbrep);
             else
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
             }
             break;
           case Mesh mesh:
-            mesh.TransformTo(transform, out var tmesh);
+            mesh.TransformTo(transform, out Mesh tmesh);
             meshes.Add(tmesh);
             break;
           case ICurve curve:
@@ -74,13 +74,13 @@ namespace Objects.Converter.Revit
       var ids = new List<ElementId>();
       breps.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).NativeObject as DB.DirectShape;
+        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
           ids.Add(ds.Id);
       });
       meshes.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).NativeObject as DB.DirectShape;
+        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
           ids.Add(ds.Id);
         ids.Add(ds.Id);
@@ -106,7 +106,6 @@ namespace Objects.Converter.Revit
       Report.Log($"Created Group '{ group.GroupType.Name}' {group.Id}");
       return group;
     }
-
 
     private bool MatrixDecompose(double[] m, out double rotation)
     {

@@ -1,4 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -6,9 +10,7 @@ using Speckle.Core.Models;
 
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 #endif
@@ -53,6 +55,25 @@ namespace Objects.Converter.AutocadCivil
         return _lineTypeDictionary;
       }
     }
+
+    /// <summary>
+    /// Removes invalid characters for Autocad layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidAutocadChars(string str)
+    {
+      // using this to handle rhino nested layer syntax
+      // replace "::" layer delimiter with "$" (acad standard)
+      string cleanDelimiter = str.Replace("::", "$");
+
+      // remove all other invalid chars
+      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
+    }
+
+    #region app props
+    public static string AutocadPropName = "AutocadProps";
+    #endregion
 
     #region units
     private string _modelUnits;
@@ -126,19 +147,6 @@ namespace Objects.Converter.AutocadCivil
     }
     #endregion
 
-    /// <summary>
-    /// Removes invalid characters for Autocad layer and block names
-    /// </summary>
-    /// <param name="str"></param>
-    /// <returns></returns>
-    public static string RemoveInvalidAutocadChars(string str)
-    {
-      // using this to handle rhino nested layer syntax
-      // replace "::" layer delimiter with "$" (acad standard)
-      string cleanDelimiter = str.Replace("::", "$");
-
-      // remove all other invalid chars
-      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
-    }
+    
   }
 }

@@ -15,7 +15,6 @@ namespace DesktopUI2.Views.Pages
     private void InitializeComponent()
     {
       AvaloniaXamlLoader.Load(this);
-
     }
 
     public static StreamEditView Instance { get; private set; }

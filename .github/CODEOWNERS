@@ -1,0 +1,37 @@
+# SPECKLE-SHARP OWNERS
+
+# Global owner is the connectors team. This ensures everyone get's pinged if no owner is found
+
+* @specklesystems/connectors
+
+# Core
+# Not needed, falls back on team approval
+
+# Objects
+#   Converters require product owner approval, anything else falls back to team approval
+
+Objects/ConverterAutocadCivil/* @clairekuang @reynold-chan
+Objects/ConverterCSI/* @reynold-chan
+Objects/ConverterDynamo/* @teocomi @alanrynne
+Objects/ConverterMicrostation/* @reynold-chan
+Objects/ConverterRevit/* @connorivy @teocomi
+Objects/ConverterRhinoGh/* @alanrynne @clairekuang
+Objects/ConverterTeklaStructures/* @reynold-chan
+Objects/StructuralUtilities/PolygonMesher/* @reynold-chan
+
+# Connectors
+
+ConnectorAutocadCivil/* @clairekuang @reynold-chan
+ConnectorArchicad/* @izzylys
+ConnectorCSI/* @reynold-chan
+ConnectorDynamo/* @teocomi @alanrynne
+ConnectorGrasshopper/* @alanrynne @clairekuang
+ConnectorMicrostation/* @reynold-chan
+ConnectorRevit/* @teocomi @connorivy
+ConnectorRhino/* @clairekuang @alanrynne
+ConnectorTeklaStructures/* @reynold-chan
+
+# DesktopUI
+
+DesktopUI/* @teocomi @clairekuang
+DesktopUI2/* @teocomi @clairekuang

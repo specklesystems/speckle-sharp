@@ -11,6 +11,7 @@ using BE = Objects.BuiltElements;
 using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 using Tekla.Structures;
+using GE = Objects.Geometry;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -28,6 +29,8 @@ namespace Objects.Converter.TeklaStructures
 
     public string Name => nameof(ConverterTeklaStructures);
 
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+
     public string Author => "Speckle";
 
     public string WebsiteOrEmail => "https://speckle.systems";
@@ -44,14 +47,13 @@ namespace Objects.Converter.TeklaStructures
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> PreviousContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
-
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
@@ -111,10 +113,27 @@ namespace Objects.Converter.TeklaStructures
       };
     }
 
-
-
     public object ConvertToNative(Base @object)
     {
+
+      Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
+      if (bool.Parse(recieveModelMesh) == true)
+      {
+        try
+        {
+          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
+          //dynamic property = propInfo;
+          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+          MeshToNative(@object, meshes);
+          return true;
+        }
+        catch
+        {
+
+        }
+      }
+
       switch (@object)
       {
         case BE.Beam o:
@@ -200,9 +219,7 @@ namespace Objects.Converter.TeklaStructures
     private string GetElemInfo(object o)
     {
       if (o is ModelObject e)
-      {
         return $", name: {e.Identifier.GetType().ToString()}, id: {e.Identifier.ToString()}";
-      }
 
       return "";
     }
@@ -211,14 +228,13 @@ namespace Objects.Converter.TeklaStructures
 
     public IEnumerable<string> GetServicedApplications() => new string[] { TeklaStructuresAppName };
 
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
-
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
     public void SetConverterSettings(object settings)
     {
-      throw new NotImplementedException("This converter does not have any settings.");
+      Settings = settings as Dictionary<string, string>;
     }
   }
 }

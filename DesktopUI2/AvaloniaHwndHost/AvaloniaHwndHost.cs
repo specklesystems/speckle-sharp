@@ -16,8 +16,8 @@
     {
       get
       {
-        if (_root == null)
-          _root = new EmbeddableControlRoot();
+        if (_root == null || _root.Renderer == null)
+          _root = new EmbeddableControlRoot(); // TODO: this crashes rhino periodically! 
         return _root;
       }
     }

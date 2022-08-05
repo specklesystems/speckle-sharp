@@ -19,7 +19,7 @@ namespace SpeckleRhino
   public class SchemaObjectFilter
   {
     #region Properties
-    public enum SupportedSchema { Floor, Wall, Roof, Column, Beam, Pipe, Duct, FaceWall, none };
+    public enum SupportedSchema { Floor, Wall, Roof, Column, Beam, Pipe, Duct, FaceWall, Topography, none };
     private Rhino.RhinoDoc Doc;
     public Dictionary<string, List<RhinoObject>> SchemaDictionary = new Dictionary<string, List<RhinoObject>>();
     public double minDimension = 25 * Units.GetConversionFactor(Units.Millimeters, RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
@@ -107,9 +107,7 @@ namespace SpeckleRhino
           List<SupportedSchema> schemasToTest = GetValidSchemas(obj);
           foreach (var testSchema in schemasToTest)
             if (IsViableSchemaObject(testSchema, obj))
-            {
               SchemaDictionary[testSchema.ToString()].Add(obj); break;
-            }
         }
       }
     }
@@ -185,6 +183,15 @@ namespace SpeckleRhino
           }
           catch { }
           break;
+        case SupportedSchema.Topography:
+          try
+          {
+            Mesh mesh = obj.Geometry as Mesh;
+            if (!mesh.IsClosed)
+              return true;
+          }
+          catch { }
+          break;
         default:
           return false;
       }
@@ -232,9 +239,14 @@ namespace SpeckleRhino
             SupportedSchema.FaceWall,
             SupportedSchema.Roof };
           break;
+        case ObjectType.Mesh:
+          objSchemas = new List<SupportedSchema>
+          {
+            SupportedSchema.Topography
+          };
+          break;
         case ObjectType.PolysrfFilter:
         case ObjectType.Brep:
-        case ObjectType.Mesh:
         case ObjectType.Extrusion:
           break;
         default:

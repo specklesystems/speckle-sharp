@@ -1,5 +1,6 @@
 ﻿using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using Speckle.Core.Api;
@@ -22,14 +23,26 @@ namespace Speckle.ConnectorTeklaStructures.UI
   {
     #region sending
 
+    private List<ISetting> CurrentSettings { get; set; }
+
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      // TODO!
+    }
+
     public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
       //var converter = new ConverterTeklaStructures();
       var converter = kit.LoadConverter(ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
       converter.SetContextDocument(Model);
       Exceptions.Clear();
+
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
 
       var commitObj = new Base();
       int objCount = 0;

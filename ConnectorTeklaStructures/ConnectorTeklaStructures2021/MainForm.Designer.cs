@@ -33,8 +33,11 @@ namespace Speckle.ConnectorTeklaStructures
       // 
       // MainForm
       // 
+      this.structuresExtender.SetAttributeName(this, null);
+      this.structuresExtender.SetAttributeTypeName(this, null);
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.structuresExtender.SetBindPropertyName(this, null);
       this.ClientSize = new System.Drawing.Size(800, 450);
       this.Name = "MainForm";
       this.Text = "MainForm";

@@ -20,6 +20,7 @@ using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Spiral = Objects.Geometry.Spiral;
+using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Dynamo
@@ -54,13 +55,14 @@ namespace Objects.Converter.Dynamo
     public Document Doc { get; private set; }
 #endif
 
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
     public ProgressReport Report => new ProgressReport();
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
+
     public void SetConverterSettings(object settings)
     {
       throw new NotImplementedException("This converter does not have any settings.");
@@ -176,7 +178,9 @@ namespace Objects.Converter.Dynamo
 
         case Box o:
           return BoxToNative(o);
-
+        
+        case Transform o:
+          return TransformToNative(o);
         default:
           throw new NotSupportedException();
       }
@@ -197,50 +201,20 @@ namespace Objects.Converter.Dynamo
       switch (@object)
       {
         case DS.Point _:
-          return true;
-
         case DS.Vector _:
-          return true;
-
         case DS.Plane _:
-          return true;
-
         case DS.Line _:
-          return true;
-
         case DS.Rectangle _:
-          return true;
-
         case DS.Polygon _:
-          return true;
-
         case DS.Circle _:
-          return true;
-
         case DS.Arc _:
-          return true;
-
         case DS.Ellipse _:
-          return true;
-
         case DS.EllipseArc _:
-          return true;
-
         case DS.PolyCurve _:
-          return true;
-
         case DS.NurbsCurve _:
-          return true;
-
         case DS.Helix _:
-          return true;
-
         case DS.Curve _: //last _f the curves
-          return true;
-
         case DS.Mesh _:
-          return true;
-
         case DS.Cuboid _:
           return true;
 
@@ -275,13 +249,13 @@ namespace Objects.Converter.Dynamo
         case Brep _:
         case Mesh _:
         case Box _:
+        case Transform _:
           return true;
 
         default:
           return false;
       }
     }
-
 
     public void SetContextDocument(object doc)
     {

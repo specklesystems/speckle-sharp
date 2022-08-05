@@ -29,7 +29,22 @@ namespace Speckle.Core.Api
     {
       var sw = new StreamWrapper(stream);
 
-      var client = new Client(account ?? await sw.GetAccount());
+      try
+      {
+        account ??= await sw.GetAccount();
+      }
+      catch (SpeckleException e)
+      {
+        if (string.IsNullOrEmpty(sw.StreamId)) throw e;
+        
+        //Fallback to a non authed account
+        account = new Account() {token = "",
+          serverInfo = new ServerInfo() {url = sw.ServerUrl},
+          userInfo = new UserInfo()
+        };
+      }
+      
+      var client = new Client(account);
 
       var transport = new ServerTransport(client.Account, sw.StreamId);
 

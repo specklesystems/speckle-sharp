@@ -32,6 +32,14 @@ namespace Objects.Converter.CSI
     }
 
     public void updatePointProperties(Node speckleStructNode, string name){
+      var point = speckleStructNode.basePoint;
+      string name = "";
+      Model.PointObj.AddCartesian(
+        ScaleToNative(point.x, point.units),
+        ScaleToNative(point.y, point.units),
+        ScaleToNative(point.z, point.units),
+        ref name
+      );
       if (speckleStructNode.restraint != null)
       {
         var restraint = RestraintToNative(speckleStructNode.restraint);

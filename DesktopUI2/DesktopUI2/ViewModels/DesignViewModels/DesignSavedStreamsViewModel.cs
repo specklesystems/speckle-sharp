@@ -5,9 +5,7 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 {
   public class DesignSavedStreamsViewModel
   {
-
     public List<DesignSavedStreamViewModel> SavedStreams { get; set; }
-
 
     public DesignSavedStreamsViewModel()
     {
@@ -16,20 +14,16 @@ namespace DesktopUI2.ViewModels.DesignViewModels
         new DesignSavedStreamViewModel(),
          new DesignSavedStreamViewModel()
          {
-
            Stream = new DesignStream { name = "BIM data is cool" },
            StreamState = new DesignStreamState()
            {
              BranchName = "main",
              IsReceiver = false,
              Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" },
-
            },
            ShowNotification = false,
-           ShowReport = false,
            NoAccess = true,
          }
-
       };
     }
   }
@@ -40,7 +34,6 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string CommitId { get; set; }
     public string CommitMessage { get; set; }
     public bool IsReceiver { get; set; }
-
     public bool SchedulerEnabled { get; set; }
     public ListSelectionFilter Filter { get; set; }
     public object Client { get; internal set; }
@@ -58,7 +51,6 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string role { get; set; }
   }
 
-
   public class DesignSavedStreamViewModel
   {
     public DesignStreamState StreamState { get; set; }
@@ -68,12 +60,12 @@ namespace DesktopUI2.ViewModels.DesignViewModels
     public string LastUsed { get; set; } = "Never";
     public string Notification { get; set; } = "Hello";
     public bool ShowNotification { get; set; } = true;
-
     public bool NoAccess { get; set; } = false;
-    public bool ShowReport { get; set; } = true;
+
     public List<MenuItemViewModel> MenuItems = new List<MenuItemViewModel>();
     public List<ActivityViewModel> Activity { get; set; }
-
+    public List<ApplicationObjectViewModel> Report { get; set; }
+    public List<CommentViewModel> Comments { get; set; }
 
     public DesignSavedStreamViewModel()
     {
@@ -86,16 +78,15 @@ namespace DesktopUI2.ViewModels.DesignViewModels
         SchedulerEnabled = true,
         IsReceiver = true,
         Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" }
-
       };
 
       Activity = new List<ActivityViewModel>() {
-        new ActivityViewModel {
+        new ActivityViewModel (null, null){
 
           Margin = new Avalonia.Thickness(50,10,10,0),
           Icon = "ArrowBottomLeft",
           Message = "Commit 5aaf00a723 was received by Matteo Cominetti" },
-        new ActivityViewModel {
+        new ActivityViewModel (null, null) {
               Margin = new Avalonia.Thickness(10,10,50,0),
           Icon = "ArrowTopRight",
           Message = "Commit created on branch main: 0ae5a01ad7 (Sent 148 objects from Revit2022.)" } };

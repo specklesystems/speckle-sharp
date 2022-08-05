@@ -39,9 +39,9 @@ namespace Objects.Converter.CSI
 
       foreach (Node point in area.topology)
       {
-        X.Add(point.basePoint.x);
-        Y.Add(point.basePoint.y);
-        Z.Add(point.basePoint.z);
+        X.Add(ScaleToNative(point.basePoint.x, point.basePoint.units));
+        Y.Add(ScaleToNative(point.basePoint.y, point.basePoint.units));
+        Z.Add(ScaleToNative(point.basePoint.z, point.basePoint.units));
       }
       double[] x = X.ToArray();
       double[] y = Y.ToArray();

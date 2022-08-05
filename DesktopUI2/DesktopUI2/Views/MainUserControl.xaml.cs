@@ -15,9 +15,6 @@ namespace DesktopUI2.Views
       AvaloniaXamlLoader.Load(this);
 
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launched" } });
-
-
-
     }
   }
 }

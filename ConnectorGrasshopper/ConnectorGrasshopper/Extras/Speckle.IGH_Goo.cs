@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
@@ -27,7 +28,7 @@ namespace ConnectorGrasshopper.Extras
 
     public override bool IsValid => Value != null;
 
-    public override string TypeName => "Speckle" + (Value != null && Value.speckle_type == "" ? " Base" : " " + Value?.speckle_type);
+    public override string TypeName => ToString();
 
     public override string TypeDescription => "A Speckle Object";
 
@@ -87,7 +88,12 @@ namespace ConnectorGrasshopper.Extras
 
     public override string ToString()
     {
-      return $"{(Value != null && Value.speckle_type == "" ? "Speckle.Base" : Value?.speckle_type)}";
+      if (Value == null) return "";
+      if (Value.GetType().IsSubclassOf(typeof(Base)))
+        return $"Speckle {Value.GetType().Name}";
+      return "Speckle Object";
+      
+      //return $"{(Value != null && Value.speckle_type == "" ? "Speckle.Base" : Value?.speckle_type)}";
     }
   }
 

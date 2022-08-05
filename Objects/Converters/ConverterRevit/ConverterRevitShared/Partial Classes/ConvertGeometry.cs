@@ -7,9 +7,10 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
-using Autodesk.Revit.ApplicationServices;
+using Objects.Converters.DxfConverter;
 using Arc = Objects.Geometry.Arc;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
@@ -21,6 +22,7 @@ using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
+using Transform = Objects.Other.Transform;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
 
@@ -99,11 +101,12 @@ namespace Objects.Converter.Revit
     {
       var u = units ?? ModelUnits;
       var boundingBox = pointcloud.get_BoundingBox(null);
-      var filter = PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, boundingBox.Min) });
+      var transform = pointcloud.GetTransform();
+      var filter = PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, transform.Origin) });
       var points = pointcloud.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error
 
       var _pointcloud = new Pointcloud();
-      _pointcloud.points = points.Select(o => PointToSpeckle(o, u)).SelectMany(o => new List<double>() { o.x, o.y, o.z }).ToList();
+      _pointcloud.points = points.Select(o => PointToSpeckle(transform.OfPoint(o), u)).SelectMany(o => new List<double>() { o.x, o.y, o.z }).ToList();
       _pointcloud.colors = points.Select(o => o.Color).ToList();
       _pointcloud.units = u;
       _pointcloud.bbox = BoxToSpeckle(boundingBox, u);
@@ -197,6 +200,13 @@ namespace Objects.Converter.Revit
         endAngle = (double)arc.endAngle;
       }
       var plane = PlaneToNative(arc.plane);
+
+      if (Point.Distance(arc.startPoint, arc.endPoint) < 1E-6)
+      {
+        // Endpoints coincide, it's a circle.
+        return DB.Arc.Create(plane, ScaleToNative(arc.radius ?? 0, arc.units), startAngle, endAngle);
+      }
+      
       return DB.Arc.Create(PointToNative(arc.startPoint), PointToNative(arc.endPoint), PointToNative(arc.midPoint));
       //return Arc.Create( plane.Origin, (double) arc.Radius * Scale, startAngle, endAngle, plane.XVec, plane.YVec );
     }
@@ -650,6 +660,7 @@ namespace Objects.Converter.Revit
       }
     }
 
+
     public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
       if (arr.Count % 3 != 0)
@@ -748,7 +759,6 @@ namespace Objects.Converter.Revit
     public List<BRepBuilderEdgeGeometry> BrepEdgeToNative(BrepEdge edge)
     {
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
-
       var nativeCurveArray = CurveToNative(edge.Curve);
       bool isTrimmed = edge.Curve.domain != null && edge.Domain != null &&
         (edge.Curve.domain.start != edge.Domain.start ||
@@ -874,11 +884,11 @@ namespace Objects.Converter.Revit
 
       return result;
     }
-
-    public Solid BrepToNative(Brep brep)
+    
+    public Solid BrepToNative(Brep brep, out List<string> notes)
     {
       //Make sure face references are calculated by revit
-
+      notes = new List<string>();
       var bRepType = BRepType.OpenShell;
       switch (brep.Orientation)
       {
@@ -895,70 +905,95 @@ namespace Objects.Converter.Revit
 
       builder.SetAllowShortEdges();
       builder.AllowRemovalOfProblematicFaces();
-
       var brepEdges = new List<DB.BRepBuilderGeometryId>[brep.Edges.Count];
       foreach (var face in brep.Faces)
       {
-        var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
-        builder.SetFaceMaterialId(faceId, materialId);
-        
-        foreach (var loop in face.Loops)
+        try
         {
-          var loopId = builder.AddLoop(faceId);
-          if (face.OrientationReversed)
-            loop.TrimIndices.Reverse();
-
-          foreach (var trim in loop.Trims)
+          var faceId = builder.AddFace(SurfaceToNative(face.Surface), face.OrientationReversed);
+          builder.SetFaceMaterialId(faceId, materialId);
+        
+          foreach (var loop in face.Loops)
           {
-            if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated && trim.TrimType != BrepTrimType.Seam)
-              continue;
-
-            if (trim.Edge == null)
-              continue;
-
-            var edgeIds = brepEdges[trim.EdgeIndex];
-            if (edgeIds == null)
+            try
             {
-              // First time we see this edge, convert it and add
-              edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
-              var bRepBuilderGeometryIds = BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge));
-              edgeIds.AddRange(bRepBuilderGeometryIds);
+              var loopId = builder.AddLoop(faceId);
+              if (face.OrientationReversed)
+                loop.TrimIndices.Reverse();
+
+              foreach (var trim in loop.Trims)
+              {
+                try
+                {
+                  if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated &&
+                      trim.TrimType != BrepTrimType.Seam)
+                    continue;
+                  if (trim.Edge == null)
+                    continue;
+
+                  var edgeIds = brepEdges[trim.EdgeIndex];
+                  if (edgeIds == null)
+                  {
+                    // First time we see this edge, convert it and add
+                    edgeIds = brepEdges[trim.EdgeIndex] = new List<BRepBuilderGeometryId>();
+                    var bRepBuilderGeometryIds = BrepEdgeToNative(trim.Edge).Select(edge => builder.AddEdge(edge));
+                    edgeIds.AddRange(bRepBuilderGeometryIds);
+                  }
+
+                  var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
+                  if (trimReversed)
+                  {
+                    for (int e = edgeIds.Count - 1; e >= 0; --e)
+                      if (builder.IsValidEdgeId(edgeIds[e]))
+                        builder.AddCoEdge(loopId, edgeIds[e], true);
+                  }
+                  else
+                  {
+                    for (int e = 0; e < edgeIds.Count; ++e)
+                      if (builder.IsValidEdgeId(edgeIds[e]))
+                        builder.AddCoEdge(loopId, edgeIds[e], false);
+                  }
+                }
+                catch (Exception e)
+                {
+                  notes.Add($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}: {e.Message}");
+                  throw new SpeckleException($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)}  on brep with id {brep.id}\n   Reason: {e.Message}", false);
+                }
+              }
+              builder.FinishLoop(loopId);
             }
-
-            var trimReversed = face.OrientationReversed ? !trim.IsReversed : trim.IsReversed;
-            if (trimReversed)
+            catch (Exception e)
             {
-              for (int e = edgeIds.Count - 1; e >= 0; --e)
-                if (builder.IsValidEdgeId(edgeIds[e]))
-                  builder.AddCoEdge(loopId, edgeIds[e], true);
-
-            }
-            else
-            {
-              for (int e = 0; e < edgeIds.Count; ++e)
-                if (builder.IsValidEdgeId(edgeIds[e]))
-                  builder.AddCoEdge(loopId, edgeIds[e], false);
+              notes.Add(e.Message);
+              if (e is SpeckleException) throw;
+              throw new SpeckleException($"Failed to create loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
             }
           }
-
-          builder.FinishLoop(loopId);
+          builder.FinishFace(faceId);
         }
-        builder.FinishFace(faceId);
+        catch (Exception e)
+        {
+          builder.Dispose();
+          notes.Add(e.Message);
+          if (e is SpeckleException) throw;
+          throw new SpeckleException($"Failed to create face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
+        }
       }
 
-      var removedFace = builder.RemovedSomeFaces();
       var bRepBuilderOutcome = builder.Finish();
       if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
 
       var isResultAvailable = builder.IsResultAvailable();
       if (!isResultAvailable) return null;
       var result = builder.GetResult();
+      builder.Dispose();
       return result;
     }
 
     public Brep BrepToSpeckle(Solid solid, Document d, string units = null)
     {
 #if REVIT2019 || REVIT2020
+
       throw new Speckle.Core.Logging.SpeckleException("Converting BREPs to Speckle is currently only supported in Revit 2021 and above.");
 #else
       // TODO: Incomplete implementation!!
@@ -1153,7 +1188,6 @@ namespace Objects.Converter.Revit
             }
           }
         }
-
       }
       throw new NotImplementedException();
     }
@@ -1166,19 +1200,23 @@ namespace Objects.Converter.Revit
       public List<int> orientation;
     }
 
-    public DirectShape BrepToDirectShape(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public DirectShape BrepToDirectShape(Brep brep, out List<string> notes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
     {
       var revitDs = DirectShape.CreateElement(Doc, new ElementId(cat));
-
+      notes = new List<string>();
       try
       {
-        var solid = BrepToNative(brep);
-        if (solid == null) throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid");
+        var solid = BrepToNative(brep, out notes);
+        if (solid == null)
+        {
+          notes.Add("Solid conversion returned null");
+          throw new Speckle.Core.Logging.SpeckleException("Could not convert Brep to Solid");
+        }
         revitDs.SetShape(new List<GeometryObject> { solid });
       }
       catch (Exception e)
       {
-        Report.LogConversionError(new Exception($"Failed to convert BREP with id {brep.id}, using display mesh value instead.", e));
+        notes.Add($"Failed to convert brep, using display value meshes instead.");
         var meshes = brep.displayValue.SelectMany(m => MeshToNative(m));
         revitDs.SetShape(meshes.ToArray());
       }

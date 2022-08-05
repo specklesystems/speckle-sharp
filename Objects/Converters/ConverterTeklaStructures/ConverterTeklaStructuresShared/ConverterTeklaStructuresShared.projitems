@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructureUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectShapeMesh.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFitting.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBooleanPart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />

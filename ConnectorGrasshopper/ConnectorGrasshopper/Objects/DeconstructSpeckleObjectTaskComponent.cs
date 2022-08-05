@@ -258,16 +258,23 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void BeforeSolveInstance()
     {
-      if (RunCount == -1)
+      try
       {
-        Console.WriteLine("No iter has run");
-        var x = Params.Input[0].VolatileData;
-        var tree = x as GH_Structure<IGH_Goo>;
-        if (tree != null)
+        if (RunCount == -1)
         {
-          outputList = GetOutputList(tree);
-          AutoCreateOutputs();
+          Console.WriteLine("No iter has run");
+          var x = Params.Input[0].VolatileData;
+          var tree = x as GH_Structure<IGH_Goo>;
+          if (tree != null)
+          {
+            outputList = GetOutputList(tree);
+            AutoCreateOutputs();
+          }
         }
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,$"Failed to fetch outputs:\n\t{e.Message}");
       }
       base.BeforeSolveInstance();
     }
@@ -279,7 +286,7 @@ namespace ConnectorGrasshopper.Objects
 
       foreach (var ghGoo in speckleObjects.AllData(true))
       {
-        object converted;
+        object converted = null;
         if (ghGoo is GH_SpeckleBase ghBase)
         {
           converted = ghBase.Value;

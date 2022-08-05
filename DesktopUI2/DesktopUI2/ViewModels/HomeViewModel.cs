@@ -1,9 +1,7 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
@@ -376,7 +374,7 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception e)
           {
-            Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n"+e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
           }
         }
         Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
@@ -387,10 +385,7 @@ namespace DesktopUI2.ViewModels
       {
 
       }
-
     }
-
-
 
     internal async void Init()
     {
@@ -436,7 +431,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
 
     public async void RemoveAccountCommand(Account account)
     {
@@ -499,7 +493,7 @@ namespace DesktopUI2.ViewModels
         var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
         var result = await dialog.ShowDialog<string>();
 
-        if (result!=null)
+        if (result != null)
         {
           Uri u;
           if (!Uri.TryCreate(result, UriKind.Absolute, out u))
@@ -556,11 +550,8 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
-
       var dialog = new NewStreamDialog(Accounts);
       var result = await dialog.ShowDialog<bool>();
-
-
 
       if (result)
       {
@@ -604,7 +595,7 @@ namespace DesktopUI2.ViewModels
       var result = await dialog.ShowDialog<string>();
 
 
-      if (result!=null)
+      if (result != null)
       {
         try
         {
@@ -685,11 +676,14 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
-
     }
 
     private void ChangeTheme(bool isDark)
     {
+
+      if (Application.Current == null)
+        return;
+
       var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
       var theme = materialTheme.CurrentTheme;
 
@@ -699,19 +693,13 @@ namespace DesktopUI2.ViewModels
         theme.SetBaseTheme(Theme.Dark);
 
       materialTheme.CurrentTheme = theme;
-
-
     }
-
 
     public void RefreshCommand()
     {
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
+      ApiUtils.ClearCache();
       Init();
     }
-
-
   }
-
-
 }

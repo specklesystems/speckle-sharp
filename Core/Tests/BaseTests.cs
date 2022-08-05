@@ -12,6 +12,25 @@ namespace Tests
   [TestFixture]
   public class BaseTests
   {
+    [Test]
+    public void CanGetSetDynamicItemProp()
+    {
+      var @base = new Base();
+      @base["Item"] = "Item";
+
+      Assert.AreEqual(@base["Item"], "Item");
+    }
+
+    [Test]
+    public void CanGetSetTypedItemProp()
+    {
+      var @base = new ObjectWithItemProp();
+      @base.Item = "baz";
+
+      Assert.AreEqual(@base["Item"], "baz");
+      Assert.AreEqual(@base.Item, "baz");
+    }
+
     [Test(Description = "Checks if validation is performed in property names")]
     public void CanValidatePropNames()
     {
@@ -159,6 +178,11 @@ namespace Tests
     public class SampleProp
     {
       public string name { get; set; }
+    }
+
+    public class ObjectWithItemProp : Base
+    {
+      public string Item { get; set; } = "Item";
     }
   }
 }

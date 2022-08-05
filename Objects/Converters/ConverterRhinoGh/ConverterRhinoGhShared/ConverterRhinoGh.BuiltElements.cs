@@ -19,6 +19,7 @@ using Floor = Objects.BuiltElements.Floor;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Pipe = Objects.BuiltElements.Pipe;
 using Roof = Objects.BuiltElements.Roof;
+using Topography = Objects.BuiltElements.Topography;
 using Opening = Objects.BuiltElements.Opening;
 using Point = Objects.Geometry.Point;
 using View3D = Objects.BuiltElements.View3D;
@@ -139,22 +140,38 @@ namespace Objects.Converter.RhinoGh
     }
 
     // args of format [width, height, diameter]
-    public Duct CurveToSpeckleDuct(RH.Curve curve, string[] args)
+    public Duct CurveToSpeckleDuct(RH.Curve curve, string[] args, out List<string> notes)
     {
       Duct duct = null;
-      if (args.Length < 3) return duct;
+      notes = new List<string>();
+
+      if (args.Length < 3)
+      {
+        notes.Add("Number of schema arguments less than 3");
+        return duct;
+      }
       if (double.TryParse(args[0], out double height) && double.TryParse(args[1], out double width) && double.TryParse(args[2], out double diameter))
         duct = new Duct(CurveToSpeckle(curve), width, height, diameter) { units = ModelUnits, length = curve.GetLength() };
+      else
+        notes.Add("Could not parse schema arguments into doubles");
       return duct;
     }
 
     // args of format [diameter]
-    public Pipe CurveToSpecklePipe(RH.Curve curve, string[] args)
+    public Pipe CurveToSpecklePipe(RH.Curve curve, string[] args, out List<string> notes)
     {
       Pipe pipe = null;
-      if (args.Length < 1) return pipe;
+      notes = new List<string>();
+
+      if (args.Length < 1)
+      {
+        notes.Add("Number of schema arguments less than 1");
+        return pipe;
+      }
       if (double.TryParse(args[0], out double diameter))
         pipe = new Pipe(CurveToSpeckle(curve), curve.GetLength(), diameter) { units = ModelUnits };
+      else
+        notes.Add("Could not parse schema arguments into doubles");
       return pipe;
     }
 
@@ -168,39 +185,60 @@ namespace Objects.Converter.RhinoGh
       return new Floor((ICurve)ConvertToSpeckle(curve)) { units = ModelUnits };
     }
 
-    public Wall BrepToSpeckleWall(RH.Brep brep)
+    public Wall BrepToSpeckleWall(RH.Brep brep, out List<string> notes)
     {
       Wall wall = null;
+      notes = new List<string>();
+
       BoundingBox brepBox = brep.GetBoundingBox(false);
       double height = brepBox.Max.Z - brepBox.Min.Z; // extract height
       var bottomCurves = GetSurfaceBrepEdges(brep, getBottom: true); // extract baseline
+      if (bottomCurves == null)
+      {
+        notes.Add("Could not extract wall bottom curves");
+        return wall;
+      }
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract openings
       List<Base> openings = new List<Base>();
       if (intCurves != null)
         foreach (ICurve crv in intCurves)
           openings.Add(new Opening(crv));
-      if (bottomCurves != null && height > 0)
+      if (height > 0)
         wall = new Wall(height, bottomCurves[0], openings) { units = ModelUnits };
+      else
+        notes.Add("Wall height is 0");
       return wall;
     }
 
-    public Floor BrepToSpeckleFloor(RH.Brep brep)
+    public Floor BrepToSpeckleFloor(RH.Brep brep, out List<string> notes)
     {
       Floor floor = null;
+      notes = new List<string>();
+
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
+      if (extCurves == null)
+      {
+        notes.Add("Could not extract floor outline curves");
+        return floor;
+      }
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-      if (extCurves != null)
-        floor = new Floor(extCurves[0], intCurves) { units = ModelUnits };
+      floor = new Floor(extCurves[0], intCurves) { units = ModelUnits };
       return floor;
     }
 
-    public Roof BrepToSpeckleRoof(RH.Brep brep)
+    public Roof BrepToSpeckleRoof(RH.Brep brep, out List<string> notes)
     {
       Roof roof = null;
+      notes = new List<string>();
+
       var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
+      if (extCurves == null)
+      {
+        notes.Add("Could not extract roof outline curves");
+        return roof;
+      }
       var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-      if (extCurves != null)
-        roof = new Roof(extCurves[0], intCurves) { units = ModelUnits };
+      roof = new Roof(extCurves[0], intCurves) { units = ModelUnits };
       return roof;
     }
 
@@ -213,6 +251,14 @@ namespace Objects.Converter.RhinoGh
       string type = "Default";
       try { family = args[0]; type = args[1]; } catch { }
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
+    }
+
+    public Topography MeshToTopography(RH.Mesh mesh)
+    {
+      if (mesh.IsClosed)
+        return null;
+
+      return new Topography(MeshToSpeckle(mesh)) { units = ModelUnits };
     }
 
     public RV.AdaptiveComponent InstanceToAdaptiveComponent(InstanceObject instance, string[] args)
@@ -234,7 +280,7 @@ namespace Objects.Converter.RhinoGh
 
     public RV.DirectShape BrepToDirectShape(RH.Brep brep, string[] args)
     {
-      if (args.Length == 0)
+      if (args == null || args.Length == 0)
         return null;
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
@@ -245,7 +291,7 @@ namespace Objects.Converter.RhinoGh
 
     public RV.DirectShape ExtrusionToDirectShape(RH.Extrusion extrusion, string[] args)
     {
-      if (args.Length == 0)
+      if (args == null || args.Length == 0)
         return null;
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
@@ -256,7 +302,7 @@ namespace Objects.Converter.RhinoGh
 
     public RV.DirectShape MeshToDirectShape(RH.Mesh mesh, string[] args)
     {
-      if (args.Length == 0)
+      if (args == null || args.Length == 0)
         return null;
       if (!Enum.TryParse($"{args[0]}s", out RV.RevitCategory category))
         return null;
@@ -291,17 +337,18 @@ namespace Objects.Converter.RhinoGh
       return outCurves;
     }
     
-    public List<object> DirectShapeToNative(RV.DirectShape directShape)
+    public List<object> DirectShapeToNative(RV.DirectShape directShape, out List<string> log)
     {
+      log = new List<string>();
       if (directShape.displayValue == null)
       {
-        Report.Log($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
+        log.Add($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
         return null;
       }
 
       if (directShape.displayValue.Count == 0)
       {
-        Report.Log($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
+        log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
         return null;
       }
 
@@ -312,7 +359,7 @@ namespace Objects.Converter.RhinoGh
       
       if (nativeObjects.Count == 0)
       {
-        Report.Log($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements");
+        log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements");
         return null;
       }
 
