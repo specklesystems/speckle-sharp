@@ -15,7 +15,7 @@ namespace Objects.Organization
     public string name { get; set; }
 
     /// <summary>
-    /// The index of the elements in <see cref="network"/> that belong to this link
+    /// The index of the elements in <see cref="network"/> that are connected by this link
     /// </summary>
     public List<int> elementIndices { get; set; }
 
@@ -34,9 +34,9 @@ namespace Objects.Organization.Revit
   public class RevitNetworkLink : NetworkLink
   {
     /// <summary>
-    /// The shape of the <see cref="NetworkLink"/> at each <see cref="NetworkLink.elementIndices"/>
+    /// The shape of the <see cref="NetworkLink"/>
     /// </summary>
-    public List<NetworkLinkShape> shapes { get; set; } // should this just be one shape or can a link have 2?
+    public NetworkLinkShape shape { get; set; }
 
     public Vector direction { get; set; }
 
@@ -67,7 +67,7 @@ namespace Objects.Organization.Revit
     Unknown,
     Rectangular,
     Round,
-    Square
+    Oval
   }
 }
   

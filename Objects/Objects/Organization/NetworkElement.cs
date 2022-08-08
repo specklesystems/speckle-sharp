@@ -14,10 +14,13 @@ namespace Objects.Organization
   {
     public string name { get; set; }
 
+    /// <summary>
+    /// The Base object representing the element in the network (eg Pipe, Duct, etc)
+    /// </summary>
     public Base element {get; set;}
 
     /// <summary>
-    /// The index of the links in <see cref="network"/> that belong to this element
+    /// The index of the links in <see cref="network"/> that are connected to this element
     /// </summary>
     public List<int> linkIndices { get; set; }
 

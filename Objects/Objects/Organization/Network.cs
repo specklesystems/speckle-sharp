@@ -21,7 +21,7 @@ namespace Objects.Organization
     public string name { get; set; }
 
     /// <summary>
-    /// The elements contained
+    /// The elements contained in the network
     /// </summary>
     public List<NetworkElement> elements { get; set; }
 
