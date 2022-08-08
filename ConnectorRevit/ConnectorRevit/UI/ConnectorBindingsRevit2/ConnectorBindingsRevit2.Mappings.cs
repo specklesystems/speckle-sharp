@@ -358,7 +358,8 @@ namespace Speckle.ConnectorRevit.UI
             typeCategory = GetTypeCategory(@object);
             if (!returnDict.ContainsKey(typeCategory))
               returnDict[typeCategory] = new List<string>();
-            returnDict[typeCategory].Add(@object.GetType().GetProperty("type").GetValue(@object) as string);
+            if (!string.IsNullOrEmpty(@object["type"] as string))
+              returnDict[typeCategory].Add(@object["type"] as string);
 
             break;
           case "teklastructures":
