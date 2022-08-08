@@ -39,6 +39,7 @@ namespace Speckle.ConnectorRevit.UI
     public void SetExecutorAndInit(ExternalEvent eventHandler)
     {
       Executor = eventHandler;
+
       // LOCAL STATE
       // GetStreamsInFile();
 
