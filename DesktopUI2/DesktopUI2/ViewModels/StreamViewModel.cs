@@ -134,8 +134,6 @@ namespace DesktopUI2.ViewModels
 
     public string UrlPathSegment { get; } = "stream";
 
-    public static string Test { get; } = "stream";
-
     private Client Client { get; }
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;

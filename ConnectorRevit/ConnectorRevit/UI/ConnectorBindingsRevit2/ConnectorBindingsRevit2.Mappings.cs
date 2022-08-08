@@ -1,24 +1,15 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
-using Revit.Async;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
@@ -32,12 +23,10 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="state"></param>
     /// <param name="progress"></param>
-    /// <param name="flattenedBase"></param>
     /// <param name="sourceApp"></param>
     /// <returns></returns>
     public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp)
     {
-      progress.Report.Log($"UpdateForCustomMapping");
       // Get Settings for recieve on mapping 
       var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "receive-mappings") as MappingSeting);
       var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : "";
@@ -50,34 +39,25 @@ namespace Speckle.ConnectorRevit.UI
       else
         isFirstTimeReceiving = true;
 
-      progress.Report.Log($"receiveMapping {receiveMappings}");
-
       if (receiveMappings == noMapping || receiveMappings == null)
         return;
       else
       {
-        progress.Report.Log($"GetHostTypes");
         Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
         Dictionary<string, List<string>> incomingTypesDict = GetIncomingTypes(progress, sourceApp);
 
-        progress.Report.Log($"UpdateMappingForNewObjects");
+        // if mappings already exist, update them and return true
         bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
-        //bool newTypesExist = UpdateMappingForNewObjects(settingsMapping, flattenedBase, hostTypesDict, progress);
-        progress.Report.Log($"GetInitialMapping");
+
         Dictionary<string, List<MappingValue>> Mapping = settingsMapping;
         if (Mapping == null)
-        {
-          progress.Report.Log($"Mapping null");
           Mapping = returnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
-        }
 
-        progress.Report.Log($"InitialMapping");
         try
         {
           // show custom mapping dialog if the settings corrospond to what is being received
           if (newTypesExist || receiveMappings == everyReceive)
           {
-            progress.Report.Log($"show dialog");
             var vm = new MappingViewModel(Mapping, hostTypesDict, progress, newTypesExist && !isFirstTimeReceiving);
             MappingViewDialog mappingView = new MappingViewDialog
             {
@@ -89,14 +69,13 @@ namespace Speckle.ConnectorRevit.UI
             receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(Mapping); ;
 
           }
-          //updateRecieveObject(Mapping, flattenedBase);
+          // update the mapping object for the user mapped types
           SetMappedValues(Mapping, progress, sourceApp);
         }
         catch (Exception ex)
         {
           progress.Report.Log($"Could not make new mapping {ex}");
         }
-        progress.Report.Log($"new mapping success");
       }
     }
 
@@ -114,7 +93,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         foreach (var speckleType in incomingTypesDict[incomingTypeCategory])
         {
-          string mappedValue = GetMappedValue(hostTypes, incomingTypeCategory, speckleType, progress);
+          string mappedValue = GetMappedValue(hostTypes, incomingTypeCategory, speckleType);
           if (mappings.ContainsKey(incomingTypeCategory))
           {
             mappings[incomingTypeCategory].Add(new MappingValue
@@ -138,7 +117,14 @@ namespace Speckle.ConnectorRevit.UI
       return mappings;
     }
 
-    public string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType, ProgressViewModel progress)
+    /// <summary>
+    /// Gets the most similar host type of the same category for a single incoming type
+    /// </summary>
+    /// <param name="hostTypes"></param>
+    /// <param name="category"></param>
+    /// <param name="speckleType"></param>
+    /// <returns>name of host type as string</returns>
+    public string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType)
     {
       string mappedValue = "";
       string hostCategory = "";
@@ -160,6 +146,12 @@ namespace Speckle.ConnectorRevit.UI
       return mappedValue;
     }
 
+    /// <summary>
+    /// Returns the distance between two strings
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="t"></param>
+    /// <returns>distance as an integer</returns>
     public static int LevenshteinDistance(string s, string t)
     {
       // Default algorithim for computing the similarity between strings
@@ -191,15 +183,19 @@ namespace Speckle.ConnectorRevit.UI
       return d[n, m];
     }
 
-    // Warning, these strings need to be the same as the strings in the MappingViewModel
     private string TypeCatMaterials = "Materials";
     private string TypeCatFloors = "Floors";
     private string TypeCatWalls = "Walls";
     private string TypeCatFraming = "Framing";
     private string TypeCatColumns = "Columns";
-    private string TypeCatMisc = "Miscellaneous";
+    private string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
 
-    public string GetTypeCategory(Base obj, ProgressViewModel progress)
+    /// <summary>
+    /// Gets the category of a given base object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns>name of category type as string</returns>
+    public string GetTypeCategory(Base obj)
     {
       string speckleType = obj.speckle_type.Split('.').LastOrDefault().ToLower();
 
@@ -222,13 +218,10 @@ namespace Speckle.ConnectorRevit.UI
           }
           return TypeCatMisc;
         case "csielement2d":
-          progress.Report.Log("csielement2d");
           if (obj.GetMemberNames().Contains("property") && obj["property"] is Base prop)
           {
-            progress.Report.Log("element 2d contains property");
             if (prop.GetMemberNames().Contains("type") && (int)obj["type"] is int type)
             {
-              progress.Report.Log($"contains type {type}");
               switch (type)
               {
                 case (int)PropertyType2D.Wall:
@@ -263,6 +256,9 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
+    /// <summary>
+    /// Helper class for creating filters for all the different Revit types
+    /// </summary>
     public class customTypesFilter
     {
       public string key;
@@ -277,6 +273,10 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
+    /// <summary>
+    /// Get an object with all the Revit types in the current project
+    /// </summary>
+    /// <returns>A dictionary where the keys are type categories and the value is a list of all the revit types that fit that category in the existing project</returns>
     public Dictionary<string, List<string>> GetHostTypes()
     {
       var customHostTypesFilter = new List<customTypesFilter>
@@ -318,10 +318,12 @@ namespace Speckle.ConnectorRevit.UI
       return returnDict;
     }
 
+    /// <summary>
+    /// Get an object with all the incoming types for the receive object
+    /// </summary>
+    /// <returns>A dictionary where the keys are type categories and the value is a list of all the incoming types that fit that category</returns>
     private Dictionary<string, List<string>> GetIncomingTypes(ProgressViewModel progress, string sourceApp)
     {
-      progress.Report.Log($"num objs {Preview.Count} ");
-      progress.Report.Log($"source app no nums {Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty)}");
       var returnDict = new Dictionary<string, List<string>>();
       string typeCategory = null;
 
@@ -332,15 +334,12 @@ namespace Speckle.ConnectorRevit.UI
         
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
-          case "autocad":
-            type = @object.GetType().GetProperty("type").GetValue(@object) as string;
-            break;
           case "etabs":
             if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
             {
               foreach (var el in els)
               {
-                typeCategory = GetTypeCategory(el, progress);
+                typeCategory = GetTypeCategory(el);
                 if (!returnDict.ContainsKey(typeCategory))
                   returnDict[typeCategory] = new List<string>();
 
@@ -356,17 +355,14 @@ namespace Speckle.ConnectorRevit.UI
             }
             break;
           case "revit":
-            typeCategory = GetTypeCategory(@object, progress);
+            typeCategory = GetTypeCategory(@object);
             if (!returnDict.ContainsKey(typeCategory))
               returnDict[typeCategory] = new List<string>();
             returnDict[typeCategory].Add(@object.GetType().GetProperty("type").GetValue(@object) as string);
 
             break;
-          case "rhino":
-            type = @object.GetType().GetProperty("type").GetValue(@object) as string;
-            break;
           case "teklastructures":
-            typeCategory = GetTypeCategory(@object, progress);
+            typeCategory = GetTypeCategory(@object);
             if (!returnDict.ContainsKey(typeCategory))
               returnDict[typeCategory] = new List<string>();
 
@@ -386,15 +382,16 @@ namespace Speckle.ConnectorRevit.UI
       var newDictionary = returnDict.ToDictionary(entry => entry.Key, entry => entry.Value);
       foreach (var key in newDictionary.Keys)
       {
-        progress.Report.Log($"key {key} value {String.Join(",", returnDict[key])}");
         returnDict[key] = returnDict[key].Distinct().ToList();
       }
       return returnDict;
     }
 
+    /// <summary>
+    /// Update receive object to include the user's custom mapping
+    /// </summary>
     private void SetMappedValues(Dictionary<string,List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
     {
-      progress.Report.Log($"num objs {Preview.Count} host app {Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty)}");
       string typeCategory = null;
       List<string> mappedValues = new List<string>();
 
@@ -405,17 +402,12 @@ namespace Speckle.ConnectorRevit.UI
 
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
-          case "autocad":
-            type = @object.GetType().GetProperty("type").GetValue(@object) as string;
-            break;
           case "etabs":
-            progress.Report.Log($"etabs");
-
             if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
             {
               foreach (var el in els)
               {
-                typeCategory = GetTypeCategory(el, progress);
+                typeCategory = GetTypeCategory(el);
                 if (!userMap.ContainsKey(typeCategory))
                   continue;
 
@@ -437,7 +429,7 @@ namespace Speckle.ConnectorRevit.UI
             }
             break;
           case "revit":
-            typeCategory = GetTypeCategory(@object, progress);
+            typeCategory = GetTypeCategory(@object);
             if (!userMap.ContainsKey(typeCategory))
               continue;
 
@@ -454,12 +446,8 @@ namespace Speckle.ConnectorRevit.UI
             }
 
             break;
-          case "rhino":
-            type = @object.GetType().GetProperty("type").GetValue(@object) as string;
-            break;
           case "teklastructures":
-            progress.Report.Log("tekla");
-            typeCategory = GetTypeCategory(@object, progress);
+            typeCategory = GetTypeCategory(@object);
             if (!userMap.ContainsKey(typeCategory))
               continue;
 
@@ -482,6 +470,10 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
+    /// <summary>
+    /// Update the custom type mapping that the user has saved
+    /// </summary>
+    /// <returns>A bool indicating whether there are new incoming types or not</returns>
     public bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
     {
       // no existing mappings exist
@@ -499,7 +491,7 @@ namespace Speckle.ConnectorRevit.UI
           settingsMapping[typeCategory] = new List<MappingValue>();
           foreach (var type in incomingTypesDict[typeCategory])
           {
-            string mappedValue = GetMappedValue(hostTypesDict, typeCategory, type, progress);
+            string mappedValue = GetMappedValue(hostTypesDict, typeCategory, type);
             settingsMapping[typeCategory].Add(new MappingValue(type, mappedValue, true));
           }
         }
@@ -510,7 +502,7 @@ namespace Speckle.ConnectorRevit.UI
             if (!settingsMapping[typeCategory].Any(i => i.IncomingType == type))
             {
               newTypesExist = true;
-              string mappedValue = GetMappedValue(hostTypesDict, typeCategory, type, progress);
+              string mappedValue = GetMappedValue(hostTypesDict, typeCategory, type);
               settingsMapping[typeCategory].Add(new MappingValue(type, mappedValue, true));
             }
           }

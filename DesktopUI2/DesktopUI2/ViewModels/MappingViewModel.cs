@@ -26,7 +26,7 @@ namespace DesktopUI2.ViewModels
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
     public const string UnmappedKey = "New Incoming Types";
-    private string TypeCatMisc = "Miscellaneous";
+    private string TypeCatMisc = "Miscellaneous"; // needs to match string in connectorRevit.Mappings
 
     private bool isSearching = false;
     private Dictionary<string,List<string>> _hostTypeValuesDict { get; } = new Dictionary<string, List<string>>();

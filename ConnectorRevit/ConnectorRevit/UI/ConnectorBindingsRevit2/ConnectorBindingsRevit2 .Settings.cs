@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
-using Revit.Async;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {

@@ -25,8 +25,6 @@ namespace DesktopUI2
     public string ConnectorName =>
       System.Reflection.Assembly.GetAssembly(GetType()).GetNameAndVersion().Name;
 
-    public string MappingSelectionValue { get; set; } = null;
-
     //public List<StreamState> SavedStreamStates = new List<StreamState>();
 
     #region delegates

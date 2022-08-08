@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -12,8 +10,6 @@ using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using DesktopUI2.Views.Windows.Dialogs;
-using Newtonsoft.Json;
 using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -130,7 +126,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        progress.Report.Log($" new mappings failed :( {ex}");
+        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
       }
 
 
@@ -158,7 +154,6 @@ namespace Speckle.ConnectorRevit.UI
 
           state.ReceivedObjects = newPlaceholderObjects;
 
-          progress.Report.Log($"commiting");
           t.Commit();
         }
 
