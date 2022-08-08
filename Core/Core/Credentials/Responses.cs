@@ -33,6 +33,9 @@
     public string name { get; set; }
     public string company { get; set; }
     public string url { get; set; }
+    public string adminContact { get; set; }
+    public string description { get; set; }
+    public string version { get; set; }
   }
 
   public class TokenExchangeResponse
