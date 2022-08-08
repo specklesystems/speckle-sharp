@@ -75,12 +75,12 @@ Make sure to also check and ⭐️ these other Speckle repositories:
 
 ## Developing and Debugging
 
-Clone this monorepo, **each section has its own readme**, so then just follow those instructions. 
+Clone this monorepo; **each section has its own readme**, so then just follow those instructions. 
 
-Issues or questions? We encourage everyone interested to debug / hack /contribute / give feedback to this project.
+Issues or questions? We encourage everyone interested to debug / hack / contribute / give feedback to this project.
 
 > **A note on Accounts:**
-> The connectors themselves doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app. You can install it [from here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe).
+> The connectors themselves don't have features to manage your Speckle accounts; this functionality is delegated to the Speckle Manager desktop app. You can install it [from here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe).
 
 ### Contributing
 
