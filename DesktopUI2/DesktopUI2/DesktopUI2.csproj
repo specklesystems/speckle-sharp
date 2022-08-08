@@ -62,7 +62,6 @@
     <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
-    <None Remove="Views\Windows\Dialogs\MappingView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\ButtonSettingView.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
@@ -161,9 +160,6 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\MappingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Scheduler.xaml">
@@ -274,9 +270,6 @@
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
       <DependentUpon>StreamEditView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\MappingView.xaml.cs">
-      <DependentUpon>MappingView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Scheduler.xaml.cs">
       <DependentUpon>Scheduler.xaml</DependentUpon>
