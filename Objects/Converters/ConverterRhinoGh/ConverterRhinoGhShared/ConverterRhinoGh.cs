@@ -125,7 +125,7 @@ namespace Objects.Converter.RhinoGh
       Base @base = null;
       Base schema = null;
       ApplicationObject reportObj = null;
-      List<string> notes = new List<string>();
+      var notes = new List<string>();
 
       if (@object is RhinoObject ro)
       {
@@ -277,6 +277,7 @@ namespace Objects.Converter.RhinoGh
         @base["displayStyle"] = style;
       if (schema != null)
       {
+        notes.Add($"Attached {schema.speckle_type} schema");
         schema["renderMaterial"] = material;
         @base["@SpeckleSchema"] = schema;
       }
@@ -302,7 +303,7 @@ namespace Objects.Converter.RhinoGh
       string schema = GetSchema(obj, out string[] args);
 
       Base schemaBase = null;
-      List<string> notes = null;
+      var notes = new List<string>();
       if (obj is InstanceObject)
       {
         if (schema == "AdaptiveComponent")
@@ -435,11 +436,8 @@ namespace Objects.Converter.RhinoGh
           break;
       }
       reportObj.Log.AddRange(notes);
-      if (schemaBase != null)
-        reportObj.Log.Add($"Created {schema} schema from {obj.GetType()}");
-      else
-        reportObj.Update(logItem: $"{schema} schema creation from {obj.GetType()} failed");
-      Report.UpdateReportObject(reportObj);
+      if (schemaBase == null)
+        reportObj.Update(logItem: $"{schema} schema creation failed");
       return schemaBase;
     }
 
