@@ -46,7 +46,7 @@ Give Speckle a try in no time by:
 
 This monorepo is the home to our Speckle 2.0 .NET projects:
 
-- [`Core`](https://github.com/specklesystems/speckle-sharp/tree/main/Core): the canconical SDK for Speckle. It supports multiple [data transports](https://discourse.speckle.works/t/core-2-0-transports/919), and advanced [decomposition API](https://discourse.speckle.works/t/core-2-0-decomposition-api/911) for design data, and offers a [dynamic base](https://discourse.speckle.works/t/core-2-0-the-base-object/782) for object definition.
+- [`Core`](https://github.com/specklesystems/speckle-sharp/tree/main/Core): the canonical SDK for Speckle. It supports multiple [data transports](https://discourse.speckle.works/t/core-2-0-transports/919), and advanced [decomposition API](https://discourse.speckle.works/t/core-2-0-decomposition-api/911) for design data, and offers a [dynamic base](https://discourse.speckle.works/t/core-2-0-the-base-object/782) for object definition.
 - [`Objects`](https://github.com/specklesystems/speckle-sharp/tree/main/Objects): the Objects Kit is our default interoperability kit. Read more about kits and their role in the Speckle ecosystem [here](https://discourse.speckle.works/t/introducing-kits-2-0/710).
   - [`Converters`](https://github.com/specklesystems/speckle-sharp/tree/main/Objects/Converters): conversion routines for each of the connectors mentioned below
 - Speckle Connectors
