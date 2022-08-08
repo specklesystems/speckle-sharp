@@ -35,7 +35,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="flattenedBase"></param>
     /// <param name="sourceApp"></param>
     /// <returns></returns>
-    public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, List<Base> flattenedBase, string sourceApp)
+    public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp)
     {
       progress.Report.Log($"UpdateForCustomMapping");
       // Get Settings for recieve on mapping 
@@ -58,7 +58,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         progress.Report.Log($"GetHostTypes");
         Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
-        Dictionary<string, List<string>> incomingTypesDict = GetIncomingTypes(flattenedBase, progress, sourceApp);
+        Dictionary<string, List<string>> incomingTypesDict = GetIncomingTypes(progress, sourceApp);
 
         progress.Report.Log($"UpdateMappingForNewObjects");
         bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
@@ -90,7 +90,7 @@ namespace Speckle.ConnectorRevit.UI
 
           }
           //updateRecieveObject(Mapping, flattenedBase);
-          SetMappedValues(Mapping, flattenedBase, progress, sourceApp);
+          SetMappedValues(Mapping, progress, sourceApp);
         }
         catch (Exception ex)
         {
@@ -318,15 +318,16 @@ namespace Speckle.ConnectorRevit.UI
       return returnDict;
     }
 
-    private Dictionary<string, List<string>> GetIncomingTypes(List<Base> objects, ProgressViewModel progress, string sourceApp)
+    private Dictionary<string, List<string>> GetIncomingTypes(ProgressViewModel progress, string sourceApp)
     {
-      progress.Report.Log($"num objs {objects.Count} ");
+      progress.Report.Log($"num objs {Preview.Count} ");
       progress.Report.Log($"source app no nums {Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty)}");
       var returnDict = new Dictionary<string, List<string>>();
       string typeCategory = null;
 
-      foreach (var @object in objects)
+      foreach (var obj in Preview)
       {
+        var @object = StoredObjects[obj.OriginalId];
         string type = null;
         
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
@@ -391,14 +392,15 @@ namespace Speckle.ConnectorRevit.UI
       return returnDict;
     }
 
-    private void SetMappedValues(Dictionary<string,List<MappingValue>> userMap, List<Base> objects, ProgressViewModel progress, string sourceApp)
+    private void SetMappedValues(Dictionary<string,List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
     {
-      progress.Report.Log($"num objs {objects.Count} host app {Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty)}");
+      progress.Report.Log($"num objs {Preview.Count} host app {Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty)}");
       string typeCategory = null;
       List<string> mappedValues = new List<string>();
 
-      foreach (var @object in objects)
+      foreach (var obj in Preview)
       {
+        var @object = StoredObjects[obj.OriginalId];
         string type = null;
 
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))

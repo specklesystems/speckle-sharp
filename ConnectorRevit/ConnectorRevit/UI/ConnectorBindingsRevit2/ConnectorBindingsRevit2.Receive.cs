@@ -112,19 +112,21 @@ namespace Speckle.ConnectorRevit.UI
 
       Preview.Clear();
       StoredObjects.Clear();
-      var flattenedObjects = FlattenCommitObject(commitObject, converter);
+
+
+      Preview = FlattenCommitObject(commitObject, converter);
+      foreach (var previewObj in Preview)
+        progress.Report.Log(previewObj);
+
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
       converter.SetPreviousContextObjects(previouslyReceiveObjects);
       // needs to be set for openings in floors and roofs to work
-      converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
-
-      // update flattened objects if the user has custom mappings
-      progress.Report.Log($"flattedObjects {flattenedObjects}");
+      converter.SetContextObjects(Preview);
 
       try
       {
-        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, flattenedObjects, myCommit.sourceApplication));
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
       }
       catch (Exception ex)
       {
@@ -141,17 +143,7 @@ namespace Speckle.ConnectorRevit.UI
           failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
           t.Start();
-
-          t.Start();
-          Preview = FlattenCommitObject(commitObject, converter);
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-
-          converter.ReceiveMode = state.ReceiveMode;
-          // needs to be set for editing to work 
-          converter.SetPreviousContextObjects(previouslyReceiveObjects);
-          // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(Preview);
+          
           var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
