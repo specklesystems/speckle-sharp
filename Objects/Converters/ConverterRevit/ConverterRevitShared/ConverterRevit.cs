@@ -47,13 +47,13 @@ namespace Objects.Converter.Revit
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> PreviousContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
@@ -92,8 +92,8 @@ namespace Objects.Converter.Revit
       Report.Log($"Using units: {ModelUnits}");
     }
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -102,6 +102,8 @@ namespace Objects.Converter.Revit
     public Base ConvertToSpeckle(object @object)
     {
       Base returnObject = null;
+      List<string> notes = new List<string>();
+      string id = @object is Element element ? element.UniqueId : string.Empty;
       switch (@object)
       {
         case DB.Document o:
@@ -114,10 +116,10 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = FamilyInstanceToSpeckle(o);
+          returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
-          returnObject = FloorToSpeckle(o);
+          returnObject = FloorToSpeckle(o, out notes);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -130,26 +132,18 @@ namespace Objects.Converter.Revit
           returnObject = ConvertAndCacheMaterial(o.Id, o.Document);
           break;
         case DB.ModelCurve o:
-
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
-          {
             returnObject = RoomBoundaryLineToSpeckle(o);
-          }
           else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
-          {
             returnObject = SpaceSeparationLineToSpeckle(o);
-          }
           else
-          {
             returnObject = ModelCurveToSpeckle(o);
-          }
-
           break;
         case DB.Opening o:
           returnObject = OpeningToSpeckle(o);
           break;
         case DB.RoofBase o:
-          returnObject = RoofToSpeckle(o);
+          returnObject = RoofToSpeckle(o, out notes);
           break;
         case DB.Area o:
           returnObject = AreaToSpeckle(o);
@@ -161,14 +155,13 @@ namespace Objects.Converter.Revit
           returnObject = TopographyToSpeckle(o);
           break;
         case DB.Wall o:
-          returnObject = WallToSpeckle(o);
+          returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = DuctToSpeckle(o);
+          returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
           returnObject = DuctToSpeckle(o);
-          Report.Log($"Converted FlexDuct {o.Id}");
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
@@ -178,7 +171,6 @@ namespace Objects.Converter.Revit
           break;
         case DB.Plumbing.FlexPipe o:
           returnObject = PipeToSpeckle(o);
-          Report.Log($"Converted FlexPipe {o.Id}");
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
@@ -213,7 +205,7 @@ namespace Objects.Converter.Revit
           returnObject = RebarToSpeckle(o);
           break;
         case DB.Ceiling o:
-          returnObject = CeilingToSpeckle(o);
+          returnObject = CeilingToSpeckle(o, out notes);
           break;
         case DB.PointCloudInstance o:
           returnObject = PointcloudToSpeckle(o);
@@ -229,10 +221,7 @@ namespace Objects.Converter.Revit
           break;
         case DB.ReferencePoint o:
           if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
-          {
             returnObject = AnalyticalNodeToSpeckle(o);
-
-          }
           break;
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
@@ -257,12 +246,9 @@ namespace Objects.Converter.Revit
           var el = @object as Element;
           if (el.IsElementSupported())
           {
-            returnObject = RevitElementToSpeckle(el);
-            Report.Log($"Converted {el.Category.Name} {el.Id}");
+            returnObject = RevitElementToSpeckle(el, out notes);
             break;
           }
-
-          Report.Log($"Skipped not supported type: {@object.GetType()}{GetElemInfo(@object)}");
           returnObject = null;
           break;
       }
@@ -296,15 +282,17 @@ namespace Objects.Converter.Revit
             (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
           }
           else returnObject["materialQuantities"] = null;
-
-
         }
         catch (System.Exception e)
         {
-          Report.Log(e.Message);
+          notes.Add(e.Message);
         }
       }
 
+      // log 
+      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
+      if (reportObj != null && notes.Count > 0)
+        reportObj.Update(log: notes);
 
       return returnObject;
     }
@@ -312,9 +300,7 @@ namespace Objects.Converter.Revit
     private string GetElemInfo(object o)
     {
       if (o is Element e)
-      {
         return $", name: {e.Name}, id: {e.UniqueId}";
-      }
 
       return "";
     }
@@ -369,15 +355,12 @@ namespace Objects.Converter.Revit
           //dynamic property = propInfo;
           //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
           var cat = GetObjectCategory(@object);
-          return DirectShapeToNative(meshes, cat);
+          return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, cat);
         }
         catch 
         {
 
         }
-
-        
-
       }
       //Family Document
       if (Doc.IsFamilyDocument)
@@ -428,18 +411,17 @@ namespace Objects.Converter.Revit
               return MeshToDxfImportFamily(mesh, Doc);
             case ToNativeMeshSettingEnum.Default:
             default:
-              return DirectShapeToNative(new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
+              return DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
           }
         // non revit built elems
         case BE.Alignment o:
           if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
-          {
             return ModelCurveToNative(o.baseCurve);
-          }
+
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return DirectShapeToNative(o.displayValue, applicationId: o.applicationId);
+          return DirectShapeToNative(new ApplicationObject(o.id, o.speckle_type), o.displayValue, applicationId: o.applicationId);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -648,7 +630,6 @@ namespace Objects.Converter.Revit
           _ => false
         };
       }
-
 
       //Project Document
       var schema = @object["@SpeckleSchema"] as Base; // check for contained schema

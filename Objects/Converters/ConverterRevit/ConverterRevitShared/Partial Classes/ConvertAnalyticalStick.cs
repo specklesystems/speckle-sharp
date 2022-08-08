@@ -11,18 +11,15 @@ using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
 
-
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> AnalyticalStickToNative(Element1D speckleStick)
+    public ApplicationObject AnalyticalStickToNative(Element1D speckleStick)
     {
-      List<ApplicationPlaceholderObject> placeholderObjects = new List<ApplicationPlaceholderObject> { };
+      ApplicationObject appObj = null;
       XYZ offset1 = VectorToNative(speckleStick.end1Offset);
       XYZ offset2 = VectorToNative(speckleStick.end2Offset);
-      List<ApplicationPlaceholderObject> placeholders = new List<ApplicationPlaceholderObject> { };
 
       switch (speckleStick.type)
       {
@@ -32,34 +29,29 @@ namespace Objects.Converter.Revit
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
           revitBeam.baseLine = speckleStick.baseLine;
-          //Beam beam = new Beam(speckleStick.baseLine);
-          placeholders = BeamToNative(revitBeam);
-          DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)placeholders[0].NativeObject;
-
+          appObj = BeamToNative(revitBeam);
+          DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBeam, speckleStick, offset1, offset2);
-          //analyticalModel.
-          return placeholders;
+
+          return appObj;
         case ElementType1D.Brace:
           RevitBrace revitBrace = new RevitBrace();
           revitBrace.type = speckleStick.property.name.Replace('X', 'x');
           revitBrace.baseLine = speckleStick.baseLine;
-          //Brace brace = new Brace(speckleStick.baseLine);
-          placeholders = BraceToNative(revitBrace);
-          DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)placeholders[0].NativeObject;
+          appObj = BraceToNative(revitBrace);
+          DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBrace, speckleStick, offset1, offset2);
-          return placeholders;
+          return appObj;
         case ElementType1D.Column:
           RevitColumn revitColumn = new RevitColumn();
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
-          placeholders = ColumnToNative(revitColumn);
-          DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)placeholders[0].NativeObject;
+          appObj = ColumnToNative(revitColumn);
+          DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitColumn, speckleStick, offset1, offset2);
-          return placeholders;
-          //Column column = new Column(speckleStick.baseLine);
-          return ColumnToNative(revitColumn);
+          return appObj;
       }
-      return placeholderObjects;
+      return appObj;
     }
 
     private void SetAnalyticalPros(Element element, Element1D element1d, XYZ offset1, XYZ offset2)
@@ -401,7 +393,6 @@ namespace Objects.Converter.Revit
 #else
     private Element1D AnalyticalStickToSpeckle(AnalyticalMember revitStick)
     {
-
       var speckleElement1D = new Element1D();
       switch (revitStick.StructuralRole)
       {
@@ -419,10 +410,7 @@ namespace Objects.Converter.Revit
           break;
       }
 
-
       speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(revitStick.GetCurve());
-
-
 
       var startRelease = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_TYPE);
       var endRelease = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_TYPE);
@@ -677,7 +665,6 @@ namespace Objects.Converter.Revit
       prop.material = speckleMaterial;
       prop.name = stickFamily.Name;
 
-
       var mark = GetParamValue<string>(stickFamily, BuiltInParameter.ALL_MODEL_MARK);
 
       //TODO: how to differenciate between column and beam?
@@ -706,6 +693,4 @@ namespace Objects.Converter.Revit
     }
 #endif
   }
-
-
 }

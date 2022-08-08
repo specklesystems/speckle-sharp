@@ -11,7 +11,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     public View ViewToSpeckle(DB.View revitView)
     {
       switch (revitView.ViewType)
@@ -122,6 +121,7 @@ namespace Objects.Converter.Revit
       // crop
       speckleView["cropped"] = view.CropBoxActive.ToString();
     }
+
     private DB.View3D SetViewParams(DB.View3D view, Base speckleView)
     {
       // display
@@ -173,10 +173,9 @@ namespace Objects.Converter.Revit
       corrected = Regex.Replace(corrected, "[\\}\\]]", ")");
       corrected = Regex.Replace(corrected, "[\\:|;<>?`~]", "-");
 
-      Report.ConversionLog.Add($@"Renamed view {name} to {corrected} due to invalid characters.");
+      Report.Log($@"Renamed view {name} to {corrected} due to invalid characters.");
 
       return corrected;
-
     }
   }
 }

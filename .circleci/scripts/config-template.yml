@@ -16,7 +16,7 @@ commands:
           name: Publish nuget package
           command: |
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORFKLOW_NUM)-beta/a" } else { $env:CIRCLE_TAG }
-            $version = $tag.Split("/")[0]  
+            $version = $tag.Split("/")[1]  
             msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
           environment:
@@ -340,7 +340,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-core|nugets)?$/
+              only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
             - packandpublish:
                 projectfilepath: Core/Core.sln
@@ -350,7 +350,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-objects|nugets)?$/
+              only: /^(nuget-objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
             - packandpublish:
                 projectfilepath: Objects/Objects.sln
@@ -360,7 +360,7 @@ workflows:
             branches:
               ignore: /.*/ # For testing only: /ci\/.*/
             tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})\/(nuget-dui|nugets)?$/
+              only: /^(nuget-dui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
             - packandpublish:
                 projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj

@@ -69,10 +69,5 @@
       Classes="Overline"
       Text="{Binding Stream.id}"
       TextTrimming="CharacterEllipsis" />
-
-
-
-
-
   </Grid>
 </UserControl>

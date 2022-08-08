@@ -107,9 +107,7 @@ namespace SpeckleRhino
           List<SupportedSchema> schemasToTest = GetValidSchemas(obj);
           foreach (var testSchema in schemasToTest)
             if (IsViableSchemaObject(testSchema, obj))
-            {
               SchemaDictionary[testSchema.ToString()].Add(obj); break;
-            }
         }
       }
     }
@@ -188,10 +186,19 @@ namespace SpeckleRhino
         case SupportedSchema.Topography:
           try
           {
-            Mesh mesh = obj.Geometry as Mesh;
-            if (!mesh.IsClosed)
+            switch (obj.Geometry)
             {
-              return true;
+              case Mesh o:
+                if (!o.IsClosed) return true;
+                break;
+              case Brep o:
+                if (!o.IsSolid) return true;
+                break;
+#if RHINO7
+              case SubD o:
+                if (!o.IsSolid) return true;
+                break;
+#endif
             }
           }
           catch { }
@@ -244,14 +251,13 @@ namespace SpeckleRhino
             SupportedSchema.Roof };
           break;
         case ObjectType.Mesh:
+        case ObjectType.PolysrfFilter:
+        case ObjectType.Brep:
+        case ObjectType.Extrusion:
           objSchemas = new List<SupportedSchema>
           {
             SupportedSchema.Topography
           };
-          break;
-        case ObjectType.PolysrfFilter:
-        case ObjectType.Brep:
-        case ObjectType.Extrusion:
           break;
         default:
           break;

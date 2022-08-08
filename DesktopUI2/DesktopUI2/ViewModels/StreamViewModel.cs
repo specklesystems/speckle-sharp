@@ -40,6 +40,13 @@ namespace DesktopUI2.ViewModels
 
     public ICommand RemoveSavedStreamCommand { get; }
 
+    private bool previewOn = false;
+    public bool PreviewOn
+    {
+      get => previewOn;
+      set => this.RaiseAndSetIfChanged(ref previewOn, value);
+    }
+
     #region bindings
     private Stream _stream;
     public Stream Stream
@@ -105,19 +112,7 @@ namespace DesktopUI2.ViewModels
       get => !string.IsNullOrEmpty(Notification);
     }
 
-    private bool _showReport;
-
-    public bool ShowReport
-    {
-      get => _showReport;
-      private set
-      {
-        this.RaiseAndSetIfChanged(ref _showReport, value);
-      }
-    }
-
     private bool _isRemovingStream;
-
     public bool IsRemovingStream
     {
       get => _isRemovingStream;
@@ -128,7 +123,6 @@ namespace DesktopUI2.ViewModels
     }
 
     private bool _isExpanded;
-
     public bool IsExpanded
     {
       get => _isExpanded;
@@ -232,6 +226,55 @@ namespace DesktopUI2.ViewModels
     {
       get => _activity;
       private set => this.RaiseAndSetIfChanged(ref _activity, value);
+    }
+
+    private List<ApplicationObjectViewModel> _report;
+    public List<ApplicationObjectViewModel> Report
+    {
+      get => _report;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _report, value);
+        this.RaisePropertyChanged("FilteredReport");
+        this.RaisePropertyChanged("HasReportItems");
+        this.RaisePropertyChanged("Log");
+      }
+    }
+    public List<ApplicationObjectViewModel> FilteredReport
+    {
+      get
+      {
+        if (SearchQuery == "")
+          return Report;
+        else
+          return Report.Where(o => o.SearchText.ToLower().Contains(SearchQuery.ToLower())).ToList();
+      }
+    }
+    public bool HasReportItems
+    {
+      get { return (Progress.Report.ReportObjects == null || Progress.Report.ReportObjects.Count == 0) ? false : true; }
+    }
+    public string Log
+    {
+      get
+      {
+        return Progress.Report.ConversionLogString;
+      }
+    }
+
+    private string _searchQuery = "";
+    public string SearchQuery
+    {
+      get => _searchQuery;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _searchQuery, value);
+        this.RaisePropertyChanged("FilteredReport");
+      }
+    }
+    public void ClearSearchCommand()
+    {
+      SearchQuery = "";
     }
 
     private List<CommentViewModel> _comments;
@@ -391,6 +434,7 @@ namespace DesktopUI2.ViewModels
 
         GetBranchesAndRestoreState();
         GetActivity();
+        GetReport();
         GetComments();
       }
       catch (Exception ex)
@@ -411,10 +455,8 @@ namespace DesktopUI2.ViewModels
       {
         var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
         menu.Items = new List<MenuItemViewModel> {
-        //new MenuItemViewModel (EditSavedStreamCommand, "Edit",  MaterialIconKind.Cog),
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
-        new MenuItemViewModel (OpenReportCommand, "Open Report",  MaterialIconKind.TextBox)
       };
         var customMenues = Bindings.GetCustomStreamMenuItems();
         if (customMenues != null)
@@ -456,7 +498,6 @@ namespace DesktopUI2.ViewModels
         //by default the first available receive mode is selected
         SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
 
-
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
 
@@ -489,7 +530,6 @@ namespace DesktopUI2.ViewModels
             SelectedFilter = selectionFilter;
             SelectedFilter.AddObjectSelection();
           }
-
         }
         if (StreamState.Settings != null)
         {
@@ -498,7 +538,6 @@ namespace DesktopUI2.ViewModels
             var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
             if (savedSetting != null)
               setting.Selection = savedSetting.Selection;
-
           }
         }
       }
@@ -506,6 +545,17 @@ namespace DesktopUI2.ViewModels
       {
 
       }
+    }
+
+    private void GetReport()
+    {
+      var report = new List<ApplicationObjectViewModel>();
+      foreach (var applicationObject in Progress.Report.ReportObjects)
+      {
+        var rvm = new ApplicationObjectViewModel(applicationObject, StreamState.IsReceiver);
+        report.Add(rvm);
+      }
+      Report = report;
     }
 
     private async void GetActivity()
@@ -550,7 +600,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
 
     private async void ScrollToBottom()
     {
@@ -688,6 +737,14 @@ namespace DesktopUI2.ViewModels
     }
 
     #region commands
+    public async void CopyReportCommand()
+    {
+      var reportObjectSummaries = FilteredReport.Select(o => o.GetSummary()).ToArray();
+      var summary = string.Join("\n", reportObjectSummaries);
+
+      await Avalonia.Application.Current.Clipboard.SetTextAsync(summary);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Copy Report" } });
+    }
 
     public void ShareCommand()
     {
@@ -699,13 +756,6 @@ namespace DesktopUI2.ViewModels
       NotificationUrl = "";
       Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
-
-    public void CloseReportNotificationCommand()
-    {
-      ShowReport = false;
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Report Dismiss" } });
-    }
-
 
     public void LaunchNotificationCommand()
     {
@@ -767,15 +817,46 @@ namespace DesktopUI2.ViewModels
           Notification = "Nothing sent!";
         }
 
-        if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-          ShowReport = true;
-
         GetActivity();
-
+        GetReport();
       }
       catch (Exception ex)
       {
 
+      }
+    }
+
+    public async void PreviewCommand()
+    {
+      PreviewOn = !PreviewOn;
+      if (PreviewOn)
+      {
+        try
+        {
+          UpdateStreamState();
+          Reset();
+          if (IsReceiver)
+          {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
+            await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
+          }
+          if (!IsReceiver)
+          {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
+            await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
+          }
+          GetReport();
+        }
+        catch (Exception ex)
+        {
+
+        }
+      }
+      else
+      {
+        Progress.CancellationTokenSource.Cancel();
+        Bindings.ResetDocument();
+        Reset();
       }
     }
 
@@ -798,11 +879,8 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
         }
 
-        if (Progress.Report.ConversionErrorsCount > 0 || Progress.Report.OperationErrorsCount > 0)
-          ShowReport = true;
-
-
         GetActivity();
+        GetReport();
       }
       catch (Exception ex)
       {
@@ -814,7 +892,6 @@ namespace DesktopUI2.ViewModels
     {
       Notification = "";
       NotificationUrl = "";
-      ShowReport = false;
       Progress = new ProgressViewModel();
     }
 
@@ -825,26 +902,6 @@ namespace DesktopUI2.ViewModels
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
       Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
-    }
-
-    public async void OpenReportCommand()
-    {
-      try
-      {
-        //ensure click transition has finished
-        await Task.Delay(1000);
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
-        ShowReport = true;
-        var report = new Report();
-        //report.Title = $"Report of the last operation, {LastUsed.ToLower()}";
-        report.DataContext = Progress;
-        await report.ShowDialog();
-
-      }
-      catch (Exception ex)
-      {
-
-      }
     }
 
     private void SaveCommand()
@@ -871,7 +928,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
     private void OpenSettingsCommand()
     {
       try
@@ -880,15 +936,11 @@ namespace DesktopUI2.ViewModels
         var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x, StreamState,Progress)).ToList(), this);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
-
-
       }
       catch (Exception e)
       {
         Progress.Report.Log($"Something Sad happened :( {e}");
       }
-
-
     }
 
     private void AskRemoveSavedStreamCommand()
@@ -901,7 +953,6 @@ namespace DesktopUI2.ViewModels
       IsRemovingStream = false;
     }
 
-
     [DependsOn(nameof(SelectedBranch))]
     [DependsOn(nameof(SelectedFilter))]
     [DependsOn(nameof(SelectedCommit))]
@@ -910,8 +961,6 @@ namespace DesktopUI2.ViewModels
     {
       return true;
     }
-
-
 
     [DependsOn(nameof(SelectedBranch))]
     [DependsOn(nameof(SelectedFilter))]
@@ -925,6 +974,15 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(SelectedCommit))]
     [DependsOn(nameof(IsReceiver))]
     private bool CanReceiveCommand(object parameter)
+    {
+      return IsReady();
+    }
+
+    [DependsOn(nameof(SelectedBranch))]
+    [DependsOn(nameof(SelectedCommit))]
+    [DependsOn(nameof(SelectedFilter))]
+    [DependsOn(nameof(IsReceiver))]
+    private bool CanPreviewCommand(object parameter)
     {
       return IsReady();
     }

@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Controls\PreviewButton.xaml" />
     <None Remove="Controls\ReceiveButton.xaml" />
     <None Remove="Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
@@ -55,6 +56,7 @@
     <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Report.xaml" />
     <None Remove="Views\Pages\SettingsView.xaml" />
     <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
     <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
@@ -74,7 +76,6 @@
     <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
-    <None Remove="Views\Windows\Report.xaml" />
     <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Expander.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -114,6 +115,9 @@
       <Generator></Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Controls\PreviewButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Controls\ReceiveButton.xaml">
@@ -157,6 +161,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
@@ -213,20 +220,17 @@
     <AvaloniaXaml Include="Views\Windows\Dialogs\QuickOpsDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Report.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.16" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.16" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.16" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.16" />
-    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.97-nightly" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
+    <PackageReference Include="Avalonia" Version="0.10.17" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.17" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.17" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.98-nightly" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="1.1.10" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Native\" />
@@ -240,6 +244,9 @@
   <ItemGroup>
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\PreviewButton.xaml.cs">
+      <DependentUpon>PreviewButton.xaml</DependentUpon>
     </Compile>
     <Compile Update="Controls\ReceiveButton.xaml.cs">
       <DependentUpon>ReceiveButton.xaml</DependentUpon>
@@ -318,9 +325,6 @@
     </Compile>
     <Compile Update="Views\Windows\Dialogs\QuickOpsDialog.xaml.cs">
       <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Report.xaml.cs">
-      <DependentUpon>Report.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
