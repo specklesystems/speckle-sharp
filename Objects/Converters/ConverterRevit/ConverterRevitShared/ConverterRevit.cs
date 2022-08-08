@@ -343,7 +343,6 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
-      Report.Log("converttonative");
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh) == true)
@@ -393,7 +392,6 @@ namespace Objects.Converter.Revit
         }
       }
 
-      Report.Log($"obj switch {@object} type {@object.GetType()}");
       switch (@object)
       {
         //geometry

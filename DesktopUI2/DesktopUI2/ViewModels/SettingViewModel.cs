@@ -36,22 +36,11 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public StreamState State { get; set; }
-    public ProgressViewModel Progress { get; set; }
-
     public SettingViewModel(ISetting setting)
     {
       Setting = setting;
       //restores the selected item
       Selection = setting.Selection;
-    }
-    public SettingViewModel(ISetting setting, StreamState localState, ProgressViewModel localProgress)
-    {
-      Setting = setting;
-      //restores the selected item
-      Selection = setting.Selection;
-      Progress = localProgress;
-      State = localState;
     }
   }
 }

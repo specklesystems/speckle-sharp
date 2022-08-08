@@ -16,10 +16,6 @@ namespace DesktopUI2.ViewModels
 
     private StreamViewModel _streamViewModel;
 
-    public StreamState state { get; set; }
-
-    public ProgressViewModel progress { get; set; }
-
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
     {

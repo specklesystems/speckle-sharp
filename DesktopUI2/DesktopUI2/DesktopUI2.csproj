@@ -65,7 +65,6 @@
     <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
-    <None Remove="Views\Settings\ButtonSettingView.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
 	  <None Remove="Views\Settings\ListBoxSettingView.xaml" />
     <None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
@@ -187,9 +186,6 @@
     <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\ButtonSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -301,9 +297,6 @@
     </Compile>
     <Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
       <DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Settings\ButtonSettingView.xaml.cs">
-      <DependentUpon>ButtonSettingView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
       <DependentUpon>CheckboxSettingView.xaml</DependentUpon>

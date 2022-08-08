@@ -931,13 +931,12 @@ namespace DesktopUI2.ViewModels
       try
       {
         
-        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x, StreamState,Progress)).ToList(), this);
+        var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList(), this);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
       }
       catch (Exception e)
       {
-        Progress.Report.Log($"Something Sad happened :( {e}");
       }
     }
 
