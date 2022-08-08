@@ -1,6 +1,7 @@
 ﻿using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using System;
 using System.Collections.Generic;
@@ -54,9 +55,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
             };
     }
 
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override async System.Threading.Tasks.Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      return null;
+      await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(200));
+      return new StreamState();
       // TODO!
     }
 
