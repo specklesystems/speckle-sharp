@@ -52,6 +52,7 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentCreated += Application_DocumentCreated;
       RevitApp.Application.DocumentCreating += Application_DocumentCreating;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
+      RevitApp.Application.DocumentOpening += Application_DocumentOpening; ;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Application.DocumentSaved += Application_DocumentSaved;
       RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
@@ -63,8 +64,10 @@ namespace Speckle.ConnectorRevit.UI
       // thus triggering the focus on a new project
     }
 
+    private void Application_DocumentOpening(object sender, Autodesk.Revit.DB.Events.DocumentOpeningEventArgs e)
+    {
 
-
+    }
 
     private void Application_DocumentCreating(object sender, Autodesk.Revit.DB.Events.DocumentCreatingEventArgs e)
     {
@@ -136,8 +139,7 @@ namespace Speckle.ConnectorRevit.UI
         if (e.Document == null || e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
           return;
 
-        if (SpeckleRevitCommand2.UseDockablePanel)
-          (App.Panel as Panel).Init();
+        SpeckleRevitCommand2.RegisterPane();
 
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
@@ -181,8 +183,7 @@ namespace Speckle.ConnectorRevit.UI
     { }
     private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
     {
-      if (SpeckleRevitCommand2.UseDockablePanel)
-        (App.Panel as Panel).Init();
+      SpeckleRevitCommand2.RegisterPane();
 
       //clear saved streams if opening a new doc
       if (UpdateSavedStreams != null)
@@ -191,15 +192,14 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
-      if (SpeckleRevitCommand2.UseDockablePanel)
-        (App.Panel as Panel).Init();
 
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
         if (SpeckleRevitCommand2.UseDockablePanel)
         {
-          var panel = RevitApp.GetDockablePane(SpeckleRevitCommand2.PanelId);
+          SpeckleRevitCommand2.RegisterPane();
+          var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand2.PanelId);
           panel.Show();
         }
         else

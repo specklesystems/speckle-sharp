@@ -52,7 +52,7 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = host.FindInserts(true, true, true, true);
+      var hostedElementIds = host.FindInserts(true, false, false, false);
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -76,7 +76,7 @@ namespace Objects.Converter.Revit
 
         ContextObjects.RemoveAt(isSelectedInContextObjects);
 
-        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString()) ;
+        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
         if (CanConvertToSpeckle(element))
         {
           var obj = ConvertToSpeckle(element);
@@ -132,7 +132,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception e)
           {
-            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type}: \n{e.Message}");
+            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
             continue;
           }
         }
