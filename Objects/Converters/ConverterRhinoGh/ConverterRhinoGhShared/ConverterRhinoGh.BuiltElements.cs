@@ -253,13 +253,25 @@ namespace Objects.Converter.RhinoGh
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
     }
 
+    public Topography BrepToTopography(RH.Brep brep)
+    {
+      brep.Repair(Doc.ModelAbsoluteTolerance);
+      var displayMesh = GetBrepDisplayMesh(brep);
+      return new Topography(MeshToSpeckle(displayMesh)) { units = ModelUnits };
+    }
+
     public Topography MeshToTopography(RH.Mesh mesh)
     {
-      if (mesh.IsClosed)
-        return null;
-
       return new Topography(MeshToSpeckle(mesh)) { units = ModelUnits };
     }
+
+#if RHINO7
+    public Topography MeshToTopography(RH.SubD subD)
+    {
+      var speckleMesh = MeshToSpeckle(subD);
+      return speckleMesh != null ? new Topography(speckleMesh) { units = ModelUnits } : null;
+    }
+#endif
 
     public RV.AdaptiveComponent InstanceToAdaptiveComponent(InstanceObject instance, string[] args)
     {
@@ -366,7 +378,7 @@ namespace Objects.Converter.RhinoGh
       return nativeObjects;
     } 
 
-    #region CIVIL
+#region CIVIL
 
     // alignment
     public RH.Curve AlignmentToNative(Alignment alignment)
@@ -385,6 +397,6 @@ namespace Objects.Converter.RhinoGh
       return joined.First();
     }
 
-    #endregion
+#endregion
   }
 }

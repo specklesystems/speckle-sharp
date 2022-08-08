@@ -186,9 +186,20 @@ namespace SpeckleRhino
         case SupportedSchema.Topography:
           try
           {
-            Mesh mesh = obj.Geometry as Mesh;
-            if (!mesh.IsClosed)
-              return true;
+            switch (obj.Geometry)
+            {
+              case Mesh o:
+                if (!o.IsClosed) return true;
+                break;
+              case Brep o:
+                if (!o.IsSolid) return true;
+                break;
+#if RHINO7
+              case SubD o:
+                if (!o.IsSolid) return true;
+                break;
+#endif
+            }
           }
           catch { }
           break;
@@ -240,14 +251,13 @@ namespace SpeckleRhino
             SupportedSchema.Roof };
           break;
         case ObjectType.Mesh:
+        case ObjectType.PolysrfFilter:
+        case ObjectType.Brep:
+        case ObjectType.Extrusion:
           objSchemas = new List<SupportedSchema>
           {
             SupportedSchema.Topography
           };
-          break;
-        case ObjectType.PolysrfFilter:
-        case ObjectType.Brep:
-        case ObjectType.Extrusion:
           break;
         default:
           break;
