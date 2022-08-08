@@ -125,7 +125,7 @@ namespace Objects.Converter.RhinoGh
       Base @base = null;
       Base schema = null;
       ApplicationObject reportObj = null;
-      List<string> notes = new List<string>();
+      var notes = new List<string>();
 
       if (@object is RhinoObject ro)
       {
@@ -133,16 +133,16 @@ namespace Objects.Converter.RhinoGh
         material = RenderMaterialToSpeckle(ro.GetMaterial(true));
         style = DisplayStyleToSpeckle(ro.Attributes);
 
-        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
-          schema = ConvertToSpeckleBE(ro, reportObj) ?? ConvertToSpeckleStr(ro, reportObj);
-
-        attributes = ro.Attributes;
-
         // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
         // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
         if (ro is BrepObject || ro is ExtrusionObject)
           displayMesh = GetRhinoRenderMesh(ro);
-        
+
+        if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
+          schema = ConvertToSpeckleBE(ro, reportObj, displayMesh) ?? ConvertToSpeckleStr(ro, reportObj);
+
+        attributes = ro.Attributes;
+
         if (!(@object is InstanceObject)) // block instance check
           @object = ro.Geometry;
       }
@@ -229,13 +229,9 @@ namespace Objects.Converter.RhinoGh
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
-          {
             @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()),null, displayMesh);
-          }
           else
-          {
             @base = MeshToSpeckle(o);
-          }
           break;
 #endif
         case RH.Extrusion o:
@@ -261,7 +257,6 @@ namespace Objects.Converter.RhinoGh
           break;
         case Rhino.Geometry.Dimension o:
           @base = DimensionToSpeckle(o);
-          Report.Log($"Converted Dimension");
           break;
         default:
           if (reportObj != null)
@@ -282,6 +277,7 @@ namespace Objects.Converter.RhinoGh
         @base["displayStyle"] = style;
       if (schema != null)
       {
+        notes.Add($"Attached {schema.speckle_type} schema");
         schema["renderMaterial"] = material;
         @base["@SpeckleSchema"] = schema;
       }
@@ -300,14 +296,14 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
-    public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj)
+    public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj, RH.Mesh displayMesh)
     {
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
 
       Base schemaBase = null;
-      List<string> notes = null;
+      var notes = new List<string>();
       if (obj is InstanceObject)
       {
         if (schema == "AdaptiveComponent")
@@ -366,6 +362,10 @@ namespace Objects.Converter.RhinoGh
               schemaBase = BrepToDirectShape(o, args);
               break;
 
+            case "Topography":
+              schemaBase = displayMesh != null ? MeshToTopography(displayMesh) :  BrepToTopography(o);
+              break;
+
             default:
               reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
               break;
@@ -394,6 +394,10 @@ namespace Objects.Converter.RhinoGh
             case "DirectShape":
               schemaBase = ExtrusionToDirectShape(o, args);
               break;
+            
+            case "Topography":
+              schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : MeshToTopography(o.GetMesh(MeshType.Default));
+              break;
 
             default:
               reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
@@ -418,16 +422,22 @@ namespace Objects.Converter.RhinoGh
           }
           break;
 
+#if RHINO7
+        case RH.SubD o:
+          if (o.HasBrepForm)
+            schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : BrepToTopography(o.ToBrep(new SubDToBrepOptions()));
+          else
+            schemaBase = MeshToTopography(o);
+          break;
+#endif
+
         default:
           reportObj.Update(logItem: $"{obj.ObjectType} is not supported in schema conversions.");
           break;
       }
       reportObj.Log.AddRange(notes);
-      if (schemaBase != null)
-        reportObj.Log.Add($"Created {schema} schema from {obj.GetType()}");
-      else
-        reportObj.Update(logItem: $"{schema} schema creation from {obj.GetType()} failed");
-      Report.UpdateReportObject(reportObj);
+      if (schemaBase == null)
+        reportObj.Update(logItem: $"{schema} schema creation failed");
       return schemaBase;
     }
 
