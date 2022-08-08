@@ -476,7 +476,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
    
 
     #endregion
