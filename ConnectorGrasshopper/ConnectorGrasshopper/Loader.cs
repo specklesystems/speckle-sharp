@@ -35,16 +35,16 @@ namespace ConnectorGrasshopper
       
       try
       {
-        // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
-        typeof(Setup).GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
-                     .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
+        typeof(Setup).InvokeMember(
+          "Init",
+          BindingFlags.Static | BindingFlags.InvokeMethod,
+          null,
+          null,
+          new object[] { version, HostApplications.Grasshopper.Slug });
       }
-      catch (Exception e)
+      catch (MissingMethodException e)
       {
-        // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
-        // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
-        // Recommended practice is to assume that our connector would be installed alongside theirs.
-        Log.CaptureException(e);
+        Console.WriteLine(e);
       }
 
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
