@@ -8,6 +8,7 @@ using Speckle.ConnectorCSI.Util;
 using System.Timers;
 using CSiAPIv1;
 using Speckle.Core.Kits;
+using System.Threading.Tasks;
 
 namespace Speckle.ConnectorCSI.UI
 {
