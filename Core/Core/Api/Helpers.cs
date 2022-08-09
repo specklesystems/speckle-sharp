@@ -185,6 +185,32 @@ namespace Speckle.Core.Api
 
       return false;
     }
+
+    /// <summary>
+    /// Returns the correct location of the Speckle Folder. Usually this would be the user's %appdata% folder, unless the install was made for all users.
+    /// </summary>
+    /// <returns>The location of the Speckle folder</returns>
+    public static string SpeckleFolderPath => Path.Combine(CorrectedApplicationDataPath, "Speckle");
+    
+    
+    /// <summary>
+    /// Returns the correct location of the Speckle Folder. Usually this would be the user's %appdata% folder, unless the install was made for all users.
+    /// </summary>
+    /// <returns>The location of the Speckle folder</returns>
+    public static string CorrectedApplicationDataPath
+    {
+      get {
+        // We combine our own path to the %appdata% folder due to issues with network account management in windows,
+        // where the normal `SpecialFolder.ApplicationData` would point to the `Default` user instead of the active one.
+        var local = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+        var system = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+
+        return Assembly.GetAssembly(typeof(Helpers)).Location.Contains("ProgramData") 
+          ? system 
+          : local;
+      }
+    }
+
   }
 }
 

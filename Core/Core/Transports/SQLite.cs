@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Speckle.Core.Api;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
@@ -48,7 +49,7 @@ namespace Speckle.Core.Transports
       Log.AddBreadcrumb("New SqlLite Transport");
 
       if (basePath == null)
-        basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        basePath = Helpers.CorrectedApplicationDataPath;
       _BasePath = basePath;
 
       if (applicationName == null)
