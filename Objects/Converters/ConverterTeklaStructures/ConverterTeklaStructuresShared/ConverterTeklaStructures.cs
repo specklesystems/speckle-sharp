@@ -12,6 +12,7 @@ using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 using Tekla.Structures;
 using GE = Objects.Geometry;
+using Speckle.Core.Models.Extensions;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -129,12 +130,20 @@ namespace Objects.Converter.TeklaStructures
       {
         try
         {
+          List<Base> bases = BaseExtensions.Flatten(@object);
+          foreach(var @base in bases){
+          try
+            {
+              List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+              var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<GE.Mesh>;
+              //dynamic property = propInfo;
+              //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+              MeshToNative(@base, meshes);
+            }
+          catch{
 
-          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
-          //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
-          MeshToNative(@object, meshes);
+          }
+          }
           return true;
         }
         catch
