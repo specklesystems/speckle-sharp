@@ -139,7 +139,15 @@ namespace DesktopUI2.ViewModels
 
     private Client Client { get; }
 
-    public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
+    public ReactiveCommand<Unit, Unit> GoBack
+    {
+      get
+      {
+        PreviewOn = false;
+        Bindings.ResetDocument();
+        return MainViewModel.RouterInstance.NavigateBack;
+      }
+    }
 
     //If we don't have access to this stream
     public bool NoAccess { get; set; } = false;
@@ -258,7 +266,9 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        return Progress.Report.ConversionLogString;
+        return string.IsNullOrEmpty(Progress.Report.ConversionLogString) ?
+          "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed." :
+          Progress.Report.ConversionLogString;
       }
     }
 
@@ -556,6 +566,12 @@ namespace DesktopUI2.ViewModels
         report.Add(rvm);
       }
       Report = report;
+
+      if (HasReportItems) // activate report tab
+      {
+        var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
+        tabControl.SelectedIndex = tabControl.ItemCount - 1;
+      }
     }
 
     private async void GetActivity()
@@ -846,9 +862,6 @@ namespace DesktopUI2.ViewModels
           }
           Progress.IsPreviewProgressing = false;
           GetReport();
-          // todo: activate report tab
-          var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
-          tabControl.SelectedIndex = tabControl.ItemCount - 1;
         }
         catch (Exception ex)
         {

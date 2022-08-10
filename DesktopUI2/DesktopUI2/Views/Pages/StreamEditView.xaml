@@ -169,7 +169,7 @@
 
           <Grid RowDefinitions="auto,*" ColumnDefinitions="*,auto">
             <ScrollViewer Grid.Row="1" IsVisible="{Binding !HasReportItems}">
-              <TextBlock Margin="35,0,0,10" Text="{Binding Log}" />
+              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Log}" />
             </ScrollViewer>
             <m:Card
               Grid.Row="0"
