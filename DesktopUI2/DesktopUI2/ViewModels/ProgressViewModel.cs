@@ -95,6 +95,16 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private bool _isPreviewProgressing = false;
+    public bool IsPreviewProgressing
+    {
+      get => _isPreviewProgressing;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _isPreviewProgressing, value);
+      }
+    }
+
     public void Update(ConcurrentDictionary<string, int> pd)
     {
       ProgressDict = pd;
