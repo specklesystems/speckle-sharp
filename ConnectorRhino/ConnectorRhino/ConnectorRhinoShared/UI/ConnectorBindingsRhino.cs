@@ -191,6 +191,8 @@ namespace SpeckleRhino
 
     public override void SelectClientObjects(List<string> objs, bool deselect = false)
     {
+      var isPreview = PreviewConduit != null && PreviewConduit.Enabled ? true : false;
+
       foreach (var id in objs)
       {
         RhinoObject obj = Doc.Objects.FindId(new Guid(id));
@@ -199,17 +201,14 @@ namespace SpeckleRhino
           if (deselect) obj.Select(false, true, false, true, true, true);
           else obj.Select(true, true, true, true, true, true);
         }
-        else
+        else if (isPreview)
         {
-          // this may be a receive select: try finding the preview object
-          if (PreviewConduit != null && PreviewConduit.Enabled)
-          {
-            PreviewConduit.Enabled = false;
-            PreviewConduit.SelectPreviewObject(id, deselect);
-            PreviewConduit.Enabled = true;
-          }
+          PreviewConduit.Enabled = false;
+          PreviewConduit.SelectPreviewObject(id, deselect);
+          PreviewConduit.Enabled = true;
         }
       }
+
       Doc.Views.ActiveView.ActiveViewport.ZoomExtentsSelected();
       Doc.Views.Redraw();
     }
@@ -248,7 +247,7 @@ namespace SpeckleRhino
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
         Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
-        
+
         // Convert preview objects
         foreach (var previewObj in Preview)
         {
@@ -292,6 +291,7 @@ namespace SpeckleRhino
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         PreviewConduit.Enabled = false;
+        ResetDocument();
         return null;
       }
 
