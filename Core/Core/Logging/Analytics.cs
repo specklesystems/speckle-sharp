@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -118,7 +120,7 @@ namespace Speckle.Core.Logging
 
 #if DEBUG
       //only track in prod
-      //return;
+      return;
 #endif
 
       Task.Run(() =>
@@ -126,15 +128,8 @@ namespace Speckle.Core.Logging
 
         try
         {
-          var httpWebRequest = (HttpWebRequest)WebRequest.Create(MixpanelServer + "/track?ip=1");
-          httpWebRequest.ContentType = "application/x-www-form-urlencoded";
-          httpWebRequest.Accept = "text/plain";
-          httpWebRequest.Method = "POST";
-          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-
           server = CleanURL(server);
-
-          var hashedEmail = "@" + Hash(email); //prepending an @ so we distinguish logged and non-logged users
+          var hashedEmail = "@" + Hash(email); //prepending an `@` (not relevant anymore but let's keep it for consistency)
           var hashedServer = Hash(server);
 
           var properties = new Dictionary<string, object>()
@@ -153,25 +148,17 @@ namespace Speckle.Core.Logging
             properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 
-          using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+          string json = JsonConvert.SerializeObject(new
           {
-            string json = JsonConvert.SerializeObject(new
-            {
+            @event = eventName.ToString(),
+            properties
+          });
 
-              @event = eventName.ToString(),
-              properties
-            });
-
-            streamWriter.Write("data=" + HttpUtility.UrlEncode(json));
-            streamWriter.Flush();
-            streamWriter.Close();
-          }
-
-          var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-          using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-          {
-            var result = streamReader.ReadToEnd();
-          }
+          var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
+          HttpClient client = new HttpClient();
+          client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+          query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+          client.PostAsync(MixpanelServer + "/track?ip=1", query);
         }
         catch (Exception e)
         {
@@ -180,6 +167,40 @@ namespace Speckle.Core.Logging
 
       });
 
+    }
+
+    internal static void AddConnectorToProfile(string email, string connector)
+    {
+      Task.Run(() =>
+      {
+        try
+        {
+          var hashedEmail = "@" + Hash(email);
+          var data = new Dictionary<string, object>()
+          {
+            { "$token", MixpanelToken },
+            { "$distinct_id", hashedEmail },
+            { "$union",  new Dictionary<string, object>()
+              {
+                 {"Connectors", new List<string>{ connector } },
+              }
+            }
+          };
+          string json = JsonConvert.SerializeObject(data);
+
+
+          var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
+          HttpClient client = new HttpClient();
+          client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+          query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+          client.PostAsync(MixpanelServer + "/engage#profile-union", query);
+        }
+        catch (Exception e)
+        {
+          // POKEMON: Gotta catch 'em all!
+        }
+
+      });
     }
 
     private static string CleanURL(string server)
