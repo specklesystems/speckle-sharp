@@ -30,7 +30,7 @@ namespace Speckle.Core.Logging
       Log.Initialize();
 
       foreach (var account in AccountManager.GetAccounts())
-        Analytics.AddConnectorToProfile(account.userInfo.email, hostApplication);
+        Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);
     }
 
     /// <summary>
