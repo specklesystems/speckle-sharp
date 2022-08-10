@@ -23,10 +23,10 @@ namespace Speckle.ConnectorRevit.UI
       var filterObjs = GetSelectionFilterObjects(state.Filter);
       foreach (var filterObj in filterObjs)
       {
-        var type = filterObj.GetType().ToString();
-        var reportObj = new ApplicationObject(filterObj.UniqueId, type);
+        var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
+        var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
         if (!Converter.CanConvertToSpeckle(filterObj))
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending objects of type {type} not supported in Revit");
+          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
         else
           reportObj.Update(status: ApplicationObject.State.Created);
         progress.Report.Log(reportObj);
@@ -73,13 +73,13 @@ namespace Speckle.ConnectorRevit.UI
       var convertedCount = 0;
       foreach (var revitElement in selectedObjects)
       {
-        var type = revitElement.GetType().ToString();
+        var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
         // get the report object
         // for hosted elements, they may have already been converted and added to the converter report
         bool alreadyConverted = Converter.Report.GetReportObject(revitElement.UniqueId, out int index);
         var reportObj = alreadyConverted ?
           Converter.Report.ReportObjects[index] :
-          new ApplicationObject(revitElement.UniqueId, type) { applicationId = revitElement.UniqueId };
+          new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
         if (alreadyConverted)
         {
           progress.Report.Log(reportObj);
@@ -92,7 +92,7 @@ namespace Speckle.ConnectorRevit.UI
 
           if (!Converter.CanConvertToSpeckle(revitElement))
           {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending objects of type {type} not supported in Revit");
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
             progress.Report.Log(reportObj);
             continue;
           }

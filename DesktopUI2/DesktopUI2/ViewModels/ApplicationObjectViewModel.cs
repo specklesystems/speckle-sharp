@@ -56,7 +56,7 @@ namespace DesktopUI2.ViewModels
       switch (item.Status)
       {
         case ApplicationObject.State.Created:
-          Icon = "PlusThick";
+          Icon = "CheckBold";
           break;
         case ApplicationObject.State.Updated:
           Icon = "Refresh";
