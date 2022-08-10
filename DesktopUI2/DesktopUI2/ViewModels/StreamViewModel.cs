@@ -266,9 +266,13 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        return string.IsNullOrEmpty(Progress.Report.ConversionLogString) ?
-          "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed." :
-          Progress.Report.ConversionLogString;
+        string logString = String.Empty;
+
+        if (Progress.Report.OperationErrors.Any()) logString = Progress.Report.OperationErrorsString;
+        else if (Progress.Report.ConversionLog.Any()) logString = Progress.Report.ConversionLogString;
+        else logString = "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed.";
+
+        return logString;
       }
     }
 
