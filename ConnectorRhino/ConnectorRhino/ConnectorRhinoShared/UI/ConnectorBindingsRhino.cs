@@ -134,7 +134,6 @@ namespace SpeckleRhino
         if (reportLog.ContainsKey(type)) reportLog[type] = reportLog[type]++;
         else reportLog.Add(type, 1);
       }
-      //converter.Report.LogOperationError();
       RhinoApp.WriteLine("Deselected unsupported objects:");
       foreach (var entry in reportLog)
         Rhino.RhinoApp.WriteLine($"{entry.Value} of type {entry.Key}");

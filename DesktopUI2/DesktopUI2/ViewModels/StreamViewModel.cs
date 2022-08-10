@@ -566,7 +566,7 @@ namespace DesktopUI2.ViewModels
       var report = new List<ApplicationObjectViewModel>();
       foreach (var applicationObject in Progress.Report.ReportObjects)
       {
-        var rvm = new ApplicationObjectViewModel(applicationObject, StreamState.IsReceiver);
+        var rvm = new ApplicationObjectViewModel(applicationObject, StreamState.IsReceiver, Progress.Report);
         report.Add(rvm);
       }
       Report = report;
