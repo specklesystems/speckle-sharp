@@ -852,8 +852,8 @@ namespace DesktopUI2.ViewModels
         {
           UpdateStreamState();
 
+          Progress.CancellationTokenSource = new System.Threading.CancellationTokenSource();
           Progress.IsPreviewProgressing = true;
-          Progress.Value = 0;
           if (IsReceiver)
           {
             Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
