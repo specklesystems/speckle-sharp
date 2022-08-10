@@ -821,28 +821,9 @@ namespace Objects.Converter.RhinoGh
       //   f.RebuildEdges(tol, false, false);
       // }
       // Create complex
-      var joinedMesh = new RH.Mesh();
-      if (previewMesh == null)
-      {
-        var mySettings = MeshingParameters.Default;
-        switch (SelectedMeshSettings)
-        {
-          case MeshSettings.Default:
-            mySettings = new MeshingParameters(0.05, 0.05);
-            break;
-          case MeshSettings.CurrentDoc:
-            mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
-            break;
-        }
-        joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-        joinedMesh.Weld(Math.PI);
-      }
-      else
-      {
-        joinedMesh = previewMesh;
-      }
+      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
+      var spcklBrep = new Brep(displayValue: MeshToSpeckle(displayMesh, u), provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
@@ -957,6 +938,25 @@ namespace Objects.Converter.RhinoGh
       spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(false)), u);
       
       return spcklBrep;
+    }
+
+    private RH.Mesh GetBrepDisplayMesh(RH.Brep brep)
+    {
+      var joinedMesh = new RH.Mesh();
+
+      var mySettings = MeshingParameters.Default;
+      switch (SelectedMeshSettings)
+      {
+        case MeshSettings.Default:
+          mySettings = new MeshingParameters(0.05, 0.05);
+          break;
+        case MeshSettings.CurrentDoc:
+          mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
+          break;
+      }
+      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+      joinedMesh.Weld(Math.PI);
+      return joinedMesh;
     }
 
     /// <summary>
