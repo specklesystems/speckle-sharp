@@ -28,7 +28,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi, appObj);
+      if (!GetElementType<FamilySymbol>(speckleFi, appObj, out DB.FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       if (docObj != null)
       {
         try

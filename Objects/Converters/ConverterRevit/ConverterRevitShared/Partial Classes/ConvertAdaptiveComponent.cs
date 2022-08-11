@@ -22,7 +22,11 @@ namespace Objects.Converter.Revit
       }
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
-      DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc, appObj);
+      if (!GetElementType<FamilySymbol>(speckleAc, appObj, out FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       if (familySymbol.FamilyName != familyName)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find adaptive component {familyName}");

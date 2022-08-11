@@ -25,7 +25,11 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var wallType = GetElementType<WallType>(speckleRevitWall, appObj);
+      if (!GetElementType<WallType>(speckleRevitWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       // Level level = null;
       var structural = speckleRevitWall.structural;
       var profile = new List<DB.Curve>();

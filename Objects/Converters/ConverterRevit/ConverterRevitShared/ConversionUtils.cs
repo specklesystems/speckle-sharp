@@ -482,7 +482,7 @@ namespace Objects.Converter.Revit
 
     #region  element types
 
-    private T GetElementType<T>(string family, string type, ApplicationObject appObj)
+    private bool GetElementType<T>(string family, string type, ApplicationObject appObj, out T value)
     {
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
 
@@ -493,7 +493,8 @@ namespace Objects.Converter.Revit
         if (match is FamilySymbol fs && !fs.IsActive)
           fs.Activate();
 
-        return (T)(object)match;
+        value = (T)(object)match;
+        return true;
       }
 
       //match family
@@ -506,7 +507,8 @@ namespace Objects.Converter.Revit
           if (match is FamilySymbol fs && !fs.IsActive)
             fs.Activate();
 
-          return (T)(object)match;
+          value = (T)(object)match;
+          return true;
         }
       }
 
@@ -520,15 +522,17 @@ namespace Objects.Converter.Revit
           if (match is FamilySymbol fs && !fs.IsActive)
             fs.Activate();
 
-          return (T)(object)match;
+          value = (T)(object)match;
+          return true;
         }
       }
 
       appObj.Log.Add($"Could not find any family symbol to use.");
-      throw new Speckle.Core.Logging.SpeckleException($"Could not find any family symbol to use.");
+      value = default(T);
+      return false;
     }
 
-    private T GetElementType<T>(Base element, ApplicationObject appObj)
+    private bool GetElementType<T>(Base element, ApplicationObject appObj, out T value)
     {
       List<ElementType> types = new List<ElementType>();
       ElementFilter filter = GetCategoryFilter(element);
@@ -542,7 +546,8 @@ namespace Objects.Converter.Revit
       {
         var name = string.IsNullOrEmpty(element["category"].ToString()) ? typeof(T).Name : element["category"].ToString();
         appObj.Log.Add($"Could not find any family to use for category {name}.");
-        throw new Exception($"Could not find any family to use for category {name}.");
+        value = default(T);
+        return false;
       }
 
       var family = element["family"] as string;
@@ -581,7 +586,8 @@ namespace Objects.Converter.Revit
       if (match is FamilySymbol fs && !fs.IsActive)
         fs.Activate();
 
-      return (T)(object)match;
+      value = (T)(object)match;
+      return true;
     }
 
     private ElementFilter GetCategoryFilter(Base element)

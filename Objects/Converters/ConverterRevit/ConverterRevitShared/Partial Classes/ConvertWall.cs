@@ -32,7 +32,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var wallType = GetElementType<WallType>(speckleWall, appObj);
+      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       Level level = null;
       var levelState = ApplicationObject.State.Unknown;
       var structural = false;

@@ -25,7 +25,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var railingType = GetElementType<RailingType>(speckleRailing, appObj);
+      if (!GetElementType<RailingType>(speckleRailing, appObj, out RailingType railingType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       Level level = ConvertLevelToRevit(speckleRailing.level, out ApplicationObject.State levelState);
       if (level == null) //we currently don't support railings hosted on stairs, and these have null level
       {

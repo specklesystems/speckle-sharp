@@ -36,7 +36,11 @@ namespace Objects.Converter.Revit
       }
 
       var rebarType = speckleRevitRebar?.barType;
-      var barType = GetElementType<RebarBarType>(speckleRebar, appObj);
+      if (!GetElementType<RebarBarType>(speckleRebar, appObj, out RebarBarType barType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       var rebarStyle = speckleRevitRebar?.barStyle == "StirrupTie" ? RebarStyle.StirrupTie : RebarStyle.Standard;
 
       // get construction curves (only works for revit rebar due to need for host)

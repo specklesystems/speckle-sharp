@@ -71,7 +71,11 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       Reference faceRef = GetFaceRef(mass);
 
-      var wallType = GetElementType<WallType>(speckleWall, appObj);
+      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Wall type {wallType.Name} not valid for facewall");
