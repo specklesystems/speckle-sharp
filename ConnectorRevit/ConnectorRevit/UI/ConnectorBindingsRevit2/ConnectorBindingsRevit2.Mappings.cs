@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
+using Revit.Async;
 using Speckle.Core.Models;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
