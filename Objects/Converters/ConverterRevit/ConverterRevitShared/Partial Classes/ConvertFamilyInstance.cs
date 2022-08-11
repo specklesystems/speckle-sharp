@@ -15,7 +15,6 @@ namespace Objects.Converter.Revit
     //TODO: might need to clean this up and split the ConversionLog.Addic by beam, FI, etc...
     public ApplicationObject FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
     {
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = ConvertLevelToRevit(speckleFi.level, out ApplicationObject.State levelState);
       DB.FamilyInstance familyInstance = null;
@@ -29,6 +28,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi, appObj);
       if (docObj != null)
       {
         try
@@ -95,7 +95,10 @@ namespace Objects.Converter.Revit
           else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
           {
             if (CurrentHostElement == null)
-              Report.ConversionErrors.Add(new Exception($"Object with ID {speckleFi.id} is work plane based, but does not have a host element"));
+            {
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
+              return appObj;
+            }
             if (CurrentHostElement is Wall wall)
             {
               Doc.Regenerate();
@@ -152,12 +155,14 @@ namespace Objects.Converter.Revit
             else if (CurrentHostElement is Floor floor)
             {
               // TODO: support hosted elements on floors. Should be very similar to above implementation
-              Report.ConversionErrors.Add(new Exception($"Work Plane based families on floors to be supported soon"));
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Work Plane based families on floors to be supported soon");
+              return appObj;
             }
           }
           else
           {
-            Report.ConversionErrors.Add(new Exception($"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}"));
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}");
+            return appObj;
           }
           // try a catch all solution as a last resort
           if (familyInstance == null)
@@ -334,7 +339,6 @@ namespace Objects.Converter.Revit
       double PointD = planeNormal.X * point.X + planeNormal.Y * point.Y + planeNormal.Z * point.Z;
       double value = Math.Abs(D - PointD);
 
-      //Report.Log($"point {point}");
       return value;
     }
 

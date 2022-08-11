@@ -23,7 +23,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn, appObj);
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
 
       // If the start point elevation is higher than the end point elevation, reverse the line.

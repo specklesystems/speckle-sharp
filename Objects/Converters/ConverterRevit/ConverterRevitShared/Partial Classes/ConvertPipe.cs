@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
       }
 
       // get system info
-      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
+      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj);
       var systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType()
        .OfClass(typeof(DB.Plumbing.PipingSystemType)).ToElements().Cast<ElementType>().ToList();
       var systemFamily = speckleRevitPipe?.systemType ?? "";
@@ -59,7 +59,7 @@ namespace Objects.Converter.Revit
         case Polyline _:
         case Curve _:
           var speckleRevitFlexPipe = specklePipe as RevitFlexPipe;
-          var flexPipeType = (speckleRevitFlexPipe != null) ? GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe) : GetElementType<DB.Plumbing.FlexPipeType>(specklePipe);
+          var flexPipeType = (speckleRevitFlexPipe != null) ? GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe, appObj) : GetElementType<DB.Plumbing.FlexPipeType>(specklePipe, appObj);
 
           // get points
           Polyline basePoly = specklePipe.baseCurve as Polyline;

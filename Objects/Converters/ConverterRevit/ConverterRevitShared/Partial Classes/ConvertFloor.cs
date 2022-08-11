@@ -40,7 +40,7 @@ namespace Objects.Converter.Revit
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out ApplicationObject.State state);
       }
 
-      var floorType = GetElementType<FloorType>(speckleFloor);
+      var floorType = GetElementType<FloorType>(speckleFloor, appObj);
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element. The closest thing would be:
       // https://adndevbConversionLog.Add.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html

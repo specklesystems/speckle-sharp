@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
       }
 
-      var ceilingType = GetElementType<CeilingType>(speckleCeiling);
+      var ceilingType = GetElementType<CeilingType>(speckleCeiling, appObj);
 
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)

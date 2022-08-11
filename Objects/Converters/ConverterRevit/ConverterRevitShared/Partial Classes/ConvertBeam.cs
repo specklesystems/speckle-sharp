@@ -31,7 +31,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
+      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam, appObj);
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;

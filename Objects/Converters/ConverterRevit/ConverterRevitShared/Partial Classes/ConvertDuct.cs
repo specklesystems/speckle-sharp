@@ -37,7 +37,7 @@ namespace Objects.Converter.Revit
       Element duct = null;
       if (speckleDuct.baseCurve == null || speckleDuct.baseCurve is Line)
       {
-        var ductType = GetElementType<DuctType>(speckleDuct);
+        var ductType = GetElementType<DuctType>(speckleDuct, appObj);
 
         DB.Line baseLine = (speckleDuct.baseCurve != null) ? LineToNative(speckleDuct.baseCurve as Line) : LineToNative(speckleDuct.baseLine);
         XYZ startPoint = baseLine.GetEndPoint(0);
@@ -48,7 +48,7 @@ namespace Objects.Converter.Revit
       }
       else if (speckleDuct.baseCurve is Polyline polyline)
       {
-        var ductType = GetElementType<FlexDuctType>(speckleDuct);
+        var ductType = GetElementType<FlexDuctType>(speckleDuct, appObj);
 
         var speckleRevitFlexDuct = speckleDuct as RevitFlexDuct;
         var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();
