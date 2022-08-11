@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -14,9 +15,11 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {
+  
   public partial class ConnectorBindingsRevit2
   {
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
@@ -33,6 +36,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
+    /// 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       //make sure to instance a new copy so all values are reset correctly
@@ -105,6 +109,27 @@ namespace Speckle.ConnectorRevit.UI
       Preview.Clear();
       StoredObjects.Clear();
 
+
+      Preview = FlattenCommitObject(commitObject, converter);
+      foreach (var previewObj in Preview)
+        progress.Report.Log(previewObj);
+
+      converter.ReceiveMode = state.ReceiveMode;
+      // needs to be set for editing to work 
+      converter.SetPreviousContextObjects(previouslyReceiveObjects);
+      // needs to be set for openings in floors and roofs to work
+      converter.SetContextObjects(Preview);
+
+      try
+      {
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+      }
+      catch (Exception ex)
+      {
+        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
+      }
+
+
       await RevitTask.RunAsync(app =>
       {
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
@@ -113,17 +138,8 @@ namespace Speckle.ConnectorRevit.UI
           failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
           failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
-
           t.Start();
-          Preview = FlattenCommitObject(commitObject, converter);
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-
-          converter.ReceiveMode = state.ReceiveMode;
-          // needs to be set for editing to work 
-          converter.SetPreviousContextObjects(previouslyReceiveObjects);
-          // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(Preview);
+          
           var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)

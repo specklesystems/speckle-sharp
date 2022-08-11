@@ -26,6 +26,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 
@@ -219,6 +220,12 @@ namespace SpeckleRhino
 
       Doc.Objects.UnselectAll(true); // TODO: consider instead of unselecting, storing doc visibility state and restoring to this point
       Doc.Views.Redraw();
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
 
     #endregion

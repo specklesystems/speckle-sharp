@@ -567,6 +567,21 @@ namespace Objects.Converter.Revit
       if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
         match = types.FirstOrDefault(x => x.Name == type);
 
+      // match the type only for when we auto assign it
+      if (match == null && !string.IsNullOrEmpty(type))
+      {
+        match = types.FirstOrDefault(x =>
+        {
+          var symbolType = x.GetParameters("Type");
+          var symbolTypeName = x.GetParameters("Type Name");
+          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString().ToLower() == type.ToLower())
+            return true;
+          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString().ToLower() == type.ToLower())
+            return true;
+          return false;
+        });
+      }
+
       if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
       {
         match = types.FirstOrDefault(x => x.FamilyName == family);
@@ -621,9 +636,9 @@ namespace Objects.Converter.Revit
       }
     }
 
-    #endregion
+#endregion
 
-    #region conversion "edit existing if possible" utilities
+#region conversion "edit existing if possible" utilities
 
     /// <summary>
     /// Returns, if found, the corresponding doc element.
@@ -654,9 +669,9 @@ namespace Objects.Converter.Revit
       return element;
     }
 
-    #endregion
+#endregion
 
-    #region Reference Point
+#region Reference Point
 
     // CAUTION: these strings need to have the same values as in the connector bindings
     const string InternalOrigin = "Internal Origin (default)";
@@ -746,9 +761,9 @@ namespace Objects.Converter.Revit
     {
       return (isPoint) ? ReferencePointTransform.OfPoint(p) : ReferencePointTransform.OfVector(p);
     }
-    #endregion
+#endregion
 
-    #region Floor/ceiling/roof openings
+#region Floor/ceiling/roof openings
 
     //a floor/roof/ceiling outline can have "voids/holes" for 3 reasons:
     // - there is a shaft cutting through it > we don't need to create an opening (the shaft will be created on its own)
@@ -820,9 +835,9 @@ namespace Objects.Converter.Revit
       return false;
     }
 
-    #endregion
+#endregion
 
-    #region misc
+#region misc
 
     public string GetTemplatePath(string templateName)
     {
@@ -840,7 +855,7 @@ namespace Objects.Converter.Revit
 
       return templatePath;
     }
-    #endregion
+#endregion
 
     private List<ICurve> GetProfiles(DB.SpatialElement room)
     {
@@ -882,7 +897,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    #region materials
+#region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
@@ -1001,7 +1016,7 @@ namespace Objects.Converter.Revit
       return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
     }
 
-    #endregion
+#endregion
 
 
     /// <summary>

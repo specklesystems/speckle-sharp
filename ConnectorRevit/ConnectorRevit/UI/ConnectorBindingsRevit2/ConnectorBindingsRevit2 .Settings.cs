@@ -20,10 +20,15 @@ namespace Speckle.ConnectorRevit.UI
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
+    const string noMapping = "Never (default)";
+    const string everyReceive = "Always";
+    const string forNewTypes = "For New Types";
+
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
       List<string> prettyMeshOptions = new List<string>() { defaultValue, dxf, familyDxf };
+      List<string> mappingOptions = new List<string>() { noMapping, everyReceive, forNewTypes };
 
       // find project base point and survey point. these don't always have name props, so store them under custom strings
       var basePoint = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(BasePoint)).Cast<BasePoint>().Where(o => o.IsShared == false).FirstOrDefault();
@@ -42,6 +47,7 @@ namespace Speckle.ConnectorRevit.UI
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Selection = defaultValue, Description = "Determines the display style of imported meshes"},
+        new MappingSeting {Slug = "receive-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = mappingOptions, Description = "Sends or receives stream objects in relation to this document point"},
       };
     }
   }

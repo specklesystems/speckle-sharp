@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
 {
@@ -121,6 +122,7 @@ namespace DesktopUI2
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
           Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Selection = "Default", Description = "Determines the display style of imported meshes" },
+        new MappingSeting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = new List<string>() {"none", "alot", "some"}, Description = "Sends or receives stream objects in relation to this document point"},
       };
     }
 
@@ -454,6 +456,12 @@ namespace DesktopUI2
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }
