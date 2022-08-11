@@ -4,11 +4,11 @@ using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Splat;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Splat;
 using System.Threading.Tasks;
-using System;
 
 namespace DesktopUI2.ViewModels
 {
@@ -98,7 +98,7 @@ namespace DesktopUI2.ViewModels
           if (!_Progress.SelectedReportObjects.Contains(applicationId))
             _Progress.SelectedReportObjects.Add(applicationId);
         Bindings.SelectClientObjects(_Progress.SelectedReportObjects);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Viewed Report Item" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Viewed Report Item" } });
       }
       else
       {
