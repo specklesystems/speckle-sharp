@@ -214,7 +214,7 @@ namespace ConnectorGrasshopper.Extras
         {
           ghParam.NewInstanceGuid();
           ghParam.Attributes.Selected = false;
-          ghParam.Attributes.Pivot = new PointF(this.Attributes.Pivot.X + 40f, this.Attributes.Pivot.Y);
+          ghParam.Attributes.Pivot = new PointF(Attributes.Parent.Bounds.Right + ghParam.Attributes.Bounds.Width/2 + 15f, Attributes.Pivot.Y);
           ghParam.Attributes.ExpireLayout();
           ghParam.MutableNickName = true;
           if (ghParam.Attributes is GH_FloatingParamAttributes)

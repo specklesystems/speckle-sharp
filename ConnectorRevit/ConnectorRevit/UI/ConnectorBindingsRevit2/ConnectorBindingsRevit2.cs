@@ -21,6 +21,8 @@ namespace Speckle.ConnectorRevit.UI
 
     public Timer SelectionTimer;
 
+    //Only use an instance of the converter as a local variable to avoid conflicts if multiple sending/receiving
+    //operations are happening at the same time
     public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
 
     public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
@@ -55,32 +57,6 @@ namespace Speckle.ConnectorRevit.UI
     public override string GetActiveViewName() => CurrentDoc.Document.ActiveView.Title;
 
     public override string GetFileName() => CurrentDoc.Document.Title;
-
-    public override void SelectClientObjects(List<string> args, bool deselect = false)
-    {
-      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
-      if (selection != null)
-      {
-        if (!deselect)
-        {
-          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
-          if (currentSelection != null) currentSelection.AddRange(selection);
-          else currentSelection = selection;
-          try
-          {
-            CurrentDoc.Selection.SetElementIds(currentSelection);
-            CurrentDoc.ShowElements(currentSelection);
-          }
-          catch (Exception e) { }
-        }
-        else
-        {
-          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
-          CurrentDoc.Selection.SetElementIds(updatedSelection);
-          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
-        }
-      }
-    }
 
     public override List<StreamState> GetStreamsInFile()
     {

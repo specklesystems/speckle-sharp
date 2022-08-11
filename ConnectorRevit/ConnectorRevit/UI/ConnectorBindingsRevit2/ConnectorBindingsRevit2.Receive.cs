@@ -39,8 +39,8 @@ namespace Speckle.ConnectorRevit.UI
     /// 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
+      //make sure to instance a new copy so all values are reset correctly
+      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
       var previouslyReceiveObjects = state.ReceivedObjects;
 
@@ -276,7 +276,7 @@ namespace Speckle.ConnectorRevit.UI
         if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
         {
           var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving objects of type {obj.GetType()} not supported in Revit");
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
           objects.Add(appObj);
         }
       }

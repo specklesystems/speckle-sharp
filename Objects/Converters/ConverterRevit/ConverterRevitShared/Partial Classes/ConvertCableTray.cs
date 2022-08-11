@@ -23,7 +23,11 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray);
+      if (!GetElementType<CableTrayType>(speckleCableTray, appObj, out CableTrayType cableTrayType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       Element cableTray = null;
       if (speckleCableTray.baseCurve is Line)

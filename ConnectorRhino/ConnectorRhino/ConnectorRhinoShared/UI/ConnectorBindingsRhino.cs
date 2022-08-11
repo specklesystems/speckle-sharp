@@ -135,7 +135,6 @@ namespace SpeckleRhino
         if (reportLog.ContainsKey(type)) reportLog[type] = reportLog[type]++;
         else reportLog.Add(type, 1);
       }
-      //converter.Report.LogOperationError();
       RhinoApp.WriteLine("Deselected unsupported objects:");
       foreach (var entry in reportLog)
         Rhino.RhinoApp.WriteLine($"{entry.Value} of type {entry.Key}");
@@ -192,6 +191,8 @@ namespace SpeckleRhino
 
     public override void SelectClientObjects(List<string> objs, bool deselect = false)
     {
+      var isPreview = PreviewConduit != null && PreviewConduit.Enabled ? true : false;
+
       foreach (var id in objs)
       {
         RhinoObject obj = Doc.Objects.FindId(new Guid(id));
@@ -200,17 +201,14 @@ namespace SpeckleRhino
           if (deselect) obj.Select(false, true, false, true, true, true);
           else obj.Select(true, true, true, true, true, true);
         }
-        else
+        else if (isPreview)
         {
-          // this may be a receive select: try finding the preview object
-          if (PreviewConduit != null && PreviewConduit.Enabled)
-          {
-            PreviewConduit.Enabled = false;
-            PreviewConduit.SelectPreviewObject(id, deselect);
-            PreviewConduit.Enabled = true;
-          }
+          PreviewConduit.Enabled = false;
+          PreviewConduit.SelectPreviewObject(id, deselect);
+          PreviewConduit.Enabled = true;
         }
       }
+
       Doc.Views.ActiveView.ActiveViewport.ZoomExtentsSelected();
       Doc.Views.Redraw();
     }
@@ -255,7 +253,7 @@ namespace SpeckleRhino
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
         Preview = FlattenCommitObject(commitObject, commitLayerName, ref count);
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
-        
+
         // Convert preview objects
         foreach (var previewObj in Preview)
         {
@@ -279,7 +277,7 @@ namespace SpeckleRhino
           {
             previewObj.Status = ApplicationObject.State.Created;
             if (!previewObj.Convertible)
-              previewObj.Update(logItem: $"Converted unsupported object to {previewObj.Converted.Count} fallback values");
+              previewObj.Update(logItem: $"Created using {previewObj.Converted.Count} fallback values");
           }
           progress.Report.Log(previewObj);
         }
@@ -299,6 +297,7 @@ namespace SpeckleRhino
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
         PreviewConduit.Enabled = false;
+        ResetDocument();
         return null;
       }
 
@@ -354,7 +353,7 @@ namespace SpeckleRhino
               previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
             else
               if (!previewObj.Convertible)
-                previewObj.Update(logItem: $"Converted unsupported object to {previewObj.Converted.Count} fallback values");
+                previewObj.Update(logItem: $"Creating with {previewObj.Converted.Count} fallback values");
 
             progress.Report.Log(previewObj);
             if (progress.CancellationTokenSource.Token.IsCancellationRequested)
@@ -495,7 +494,7 @@ namespace SpeckleRhino
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
           {
-            appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving objects of type {@base.speckle_type} not supported in Rhino");
+            appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Rhino");
             objects.Add(appObj);
           }
 
@@ -636,9 +635,11 @@ namespace SpeckleRhino
     #region sending
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
+      var filterObjs = GetObjectsFromFilter(state.Filter);
+
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
       Doc.Objects.UnselectAll(false);
-      SelectClientObjects(GetObjectsFromFilter(state.Filter));
+      SelectClientObjects(filterObjs);
       Doc.Views.Redraw();
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
@@ -683,13 +684,13 @@ namespace SpeckleRhino
         {
           viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
         }
-        ApplicationObject reportObj = new ApplicationObject(applicationId, obj.ObjectType.ToString());
+        ApplicationObject reportObj = new ApplicationObject(applicationId, Formatting.ObjectDescriptor(obj));
 
         if (obj != null)
         {
           if (!Converter.CanConvertToSpeckle(obj))
           {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending objects of type {obj.ObjectType} not supported in Rhino");
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Rhino");
             progress.Report.Log(reportObj);
             continue;
           }
@@ -719,7 +720,7 @@ namespace SpeckleRhino
           converted = Converter.ConvertToSpeckle(view);
           if (converted == null)
           {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Creation of {view.GetType()} returned Null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
             progress.Report.Log(reportObj);
             continue;
           }
