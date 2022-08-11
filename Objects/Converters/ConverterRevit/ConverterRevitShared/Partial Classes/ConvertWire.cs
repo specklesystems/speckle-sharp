@@ -27,7 +27,11 @@ namespace Objects.Converter.Revit
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"
         ? DB.Electrical.WiringType.Chamfer
         : DB.Electrical.WiringType.Arc;
-      var wireType = GetElementType<DB.Electrical.WireType>(speckleWire);
+      if (!GetElementType<DB.Electrical.WireType>(speckleWire, appObj, out DB.Electrical.WireType wireType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       // get construction points (if wire is from Revit, these are not the same as the geometry points)
       var points = new List<XYZ>();

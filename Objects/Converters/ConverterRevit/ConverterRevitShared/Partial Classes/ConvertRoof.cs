@@ -40,7 +40,11 @@ namespace Objects.Converter.Revit
       else
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
 
-      var roofType = GetElementType<RoofType>(speckleRoof);
+      if (!GetElementType<RoofType>(speckleRoof, appObj, out RoofType roofType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       if (docObj != null)
         Doc.Delete(docObj.Id);
