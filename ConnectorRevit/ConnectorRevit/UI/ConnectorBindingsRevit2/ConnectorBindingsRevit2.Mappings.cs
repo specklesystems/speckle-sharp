@@ -86,7 +86,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="hostTypes"></param>
     /// <param name="progress"></param>
     /// <returns></returns>
-    public Dictionary<string, List<MappingValue>> ReturnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
+    private Dictionary<string, List<MappingValue>> ReturnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
     {
       var mappings = new Dictionary<string, List<MappingValue>> { };
       foreach (var incomingTypeCategory in incomingTypesDict.Keys)
@@ -124,7 +124,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="category"></param>
     /// <param name="speckleType"></param>
     /// <returns>name of host type as string</returns>
-    public string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType)
+    private string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType)
     {
       string mappedValue = "";
       string hostCategory = "";
@@ -152,7 +152,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="s"></param>
     /// <param name="t"></param>
     /// <returns>distance as an integer</returns>
-    public static int LevenshteinDistance(string s, string t)
+    private static int LevenshteinDistance(string s, string t)
     {
       // Default algorithim for computing the similarity between strings
       int n = s.Length;
@@ -195,7 +195,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>name of category type as string</returns>
-    public string GetTypeCategory(Base obj)
+    private string GetTypeCategory(Base obj)
     {
       string speckleType = obj.speckle_type.Split('.').LastOrDefault().ToLower();
 
@@ -259,7 +259,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <summary>
     /// Helper class for creating filters for all the different Revit types
     /// </summary>
-    public class customTypesFilter
+    private class customTypesFilter
     {
       public string key;
       public Type objectClass;
@@ -277,7 +277,7 @@ namespace Speckle.ConnectorRevit.UI
     /// Get an object with all the Revit types in the current project
     /// </summary>
     /// <returns>A dictionary where the keys are type categories and the value is a list of all the revit types that fit that category in the existing project</returns>
-    public Dictionary<string, List<string>> GetHostTypes()
+    private Dictionary<string, List<string>> GetHostTypes()
     {
       var customHostTypesFilter = new List<customTypesFilter>
       {
@@ -475,7 +475,7 @@ namespace Speckle.ConnectorRevit.UI
     /// Update the custom type mapping that the user has saved
     /// </summary>
     /// <returns>A bool indicating whether there are new incoming types or not</returns>
-    public bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
+    private bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
     {
       // no existing mappings exist
       if (settingsMapping == null)
