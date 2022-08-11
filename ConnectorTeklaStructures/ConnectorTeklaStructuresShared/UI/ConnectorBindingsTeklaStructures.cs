@@ -52,7 +52,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       throw new NotImplementedException();
     }
 
-    public override async System.Threading.Tasks.Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string, List<MappingValue>> Mapping)
+    public override async System.Threading.Tasks.Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
     {
       await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(500));
       return new Dictionary<string, List<MappingValue>>();

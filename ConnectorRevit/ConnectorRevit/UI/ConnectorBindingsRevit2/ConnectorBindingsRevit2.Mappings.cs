@@ -51,7 +51,7 @@ namespace Speckle.ConnectorRevit.UI
 
         Dictionary<string, List<MappingValue>> Mapping = settingsMapping;
         if (Mapping == null)
-          Mapping = returnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
+          Mapping = ReturnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
 
         try
         {
@@ -86,7 +86,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="hostTypes"></param>
     /// <param name="progress"></param>
     /// <returns></returns>
-    public Dictionary<string, List<MappingValue>> returnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
+    public Dictionary<string, List<MappingValue>> ReturnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
     {
       var mappings = new Dictionary<string, List<MappingValue>> { };
       foreach (var incomingTypeCategory in incomingTypesDict.Keys)
@@ -510,6 +510,62 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
       return newTypesExist;
+    }
+
+
+    /// <summary>
+    /// Imports family symbols into Revit
+    /// </summary>
+    /// <param name="Mapping"></param>
+    /// <returns>
+    /// New mapping value with newly imported types added (if applicable)
+    /// </returns>
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      FileOpenDialog dialog = new FileOpenDialog("Revit Families (*.rfa)|*.rfa");
+      dialog.ShowPreview = true;
+      var result = dialog.Show();
+
+      if (result == ItemSelectionDialogResult.Canceled)
+      {
+        return Mapping;
+      }
+
+      string path = "";
+      path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
+
+      return await RevitTask.RunAsync(app =>
+      {
+        using (var t = new Transaction(CurrentDoc.Document, $"Imported family symbols"))
+        {
+          t.Start();
+          bool symbolLoaded = false;
+
+          foreach (var category in Mapping.Keys)
+          {
+            foreach (var mappingValue in Mapping[category])
+            {
+              if (!mappingValue.Imported)
+              {
+                bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(path, mappingValue.IncomingType);
+
+                if (successfullyImported)
+                {
+                  mappingValue.Imported = true;
+                  mappingValue.OutgoingType = mappingValue.IncomingType;
+                  symbolLoaded = true;
+                }
+              }
+            }
+          }
+
+          if (symbolLoaded)
+            t.Commit();
+          else
+            t.RollBack();
+          return Mapping;
+        }
+      });
     }
   }
 }

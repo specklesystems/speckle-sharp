@@ -19,8 +19,6 @@ namespace DesktopUI2.ViewModels
 
     public IScreen HostScreen => throw new NotImplementedException();
 
-    //public event EventHandler OnRequestClose;
-
     public ConnectorBindings Bindings { get; set; }
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
@@ -238,9 +236,9 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public async void ImportFamily()
+    public async void ImportFamilyCommand()
     {
-      Mapping = await Bindings.ImportFamily(Mapping);
+      Mapping = await Bindings.ImportFamilyCommand(Mapping);
     }
 
     public void Done()

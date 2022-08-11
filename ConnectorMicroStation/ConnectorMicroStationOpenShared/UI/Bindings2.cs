@@ -190,7 +190,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
       // TODO!
     }
 
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string, List<MappingValue>> Mapping)
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(500));
       return new Dictionary<string, List<MappingValue>>();

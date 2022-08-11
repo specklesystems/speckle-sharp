@@ -184,7 +184,11 @@ namespace DesktopUI2
 
     public abstract List<ISetting> GetSettings();
 
-    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamily(Dictionary<string,List<MappingValue>> Mapping);
+    /// <summary>
+    /// Imports family symbols in Revit 
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string,List<MappingValue>> Mapping);
     #endregion
   }
 }

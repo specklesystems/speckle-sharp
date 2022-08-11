@@ -191,7 +191,7 @@
           CornerRadius="20"
           Margin="5"
           HorizontalAlignment="Left"
-          Command="{Binding ImportFamily}">
+          Command="{Binding ImportFamilyCommand}">
           Import
         </Button>
         <Button
