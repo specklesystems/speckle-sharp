@@ -35,9 +35,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns></returns>
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
-      converter.SetContextDocument(CurrentDoc.Document);
+      //make sure to instance a new copy so all values are reset correctly
+      Converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      Converter.SetContextDocument(CurrentDoc.Document);
       var previouslyReceiveObjects = state.ReceivedObjects;
 
       // set converter settings as tuples (setting slug, setting selection)
@@ -45,7 +45,7 @@ namespace Speckle.ConnectorRevit.UI
       CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
-      converter.SetConverterSettings(settings);
+      Converter.SetConverterSettings(settings);
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
@@ -110,21 +110,21 @@ namespace Speckle.ConnectorRevit.UI
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
         {
           var failOpts = t.GetFailureHandlingOptions();
-          failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+          failOpts.SetFailuresPreprocessor(new ErrorEater(Converter));
           failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
 
           t.Start();
-          Preview = FlattenCommitObject(commitObject, converter);
+          Preview = FlattenCommitObject(commitObject, Converter);
           foreach (var previewObj in Preview)
             progress.Report.Log(previewObj);
 
-          converter.ReceiveMode = state.ReceiveMode;
+          Converter.ReceiveMode = state.ReceiveMode;
           // needs to be set for editing to work 
-          converter.SetPreviousContextObjects(previouslyReceiveObjects);
+          Converter.SetPreviousContextObjects(previouslyReceiveObjects);
           // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(Preview);
-          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+          Converter.SetContextObjects(Preview);
+          var newPlaceholderObjects = ConvertReceivedObjects(Converter, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
           {
@@ -143,7 +143,7 @@ namespace Speckle.ConnectorRevit.UI
 
       });
 
-      if (converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
+      if (Converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
         return null; // the commit is being rolled back
 
       return state;
