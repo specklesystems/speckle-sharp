@@ -42,6 +42,8 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
+      //make sure to instance a new copy so all values are reset correctly
+      Converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       Converter.SetContextDocument(CurrentDoc.Document);
       Converter.Report.ReportObjects.Clear();
 
