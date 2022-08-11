@@ -26,7 +26,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
         var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
-        if (!Converter.CanConvertToSpeckle(filterObj))
+        if (!converter.CanConvertToSpeckle(filterObj))
           reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
         else
           reportObj.Update(status: ApplicationObject.State.Created);
@@ -43,16 +43,16 @@ namespace Speckle.ConnectorRevit.UI
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       //make sure to instance a new copy so all values are reset correctly
-      Converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-      Converter.SetContextDocument(CurrentDoc.Document);
-      Converter.Report.ReportObjects.Clear();
+      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      converter.SetContextDocument(CurrentDoc.Document);
+      converter.Report.ReportObjects.Clear();
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
       CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
-      Converter.SetConverterSettings(settings);
+      converter.SetConverterSettings(settings);
 
       var streamId = state.StreamId;
       var client = state.Client;
@@ -66,8 +66,8 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      Converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
-      var commitObject = Converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
+      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
+      var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
@@ -79,9 +79,9 @@ namespace Speckle.ConnectorRevit.UI
         var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
         // get the report object
         // for hosted elements, they may have already been converted and added to the converter report
-        bool alreadyConverted = Converter.Report.GetReportObject(revitElement.UniqueId, out int index);
+        bool alreadyConverted = converter.Report.GetReportObject(revitElement.UniqueId, out int index);
         var reportObj = alreadyConverted ?
-          Converter.Report.ReportObjects[index] :
+          converter.Report.ReportObjects[index] :
           new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
         if (alreadyConverted)
         {
@@ -93,7 +93,7 @@ namespace Speckle.ConnectorRevit.UI
           if (revitElement == null)
             continue;
 
-          if (!Converter.CanConvertToSpeckle(revitElement))
+          if (!converter.CanConvertToSpeckle(revitElement))
           {
             reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
             progress.Report.Log(reportObj);
@@ -103,8 +103,8 @@ namespace Speckle.ConnectorRevit.UI
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             return null;
 
-          Converter.Report.Log(reportObj); // Log object so converter can access
-          var conversionResult = Converter.ConvertToSpeckle(revitElement);
+          converter.Report.Log(reportObj); // Log object so converter can access
+          var conversionResult = converter.ConvertToSpeckle(revitElement);
 
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
@@ -150,7 +150,7 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.Log(reportObj);
       }
 
-      progress.Report.Merge(Converter.Report);
+      progress.Report.Merge(converter.Report);
 
       if (convertedCount == 0)
       {
