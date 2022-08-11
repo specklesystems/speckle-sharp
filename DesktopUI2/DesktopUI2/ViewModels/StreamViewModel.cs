@@ -771,12 +771,12 @@ namespace DesktopUI2.ViewModels
     {
       Notification = "";
       NotificationUrl = "";
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
+      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
     public void LaunchNotificationCommand()
     {
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
+      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
 
       if (!string.IsNullOrEmpty(NotificationUrl))
         Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
@@ -957,7 +957,7 @@ namespace DesktopUI2.ViewModels
       {
         var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList(), this);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
       }
       catch (Exception e)
       {

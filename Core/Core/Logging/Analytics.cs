@@ -100,7 +100,10 @@ namespace Speckle.Core.Logging
     /// <param name="customProperties">Additional parameters to pass to the event</param>
     public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null)
     {
-      TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties);
+      if (account == null)
+        TrackEvent(eventName, customProperties);
+      else
+        TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties);
     }
 
     /// <summary>
