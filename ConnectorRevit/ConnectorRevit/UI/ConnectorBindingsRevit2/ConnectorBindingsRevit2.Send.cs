@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autodesk.Revit.DB;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -115,11 +116,28 @@ namespace Speckle.ConnectorRevit.UI
             continue;
           }
 
-          var category = $"@{revitElement.Category.Name}";
-          if (commitObject[category] == null)
-            commitObject[category] = new List<Base>();
+          //is an element type, nest it under Types instead
+          if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
+          {
+            var category = $"@{revitElement.Category.Name}";
 
-          ((List<Base>)commitObject[category]).Add(conversionResult);
+            if (commitObject["Types"] == null)
+              commitObject["Types"] = new Base();
+
+            if ((commitObject["Types"] as Base)[category] == null)
+              (commitObject["Types"] as Base)[category] = new List<Base>();
+
+            ((List<Base>)((commitObject["Types"] as Base)[category])).Add(conversionResult);
+          }
+          else
+          {
+            var category = $"@{revitElement.Category.Name}";
+            if (commitObject[category] == null)
+              commitObject[category] = new List<Base>();
+
+            ((List<Base>)commitObject[category]).Add(conversionResult);
+          }
+
 
           reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}");
         }
