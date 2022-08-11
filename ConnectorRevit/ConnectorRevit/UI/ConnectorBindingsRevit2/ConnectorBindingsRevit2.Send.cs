@@ -24,6 +24,7 @@ namespace Speckle.ConnectorRevit.UI
       var filterObjs = GetSelectionFilterObjects(state.Filter);
       foreach (var filterObj in filterObjs)
       {
+        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
         var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
         var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
         if (!converter.CanConvertToSpeckle(filterObj))
