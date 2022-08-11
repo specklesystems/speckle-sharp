@@ -21,6 +21,8 @@ namespace Speckle.ConnectorRevit.UI
 
     public Timer SelectionTimer;
 
+    //Only use an instance of the converter as a local variable to avoid conflicts if multiple sending/receiving
+    //operations are happening at the same time
     public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
 
     public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
