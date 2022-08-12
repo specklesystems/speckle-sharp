@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
-using Speckle.Cor.Api;
+using Speckle.Core.Api;
 
 namespace TestsUnit
 {
