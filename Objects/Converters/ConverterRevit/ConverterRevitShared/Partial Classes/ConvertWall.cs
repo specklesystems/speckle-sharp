@@ -32,16 +32,20 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var wallType = GetElementType<WallType>(speckleWall);
+      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       Level level = null;
       var levelState = ApplicationObject.State.Unknown;
       var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
+
       List<string> joinSettings = new List<string>();
       if (Settings.ContainsKey("disallow-join"))
-      {
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
-      }
 
       if (speckleWall is RevitWall speckleRevitWall)
       {

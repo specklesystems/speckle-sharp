@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
 namespace Speckle.Core.Logging
@@ -16,18 +17,22 @@ namespace Speckle.Core.Logging
   {
     private readonly static string _suuidPath = Path.Combine(Helpers.SpeckleFolderPath, "suuid");
 
+
     public static void Init(string versionedHostApplication, string hostApplication)
     {
       HostApplication = hostApplication;
       VersionedHostApplication = versionedHostApplication;
 
-      #if !NETSTANDARD1_5_OR_GREATER
+#if !NETSTANDARD1_5_OR_GREATER
       //needed by older .net frameworks, eg Revit 2019
       ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-      #endif
+#endif
 
 
       Log.Initialize();
+
+      foreach (var account in AccountManager.GetAccounts())
+        Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);
     }
 
     /// <summary>
