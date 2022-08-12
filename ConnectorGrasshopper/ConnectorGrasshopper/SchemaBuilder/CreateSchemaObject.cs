@@ -470,7 +470,7 @@ namespace ConnectorGrasshopper
       {
         var type = inputValue.GetType();
         var propertyInfo = type.GetProperty("Value");
-        var value = propertyInfo.GetValue(inputValue);
+        var value = propertyInfo?.GetValue(inputValue);
         return value;
       }
 
@@ -482,11 +482,11 @@ namespace ConnectorGrasshopper
     {
       if (!values.Any()) return null;
 
-      var listElementType = t.GetElementType();
-      var list = (IList)Array.CreateInstance(listElementType, values.Count);
-      for (int i = 0; i < values.Count; i++)
+      var list = (IList)Activator.CreateInstance(t);
+      var listElementType = list.GetType().GetGenericArguments().Single();
+      foreach (var value in values)
       {
-        list[i] = (ConvertType(listElementType, values[i], param.Name));
+        list.Add(ConvertType(listElementType, value, param.Name));
       }
 
       return list;
