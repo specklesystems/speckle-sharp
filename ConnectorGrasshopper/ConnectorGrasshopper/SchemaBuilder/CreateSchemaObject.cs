@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -73,7 +73,7 @@ namespace ConnectorGrasshopper
       objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
 
       var tagItem =
-        schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam.Name ?? "geometry"} with {Name} attached") as
+        schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam?.Name ?? "geometry"} with {Name} attached") as
           ToolStripMenuItem;
       tagItem.Checked = UseSchemaTag;
       tagItem.Enabled = mainParam != null;
