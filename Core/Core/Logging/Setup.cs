@@ -1,4 +1,10 @@
-﻿using Speckle.Core.Credentials;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Text;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
 namespace Speckle.Core.Logging
