@@ -31,7 +31,7 @@ namespace DiskTransport
     public DiskTransport(string basePath = null)
     {
       if (basePath == null)
-        basePath = Path.Combine(Helpers.SpeckleFolderPath, "DiskTransportFiles");
+        basePath = Path.Combine(Helpers.UserSpeckleFolderPath, "DiskTransportFiles");
 
       RootPath = Path.Combine(basePath);
 

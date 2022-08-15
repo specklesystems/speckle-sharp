@@ -12,7 +12,7 @@ namespace TestsUnit
   public class Fixtures
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
-    private static string accountPath = Path.Combine(Helpers.SpeckleFolderPath, "Accounts", "TestAccount.json");
+    private static string accountPath = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts", "TestAccount.json");
 
 
     public static void UpdateOrSaveAccount(Account account)
