@@ -160,7 +160,7 @@ namespace Objects.Converter.Revit
       dxfConverter.Doc.Entities.Add(collection.Where(x => x != null));
 
       var folderPath = Path.Combine(
-        Helpers.SpeckleFolderPath,
+        Helpers.UserSpeckleFolderPath,
         "Temp",
         "Dxf");
 
