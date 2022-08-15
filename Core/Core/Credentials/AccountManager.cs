@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -131,7 +131,7 @@ namespace Speckle.Core.Credentials
     {
       var defaultServerUrl = "https://speckle.xyz";
 
-      var customServerFile = Path.Combine(Helpers.SpeckleFolderPath, "server");
+      var customServerFile = Path.Combine(Helpers.UserSpeckleFolderPath, "server");
       if (File.Exists(customServerFile))
       {
         var customUrl = File.ReadAllText(customServerFile);
@@ -196,7 +196,7 @@ namespace Speckle.Core.Credentials
     private static IEnumerable<Account> GetLocalAccounts()
     {
       var accounts = new List<Account>();
-      var accountsDir = Path.Combine(Helpers.SpeckleFolderPath, "Accounts");
+      var accountsDir = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts");
       if (!Directory.Exists(accountsDir))
       {
         return accounts;

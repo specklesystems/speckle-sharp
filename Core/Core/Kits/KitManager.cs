@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace Speckle.Core.Kits
         if (_kitsFolder != null)
           return _kitsFolder;
 
-        return Path.Combine(Helpers.SpeckleFolderPath, "Kits");
+        return Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits");
       }
       set
       {

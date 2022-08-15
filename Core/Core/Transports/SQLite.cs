@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -49,7 +49,7 @@ namespace Speckle.Core.Transports
       Log.AddBreadcrumb("New SqlLite Transport");
 
       if (basePath == null)
-        basePath = Helpers.CorrectedApplicationDataPath;
+        basePath = Helpers.UserApplicationDataPath;
       _BasePath = basePath;
 
       if (applicationName == null)

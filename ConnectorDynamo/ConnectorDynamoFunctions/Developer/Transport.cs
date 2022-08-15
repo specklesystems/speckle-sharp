@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -22,7 +22,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object DiskTransport(string basePath = "")
     {
       if (string.IsNullOrEmpty(basePath))
-        basePath = Path.Combine(Helpers.SpeckleFolderPath, "DiskTransportFiles");
+        basePath = Path.Combine(Helpers.UserSpeckleFolderPath, "DiskTransportFiles");
 
       Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
 
@@ -88,7 +88,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     public static object SQLiteTransport(string basePath = "", string applicationName = "Speckle", string scope = "UserLocalDefaultDb")
     {
       if (string.IsNullOrEmpty(basePath))
-        basePath = Helpers.CorrectedApplicationDataPath;
+        basePath = Helpers.UserApplicationDataPath;
       if (string.IsNullOrEmpty(applicationName))
         applicationName = "Speckle";
       if (string.IsNullOrEmpty(scope))
