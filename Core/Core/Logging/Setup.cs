@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
@@ -14,7 +15,8 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class Setup
   {
-    private static readonly string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
+    private readonly static string _suuidPath = Path.Combine(Helpers.InstallSpeckleFolderPath, "suuid");
+
 
     public static void Init(string versionedHostApplication, string hostApplication)
     {
