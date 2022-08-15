@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -22,7 +21,15 @@ namespace DesktopUI2.Views.Windows.Dialogs
       InitializeComponent();
       var combo = this.FindControl<ComboBox>("accounts");
       combo.Items = accounts;
-      combo.SelectedIndex = 0;
+      try
+      {
+        combo.SelectedIndex = accounts.FindIndex(x => x.Account.isDefault);
+      }
+      catch
+      {
+        combo.SelectedIndex = 0;
+      }
+
     }
 
     private void InitializeComponent()
