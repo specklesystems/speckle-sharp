@@ -39,7 +39,7 @@ namespace Speckle.Core.Api
         
         //Fallback to a non authed account
         account = new Account() {token = "",
-          serverInfo = new ServerInfo() {url = sw.ServerUrl},
+          serverInfo = new Credentials.ServerInfo() {url = sw.ServerUrl},
           userInfo = new UserInfo()
         };
       }

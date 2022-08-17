@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -116,6 +117,39 @@ namespace Speckle.Core.Api
         return res.Data.userSearch.items;
       }
       catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+    
+    /// <summary>
+    /// Gets the version of the current server. Useful for guarding against unsupported api calls on newer or older servers.
+    /// </summary>
+    /// <param name="cancellationToken">[Optional] defaults to an empty cancellation token</param>
+    /// <returns><see cref="Version"/> object excluding any strings (eg "2.7.2-alpha.6995" becomes "2.7.2.6995")</returns>
+    /// <exception cref="SpeckleException"></exception>
+    ///
+    public async Task<Version> ServerVersion(CancellationToken cancellationToken =  default)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Server {
+                      serverInfo {
+                          version
+                        }
+                    }",
+        };
+
+        var res = await GQLClient.SendMutationAsync<ServerInfoData>(request, cancellationToken).ConfigureAwait(false);
+
+        if ( res.Errors != null && res.Errors.Any() )
+          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+
+        return new Version(Regex.Replace(res.Data.serverInfo.version, "[-a-zA-Z]+", ""));
+      }
+      catch ( Exception e )
       {
         throw new SpeckleException(e.Message, e);
       }
