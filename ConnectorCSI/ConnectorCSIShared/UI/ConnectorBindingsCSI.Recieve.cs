@@ -143,7 +143,6 @@ namespace Speckle.ConnectorCSI.UI
     /// <param name="converter"></param>
     private void BakeObject(Base obj, StreamState state, ISpeckleConverter converter)
     {
-      converter.ReceiveMode = state.ReceiveMode;
       try
       {
         converter.ConvertToNative(obj);

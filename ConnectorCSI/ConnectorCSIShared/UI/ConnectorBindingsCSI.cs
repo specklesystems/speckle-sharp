@@ -22,7 +22,7 @@ namespace Speckle.ConnectorCSI.UI
 
     public override List<ReceiveMode> GetReceiveModes()
     {
-      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create };
+      return new List<ReceiveMode> { ReceiveMode.Create };
     }
 
     #region boilerplate

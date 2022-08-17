@@ -21,20 +21,8 @@ namespace Objects.Converter.CSI
       Model.PointObj.GetGUID(csiNode, ref GUID);
       if (speckleStructNode.applicationId == GUID)
       {
-<<<<<<< Updated upstream
         Model.EditPoint.ChangeCoordinates_1(csiNode, basePt.x, basePt.y, basePt.z);
         updatePointProperties(speckleStructNode, csiNode);
-=======
-<<<<<<< Updated upstream
-        return null;
-=======
-        Model.EditPoint.ChangeCoordinates_1(csiNode, basePt.x, basePt.y, basePt.z, true);
-        updatePointProperties(speckleStructNode, csiNode);
-      }
-      else{
-        PointToNative(speckleStructNode);
->>>>>>> Stashed changes
->>>>>>> Stashed changes
       }
       else{
         PointToNative(speckleStructNode);
@@ -45,13 +33,13 @@ namespace Objects.Converter.CSI
 
     public void updatePointProperties(Node speckleStructNode, string name){
       var point = speckleStructNode.basePoint;
-      string Name = "";
+      string name = "";
       Model.PointObj.AddCartesian(
         ScaleToNative(point.x, point.units),
         ScaleToNative(point.y, point.units),
         ScaleToNative(point.z, point.units),
-        ref Name
-      ) ;
+        ref name
+      );
       if (speckleStructNode.restraint != null)
       {
         var restraint = RestraintToNative(speckleStructNode.restraint);
