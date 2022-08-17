@@ -990,6 +990,10 @@ namespace Objects.Converter.AutocadCivil
       var _proxy = new Base();
       _proxy["bbox"] = BoxToSpeckle(proxy.GeometricExtents);
       var props = Utilities.GetApplicationProps(proxy, typeof(ProxyEntity), false);
+      props["ApplicationDescription"] = proxy.ApplicationDescription;
+      props["OriginalClassName"] = proxy.OriginalClassName;
+      props["OriginalDxfName"] = proxy.OriginalDxfName;
+      props["ProxyFlags"] = proxy.ProxyFlags;
       if (props != null) _proxy[AutocadPropName] = props;
 
       return _proxy;
