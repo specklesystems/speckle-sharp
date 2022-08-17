@@ -45,6 +45,7 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       return new List<ISelectionFilter>()
+<<<<<<< Updated upstream
         {
         new AllSelectionFilter {Slug="all",  Name = "Everything",
             Icon = "CubeScan", Description = "Selects all document objects." },
@@ -61,10 +62,45 @@ namespace Speckle.ConnectorCSI.UI
     //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
     //},
             
+=======
+<<<<<<< Updated upstream
+            {
+            new AllSelectionFilter {Slug="all",  Name = "Everything",
+                Icon = "CubeScan", Description = "Selects all document objects." },
+            new ListSelectionFilter {Slug="type", Name = "Categories",
+                Icon = "Category", Values = objectTypes,
+                Description="Adds all objects belonging to the selected types"},
+        //new PropertySelectionFilter{
+        //  Slug="param",
+        //  Name = "Param",
+        //  Description="Adds  all objects satisfying the selected parameter",
+        //  Icon = "FilterList",
+        //  HasCustomProperty = false,
+        //  Values = objectNames,
+        //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
+        //},
+            
+            new ManualSelectionFilter(),
+            new ListSelectionFilter { Slug = "group", Name = "Group",
+            Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
+            };
+            
+=======
+        {
+        new AllSelectionFilter {Slug="all",  Name = "Everything",
+            Icon = "CubeScan", Description = "Selects all document objects." },
+        new ListSelectionFilter {Slug="type", Name = "Categories",
+            Icon = "Category", Values = objectTypes,
+            Description="Adds all objects belonging to the selected types"},
+>>>>>>> Stashed changes
         new ManualSelectionFilter(),
         new ListSelectionFilter { Slug = "group", Name = "Group",
         Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
         };
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     }
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
@@ -106,6 +142,7 @@ namespace Speckle.ConnectorCSI.UI
 
         case "group":
           //Clear objects first
+          { 
           Model.SelectObj.ClearSelection();
           var groupFilter = filter as ListSelectionFilter;
           foreach (var group in groupFilter.Selection)

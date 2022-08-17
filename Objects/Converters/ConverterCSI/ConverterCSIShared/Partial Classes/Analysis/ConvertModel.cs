@@ -93,25 +93,49 @@ namespace Objects.Converter.CSI
             }
             else
             {
+<<<<<<< Updated upstream
             if(framesNames.Contains(CSIelement.name)){
+=======
+<<<<<<< Updated upstream
+              FrameToNative((Element1D)element);
+=======
+            if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update){
+>>>>>>> Stashed changes
                 updateFrametoNative((Element1D)element);
             }
             else
               {
                 FrameToNative((Element1D)element);
               }
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             }
           }
 
           else if (element is Element2D)
           {
+<<<<<<< Updated upstream
             var CSIElement = (Element2D)element;
           if(AreaNames.Contains(CSIElement.name)){
+=======
+<<<<<<< Updated upstream
+            AreaToNative((Element2D)element);
+=======
+            var CSIElement = (Element2D)element;
+          if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+            {
+>>>>>>> Stashed changes
               updateExistingArea(CSIElement);
             }
           else{
               AreaToNative(CSIElement);
             }
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
           }
           else if (element is CSIStories)
           {
@@ -122,16 +146,32 @@ namespace Objects.Converter.CSI
 
       if (model.nodes != null)
       {
+<<<<<<< Updated upstream
         var pointNames = GetAllPointNames(Model);
         foreach (Node node in model.nodes)
         {
         if(pointNames.Contains(node.name)){
+=======
+<<<<<<< Updated upstream
+        foreach (Node node in model.nodes)
+        {
+          PointToNative(node);
+=======
+       foreach (Node node in model.nodes)
+        {
+        if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+          {
+>>>>>>> Stashed changes
             updatePoint(node);
         }else{
             PointToNative(node);
           }
           
           
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         }
       }
 
