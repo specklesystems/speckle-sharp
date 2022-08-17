@@ -1388,14 +1388,15 @@ namespace Objects.Converter.AutocadCivil
               var indices = new List<int>();
               for (short i = 0; i < 4; i++)
               {
-                short index = o.GetVertexAt(i);
-                if (index != 0)
-                  indices.Add(index);
+                short index = o.GetVertexAt(i); 
+                if (index == 0) continue;
+                var adjustedIndex = index > 0 ? index - 1 : Math.Abs(index) - 1; // vertices are 1 indexed, and can be negative (hidden)
+                indices.Add(adjustedIndex);
               }
-              if (indices.Count == 4) // vertex index starts at 1 sigh
-                faces.AddRange(new List<int> { 1, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
+              if (indices.Count == 4)
+                faces.AddRange(new List<int> { 1, indices[0], indices[1], indices[2], indices[3] });
               else
-                faces.AddRange(new List<int> { 0, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
+                faces.AddRange(new List<int> { 0, indices[0], indices[1], indices[2] });
               break;
           }
         }
