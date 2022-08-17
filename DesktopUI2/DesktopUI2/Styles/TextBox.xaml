@@ -67,6 +67,13 @@
     <Setter Property="MinHeight" Value="0" />
   </Style>
 
+  <Style Selector="TextBox.Readonly">
+    <Setter Property="Margin" Value="20,0,20,20" />
+    <Setter Property="FontStyle" Value="Italic" />
+  </Style>
+  <Style Selector="TextBox.Readonly /template/ styles|MaterialUnderline#PART_Underline">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
 
 
 </Styles>

@@ -10,6 +10,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -87,32 +88,46 @@ namespace Archicad.Launcher
       return new List<StreamState>();
     }
 
+    public override void ResetDocument()
+    {
+      // TODO!
+    }
+
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+      // TODO!
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
       if (commitObject is null)
-      {
         return null;
-      }
 
       state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, progress.CancellationTokenSource.Token);
 
       return state;
     }
 
-    public override void SelectClientObjects(string args) { }
+    public override void SelectClientObjects(List<string> args, bool deselect = false) 
+    {
+      // TODO!
+    }
 
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      // TODO!
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       if (state.Filter is null)
-      {
         return null;
-      }
 
       state.SelectedObjectIds = state.Filter.Selection;
 
@@ -131,6 +146,12 @@ namespace Archicad.Launcher
     {
       var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null };
       return stream.ToString();
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

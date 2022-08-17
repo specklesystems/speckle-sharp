@@ -12,14 +12,26 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> WireToNative(BuiltElements.Wire speckleWire)
+    public ApplicationObject WireToNative(BuiltElements.Wire speckleWire)
     {
       var speckleRevitWire = speckleWire as RevitWire;
+
+      var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
+      var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type) { applicationId = speckleWire.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        return appObj;
+      }
 
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"
         ? DB.Electrical.WiringType.Chamfer
         : DB.Electrical.WiringType.Arc;
-      var wireType = GetElementType<DB.Electrical.WireType>(speckleWire);
+      if (!GetElementType<DB.Electrical.WireType>(speckleWire, appObj, out DB.Electrical.WireType wireType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       // get construction points (if wire is from Revit, these are not the same as the geometry points)
       var points = new List<XYZ>();
@@ -38,22 +50,13 @@ namespace Objects.Converter.Revit
               points.AddRange(PointListToNative(line.value));
               break;
             default:  // what other curves should be supported? currently just the ones you can create from revit
-              new SpeckleException($"Wire segment geometry of type {segment.GetType()} not currently supported");
+              appObj.Update(logItem: $"Wire segment geometry of type {segment.GetType()} not currently supported");
               break;
           }
         }
       }
 
       DB.Electrical.Wire wire = null;
-      var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
-
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleWire.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
-
       if (docObj != null)
       {
         wire = (DB.Electrical.Wire)docObj;
@@ -71,21 +74,22 @@ namespace Objects.Converter.Revit
           wire.SetVertex(i, points[i]);
         }
       var isUpdate = wire != null;
-      // crete a new one if there isn't one to update
+      // create a new one if there isn't one to update
       wire ??= DB.Electrical.Wire.Create(Doc, wireType.Id, Doc.ActiveView.Id,
         wiringType,
         points, null, null);
 
       if (speckleRevitWire != null)
         SetInstanceParameters(wire, speckleRevitWire);
-
-      var placeholders = new List<ApplicationPlaceholderObject>
+      else
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleWire.applicationId, ApplicationGeneratedId = wire.UniqueId, NativeObject = wire}
-      };
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} Wire {wire.Id}");
-      return placeholders;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Creation returned null");
+        return appObj;
+      }
+
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: wire.UniqueId, convertedItem: wire);
+      return appObj;
     }
 
     public BuiltElements.Wire WireToSpeckle(DB.Electrical.Wire revitWire)
@@ -130,7 +134,6 @@ namespace Objects.Converter.Revit
         }
 
       GetAllRevitParamsAndIds(speckleWire, revitWire, new List<string>());
-      Report.Log($"Converted Wire {revitWire.Id}");
       return speckleWire;
     }
   }

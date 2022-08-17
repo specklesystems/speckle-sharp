@@ -18,6 +18,7 @@ namespace DesktopUI2.Models.Settings
     public string Slug { get; set; }
     public string Icon { get; set; }
     public string Description { get; set; }
+    public string DefaultValue = "None";
     public List<string> Values { get; set; }
 
     private string _selection;
@@ -25,6 +26,8 @@ namespace DesktopUI2.Models.Settings
     {
       get
       {
+        if (Selections.Count == 0)
+          return DefaultValue;
         return string.Join(", ", Selections);
       }
       set => this.RaiseAndSetIfChanged(ref _selection, value);

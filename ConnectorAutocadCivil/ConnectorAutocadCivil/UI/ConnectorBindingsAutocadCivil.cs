@@ -20,6 +20,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -138,14 +139,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return new List<MenuItem>();
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
+    }
+
+    public override void ResetDocument()
+    {
+      // TODO!
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
 
     #endregion
 
     #region receiving 
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+      // TODO!
+    }
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -485,6 +502,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
+    public override async void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      // TODO!
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();

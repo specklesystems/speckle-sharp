@@ -25,6 +25,11 @@ namespace Objects.Converter.CSI
         return null;
       }
     }
+    public double ScaleToNative(double value, string units)
+    {
+      var f = Speckle.Core.Kits.Units.GetConversionFactor(units, ModelUnits());
+      return value * f;
+    }
     public static List<string> GetAllFrameNames(cSapModel model)
     {
       int num = 0;

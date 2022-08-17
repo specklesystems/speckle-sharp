@@ -74,13 +74,13 @@ namespace Objects.Converter.Revit
       var ids = new List<ElementId>();
       breps.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).NativeObject as DB.DirectShape;
+        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
           ids.Add(ds.Id);
       });
       meshes.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).NativeObject as DB.DirectShape;
+        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
           ids.Add(ds.Id);
         ids.Add(ds.Id);
@@ -106,7 +106,6 @@ namespace Objects.Converter.Revit
       Report.Log($"Created Group '{ group.GroupType.Name}' {group.Id}");
       return group;
     }
-
 
     private bool MatrixDecompose(double[] m, out double rotation)
     {
