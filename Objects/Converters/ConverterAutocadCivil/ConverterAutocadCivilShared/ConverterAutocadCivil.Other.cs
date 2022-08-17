@@ -313,7 +313,6 @@ namespace Objects.Converter.AutocadCivil
 
       return instance;
     }
-    
     public string BlockInstanceToNativeDB(BlockInstance instance, out BlockReference reference, bool AppendToModelSpace = true)
     {
       string result = null;
@@ -383,59 +382,6 @@ namespace Objects.Converter.AutocadCivil
 
       return definition;
     }
-
-    /// <summary>
-    /// Get the name of the block definition from BlockTableRecord.
-    /// If btr is a Dynamic Block, name is formatted as "DynamicBlockName"_"VisibilityName"
-    /// </summary>
-    /// <param name="btr">BlockTableRecord object</param>
-    /// <returns>block table record name</returns>
-    private string GetBlockDefName(BlockTableRecord btr)
-    {
-      var fullName = btr.Name;
-      var curVisibilityName = string.Empty;
-
-      if (btr.IsAnonymous || btr.IsDynamicBlock)
-      {
-        var referenceIds = btr.GetBlockReferenceIds(true, false);
-        ObjectId referenceId = referenceIds.Count > 0 ? referenceIds[0] : ObjectId.Null;
-        BlockReference reference = referenceId != ObjectId.Null ? Trans.GetObject(referenceId, OpenMode.ForRead) as BlockReference : null;
-        if (reference == null) return fullName;
-
-        if (btr.IsAnonymous)
-        {
-          BlockTableRecord dynamicBlock = reference.DynamicBlockTableRecord != ObjectId.Null ? 
-            Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord : null;
-          if (dynamicBlock != null) fullName = dynamicBlock.Name;
-        }
-
-        var descriptiveProps = new List<string>();
-        foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
-          if (prop.VisibleInCurrentVisibilityState && !prop.ReadOnly && IsSimpleType(prop.Value, out string value))
-            descriptiveProps.Add(value);
-
-        if (descriptiveProps.Count > 0) fullName = $"{fullName}_{String.Join("_", descriptiveProps.ToArray())}";
-      }
-
-      return fullName;
-    }
-    private bool IsSimpleType(object value, out string stringValue)
-    {
-      stringValue = String.Empty;
-      var type = value.GetType();
-      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-      {
-        // nullable type, check if the nested type is simple.
-        return IsSimpleType(type.GetGenericArguments()[0], out stringValue);
-      }
-      if (type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal)))
-      {
-        stringValue = value.ToString();
-        return true;
-      }
-      return false;
-    }
-
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
@@ -506,6 +452,58 @@ namespace Objects.Converter.AutocadCivil
 
       return blockId;
     }
+
+    /// <summary>
+    /// Get the name of the block definition from BlockTableRecord.
+    /// If btr is a Dynamic Block, name is formatted as "DynamicBlockName"_"VisibilityName"
+    /// </summary>
+    /// <param name="btr">BlockTableRecord object</param>
+    /// <returns>block table record name</returns>
+    private string GetBlockDefName(BlockTableRecord btr)
+    {
+      var fullName = btr.Name;
+      var curVisibilityName = string.Empty;
+
+      if (btr.IsAnonymous || btr.IsDynamicBlock)
+      {
+        var referenceIds = btr.GetBlockReferenceIds(true, false);
+        ObjectId referenceId = referenceIds.Count > 0 ? referenceIds[0] : ObjectId.Null;
+        BlockReference reference = referenceId != ObjectId.Null ? Trans.GetObject(referenceId, OpenMode.ForRead) as BlockReference : null;
+        if (reference == null) return fullName;
+
+        if (btr.IsAnonymous)
+        {
+          BlockTableRecord dynamicBlock = reference.DynamicBlockTableRecord != ObjectId.Null ? 
+            Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord : null;
+          if (dynamicBlock != null) fullName = dynamicBlock.Name;
+        }
+
+        var descriptiveProps = new List<string>();
+        foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
+          if (prop.VisibleInCurrentVisibilityState && !prop.ReadOnly && IsSimpleType(prop.Value, out string value))
+            descriptiveProps.Add(value);
+
+        if (descriptiveProps.Count > 0) fullName = $"{fullName}_{String.Join("_", descriptiveProps.ToArray())}";
+      }
+
+      return fullName;
+    }
+    private bool IsSimpleType(object value, out string stringValue)
+    {
+      stringValue = String.Empty;
+      var type = value.GetType();
+      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+      {
+        // nullable type, check if the nested type is simple.
+        return IsSimpleType(type.GetGenericArguments()[0], out stringValue);
+      }
+      if (type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal)))
+      {
+        stringValue = value.ToString();
+        return true;
+      }
+      return false;
+    }
     private void ConvertWithDisplay(Base obj, DisplayStyle style, RenderMaterial material, ref List<Entity> converted, bool TryUseObjDisplay = false)
     {
       if (TryUseObjDisplay && obj["displayStyle"] as DisplayStyle != null) style = obj["displayStyle"] as DisplayStyle;
@@ -571,7 +569,6 @@ namespace Objects.Converter.AutocadCivil
 
       return _text;
     }
-
     public Entity AcadTextToNative(Text text)
     {
       Entity _text = null;
@@ -623,6 +620,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _text;
     }
+
     private ObjectId GetTextStyle(string styleName)
     {
       var textStyleTable = Trans.GetObject(Doc.Database.TextStyleTableId, OpenMode.ForRead) as DimStyleTable;
@@ -983,6 +981,18 @@ namespace Objects.Converter.AutocadCivil
           return id;
       }
       return ObjectId.Null;
+    }
+
+    // Proxy Entity
+    public Base ProxyEntityToSpeckle(ProxyEntity proxy)
+    {
+      // Currently not possible to retrieve geometry of proxy entities, so sending props as a base instead
+      var _proxy = new Base();
+      _proxy["bbox"] = BoxToSpeckle(proxy.GeometricExtents);
+      var props = Utilities.GetApplicationProps(proxy, typeof(ProxyEntity), false);
+      if (props != null) _proxy[AutocadPropName] = props;
+
+      return _proxy;
     }
   }
 }
