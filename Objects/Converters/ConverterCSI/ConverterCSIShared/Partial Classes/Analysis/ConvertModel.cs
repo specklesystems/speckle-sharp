@@ -77,9 +77,6 @@ namespace Objects.Converter.CSI
 
       if (model.elements != null)
       {
-
-        var framesNames = GetAllFrameNames(Model);
-        var AreaNames = GetAllAreaNames(Model);
         foreach (var element in model.elements)
         {
 
@@ -93,7 +90,8 @@ namespace Objects.Converter.CSI
             }
             else
             {
-            if(framesNames.Contains(CSIelement.name)){
+            if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+              {
                 updateFrametoNative((Element1D)element);
             }
             else
@@ -106,7 +104,8 @@ namespace Objects.Converter.CSI
           else if (element is Element2D)
           {
             var CSIElement = (Element2D)element;
-          if(AreaNames.Contains(CSIElement.name)){
+          if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+            {
               updateExistingArea(CSIElement);
             }
           else{
@@ -122,10 +121,9 @@ namespace Objects.Converter.CSI
 
       if (model.nodes != null)
       {
-        var pointNames = GetAllPointNames(Model);
         foreach (Node node in model.nodes)
         {
-        if(pointNames.Contains(node.name)){
+        if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update){
             updatePoint(node);
         }else{
             PointToNative(node);
@@ -170,6 +168,7 @@ namespace Objects.Converter.CSI
 
         }
       }
+      Model.View.RefreshWindow();
 
       return "Finished";
     }

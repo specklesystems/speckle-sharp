@@ -145,6 +145,7 @@ namespace Speckle.ConnectorCSI.UI
     {
       try
       {
+        converter.ReceiveMode = state.ReceiveMode;
         converter.ConvertToNative(obj);
       }
       catch (Exception e)

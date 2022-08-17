@@ -21,25 +21,26 @@ namespace Objects.Converter.CSI
       Model.PointObj.GetGUID(csiNode, ref GUID);
       if (speckleStructNode.applicationId == GUID)
       {
-        Model.EditPoint.ChangeCoordinates_1(csiNode, basePt.x, basePt.y, basePt.z);
+        double xD = 0;
+        double yD = 0;
+        double zD = 0;
+        Model.PointObj.GetCoordCartesian(csiNode,ref  xD,ref  yD, ref zD);
+        Model.SelectObj.ClearSelection();
+        Model.PointObj.SetSelected(csiNode, true);
+        Model.EditGeneral.Move(speckleStructNode.basePoint.x-xD, speckleStructNode.basePoint.y- yD,  speckleStructNode.basePoint.z - zD);
         updatePointProperties(speckleStructNode, csiNode);
       }
-      else{
+      else
+      {
         PointToNative(speckleStructNode);
       }
-      
+
       return speckleStructNode.name;
     }
 
     public void updatePointProperties(Node speckleStructNode, string name){
       var point = speckleStructNode.basePoint;
-      string name = "";
-      Model.PointObj.AddCartesian(
-        ScaleToNative(point.x, point.units),
-        ScaleToNative(point.y, point.units),
-        ScaleToNative(point.z, point.units),
-        ref name
-      );
+    
       if (speckleStructNode.restraint != null)
       {
         var restraint = RestraintToNative(speckleStructNode.restraint);
@@ -82,8 +83,13 @@ namespace Objects.Converter.CSI
         return null;
       }
       var point = speckleStructNode.basePoint;
-      string name = "";
-      Model.PointObj.AddCartesian(point.x, point.y, point.z, ref name);
+      string name = ""; 
+      Model.PointObj.AddCartesian(
+       ScaleToNative(point.x, point.units),
+       ScaleToNative(point.y, point.units),
+       ScaleToNative(point.z, point.units),
+       ref name
+     );
       updatePointProperties(speckleStructNode, name);
 
       return speckleStructNode.name;

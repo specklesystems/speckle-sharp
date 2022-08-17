@@ -109,9 +109,10 @@ namespace Speckle.ConnectorCSI.UI
           Model.SelectObj.ClearSelection();
           var groupFilter = filter as ListSelectionFilter;
           foreach (var group in groupFilter.Selection)
-            Model.SelectObj.Group(group);
-          }
-          return GetSelectedObjects();          
+          { Model.SelectObj.Group(group); }
+
+          return GetSelectedObjects();
+          
       }
 
       return selection;
