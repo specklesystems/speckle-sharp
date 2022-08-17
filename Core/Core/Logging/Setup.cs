@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -15,6 +16,21 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class Setup
   {
+    private readonly static string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
+
+    static Setup()
+    {
+      //Set fallback values
+      try
+      {
+        HostApplication = Process.GetCurrentProcess().ProcessName;
+      }
+      catch
+      {
+        HostApplication = "other (.NET)";
+      }
+    }
+    
     public static void Init(string versionedHostApplication, string hostApplication)
     {
       HostApplication = hostApplication;
@@ -35,7 +51,7 @@ namespace Speckle.Core.Logging
     /// <summary>
     /// Set from the connectors, defines which current host application we're running on.
     /// </summary>
-    internal static string HostApplication { get; private set; } = "other";
+    internal static string HostApplication { get; private set; }
     /// <summary>
     /// Set from the connectors, defines which current host application we're running on - includes the version.
     /// </summary>
