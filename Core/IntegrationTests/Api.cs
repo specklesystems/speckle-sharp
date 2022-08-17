@@ -52,6 +52,13 @@ namespace TestsIntegration
       Assert.NotNull(res);
     }
 
+    [Test]
+    public async Task ServerVersion()
+    {
+      var res = await myClient.ServerVersion();
+      
+      Assert.NotNull(res);
+    }
 
     [Test, Order(0)]
     public async Task StreamCreate()
