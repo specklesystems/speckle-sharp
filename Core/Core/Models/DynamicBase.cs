@@ -95,6 +95,7 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
+    [IgnoreTheItemAttribute]
     public object this[string key]
     {
       get
@@ -102,7 +103,8 @@ namespace Speckle.Core.Models
         if (properties.ContainsKey(key))
           return properties[key];
 
-        var prop = GetType().GetProperty(key);
+        PopulatePropInfoCache(GetType());
+        var prop = propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
 
         if (prop == null)
           return null;
@@ -119,7 +121,8 @@ namespace Speckle.Core.Models
           return;
         }
 
-        var prop = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => p.Name == key);
+        PopulatePropInfoCache(GetType());
+        var prop = propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
 
         if (prop == null)
         {
@@ -137,6 +140,16 @@ namespace Speckle.Core.Models
       }
     }
 
+    private static Dictionary<Type, List<PropertyInfo>> propInfoCache = new Dictionary<Type, List<PropertyInfo>>();
+
+    private static void PopulatePropInfoCache(Type type)
+    {
+      if(!propInfoCache.ContainsKey(type))
+      {
+        propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.GetCustomAttribute(typeof(IgnoreTheItemAttribute)) == null).ToList();
+      }
+    }
+
     /// <summary>
     /// Gets all of the property names on this class, dynamic or not.
     /// </summary>
@@ -146,10 +159,10 @@ namespace Speckle.Core.Models
       var names = new List<string>();
       foreach (var kvp in properties) names.Add(kvp.Key);
 
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      //var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      PopulatePropInfoCache(GetType());
+      var pinfos = propInfoCache[GetType()];
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
-
-      names.Remove("Item"); // TODO: investigate why we get Item out?
       return names;
     }
 
@@ -160,10 +173,10 @@ namespace Speckle.Core.Models
     public IEnumerable<string> GetInstanceMembersNames()
     {
       var names = new List<string>();
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      PopulatePropInfoCache(GetType());
+      var pinfos = propInfoCache[GetType()];
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
-      names.Remove("Item"); // TODO: investigate why we get Item out?
       return names;
     }
 
@@ -174,7 +187,8 @@ namespace Speckle.Core.Models
     public IEnumerable<PropertyInfo> GetInstanceMembers()
     {
       var names = new List<PropertyInfo>();
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+      PopulatePropInfoCache(GetType());
+      var pinfos = propInfoCache[GetType()];
 
       foreach (var pinfo in pinfos)
         if (pinfo.Name != "Item") names.Add(pinfo);
@@ -191,11 +205,10 @@ namespace Speckle.Core.Models
       var names = new List<string>();
       foreach (var kvp in properties) names.Add(kvp.Key);
 
-      var pinfos = GetType()
-        .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-        .Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null
-                    && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null
-                    && x.Name != "Item");
+      PopulatePropInfoCache(GetType());
+      var pinfos = propInfoCache[GetType()].Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null
+                    && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null);
+
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       return names;
@@ -209,10 +222,15 @@ namespace Speckle.Core.Models
     {
       //typed members
       var dic = new Dictionary<string, object>();
-      var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
-        .Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null && x.Name != "Item");
+
+      PopulatePropInfoCache(GetType());
+      var pinfos = propInfoCache[GetType()].Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null
+                    && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null);
+
+
       foreach (var pi in pinfos)
         dic.Add(pi.Name, pi.GetValue(this));
+
       //dynamic members
       foreach (var kvp in properties)
         dic.Add(kvp.Key, kvp.Value);
@@ -235,5 +253,11 @@ namespace Speckle.Core.Models
     public bool IsWrapper() => properties.Count == 1;
 
   }
+
+  /// <summary>
+  /// This attribute is used internally to hide the this[key]{get; set;} property from inner reflection on members.
+  /// For more info see this discussion: https://speckle.community/t/why-do-i-keep-forgetting-base-objects-cant-use-item-as-a-dynamic-member/3246/5
+  /// </summary>
+  internal class IgnoreTheItemAttribute : Attribute { }
 
 }

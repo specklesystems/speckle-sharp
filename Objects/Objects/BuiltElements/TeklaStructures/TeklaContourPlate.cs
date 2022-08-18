@@ -4,6 +4,11 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
+using System;
+using System.Linq;
+using System.Text;
+using Speckle.Newtonsoft.Json;
+
 
 
 namespace Objects.BuiltElements.TeklaStructures
@@ -14,20 +19,33 @@ namespace Objects.BuiltElements.TeklaStructures
     public SectionProfile profile { get; set; }
     [DetachProperty]
     public Material material { get; set; }
-    public string finish { get; set; }
-    public string classNumber { get; set; }
-    public TeklaPosition position { get; set; }
-
     [DetachProperty]
-    public Mesh displayMesh { get; set; }
-	[DetachProperty]
-	public Base rebars { get; set; }
-	public List<TeklaContourPoint> contour { get; set; } // Use for ToNative to Tekla. Other programs can use Area.outline.
+    public string finish { get; set; }
+    [DetachProperty]
+    public string classNumber { get; set; }
+    [DetachProperty]
+    public TeklaPosition position { get; set; }
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
+    [DetachProperty]
+    public Base rebars { get; set; }
+    public List<TeklaContourPoint> contour { get; set; } // Use for ToNative to Tekla. Other programs can use Area.outline.
 
     public string units { get; set; }
 
+
+    #region Obsolete Members
+    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
+    public Mesh displayMesh
+    {
+      get => displayValue?.FirstOrDefault();
+      set => displayValue = new List<Mesh> { value };
+    }
+    #endregion
+
+
     [SchemaInfo("ContourPlate", "Creates a TeklaStructures contour plate.", "Tekla", "Structure")]
-    public TeklaContourPlate(SectionProfile profile, Polyline outline, string finish, string classNumber, string units, Material material = null ,TeklaPosition position = null , Base rebars = null)
+    public TeklaContourPlate(SectionProfile profile, Polyline outline, string finish, string classNumber, string units, Material material = null, TeklaPosition position = null, Base rebars = null)
     {
       this.profile = profile;
       this.outline = outline;
@@ -39,7 +57,7 @@ namespace Objects.BuiltElements.TeklaStructures
       this.units = units;
     }
 
-  
+
     public TeklaContourPlate() { }
   }
   public class TeklaContourPoint : Point

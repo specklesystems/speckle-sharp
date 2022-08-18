@@ -1,26 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TSDatatype = Tekla.Structures.Datatype;
-using Tekla.Structures.Model;
 using Tekla.Structures.Plugins;
-using Tekla.Structures;
-using Tekla.Structures.Geometry3d;
-using Tekla.Structures.Model.UI;
-using System.Reflection;
 
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-
-using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
-using System.Threading.Tasks;
-using System.IO;
-using Assembly = System.Reflection.Assembly;
-using Speckle.ConnectorTeklaStructures.UI;
 
 namespace Speckle.ConnectorTeklaStructures
 {

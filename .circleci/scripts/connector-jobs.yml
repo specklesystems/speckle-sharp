@@ -3,26 +3,17 @@
 # These jobs will be pulled into the 'config-template.yml' file when needed.
 # The name of each build step will be set using the "slug"
 
-grasshopper:
-  - build-connector:
-      slnname: ConnectorGrasshopper
-      dllname: SpeckleConnectorGrasshopper.gha
-      slug: grasshopper
-  - build-connector-mac:
-      slnname: ConnectorGrasshopper
-      projname: ConnectorGrasshopper
-      installername: SpeckleGhInstall
-      slug: grasshopper-mac
-      converter-files: "
-        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.dll
-        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
-        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
-        "
 rhino:
   - build-connector:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: rhino
+      requires:
+        - build-desktopui
+  - build-connector:
+      slnname: ConnectorRhino
+      dllname: SpeckleConnectorRhino.rhp
+      slug: grasshopper
       requires:
         - build-desktopui
   - build-connector-mac:
@@ -37,6 +28,24 @@ rhino:
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
         Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
+        "
+  - build-connector-mac:
+      slnname: ConnectorRhino
+      projname: ConnectorRhino7
+      build-config: Release Mac
+      installername: SpeckleGhInstall
+      installer: true
+      slug: grasshopper-mac
+      requires:
+        - build-desktopui
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
         "
 dynamo:
   - build-connector:

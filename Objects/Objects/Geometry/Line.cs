@@ -11,7 +11,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
-  public class Line : Base, ICurve, IHasBoundingBox, ITransformable
+  public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   {
     /// <summary>
     /// OBSOLETE - This is just here for backwards compatibility.
@@ -103,16 +103,23 @@ namespace Objects.Geometry
       return line;
     }
 
-    public bool TransformTo(Transform transform, out ITransformable line)
+    public bool TransformTo(Transform transform, out Line transformed)
     {
-      line = new Line
+      transformed = new Line
       {
         start = transform.ApplyToPoint(start),
         end = transform.ApplyToPoint(end),
         applicationId = applicationId,
-        units = units
+        units = units,
+        domain = domain == null ? null : new Interval { start= domain.start, end= domain.end }
       };
-      return true;
+      return true;    }
+
+    public bool TransformTo(Transform transform, out ITransformable transformed)
+    {
+      var res = TransformTo(transform, out Line line);
+      transformed = line;
+      return res;
     }
   }
 }

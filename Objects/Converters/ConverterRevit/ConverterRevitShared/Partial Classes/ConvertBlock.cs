@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
         switch (geometry)
         {
           case Brep brep:
-            var success = brep.TransformTo(transform, out var tbrep);
+            var success = brep.TransformTo(transform, out Brep tbrep);
             if (success)
               breps.Add(tbrep);
             else
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
             }
             break;
           case Mesh mesh:
-            mesh.TransformTo(transform, out var tmesh);
+            mesh.TransformTo(transform, out Mesh tmesh);
             meshes.Add(tmesh);
             break;
           case ICurve curve:

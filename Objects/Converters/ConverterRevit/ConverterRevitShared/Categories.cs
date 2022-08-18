@@ -103,7 +103,6 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_StructuralFoundation,
       BuiltInCategory.OST_StructuralFraming,
       BuiltInCategory.OST_PathRein,
-      BuiltInCategory.OST_Rebar,
       BuiltInCategory.OST_StructuralStiffener,
       BuiltInCategory.OST_StructuralTruss,
       BuiltInCategory.OST_SwitchSystem,
@@ -112,7 +111,32 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_Cornices,
       BuiltInCategory.OST_Walls,
       BuiltInCategory.OST_Windows,
-      BuiltInCategory.OST_Wire
+      BuiltInCategory.OST_Wire,
+      BuiltInCategory.OST_Casework,
+      BuiltInCategory.OST_CurtainWallPanels,
+      BuiltInCategory.OST_CurtainWallMullions,
+      BuiltInCategory.OST_Entourage,
+      BuiltInCategory.OST_Furniture,
+      BuiltInCategory.OST_FurnitureSystems,
+      BuiltInCategory.OST_Planting,
+      BuiltInCategory.OST_PlumbingFixtures,
+      BuiltInCategory.OST_Ramps,
+      BuiltInCategory.OST_SpecialityEquipment,
+      BuiltInCategory.OST_Rebar,
+#if !REVIT2019 && !REVIT2020 && !REVIT2021
+      BuiltInCategory.OST_AudioVisualDevices,
+      BuiltInCategory.OST_FireProtection,
+      BuiltInCategory.OST_FoodServiceEquipment,
+      BuiltInCategory.OST_Hardscape,
+      BuiltInCategory.OST_MedicalEquipment,
+      BuiltInCategory.OST_Signage,
+      BuiltInCategory.OST_TemporaryStructure,
+      BuiltInCategory.OST_VerticalCirculation,
+#endif
+#if !REVIT2019 && !REVIT2020 && !REVIT2021 && !REVIT2022
+       BuiltInCategory.OST_MechanicalControlDevices,
+#endif
+
   };
 
     public static RevitCategory GetSchemaBuilderCategoryFromBuiltIn(string builtInCategory)
