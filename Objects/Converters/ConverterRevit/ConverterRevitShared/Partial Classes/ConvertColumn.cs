@@ -15,7 +15,13 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject ColumnToNative(Column speckleColumn)
     {
+      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
       var appObj = new ApplicationObject(speckleColumn.id, speckleColumn.speckle_type) { applicationId = speckleColumn.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+        return appObj;
+      }
 
       if (speckleColumn.baseLine == null)
       {
@@ -60,13 +66,6 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
-      
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
-        return appObj;
-      }
 
       bool isUpdate = false;
       if (docObj != null)

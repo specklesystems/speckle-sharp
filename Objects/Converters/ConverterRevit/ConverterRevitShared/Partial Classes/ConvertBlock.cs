@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,30 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Group BlockInstanceToNative(BlockInstance instance, Transform transform = null)
+    public ApplicationObject BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
-      // get app object
-      var appObj = Report.GetReportObject(instance.id, out int index) ? Report.ReportObjects[index] : null;
+      //try update existing 
+      var docObj = GetExistingElementByApplicationId(instance.applicationId);
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem:$"ApplicationId already exists in document, new object ignored.");
+        return appObj;
+      }
+
+      var isUpdate = false;
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+      {
+        try
+        {
+          Doc.Delete(docObj.Id);
+          isUpdate = true;
+        }
+        catch
+        {
+          //something went wrong, re-create it
+        }
+      }
 
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
       if (transform != null)
@@ -72,57 +93,55 @@ namespace Objects.Converter.Revit
       }
 
       var ids = new List<ElementId>();
-      int brepCount = 0;
+      int skippedBreps = breps.Count;
       breps.ForEach(o =>
       {
         var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
         {
           ids.Add(ds.Id);
-          brepCount++;
+          skippedBreps--;
         }
       });
-      int skippedBreps = breps.Count - brepCount;
 
-      int meshCount = 0;
+      int skippedMeshes = meshes.Count;
       meshes.ForEach(o =>
       {
         var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
         {
           ids.Add(ds.Id);
-          meshCount++;
+          skippedMeshes--;
         } 
       });
-      int skippedMeshes = meshes.Count - meshCount;
 
-      int curveCount = 0;
+      int skippedCurves = curves.Count;
       curves.ForEach(o =>
       {
         var mc = Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc));
         if (mc != null)
         {
           ids.Add(mc.Id);
-          curveCount++;
+          skippedCurves--;
         }
       });
-      int skippedCurves = curves.Count - curveCount;
 
-      int blockCount = 0;
+      int skippedBlocks = blocks.Count;
       blocks.ForEach(o =>
       {
         var block = BlockInstanceToNative(o, transform);
         if (block != null)
         {
-          ids.Add(block.Id);
-          blockCount++;
+          var nestedBlock = block.Converted.FirstOrDefault() as Group;
+          ids.Add(nestedBlock.Id);
+          skippedBlocks--;
         }
       });
-      int skippedBlocks = blocks.Count - blockCount;
 
       if (!ids.Any())
       {
-        appObj.Update(status: Speckle.Core.Models.ApplicationObject.State.Failed, logItem: $"No geometry could be created");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"No geometry could be created");
+        Report.Log(appObj);
         return null;
       }
 
@@ -133,14 +152,14 @@ namespace Objects.Converter.Revit
         group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
         string skipped = $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
         if (!string.IsNullOrEmpty(skipped)) appObj.Update(logItem: $"Skipped {skipped}");
-        appObj.Update(status: Speckle.Core.Models.ApplicationObject.State.Created, createdId: group.UniqueId, convertedItem: group, logItem: $"Assigned name: {group.GroupType.Name}");
+        var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+        appObj.Update(status: state, createdId: group.UniqueId, convertedItem: group, logItem: $"Assigned name: {group.GroupType.Name}");
       }
       catch
       {
-        appObj.Update(status: Speckle.Core.Models.ApplicationObject.State.Failed, logItem: $"Group could not be created");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Group could not be created");
       }
-      
-      return group;
+      return appObj;
     }
 
     private bool MatrixDecompose(double[] m, out double rotation)
