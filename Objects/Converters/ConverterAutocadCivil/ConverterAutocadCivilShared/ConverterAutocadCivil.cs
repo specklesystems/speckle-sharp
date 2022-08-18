@@ -71,6 +71,7 @@ namespace Objects.Converter.AutocadCivil
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
+
     public void SetConverterSettings(object settings)
     {
       throw new NotImplementedException("This converter does not have any settings.");
@@ -141,6 +142,9 @@ namespace Objects.Converter.AutocadCivil
               break;
             case PolyFaceMesh o:
               @base = MeshToSpeckle(o);
+              break;
+            case ProxyEntity o:
+              @base = ProxyEntityToSpeckle(o);
               break;
             case SubDMesh o:
               @base = MeshToSpeckle(o);
@@ -383,6 +387,7 @@ namespace Objects.Converter.AutocadCivil
             case AcadDB.Polyline3d _:
             case AcadDB.Surface _:
             case AcadDB.PolyFaceMesh _:
+            case AcadDB.ProxyEntity _:
             case AcadDB.Region _:
             case SubDMesh _:
             case Solid3d _:
@@ -448,7 +453,6 @@ namespace Objects.Converter.AutocadCivil
         case Text _:
 
         case Alignment _:
-
         case ModelCurve _:
           return true;
 
