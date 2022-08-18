@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,6 +23,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Core.Models.Extensions;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -509,7 +510,7 @@ namespace ConnectorGrasshopper.Ops
           var msg = exception.Message.Contains("401")
             ? $"You don't have access to this transport , or it doesn't exist."
             : exception.Message;
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {exception.ToFormattedString()}"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source =>
