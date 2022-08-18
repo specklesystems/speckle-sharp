@@ -47,7 +47,7 @@ namespace Objects.Converter.Revit
         DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
         appObj.Update(createdId: revitCurve.UniqueId);
       }
-
+      appObj.Update(status: ApplicationObject.State.Created);
       return appObj;
     }
 
@@ -80,7 +80,7 @@ namespace Objects.Converter.Revit
 
         appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
-
+      appObj.Update(status: ApplicationObject.State.Created);
       return appObj;
     }
 
@@ -110,8 +110,10 @@ namespace Objects.Converter.Revit
       {
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
         if (speckleLine is IDisplayValue<Geometry.Polyline> d)
-          return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(),
-            speckleLine, appObj);
+        {
+          appObj.Update(logItem: $"Curve failed conversion (probably a closed period curve or non-planar nurbs): used polyline display value instead.");
+          return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(), speckleLine, appObj);
+        }
         else
         {
           appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
@@ -134,9 +136,11 @@ namespace Objects.Converter.Revit
         else
           revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
 
-        appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
+        if (revitCurve != null)
+          appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
-
+      if (appObj.CreatedIds.Count > 1) appObj.Update(logItem: $"Created as {appObj.CreatedIds.Count} model curves");
+      appObj.Update(status: ApplicationObject.State.Created);
       return appObj;
     }
 
@@ -186,7 +190,7 @@ namespace Objects.Converter.Revit
 
         appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
-
+      appObj.Update(status: ApplicationObject.State.Created, logItem: $"Created as {appObj.CreatedIds.Count} detail curves");
       return appObj;
     }
 

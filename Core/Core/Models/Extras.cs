@@ -166,8 +166,8 @@ namespace Speckle.Core.Models
       if (status.HasValue) Status = status.Value;
       if (log != null) log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
       if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem)) Log.Add(logItem);
-      if (convertedItem != null) Converted.Add(convertedItem);
-      if (converted != null) converted.Where(o => o != null)?.ToList().ForEach(o => Converted.Add(o));
+      if (convertedItem != null && !Converted.Contains(convertedItem)) Converted.Add(convertedItem);
+      if (converted != null) converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
     }
   }
 
@@ -187,7 +187,7 @@ namespace Speckle.Core.Models
     {
       if (GetReportObject(obj.OriginalId, out int index))
       {
-        ReportObjects[index].Update(createdIds: obj.CreatedIds, log: obj.Log);
+        ReportObjects[index].Update(createdIds: obj.CreatedIds, converted: obj.Converted, log: obj.Log);
         if (obj.Status != ApplicationObject.State.Unknown)
           ReportObjects[index].Update(status: obj.Status);
         return ReportObjects[index];

@@ -159,7 +159,7 @@ namespace Speckle.ConnectorRevit.UI
 
       });
 
-      if (converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
+      if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
         return null; // the commit is being rolled back
 
       return state;
@@ -203,25 +203,26 @@ namespace Speckle.ConnectorRevit.UI
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
 
-          //skip element if is froma  linked file and setting is off
+          //skip element if is from a linked file and setting is off
           if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
             continue;
 
           var convRes = converter.ConvertToNative(@base);
-          if (convRes is ApplicationObject placeholder)
+          switch (convRes)
           {
-            placeholders.Add(placeholder);
-            obj.Update(status: placeholder.Status, createdIds: placeholder.CreatedIds, converted: placeholder.Converted, log: placeholder.Log);
-            progress.Report.Log(obj);
-          }
-          else
-          {
-
+            case ApplicationObject o:
+              placeholders.Add(o);
+              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
+              progress.Report.UpdateReportObject(obj);
+              break;
+            default:
+              break;
           }
         }
         catch (Exception e)
         {
-          progress.Report.LogConversionError(e);
+          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          progress.Report.UpdateReportObject(obj);
         }
       }
 

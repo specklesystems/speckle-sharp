@@ -14,7 +14,13 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject FloorToNative(BuiltElements.Floor speckleFloor)
     {
+      var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
       var appObj = new ApplicationObject(speckleFloor.id, speckleFloor.speckle_type) { applicationId = speckleFloor.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+        return appObj;
+      }
 
       if (speckleFloor.outline == null)
       {
@@ -49,12 +55,7 @@ namespace Objects.Converter.Revit
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element. The closest thing would be:
       // https://adndevbConversionLog.Add.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
       // This would only work if the floors have the same number (and type!!!) of outline curves. 
-      var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
-        return appObj;
-      }
+      
 
       if (docObj != null)
         Doc.Delete(docObj.Id);
