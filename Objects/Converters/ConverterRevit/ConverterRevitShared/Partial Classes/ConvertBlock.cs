@@ -16,6 +16,9 @@ namespace Objects.Converter.Revit
   {
     public Group BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
+      // get app object
+      var appObj = Report.GetReportObject(instance.id, out int index) ? Report.ReportObjects[index] : null;
+
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
       if (transform != null)
         transform *= instance.transform;
@@ -37,8 +40,7 @@ namespace Objects.Converter.Revit
               breps.Add(tbrep);
             else
             {
-              Report.LogConversionError(new SpeckleException(
-                $"Could not convert block {instance.id} brep to native, falling back to mesh representation."));
+              appObj.Update(logItem: $"Could not convert block brep to native, using mesh fallback value instead");
               meshes.AddRange(tbrep.displayValue);
             }
             break;
@@ -60,10 +62,8 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              Report.LogConversionError(
-                new SpeckleException($"Could not convert block {instance.id} curve to native.", e));
+              appObj.Update(logItem: $"Could not convert block curve to native: {e.Message}");
             }
-
             break;
           case BlockInstance blk:
             blocks.Add(blk);
@@ -72,38 +72,74 @@ namespace Objects.Converter.Revit
       }
 
       var ids = new List<ElementId>();
+      int brepCount = 0;
       breps.ForEach(o =>
       {
         var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
+        {
           ids.Add(ds.Id);
+          brepCount++;
+        }
       });
+      int skippedBreps = breps.Count - brepCount;
+
+      int meshCount = 0;
       meshes.ForEach(o =>
       {
         var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
+        {
           ids.Add(ds.Id);
-        ids.Add(ds.Id);
+          meshCount++;
+        } 
       });
+      int skippedMeshes = meshes.Count - meshCount;
+
+      int curveCount = 0;
       curves.ForEach(o =>
       {
         var mc = Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc));
         if (mc != null)
+        {
           ids.Add(mc.Id);
+          curveCount++;
+        }
       });
+      int skippedCurves = curves.Count - curveCount;
+
+      int blockCount = 0;
       blocks.ForEach(o =>
       {
         var block = BlockInstanceToNative(o, transform);
         if (block != null)
+        {
           ids.Add(block.Id);
+          blockCount++;
+        }
       });
+      int skippedBlocks = blocks.Count - blockCount;
 
       if (!ids.Any())
+      {
+        appObj.Update(status: Speckle.Core.Models.ApplicationObject.State.Failed, logItem: $"No geometry could be created");
         return null;
+      }
 
-      var group = Doc.Create.NewGroup(ids);
-      group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
-      Report.Log($"Created Group '{ group.GroupType.Name}' {group.Id}");
+      Group group = null;
+      try
+      {
+        group = Doc.Create.NewGroup(ids);
+        group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
+        string skipped = $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
+        if (!string.IsNullOrEmpty(skipped)) appObj.Update(logItem: $"Skipped {skipped}");
+        appObj.Update(status: Speckle.Core.Models.ApplicationObject.State.Created, createdId: group.UniqueId, convertedItem: group, logItem: $"Assigned name: {group.GroupType.Name}");
+      }
+      catch
+      {
+        appObj.Update(status: Speckle.Core.Models.ApplicationObject.State.Failed, logItem: $"Group could not be created");
+      }
+      
       return group;
     }
 

@@ -594,7 +594,7 @@ namespace Objects.Converter.Revit
       return speckleMesh;
     }
 
-    // Insipred by
+    // Inspired by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
     public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage, RenderMaterial parentMaterial = null)
     {
