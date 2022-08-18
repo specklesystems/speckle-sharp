@@ -1,4 +1,5 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using Speckle.Core.Models.Extensions;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -275,7 +276,7 @@ namespace Speckle.Core.Models
       get
       {
         lock (OperationErrorsLock)
-          return string.Join("\n", OperationErrors.Select(x => x.Message).Distinct());
+          return string.Join("\n", OperationErrors.Select(x => x.ToFormattedString()).Distinct());
       }
     }
 
