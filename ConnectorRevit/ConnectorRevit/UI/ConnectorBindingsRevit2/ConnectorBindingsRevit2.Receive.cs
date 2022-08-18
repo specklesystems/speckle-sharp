@@ -215,14 +215,6 @@ namespace Speckle.ConnectorRevit.UI
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);
               break;
-            case Group o:
-              var convAppObj = converter.Report.GetReportObject(obj.OriginalId, out int convIndex) ? converter.Report.ReportObjects[convIndex] : null;
-              if (convAppObj != null)
-              {
-                obj.Update(status: convAppObj.Status, createdIds: convAppObj.CreatedIds, converted: convAppObj.Converted,log: convAppObj.Log);
-                progress.Report.UpdateReportObject(obj);
-              }
-              break;
             default:
               break;
           }
