@@ -2,10 +2,10 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -15,7 +15,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -129,6 +128,8 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
       }
 
+      var watch = new Stopwatch();
+      watch.Start();
 
       await RevitTask.RunAsync(app =>
       {
@@ -158,6 +159,9 @@ namespace Speckle.ConnectorRevit.UI
         }
 
       });
+
+      watch.Stop();
+      Console.WriteLine($"Time elapsed {watch.Elapsed.TotalSeconds} seconds");
 
       if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
         return null; // the commit is being rolled back
@@ -201,13 +205,30 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           conversionProgressDict["Conversion"]++;
-          progress.Update(conversionProgressDict);
+          System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() =>
+          {
+            progress.Update(conversionProgressDict);
+          }, System.Windows.Threading.DispatcherPriority.Background);
 
           //skip element if is from a linked file and setting is off
           if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
             continue;
 
           var convRes = converter.ConvertToNative(@base);
+
+          //these two lines work to regenerate the current view when not run in a dockable panel
+          CurrentDoc.Document.Regenerate();
+
+          // get the active ui view
+          var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+          var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+
+          //So as not to bother the user by changing the zoom
+          var zc = uiView.GetZoomCorners().ToList();
+
+          // "refresh" the active view
+          uiView.ZoomAndCenterRectangle(zc.ElementAt(0), zc.ElementAt(1));
+
           switch (convRes)
           {
             case ApplicationObject o:

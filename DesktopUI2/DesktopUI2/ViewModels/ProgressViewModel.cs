@@ -107,8 +107,11 @@ namespace DesktopUI2.ViewModels
 
     public void Update(ConcurrentDictionary<string, int> pd)
     {
-      ProgressDict = pd;
-      Value = pd.Values.Last();
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        ProgressDict = pd;
+        Value = pd.Values.Last();
+      });
     }
 
     public void GetHelpCommand()
