@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
@@ -128,9 +127,6 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
       }
 
-      var watch = new Stopwatch();
-      watch.Start();
-
       await RevitTask.RunAsync(app =>
       {
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
@@ -159,9 +155,6 @@ namespace Speckle.ConnectorRevit.UI
         }
 
       });
-
-      watch.Stop();
-      Console.WriteLine($"Time elapsed {watch.Elapsed.TotalSeconds} seconds");
 
       if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
         return null; // the commit is being rolled back
