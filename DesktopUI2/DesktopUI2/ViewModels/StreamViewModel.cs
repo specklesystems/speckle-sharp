@@ -6,7 +6,6 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels.Share;
 using DesktopUI2.Views.Pages;
-using DesktopUI2.Views.Windows;
 using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -375,7 +374,7 @@ namespace DesktopUI2.ViewModels
         //receiver
         else
         {
-          if (SelectedCommit != null)
+          if (SelectedCommit != null && SelectedCommit.id != "latest")
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
           if (SelectedBranch != null)
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.name}";
