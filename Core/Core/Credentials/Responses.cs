@@ -1,4 +1,6 @@
-﻿namespace Speckle.Core.Credentials
+﻿using Speckle.Core.Api;
+
+namespace Speckle.Core.Credentials
 {
 
   public class UserServerInfoResponse
@@ -21,18 +23,6 @@
 
     public Streams streams { get; set; }
     public Commits commits { get; set; }
-  }
-
-  public class ServerInfoResponse
-  {
-    public ServerInfo serverInfo { get; set; }
-  }
-
-  public class ServerInfo
-  {
-    public string name { get; set; }
-    public string company { get; set; }
-    public string url { get; set; }
   }
 
   public class TokenExchangeResponse
