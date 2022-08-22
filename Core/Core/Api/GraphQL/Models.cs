@@ -41,13 +41,6 @@ namespace Speckle.Core.Api
     public string message { get; set; }
   }
 
-  public class StreamInviteUseInput
-  {
-    public bool accept { get; set; } = true;
-    public string streamId { get; set; }
-    public string token { get; set; }
-  }
-
   public class BranchCreateInput
   {
     public string streamId { get; set; }

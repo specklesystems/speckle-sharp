@@ -761,16 +761,18 @@ namespace Speckle.Core.Api
         throw new SpeckleException("Stream invites are only supported as of Speckle Server v2.6.4.");
       return true;
     }
-
+    
     /// <summary>
     /// Accept or decline a stream invite.
     /// Requires Speckle Server version >= 2.6 .4
     /// </summary>
-    /// <param name="inviteUseInput">whether to accept (bool), the stream id, and the invite token</param>
+    /// <param name="streamId"></param>
+    /// <param name="token"></param>
+    /// <param name="accept"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="SpeckleException"></exception>
-    public async Task<bool> StreamInviteUse(StreamInviteUseInput inviteUseInput,
+    public async Task<bool> StreamInviteUse(string streamId, string token, bool accept = true,
       CancellationToken cancellationToken = default)
     {
       await _CheckStreamInvitesSupported(cancellationToken);
@@ -780,17 +782,17 @@ namespace Speckle.Core.Api
         {
           Query =
             @"
-            mutation streamInviteUse($input: StreamInviteCreateInput!) {
-              streamInviteUse(input: $input)
+            mutation streamInviteUse( $accept: Boolean!, $streamId: String!, $token: String! ) {
+              streamInviteUse(accept: $accept, streamId: $streamId, token: $token)
             }",
-          Variables = new { input = inviteUseInput }
+          Variables = new {streamId, token, accept}
         };
 
         var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request).ConfigureAwait(false);
 
         if ( res.Errors != null )
           throw new SpeckleException(
-            $"Could not {( inviteUseInput.accept ? "accept" : "decline" )} the invite for stream {inviteUseInput.streamId}",
+            $"Could not {( accept ? "accept" : "decline" )} the invite for stream {streamId}",
             res.Errors);
 
         return ( bool )res.Data[ "streamInviteUse" ];

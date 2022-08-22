@@ -155,10 +155,7 @@ namespace TestsIntegration
     {
       var invites = await secondClient.GetAllPendingInvites();
 
-      var res = await secondClient.StreamInviteUse(new StreamInviteUseInput
-      {
-        accept = true, streamId = invites[ 0 ].streamId, token = invites[ 0 ].token
-      });
+      var res = await secondClient.StreamInviteUse(invites[ 0 ].streamId, invites[ 0 ].token);
 
       Assert.IsTrue(res);
     }
