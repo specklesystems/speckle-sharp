@@ -16,6 +16,8 @@ namespace Speckle.Core.Api
     public string ServerUrl { get => Account.serverInfo.url; }
 
     public string ApiToken { get => Account.token; }
+    
+    public Version ServerVersion { get; set; }
 
     [JsonIgnore]
     public Account Account { get; set; }
