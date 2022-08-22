@@ -143,22 +143,27 @@ namespace TestsIntegration
     }
     
     [Test, Order(32)]
-    public async Task StreamInviteGetAndUse()
+    public async Task StreamInviteGet()
     {
       var invites = await secondClient.GetAllPendingInvites();
       
       Assert.NotNull(invites);
+    }
+
+    [Test, Order(33)]
+    public async Task StreamInviteUse()
+    {
+      var invites = await secondClient.GetAllPendingInvites();
 
       var res = await secondClient.StreamInviteUse(new StreamInviteUseInput
       {
         accept = true, streamId = invites[ 0 ].streamId, token = invites[ 0 ].token
       });
-      
+
       Assert.IsTrue(res);
     }
-
-
-    [Test, Order(32)]
+    
+    [Test, Order(34)]
     public async Task StreamUpdatePermission()
     {
       var res = await myClient.StreamUpdatePermission(new StreamPermissionInput
