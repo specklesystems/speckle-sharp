@@ -165,7 +165,7 @@ namespace TestsIntegration
     {
       var res = await myClient.StreamUpdatePermission(new StreamPermissionInput
       {
-        role = "stream:reviewer", streamId = streamId, userId = secondUserAccount.id
+        role = "stream:reviewer", streamId = streamId, userId = secondUserAccount.userInfo.id
       });
       
       Assert.IsTrue(res);
