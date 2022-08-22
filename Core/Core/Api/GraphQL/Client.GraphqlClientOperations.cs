@@ -810,7 +810,7 @@ namespace Speckle.Core.Api
         {
           Query =
             @"
-            mutation StreamInvites {
+            query StreamInvites {
               streamInvites{
                 id
                 token
