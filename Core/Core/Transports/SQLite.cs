@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Speckle.Core.Logging;
+using Speckle.Core.Api;
 
 namespace Speckle.Core.Transports
 {
@@ -45,10 +45,8 @@ namespace Speckle.Core.Transports
 
     public SQLiteTransport(string basePath = null, string applicationName = "Speckle", string scope = "Data")
     {
-      Log.AddBreadcrumb("New SqlLite Transport");
-
       if (basePath == null)
-        basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        basePath = Helpers.UserApplicationDataPath;
       _BasePath = basePath;
 
       if (applicationName == null)

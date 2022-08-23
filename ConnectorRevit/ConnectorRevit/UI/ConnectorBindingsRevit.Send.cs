@@ -18,8 +18,6 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
-
-
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
     /// the Server and the local DB, and creates a commit with the objects.
@@ -50,14 +48,13 @@ namespace Speckle.ConnectorRevit.UI
         selectedObjects = state.SelectedObjectIds.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
       }
 
-
       if (!selectedObjects.Any())
       {
         state.Errors.Add(new Exception("There are zero objects to send. Please use a filter, or set some via selection."));
         return state;
       }
 
-      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.UniqueId }).ToList());
+      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
 
       var commitObject = new Base();
 
@@ -72,9 +69,7 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           if (revitElement == null)
-          {
             continue;
-          }
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
@@ -87,7 +82,7 @@ namespace Speckle.ConnectorRevit.UI
           conversionProgressDict["Conversion"]++;
           UpdateProgress(conversionProgressDict, state.Progress);
 
-          placeholders.Add(new ApplicationPlaceholderObject { applicationId = revitElement.UniqueId, ApplicationGeneratedId = revitElement.UniqueId });
+          placeholders.Add(new ApplicationObject(revitElement.UniqueId, revitElement.GetType().ToString()) { applicationId = revitElement.UniqueId });
 
           convertedCount++;
 
@@ -97,18 +92,15 @@ namespace Speckle.ConnectorRevit.UI
           {
             var category = $"@{revitElement.Category.Name}";
             if (commitObject[category] == null)
-            {
               commitObject[category] = new List<Base>();
-            }
-             ((List<Base>)commitObject[category]).Add(conversionResult);
-          }
 
+            ((List<Base>)commitObject[category]).Add(conversionResult);
+          }
         }
         catch (Exception e)
         {
           state.Errors.Add(e);
         }
-
       }
 
       if (converter.Report.ConversionErrorsCount != 0)
@@ -127,9 +119,7 @@ namespace Speckle.ConnectorRevit.UI
       Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return state;
-      }
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
@@ -155,9 +145,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       if (state.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       var actualCommit = new CommitCreateInput()
       {

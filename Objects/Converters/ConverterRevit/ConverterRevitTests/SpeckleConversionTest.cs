@@ -56,7 +56,7 @@ namespace ConverterRevitTests
     {
       Document doc = null;
       IList<Element> elements = null;
-      List<ApplicationPlaceholderObject> appPlaceholders = null;
+      List<ApplicationObject> appPlaceholders = null;
 
       if (ud == null)
       {
@@ -74,7 +74,7 @@ namespace ConverterRevitTests
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(doc);
       //setting context objects for nested routine
-      converter.SetContextObjects(elements.Select(obj => new ApplicationPlaceholderObject { applicationId = obj.UniqueId }).ToList());
+      converter.SetContextObjects(elements.Select(obj => new ApplicationObject (obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId }).ToList());
       var spkElems = elements.Select(x => converter.ConvertToSpeckle(x)).Where(x => x != null).ToList();
 
       converter = new ConverterRevit();
@@ -83,7 +83,7 @@ namespace ConverterRevitTests
       if (appPlaceholders != null)
         converter.SetPreviousContextObjects(appPlaceholders);
 
-      converter.SetContextObjects(spkElems.Select(x => new ApplicationPlaceholderObject { applicationId = x.applicationId, NativeObject = x }).ToList());
+      converter.SetContextObjects(spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId}).ToList());
 
 
       var resEls = new List<object>();
@@ -104,7 +104,7 @@ namespace ConverterRevitTests
             converter.Report.LogConversionError(new Exception(e.Message, e));
           }
 
-          if (res is List<ApplicationPlaceholderObject> apls)
+          if (res is List<ApplicationObject> apls)
           {
             resEls.AddRange(apls);
             flatSpkElems.Add(el);
@@ -124,7 +124,7 @@ namespace ConverterRevitTests
       for (var i = 0; i < spkElems.Count; i++)
       {
         var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
-        var destElement = (T)((ApplicationPlaceholderObject)resEls[i]).NativeObject;
+        var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
         assert(sourceElem, destElement);
       }
 
@@ -142,7 +142,7 @@ namespace ConverterRevitTests
 
       SpeckleToNative(assert, new UpdateData
       {
-        AppPlaceholders = result.Cast<ApplicationPlaceholderObject>().ToList(),
+        AppPlaceholders = result.Cast<ApplicationObject>().ToList(),
         Doc = fixture.UpdatedDoc,
         Elements = fixture.UpdatedRevitElements
       });
@@ -161,16 +161,14 @@ namespace ConverterRevitTests
 
       xru.RunInTransaction(() =>
       {
-
         //revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
         foreach (var el in spkElems)
         {
           var res = converter.ConvertToNative(el);
-          if (res is List<ApplicationPlaceholderObject> apls)
-          {
+          if (res is List<ApplicationObject> apls)
             resEls.AddRange(apls);
-          }
-          else resEls.Add(el);
+          else 
+            resEls.Add(el);
         }
       }, fixture.NewDoc).Wait();
 
@@ -179,7 +177,7 @@ namespace ConverterRevitTests
       for (var i = 0; i < revitEls.Count; i++)
       {
         var sourceElem = (T)(object)fixture.RevitElements[i];
-        var destElement = (T)((ApplicationPlaceholderObject)resEls[i]).NativeObject;
+        var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
 
         assert(sourceElem, (T)destElement);
       }
@@ -265,7 +263,7 @@ namespace ConverterRevitTests
   {
     public Document Doc { get; set; }
     public IList<Element> Elements { get; set; }
-    public List<ApplicationPlaceholderObject> AppPlaceholders { get; set; }
+    public List<ApplicationObject> AppPlaceholders { get; set; }
 
   }
 }

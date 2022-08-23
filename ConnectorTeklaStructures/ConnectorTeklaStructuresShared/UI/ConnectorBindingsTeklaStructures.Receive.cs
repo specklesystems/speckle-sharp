@@ -77,7 +77,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
                   progress.Report.LogOperationError(e);
                   progress.CancellationTokenSource.Cancel();
                 }),
-                //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+               onTotalChildrenCountKnown: count => { progress.Max = count; },
                 disposeTransports: true
                 );
 
@@ -113,7 +113,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
+      conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
       Action updateProgressAction = () =>

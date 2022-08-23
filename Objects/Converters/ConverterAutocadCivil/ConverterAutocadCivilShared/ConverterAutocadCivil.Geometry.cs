@@ -721,7 +721,6 @@ namespace Objects.Converter.AutocadCivil
       }
       catch (Exception e)
       {
-        Report.ConversionLog.Add("Could not join Polycurve segments: segments converted individually.");
         return null;
       }
     }
@@ -1012,7 +1011,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _surface;
     }
-    public Mesh SurfaceToSpeckle(AcadDB.Surface surface, string units = null)
+    public Mesh SurfaceToSpeckle(AcadDB.Surface surface, out List<string> notes, string units = null)
     {
       var u = units ?? ModelUnits;
 
@@ -1021,7 +1020,7 @@ namespace Objects.Converter.AutocadCivil
         case AcadDB.PlaneSurface _:
         case AcadDB.NurbSurface _:
         default: // return mesh for now
-          var displayMesh = GetMeshFromSolidOrSurface(surface: surface);
+          var displayMesh = GetMeshFromSolidOrSurface(out notes, surface: surface);
           return displayMesh;
       }
     }
@@ -1093,9 +1092,9 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Region
-    public Mesh RegionToSpeckle(Region region, string units = null)
+    public Mesh RegionToSpeckle(Region region, out List<string> notes, string units = null)
     {
-      return GetMeshFromSolidOrSurface(region: region);
+      return GetMeshFromSolidOrSurface(out notes, region: region);
     }
 
     // Box
@@ -1213,9 +1212,9 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Brep
-    public Mesh SolidToSpeckle(Solid3d solid, string units = null)
+    public Mesh SolidToSpeckle(Solid3d solid, out List<string> notes, string units = null)
     {
-      return GetMeshFromSolidOrSurface(solid: solid);
+      return GetMeshFromSolidOrSurface(out notes, solid: solid);
 
       /* Not in use currently: needs development on trims
       // make brep
@@ -1389,14 +1388,15 @@ namespace Objects.Converter.AutocadCivil
               var indices = new List<int>();
               for (short i = 0; i < 4; i++)
               {
-                short index = o.GetVertexAt(i);
-                if (index != 0)
-                  indices.Add(index);
+                short index = o.GetVertexAt(i); 
+                if (index == 0) continue;
+                var adjustedIndex = index > 0 ? index - 1 : Math.Abs(index) - 1; // vertices are 1 indexed, and can be negative (hidden)
+                indices.Add(adjustedIndex);
               }
-              if (indices.Count == 4) // vertex index starts at 1 sigh
-                faces.AddRange(new List<int> { 1, indices[0] - 1, indices[1] - 1, indices[2] - 1, indices[3] - 1 });
+              if (indices.Count == 4)
+                faces.AddRange(new List<int> { 1, indices[0], indices[1], indices[2], indices[3] });
               else
-                faces.AddRange(new List<int> { 0, indices[0] - 1, indices[1] - 1, indices[2] - 1 });
+                faces.AddRange(new List<int> { 0, indices[0], indices[1], indices[2] });
               break;
           }
         }
@@ -1505,7 +1505,6 @@ namespace Objects.Converter.AutocadCivil
             _mesh.AppendFaceRecord(face);
             tr.AddNewlyCreatedDBObject(face, true);
           }
-          
         }
 
         tr.Commit();
@@ -1514,11 +1513,12 @@ namespace Objects.Converter.AutocadCivil
       return _mesh;
     }
     // Based on Kean Walmsley's blog post on mesh conversion using Brep API
-    private Mesh GetMeshFromSolidOrSurface(Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
+    private Mesh GetMeshFromSolidOrSurface(out List<string> notes, Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
     {
       Mesh mesh = null;
       double volume = 0;
       double area = 0;
+      notes = new List<string>();
 
       AcadBRep.Brep brep = null;
       Box bbox = null;
@@ -1600,7 +1600,7 @@ namespace Objects.Converter.AutocadCivil
         }
         catch(Exception e)
         {
-          Report.LogConversionError(e);
+          notes.Add(e.Message);
         }
       }
 

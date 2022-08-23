@@ -342,7 +342,7 @@ namespace ConnectorGrasshopper
         Tracker.TrackNodeRun("Create Schema Object", Name);
 
 
-      var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
+      var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
 
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();

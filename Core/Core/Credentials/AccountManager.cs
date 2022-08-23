@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
+using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
@@ -129,12 +130,8 @@ namespace Speckle.Core.Credentials
     public static string GetDefaultServerUrl()
     {
       var defaultServerUrl = "https://speckle.xyz";
-      var local = Environment.SpecialFolder.ApplicationData;
-      var system = Environment.SpecialFolder.CommonApplicationData;
 
-      var folder = Assembly.GetAssembly(typeof(AccountManager)).Location.Contains("ProgramData") ? system : local;
-
-      var customServerFile = Path.Combine(Environment.GetFolderPath(folder), "Speckle", "server");
+      var customServerFile = Path.Combine(Helpers.UserSpeckleFolderPath, "server");
       if (File.Exists(customServerFile))
       {
         var customUrl = File.ReadAllText(customServerFile);
@@ -199,7 +196,7 @@ namespace Speckle.Core.Credentials
     private static IEnumerable<Account> GetLocalAccounts()
     {
       var accounts = new List<Account>();
-      var accountsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts");
+      var accountsDir = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts");
       if (!Directory.Exists(accountsDir))
       {
         return accounts;
@@ -260,6 +257,34 @@ namespace Speckle.Core.Credentials
     {
       //TODO: reset default account
       AccountStorage.DeleteObject(id);
+
+      var accounts = GetAccounts();
+
+      if (accounts.Any() && !accounts.Any(x => x.isDefault))
+      {
+        ChangeDefaultAccount(accounts.First().id);
+      }
+    }
+
+    /// <summary>
+    /// Changes the default account
+    /// </summary>
+    /// <param name="id"></param>
+    public static void ChangeDefaultAccount(string id)
+    {
+      foreach (var account in GetAccounts())
+      {
+        if (account.id != id)
+        {
+          account.isDefault = false;
+        }
+        else
+        {
+          account.isDefault = true;
+        }
+
+        AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+      }
     }
 
 

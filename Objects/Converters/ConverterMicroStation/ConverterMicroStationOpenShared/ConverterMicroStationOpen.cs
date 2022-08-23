@@ -74,9 +74,9 @@ namespace Objects.Converter.MicroStationOpen
     public GeometricModel GeomModel { get; private set; }
 #endif
     public double UoR { get; private set; }
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => throw new NotImplementedException();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
     public void SetConverterSettings(object settings)
     {
       throw new NotImplementedException("This converter does not have any settings.");

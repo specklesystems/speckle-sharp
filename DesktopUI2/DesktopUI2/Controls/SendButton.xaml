@@ -46,6 +46,7 @@
         Classes="Circle"
         IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
+        IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
         Maximum="{Binding Progress.Max}"
         Value="{Binding Progress.Value}" />
       <m:FloatingButton
@@ -55,6 +56,7 @@
         Classes="Mini"
         Command="{Binding CancelSendOrReceiveCommand}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
+        IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
         ToolTip.Tip="Cancel">
         <Button.Content>
           <icons:MaterialIcon

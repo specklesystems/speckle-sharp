@@ -6,6 +6,7 @@ using System.Text;
 using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
+using Speckle.Core.Api;
 
 namespace SpeckleRhino
 {
@@ -20,23 +21,33 @@ namespace SpeckleRhino
     public ConnectorBindingsRhino Bindings { get; private set; }
     public MainViewModel ViewModel { get; private set; }
 
+    private bool _initialized;
+
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
-#if !DEBUG
-      Init();
-#endif
     }
 
     internal void Init()
     {
+      try
+      {
+        if (_initialized)
+          return;
 
-      SpeckleCommand.InitAvalonia();
-      Bindings = new ConnectorBindingsRhino();
-      ViewModel = new MainViewModel(Bindings);
+        SpeckleCommand.InitAvalonia();
+        Bindings = new ConnectorBindingsRhino();
+        ViewModel = new MainViewModel(Bindings);
 
-      RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
-      RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+        RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
+        RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+
+        _initialized = true;
+      }
+      catch (Exception ex)
+      {
+
+      }
 
     }
 
@@ -84,6 +95,8 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
+      Init();
+
 #if !MAC
       System.Type panelType = typeof(Panel);
       // Register my custom panel class type with Rhino, the custom panel my be display
@@ -103,7 +116,7 @@ namespace SpeckleRhino
         {
           // Build a path to the user's staged RUI file.
           var sb = new StringBuilder();
-          sb.Append(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+          sb.Append(Helpers.InstallApplicationDataPath);
 #if RHINO6
           sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7

@@ -42,7 +42,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Brep);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Brep });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Wall.ToString(), doc, false);
@@ -56,7 +56,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Brep);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Brep });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Floor.ToString(), doc, false);
@@ -70,7 +70,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Curve);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Curve });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Column.ToString(), doc, false);
@@ -84,7 +84,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Curve);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Curve });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Beam.ToString(), doc, false);
@@ -98,7 +98,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Curve);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Curve });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Pipe.ToString(), doc, false);
@@ -112,7 +112,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Curve);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Curve });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Duct.ToString(), doc, false);
@@ -126,7 +126,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Brep);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Brep });
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.FaceWall.ToString(), doc, false);
@@ -140,7 +140,7 @@ namespace SpeckleRhino
 
       protected override Result RunCommand(RhinoDoc doc, RunMode mode)
       {
-        var selectedObjects = GetObjectSelection(ObjectType.Mesh);
+        var selectedObjects = GetObjectSelection(new List<ObjectType> { ObjectType.Mesh , ObjectType.Brep, ObjectType.SubD});
         if (selectedObjects == null)
           return Result.Cancel;
         ApplySchema(selectedObjects, SchemaObjectFilter.SupportedSchema.Topography.ToString(), doc, false);
@@ -399,8 +399,9 @@ namespace SpeckleRhino
     }
 
     #region helper methods
-    private static List<RhinoObject> GetObjectSelection(ObjectType filter = ObjectType.AnyObject)
+    private static List<RhinoObject> GetObjectSelection(List<ObjectType> filter = null)
     {
+      filter = filter ?? new List<ObjectType> { ObjectType.AnyObject };
       // Construct an objects getter
       var getObj = new GetObject();
       getObj.SetCommandPrompt("Select geometry");
@@ -409,7 +410,7 @@ namespace SpeckleRhino
       getObj.EnableClearObjectsOnEntry(false);
       getObj.EnableUnselectObjectsOnExit(false);
       getObj.DeselectAllBeforePostSelect = false;
-      getObj.GeometryFilter = filter;
+      getObj.GeometryFilter = filter.Aggregate((a,b) => a | b);
 
       // Get objects
       for (; ; )
