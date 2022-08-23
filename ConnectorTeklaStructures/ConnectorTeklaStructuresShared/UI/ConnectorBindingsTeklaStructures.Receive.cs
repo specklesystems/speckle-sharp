@@ -183,6 +183,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
     {
       List<Base> objects = new List<Base>();
 
+
       if (obj is Base @base)
       {
         if (converter.CanConvertToNative(@base))
