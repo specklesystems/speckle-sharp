@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Geometry;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,31 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Group BlockInstanceToNative(BlockInstance instance, Transform transform = null)
+    public ApplicationObject BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
+      //try update existing 
+      var docObj = GetExistingElementByApplicationId(instance.applicationId);
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem:$"ApplicationId already exists in document, new object ignored.");
+        return appObj;
+      }
+
+      var isUpdate = false;
+      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+      {
+        try
+        {
+          Doc.Delete(docObj.Id);
+          isUpdate = true;
+        }
+        catch
+        {
+          //something went wrong, re-create it
+        }
+      }
+
       // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
       if (transform != null)
         transform *= instance.transform;
@@ -37,8 +61,7 @@ namespace Objects.Converter.Revit
               breps.Add(tbrep);
             else
             {
-              Report.LogConversionError(new SpeckleException(
-                $"Could not convert block {instance.id} brep to native, falling back to mesh representation."));
+              appObj.Update(logItem: $"Could not convert block brep to native, using mesh fallback value instead");
               meshes.AddRange(tbrep.displayValue);
             }
             break;
@@ -60,10 +83,8 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              Report.LogConversionError(
-                new SpeckleException($"Could not convert block {instance.id} curve to native.", e));
+              appObj.Update(logItem: $"Could not convert block curve to native: {e.Message}");
             }
-
             break;
           case BlockInstance blk:
             blocks.Add(blk);
@@ -72,39 +93,73 @@ namespace Objects.Converter.Revit
       }
 
       var ids = new List<ElementId>();
+      int skippedBreps = breps.Count;
       breps.ForEach(o =>
       {
         var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
+        {
           ids.Add(ds.Id);
+          skippedBreps--;
+        }
       });
+
+      int skippedMeshes = meshes.Count;
       meshes.ForEach(o =>
       {
         var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
+        {
           ids.Add(ds.Id);
-        ids.Add(ds.Id);
+          skippedMeshes--;
+        } 
       });
+
+      int skippedCurves = curves.Count;
       curves.ForEach(o =>
       {
         var mc = Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc));
         if (mc != null)
+        {
           ids.Add(mc.Id);
+          skippedCurves--;
+        }
       });
+
+      int skippedBlocks = blocks.Count;
       blocks.ForEach(o =>
       {
         var block = BlockInstanceToNative(o, transform);
         if (block != null)
-          ids.Add(block.Id);
+        {
+          var nestedBlock = block.Converted.FirstOrDefault() as Group;
+          ids.Add(nestedBlock.Id);
+          skippedBlocks--;
+        }
       });
 
       if (!ids.Any())
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"No geometry could be created");
+        Report.Log(appObj);
         return null;
+      }
 
-      var group = Doc.Create.NewGroup(ids);
-      group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
-      Report.Log($"Created Group '{ group.GroupType.Name}' {group.Id}");
-      return group;
+      Group group = null;
+      try
+      {
+        group = Doc.Create.NewGroup(ids);
+        group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
+        string skipped = $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
+        if (!string.IsNullOrEmpty(skipped)) appObj.Update(logItem: $"Skipped {skipped}");
+        var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+        appObj.Update(status: state, createdId: group.UniqueId, convertedItem: group, logItem: $"Assigned name: {group.GroupType.Name}");
+      }
+      catch
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Group could not be created");
+      }
+      return appObj;
     }
 
     private bool MatrixDecompose(double[] m, out double rotation)

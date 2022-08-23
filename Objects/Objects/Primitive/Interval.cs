@@ -24,6 +24,6 @@ namespace Objects.Primitive
       return base.ToString() + $"[{this.start}, {this.end}]";
     }
 
-    [JsonIgnore] public double Length => Math.Abs(end ?? 0 - start ?? 0);
+    [JsonIgnore] public double Length => Math.Abs((end ?? 0) - (start ?? 0));
   }
 }

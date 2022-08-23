@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
       if (revitGrid != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitGrid.UniqueId, convertedItem: revitGrid);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitGrid.UniqueId, convertedItem: revitGrid, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 

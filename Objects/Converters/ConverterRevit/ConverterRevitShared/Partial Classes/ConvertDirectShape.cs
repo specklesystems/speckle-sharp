@@ -60,7 +60,7 @@ namespace Objects.Converter.Revit
       if (existing != null)
       {
         appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: existing.CreatedIds.FirstOrDefault(), convertedItem: existing.Converted.FirstOrDefault(), logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 

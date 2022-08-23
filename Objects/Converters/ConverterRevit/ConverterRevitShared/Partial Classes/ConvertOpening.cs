@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleOpening.id, speckleOpening.speckle_type) { applicationId = speckleOpening.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 

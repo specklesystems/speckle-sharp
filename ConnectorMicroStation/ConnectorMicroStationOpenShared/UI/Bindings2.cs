@@ -13,6 +13,7 @@ using Speckle.Core.Transports;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 
@@ -187,6 +188,12 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
       // TODO!
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
     #endregion
 

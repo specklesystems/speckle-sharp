@@ -5,13 +5,14 @@ using System.Text;
 using Newtonsoft.Json;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
+using Speckle.Core.Api;
 
 namespace TestsUnit
 {
   public class Fixtures
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
-    private static string accountPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts", "TestAccount.json");
+    private static string accountPath = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts", "TestAccount.json");
 
 
     public static void UpdateOrSaveAccount(Account account)

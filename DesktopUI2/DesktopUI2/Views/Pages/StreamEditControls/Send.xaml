@@ -28,7 +28,6 @@
           <TextBlock FontWeight="Bold" Text="{Binding SelectedFilter.Summary, FallbackValue=?}" />
           <TextBlock Text=" to " />
           <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.name, FallbackValue=?}" />
-
         </StackPanel>
       </Expander.Header>
 
