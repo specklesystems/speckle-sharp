@@ -75,10 +75,6 @@
       <Name>DesktopUI</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\ConverterRevit\ConverterRevit2023\ConverterRevit2023.csproj">
-      <Project>{c74e4c61-ca68-47f9-825e-91b7a5c4546d}</Project>
-      <Name>ConverterRevit2023</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
