@@ -8,7 +8,7 @@
 <#
 	var buildPath = $@".\bin\Debug";
 	var files = Directory.EnumerateFiles(buildPath, "*.dll");
-	var CiPath = $@"C:/Users/circleci/project/ConnectorTeklaStructures/ConnectorTeklaStructures2021/";
+	var CiPath = $@"C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\";
 	var enumerateDirectories = Directory.EnumerateDirectories(buildPath);
 	var emptyFiles =  new List<string>() {};
 	foreach (var dir in enumerateDirectories)
