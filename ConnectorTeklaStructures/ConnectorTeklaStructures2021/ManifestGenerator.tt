@@ -7,6 +7,8 @@
 <#@ import namespace="System.IO" #>
 <#
 	var buildPath = $@".\bin\Release";
+
+	var CiPath2 = $@"C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release";
 	var files = Directory.EnumerateFiles(buildPath, "*.dll");
 	var CiPath = $@"C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\";
 	var enumerateDirectories = Directory.EnumerateDirectories(buildPath);
@@ -60,7 +62,7 @@
 #>
 <#foreach (var path in emptyFiles){
 #>
-		<File Id="<#=  path.Replace(buildPath, "")  #>" Source="<#= CiPath + Path.GetFileName(path) #>" Target= "<#= "%BinariesTargetDirectory%\\"  + path.Replace(buildPath, "").Split('\\' )[1] #>"/>
+		<File Id="<#=  path.Replace(buildPath, "")  #>" Source="<#= CiPath2 + path.Replace(buildPath, "") #>" Target= "<#= "%BinariesTargetDirectory%\\"  + path.Replace(buildPath, "").Split('\\' )[1] #>"/>
 <#
    }
 #>
