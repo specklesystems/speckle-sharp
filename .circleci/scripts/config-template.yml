@@ -61,7 +61,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - checkout
       - run:
           name: Unit Test
-          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          command: dotnet test Core/Tests/TestsUnit.csproj -c Release --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
