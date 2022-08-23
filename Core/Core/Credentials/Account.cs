@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -46,6 +47,19 @@ namespace Speckle.Core.Credentials
 
     #region public methods
 
+    public string GetHashedEmail()
+    {
+
+      string email = userInfo?.email ?? "unknown";
+      return "@" + Hash(email);
+    }
+
+    public string GetHashedServer()
+    {
+      string url = serverInfo?.url ?? "https://speckle.xyz/";
+      return Hash(CleanURL(url));
+    }
+
     public async Task<UserInfo> Validate()
     {
       using var httpClient = new HttpClient();
@@ -75,6 +89,38 @@ namespace Speckle.Core.Credentials
     public override string ToString()
     {
       return $"Account ({userInfo.email} | {serverInfo.url})";
+    }
+
+    #endregion
+
+    #region private methods
+    private static string CleanURL(string server)
+    {
+      Uri NewUri;
+
+      if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
+      {
+        server = NewUri.Authority;
+      }
+      return server;
+    }
+
+    private static string Hash(string input)
+    {
+
+      using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+      {
+        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input.ToLowerInvariant());
+        byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < hashBytes.Length; i++)
+        {
+          sb.Append(hashBytes[i].ToString("X2"));
+        }
+        return sb.ToString();
+      }
+
     }
 
     #endregion

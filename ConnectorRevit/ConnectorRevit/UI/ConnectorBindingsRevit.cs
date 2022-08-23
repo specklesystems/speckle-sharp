@@ -77,7 +77,7 @@ namespace Speckle.ConnectorRevit.UI
 
     public override void SelectClientObjects(string args)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     #region app events

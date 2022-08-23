@@ -385,10 +385,7 @@ namespace DesktopUI2.ViewModels
       {
 
       }
-
     }
-
-
 
     internal async void Init()
     {
@@ -435,13 +432,12 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
     public async void RemoveAccountCommand(Account account)
     {
       try
       {
         AccountManager.RemoveAccount(account.id);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
         Init();
       }
       catch (Exception ex)
@@ -453,7 +449,7 @@ namespace DesktopUI2.ViewModels
     public void OpenProfileCommand(Account account)
     {
       Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
+      Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
     }
 
     public void LaunchManagerCommand()
@@ -462,7 +458,7 @@ namespace DesktopUI2.ViewModels
       {
         string path = "";
 
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -506,7 +502,7 @@ namespace DesktopUI2.ViewModels
           {
             try
             {
-              Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
 
               await AccountManager.AddAccount(result);
               await Task.Delay(1000);
@@ -554,11 +550,8 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
-
       var dialog = new NewStreamDialog(Accounts);
       var result = await dialog.ShowDialog<bool>();
-
-
 
       if (result)
       {
@@ -683,7 +676,6 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
-
     }
 
     private void ChangeTheme(bool isDark)
@@ -701,10 +693,7 @@ namespace DesktopUI2.ViewModels
         theme.SetBaseTheme(Theme.Dark);
 
       materialTheme.CurrentTheme = theme;
-
-
     }
-
 
     public void RefreshCommand()
     {
@@ -712,9 +701,5 @@ namespace DesktopUI2.ViewModels
       ApiUtils.ClearCache();
       Init();
     }
-
-
   }
-
-
 }

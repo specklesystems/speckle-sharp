@@ -93,6 +93,84 @@ namespace Objects.Converter.TeklaStructures
       }
     }
 
+
+    public void ColumnToNative(BE.Column column)
+    {
+
+
+      //if (beam is TeklaBeam)
+      //{
+
+      //  var teklaBeam = (TeklaBeam)beam;
+      //  switch (teklaBeam.TeklaBeamType)
+      //  {
+      //    case TeklaBeamType.Beam:
+      //      if (!(beam.baseLine is Line))
+      //      {
+      //      }
+      //      Line line = (Line)beam.baseLine;
+      //      TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
+      //      TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+      //      var myBeam = new Beam(startPoint, endPoint);
+      //      SetPartProperties(myBeam, teklaBeam);
+      //      if (!IsProfileValid(myBeam.Profile.ProfileString))
+      //      {
+      //        Report.Log($"{myBeam.Profile.ProfileString} not in model catalog. Cannot place object {beam.id}");
+      //        return;
+      //      }
+      //      myBeam.Insert();
+      //      //Model.CommitChanges();
+      //      break;
+      //    case TeklaBeamType.PolyBeam:
+      //      Polyline polyline = (Polyline)beam.baseLine;
+      //      var polyBeam = new PolyBeam();
+      //      ToNativeContourPlate(polyline, polyBeam.Contour);
+      //      SetPartProperties(polyBeam, teklaBeam);
+      //      if (!IsProfileValid(polyBeam.Profile.ProfileString))
+      //      {
+      //        Report.Log($"{polyBeam.Profile.ProfileString} not in model catalog. Cannot place object {beam.id}");
+      //        return;
+      //      }
+      //      polyBeam.Insert();
+      //      //Model.CommitChanges();
+      //      break;
+      //    case TeklaBeamType.SpiralBeam:
+      //      Polyline polyline2 = (Polyline)beam.baseLine;
+      //      var teklaSpiralBeam = (Objects.BuiltElements.TeklaStructures.SpiralBeam)teklaBeam;
+      //      var startPt = new TSG.Point(teklaSpiralBeam.startPoint.x, teklaSpiralBeam.startPoint.y, teklaSpiralBeam.startPoint.z);
+      //      var rotatAxisPt1 = new TSG.Point(teklaSpiralBeam.rotationAxisPt1.x, teklaSpiralBeam.rotationAxisPt1.y, teklaSpiralBeam.rotationAxisPt1.z);
+      //      var rotatAxisPt2 = new TSG.Point(teklaSpiralBeam.rotationAxisPt2.x, teklaSpiralBeam.rotationAxisPt2.y, teklaSpiralBeam.rotationAxisPt2.z);
+      //      var totalRise = teklaSpiralBeam.totalRise;
+      //      var rotationAngle = teklaSpiralBeam.rotationAngle;
+      //      var twistAngleStart = teklaSpiralBeam.twistAngleStart;
+      //      var twistAngleEnd = teklaSpiralBeam.twistAngleEnd;
+      //      var spiralBeam = new Tekla.Structures.Model.SpiralBeam(startPt, rotatAxisPt1, rotatAxisPt2, totalRise, rotationAngle, twistAngleStart, twistAngleEnd);
+      //      SetPartProperties(spiralBeam, teklaBeam);
+      //      if (!IsProfileValid(spiralBeam.Profile.ProfileString))
+      //      {
+      //        Report.Log($"{spiralBeam.Profile.ProfileString} not in model catalog. Cannot place object {beam.id}");
+      //        return;
+      //      }
+      //      spiralBeam.Insert();
+      //      //Model.CommitChanges();
+      //      break;
+      //  }
+      //}
+      //else
+      //{
+        if (!(column.baseLine is Line))
+        {
+        }
+        Line line = (Line)column.baseLine;
+        TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
+        TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+        var myBeam = new Beam(startPoint, endPoint);
+        myBeam.Insert();
+        //Model.CommitChanges();
+      //}
+    }
+
+
     public void SetPartProperties(Part part, TeklaBeam teklaBeam)
     {
       part.Material.MaterialString = teklaBeam.material.name;

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Models;
 using Speckle.ConnectorCSI.Util;
 using System.Timers;
 using CSiAPIv1;
 using Speckle.Core.Kits;
+using System.Threading.Tasks;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -20,13 +22,10 @@ namespace Speckle.ConnectorCSI.UI
       Model = model;
     }
 
-
-
     public override List<ReceiveMode> GetReceiveModes()
     {
-      return new List<ReceiveMode> { ReceiveMode.Create };
+      return new List<ReceiveMode> { ReceiveMode.Create, ReceiveMode.Update };
     }
-
 
     #region boilerplate
     public override string GetActiveViewName()
@@ -65,12 +64,18 @@ namespace Speckle.ConnectorCSI.UI
       throw new NotImplementedException();
     }
 
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
+    }
+
+    public override void ResetDocument()
+    {
+      // TODO!
+    }
 
     #endregion
-
-
-
-
 
   }
 }

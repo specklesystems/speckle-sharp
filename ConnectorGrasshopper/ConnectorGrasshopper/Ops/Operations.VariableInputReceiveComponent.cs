@@ -421,11 +421,18 @@ namespace ConnectorGrasshopper.Ops
 
     private async Task ResetApiClient(StreamWrapper wrapper)
     {
-      ApiClient?.Dispose();
-      var acc = await wrapper.GetAccount();
-      ApiClient = new Client(acc);
-      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      try
+      {
+        ApiClient?.Dispose();
+        var acc = await wrapper.GetAccount();
+        ApiClient = new Client(acc);
+        ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
+        ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+      }
     }
 
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)

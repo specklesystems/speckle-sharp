@@ -295,7 +295,10 @@ namespace Speckle.Core.Api
 
         if (res.Errors != null)
           throw new SpeckleException("Could not get streams", res.Errors);
-
+        if (res.Data?.user == null)
+        {
+          throw new SpeckleException("User is not authenticated, or the credentials were not valid. Check the provided account is still valid, remove it from manager and add it again.");
+        }
         return res.Data.user.streams.items;
       }
       catch (Exception e)

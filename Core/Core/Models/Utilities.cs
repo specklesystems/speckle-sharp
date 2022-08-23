@@ -99,21 +99,28 @@ namespace Speckle.Core.Models
       var appProps = new Base();
       appProps["class"] = t.Name;
 
-      // set primitive writeable props 
-      foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+      try
       {
-        if (ignore != null && ignore.Contains(propInfo.Name)) continue;
-        if (IsMeaningfulProp(propInfo, o, out object propValue))
-          appProps[propInfo.Name] = propValue;
-      }
-      if (getParentProps)
-      {
-        foreach (var propInfo in t.BaseType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+        // set primitive writeable props 
+        foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
         {
           if (ignore != null && ignore.Contains(propInfo.Name)) continue;
           if (IsMeaningfulProp(propInfo, o, out object propValue))
             appProps[propInfo.Name] = propValue;
         }
+        if (getParentProps)
+        {
+          foreach (var propInfo in t.BaseType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+          {
+            if (ignore != null && ignore.Contains(propInfo.Name)) continue;
+            if (IsMeaningfulProp(propInfo, o, out object propValue))
+              appProps[propInfo.Name] = propValue;
+          }
+        }
+      }
+      catch(Exception e)
+      {
+
       }
 
       return appProps;

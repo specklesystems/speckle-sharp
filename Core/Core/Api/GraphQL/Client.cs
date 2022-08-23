@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using Speckle.Core.Api.GraphQL.Serializer;
@@ -50,6 +51,10 @@ namespace Speckle.Core.Api
       {
         HttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {account.token}");
       }
+      
+      HttpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
+      HttpClient.DefaultRequestHeaders.Add("apollographql-client-version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+
 
       GQLClient = new GraphQLHttpClient(
         new GraphQLHttpClientOptions

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sentry;
+using Speckle.Core.Credentials;
 
 namespace Speckle.Core.Logging
 {
@@ -39,9 +40,14 @@ namespace Speckle.Core.Logging
         o.AttachStacktrace = true;
       });
 
+
+      var da = AccountManager.GetDefaultAccount();
+      var id = da != null ? da.GetHashedEmail() : "unknown";
+
+
       SentrySdk.ConfigureScope(scope =>
       {
-        scope.User = new User { Id = Setup.SUUID, };
+        scope.User = new User { Id = id, };
         scope.SetTag("hostApplication", Setup.HostApplication);
       });
 

@@ -29,10 +29,8 @@ namespace DesktopUI2.ViewModels
 
     public ActivityViewModel(ActivityItem item, Client client)
     {
-
       _activity = item;
       _client = client;
-
 
       switch (item.actionType)
       {
@@ -64,8 +62,5 @@ namespace DesktopUI2.ViewModels
       //this.RaisePropertyChanged("Icon");
       //this.RaisePropertyChanged("Align");
     }
-
-
-
   }
 }
