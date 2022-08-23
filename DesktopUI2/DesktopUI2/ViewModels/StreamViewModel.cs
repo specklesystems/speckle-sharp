@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
@@ -236,6 +237,7 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _activity, value);
     }
 
+    #region report
     private List<ApplicationObjectViewModel> _report;
     public List<ApplicationObjectViewModel> Report
     {
@@ -245,6 +247,7 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _report, value);
         this.RaisePropertyChanged("FilteredReport");
         this.RaisePropertyChanged("HasReportItems");
+        this.RaisePropertyChanged("ReportFilterItems");
         this.RaisePropertyChanged("Log");
       }
     }
@@ -252,10 +255,12 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        if (SearchQuery == "")
+        if (SearchQuery == "" && !_reportSelectedFilterItems.Any())
           return Report;
         else
-          return Report.Where(o => o.SearchText.ToLower().Contains(SearchQuery.ToLower())).ToList();
+          return Report.Where(o => 
+          _reportSelectedFilterItems.Any(a => o.Status == a) && 
+          _searchQueryItems.All(a => o.SearchText.ToLower().Contains(a.ToLower()))).ToList();
       }
     }
     public bool HasReportItems
@@ -266,16 +271,16 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        string logString = String.Empty;
+        string defaultMessage = "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed.";
 
-        if (Progress.Report.OperationErrors.Any()) logString = Progress.Report.OperationErrorsString;
-        else if (Progress.Report.ConversionLog.Any()) logString = Progress.Report.ConversionLogString;
-        else logString = "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed.";
+        string reportInfo = $"\nOperation: {(IsReceiver ? "Received at " : "Sent at ")}{DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss")}";
+        reportInfo += $"\nTotal: {Report.Count} objects";
 
-        return logString;
+        return Report.Any() ? reportInfo : defaultMessage;
       }
     }
 
+    private List<string> _searchQueryItems = new List<string>();
     private string _searchQuery = "";
     public string SearchQuery
     {
@@ -283,13 +288,49 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
+        if (string.IsNullOrEmpty(SearchQuery))
+          _searchQueryItems.Clear();
+        else if (!SearchQuery.Replace(" ", "").Any())
+          ClearSearchCommand();
+        else
+          _searchQueryItems = _searchQuery.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
         this.RaisePropertyChanged("FilteredReport");
       }
     }
-    public void ClearSearchCommand()
+
+    #region REPORT FILTER
+    public SelectionModel<string> ReportSelectionModel { get; set; }
+    private List<string> _reportSelectedFilterItems = new List<string>();
+    private List<string> _reportFilterItems = new List<string>();
+    public List<string> ReportFilterItems
     {
-      SearchQuery = "";
+      get => _reportFilterItems;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _reportFilterItems, value);
+      }
     }
+    void ReportFilterSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+    {
+      try
+      {
+        foreach (var a in e.SelectedItems)
+          if (!_reportSelectedFilterItems.Contains(a as string))
+            _reportSelectedFilterItems.Add(a as string);
+        foreach (var r in e.DeselectedItems)
+          if (_reportSelectedFilterItems.Contains(r as string))
+            _reportSelectedFilterItems.Remove(r as string);
+
+        this.RaisePropertyChanged("FilteredReport");
+      }
+      catch (Exception ex)
+      {
+
+      }
+    }
+    #endregion
+
+    #endregion
 
     private List<CommentViewModel> _comments;
     public List<CommentViewModel> Comments
@@ -450,6 +491,7 @@ namespace DesktopUI2.ViewModels
         GetActivity();
         GetReport();
         GetComments();
+
       }
       catch (Exception ex)
       {
@@ -576,6 +618,12 @@ namespace DesktopUI2.ViewModels
         var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
         tabControl.SelectedIndex = tabControl.ItemCount - 1;
       }
+
+      // report filter selection
+      ReportSelectionModel = new SelectionModel<string>();
+      ReportSelectionModel.SingleSelect = false;
+      ReportSelectionModel.SelectionChanged += ReportFilterSelectionChanged;
+      ReportFilterItems = report.Select(o => o.Status).Distinct().ToList();
     }
 
     private async void GetActivity()
@@ -760,6 +808,10 @@ namespace DesktopUI2.ViewModels
 
       await Avalonia.Application.Current.Clipboard.SetTextAsync(summary);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Copy Report" } });
+    }
+    public void ClearSearchCommand()
+    {
+      SearchQuery = "";
     }
 
     public void ShareCommand()
