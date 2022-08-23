@@ -64,8 +64,6 @@
 		<File Id="GraphQL.Primitives.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\GraphQL.Primitives.dll" Target="%BinariesTargetDirectory%"/>
 		<File Id="HarfBuzzSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\HarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
 		<File Id="JetBrains.Annotations.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\JetBrains.Annotations.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="libHarfBuzzSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\libHarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="libSkiaSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\libSkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
 		<File Id="Material.Avalonia.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
 		<File Id="Material.Colors.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Colors.dll" Target="%BinariesTargetDirectory%"/>
 		<File Id="Material.DataGrid.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.DataGrid.dll" Target="%BinariesTargetDirectory%"/>

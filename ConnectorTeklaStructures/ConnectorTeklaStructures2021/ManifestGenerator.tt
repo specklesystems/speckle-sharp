@@ -6,7 +6,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.IO" #>
 <#
-	var buildPath = $@".\bin\Debug";
+	var buildPath = $@".\bin\Release";
 	var files = Directory.EnumerateFiles(buildPath, "*.dll");
 	var CiPath = $@"C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\";
 	var enumerateDirectories = Directory.EnumerateDirectories(buildPath);
