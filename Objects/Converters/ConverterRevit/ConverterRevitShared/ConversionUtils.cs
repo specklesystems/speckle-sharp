@@ -482,7 +482,7 @@ namespace Objects.Converter.Revit
 
     #region  element types
 
-    private T GetElementType<T>(string family, string type)
+    private bool GetElementType<T>(string family, string type, ApplicationObject appObj, out T value)
     {
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
 
@@ -493,20 +493,22 @@ namespace Objects.Converter.Revit
         if (match is FamilySymbol fs && !fs.IsActive)
           fs.Activate();
 
-        return (T)(object)match;
+        value = (T)(object)match;
+        return true;
       }
 
       //match family
       match = types.FirstOrDefault(x => x.FamilyName == family);
       if (match != null)
       {
-        Report.Log($"Missing type [{family} - {type}] was replaced with [{match.FamilyName} - {match.Name}]");
+        appObj.Log.Add($"Missing type [{family} - {type}] was replaced with [{match.FamilyName} - {match.Name}]");
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
             fs.Activate();
 
-          return (T)(object)match;
+          value = (T)(object)match;
+          return true;
         }
       }
 
@@ -514,37 +516,38 @@ namespace Objects.Converter.Revit
       if (types.Any())
       {
         match = types.FirstOrDefault();
-        Report.Log($"Missing family and type, the following family and type were used: {match.FamilyName} - {match.Name}");
+        appObj.Log.Add($"Missing family and type, the following family and type were used: {match.FamilyName} - {match.Name}");
         if (match != null)
         {
           if (match is FamilySymbol fs && !fs.IsActive)
             fs.Activate();
 
-          return (T)(object)match;
+          value = (T)(object)match;
+          return true;
         }
       }
 
-      throw new Speckle.Core.Logging.SpeckleException($"Could not find any family symbol to use.");
+      appObj.Log.Add($"Could not find any family symbol to use.");
+      value = default(T);
+      return false;
     }
 
-    private T GetElementType<T>(Base element)
+    private bool GetElementType<T>(Base element, ApplicationObject appObj, out T value)
     {
       List<ElementType> types = new List<ElementType>();
       ElementFilter filter = GetCategoryFilter(element);
 
       if (filter != null)
-      {
         types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
-      }
       else
-      {
         types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-      }
 
       if (types.Count == 0)
       {
         var name = string.IsNullOrEmpty(element["category"].ToString()) ? typeof(T).Name : element["category"].ToString();
-        throw new Speckle.Core.Logging.SpeckleException($"Could not find any family to use for category {name}.");
+        appObj.Log.Add($"Could not find any family to use for category {name}.");
+        value = default(T);
+        return false;
       }
 
       var family = element["family"] as string;
@@ -558,21 +561,32 @@ namespace Objects.Converter.Revit
       //}
 
       if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-      {
         match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
-      }
 
       //some elements only have one family so we didn't add such prop our schema
       if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-      {
         match = types.FirstOrDefault(x => x.Name == type);
+
+      // match the type only for when we auto assign it
+      if (match == null && !string.IsNullOrEmpty(type))
+      {
+        match = types.FirstOrDefault(x =>
+        {
+          var symbolType = x.GetParameters("Type");
+          var symbolTypeName = x.GetParameters("Type Name");
+          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString().ToLower() == type.ToLower())
+            return true;
+          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString().ToLower() == type.ToLower())
+            return true;
+          return false;
+        });
       }
 
       if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
       {
         match = types.FirstOrDefault(x => x.FamilyName == family);
         if (match != null) //inform user that the type is different!
-          Report.Log($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+          appObj.Log.Add($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
 
       }
       if (match == null) // okay, try something!
@@ -581,15 +595,14 @@ namespace Objects.Converter.Revit
           match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
         if (match == null)
           match = types.First();
-        Report.Log($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+        appObj.Log.Add($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
       }
 
       if (match is FamilySymbol fs && !fs.IsActive)
-      {
         fs.Activate();
-      }
 
-      return (T)(object)match;
+      value = (T)(object)match;
+      return true;
     }
 
     private ElementFilter GetCategoryFilter(Base element)
@@ -623,9 +636,9 @@ namespace Objects.Converter.Revit
       }
     }
 
-    #endregion
+#endregion
 
-    #region conversion "edit existing if possible" utilities
+#region conversion "edit existing if possible" utilities
 
     /// <summary>
     /// Returns, if found, the corresponding doc element.
@@ -656,9 +669,9 @@ namespace Objects.Converter.Revit
       return element;
     }
 
-    #endregion
+#endregion
 
-    #region Reference Point
+#region Reference Point
 
     // CAUTION: these strings need to have the same values as in the connector bindings
     const string InternalOrigin = "Internal Origin (default)";
@@ -748,9 +761,9 @@ namespace Objects.Converter.Revit
     {
       return (isPoint) ? ReferencePointTransform.OfPoint(p) : ReferencePointTransform.OfVector(p);
     }
-    #endregion
+#endregion
 
-    #region Floor/ceiling/roof openings
+#region Floor/ceiling/roof openings
 
     //a floor/roof/ceiling outline can have "voids/holes" for 3 reasons:
     // - there is a shaft cutting through it > we don't need to create an opening (the shaft will be created on its own)
@@ -822,13 +835,13 @@ namespace Objects.Converter.Revit
       return false;
     }
 
-    #endregion
+#endregion
 
-    #region misc
+#region misc
 
     public string GetTemplatePath(string templateName)
     {
-      var directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      var directoryPath = Path.Combine(Speckle.Core.Api.Helpers.UserSpeckleFolderPath, "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
       string templatePath = "";
       switch (Doc.DisplayUnitSystem)
       {
@@ -842,7 +855,7 @@ namespace Objects.Converter.Revit
 
       return templatePath;
     }
-    #endregion
+#endregion
 
     private List<ICurve> GetProfiles(DB.SpatialElement room)
     {
@@ -884,7 +897,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    #region materials
+#region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
@@ -1003,7 +1016,7 @@ namespace Objects.Converter.Revit
       return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
     }
 
-    #endregion
+#endregion
 
 
     /// <summary>
@@ -1028,11 +1041,11 @@ namespace Objects.Converter.Revit
     /// <param name="curveArray">The revit <see cref="CurveArray"/> to add the line to.</param>
     /// <param name="line">The <see cref="Line"/> to be added.</param>
     /// <returns>True if the line was added, false otherwise.</returns>
-    public bool TryAppendLineSafely(CurveArray curveArray, Line line)
+    public bool TryAppendLineSafely(CurveArray curveArray, Line line, ApplicationObject appObj)
     {
       if (IsLineTooShort(line))
       {
-        Report.Log("Some lines in the CurveArray where ignored due to being smaller than the allowed curve length.");
+        appObj.Log.Add("Some lines in the CurveArray where ignored due to being smaller than the allowed curve length.");
         return false;
       }
       try
@@ -1042,7 +1055,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-        Report.LogConversionError(e);
+        appObj.Log.Add(e.Message);
         return false;
       }
     }

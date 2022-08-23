@@ -190,6 +190,12 @@ namespace SpeckleRhino
 
   public static class Formatting
   {
+    public static string ObjectDescriptor(RhinoObject obj)
+    {
+      var simpleType = obj.ObjectType.ToString();
+      return obj.HasName ? $"{simpleType}" : $"{simpleType} {obj.Name}";
+    }
+
     public static string TimeAgo(string timestamp)
     {
       TimeSpan timeAgo;

@@ -22,7 +22,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
       if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, convertedItem: revitWall);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, convertedItem: revitWall, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 
@@ -71,7 +71,11 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       Reference faceRef = GetFaceRef(mass);
 
-      var wallType = GetElementType<WallType>(speckleWall);
+      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Wall type {wallType.Name} not valid for facewall");

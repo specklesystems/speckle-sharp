@@ -46,7 +46,7 @@ Give Speckle a try in no time by:
 
 This monorepo is the home to our Speckle 2.0 .NET projects:
 
-- [`Core`](https://github.com/specklesystems/speckle-sharp/tree/main/Core): the canconical SDK for Speckle. It supports multiple [data transports](https://discourse.speckle.works/t/core-2-0-transports/919), and advanced [decomposition API](https://discourse.speckle.works/t/core-2-0-decomposition-api/911) for design data, and offers a [dynamic base](https://discourse.speckle.works/t/core-2-0-the-base-object/782) for object definition.
+- [`Core`](https://github.com/specklesystems/speckle-sharp/tree/main/Core): the canonical SDK for Speckle. It supports multiple [data transports](https://discourse.speckle.works/t/core-2-0-transports/919), and advanced [decomposition API](https://discourse.speckle.works/t/core-2-0-decomposition-api/911) for design data, and offers a [dynamic base](https://discourse.speckle.works/t/core-2-0-the-base-object/782) for object definition.
 - [`Objects`](https://github.com/specklesystems/speckle-sharp/tree/main/Objects): the Objects Kit is our default interoperability kit. Read more about kits and their role in the Speckle ecosystem [here](https://discourse.speckle.works/t/introducing-kits-2-0/710).
   - [`Converters`](https://github.com/specklesystems/speckle-sharp/tree/main/Objects/Converters): conversion routines for each of the connectors mentioned below
 - Speckle Connectors
@@ -69,18 +69,18 @@ Make sure to also check and ⭐️ these other Speckle repositories:
 - [`speckle-unreal`](https://github.com/specklesystems/speckle-unreal): Unreal Engine Connector
 - [`speckle-qgis`](https://github.com/specklesystems/speckle-qgis): QGIS connectod
 - [`speckle-powerbi`](https://github.com/specklesystems/speckle-powerbi): PowerBi connector
-- and more [connectos & tooling](https://github.com/specklesystems/)!
+- and more [connectors & tooling](https://github.com/specklesystems/)!
 
 
 
 ## Developing and Debugging
 
-Clone this monorepo, **each section has its own readme**, so then just follow those instructions. 
+Clone this monorepo; **each section has its own readme**, so then just follow those instructions. 
 
-Issues or questions? We encourage everyone interested to debug / hack /contribute / give feedback to this project.
+Issues or questions? We encourage everyone interested to debug / hack / contribute / give feedback to this project.
 
 > **A note on Accounts:**
-> The connectors themselves doesn't have features to manage your Speckle accounts, this functionality has been delegated to the Speckle Manager desktop app. You can install it [from here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe).
+> The connectors themselves don't have features to manage your Speckle accounts; this functionality is delegated to the Speckle Manager desktop app. You can install it [from here](https://speckle-releases.ams3.digitaloceanspaces.com/manager/SpeckleManager%20Setup.exe).
 
 ### Contributing
 

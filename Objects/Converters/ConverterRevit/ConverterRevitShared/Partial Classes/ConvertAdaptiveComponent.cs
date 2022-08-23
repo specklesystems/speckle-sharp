@@ -17,12 +17,16 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type) { applicationId = speckleAc.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem:$"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
-      DB.FamilySymbol familySymbol = GetElementType<DB.FamilySymbol>(speckleAc);
+      if (!GetElementType<FamilySymbol>(speckleAc, appObj, out FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       if (familySymbol.FamilyName != familyName)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find adaptive component {familyName}");

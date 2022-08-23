@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 
@@ -31,7 +31,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
+      if (!GetElementType<FamilySymbol>(speckleBeam, appObj, out DB.FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;

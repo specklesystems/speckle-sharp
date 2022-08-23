@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
       if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitRailing.UniqueId, convertedItem: revitRailing);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitRailing.UniqueId, convertedItem: revitRailing, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
      
@@ -25,7 +25,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var railingType = GetElementType<RailingType>(speckleRailing);
+      if (!GetElementType<RailingType>(speckleRailing, appObj, out RailingType railingType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       Level level = ConvertLevelToRevit(speckleRailing.level, out ApplicationObject.State levelState);
       if (level == null) //we currently don't support railings hosted on stairs, and these have null level
       {

@@ -42,6 +42,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper7", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper", "..\ConnectorGrasshopper\ConnectorGrasshopper\ConnectorGrasshopper.csproj", "{109B3382-634B-408A-8A5C-4CD09CB92641}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9454D346-A629-40E0-9EE2-7C6933ED1530} = {9454D346-A629-40E0-9EE2-7C6933ED1530}
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E} = {CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D} = {EAA8D25F-A118-4B16-BC6C-A71463B3C53D}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "..\ConnectorGrasshopper\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
 EndProject

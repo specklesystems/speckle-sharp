@@ -19,11 +19,15 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 
-      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray);
+      if (!GetElementType<CableTrayType>(speckleCableTray, appObj, out CableTrayType cableTrayType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       Element cableTray = null;
       if (speckleCableTray.baseCurve is Line)

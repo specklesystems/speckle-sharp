@@ -5,7 +5,6 @@ using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.UI
@@ -56,9 +55,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
             };
     }
 
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override async System.Threading.Tasks.Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      return null;
+      await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(200));
+      return new StreamState();
       // TODO!
     }
 

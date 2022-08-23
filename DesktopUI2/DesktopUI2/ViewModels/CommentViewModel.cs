@@ -82,7 +82,7 @@ namespace DesktopUI2.ViewModels
 
 
       Process.Start(new ProcessStartInfo($"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}") { UseShellExecute = true });
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment View" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment View" } });
     }
   }
 }

@@ -10,6 +10,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -145,6 +146,12 @@ namespace Archicad.Launcher
     {
       var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null };
       return stream.ToString();
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,6 +23,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Core.Models.Extensions;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -158,6 +159,10 @@ namespace ConnectorGrasshopper.Ops
       base.AppendAdditionalMenuItems(menu);
     }
 
+    public bool HasDuplicateKeys => Params.Input.Skip(2)
+      .Select(p => p.NickName)
+      .GroupBy(x => x).Count(group => group.Count() > 1) > 0;
+    
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -167,7 +172,15 @@ namespace ConnectorGrasshopper.Ops
         base.SolveInstance(DA);
         return;
       }
-
+      
+      if (HasDuplicateKeys)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
+        CurrentComponentState = "needs_input";
+        Message = "Expired";
+        return;
+      }
+      
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
         !JustPastedIn)
       {
@@ -238,14 +251,15 @@ namespace ConnectorGrasshopper.Ops
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-
-      return new SendReceiveDataParam
+      var myParam = new SendReceiveDataParam
       {
         Name = uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
         Optional = false
       };
+      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
+      return myParam;
     }
 
     public bool DestroyParameter(GH_ParameterSide side, int index)
@@ -255,6 +269,11 @@ namespace ConnectorGrasshopper.Ops
 
     public void VariableParameterMaintenance()
     {
+      Params.Input.Skip(2)
+        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+        .ToList()
+        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
+        );
     }
 
     private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
@@ -491,7 +510,7 @@ namespace ConnectorGrasshopper.Ops
           var msg = exception.Message.Contains("401")
             ? $"You don't have access to this transport , or it doesn't exist."
             : exception.Message;
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {exception.ToFormattedString()}"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source =>

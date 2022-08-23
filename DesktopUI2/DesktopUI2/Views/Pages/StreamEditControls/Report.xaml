@@ -3,8 +3,8 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:c="clr-namespace:DesktopUI2.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -24,43 +24,45 @@
             HorizontalAlignment="Stretch"
             assists:ShadowAssist.ShadowDepth="Depth0"
             CornerRadius="25"
-            Opacity="{Binding Opacity}"
-            Mode="Standard">
+            Mode="Standard"
+            Opacity="{Binding Opacity}">
             <StackPanel Orientation="Vertical">
-              <Grid ColumnDefinitions="auto,auto,auto,*">
+              <Grid ColumnDefinitions="auto,*,auto">
                 <icons:MaterialIcon
-                  Margin="10,0,0,0"
                   Width="15"
                   Height="15"
+                  Margin="10,0,0,0"
                   VerticalAlignment="Center"
                   Foreground="{DynamicResource PrimaryHueMidBrush}"
                   Kind="{Binding Icon}"
                   ToolTip.Tip="{Binding Status}" />
-                <TextBlock
-                  Margin="10,0,0,0"
-                  Grid.Column="2"
-                  VerticalAlignment="Center"
-                  Text="{Binding Name}"
-                  TextWrapping="Wrap" />
-                <TextBlock
-                  Margin="10,0,0,0"
-                  Foreground="Gray"
-                  VerticalAlignment="Center"
-                  Grid.Column="3"
-                  Text="{Binding Id}"
-                  TextWrapping="Wrap" />
+                <Grid Grid.Column="1" ColumnDefinitions="*,*">
+                  <TextBlock
+                    Grid.Column="0"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Text="{Binding Id}"
+                    TextTrimming="CharacterEllipsis" />
+                </Grid>
                 <!--  PREVIEW BTN  -->
                 <c:PreviewButton
-                  Grid.Column="4"
+                  Grid.Column="2"
                   Margin="0,0,5,0"
-                  HorizontalAlignment="Right"/>
+                  HorizontalAlignment="Right" />
               </Grid>
               <TextBlock
                 Margin="35,0,0,10"
                 Foreground="{Binding Color}"
                 IsVisible="{Binding Log, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                TextWrapping="Wrap"
-                Text="{Binding Log}" />
+                Text="{Binding Log}"
+                TextWrapping="Wrap" />
             </StackPanel>
           </m:ColorZone>
         </DataTemplate>

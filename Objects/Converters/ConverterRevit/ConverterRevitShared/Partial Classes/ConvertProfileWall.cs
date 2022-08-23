@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRevitWall.id, speckleRevitWall.speckle_type) { applicationId = speckleRevitWall.applicationId };
       if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, convertedItem: revitWall);
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, convertedItem: revitWall, logItem: $"ApplicationId already exists in document, new object ignored.");
         return appObj;
       }
 
@@ -25,7 +25,11 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var wallType = GetElementType<WallType>(speckleRevitWall);
+      if (!GetElementType<WallType>(speckleRevitWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       // Level level = null;
       var structural = speckleRevitWall.structural;
       var profile = new List<DB.Curve>();
