@@ -14,6 +14,16 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
+    public object updateExistingArea(Element2D area)
+    {
+      string GUID = "";
+      Model.AreaObj.GetGUID(area.name, ref GUID);
+      if (area.applicationId == GUID)
+      {
+        setAreaProperties(area.name, area);
+      }
+      return area.name;
+    }
     public object AreaToNative(Element2D area)
     {
       if (GetAllAreaNames(Model).Contains(area.name))
@@ -93,6 +103,31 @@ namespace Objects.Converter.CSI
       return name;
 
     }
+
+    public void setAreaProperties(string name, Element2D area)
+    {
+
+      Model.AreaObj.SetProperty(name, area.property.name);
+      if (area is CSIElement2D)
+      {
+        var CSIarea = (CSIElement2D)area;
+        double[] values = null;
+        if (CSIarea.modifiers != null)
+        {
+          values = CSIarea.modifiers;
+        }
+
+        Model.AreaObj.SetModifiers(CSIarea.name, ref values);
+        Model.AreaObj.SetLocalAxes(CSIarea.name, CSIarea.orientationAngle);
+        Model.AreaObj.SetPier(CSIarea.name, CSIarea.PierAssignment);
+        Model.AreaObj.SetSpandrel(CSIarea.name, CSIarea.SpandrelAssignment);
+        if (CSIarea.CSIAreaSpring != null) { Model.AreaObj.SetSpringAssignment(CSIarea.name, CSIarea.CSIAreaSpring.name); }
+
+        if (CSIarea.DiaphragmAssignment != null) { Model.AreaObj.SetDiaphragm(CSIarea.name, CSIarea.DiaphragmAssignment); }
+
+
+      }
+    }
     public Element2D AreaToSpeckle(string name)
     {
       string units = ModelUnits();
@@ -137,7 +172,7 @@ namespace Objects.Converter.CSI
       bool advanced = true;
       Model.AreaObj.GetLocalAxes(name, ref angle, ref advanced);
       speckleStructArea.orientationAngle = angle;
-      if(coordinates.Count != 0)
+      if (coordinates.Count != 0)
       {
         PolygonMesher polygonMesher = new PolygonMesher();
         polygonMesher.Init(coordinates);
