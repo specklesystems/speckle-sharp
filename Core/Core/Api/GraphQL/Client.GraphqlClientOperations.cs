@@ -755,7 +755,7 @@ namespace Speckle.Core.Api
     /// Creates a branch on a stream.
     /// </summary>
     /// <param name="branchInput"></param>
-    /// <returns>The stream's id.</returns>
+    /// <returns>The branch id.</returns>
     public async Task<string> BranchCreate(CancellationToken cancellationToken, BranchCreateInput branchInput)
     {
       try
