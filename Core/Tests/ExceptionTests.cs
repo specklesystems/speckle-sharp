@@ -1,7 +1,8 @@
 ﻿using System;
 using NUnit.Framework;
 using Speckle.Core.Models.Extensions;
-namespace TestsUnit
+
+namespace Tests
 {
   [TestFixture]
   public class ExceptionTests
