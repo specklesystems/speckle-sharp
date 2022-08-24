@@ -5,6 +5,7 @@ using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -282,17 +283,20 @@ namespace DesktopUI2
         pd["A1"] = i;
         pd["A2"] = i + 2;
 
+        var appObj = new ApplicationObject(i.ToString(), "Some Object");
+
         try
         {
           if (i % 7 == 0)
-            throw new Exception($"Something happened.");
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Something happened.");
+          else
+            appObj.Update(status: ApplicationObject.State.Created);
         }
         catch (Exception e)
         {
-          //TODO
-          //state.Errors.Add(e);
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
         }
-
+        progress.Report.Log(appObj);
         progress.Update(pd);
       }
 
@@ -329,24 +333,26 @@ namespace DesktopUI2
         pd["A1"] = i;
         pd["A2"] = i + 2;
 
+        var appObj = new ApplicationObject(i.ToString(), "Some Object");
+
         try
         {
           if (i % 7 == 0)
-            throw new Exception($"Something happened.");
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Something happened.");
+          else
+            appObj.Update(status: ApplicationObject.State.Created);
         }
         catch (Exception e)
         {
-          //TODO
-          progress.Report.LogConversionError(e);
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
         }
-
+        progress.Report.Log(appObj);
         progress.Update(pd);
       }
 
       // Mock some errors
       for (int i = 0; i < 100; i++)
       {
-        progress.Report.Log($"Hello this is a sample line {i}");
         try
         {
           throw new Exception($"Number {i} fail");
@@ -423,7 +429,11 @@ namespace DesktopUI2
           return null;
         }
 
-        progress.Report.Log("Done fake task " + i);
+        var r = new Random(i);
+        var status = (ApplicationObject.State)r.Next(5);
+        var appObj = new ApplicationObject(i.ToString(), "Some Object") { Status = status, Log = new List<string>() { "Some description"} };
+        progress.Report.Log(appObj);
+
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;

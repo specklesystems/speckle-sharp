@@ -273,7 +273,7 @@ namespace DesktopUI2.ViewModels
       {
         string defaultMessage = "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed.";
 
-        string reportInfo = $"\nOperation: {(IsReceiver ? "Received at " : "Sent at ")}{DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss")}";
+        string reportInfo = $"\nOperation: {(PreviewOn ? "Preview " : "")}{(IsReceiver ? "Received at " : "Sent at ")}{DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss")}";
         reportInfo += $"\nTotal: {Report.Count} objects";
 
         return Report.Any() ? reportInfo : defaultMessage;
