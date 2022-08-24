@@ -15,7 +15,7 @@ namespace Objects.Converter.CSI
     public object Property1DToNative(Property1D property1D)
     {
       int numbMaterial = 0;
-      string[] materials = null;
+      string[] materials = new string[] { };
       Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
       if (property1D.material != null)
       {
