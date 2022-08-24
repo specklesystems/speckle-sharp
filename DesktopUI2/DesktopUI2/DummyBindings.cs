@@ -351,15 +351,20 @@ namespace DesktopUI2
       }
 
       // Mock some errors
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 3; i++)
       {
-        try
+        var r = new Random(i);
+        if (r.NextDouble() > 0.5)
         {
-          throw new Exception($"Number {i} fail");
-        }
-        catch (Exception e)
-        {
-          progress.Report.LogOperationError(e);
+          try
+          {
+            //progress.Report.LogOperationError(new Exception($"Critical operation error!"));
+            throw new Exception($"Number {i} fail");
+          }
+          catch (Exception e)
+          {
+            progress.Report.LogOperationError(e);
+          }
         }
       }
 

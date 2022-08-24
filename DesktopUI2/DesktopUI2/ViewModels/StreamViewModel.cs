@@ -258,9 +258,12 @@ namespace DesktopUI2.ViewModels
         if (SearchQuery == "" && !_reportSelectedFilterItems.Any())
           return Report;
         else
-          return Report.Where(o => 
-          _reportSelectedFilterItems.Any(a => o.Status == a) && 
-          _searchQueryItems.All(a => o.SearchText.ToLower().Contains(a.ToLower()))).ToList();
+        {
+          var filterItems = _reportSelectedFilterItems.Any() ? Report.Where(o => _reportSelectedFilterItems.Any(a => o.Status == a)).ToList() : Report;
+          return SearchQuery == "" ? 
+            filterItems : 
+            filterItems.Where(o => _searchQueryItems.All(a => o.SearchText.ToLower().Contains(a.ToLower()))).ToList();
+        }
       }
     }
     public bool HasReportItems
@@ -275,8 +278,9 @@ namespace DesktopUI2.ViewModels
 
         string reportInfo = $"\nOperation: {(PreviewOn ? "Preview " : "")}{(IsReceiver ? "Received at " : "Sent at ")}{DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss")}";
         reportInfo += $"\nTotal: {Report.Count} objects";
+        reportInfo += Progress.Report.OperationErrors.Any() ? $"\n\nErrors: \n{Progress.Report.OperationErrorsString}":"";
 
-        return Report.Any() ? reportInfo : defaultMessage;
+        return Report.Any() || Progress.Report.OperationErrors.Any() ? reportInfo : defaultMessage;
       }
     }
 
