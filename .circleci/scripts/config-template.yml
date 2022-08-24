@@ -128,17 +128,12 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG) -And -Not $semver.Contains('-')) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $semver" }
           environment:
             WORKFLOW_NUM: << pipeline.number >>
-      - when:
-          condition:
-            not:
-              equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
-          steps:
-            - run:
-                name: Build Installer
-                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
-                shell: cmd.exe #does not work in powershell
-                environment:
-                  SLUG: << parameters.slug >>
+      - run:
+          name: Build Installer
+          command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
+          shell: cmd.exe #does not work in powershell
+          environment:
+            SLUG: << parameters.slug >>
       - when:
           condition:
             equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
@@ -153,51 +148,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 root: ./
                 paths:
                   - speckle-sharp-ci-tools/Installers
-
-  build-connector-new: # Reusable job for basic connectors
-    executor:
-      name: win/default
-      shell: powershell.exe
-    parameters:
-      slnname:
-        type: string
-      dllname:
-        type: string
-      slug:
-        type: string
-        default: ""
-      installer:
-        type: boolean
-        default: false
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Restore << parameters.slnname >>
-          command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
-      - run:
-          name: Build << parameters.slnname >>
-          command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0" } else { $env:CIRCLE_TAG }
-            $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
-            $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
-            $channel = if($semver.Contains('-')) {$semver.Split("-")[1] } else { "latest" }
-            $version = "$($ver).$($env:WORKFLOW_NUM)"
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver  
-            if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG)) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$channel.yml" -ItemType File -Value "version: $semver" }
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
-
-      - run: # Creates the inno installer
-          name: Build Installer
-          command: speckle-sharp-ci-tools/TSEPBuilder/TeklaExtensionPackage.BatchBuilder.exe -I C:/Users/circleci/project/ConnectorTeklaStructures/ConnectorTeklaStructures2021/ManifestGenerator.xml -O C:/Users/circleci/project/speckle-sharp-ci-tools/Installers/<<parameters.slug>>/<<parameters.dllname>>.tsep
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - speckle-sharp-ci-tools/Installers
-      - store_artifacts:
-          path: speckle-sharp-ci-tools/Installers
 
   deploy-connector-new:
     docker:
