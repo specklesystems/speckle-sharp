@@ -106,13 +106,6 @@ teklastructures:
       slug: teklastructures
       requires:
         - build-desktopui
-
-  - build-connector-new:
-      slnname: ConnectorTeklaStructures
-      dllname: SpeckleConnectorTeklaStructures.dll
-      slug: teklastructures
-      requires:
-        - build-desktopui
 csi:
   - build-connector:
       slnname: ConnectorCSI
