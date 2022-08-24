@@ -15,11 +15,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
       var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type) { applicationId = speckleAc.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem:$"ApplicationId already exists in document, new object ignored.");
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
       if (!GetElementType<FamilySymbol>(speckleAc, appObj, out FamilySymbol familySymbol))

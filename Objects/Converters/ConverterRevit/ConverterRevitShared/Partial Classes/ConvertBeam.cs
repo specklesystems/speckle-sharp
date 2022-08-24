@@ -16,14 +16,12 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
-      //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
       var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj)) 
         return appObj;
-      }
 
       if (speckleBeam.baseLine == null)
       {

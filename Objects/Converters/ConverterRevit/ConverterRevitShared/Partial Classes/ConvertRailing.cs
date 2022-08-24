@@ -13,12 +13,11 @@ namespace Objects.Converter.Revit
     {
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
       var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
-      if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitRailing.UniqueId, convertedItem: revitRailing, logItem: $"ApplicationId already exists in document, new object ignored.");
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitRailing, appObj, out appObj))
         return appObj;
-      }
-     
+
       if (speckleRailing.path == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Path was null");

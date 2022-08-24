@@ -27,11 +27,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(alignment.applicationId);
       var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       //delete and re-create line
       //TODO: check if can be modified
@@ -55,11 +54,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       //delete and re-create line
       //TODO: check if can be modified
@@ -93,11 +91,10 @@ namespace Objects.Converter.Revit
 
       var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
       var appObj = new ApplicationObject(((Base)speckleLine).id, ((Base)speckleLine).speckle_type) { applicationId = ((Base)speckleLine).applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       if (docObj != null)
         Doc.Delete(docObj.Id);
@@ -157,11 +154,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       //delete and re-create line
       //TODO: check if can be modified
@@ -207,11 +203,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
@@ -245,11 +240,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
       var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 

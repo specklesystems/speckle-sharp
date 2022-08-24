@@ -13,13 +13,12 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject SpaceToNative(Space speckleSpace)
     {
-      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
-      if (revitSpace != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitSpace.UniqueId, convertedItem: revitSpace);
+      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitSpace, appObj, out appObj))
         return appObj;
-      }
 
       var levelState = ApplicationObject.State.Unknown;
       var level = ConvertLevelToRevit(speckleSpace.level, out levelState);

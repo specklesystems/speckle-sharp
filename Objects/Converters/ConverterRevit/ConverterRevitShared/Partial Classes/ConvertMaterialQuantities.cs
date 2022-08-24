@@ -32,25 +32,20 @@ namespace Objects.Converter.Revit
       volume *= factor * factor * factor;
       area *= factor * factor;
 
-
-
       //Create and return materialquantity
       var speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
       return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area, units);
     }
 
-
     #endregion
-
 
     #region MaterialQuantities
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element)
     {
       var matIDs = element?.GetMaterialIds(false);
       if (matIDs == null || matIDs.Count() == 0)
-      {
         return null;
-      }
+
       var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
       return MaterialQuantitiesToSpeckle(element, materials);
     }
@@ -60,12 +55,10 @@ namespace Objects.Converter.Revit
       List<Objects.Other.MaterialQuantity> quantities = new List<Objects.Other.MaterialQuantity>();
 
       foreach (var material in materials)
-      {
         quantities.Add(MaterialQuantityToSpeckle(element, material));
-      }
+
       return quantities;
     }
-
 
     #endregion
   }
