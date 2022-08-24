@@ -108,6 +108,5 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
-  <Import Project="..\..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
