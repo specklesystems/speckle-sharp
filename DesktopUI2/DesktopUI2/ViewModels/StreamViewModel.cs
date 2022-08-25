@@ -7,7 +7,7 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels.Share;
 using DesktopUI2.Views.Pages;
-using DesktopUI2.Views.Windows;
+using DesktopUI2.Views.Windows.Dialogs;
 using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -160,6 +160,7 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _isReceiver, value);
+        this.RaisePropertyChanged(nameof(BranchesViewModel));
       }
     }
 
@@ -183,15 +184,24 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private Branch _selectedBranch;
-    public Branch SelectedBranch
+    private BranchViewModel _selectedBranch;
+    public BranchViewModel SelectedBranch
     {
       get => _selectedBranch;
       set
       {
         this.RaiseAndSetIfChanged(ref _selectedBranch, value);
-        if (value != null)
+
+        if (value == null)
+          return;
+
+
+        if (value.Branch.id == null)
+          AddNewBranch();
+        else
           GetCommits();
+
+
       }
     }
 
@@ -199,7 +209,33 @@ namespace DesktopUI2.ViewModels
     public List<Branch> Branches
     {
       get => _branches;
-      private set => this.RaiseAndSetIfChanged(ref _branches, value);
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _branches, value);
+        _branchesViewModel = null;
+        this.RaisePropertyChanged(nameof(BranchesViewModel));
+      }
+
+    }
+
+
+    private List<BranchViewModel> _branchesViewModel;
+    public List<BranchViewModel> BranchesViewModel
+    {
+      get
+      {
+        if (_branchesViewModel == null)
+          _branchesViewModel = Branches.Select(x => new BranchViewModel(x)).ToList();
+
+        //start fresh, just in case
+        if (_branchesViewModel.Last().Branch.id == null)
+          _branchesViewModel.Remove(_branchesViewModel.Last());
+
+        if (!IsReceiver)
+          _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Branch" }, "Plus"));
+
+        return _branchesViewModel;
+      }
     }
 
     private Commit _selectedCommit;
@@ -212,7 +248,7 @@ namespace DesktopUI2.ViewModels
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
-            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{SelectedBranch.name}";
+            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{SelectedBranch.Branch.name}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         }
@@ -414,16 +450,16 @@ namespace DesktopUI2.ViewModels
         //sender
         if (!IsReceiver)
         {
-          if (SelectedBranch != null && SelectedBranch.name != "main")
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.name}";
+          if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.Branch.name}";
         }
         //receiver
         else
         {
-          if (SelectedCommit != null)
+          if (SelectedCommit != null && SelectedCommit.id != "latest")
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
           if (SelectedBranch != null)
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.name}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.Branch.name}";
         }
         return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
 
@@ -565,14 +601,13 @@ namespace DesktopUI2.ViewModels
         AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
         SelectedFilter = AvailableFilters[0];
 
-        var branches = await Client.StreamGetBranches(Stream.id, 100, 0);
-        Branches = branches;
+        Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
 
-        var branch = Branches.FirstOrDefault(x => x.name == StreamState.BranchName);
-        if (branch != null)
-          SelectedBranch = branch;
+        var index = Branches.FindIndex(x => x.name == StreamState.BranchName);
+        if (index != -1)
+          SelectedBranch = BranchesViewModel[index];
         else
-          SelectedBranch = Branches[0];
+          SelectedBranch = BranchesViewModel[0];
 
         //restore selected filter
         if (StreamState.Filter != null)
@@ -699,7 +734,7 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        StreamState.BranchName = SelectedBranch.name;
+        StreamState.BranchName = SelectedBranch.Branch.name;
         StreamState.IsReceiver = IsReceiver;
         StreamState.AutoReceive = AutoReceive;
         StreamState.ReceiveMode = SelectedReceiveMode;
@@ -720,9 +755,9 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        if (SelectedBranch.commits == null || SelectedBranch.commits.totalCount > 0)
+        if (SelectedBranch.Branch.commits == null || SelectedBranch.Branch.commits.totalCount > 0)
         {
-          var branch = await Client.BranchGet(Stream.id, SelectedBranch.name, 100);
+          var branch = await Client.BranchGet(Stream.id, SelectedBranch.Branch.name, 100);
           branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
           Commits = branch.commits.items;
           var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
@@ -805,6 +840,41 @@ namespace DesktopUI2.ViewModels
     }
 
     #region commands
+
+    private async void AddNewBranch()
+    {
+      var dialog = new NewBranchDialog();
+      var nbvm = new NewBranchViewModel(Branches);
+      dialog.DataContext = nbvm;
+
+      var result = await dialog.ShowDialog<bool>();
+
+      if (result)
+      {
+        try
+        {
+
+          var branchId = await this.StreamState.Client.BranchCreate(new BranchCreateInput { streamId = Stream.id, description = nbvm.Description ?? "", name = nbvm.BranchName });
+
+
+          Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
+
+          var index = Branches.FindIndex(x => x.name == nbvm.BranchName);
+          if (index != -1)
+            SelectedBranch = BranchesViewModel[index];
+
+        }
+        catch (Exception e)
+        {
+          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+        }
+      }
+      else
+      {
+        //make sure the a branch is selected if canceled
+        SelectedBranch = BranchesViewModel[0];
+      }
+    }
     public async void CopyReportCommand()
     {
       var reportObjectSummaries = FilteredReport.Select(o => o.GetSummary()).ToArray();
