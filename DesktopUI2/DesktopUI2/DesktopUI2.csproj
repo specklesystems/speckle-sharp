@@ -66,6 +66,7 @@
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
 	<None Remove="Views\Settings\ListBoxSettingView.xaml" />
 	<None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
+	<None Remove="Views\Settings\NumericUpDownSettingView.xaml" />
 	<None Remove="Views\Settings\NumericUpDownWithComboBoxSettingView.xaml" />
 	<None Remove="Views\Settings\TextBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
@@ -210,6 +211,9 @@
     <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <EmbeddedResource Include="Views\Settings\NumericUpDownSettingView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Settings\NumericUpDownWithComboBoxSettingView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

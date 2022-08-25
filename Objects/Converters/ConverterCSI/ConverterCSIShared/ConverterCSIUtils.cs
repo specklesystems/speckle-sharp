@@ -11,7 +11,9 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
+    public double RoundUnit(int dec, double value ){
+      return Math.Round(value, dec);
+    }
     public string ModelUnits()
     {
       var units = Model.GetDatabaseUnits();

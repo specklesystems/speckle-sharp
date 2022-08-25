@@ -39,6 +39,7 @@ namespace Objects.Converter.CSI
     public string Name => nameof(ConverterCSI);
 
     public string Author => "Speckle";
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public string WebsiteOrEmail => "https://speckle.systems";
 
@@ -55,6 +56,12 @@ namespace Objects.Converter.CSI
       Model = (cSapModel)doc;
       SpeckleModel = ModelToSpeckle();
       AnalysisResults = ResultsToSpeckle();
+    }
+
+
+    public void SetConverterSettings(object settings)
+    {
+      Settings = settings as Dictionary<string, string>;
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -312,9 +319,5 @@ namespace Objects.Converter.CSI
       throw new NotImplementedException();
     }
 
-    public void SetConverterSettings(object settings)
-    {
-      throw new NotImplementedException("This converter does not have any settings.");
-    }
   }
 }

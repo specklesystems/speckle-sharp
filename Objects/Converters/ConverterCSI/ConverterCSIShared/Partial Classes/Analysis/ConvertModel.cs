@@ -22,6 +22,9 @@ namespace Objects.Converter.CSI
   {
     public object ModelToNative(Model model)
     {
+      Settings.TryGetValue("", out string recieveModelMesh);
+      var modelTolerance = 
+
       if (model.specs != null) { ModelInfoToNative(model.specs); }
 
       if (model.materials != null)

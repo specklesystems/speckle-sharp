@@ -53,7 +53,7 @@ namespace Speckle.ConnectorCSI.UI
         return null;
       }
 
-      var modelToleranceSettings = (CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as NumericUpDownWithComboBoxSetting);
+      var modelToleranceSettings = (CurrentSettings.FirstOrDefault(x => x.Slug == "model-tolerance") as NumericUpDownSetting);
       var modelToleranceValue = modelToleranceSettings != null ? modelToleranceSettings.Value: "0.0";
       var modelTolernaceUnits = modelToleranceSettings != null ? modelToleranceSettings.Selection: "mm";
 
