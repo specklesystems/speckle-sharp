@@ -193,6 +193,85 @@ namespace Speckle.ConnectorAutocadCivil
     }
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
+    private static Autodesk.Aec.PropertyData.DataType? GetPropertySetType(object prop)
+    {
+      switch (prop)
+      {
+        case IEnumerable<string> _:
+        case IEnumerable<int> _:
+        case IEnumerable<double> _:
+        case IEnumerable<bool> _:
+          return Autodesk.Aec.PropertyData.DataType.List;
+
+        case string _:
+          return Autodesk.Aec.PropertyData.DataType.Text;
+        case int _:
+          return Autodesk.Aec.PropertyData.DataType.Integer;
+        case double _:
+          return Autodesk.Aec.PropertyData.DataType.Real;
+        case bool _:
+          return Autodesk.Aec.PropertyData.DataType.TrueFalse;
+
+        default:
+          return null;
+      }
+    }
+
+    public static void SetPropertySets(this Entity entity, Document doc, Transaction tr, List<Dictionary<string, object>> propertySetDicts)
+    {
+      // create a dictionary for property sets for this object
+      var dictPropSetDef = new DictionaryPropertySetDefinitions(doc.Database);
+      var name = $"Speckle {entity.Handle} Property Set";
+      int count = 0;
+      foreach (var propertySetDict in propertySetDicts)
+      {
+        // create the property set definition for this set.
+        var propSetDef = new PropertySetDefinition();
+        propSetDef.SetToStandard(doc.Database);
+        propSetDef.SubSetDatabaseDefaults(doc.Database);
+        //propSetDef.Name = name += $" - {count}";
+        propSetDef.Description = "Property Set Definition added with Speckle";
+        propSetDef.AppliesToAll = true;
+
+        // Create the definition for each property
+        foreach (var entry in propertySetDict)
+        {
+          var propDef = new PropertyDefinition();
+          propDef.SetToStandard(doc.Database);
+          propDef.SubSetDatabaseDefaults(doc.Database);
+          propDef.Name = entry.Key;
+          var dataType = GetPropertySetType(entry.Value);
+          if (dataType != null)
+            propDef.DataType = (Autodesk.Aec.PropertyData.DataType)dataType;
+          propDef.DefaultData = entry.Value;
+          propSetDef.Definitions.Add(propDef);
+        }
+
+        // add the property sets to the object
+        try
+        {
+          /*
+          // add property set to the database
+          // todo: add logging if the property set couldnt be added because a def already exists
+          using (tr)
+          {
+            if (dictPropSetDef.Has(propSetDef.Name, tr)) return;
+            dictPropSetDef.AddNewRecord(propSetDef.Name, propSetDef);
+            tr.AddNewlyCreatedDBObject(propSetDef, true);
+            tr.Commit();
+          }
+          */
+
+          using (tr)
+          {
+            PropertyDataServices.AddPropertySet(entity, propSetDef.ObjectId);
+            tr.Commit();
+          }
+        }
+        catch { }
+      }
+    }
+
     /// <summary>
     /// Get the property sets of  DBObject
     /// </summary>
