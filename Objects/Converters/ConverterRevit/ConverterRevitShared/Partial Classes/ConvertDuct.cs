@@ -18,12 +18,11 @@ namespace Objects.Converter.Revit
       var speckleRevitDuct = speckleDuct as RevitDuct;
       var docObj = GetExistingElementByApplicationId(speckleDuct.applicationId);
       var appObj = new ApplicationObject(speckleDuct.id, speckleDuct.speckle_type) { applicationId = speckleDuct.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
-      
+
       var systemFamily = (speckleRevitDuct != null) ? speckleRevitDuct.systemName : "";
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType()
           .OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();

@@ -669,6 +669,24 @@ namespace Objects.Converter.Revit
       return element;
     }
 
+    /// <summary>
+    /// Returns true if element is not null and the user-selected receive mode is set to "ignore"
+    /// </summary>
+    /// <param name="docObj">Existing document element</param>
+    /// <param name="appObj"></param>
+    /// <param name="updatedAppObj">The updated appObj if method returns true, the original appObj if false</param>
+    /// <returns></returns>
+    public bool IsIgnore(Element docObj, ApplicationObject appObj, out ApplicationObject updatedAppObj)
+    {
+      updatedAppObj = appObj;
+      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
+      {
+        updatedAppObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+        return true;
+      }
+      else
+        return false;
+    }
 #endregion
 
 #region Reference Point
@@ -1112,13 +1130,15 @@ namespace Objects.Converter.Revit
     public ApplicationObject CheckForExistingObject(Base @base)
     {
       @base.applicationId ??= @base.id;
+
       var docObj = GetExistingElementByApplicationId(@base.applicationId);
+      var appObj = new ApplicationObject(@base.id, @base.speckle_type) { applicationId = @base.applicationId };
 
-      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
-        return new ApplicationObject(@base.id, @base.speckle_type)
-        { applicationId = @base.applicationId, CreatedIds = new List<string> { docObj.UniqueId }, Converted = new List<object> { docObj } };
-
-      //just create new one 
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+     
+      // otherwise just create new one 
       if (docObj != null)
         Doc.Delete(docObj.Id);
 

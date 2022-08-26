@@ -19,14 +19,13 @@ namespace Objects.Converter.Revit
       DB.Level level = ConvertLevelToRevit(speckleFi.level, out ApplicationObject.State levelState);
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
-      //try update existing
+
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
       var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type) { applicationId = speckleFi.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       if (!GetElementType<FamilySymbol>(speckleFi, appObj, out DB.FamilySymbol familySymbol))
       {

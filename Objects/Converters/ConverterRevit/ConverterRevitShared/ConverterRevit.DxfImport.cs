@@ -24,11 +24,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
       var existing = CheckForExistingObject(ds);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
         return existing;
-      }
 
       var el = CreateDxfImport(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
@@ -40,11 +36,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
       var existing = CheckForExistingObject(ds);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
         return existing;
-      }
 
       var el = CreateDxfImportFamily(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
@@ -56,11 +48,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var existing = CheckForExistingObject(mesh);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
         return existing;
-      }
 
       var el = CreateDxfImport(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}.dxf", 1, doc);
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
@@ -72,12 +60,8 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var existing = CheckForExistingObject(mesh);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
         return existing;
-      }
-      
+
       var el = CreateDxfImportFamily(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}", 1, doc);
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
@@ -88,11 +72,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
       var existing = CheckForExistingObject(brep);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
         return existing;
-      }
 
       var el = CreateDxfImport(
         new List<Base>{brep}, 
@@ -109,12 +89,8 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
       var existing = CheckForExistingObject(brep);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
         return existing;
-      }
-      
+
       var el = CreateDxfImportFamily(
         new List<Base>{brep}, 
         $"Speckle-Brep-{brep.id}-{brep.applicationId}",

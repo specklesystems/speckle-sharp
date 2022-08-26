@@ -17,14 +17,12 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject BlockInstanceToNative(BlockInstance instance, Transform transform = null)
     {
-      //try update existing 
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem:$"ApplicationId already exists in document, new object ignored.");
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       var isUpdate = false;
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
