@@ -165,10 +165,13 @@ namespace Speckle.Core.Credentials
       if (defaultAccount == null)
       {
         var firstAccount = GetAccounts().FirstOrDefault();
-        if (firstAccount == null)
-        {
-          Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.SentryLevel.Info);
-        }
+        // We disabled this logging cause of the infinite loop:
+        // - Log.CaptureException -> Log.Initialize -> AccountManager.GetDefaultAccount -> null -> Log.CaptureException
+        // check with Matteo if we really need this
+        // if (firstAccount == null)
+        // {
+        //   Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.SentryLevel.Info);
+        // }
         return firstAccount;
       }
       return defaultAccount;

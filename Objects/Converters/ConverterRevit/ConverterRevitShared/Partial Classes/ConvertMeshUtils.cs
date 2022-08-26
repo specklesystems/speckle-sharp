@@ -20,12 +20,8 @@ namespace Objects.Converter.Revit
       }
 
       if (subElements != null)
-      {
         foreach (var sb in subElements)
-        {
           allSolids.AddRange(GetElementSolids(sb));
-        }
-      }
 
       return GetMeshesFromSolids(allSolids, element.Document);
 

@@ -16,11 +16,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
       var appObj = new ApplicationObject(speckleRebar.id, speckleRebar.speckle_type) { applicationId = speckleRebar.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       if (speckleRebar.curves.Count == 0)
       {

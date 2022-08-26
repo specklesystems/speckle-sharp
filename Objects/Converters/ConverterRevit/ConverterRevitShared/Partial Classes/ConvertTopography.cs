@@ -14,11 +14,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
       var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       var pts = new List<XYZ>();
       var facets = new List<PolymeshFacet>();

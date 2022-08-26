@@ -17,11 +17,10 @@ namespace Objects.Converter.Revit
 
       var docObj = GetExistingElementByApplicationId((speckleCableTray).applicationId);
       var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       if (!GetElementType<CableTrayType>(speckleCableTray, appObj, out CableTrayType cableTrayType))
       {

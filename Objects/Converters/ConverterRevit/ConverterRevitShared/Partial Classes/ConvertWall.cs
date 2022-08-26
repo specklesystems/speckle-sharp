@@ -20,11 +20,10 @@ namespace Objects.Converter.Revit
     {
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
       var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
-      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitWall.UniqueId, convertedItem: revitWall);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitWall, appObj, out appObj))
         return appObj;
-      }
 
       if (speckleWall.baseLine == null)
       {

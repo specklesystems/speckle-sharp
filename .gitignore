@@ -9,6 +9,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.tsep
 
 # Intellij Crap
 .idea

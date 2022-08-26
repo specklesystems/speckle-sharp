@@ -18,10 +18,10 @@ namespace Speckle.Core.Transports.ServerUtils
   {
     private int BATCH_SIZE_HAS_OBJECTS = 100000;
     private int BATCH_SIZE_GET_OBJECTS = 10000;
-    private int MAX_OBJECT_SIZE = 10_000_000;
+    private int MAX_OBJECT_SIZE = 25_000_000;
     private int MAX_MULTIPART_COUNT = 5;
-    private int MAX_MULTIPART_SIZE = 10_000_000;
-    private int MAX_REQUEST_SIZE = 50_000_000;
+    private int MAX_MULTIPART_SIZE = 25_000_000;
+    private int MAX_REQUEST_SIZE = 100_000_000;
 
     private int DOWNLOAD_BATCH_SIZE = 1000;
     private int RETRY_COUNT = 3;

@@ -167,12 +167,24 @@
             </StackPanel>
           </TabItem.Header>
 
-          <Grid RowDefinitions="auto,*" ColumnDefinitions="*,auto">
-            <ScrollViewer Grid.Row="1" IsVisible="{Binding !HasReportItems}">
-              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Log}" />
+          <Grid RowDefinitions="auto,auto,auto,*" ColumnDefinitions="*,auto">
+
+            <!--  OLD REPORT, DEPRECATE AFTER ALL CONNECTOR BINDINGS ARE UPDATED WITH NEW APPOBJS  -->
+            <ScrollViewer Grid.Row="2" IsVisible="{Binding !HasReportItems}">
+              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Progress.Report.ConversionLogString}" />
             </ScrollViewer>
-            <m:Card
+
+            <!--  SUMMARY AND OPERATION ERRORS  -->
+            <TextBlock
               Grid.Row="0"
+              Margin="10,0,0,0"
+              VerticalAlignment="Center"
+              Text="{Binding Log}"
+              TextWrapping="Wrap" />
+
+            <!--  SEARCH AND FILTER  -->
+            <m:Card
+              Grid.Row="1"
               Grid.Column="0"
               Margin="5,10,5,10"
               Padding="0"
@@ -214,7 +226,7 @@
               </TextBox>
             </m:Card>
             <m:FloatingButton
-              Grid.Row="0"
+              Grid.Row="1"
               Grid.Column="1"
               HorizontalAlignment="Right"
               VerticalAlignment="Center"
@@ -232,7 +244,18 @@
                   Kind="ContentCopy" />
               </Button.Content>
             </m:FloatingButton>
-            <uc:Report Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding HasReportItems}" />
+
+            <ListBox
+              Grid.Row="2"
+              Margin="0,0,0,8"
+              IsVisible="{Binding HasReportItems}"
+              Classes="Chip"
+              Items="{Binding ReportFilterItems}"
+              Selection="{Binding ReportSelectionModel}"
+              SelectionMode="Multiple, Toggle" />
+
+            <!--  APP OBJS  -->
+            <uc:Report Grid.Row="3" Grid.ColumnSpan="2" IsVisible="{Binding HasReportItems}" />
           </Grid>
 
         </TabItem>
