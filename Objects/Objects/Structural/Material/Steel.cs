@@ -12,10 +12,7 @@ namespace Objects.Structural.Materials
     public double ultimateStrength { get; set; } //ultimateStress
     public double maxStrain { get; set; } //failureStrain
     public double strainHardeningModulus { get; set; }
-    public Steel() 
-    {
-      materialType = MaterialType.Steel;
-    }
+    public Steel() { }
 
     [SchemaInfo("Steel", "Creates a Speckle structural material for steel (to be used in structural analysis models)", "Structural", "Materials")]
     public Steel(string name, string grade = null, string designCode = null, string codeYear = null, double elasticModulus = 0, double yieldStrength = 0, double ultimateStrength = 0, double maxStrain = 0, double poissonsRatio = 0, double shearModulus = 0, double density = 0, double alpha = 0, double dampingRatio = 0)
