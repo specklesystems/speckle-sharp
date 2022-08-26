@@ -14,7 +14,7 @@ namespace Objects.Structural.Materials
     public double strainHardeningModulus { get; set; }
     public Steel() 
     {
-      this.materialType = MaterialType.Steel;
+      materialType = MaterialType.Steel;
     }
 
     [SchemaInfo("Steel", "Creates a Speckle structural material for steel (to be used in structural analysis models)", "Structural", "Materials")]

@@ -12,7 +12,7 @@ namespace Objects.Structural.Materials
     public string species { get; set; }
     public Timber() 
     {
-      this.materialType = MaterialType.Timber;
+      materialType = MaterialType.Timber;
     }
 
     [SchemaInfo("Timber", "Creates a Speckle structural material for timber (to be used in structural analysis models)", "Structural", "Materials")]

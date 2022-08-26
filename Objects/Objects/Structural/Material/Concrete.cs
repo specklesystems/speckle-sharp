@@ -18,7 +18,7 @@ namespace Objects.Structural.Materials
 
     public Concrete() 
     {
-      this.materialType = MaterialType.Concrete;
+      materialType = MaterialType.Concrete;
     }
 
     [SchemaInfo("Concrete", "Creates a Speckle structural material for concrete (to be used in structural analysis models)", "Structural", "Materials")]
