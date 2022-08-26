@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
@@ -215,9 +216,11 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <returns>The location of the user's `%appdata%` folder.</returns>
     public static string UserApplicationDataPath
-        // We combine our own path to the %appdata% folder due to solve issues with network account management in windows,
-        // where the normal `SpecialFolder.ApplicationData` would point to the `Default` user instead of the active one.
-        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+      // We combine our own path to the %appdata% folder due to solve issues with network account management in windows,
+      // where the normal `SpecialFolder.ApplicationData` would point to the `Default` user instead of the active one.
+      => RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming")
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
   }
 }
