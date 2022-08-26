@@ -20,7 +20,7 @@ namespace Speckle.Core.Api
     public bool isPublic { get; set; } = true;
   }
 
-  public class StreamGrantPermissionInput
+  public class StreamPermissionInput
   {
     public string streamId { get; set; }
     public string userId { get; set; }
@@ -36,6 +36,7 @@ namespace Speckle.Core.Api
   public class StreamInviteCreateInput
   {
     public string streamId { get; set; }
+    public string userId { get; set; }
     public string email { get; set; }
     public string message { get; set; }
   }
@@ -152,6 +153,22 @@ namespace Speckle.Core.Api
     {
       return $"Collaborator ({name} | {role} | {id})";
     }
+  }
+
+  public class StreamInvitesResponse
+  {
+    public List<PendingStreamCollaborator> streamInvites { get; set; }
+  }
+  public class PendingStreamCollaborator
+  {
+    public string id { get; set; }
+    public string inviteId { get; set; }
+    public string streamId { get; set; }
+    public string streamName { get; set; }
+    public string title { get; set; }
+    public string role { get; set; }
+    public User invitedBy { get; set; }
+    public string token { get; set; }
   }
 
   public class Branches
@@ -315,13 +332,13 @@ namespace Speckle.Core.Api
   public partial class Doc
   {
     public string Type { get; set; }
-    public DocContent[] Content { get; set; }
+    public DocContent[ ] Content { get; set; }
   }
 
   public partial class DocContent
   {
     public string Type { get; set; }
-    public ContentContent[] Content { get; set; }
+    public ContentContent[ ] Content { get; set; }
   }
 
   public partial class ContentContent
@@ -330,7 +347,6 @@ namespace Speckle.Core.Api
     //public Mark[] Marks { get; set; }
     public string Text { get; set; }
   }
-
 
   public class Resource
   {
@@ -346,15 +362,12 @@ namespace Speckle.Core.Api
     comment
   }
 
-
-
   public class Location
   {
     public double x { get; set; }
     public double y { get; set; }
     public double z { get; set; }
   }
-
 
   public class UserData
   {
@@ -370,6 +383,26 @@ namespace Speckle.Core.Api
   {
     public string cursor { get; set; }
     public List<User> items { get; set; }
+  }
+
+  public class ServerInfoResponse
+  {
+    // TODO: server and user models are duplicated here and in Core.Credentials.Responses
+    // a bit weird and unnecessary - shouldn't both Credentials and Api share the same models since they're
+    // all server models that should be consistent? am creating a new obj here as to not reference Credentials in
+    // this file but it should prob be refactored in the futrue
+    public ServerInfo serverInfo { get; set; }
+  }
+
+  // TODO: prob remove and bring one level up and shared w Core.Credentials
+  public class ServerInfo
+  {
+    public string name { get; set; }
+    public string company { get; set; }
+    public string url { get; set; }
+    public string version { get; set; }
+    public string adminContact { get; set; }
+    public string description { get; set; }
   }
 
   public class StreamData

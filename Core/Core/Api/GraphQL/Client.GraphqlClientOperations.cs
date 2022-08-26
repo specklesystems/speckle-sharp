@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -116,6 +117,40 @@ namespace Speckle.Core.Api
         return res.Data.userSearch.items;
       }
       catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+    
+    /// <summary>
+    /// Gets the version of the current server. Useful for guarding against unsupported api calls on newer or older servers.
+    /// </summary>
+    /// <param name="cancellationToken">[Optional] defaults to an empty cancellation token</param>
+    /// <returns><see cref="Version"/> object excluding any strings (eg "2.7.2-alpha.6995" becomes "2.7.2.6995")</returns>
+    /// <exception cref="SpeckleException"></exception>
+    ///
+    public async Task<Version> GetServerVersion(CancellationToken cancellationToken =  default)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query Server {
+                      serverInfo {
+                          version
+                        }
+                    }",
+        };
+
+        var res = await GQLClient.SendMutationAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
+
+        if ( res.Errors != null && res.Errors.Any() )
+          throw new SpeckleException(res.Errors[ 0 ].Message, res.Errors);
+
+        ServerVersion = new Version(Regex.Replace(res.Data.serverInfo.version, "[-a-zA-Z]+", ""));
+        return ServerVersion;
+      }
+      catch ( Exception e )
       {
         throw new SpeckleException(e.Message, e);
       }
@@ -535,7 +570,7 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="permissionInput"></param>
     /// <returns></returns>
-    public Task<bool> StreamGrantPermission(StreamGrantPermissionInput permissionInput)
+    public Task<bool> StreamGrantPermission(StreamPermissionInput permissionInput)
     {
       return StreamGrantPermission(CancellationToken.None, permissionInput);
     }
@@ -546,8 +581,17 @@ namespace Speckle.Core.Api
     /// <param name="cancellationToken"></param>
     /// <param name="permissionInput"></param>
     /// <returns></returns>
-    public async Task<bool> StreamGrantPermission(CancellationToken cancellationToken, StreamGrantPermissionInput permissionInput)
+    public async Task<bool> StreamGrantPermission(CancellationToken cancellationToken, StreamPermissionInput permissionInput)
     {
+      var version = await GetServerVersion(cancellationToken);
+      if ( version >= new Version("2.6.4") )
+      {
+        throw new SpeckleException(
+          "Server mutation `StreamGrantPermission` is no longer supported as of Speckle Server v2.6.4." +
+          "Please use the new `StreamUpdatePermission` method to change an existing user's permission or use the" +
+          "StreamInviteCreate method to invite a user to a stream."
+          );
+      }
       try
       {
         var request = new GraphQLRequest
@@ -622,6 +666,42 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
+    /// Updates permissions for a user on a given stream.
+    /// Valid for Speckle Server >=2.6.4
+    /// </summary>
+    /// <param name="updatePermissionInput">includes the streamId, the userId of the user to update, and the user's new role</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<bool> StreamUpdatePermission(StreamPermissionInput updatePermissionInput, CancellationToken cancellationToken = default)
+    {
+      await _CheckStreamInvitesSupported(cancellationToken);
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query =
+            @"
+            mutation streamUpdatePermission($permissionParams: StreamUpdatePermissionInput!) {
+              streamUpdatePermission(permissionParams:$permissionParams)
+            }",
+          Variables = new { permissionParams = updatePermissionInput }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request).ConfigureAwait(false);
+
+        if ( res.Errors != null )
+          throw new SpeckleException("Could not update permission", res.Errors);
+
+        return ( bool )res.Data[ "streamUpdatePermission" ];
+      }
+      catch ( Exception e )
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    /// <summary>
     /// Sends an email invite to join a stream and assigns them a collaborator role.
     /// </summary>
     /// <param name="streamCreateInput"></param>
@@ -635,12 +715,16 @@ namespace Speckle.Core.Api
     /// Sends an email invite to join a stream and assigns them a collaborator role.
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <param name="streamCreateInput"></param>
+    /// <param name="inviteCreateInput"></param>
     /// <returns></returns>
-    public async Task<bool> StreamInviteCreate(CancellationToken cancellationToken, StreamInviteCreateInput streamCreateInput)
+    public async Task<bool> StreamInviteCreate(CancellationToken cancellationToken, StreamInviteCreateInput inviteCreateInput)
     {
+      if ( inviteCreateInput.email == null & inviteCreateInput.userId == null )
+        throw new SpeckleException("You must provide either an email or a user id to create a stream invite");
       try
       {
+        // not guarded by _CheckStreamInvitesSupported because this was here already so i'm guessing this particular
+        // endpoint was still supported prior to 2.6.4 even though the rest of the flow was not
         var request = new GraphQLRequest
         {
           Query =
@@ -650,7 +734,7 @@ namespace Speckle.Core.Api
           }",
           Variables = new
           {
-            input = streamCreateInput
+            input = inviteCreateInput
           }
         };
 
@@ -662,6 +746,104 @@ namespace Speckle.Core.Api
         return (bool)res.Data["streamInviteCreate"];
       }
       catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    /// <summary>
+    /// Checks if Speckle Server version is at least v2.6.4 meaning stream invites are supported.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns>true if invites are supported</returns>
+    /// <exception cref="SpeckleException">if Speckle Server version is less than v2.6.4</exception>
+    public async Task<bool> _CheckStreamInvitesSupported(CancellationToken cancellationToken = default)
+    {
+      var version = ServerVersion ?? await GetServerVersion(cancellationToken);
+      if ( version < new Version("2.6.4") )
+        throw new SpeckleException("Stream invites are only supported as of Speckle Server v2.6.4.");
+      return true;
+    }
+    
+    /// <summary>
+    /// Accept or decline a stream invite.
+    /// Requires Speckle Server version >= 2.6 .4
+    /// </summary>
+    /// <param name="streamId"></param>
+    /// <param name="token"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<bool> StreamInviteUse(string streamId, string token, bool accept = true,
+      CancellationToken cancellationToken = default)
+    {
+      await _CheckStreamInvitesSupported(cancellationToken);
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query =
+            @"
+            mutation streamInviteUse( $accept: Boolean!, $streamId: String!, $token: String! ) {
+              streamInviteUse(accept: $accept, streamId: $streamId, token: $token)
+            }",
+          Variables = new {streamId, token, accept}
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request).ConfigureAwait(false);
+
+        if ( res.Errors != null )
+          throw new SpeckleException(
+            $"Could not {( accept ? "accept" : "decline" )} the invite for stream {streamId}",
+            res.Errors);
+
+        return ( bool )res.Data[ "streamInviteUse" ];
+      }
+      catch ( Exception e )
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
+    {
+      await _CheckStreamInvitesSupported(cancellationToken);
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query =
+            @"
+            query StreamInvites {
+              streamInvites{
+                id
+                token
+                inviteId
+                streamId
+                streamName
+                title
+                role
+                invitedBy {
+                  id
+                  name
+                  company
+                  avatar
+                }
+              }
+            }",
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamInvitesResponse>(request).ConfigureAwait(false);
+
+        if ( res.Errors != null )
+          throw new SpeckleException(
+            "Could not get pending stream invites for current user",
+            res.Errors);
+
+        return res.Data.streamInvites;
+      }
+      catch ( Exception e )
       {
         throw new SpeckleException(e.Message, e);
       }
