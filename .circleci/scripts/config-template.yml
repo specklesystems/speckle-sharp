@@ -23,9 +23,9 @@ commands:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-core:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet core 3.1 sdk
+      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
     steps:
       - checkout
       - run:
