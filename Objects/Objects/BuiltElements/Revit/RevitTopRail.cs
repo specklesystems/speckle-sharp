@@ -19,7 +19,7 @@ namespace Objects.BuiltElements.Revit
 
 		public RevitTopRail() { }
 
-		[SchemaInfo("TopRail", "Creates a Revit top rail by base curve.", "Revit", "Architecture")]
+		[SchemaInfo("TopRail", "Creates a Revit top rail.", "Revit", "Architecture")]
 		public RevitTopRail(string type)
 		{
 			this.type = type;
