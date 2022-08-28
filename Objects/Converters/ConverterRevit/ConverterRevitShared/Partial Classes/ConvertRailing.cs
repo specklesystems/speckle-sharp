@@ -7,96 +7,152 @@ using System.Collections.Generic;
 
 namespace Objects.Converter.Revit
 {
-  public partial class ConverterRevit
-  {
-    public List<ApplicationPlaceholderObject> RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
-    {
-      if (speckleRailing.path == null)
-      {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Railings are currently supported.");
-      }
+	public partial class ConverterRevit
+	{
+		public List<ApplicationPlaceholderObject> RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
+		{
+			if (speckleRailing.path == null)
+			{
+				throw new Speckle.Core.Logging.SpeckleException("Only line based Railings are currently supported.");
+			}
 
-      var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
+			var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
 
-      if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleRailing.applicationId, ApplicationGeneratedId = revitRailing.UniqueId, NativeObject = revitRailing}
-      };
+			if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+				return new List<ApplicationPlaceholderObject>
+			{
+				new ApplicationPlaceholderObject
+					{applicationId = speckleRailing.applicationId, ApplicationGeneratedId = revitRailing.UniqueId, NativeObject = revitRailing}
+			};
 
-      var railingType = GetElementType<RailingType>(speckleRailing);
-      Level level = ConvertLevelToRevit(speckleRailing.level);
+			var railingType = GetElementType<RailingType>(speckleRailing);
+			Level level = ConvertLevelToRevit(speckleRailing.level);
 
-      //we currently don't support railings hosted on stairs, and these have null level
-      if (level == null)
-        return null;
-      var baseCurve = CurveArrayToCurveLoop(CurveToNative(speckleRailing.path));
+			//we currently don't support railings hosted on stairs, and these have null level
+			if (level == null)
+				return null;
+			var baseCurve = CurveArrayToCurveLoop(CurveToNative(speckleRailing.path));
 
-      //if it's a new element, we don't need to update certain properties
-      bool isUpdate = true;
-      if (revitRailing == null)
-      {
-        isUpdate = false;
-        revitRailing = Railing.Create(Doc, baseCurve, railingType.Id, level.Id);
-      }
-      if (revitRailing == null)
-      {
-        throw (new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
-      }
+			//if it's a new element, we don't need to update certain properties
+			bool isUpdate = true;
+			if (revitRailing == null)
+			{
+				isUpdate = false;
+				revitRailing = Railing.Create(Doc, baseCurve, railingType.Id, level.Id);
+			}
+			if (revitRailing == null)
+			{
+				throw (new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
+			}
 
-      if (revitRailing.GetTypeId() != railingType.Id)
-      {
-        revitRailing.ChangeTypeId(railingType.Id);
-      }
+			if (revitRailing.GetTypeId() != railingType.Id)
+			{
+				revitRailing.ChangeTypeId(railingType.Id);
+			}
 
-      if (isUpdate)
-      {
-        revitRailing.SetPath(baseCurve);
-        TrySetParam(revitRailing, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
-      }
+			if (speckleRailing.topRail != null)
+			{
+				var topRailType = GetElementType<TopRailType>(speckleRailing.topRail);
 
-      if (speckleRailing.flipped != revitRailing.Flipped)
-      {
-        revitRailing.Flip();
-      }
+				if (GetParamValue<int>(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL) == 0)
+					TrySetParam(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL, 1);
 
-      SetInstanceParameters(revitRailing, speckleRailing);
+				if (railingType.TopRailType != topRailType.Id)
+					railingType.TopRailType = topRailType.Id;
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleRailing.applicationId,
-        ApplicationGeneratedId = revitRailing.UniqueId,
-        NativeObject = revitRailing
-        }
-      };
-
-      Doc.Regenerate();
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} Railing {revitRailing.Id}");
-      return placeholders;
-    }
-
-    //TODO: host railings, where possible
-    private RevitRailing RailingToSpeckle(Railing revitRailing)
-    {
-
-      var railingType = revitRailing.Document.GetElement(revitRailing.GetTypeId()) as RailingType;
-      var speckleRailing = new RevitRailing();
-      //speckleRailing.family = railingType.FamilyName;
-      speckleRailing.type = railingType.Name;
-      speckleRailing.level = ConvertAndCacheLevel(revitRailing, BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM);
-      speckleRailing.path = CurveListToSpeckle(revitRailing.GetPath());
-
-      GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
+			}
 
 
-      speckleRailing.displayValue = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      Report.Log($"Converted Railing {revitRailing.Id}");
+			if (isUpdate)
+			{
+				revitRailing.SetPath(baseCurve);
+				TrySetParam(revitRailing, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
+			}
 
-      return speckleRailing;
-    }
+			if (speckleRailing.flipped != revitRailing.Flipped)
+			{
+				revitRailing.Flip();
+			}
 
-  }
+			SetInstanceParameters(revitRailing, speckleRailing);
+
+			var placeholders = new List<ApplicationPlaceholderObject>()
+			{
+				new ApplicationPlaceholderObject
+				{
+				applicationId = speckleRailing.applicationId,
+				ApplicationGeneratedId = revitRailing.UniqueId,
+				NativeObject = revitRailing
+				}
+			};
+
+			Doc.Regenerate();
+
+			if (speckleRailing.topRail != null)
+			{
+				var revitTopRail = Doc.GetElement(revitRailing.TopRail);
+
+				placeholders.Add(new ApplicationPlaceholderObject
+				{
+					applicationId = speckleRailing.topRail.applicationId,
+					ApplicationGeneratedId = revitTopRail.UniqueId,
+					NativeObject = revitTopRail,
+
+				});
+
+			}
+
+			Doc.Regenerate();
+			Report.Log($"{(isUpdate ? "Updated" : "Created")} Railing {revitRailing.Id}");
+			return placeholders;
+		}
+
+		//TODO: host railings, where possible
+		private RevitRailing RailingToSpeckle(Railing revitRailing)
+		{
+
+			var railingType = revitRailing.Document.GetElement(revitRailing.GetTypeId()) as RailingType;
+			var speckleRailing = new RevitRailing();
+			//speckleRailing.family = railingType.FamilyName;
+			speckleRailing.type = railingType.Name;
+			speckleRailing.level = ConvertAndCacheLevel(revitRailing, BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM);
+			speckleRailing.path = CurveListToSpeckle(revitRailing.GetPath());
+
+			GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
+
+
+			speckleRailing.displayValue = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+
+			if (revitRailing.TopRail != ElementId.InvalidElementId)
+			{
+
+				var railingIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitRailing.UniqueId);
+				if (railingIndex != -1)
+				{
+					ContextObjects.RemoveAt(railingIndex);
+				}
+
+				var revitTopRail = revitRailing.Document.GetElement(revitRailing.TopRail) as TopRail;
+
+				var isSelectedInContextObjects = ContextObjects
+							.FindIndex(x => x.applicationId == revitTopRail.UniqueId);
+
+				if (isSelectedInContextObjects != -1)
+				{
+					ContextObjects.RemoveAt(isSelectedInContextObjects);
+				}
+
+				if (CanConvertToSpeckle(revitTopRail))
+				{
+					speckleRailing.topRail = TopRailToSpeckle(revitTopRail);
+					ConvertedObjectsList.Add(speckleRailing.topRail.applicationId);
+				}
+			}
+
+			Report.Log($"Converted Railing {revitRailing.Id}");
+
+			return speckleRailing;
+		}
+
+	}
 }

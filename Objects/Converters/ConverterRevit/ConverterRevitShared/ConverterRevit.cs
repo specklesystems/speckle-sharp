@@ -206,7 +206,10 @@ namespace Objects.Converter.Revit
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
           break;
-        case DB.Architecture.TopRail _:
+        case DB.Architecture.TopRail o:
+          returnObject = TopRailToSpeckle(o);
+          break;
+        case DB.Architecture.HandRail _:
           returnObject = null;
           break;
         case DB.Structure.Rebar o:
