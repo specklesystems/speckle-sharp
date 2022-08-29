@@ -323,7 +323,7 @@ namespace Objects.Converter.Revit
     }
     private BuiltInCategory GetObjectCategory(Base @object)
     {
-      switch(@object)
+      switch (@object)
       {
         case BE.Beam _:
         case BE.Brace _:
@@ -343,7 +343,7 @@ namespace Objects.Converter.Revit
           return BuiltInCategory.OST_PipeSegments;
         case BE.Rebar _:
           return BuiltInCategory.OST_Rebar;
-        case BE.Topography _: 
+        case BE.Topography _:
           return BuiltInCategory.OST_Topography;
         case BE.Wall _:
           return BuiltInCategory.OST_Walls;
@@ -354,7 +354,7 @@ namespace Objects.Converter.Revit
         case BE.CableTray _:
           return BuiltInCategory.OST_CableTray;
         default:
-          return BuiltInCategory.OST_GenericModel;        
+          return BuiltInCategory.OST_GenericModel;
       }
     }
 
@@ -373,12 +373,12 @@ namespace Objects.Converter.Revit
           var cat = GetObjectCategory(@object);
           return DirectShapeToNative(meshes, cat);
         }
-        catch 
+        catch
         {
 
         }
 
-        
+
 
       }
       //Family Document

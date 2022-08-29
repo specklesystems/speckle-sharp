@@ -5,50 +5,26 @@ using System.Collections.Generic;
 
 namespace Objects.Converter.Revit
 {
-	public partial class ConverterRevit
-	{
+  public partial class ConverterRevit
+  {
+    private RevitTopRail TopRailToSpeckle(TopRail revitTopRail)
+    {
+      if (!ShouldConvertHostedElement(revitTopRail, Doc.GetElement(revitTopRail.HostRailingId)))
+        return null;
 
-		//public List<ApplicationPlaceholderObject> TopRailToNative(RevitTopRail speckleTopRail)
-		//{
+      var topRailType = revitTopRail.Document.GetElement(revitTopRail.GetTypeId()) as TopRailType;
+      var speckleTopRail = new RevitTopRail
+      {
+        type = topRailType.Name,
+        displayValue = GetElementDisplayMesh(revitTopRail,
+                new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false })
+      };
 
-		//	var revitTopRail = GetExistingElementByApplicationId(speckleTopRail.applicationId) as TopRail;
+      GetAllRevitParamsAndIds(speckleTopRail, revitTopRail, new List<string> { });
 
+      Report.Log($"Converted TopRail {revitTopRail.Id}");
 
-		//	if (revitTopRail != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-		//		return new List<ApplicationPlaceholderObject>
-		//		{
-		//			new ApplicationPlaceholderObject
-		//			{
-		//					applicationId = speckleTopRail.applicationId,
-		//					ApplicationGeneratedId = revitTopRail.UniqueId, 
-		//					NativeObject = revitTopRail
-		//			}
-		//		};
-
-
-
-
-		//}
-
-
-		private RevitTopRail TopRailToSpeckle(TopRail revitTopRail)
-		{
-			if (!ShouldConvertHostedElement(revitTopRail, Doc.GetElement(revitTopRail.HostRailingId)))
-				return null;
-
-			var topRailType = revitTopRail.Document.GetElement(revitTopRail.GetTypeId()) as TopRailType;
-			var speckleTopRail = new RevitTopRail
-			{
-				type = topRailType.Name,
-				displayValue = GetElementDisplayMesh(revitTopRail,
-								new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false })
-			};
-
-			GetAllRevitParamsAndIds(speckleTopRail, revitTopRail, new List<string> { });
-
-			Report.Log($"Converted TopRail {revitTopRail.Id}");
-
-			return speckleTopRail;
-		}
-	}
+      return speckleTopRail;
+    }
+  }
 }
