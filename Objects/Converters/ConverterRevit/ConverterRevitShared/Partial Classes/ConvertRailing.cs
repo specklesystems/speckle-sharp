@@ -86,11 +86,16 @@ namespace Objects.Converter.Revit
         }
       };
 
-      Doc.Regenerate();
 
       if (speckleRailing.topRail != null)
       {
+        // This call to regenerate is to reflect the generation 
+        // of the TopRail element associated with the Railing element
+        Doc.Regenerate();
+
         var revitTopRail = Doc.GetElement(revitRailing.TopRail);
+
+        SetInstanceParameters(revitTopRail, speckleRailing.topRail);
 
         placeholders.Add(new ApplicationPlaceholderObject
         {
@@ -103,6 +108,7 @@ namespace Objects.Converter.Revit
       }
 
       Doc.Regenerate();
+
       Report.Log($"{(isUpdate ? "Updated" : "Created")} Railing {revitRailing.Id}");
       return placeholders;
     }
