@@ -168,7 +168,7 @@ namespace Objects.Converter.Revit
           var concreteMaterial = new Concrete
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Concrete,
+            materialType = Structural.MaterialType.Concrete,
             grade = null,
             designCode = null,
             codeYear = null,
@@ -192,7 +192,7 @@ namespace Objects.Converter.Revit
           var steelMaterial = new Steel
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Steel,
+            materialType = Structural.MaterialType.Steel,
             grade = materialAsset.Name,
             designCode = null,
             codeYear = null,
@@ -212,7 +212,7 @@ namespace Objects.Converter.Revit
           var timberMaterial = new Timber
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Timber,
+            materialType = Structural.MaterialType.Timber,
             grade = materialAsset.WoodGrade,
             designCode = null,
             codeYear = null,
@@ -326,7 +326,7 @@ namespace Objects.Converter.Revit
           var concreteMaterial = new Concrete
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Concrete,
+            materialType = Structural.MaterialType.Concrete,
             grade = null,
             designCode = null,
             codeYear = null,
@@ -350,7 +350,7 @@ namespace Objects.Converter.Revit
           var steelMaterial = new Steel
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Steel,
+            materialType = Structural.MaterialType.Steel,
             grade = materialAsset.Name,
             designCode = null,
             codeYear = null,
@@ -370,7 +370,7 @@ namespace Objects.Converter.Revit
           var timberMaterial = new Timber
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Timber,
+            materialType = Structural.MaterialType.Timber,
             grade = materialAsset.WoodGrade,
             designCode = null,
             codeYear = null,
