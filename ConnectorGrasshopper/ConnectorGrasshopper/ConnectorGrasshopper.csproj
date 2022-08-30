@@ -28,4 +28,9 @@
     <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build" />
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="SchemaBuilder\SchemaBuilderGen.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
 </Project>
