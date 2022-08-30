@@ -169,7 +169,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.CreatedIds.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
         var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
@@ -226,6 +226,8 @@ namespace Speckle.ConnectorRevit.UI
 
             // "refresh" the active view
             uiView.ZoomAndCenterRectangle(zc.ElementAt(0), zc.ElementAt(1));
+
+            //uiView.Zoom(1);
           }
           catch (Exception ex) 
           { }
