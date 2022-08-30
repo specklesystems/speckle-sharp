@@ -215,22 +215,12 @@ namespace Speckle.ConnectorRevit.UI
           //regenerate the document and then implement a hack to "refresh" the view
           CurrentDoc.Document.Regenerate();
 
-          try
-          {
-            // get the active ui view
-            var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
-            var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+          // get the active ui view
+          var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+          var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
-            //So as not to bother the user by changing the zoom
-            var zc = uiView.GetZoomCorners().ToList();
-
-            // "refresh" the active view
-            uiView.ZoomAndCenterRectangle(zc.ElementAt(0), zc.ElementAt(1));
-
-            //uiView.Zoom(1);
-          }
-          catch (Exception ex) 
-          { }
+          // "refresh" the active view
+          uiView.Zoom(1);
 
           switch (convRes)
           {
