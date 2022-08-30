@@ -467,7 +467,7 @@ namespace DesktopUI2.ViewModels
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-          path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe");
+          path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
         }
 
         if (File.Exists(path))
@@ -475,7 +475,7 @@ namespace DesktopUI2.ViewModels
 
         else
         {
-          Process.Start(new ProcessStartInfo($"https://speckle-releases.netlify.app/") { UseShellExecute = true });
+          Process.Start(new ProcessStartInfo($"https://releases.speckle.systems/") { UseShellExecute = true });
         }
       }
       catch (Exception ex)
