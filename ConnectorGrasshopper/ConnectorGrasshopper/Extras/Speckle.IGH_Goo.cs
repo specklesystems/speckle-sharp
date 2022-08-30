@@ -89,8 +89,17 @@ namespace ConnectorGrasshopper.Extras
     public override string ToString()
     {
       if (Value == null) return "";
+      var name = Value["Name"] ?? Value["name"];
+
       if (Value.GetType().IsSubclassOf(typeof(Base)))
-        return $"Speckle {Value.GetType().Name}";
+      {
+        var baseString = $"Speckle {Value.GetType().Name}";
+        if (name != null)
+        {
+          baseString += $" [{name}]";
+        }
+        return baseString;
+      }
       return "Speckle Object";
       
       //return $"{(Value != null && Value.speckle_type == "" ? "Speckle.Base" : Value?.speckle_type)}";
