@@ -8,6 +8,7 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using Revit.Async;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -165,8 +166,9 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
         var td = new TaskDialog("Could not load Speckle");
-        td.MainContent = "Oh no! Something went wrong while loading Speckle, please report it on the forum:";
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
 
         TaskDialogResult tResult = td.Show();
