@@ -31,9 +31,11 @@
   <ItemGroup>
     <None Update="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="SchemaBuilder\SchemaBuilderGen.cs">
-      <AutoGen>True</AutoGen>
       <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
     </Compile>
   </ItemGroup>
