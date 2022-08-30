@@ -259,7 +259,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -279,7 +279,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -292,7 +292,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -332,7 +332,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -383,7 +383,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -404,11 +404,11 @@ namespace DesktopUI2.ViewModels
         catch { }
 
 
-        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
+        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -428,7 +428,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -442,7 +442,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -480,7 +480,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
     public async void AddAccountCommand()
@@ -510,6 +510,7 @@ namespace DesktopUI2.ViewModels
             }
             catch (Exception e)
             {
+              Log.CaptureException(e, Sentry.SentryLevel.Error);
               Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
             }
           }
@@ -519,7 +520,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -570,6 +571,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
+          Log.CaptureException(e, Sentry.SentryLevel.Error);
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -622,6 +624,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
+          Log.CaptureException(e, Sentry.SentryLevel.Error);
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
