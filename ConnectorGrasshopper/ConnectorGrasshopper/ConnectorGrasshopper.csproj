@@ -32,5 +32,15 @@
     <None Update="SchemaBuilder\SchemaBuilderGen.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
+    <Compile Update="SchemaBuilder\SchemaBuilderGen.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
+  <Target Name="GenerateT4" BeforeTargets="BeforeRebuild">
+    <Message Text="Restoring T4 tool..." Importance="high" />
+    <Exec Command="dotnet tool restore" />
+    <Message Text="Generating T4 templates..." Importance="high" />
+    <Exec Command="dotnet t4 -o $(ProjectDir)SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)SchemaBuilder" />
+  </Target>
 </Project>
