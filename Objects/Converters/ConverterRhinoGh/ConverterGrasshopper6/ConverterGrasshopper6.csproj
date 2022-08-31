@@ -15,6 +15,7 @@
         <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
+        <RhinoPluginType>none</RhinoPluginType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

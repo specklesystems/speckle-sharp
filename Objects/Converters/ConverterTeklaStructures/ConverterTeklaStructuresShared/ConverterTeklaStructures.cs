@@ -130,7 +130,7 @@ namespace Objects.Converter.TeklaStructures
       {
         try
         {
-          List<Base> bases = BaseExtensions.Flatten(@object);
+          var bases = BaseExtensions.Flatten(@object);
           foreach(var @base in bases){
           try
             {
