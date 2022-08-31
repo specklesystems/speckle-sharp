@@ -128,9 +128,38 @@ namespace Speckle.ConnectorAutocadCivil.UI
       };
     }
 
+    
+    private List<ISetting> CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
+    // CAUTION: these strings need to have the same values as in the converter
+    const string InternalOrigin = "Internal Origin (default)";
+    const string UCS = "Current User Coordinate System";
     public override List<ISetting> GetSettings()
     {
-      return new List<ISetting>();
+      List<string> referencePoints = new List<string>() { InternalOrigin };
+
+      // add the current UCS if it exists
+      if (Doc.Editor.CurrentUserCoordinateSystem != null)
+        referencePoints.Add(UCS);
+
+      // add any named UCS if they exist
+      var namedUCS = new List<string>();
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      {
+        var UCSTable = tr.GetObject(Doc.Database.UcsTableId, OpenMode.ForRead) as UcsTable;
+        foreach (var entry in UCSTable)
+        {
+          var ucs = tr.GetObject(entry, OpenMode.ForRead) as UcsTableRecord;
+          namedUCS.Add(ucs.Name);
+        }
+        tr.Commit();
+      }
+      if (namedUCS.Any())
+        referencePoints.AddRange(namedUCS);
+
+      return new List<ISetting>
+      {
+        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Selection = InternalOrigin, Description = "Sends or receives stream objects in relation to this document point"},
+      };
     }
 
     //TODO
@@ -243,6 +272,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
           converter.SetContextDocument(Doc);
+
+          // set converter settings as tuples (setting slug, setting selection)
+          var settings = new Dictionary<string, string>();
+          CurrentSettings = state.Settings;
+          foreach (var setting in state.Settings)
+            settings.Add(setting.Slug, setting.Selection);
+          converter.SetConverterSettings(settings);
 
           // keep track of conversion progress here
           var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -611,6 +647,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
         converter.SetContextDocument(Doc);
+
+        // set converter settings as tuples (setting slug, setting selection)
+        var settings = new Dictionary<string, string>();
+        CurrentSettings = state.Settings;
+        foreach (var setting in state.Settings)
+          settings.Add(setting.Slug, setting.Selection);
+        converter.SetConverterSettings(settings);
 
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;
