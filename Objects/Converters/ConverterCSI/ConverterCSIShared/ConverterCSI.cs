@@ -75,6 +75,8 @@ namespace Objects.Converter.CSI
 
     public bool CanConvertToSpeckle(object @object)
     {
+      if (@object == null)
+        return false;
       foreach (var type in Enum.GetNames(typeof(ConverterCSI.CSIAPIUsableTypes)))
       {
         if (type == @object.ToString())

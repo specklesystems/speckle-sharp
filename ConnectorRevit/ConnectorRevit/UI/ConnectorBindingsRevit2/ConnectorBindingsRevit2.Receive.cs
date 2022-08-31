@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Avalonia.Threading;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -167,7 +169,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.CreatedIds.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
         var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
@@ -198,10 +200,11 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           conversionProgressDict["Conversion"]++;
-          System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() =>
-          {
-            progress.Update(conversionProgressDict);
-          }, System.Windows.Threading.DispatcherPriority.Background);
+          progress.Update(conversionProgressDict);
+
+          var s = new CancellationTokenSource();
+          DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
+          Dispatcher.UIThread.MainLoop(s.Token);
 
           //skip element if is from a linked file and setting is off
           if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
@@ -216,11 +219,8 @@ namespace Speckle.ConnectorRevit.UI
           var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
           var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
-          //So as not to bother the user by changing the zoom
-          var zc = uiView.GetZoomCorners().ToList();
-
           // "refresh" the active view
-          uiView.ZoomAndCenterRectangle(zc.ElementAt(0), zc.ElementAt(1));
+          uiView.Zoom(1);
 
           switch (convRes)
           {

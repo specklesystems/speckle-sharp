@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Autodesk.Revit.Attributes;
@@ -11,6 +10,7 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -61,7 +61,10 @@ namespace Speckle.ConnectorRevit.Entry
           var panel = App.AppInstance.GetDockablePane(PanelId);
           panel.Show();
         }
-        catch { }
+        catch (Exception ex)
+        {
+          Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        }
       }
       else
         CreateOrFocusSpeckle();
@@ -122,9 +125,6 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
-
-
-
 
 
       if (MainWindow == null)

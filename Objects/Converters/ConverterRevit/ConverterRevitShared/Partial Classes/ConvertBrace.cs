@@ -46,7 +46,8 @@ namespace Objects.Converter.Revit
         baseLine = myBeam.baseLine,
         level = myBeam.level,
         family = myBeam.family,
-        parameters = myBeam.parameters
+        parameters = myBeam.parameters,
+        displayValue = myBeam.displayValue,
       };
       return myBrace;
     }

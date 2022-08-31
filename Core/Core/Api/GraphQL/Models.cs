@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Speckle.Core.Api
 {
@@ -332,13 +333,13 @@ namespace Speckle.Core.Api
   public partial class Doc
   {
     public string Type { get; set; }
-    public DocContent[ ] Content { get; set; }
+    public DocContent[] Content { get; set; }
   }
 
   public partial class DocContent
   {
     public string Type { get; set; }
-    public ContentContent[ ] Content { get; set; }
+    public ContentContent[] Content { get; set; }
   }
 
   public partial class ContentContent
@@ -424,4 +425,77 @@ namespace Speckle.Core.Api
   {
     public CommentItem comment { get; set; }
   }
+
+  #region manager api
+
+  public class Connector
+  {
+    public List<Version> Versions { get; set; } = new List<Version>();
+  }
+
+  public class Version
+  {
+    public string Number { get; set; }
+    public string Url { get; set; }
+    public Os Os { get; set; }
+    public DateTime Date { get; set; }
+
+    [JsonIgnore]
+    public string DateTimeAgo => Helpers.TimeAgo(Date);
+    public bool Prerelease { get; set; } = false;
+
+    public Version(string number, string url, Os os = Os.Win)
+    {
+      Number = number;
+      Url = url;
+      Date = DateTime.Now;
+      Prerelease = Number.Contains("-");
+      Os = os;
+    }
+  }
+
+  public enum Os
+  {
+    Win,
+    OSX
+  }
+
+
+  //GHOST API
+  public class Meta
+  {
+    public Pagination pagination { get; set; }
+  }
+
+  public class Pagination
+  {
+    public int page { get; set; }
+    public string limit { get; set; }
+    public int pages { get; set; }
+    public int total { get; set; }
+    public object next { get; set; }
+    public object prev { get; set; }
+  }
+
+  public class Tags
+  {
+    public List<Tag> tags { get; set; }
+    public Meta meta { get; set; }
+  }
+
+  public class Tag
+  {
+    public string id { get; set; }
+    public string name { get; set; }
+    public string slug { get; set; }
+    public string description { get; set; }
+    public string feature_image { get; set; }
+    public string visibility { get; set; }
+    public string codeinjection_head { get; set; }
+    public object codeinjection_foot { get; set; }
+    public object canonical_url { get; set; }
+    public string accent_color { get; set; }
+    public string url { get; set; }
+  }
+  #endregion
 }
