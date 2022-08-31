@@ -19,6 +19,7 @@
     <PackageTags>speckle objects converter rhino</PackageTags>
     <AssemblyName>Objects.Converter.Rhino7</AssemblyName>
     <RootNamespace>Objects.Converter.Rhino</RootNamespace>
+    <RhinoPluginType>none</RhinoPluginType>
   </PropertyGroup>
 
   <ItemGroup>
