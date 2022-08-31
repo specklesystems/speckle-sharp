@@ -26,7 +26,7 @@ namespace DesktopUI2.ViewModels
 
     public bool DialogVisible
     {
-      get => _dialogBody!=null;
+      get => _dialogBody != null;
     }
 
     public double DialogOpacity
@@ -38,7 +38,8 @@ namespace DesktopUI2.ViewModels
     public UserControl DialogBody
     {
       get => _dialogBody;
-      set  {
+      set
+      {
 
         this.RaiseAndSetIfChanged(ref _dialogBody, value);
         this.RaisePropertyChanged("DialogVisible");
@@ -55,12 +56,13 @@ namespace DesktopUI2.ViewModels
     }
     public MainViewModel()
     {
-     
+
       Init();
     }
 
     private void Init()
     {
+
       Instance = this;
       Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
 
@@ -80,19 +82,15 @@ namespace DesktopUI2.ViewModels
       Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
       Bindings.UpdateSelectedStream = HomeViewModel.Instance.UpdateSelectedStream;
 
-      Router.PropertyChanged += Router_PropertyChanged;
+
     }
 
     //https://github.com/AvaloniaUI/Avalonia/issues/5290
     private void CatchReactiveException(Exception e)
     {
-      //do nothing
+      Log.CaptureException(e, Sentry.SentryLevel.Error);
     }
 
-    private void Router_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-      throw new System.NotImplementedException();
-    }
 
     public static void GoHome()
     {
