@@ -107,9 +107,9 @@ namespace Objects.Converter.AutocadCivil
         var row = new List<ControlPoint>();
         for (var j = 0; j < surface.NumberOfControlPointsInV; j++)
         {
-          var point = surface.GetControlPointAt(i, j);
+          var point = PointToSpeckle(surface.GetControlPointAt(i, j));
           var weight = surface.GetWeight(i, j);
-          row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, ModelUnits));
+          row.Add(new ControlPoint(point.x, point.y, point.z, weight, ModelUnits));
         }
         points.Add(row);
       }
