@@ -324,6 +324,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   if (display == null) display = obj[@"renderMaterial"] as Base;
                   if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
 
+                  // add property sets if this is Civil3D
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
+                  if (obj["propertySets"] is IReadOnlyList<object> list)
+                  {
+                    var propertySets = new List<Dictionary<string, object>>();
+                    foreach (var listObj in list)
+                      propertySets.Add(listObj as Dictionary<string, object>);
+                    convertedEntity.SetPropertySets(Doc, propertySets);
+                  }
+#endif
+
                   tr.TransactionManager.QueueForGraphicsFlush();
                 }
                 else
