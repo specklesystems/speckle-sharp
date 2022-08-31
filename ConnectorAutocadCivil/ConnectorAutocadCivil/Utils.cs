@@ -217,10 +217,9 @@ namespace Speckle.ConnectorAutocadCivil
       }
     }
 
-    public static void SetPropertySets(this Entity entity, Document doc, Transaction tr, List<Dictionary<string, object>> propertySetDicts)
+    public static void SetPropertySets(this Entity entity, Document doc, List<Dictionary<string, object>> propertySetDicts)
     {
       // create a dictionary for property sets for this object
-      var dictPropSetDef = new DictionaryPropertySetDefinitions(doc.Database);
       var name = $"Speckle {entity.Handle} Property Set";
       int count = 0;
       foreach (var propertySetDict in propertySetDicts)
@@ -229,7 +228,7 @@ namespace Speckle.ConnectorAutocadCivil
         var propSetDef = new PropertySetDefinition();
         propSetDef.SetToStandard(doc.Database);
         propSetDef.SubSetDatabaseDefaults(doc.Database);
-        //propSetDef.Name = name += $" - {count}";
+        var propSetDefName = name += $" - {count}";
         propSetDef.Description = "Property Set Definition added with Speckle";
         propSetDef.AppliesToAll = true;
 
@@ -250,20 +249,15 @@ namespace Speckle.ConnectorAutocadCivil
         // add the property sets to the object
         try
         {
-          /*
           // add property set to the database
           // todo: add logging if the property set couldnt be added because a def already exists
-          using (tr)
+          using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
           {
-            if (dictPropSetDef.Has(propSetDef.Name, tr)) return;
-            dictPropSetDef.AddNewRecord(propSetDef.Name, propSetDef);
+            var dictPropSetDef = new DictionaryPropertySetDefinitions(doc.Database);
+            dictPropSetDef.AddNewRecord(propSetDefName, propSetDef);
             tr.AddNewlyCreatedDBObject(propSetDef, true);
-            tr.Commit();
-          }
-          */
 
-          using (tr)
-          {
+            entity.UpgradeOpen();
             PropertyDataServices.AddPropertySet(entity, propSetDef.ObjectId);
             tr.Commit();
           }

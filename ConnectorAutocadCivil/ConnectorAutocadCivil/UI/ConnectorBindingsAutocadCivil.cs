@@ -326,9 +326,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
                   // add property sets if this is Civil3D
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
-                  var propertySets = obj["propertySets"] as List<Dictionary<string, object>>;
-                  if (propertySets != null)
-                    convertedEntity.SetPropertySets(Doc, tr, propertySets);
+                  if (obj["propertySets"] is IReadOnlyList<object> list)
+                  {
+                    var propertySets = new List<Dictionary<string, object>>();
+                    foreach (var listObj in list)
+                      propertySets.Add(listObj as Dictionary<string, object>);
+                    convertedEntity.SetPropertySets(Doc, propertySets);
+                  }
 #endif
 
                   tr.TransactionManager.QueueForGraphicsFlush();
