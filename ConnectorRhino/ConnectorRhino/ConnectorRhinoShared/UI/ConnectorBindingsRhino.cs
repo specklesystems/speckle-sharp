@@ -233,6 +233,9 @@ namespace SpeckleRhino
     #region receiving 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
+      // if this is a "can preview" check, return an new streamstate
+      if (state == null && progress == null) return new StreamState();
+
       // first check if commit is the same and preview objects have already been generated
       Commit commit = await GetCommitFromState(state, progress);
 
@@ -635,6 +638,9 @@ namespace SpeckleRhino
     #region sending
     public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
     {
+      // if this is a "can preview" check, return an empty string
+      if (state == null && progress == null) return String.Empty;
+
       var filterObjs = GetObjectsFromFilter(state.Filter);
 
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
@@ -822,7 +828,7 @@ namespace SpeckleRhino
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
     {
       var objs = new List<string>();
-
+      if (filter == null) return objs;
       switch (filter.Slug)
       {
         case "manual":

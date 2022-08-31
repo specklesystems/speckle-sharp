@@ -21,6 +21,9 @@ namespace Speckle.ConnectorRevit.UI
 
     public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
     {
+      // if this is a "can preview" check, return an empty string
+      if (state == null && progress == null) return String.Empty;
+
       var filterObjs = GetSelectionFilterObjects(state.Filter);
       foreach (var filterObj in filterObjs)
       {

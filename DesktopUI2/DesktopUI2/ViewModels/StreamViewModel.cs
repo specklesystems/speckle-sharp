@@ -1129,31 +1129,16 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(SelectedCommit))]
     [DependsOn(nameof(SelectedFilter))]
     [DependsOn(nameof(IsReceiver))]
-    private async Task<bool> CanPreviewCommand(object parameter)
+    private bool CanPreviewCommand(object parameter)
     {
       var preCheck = IsReady();
       if (preCheck)
       {
-        try
-        {
-          // test for not implemented exception
-          string sendRes = null;
-          StreamState receiveRes = null;
-          if (IsReceiver)
-          {
-            var res = await Bindings.PreviewReceive(new StreamState(), new ProgressViewModel());
-            if (res == null) return false;
-          }
-          else
-          {
-            var res = await Bindings.PreviewSend(new StreamState(), new ProgressViewModel());
-            if (res == null) return false;
-          }
-        }
-        catch
-        {
-          return false;
-        }
+        // test for unimplemented binding returning null
+        if (IsReceiver)
+          preCheck = Bindings.PreviewReceive(null, null).Result == null ? false : true;
+        else
+          preCheck = Bindings.PreviewSend(null, null).Result == null ? false : true;
       }
 
       return preCheck;
