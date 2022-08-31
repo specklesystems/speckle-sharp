@@ -62,6 +62,7 @@ namespace Objects.Converter.AutocadCivil
     public IEnumerable<string> GetServicedApplications() => new string[] { AutocadAppName };
     public Document Doc { get; private set; }
     public Transaction Trans { get; private set; } // TODO: evaluate if this should be here
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
     #endregion ISpeckleConverter props
 
     public ReceiveMode ReceiveMode { get; set; }
@@ -74,7 +75,7 @@ namespace Objects.Converter.AutocadCivil
 
     public void SetConverterSettings(object settings)
     {
-      throw new NotImplementedException("This converter does not have any settings.");
+      Settings = settings as Dictionary<string, string>;
     }
 
     public void SetContextDocument(object doc)
