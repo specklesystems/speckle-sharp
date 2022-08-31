@@ -124,7 +124,7 @@ namespace DesktopUI2
     /// <param name="state"></param>
     /// <param name="progress"></param>
     /// <returns></returns>
-    public abstract void PreviewSend(StreamState state, ProgressViewModel progress);
+    public abstract Task<string> PreviewSend(StreamState state, ProgressViewModel progress);
 
     /// <summary>
     /// Receives stream data from the server

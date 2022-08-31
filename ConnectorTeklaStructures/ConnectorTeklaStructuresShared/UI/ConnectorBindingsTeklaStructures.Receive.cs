@@ -17,9 +17,13 @@ using System.Threading.Tasks;
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
-
   {
     #region receiving
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Exceptions.Clear();

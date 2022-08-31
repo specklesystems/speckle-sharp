@@ -17,9 +17,9 @@ namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      // TODO!
+      return null;
     }
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)

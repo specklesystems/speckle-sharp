@@ -19,7 +19,7 @@ namespace Speckle.ConnectorRevit.UI
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
 
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
     {
       var filterObjs = GetSelectionFilterObjects(state.Filter);
       foreach (var filterObj in filterObjs)
@@ -34,6 +34,7 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.Log(reportObj);
       }
       SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList());
+      return "success";
     }
 
     /// <summary>

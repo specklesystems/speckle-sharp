@@ -633,7 +633,7 @@ namespace SpeckleRhino
     #endregion
 
     #region sending
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
     {
       var filterObjs = GetObjectsFromFilter(state.Filter);
 
@@ -641,6 +641,7 @@ namespace SpeckleRhino
       Doc.Objects.UnselectAll(false);
       SelectClientObjects(filterObjs);
       Doc.Views.Redraw();
+      return "success";
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {

@@ -25,9 +25,9 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
     private List<ISetting> CurrentSettings { get; set; }
 
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async System.Threading.Tasks.Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      // TODO!
+      return null;
     }
 
     public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
