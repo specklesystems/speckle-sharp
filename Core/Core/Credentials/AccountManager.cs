@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -240,9 +240,19 @@ namespace Speckle.Core.Credentials
         var url = account.serverInfo.url;
         var userServerInfo = await GetUserServerInfo(account.token, url);
 
-        //prevent corrupting existing accounts
+        //the token has expired
+        //TODO: once we get a token expired exception from the server use that instead
         if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
-          continue;
+        {
+          var tokenResponse = await GetRefreshedToken(account.refreshToken, url);
+          userServerInfo = await GetUserServerInfo(tokenResponse.token, url);
+
+          if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+            continue;
+
+          account.token = tokenResponse.token;
+          account.refreshToken = tokenResponse.refreshToken;
+        }
 
         account.userInfo = userServerInfo.user;
         account.serverInfo = userServerInfo.serverInfo;
@@ -410,6 +420,49 @@ namespace Speckle.Core.Credentials
           appSecret = "sca",
           accessCode = accessCode,
           challenge = challenge,
+        };
+
+        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+        {
+          string json = JsonConvert.SerializeObject(body);
+
+          streamWriter.Write(json);
+          streamWriter.Flush();
+          streamWriter.Close();
+        }
+
+        var httpResponse = (HttpWebResponse)await Task.Factory.FromAsync<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse, null);
+
+        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+        {
+          var result = streamReader.ReadToEnd();
+          return JsonConvert.DeserializeObject<TokenExchangeResponse>(result);
+        }
+
+
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+
+
+    }
+
+    private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
+    {
+      try
+      {
+        var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{server}/auth/token");
+        httpWebRequest.ContentType = "application/json";
+        httpWebRequest.Method = "POST";
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+        var body = new
+        {
+          appId = "sca",
+          appSecret = "sca",
+          refreshToken = refreshToken
         };
 
         using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
