@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -16,7 +17,7 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class Setup
   {
-    private readonly static string _suuidPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "suuid");
+    public static Mutex mutex;
 
     static Setup()
     {
@@ -30,11 +31,14 @@ namespace Speckle.Core.Logging
         HostApplication = "other (.NET)";
       }
     }
-    
+
     public static void Init(string versionedHostApplication, string hostApplication)
     {
       HostApplication = hostApplication;
       VersionedHostApplication = versionedHostApplication;
+
+      //start mutex so that Manager can detect if this process is running
+      mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
 #if !NETSTANDARD1_5_OR_GREATER
       //needed by older .net frameworks, eg Revit 2019
