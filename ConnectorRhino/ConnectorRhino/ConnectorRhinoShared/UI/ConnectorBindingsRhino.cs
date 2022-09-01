@@ -684,7 +684,8 @@ namespace SpeckleRhino
         {
           viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
         }
-        ApplicationObject reportObj = new ApplicationObject(applicationId, Formatting.ObjectDescriptor(obj));
+        var descriptor = obj != null ? Formatting.ObjectDescriptor(obj) : "Named View";
+        ApplicationObject reportObj = new ApplicationObject(applicationId, descriptor);
 
         if (obj != null)
         {

@@ -192,6 +192,7 @@ namespace SpeckleRhino
   {
     public static string ObjectDescriptor(RhinoObject obj)
     {
+      if (obj == null) return String.Empty;
       var simpleType = obj.ObjectType.ToString();
       return obj.HasName ? $"{simpleType}" : $"{simpleType} {obj.Name}";
     }
