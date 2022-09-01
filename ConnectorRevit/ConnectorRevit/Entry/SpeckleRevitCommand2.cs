@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Autodesk.Revit.Attributes;
@@ -76,75 +77,92 @@ namespace Speckle.ConnectorRevit.Entry
 
     internal static void RegisterPane()
     {
-      if (!UseDockablePanel)
-        return;
-
-      var registered = DockablePane.PaneIsRegistered(PanelId);
-      var created = DockablePane.PaneExists(PanelId);
-
-      if (registered && created)
+      try
       {
-        _panel.Init();
-        return;
-      }
+        if (!UseDockablePanel)
+          return;
 
-      if (!registered)
-      {
-        //Register dockable panel
-        var viewModel = new MainViewModel(Bindings);
-        _panel = new Panel
+        var registered = DockablePane.PaneIsRegistered(PanelId);
+        var created = DockablePane.PaneExists(PanelId);
+
+        if (registered && created)
         {
-          DataContext = viewModel
-        };
-        App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
-        _panel.Init();
+          _panel.Init();
+          return;
+        }
+
+        if (!registered)
+        {
+          //Register dockable panel
+          var viewModel = new MainViewModel(Bindings);
+          _panel = new Panel
+          {
+            DataContext = viewModel
+          };
+          App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
+          _panel.Init();
+        }
+        created = DockablePane.PaneExists(PanelId);
+
+        //if revit was launched double-clicking on a Revit file, we're screwed
+        //could maybe show the old window?
+        if (!created && App.AppInstance.Application.Documents.Size > 0)
+        {
+          TaskDialog mainDialog = new TaskDialog("Dockable Panel Issue");
+          mainDialog.MainInstruction = "Dockable Panel Issue";
+          mainDialog.MainContent =
+              "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
+              + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
+
+
+          // Set footer text. Footer text is usually used to link to the help document.
+          mainDialog.FooterText =
+              "<a href=\"https://github.com/specklesystems/speckle-sharp/issues/1469 \">"
+              + "Click here for more info</a>";
+
+          mainDialog.Show();
+
+        }
       }
-      created = DockablePane.PaneExists(PanelId);
-
-      //if revit was launched double-clicking on a Revit file, we're screwed
-      //could maybe show the old window?
-      if (!created && App.AppInstance.Application.Documents.Size > 0)
+      catch (Exception ex)
       {
-        TaskDialog mainDialog = new TaskDialog("Dockable Panel Issue");
-        mainDialog.MainInstruction = "Dockable Panel Issue";
-        mainDialog.MainContent =
-            "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
-            + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        var td = new TaskDialog("Error");
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
 
+        TaskDialogResult tResult = td.Show();
 
-        // Set footer text. Footer text is usually used to link to the help document.
-        mainDialog.FooterText =
-            "<a href=\"https://github.com/specklesystems/speckle-sharp/issues/1469 \">"
-            + "Click here for more info</a>";
-
-        mainDialog.Show();
-
+        if (TaskDialogResult.CommandLink1 == tResult)
+        {
+          Process.Start("https://speckle.community/");
+        }
       }
 
     }
 
     public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
-
-
-      if (MainWindow == null)
-      {
-        var viewModel = new MainViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
-
-        //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
-        //to avoid an annoying error when closing revit
-        var cts = new CancellationTokenSource();
-        cts.CancelAfter(100);
-        AvaloniaApp.Run(cts.Token);
-
-      }
-
       try
       {
+
+        if (MainWindow == null)
+        {
+          var viewModel = new MainViewModel(Bindings);
+          MainWindow = new MainWindow
+          {
+            DataContext = viewModel
+          };
+
+          //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
+          //to avoid an annoying error when closing revit
+          var cts = new CancellationTokenSource();
+          cts.CancelAfter(100);
+          AvaloniaApp.Run(cts.Token);
+
+        }
+
+
         if (showWindow)
         {
           MainWindow.Show();
@@ -165,6 +183,17 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        var td = new TaskDialog("Error");
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
+
+        TaskDialogResult tResult = td.Show();
+
+        if (TaskDialogResult.CommandLink1 == tResult)
+        {
+          Process.Start("https://speckle.community/");
+        }
       }
     }
 
