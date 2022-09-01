@@ -195,7 +195,16 @@ namespace SpeckleRhino
 
       foreach (var id in objs)
       {
-        RhinoObject obj = Doc.Objects.FindId(new Guid(id));
+        RhinoObject obj = null;
+        try
+        {
+          obj = Doc.Objects.FindId(new Guid(id)); // this is a rhinoobj
+        }
+        catch
+        {
+          continue; // this was a named view!
+        }
+        
         if (obj != null)
         {
           if (deselect) obj.Select(false, true, false, true, true, true);
@@ -684,7 +693,8 @@ namespace SpeckleRhino
         {
           viewIndex = Doc.NamedViews.FindByName(applicationId); // try get view
         }
-        ApplicationObject reportObj = new ApplicationObject(applicationId, Formatting.ObjectDescriptor(obj));
+        var descriptor = obj != null ? Formatting.ObjectDescriptor(obj) : "Named View";
+        ApplicationObject reportObj = new ApplicationObject(applicationId, descriptor);
 
         if (obj != null)
         {
