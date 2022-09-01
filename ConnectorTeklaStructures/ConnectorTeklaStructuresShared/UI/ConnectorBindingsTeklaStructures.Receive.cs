@@ -19,7 +19,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
   {
     #region receiving
-    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }

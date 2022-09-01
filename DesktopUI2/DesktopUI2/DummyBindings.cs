@@ -266,8 +266,10 @@ namespace DesktopUI2
       // TODO!
     }
 
-    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
+      if (isDryRun) return new StreamState();
+
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
       pd["A2"] = 1;
@@ -371,8 +373,10 @@ namespace DesktopUI2
       return state;
     }
 
-    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
+      if (isDryRun) return String.Empty;
+
       // Let's fake some progress barsssss
       //progress.Report.Log("Starting fake sending");
       var pd = new ConcurrentDictionary<string, int>();

@@ -123,8 +123,9 @@ namespace DesktopUI2
     /// </summary>
     /// <param name="state"></param>
     /// <param name="progress"></param>
+    /// <param name="isDryRun">Indicates if this is a dry run to determine if the method is implemented or not without firing</param>
     /// <returns></returns>
-    public abstract Task<string> PreviewSend(StreamState state, ProgressViewModel progress);
+    public abstract Task<string> PreviewSend(StreamState state, ProgressViewModel progress, bool isDryRun = false);
 
     /// <summary>
     /// Receives stream data from the server
@@ -138,8 +139,9 @@ namespace DesktopUI2
     /// </summary>
     /// <param name="state"></param>
     /// <param name="progress"></param>
+    /// <param name="isDryRun">Indicates if this is a dry run to determine if the method is implemented or not without firing</param>
     /// <returns></returns>
-    public abstract Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress);
+    public abstract Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress, bool isDryRun = false);
 
     /// <summary>
     /// Adds the current selection to the provided client.

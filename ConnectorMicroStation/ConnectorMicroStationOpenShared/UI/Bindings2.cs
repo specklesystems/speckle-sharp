@@ -198,7 +198,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region receiving
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }
@@ -449,7 +449,7 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region sending
-    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }

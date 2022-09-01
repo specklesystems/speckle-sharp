@@ -187,7 +187,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region receiving 
-    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }
@@ -548,7 +548,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
-    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }

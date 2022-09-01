@@ -19,10 +19,10 @@ namespace Speckle.ConnectorRevit.UI
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
 
-    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
-      // if this is a "can preview" check, return an empty string
-      if (state == null && progress == null) return String.Empty;
+      // handle dry runs so this method passes DUI2 implementation check without firing
+      if (isDryRun) return String.Empty;
 
       var filterObjs = GetSelectionFilterObjects(state.Filter);
       foreach (var filterObj in filterObjs)

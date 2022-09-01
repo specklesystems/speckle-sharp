@@ -98,7 +98,7 @@ namespace Archicad.Launcher
       return new List<ReceiveMode> { ReceiveMode.Create };
     }
 
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }
@@ -119,7 +119,7 @@ namespace Archicad.Launcher
       // TODO!
     }
 
-    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress)
+    public override async Task<string> PreviewSend(StreamState state, ProgressViewModel progress, bool isDryRun = false)
     {
       return null;
     }

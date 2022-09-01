@@ -1136,9 +1136,9 @@ namespace DesktopUI2.ViewModels
       {
         // test for unimplemented binding returning null
         if (IsReceiver)
-          preCheck = Bindings.PreviewReceive(null, null).Result == null ? false : true;
+          preCheck = Bindings.PreviewReceive(StreamState, Progress, true).Result == null ? false : true;
         else
-          preCheck = Bindings.PreviewSend(null, null).Result == null ? false : true;
+          preCheck = Bindings.PreviewSend(StreamState, Progress, true).Result == null ? false : true;
       }
 
       return preCheck;
