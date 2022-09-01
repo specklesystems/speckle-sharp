@@ -1275,19 +1275,6 @@ public class LoadNode1SchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
-public class StructuralMaterialSchemaComponent: CreateSchemaObjectBase {
-     
-    public StructuralMaterialSchemaComponent(): base("Material", "Material", "Creates a Speckle structural material", "Speckle 2 Structural", "Materials") { }
-    
-    public override Guid ComponentGuid => new Guid("a2ec94ca-c50c-01bf-3d12-0c8feb41004b");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String)","Objects.Structural.Materials.Material");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
 public class Material1SchemaComponent: CreateSchemaObjectBase {
      
     public Material1SchemaComponent(): base("Material (with properties)", "Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Speckle 2 Structural", "Materials") { }
