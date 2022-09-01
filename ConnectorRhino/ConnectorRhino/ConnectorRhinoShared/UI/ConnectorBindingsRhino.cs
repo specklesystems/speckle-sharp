@@ -195,7 +195,16 @@ namespace SpeckleRhino
 
       foreach (var id in objs)
       {
-        RhinoObject obj = Doc.Objects.FindId(new Guid(id));
+        RhinoObject obj = null;
+        try
+        {
+          obj = Doc.Objects.FindId(new Guid(id)); // this is a rhinoobj
+        }
+        catch
+        {
+          continue; // this was a named view!
+        }
+        
         if (obj != null)
         {
           if (deselect) obj.Select(false, true, false, true, true, true);
