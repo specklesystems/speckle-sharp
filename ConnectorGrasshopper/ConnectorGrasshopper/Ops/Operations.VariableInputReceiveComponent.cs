@@ -396,6 +396,10 @@ namespace ConnectorGrasshopper.Ops
         AutoReceive = false;
         StreamWrapper = wrapper;
         LastInfoMessage = null;
+        Task.Run(async () =>
+        {
+          await ResetApiClient(wrapper);
+        });
         return;
       }
 
