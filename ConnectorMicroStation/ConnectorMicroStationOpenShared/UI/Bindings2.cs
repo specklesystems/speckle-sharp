@@ -198,6 +198,12 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region receiving
+    public override bool CanPreviewReceive => false;
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -444,6 +450,12 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region sending
+    public override bool CanPreviewSend => false;
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      return;
+    }
+
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -848,17 +860,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
     public override void ResetDocument()
     {
-      // TODO!
-    }
-
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
-    {
-      // TODO!
-    }
-
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
-    {
-      return null;
       // TODO!
     }
     #endregion

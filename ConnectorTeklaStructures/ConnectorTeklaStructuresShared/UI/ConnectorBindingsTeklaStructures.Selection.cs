@@ -55,13 +55,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
             };
     }
 
-    public override async System.Threading.Tasks.Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
-    {
-      await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(200));
-      return new StreamState();
-      // TODO!
-    }
-
     public override void ResetDocument()
     {
       // TODO!
