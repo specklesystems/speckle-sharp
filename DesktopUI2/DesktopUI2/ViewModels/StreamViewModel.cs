@@ -47,6 +47,12 @@ namespace DesktopUI2.ViewModels
       get => _previewOn;
       set
       {
+        if (value == false && value != _previewOn)
+        {
+          if (Progress.IsPreviewProgressing)
+            Progress.IsPreviewProgressing = false;
+          Bindings.ResetDocument();
+        }
         this.RaiseAndSetIfChanged(ref _previewOn, value);
       }
     }
@@ -159,6 +165,10 @@ namespace DesktopUI2.ViewModels
       get => _isReceiver;
       set
       {
+        if (value != _isReceiver)
+        {
+          PreviewOn = false;
+        }
         this.RaiseAndSetIfChanged(ref _isReceiver, value);
         this.RaisePropertyChanged(nameof(BranchesViewModel));
       }
@@ -1131,7 +1141,10 @@ namespace DesktopUI2.ViewModels
     [DependsOn(nameof(IsReceiver))]
     private bool CanPreviewCommand(object parameter)
     {
-      return IsReady();
+      bool previewImplemented = IsReceiver ? Bindings.CanPreviewReceive : Bindings.CanPreviewSend;
+      if (previewImplemented)
+        return IsReady();
+      else return false;
     }
 
     private bool IsReady()

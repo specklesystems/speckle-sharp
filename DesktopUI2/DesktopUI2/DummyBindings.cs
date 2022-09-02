@@ -266,6 +266,7 @@ namespace DesktopUI2
       // TODO!
     }
 
+    public override bool CanPreviewReceive => true;
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       var pd = new ConcurrentDictionary<string, int>();
@@ -371,6 +372,7 @@ namespace DesktopUI2
       return state;
     }
 
+    public override bool CanPreviewSend => true;
     public override async void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // Let's fake some progress barsssss
