@@ -10,12 +10,14 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationPlaceholderObject TopographyToNative(Topography speckleSurface)
+    public ApplicationObject TopographyToNative(Topography speckleSurface)
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
+      var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
 
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new ApplicationPlaceholderObject { applicationId = speckleSurface.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj };
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
 
       var pts = new List<XYZ>();
       var facets = new List<PolymeshFacet>();
@@ -43,9 +45,8 @@ namespace Objects.Converter.Revit
       }
 
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
+
       TopographySurface revitSurface = null;
 #if !REVIT2019
       revitSurface = TopographySurface.Create(Doc, pts, facets);
@@ -53,11 +54,10 @@ namespace Objects.Converter.Revit
       revitSurface = TopographySurface.Create(Doc, pts);
 #endif
       if (speckleSurface is RevitTopography rt)
-      {
         SetInstanceParameters(revitSurface, rt);
-      }
-      Report.Log($"Created Topography {revitSurface.Id}");
-      return new ApplicationPlaceholderObject { applicationId = ((Base)speckleSurface).applicationId, ApplicationGeneratedId = revitSurface.UniqueId, NativeObject = revitSurface };
+
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSurface.UniqueId, convertedItem: revitSurface);
+      return appObj;
     }
 
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
@@ -65,7 +65,6 @@ namespace Objects.Converter.Revit
       var speckleTopo = new RevitTopography();
       speckleTopo.displayValue = GetElementMesh(revitTopo);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
-      Report.Log($"Converted Topography {revitTopo.Id}");
       return speckleTopo;
     }
   }

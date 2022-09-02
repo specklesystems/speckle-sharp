@@ -6,12 +6,14 @@ using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
+  
+ 
     public string ModelUnits()
     {
       var units = Model.GetDatabaseUnits();
@@ -24,6 +26,11 @@ namespace Objects.Converter.CSI
       {
         return null;
       }
+    }
+    public double ScaleToNative(double value, string units)
+    {
+      var f = Speckle.Core.Kits.Units.GetConversionFactor(units, ModelUnits());
+      return value * f;
     }
     public static List<string> GetAllFrameNames(cSapModel model)
     {

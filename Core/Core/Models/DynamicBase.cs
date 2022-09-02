@@ -54,15 +54,14 @@ namespace Speckle.Core.Models
       return valid;
     }
 
+    // Rule for multiple leading @.
+    private static Regex manyLeadingAtChars = new Regex(@"^@{2,}");
+    // Rule for invalid chars.
+    private static Regex invalidChars = new Regex(@"[\.\/]");
     public bool IsPropNameValid(string name, out string reason)
     {
-      // Regex rules
-      // Rule for multiple leading @.
-      var manyLeadingAtChars = new Regex(@"^@{2,}");
-      // Rule for invalid chars.
-      var invalidChars = new Regex(@"[\.\/]");
       // Existing members
-      var members = GetInstanceMembersNames();
+      //var members = GetInstanceMembersNames();
 
       // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
       // TODO: Instance members will not be overwritten, this may cause issues.
@@ -146,7 +145,7 @@ namespace Speckle.Core.Models
     {
       if(!propInfoCache.ContainsKey(type))
       {
-        propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.GetCustomAttribute(typeof(IgnoreTheItemAttribute)) == null).ToList();
+        propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true)).ToList();
       }
     }
 
@@ -156,13 +155,13 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public override IEnumerable<string> GetDynamicMemberNames()
     {
-      var names = new List<string>();
-      foreach (var kvp in properties) names.Add(kvp.Key);
-
-      //var pinfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
       PopulatePropInfoCache(GetType());
       var pinfos = propInfoCache[GetType()];
+      
+      var names = new List<string>(properties.Count + pinfos.Count);
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
+      foreach (var kvp in properties) names.Add(kvp.Key);
+      
       return names;
     }
 
@@ -170,11 +169,13 @@ namespace Speckle.Core.Models
     /// Gets the names of the defined class properties (typed).
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<string> GetInstanceMembersNames()
+    public IEnumerable<string> GetInstanceMembersNames() => GetInstanceMembersNames(GetType());
+    public static IEnumerable<string> GetInstanceMembersNames(Type t)
     {
-      var names = new List<string>();
-      PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()];
+      PopulatePropInfoCache(t);
+      var pinfos = propInfoCache[t];
+      
+      var names = new List<string>(pinfos.Count);
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
       return names;
@@ -184,11 +185,13 @@ namespace Speckle.Core.Models
     /// Gets the defined (typed) properties of this object.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<PropertyInfo> GetInstanceMembers()
+    public IEnumerable<PropertyInfo> GetInstanceMembers() => GetInstanceMembers(GetType()); 
+    public static IEnumerable<PropertyInfo> GetInstanceMembers(Type t)
     {
-      var names = new List<PropertyInfo>();
-      PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()];
+      PopulatePropInfoCache(t);
+      var pinfos = propInfoCache[t];
+      
+      var names = new List<PropertyInfo>(pinfos.Count);
 
       foreach (var pinfo in pinfos)
         if (pinfo.Name != "Item") names.Add(pinfo);
@@ -202,12 +205,12 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public IEnumerable<string> GetMemberNames()
     {
-      var names = new List<string>();
+      var names = new List<string>(properties.Count);
       foreach (var kvp in properties) names.Add(kvp.Key);
 
       PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()].Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null
-                    && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null);
+      var pinfos = propInfoCache[GetType()].Where(x => !x.IsDefined(typeof(SchemaIgnore), true)
+                    && !x.IsDefined(typeof(ObsoleteAttribute), true));
 
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
@@ -220,20 +223,18 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public Dictionary<string, object> GetMembers()
     {
-      //typed members
-      var dic = new Dictionary<string, object>();
+      // initialise with dynamic members
+      var dic = new Dictionary<string, object>(properties);
 
+      // add typed members
       PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()].Where(x => x.GetCustomAttribute(typeof(SchemaIgnore)) == null
-                    && x.GetCustomAttribute(typeof(ObsoleteAttribute)) == null);
+      var pinfos = propInfoCache[GetType()].Where(x => !x.IsDefined(typeof(SchemaIgnore), true)
+                    && !x.IsDefined(typeof(ObsoleteAttribute),true));
 
 
       foreach (var pi in pinfos)
         dic.Add(pi.Name, pi.GetValue(this));
 
-      //dynamic members
-      foreach (var kvp in properties)
-        dic.Add(kvp.Key, kvp.Value);
       return dic;
     }
 
@@ -243,8 +244,7 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     public IEnumerable<string> GetDynamicMembers()
     {
-      foreach (var kvp in properties)
-        yield return kvp.Key;
+      return properties.Keys;
     }
 
     /// <summary>

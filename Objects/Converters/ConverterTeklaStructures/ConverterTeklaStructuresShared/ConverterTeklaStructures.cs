@@ -12,6 +12,7 @@ using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 using Tekla.Structures;
 using GE = Objects.Geometry;
+using Speckle.Core.Models.Extensions;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -47,14 +48,13 @@ namespace Objects.Converter.TeklaStructures
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> ContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public List<ApplicationPlaceholderObject> PreviousContextObjects { get; set; } = new List<ApplicationPlaceholderObject>();
-
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
@@ -62,11 +62,17 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToNative(Base @object)
     {
-
+      Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
+      if (bool.Parse(recieveModelMesh) == true)
+      {
+        return true;
+      }
 
       switch (@object)
       {
         case BE.Beam b:
+          return true;
+        case BE.Column b:
           return true;
         case BE.Area a:
           return true;
@@ -89,7 +95,6 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToSpeckle(object @object)
     {
-
       //return @object
       switch (@object)
       {
@@ -117,8 +122,6 @@ namespace Objects.Converter.TeklaStructures
       };
     }
 
-
-
     public object ConvertToNative(Base @object)
     {
 
@@ -127,27 +130,35 @@ namespace Objects.Converter.TeklaStructures
       {
         try
         {
-          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
-          //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
-          MeshToNative(@object, meshes);
+          var bases = BaseExtensions.Flatten(@object);
+          foreach(var @base in bases){
+          try
+            {
+              List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+              var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<GE.Mesh>;
+              //dynamic property = propInfo;
+              //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+              MeshToNative(@base, meshes);
+            }
+          catch{
+
+          }
+          }
           return true;
         }
         catch
         {
 
         }
-
-
-
       }
-
 
       switch (@object)
       {
         case BE.Beam o:
           BeamToNative(o);
+          return true;
+        case BE.Column o:
+          ColumnToNative(o);
           return true;
         case BE.Area o:
           ContourPlateToNative(o);
@@ -229,9 +240,7 @@ namespace Objects.Converter.TeklaStructures
     private string GetElemInfo(object o)
     {
       if (o is ModelObject e)
-      {
         return $", name: {e.Identifier.GetType().ToString()}, id: {e.Identifier.ToString()}";
-      }
 
       return "";
     }
@@ -240,10 +249,9 @@ namespace Objects.Converter.TeklaStructures
 
     public IEnumerable<string> GetServicedApplications() => new string[] { TeklaStructuresAppName };
 
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects) => ContextObjects = objects;
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects) => PreviousContextObjects = objects;
-
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
     public void SetConverterSettings(object settings)
     {

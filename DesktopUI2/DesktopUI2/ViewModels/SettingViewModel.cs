@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Selection;
+using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using ReactiveUI;
 using System.Collections.Generic;

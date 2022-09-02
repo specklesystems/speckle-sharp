@@ -44,7 +44,6 @@
           Command="{Binding GoBack}"
           ToolTip.Tip="Back">
           <Button.Content>
-
             <Viewbox
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
@@ -55,7 +54,6 @@
                 Foreground="{DynamicResource MaterialDesignBody}"
                 Kind="ChevronLeft" />
             </Viewbox>
-
           </Button.Content>
 
         </m:FloatingButton>
@@ -100,10 +98,7 @@
               <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
             </Style>
           </Menu.Styles>
-
         </Menu>
-
-
       </Grid>
     </Border>
 
@@ -111,9 +106,9 @@
       Grid.Row="1"
       Margin="15,0"
       RowDefinitions="*,auto,auto">
-      <!--  ACTIVITY & COMMENTS  -->
+      <!--  ACTIVITY & COMMENTS & REPORT  -->
 
-      <TabControl Grid.Row="0" Background="Transparent">
+      <TabControl Grid.Row="0" Background="Transparent" Name="tabStreamEdit">
         <TabItem>
           <TabItem.Header>
             <StackPanel Orientation="Horizontal">
@@ -153,6 +148,116 @@
             </StackPanel>
           </TabItem.Header>
           <uc:Comments />
+        </TabItem>
+
+        <!--  REPORT  -->
+        <TabItem>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Kind="Information"
+                ToolTip.Tip="Send and Receive report" />
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Report" />
+            </StackPanel>
+          </TabItem.Header>
+
+          <Grid RowDefinitions="auto,auto,auto,*" ColumnDefinitions="*,auto">
+
+            <!--  OLD REPORT, DEPRECATE AFTER ALL CONNECTOR BINDINGS ARE UPDATED WITH NEW APPOBJS  -->
+            <ScrollViewer Grid.Row="2" IsVisible="{Binding !HasReportItems}">
+              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Progress.Report.ConversionLogString}" />
+            </ScrollViewer>
+
+            <!--  SUMMARY AND OPERATION ERRORS  -->
+            <TextBlock
+              Grid.Row="0"
+              Margin="10,0,0,0"
+              VerticalAlignment="Center"
+              Text="{Binding Log}"
+              TextWrapping="Wrap" />
+
+            <!--  SEARCH AND FILTER  -->
+            <m:Card
+              Grid.Row="1"
+              Grid.Column="0"
+              Margin="5,10,5,10"
+              Padding="0"
+              HorizontalAlignment="Stretch"
+              CornerRadius="25"
+              IsVisible="{Binding HasReportItems}">
+              <TextBox
+                Margin="0"
+                Padding="0"
+                Classes="Solo Small"
+                Text="{Binding SearchQuery}"
+                Watermark="Search items">
+                <TextBox.InnerRightContent>
+                  <m:FloatingButton
+                    VerticalAlignment="Center"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    Background="Transparent"
+                    Classes="Mini"
+                    Command="{Binding ClearSearchCommand}"
+                    IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                    ToolTip.Tip="Clear">
+                    <Button.Content>
+                      <icons:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        assists:ShadowAssist.ShadowDepth="0"
+                        Foreground="{DynamicResource MaterialDesignBody}"
+                        Kind="CloseCircle" />
+                    </Button.Content>
+                  </m:FloatingButton>
+                </TextBox.InnerRightContent>
+                <TextBox.InnerLeftContent>
+                  <icons:MaterialIcon
+                    Width="15"
+                    Height="15"
+                    Margin="10,0,0,0"
+                    Kind="Search" />
+                </TextBox.InnerLeftContent>
+              </TextBox>
+            </m:Card>
+            <m:FloatingButton
+              Grid.Row="1"
+              Grid.Column="1"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              Background="Transparent"
+              Command="{Binding CopyReportCommand}"
+              IsVisible="{Binding HasReportItems}"
+              ToolTip.Tip="Copy report items to clipboard">
+              <Button.Content>
+                <icons:MaterialIcon
+                  Width="20"
+                  Height="20"
+                  assists:ShadowAssist.ShadowDepth="0"
+                  Foreground="Gray"
+                  Kind="ContentCopy" />
+              </Button.Content>
+            </m:FloatingButton>
+
+            <ListBox
+              Grid.Row="2"
+              Margin="0,0,0,8"
+              IsVisible="{Binding HasReportItems}"
+              Classes="Chip"
+              Items="{Binding ReportFilterItems}"
+              Selection="{Binding ReportSelectionModel}"
+              SelectionMode="Multiple, Toggle" />
+
+            <!--  APP OBJS  -->
+            <uc:Report Grid.Row="3" Grid.ColumnSpan="2" IsVisible="{Binding HasReportItems}" />
+          </Grid>
+
         </TabItem>
 
       </TabControl>
@@ -201,58 +306,6 @@
                 Height="15"
                 Foreground="White"
                 Kind="Close" />
-
-            </Button.Content>
-          </m:FloatingButton>
-        </Grid>
-      </m:ColorZone>
-      <!--  REPORT  -->
-      <m:ColorZone
-        Grid.Row="2"
-        Margin="0,0,0,10"
-        assists:ShadowAssist.ShadowDepth="Depth0"
-        CornerRadius="25"
-        IsVisible="{Binding ShowReport}"
-        Mode="Accent">
-
-        <Grid ColumnDefinitions="*, auto">
-          <Button
-            Margin="0,0,3,0"
-            VerticalAlignment="Center"
-            Classes="Flat"
-            Command="{Binding OpenReportCommand}"
-            CornerRadius="25,0,0,25"
-            ToolTip.Tip="Open Report">
-            <StackPanel Orientation="Horizontal">
-              <TextBlock
-                VerticalAlignment="Center"
-                Classes="Overline"
-                FontWeight="Medium"
-                Foreground="White"
-                Text="Some elements have warnings, please check the report"
-                TextWrapping="Wrap" />
-              <icons:MaterialIcon
-                Margin="5,0"
-                VerticalAlignment="Center"
-                Foreground="White"
-                Kind="TextBox" />
-            </StackPanel>
-
-          </Button>
-          <m:FloatingButton
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding CloseReportNotificationCommand}"
-            ToolTip.Tip="Close notification">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                Foreground="White"
-                Kind="Close" />
-
             </Button.Content>
           </m:FloatingButton>
         </Grid>

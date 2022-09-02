@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Controls\PreviewButton.xaml" />
     <None Remove="Controls\ReceiveButton.xaml" />
     <None Remove="Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
@@ -55,6 +56,7 @@
     <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
+    <None Remove="Views\Pages\StreamEditControls\Report.xaml" />
     <None Remove="Views\Pages\SettingsView.xaml" />
     <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
     <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
@@ -64,15 +66,16 @@
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
-	<None Remove="Views\Settings\ListBoxSettingView.xaml" />
-	<None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
+	  <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+    <None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
+    <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
+    <None Remove="Views\Windows\Dialogs\NewBranchDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
     <None Remove="Views\Windows\QuickOpsDialog.xaml" />
-    <None Remove="Views\Windows\Report.xaml" />
     <None Remove="Views\Windows\Settings.xaml" />
     <AvaloniaResource Include="Styles\Expander.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -112,6 +115,9 @@
       <Generator></Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Controls\PreviewButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Controls\ReceiveButton.xaml">
@@ -157,6 +163,9 @@
     <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Report.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -184,9 +193,9 @@
     <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-	<AvaloniaXaml Include="Views\Settings\MultiSelectBoxSettingView.xaml">
-		<Generator>MSBuild:Compile</Generator>
-	</AvaloniaXaml>
+	  <AvaloniaXaml Include="Views\Settings\MultiSelectBoxSettingView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+	  </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Share.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -199,13 +208,16 @@
     <AvaloniaXaml Include="Views\Windows\Dialogs\Dialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\MappingViewDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\NewBranchDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\NewStreamDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\QuickOpsDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <None Update="Native\libAvalonia.Native.OSX.dylib">
@@ -213,12 +225,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.16" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.16" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.16" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.16" />
-    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.97-nightly" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
+    <PackageReference Include="Avalonia" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.18" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.98-nightly" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="1.1.10" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Native\" />
@@ -232,6 +244,9 @@
   <ItemGroup>
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\PreviewButton.xaml.cs">
+      <DependentUpon>PreviewButton.xaml</DependentUpon>
     </Compile>
     <Compile Update="Controls\ReceiveButton.xaml.cs">
       <DependentUpon>ReceiveButton.xaml</DependentUpon>
@@ -284,9 +299,12 @@
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
       <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
     </Compile>
-	<Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
-		<DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
-	</Compile>
+    <Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
+      <DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
+      <DependentUpon>CheckboxSettingView.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
       <DependentUpon>AddAccountDialog.xaml</DependentUpon>
     </Compile>
@@ -296,14 +314,17 @@
     <Compile Update="Views\Windows\Dialogs\Dialog.xaml.cs">
       <DependentUpon>Dialog.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Windows\Dialogs\MappingViewDialog.xaml.cs">
+      <DependentUpon>MappingViewDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\NewBranchDialog.xaml.cs">
+      <DependentUpon>NewBranchDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Windows\Dialogs\NewStreamDialog.xaml.cs">
       <DependentUpon>NewStreamDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\QuickOpsDialog.xaml.cs">
       <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Report.xaml.cs">
-      <DependentUpon>Report.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

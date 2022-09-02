@@ -27,12 +27,14 @@
           <TextBlock Text="Sending " />
           <TextBlock FontWeight="Bold" Text="{Binding SelectedFilter.Summary, FallbackValue=?}" />
           <TextBlock Text=" to " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.name, FallbackValue=?}" />
-
+          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
         </StackPanel>
       </Expander.Header>
 
-      <Grid ColumnDefinitions="auto,*,auto, *" RowDefinitions="auto, auto, auto">
+      <Grid
+        Margin="15,0"
+        ColumnDefinitions="auto,*,auto, *"
+        RowDefinitions="auto, auto, auto">
 
         <!--  SELECT BRANCH  -->
         <icons:MaterialIcon
@@ -46,19 +48,20 @@
           Margin="5,10,5,10"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
-          Items="{Binding Branches}"
+          Items="{Binding BranchesViewModel}"
           PlaceholderText="Select a branch"
-          SelectedItem="{Binding SelectedBranch}">
+          SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
+          <ComboBox.ItemsPanel />
           <ComboBox.ItemTemplate>
             <DataTemplate>
               <Grid ColumnDefinitions="auto,*">
                 <icons:MaterialIcon
                   Margin="0,0,5,0"
                   Foreground="DarkGray"
-                  Kind="SourceBranch" />
+                  Kind="{Binding Icon}" />
                 <TextBlock
                   Grid.Column="1"
-                  Text="{Binding name}"
+                  Text="{Binding Branch.name}"
                   TextTrimming="CharacterEllipsis" />
               </Grid>
             </DataTemplate>
@@ -98,7 +101,7 @@
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
-        <!--  FILTER INFO - the magic happens in FilterTemplateSelector.cs -->
+        <!--  FILTER INFO - the magic happens in FilterTemplateSelector.cs  -->
         <Grid
           Grid.Row="1"
           Grid.ColumnSpan="4"
@@ -161,7 +164,7 @@
           assists:ShadowAssist.ShadowDepth="Depth0"
           Background="Transparent"
           Command="{Binding SaveCommand}"
-          IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+          IsEnabled="{Binding !Progress.IsProgressing}"
           ToolTip.Tip="Save this sender to the file without sending">
           <Button.Content>
             <icons:MaterialIcon
@@ -173,6 +176,9 @@
 
           </Button.Content>
         </m:FloatingButton>
+
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
 
         <!--  SEND BTN  -->
         <c:SendButton />

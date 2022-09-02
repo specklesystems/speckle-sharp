@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -30,7 +31,7 @@ namespace DiskTransport
     public DiskTransport(string basePath = null)
     {
       if (basePath == null)
-        basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "DiskTransportFiles");
+        basePath = Path.Combine(Helpers.UserSpeckleFolderPath, "DiskTransportFiles");
 
       RootPath = Path.Combine(basePath);
 

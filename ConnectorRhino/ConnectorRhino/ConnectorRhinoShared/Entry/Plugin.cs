@@ -6,6 +6,7 @@ using System.Text;
 using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
+using Speckle.Core.Api;
 
 namespace SpeckleRhino
 {
@@ -115,7 +116,7 @@ namespace SpeckleRhino
         {
           // Build a path to the user's staged RUI file.
           var sb = new StringBuilder();
-          sb.Append(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+          sb.Append(Helpers.InstallApplicationDataPath);
 #if RHINO6
           sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7

@@ -7,22 +7,18 @@ using System.Linq;
 
 using DB = Autodesk.Revit.DB;
 
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
-
-    public List<ApplicationPlaceholderObject> GridLineToNative(GridLine speckleGridline)
+    public ApplicationObject GridLineToNative(GridLine speckleGridline)
     {
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
-      if (revitGrid != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleGridline.applicationId, ApplicationGeneratedId = revitGrid.UniqueId, NativeObject = revitGrid}
-      }; ;
+      var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitGrid, appObj, out appObj))
+        return appObj;
 
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
 
@@ -31,9 +27,8 @@ namespace Objects.Converter.Revit
       if (revitGrid != null)
       {
         if (revitGrid.IsCurved)
-        {
           Doc.Delete(revitGrid.Id); //not sure how to modify arc grids
-        }
+
         else
         {
           //dim's magic from 1.0
@@ -69,7 +64,7 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              Report.LogConversionError(new Exception($"Error setting grid endpoints {speckleGridline.id}."));
+              appObj.Update(logItem: $"Error setting grid endpoints: {e.Message}");
             }
             isUpdate = true;
           }
@@ -84,7 +79,10 @@ namespace Objects.Converter.Revit
         else if (curve is Line l)
           revitGrid = Grid.Create(Doc, l);
         else
-          throw new Speckle.Core.Logging.SpeckleException("Failed to create GridLine, curve type not supported for Grid: " + curve.GetType().FullName);
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve type {curve.GetType().FullName} not supported for Grid");
+          return appObj;
+        }
       }
 
       if (!string.IsNullOrEmpty(speckleGridline.label))
@@ -94,18 +92,9 @@ namespace Objects.Converter.Revit
           revitGrid.Name = speckleGridline.label;
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleGridline.applicationId,
-        ApplicationGeneratedId = revitGrid.UniqueId,
-        NativeObject = revitGrid
-        }
-      };
-
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} GridLine {revitGrid.Id}");
-      return placeholders;
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: revitGrid.UniqueId, convertedItem: revitGrid);
+      return appObj;
     }
 
     public GridLine GridLineToSpeckle(DB.Grid revitGridLine)
@@ -117,9 +106,7 @@ namespace Objects.Converter.Revit
       //speckleGridline.elementId = revitCurve.Id.ToString(); this would need a RevitGridLine element
       speckleGridline.applicationId = revitGridLine.UniqueId;
       speckleGridline.units = ModelUnits;
-      Report.Log($"Converted GridLine {revitGridLine.Id}");
       return speckleGridline;
     }
-
   }
 }

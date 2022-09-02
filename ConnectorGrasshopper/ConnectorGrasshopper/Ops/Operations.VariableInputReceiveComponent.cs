@@ -24,6 +24,7 @@ using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -395,6 +396,10 @@ namespace ConnectorGrasshopper.Ops
         AutoReceive = false;
         StreamWrapper = wrapper;
         LastInfoMessage = null;
+        Task.Run(async () =>
+        {
+          await ResetApiClient(wrapper);
+        });
         return;
       }
 
@@ -421,11 +426,30 @@ namespace ConnectorGrasshopper.Ops
 
     private async Task ResetApiClient(StreamWrapper wrapper)
     {
-      ApiClient?.Dispose();
-      var acc = await wrapper.GetAccount();
-      ApiClient = new Client(acc);
-      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      try
+      {
+        ApiClient?.Dispose();
+        Account account = null;
+        try
+        {
+          account = wrapper?.GetAccount().Result;
+        }
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
+          account = new Account
+          {
+            id = wrapper?.StreamId, serverInfo = new ServerInfo() { url = wrapper?.ServerUrl }, token = "", refreshToken = ""
+          };
+        }
+        ApiClient = new Client(account);
+        ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
+        ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+      }
     }
 
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
@@ -536,22 +560,10 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
+        
+        Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
 
-        Client client;
-        try
-        {
-          client = new Client(InputWrapper?.GetAccount().Result);
-        }
-        catch (Exception e)
-        {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
-          Done();
-          return;
-        }
-
-        Speckle.Core.Logging.Analytics.TrackEvent(client.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
-
-        var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
+        var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
         // Means it's a copy paste of an empty non-init component; set the record and exit fast unless ReceiveOnOpen is true.
@@ -568,7 +580,7 @@ namespace ConnectorGrasshopper.Ops
         var t = Task.Run(async () =>
         {
           ((VariableInputReceiveComponent)Parent).PrevReceivedData = null;
-          var myCommit = await GetCommit(InputWrapper, client, (level, message) =>
+          var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
 
@@ -600,7 +612,7 @@ namespace ConnectorGrasshopper.Ops
 
           try
           {
-            await client.CommitReceived(new CommitReceivedInput
+            await receiveComponent.ApiClient.CommitReceived(new CommitReceivedInput
             {
               streamId = InputWrapper.StreamId,
               commitId = myCommit.id,

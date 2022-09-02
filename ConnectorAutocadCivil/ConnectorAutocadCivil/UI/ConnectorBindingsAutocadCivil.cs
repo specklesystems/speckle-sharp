@@ -20,6 +20,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -127,9 +128,38 @@ namespace Speckle.ConnectorAutocadCivil.UI
       };
     }
 
+    
+    private List<ISetting> CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
+    // CAUTION: these strings need to have the same values as in the converter
+    const string InternalOrigin = "Internal Origin (default)";
+    const string UCS = "Current User Coordinate System";
     public override List<ISetting> GetSettings()
     {
-      return new List<ISetting>();
+      List<string> referencePoints = new List<string>() { InternalOrigin };
+
+      // add the current UCS if it exists
+      if (Doc.Editor.CurrentUserCoordinateSystem != null)
+        referencePoints.Add(UCS);
+
+      // add any named UCS if they exist
+      var namedUCS = new List<string>();
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      {
+        var UCSTable = tr.GetObject(Doc.Database.UcsTableId, OpenMode.ForRead) as UcsTable;
+        foreach (var entry in UCSTable)
+        {
+          var ucs = tr.GetObject(entry, OpenMode.ForRead) as UcsTableRecord;
+          namedUCS.Add(ucs.Name);
+        }
+        tr.Commit();
+      }
+      if (namedUCS.Any())
+        referencePoints.AddRange(namedUCS);
+
+      return new List<ISetting>
+      {
+        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Selection = InternalOrigin, Description = "Sends or receives stream objects in relation to this document point"},
+      };
     }
 
     //TODO
@@ -138,14 +168,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return new List<MenuItem>();
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
+    }
+
+    public override void ResetDocument()
+    {
+      // TODO!
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
 
     #endregion
 
     #region receiving 
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+      // TODO!
+    }
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -228,6 +274,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
           converter.SetContextDocument(Doc);
 
+          // set converter settings as tuples (setting slug, setting selection)
+          var settings = new Dictionary<string, string>();
+          CurrentSettings = state.Settings;
+          foreach (var setting in state.Settings)
+            settings.Add(setting.Slug, setting.Selection);
+          converter.SetConverterSettings(settings);
+
           // keep track of conversion progress here
           var conversionProgressDict = new ConcurrentDictionary<string, int>();
           conversionProgressDict["Conversion"] = 1;
@@ -306,6 +359,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   Base display = obj[@"displayStyle"] as Base;
                   if (display == null) display = obj[@"renderMaterial"] as Base;
                   if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
+
+                  // add property sets if this is Civil3D
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
+                  if (obj["propertySets"] is IReadOnlyList<object> list)
+                  {
+                    var propertySets = new List<Dictionary<string, object>>();
+                    foreach (var listObj in list)
+                      propertySets.Add(listObj as Dictionary<string, object>);
+                    convertedEntity.SetPropertySets(Doc, propertySets);
+                  }
+#endif
 
                   tr.TransactionManager.QueueForGraphicsFlush();
                 }
@@ -485,6 +549,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
+    public override async void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      // TODO!
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -580,6 +648,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
         converter.SetContextDocument(Doc);
+
+        // set converter settings as tuples (setting slug, setting selection)
+        var settings = new Dictionary<string, string>();
+        CurrentSettings = state.Settings;
+        foreach (var setting in state.Settings)
+          settings.Add(setting.Slug, setting.Selection);
+        converter.SetConverterSettings(settings);
 
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;

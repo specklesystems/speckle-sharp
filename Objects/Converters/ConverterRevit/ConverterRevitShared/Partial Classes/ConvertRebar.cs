@@ -12,17 +12,34 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> RebarToNative(Rebar speckleRebar)
+    public ApplicationObject RebarToNative(Rebar speckleRebar)
     {
+      var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
+      var appObj = new ApplicationObject(speckleRebar.id, speckleRebar.speckle_type) { applicationId = speckleRebar.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
       if (speckleRebar.curves.Count == 0)
-        throw new Speckle.Core.Logging.SpeckleException("Rebar has no base curves.");
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Rebar has no base curves.");
+        return appObj;
+      }
 
       var speckleRevitRebar = speckleRebar as RevitRebar;
-      if (speckleRevitRebar != null)
-        throw new Speckle.Core.Logging.SpeckleException("Rebar needs to be a Revit rebar.");
+      if (speckleRevitRebar == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Rebar needs to be a Revit rebar.");
+        return appObj;
+      }
 
       var rebarType = speckleRevitRebar?.barType;
-      var barType = GetElementType<RebarBarType>(speckleRebar);
+      if (!GetElementType<RebarBarType>(speckleRebar, appObj, out RebarBarType barType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       var rebarStyle = speckleRevitRebar?.barStyle == "StirrupTie" ? RebarStyle.StirrupTie : RebarStyle.Standard;
 
       // get construction curves (only works for revit rebar due to need for host)
@@ -37,17 +54,12 @@ namespace Objects.Converter.Revit
 
       // get host element
       var host = GetExistingElementByApplicationId(speckleRevitRebar.host);
-
       if (host == null)
-        throw new Speckle.Core.Logging.SpeckleException("Rebar host not found.");
-
-      var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleRebar.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Rebar host not found.");
+        return appObj;
+      }
+
       if (docObj != null)
       {
         rebar = (DB.Structure.Rebar)docObj;
@@ -59,9 +71,7 @@ namespace Objects.Converter.Revit
       // update curves if we can, only available in revit 2022
 #if REVIT2022
       if (rebar != null)
-      {
         rebar.MoveBarInSet(0, DB.Transform.Identity);
-      }
 #endif
 
       // create freeform from curveloops if they exist
@@ -70,25 +80,26 @@ namespace Objects.Converter.Revit
         var result = RebarFreeFormValidationResult.Success;
         rebar ??= DB.Structure.Rebar.CreateFreeForm(Doc, barType, host, curveLoops, out result);
         if (result != RebarFreeFormValidationResult.Success)
-          throw new Speckle.Core.Logging.SpeckleException("Freeform Rebar could not be created from closed curves.");
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Freeform Rebar could not be created from closed curves.");
+          return appObj;
+        }
       }
       else if (openCurves.Count > 0)
       {
         //rebar ??= DB.Structure.Rebar.CreateFromCurves(Doc, barType, host, curveLoops, out result);
       }
       else
-        throw new Speckle.Core.Logging.SpeckleException("No convertible rebar curves where found.");
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "No convertible rebar curves where found.");
+        return appObj;
+      }
 
       if (speckleRevitRebar != null)
         SetInstanceParameters(rebar, speckleRevitRebar);
 
-      var placeholders = new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleRebar.applicationId, ApplicationGeneratedId = rebar.UniqueId, NativeObject = rebar}
-      };
-      Report.Log($"Created Rebar {rebar.Id}");
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: rebar.UniqueId, convertedItem: rebar);
+      return appObj;
     }
 
     // need to test to see possible types of curves for rebar

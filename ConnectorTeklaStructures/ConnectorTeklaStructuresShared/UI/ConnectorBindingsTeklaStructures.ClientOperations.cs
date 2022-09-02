@@ -27,7 +27,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
         DocumentStreams.Add(s);
         WriteStateToFile();
       }
-      //throw new NotImplementedException();
     }
 
     //public override void AddNewStream(StreamState state)

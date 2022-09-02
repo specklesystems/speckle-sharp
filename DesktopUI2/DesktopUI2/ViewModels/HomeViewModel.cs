@@ -259,7 +259,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -279,7 +279,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -292,7 +292,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -332,7 +332,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -383,12 +383,9 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
-
     }
-
-
 
     internal async void Init()
     {
@@ -407,11 +404,11 @@ namespace DesktopUI2.ViewModels
         catch { }
 
 
-        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
+        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -431,29 +428,28 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
-
 
     public async void RemoveAccountCommand(Account account)
     {
       try
       {
         AccountManager.RemoveAccount(account.id);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
         Init();
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
     public void OpenProfileCommand(Account account)
     {
       Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
+      Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
     }
 
     public void LaunchManagerCommand()
@@ -462,7 +458,7 @@ namespace DesktopUI2.ViewModels
       {
         string path = "";
 
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -471,7 +467,7 @@ namespace DesktopUI2.ViewModels
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-          path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe");
+          path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
         }
 
         if (File.Exists(path))
@@ -479,12 +475,12 @@ namespace DesktopUI2.ViewModels
 
         else
         {
-          Process.Start(new ProcessStartInfo($"https://speckle-releases.netlify.app/") { UseShellExecute = true });
+          Process.Start(new ProcessStartInfo($"https://releases.speckle.systems/") { UseShellExecute = true });
         }
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
     public async void AddAccountCommand()
@@ -506,7 +502,7 @@ namespace DesktopUI2.ViewModels
           {
             try
             {
-              Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
 
               await AccountManager.AddAccount(result);
               await Task.Delay(1000);
@@ -514,6 +510,7 @@ namespace DesktopUI2.ViewModels
             }
             catch (Exception e)
             {
+              Log.CaptureException(e, Sentry.SentryLevel.Error);
               Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
             }
           }
@@ -523,7 +520,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -554,11 +551,8 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
-
       var dialog = new NewStreamDialog(Accounts);
       var result = await dialog.ShowDialog<bool>();
-
-
 
       if (result)
       {
@@ -577,6 +571,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
+          Log.CaptureException(e, Sentry.SentryLevel.Error);
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -629,6 +624,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
+          Log.CaptureException(e, Sentry.SentryLevel.Error);
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -683,7 +679,6 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
-
     }
 
     private void ChangeTheme(bool isDark)
@@ -701,10 +696,7 @@ namespace DesktopUI2.ViewModels
         theme.SetBaseTheme(Theme.Dark);
 
       materialTheme.CurrentTheme = theme;
-
-
     }
-
 
     public void RefreshCommand()
     {
@@ -712,9 +704,5 @@ namespace DesktopUI2.ViewModels
       ApiUtils.ClearCache();
       Init();
     }
-
-
   }
-
-
 }

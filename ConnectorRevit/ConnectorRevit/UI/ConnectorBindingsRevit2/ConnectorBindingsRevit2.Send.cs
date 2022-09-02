@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autodesk.Revit.DB;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -17,6 +18,24 @@ namespace Speckle.ConnectorRevit.UI
   {
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
+
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      var filterObjs = GetSelectionFilterObjects(state.Filter);
+      foreach (var filterObj in filterObjs)
+      {
+        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+        var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
+        var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
+        if (!converter.CanConvertToSpeckle(filterObj))
+          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+        else
+          reportObj.Update(status: ApplicationObject.State.Created);
+        progress.Report.Log(reportObj);
+      }
+      SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList());
+    }
+
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
     /// the Server and the local DB, and creates a commit with the objects.
@@ -24,10 +43,10 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
+      //make sure to instance a new copy so all values are reset correctly
+      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
+      converter.Report.ReportObjects.Clear();
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
@@ -48,8 +67,7 @@ namespace Speckle.ConnectorRevit.UI
         return null;
       }
 
-      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationPlaceholderObject { applicationId = x.UniqueId }).ToList());
-
+      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -57,10 +75,20 @@ namespace Speckle.ConnectorRevit.UI
 
       progress.Max = selectedObjects.Count();
       var convertedCount = 0;
-
-      var placeholders = new List<Base>();
       foreach (var revitElement in selectedObjects)
       {
+        var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
+        // get the report object
+        // for hosted elements, they may have already been converted and added to the converter report
+        bool alreadyConverted = converter.Report.GetReportObject(revitElement.UniqueId, out int index);
+        var reportObj = alreadyConverted ?
+          converter.Report.ReportObjects[index] :
+          new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
+        if (alreadyConverted)
+        {
+          progress.Report.Log(reportObj);
+          continue;
+        }
         try
         {
           if (revitElement == null)
@@ -68,26 +96,43 @@ namespace Speckle.ConnectorRevit.UI
 
           if (!converter.CanConvertToSpeckle(revitElement))
           {
-            progress.Report.Log($"Skipped not supported type: {revitElement.GetType()}, name {revitElement.Name}");
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+            progress.Report.Log(reportObj);
             continue;
           }
 
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             return null;
 
+          converter.Report.Log(reportObj); // Log object so converter can access
           var conversionResult = converter.ConvertToSpeckle(revitElement);
 
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
 
-
-          placeholders.Add(new ApplicationPlaceholderObject { applicationId = revitElement.UniqueId, ApplicationGeneratedId = revitElement.UniqueId });
-
           convertedCount++;
 
-          //hosted elements will be returned as `null` by the ConvertToSpeckle method 
-          //since they are handled when converting their parents
-          if (conversionResult != null)
+          if (conversionResult == null)
+          {
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            progress.Report.Log(reportObj);
+            continue;
+          }
+
+          //is an element type, nest it under Types instead
+          if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
+          {
+            var category = $"@{revitElement.Category.Name}";
+
+            if (commitObject["Types"] == null)
+              commitObject["Types"] = new Base();
+
+            if ((commitObject["Types"] as Base)[category] == null)
+              (commitObject["Types"] as Base)[category] = new List<Base>();
+
+            ((List<Base>)((commitObject["Types"] as Base)[category])).Add(conversionResult);
+          }
+          else
           {
             var category = $"@{revitElement.Category.Name}";
             if (commitObject[category] == null)
@@ -96,18 +141,21 @@ namespace Speckle.ConnectorRevit.UI
             ((List<Base>)commitObject[category]).Add(conversionResult);
           }
 
+
+          reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}");
         }
         catch (Exception e)
         {
-          progress.Report.LogConversionError(e);
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
         }
+        progress.Report.Log(reportObj);
       }
 
       progress.Report.Merge(converter.Report);
 
       if (convertedCount == 0)
       {
-        progress.Report.LogConversionError(new Exception("Zero objects converted successfully. Send stopped."));
+        progress.Report.LogOperationError(new Exception("Zero objects converted successfully. Send stopped."));
         return null;
       }
 
