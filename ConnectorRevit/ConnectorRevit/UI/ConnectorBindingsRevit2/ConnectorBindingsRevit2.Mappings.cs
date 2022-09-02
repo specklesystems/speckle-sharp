@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
+//using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 using Revit.Async;
 using Speckle.Core.Models;
@@ -535,6 +537,47 @@ namespace Speckle.ConnectorRevit.UI
 
       string path = "";
       path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
+
+      //open family file as xml to extract all family symbols without loading all of them into the project
+      var symbols = new List<string>();
+      CurrentDoc.Document.Application.ExtractPartAtomFromFamilyFile(path, path + ".xml");
+      XmlDocument xmlDoc = new XmlDocument(); // Create an XML document object
+      xmlDoc.Load(path + ".xml");
+      var familyRoot = xmlDoc.GetElementsByTagName("A:family");
+
+      XmlNamespaceManager nsman = new XmlNamespaceManager(xmlDoc.NameTable);
+      XmlNodeList familySymbols;
+
+      try
+      {
+        if (familyRoot.Count == 1)
+        {
+          nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
+          nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
+          familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
+
+          foreach (var symbol in familySymbols)
+          {
+            if (symbol is XmlElement el)
+            {
+              symbols.Add(el.InnerText);
+            }
+          }
+        }
+      }
+      catch (Exception e)
+      { }
+
+      // delete the newly created xml file
+      System.IO.File.Delete(path + ".xml");
+
+      // var vm = new ImportFamiliesViewModel();
+      // var importFamilies = new ImportFamilies
+      // {
+      //   DataContext = vm
+      // };
+      // vm.OnRequestClose += (s, e) => importFamilies.Close();
+      // await importFamilies.ShowDialog(MainWindow.Instance);
 
       return await RevitTask.RunAsync(app =>
       {
