@@ -574,9 +574,9 @@ namespace Objects.Converter.Revit
         {
           var symbolType = x.GetParameters("Type");
           var symbolTypeName = x.GetParameters("Type Name");
-          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString().ToLower() == type.ToLower())
+          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString()?.ToLower() == type.ToLower())
             return true;
-          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString().ToLower() == type.ToLower())
+          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString()?.ToLower() == type.ToLower())
             return true;
           return false;
         });
