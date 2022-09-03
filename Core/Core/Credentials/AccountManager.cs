@@ -311,9 +311,9 @@ namespace Speckle.Core.Credentials
 
       //does nothing?
       var timeout = TimeSpan.FromMinutes(2);
-      listener.TimeoutManager.HeaderWait = timeout;
-      listener.TimeoutManager.EntityBody = timeout;
-      listener.TimeoutManager.IdleConnection = timeout;
+      //listener.TimeoutManager.HeaderWait = timeout;
+      //listener.TimeoutManager.EntityBody = timeout;
+      //listener.TimeoutManager.IdleConnection = timeout;
 
       var task = Task.Run(() =>
       {
