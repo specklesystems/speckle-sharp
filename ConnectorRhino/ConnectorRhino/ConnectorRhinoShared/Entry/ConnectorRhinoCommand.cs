@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
@@ -13,11 +13,13 @@ namespace SpeckleRhino
 {
   public class SpeckleCommand : Command
   {
-    #region Avalonia parent window
+#region Avalonia parent window
+#if !MAC
     [DllImport("user32.dll", SetLastError = true)]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
     const int GWL_HWNDPARENT = -8;
-    #endregion
+#endif
+#endregion
 
     public static SpeckleCommand Instance { get; private set; }
 
@@ -28,7 +30,7 @@ namespace SpeckleRhino
 
     private static CancellationTokenSource Lifetime = null;
 
-    private static Avalonia.Application AvaloniaApp { get; set; }
+    public static Avalonia.Application AvaloniaApp { get; set; }
 
     public SpeckleCommand()
     {
@@ -61,7 +63,11 @@ namespace SpeckleRhino
 #endif
 
 #if MAC
-      CreateOrFocusSpeckle();
+      var msg = "Speckle is temporarily disabled on Rhino due to a critical bug regarding Rhino's top-menu commands. Please use Grasshopper instead while we fix this.";
+      RhinoApp.CommandLineOut.WriteLine(msg);
+      Rhino.UI.Dialogs.ShowMessage(msg, "Speckle has been disabled", Rhino.UI.ShowMessageButton.OK, Rhino.UI.ShowMessageIcon.Exclamation);
+      return Result.Nothing;
+      //CreateOrFocusSpeckle();
 #endif
       Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 
@@ -70,6 +76,7 @@ namespace SpeckleRhino
 
     public static void CreateOrFocusSpeckle()
     {
+      SpeckleRhinoConnectorPlugin.Instance.Init();
       if (MainWindow == null)
       {
         var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
