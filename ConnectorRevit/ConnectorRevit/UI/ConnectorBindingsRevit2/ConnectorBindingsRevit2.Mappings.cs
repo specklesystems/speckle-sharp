@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Xml;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -14,6 +15,7 @@ using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
 using Revit.Async;
 using Speckle.Core.Models;
+using static DesktopUI2.ViewModels.HomeViewModel;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
@@ -187,21 +189,45 @@ namespace Speckle.ConnectorRevit.UI
       return d[n, m];
     }
 
-    private string TypeCatMaterials = "Materials";
-    private string TypeCatFloors = "Floors";
-    private string TypeCatWalls = "Walls";
-    private string TypeCatFraming = "Framing";
-    private string TypeCatColumns = "Columns";
-    private string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
+    private const string TypeCatMaterials = "Materials";
+    private const string TypeCatFloors = "Floors";
+    private const string TypeCatWalls = "Walls";
+    private const string TypeCatFraming = "Framing";
+    private const string TypeCatColumns = "Columns";
+    private const string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
+    private List<string> allTypeCategories = new List<string> 
+    { 
+      TypeCatColumns,
+      TypeCatFloors,
+      TypeCatFraming,
+      TypeCatMaterials,
+      TypeCatMisc,
+      TypeCatWalls
+    };
 
     /// <summary>
     /// Gets the category of a given base object
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>name of category type as string</returns>
-    private string GetTypeCategory(Base obj)
+    private string GetTypeCategory(object @object)
     {
-      string speckleType = obj.speckle_type.Split('.').LastOrDefault().ToLower();
+      string speckleType = null;
+      Base obj = null;
+
+      if (@object is Base baseObj)
+      {
+        obj = baseObj;
+        speckleType = baseObj.speckle_type.Split('.').LastOrDefault().ToLower();
+      }
+      else if (@object is string s)
+      {
+        speckleType = s.ToLower();
+      }
+      else
+      {
+        throw new Exception("@object must be base obj or string obj");
+      }
 
       switch (speckleType)
       {
@@ -241,6 +267,7 @@ namespace Speckle.ConnectorRevit.UI
         #region General
         case string a when a.Contains("beam"):
         case string b when b.Contains("brace"):
+        case string c when c.Contains("framing"):
           return TypeCatFraming;
 
         case string a when a.Contains("column"):
@@ -267,9 +294,9 @@ namespace Speckle.ConnectorRevit.UI
     {
       public string key;
       public Type objectClass;
-      public List<BuiltInCategory> categories;
+      public ICollection<BuiltInCategory> categories;
 
-      public customTypesFilter(string key, Type objectClass = null, List<BuiltInCategory> categories = null)
+      public customTypesFilter(string key, Type objectClass = null, ICollection<BuiltInCategory> categories = null)
       {
         this.key = key;
         this.objectClass = objectClass;
@@ -283,43 +310,64 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>A dictionary where the keys are type categories and the value is a list of all the revit types that fit that category in the existing project</returns>
     private Dictionary<string, List<string>> GetHostTypes()
     {
-      var customHostTypesFilter = new List<customTypesFilter>
-      {
-        new customTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material)),
-        new customTypesFilter(TypeCatFloors, typeof(FloorType)),
-        new customTypesFilter(TypeCatWalls, typeof(WallType)),
-        new customTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory>{ BuiltInCategory.OST_StructuralFraming}),
-        new customTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory>{ BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns}),
-        new customTypesFilter(TypeCatMisc), 
-      };
-
       var returnDict = new Dictionary<string, List<string>>();
       var exclusionFilterIds = new List<ElementId>();
-      FilteredElementCollector list = null;
-      foreach (var customType in customHostTypesFilter)
+      foreach (var customType in allTypeCategories)
       {
         var collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-
-        if (customType.categories != null && customType.categories.Count > 0)
-        {
-          var filter = new ElementMulticategoryFilter(customType.categories);
-          list = collector.OfClass(typeof(FamilySymbol)).WherePasses(filter);
-        }
-        else if (customType.objectClass != null)
-        {
-          list = collector.OfClass(customType.objectClass);
-        }
-        else
-        {
-          list = collector;
-        }
+        FilteredElementCollector list = GetFilteredElements(customType, collector);
 
         var types = list.Select(o => o.Name).Distinct().ToList();
         exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-        returnDict[customType.key] = types;
+        returnDict[customType] = types;
       }
-
       return returnDict;
+    }
+
+    private customTypesFilter GetCustomTypeFilter(string category)
+    {
+      switch (category)
+      {
+        case TypeCatMaterials:
+          return new customTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material));
+        case TypeCatFloors:
+          return new customTypesFilter(TypeCatFloors, typeof(FloorType));
+        case TypeCatWalls:
+          return new customTypesFilter(TypeCatWalls, typeof(WallType));
+        case TypeCatFraming:
+          return new customTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming });
+        case TypeCatColumns:
+          return new customTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns });
+        case TypeCatMisc:
+        default:
+          return new customTypesFilter(TypeCatMisc); 
+      }
+    }
+
+    private FilteredElementCollector GetFilteredElements(string category, FilteredElementCollector? collector)
+    {
+      if (!allTypeCategories.Contains(category))
+        throw new Exception($"Category string {category} is not a recognized category");
+      if (collector == null)
+        collector = new FilteredElementCollector(CurrentDoc.Document);
+
+      FilteredElementCollector list = null;
+      var customTypeFilter = GetCustomTypeFilter(category);
+
+      if (customTypeFilter.categories != null && customTypeFilter.categories.Count > 0)
+      {
+        var filter = new ElementMulticategoryFilter(customTypeFilter.categories);
+        list = collector.OfClass(typeof(FamilySymbol)).WherePasses(filter);
+      }
+      else if (customTypeFilter.objectClass != null)
+      {
+        list = collector.OfClass(customTypeFilter.objectClass);
+      }
+      else
+      {
+        list = collector;
+      }
+      return list;
     }
 
     /// <summary>
@@ -537,19 +585,58 @@ namespace Speckle.ConnectorRevit.UI
 
       string path = "";
       path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
+      string pathClone = string.Copy(path);
 
       //open family file as xml to extract all family symbols without loading all of them into the project
       var symbols = new List<string>();
       CurrentDoc.Document.Application.ExtractPartAtomFromFamilyFile(path, path + ".xml");
       XmlDocument xmlDoc = new XmlDocument(); // Create an XML document object
       xmlDoc.Load(path + ".xml");
-      var familyRoot = xmlDoc.GetElementsByTagName("A:family");
 
       XmlNamespaceManager nsman = new XmlNamespaceManager(xmlDoc.NameTable);
+      nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
+
+      string familyName = pathClone.Split('\\').LastOrDefault().Split('.').FirstOrDefault();
+      Family match = null;
+      var catRoot = xmlDoc.GetElementsByTagName("category");
+
+      foreach (var node in catRoot)
+      {
+        if (node is XmlElement xmlNode)
+        {
+          var term = xmlNode.SelectSingleNode("ab:term", nsman);
+          if (term != null)
+          {
+            var category = GetTypeCategory(term.InnerText);
+            if (category == TypeCatMisc)
+              continue;
+
+            var families = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(Family));
+            var list = families.ToElements().Cast<Family>().ToList();
+
+            match = list.FirstOrDefault(x => x.Name == familyName);
+            if (match != null)
+              break;
+          }
+        }
+      }
+
+      var loadedSymbols = new List<string>();
+      if (match != null) //family exists in project
+      {
+        var symbolIds = match.GetFamilySymbolIds();
+        foreach (var id in symbolIds)
+        {
+          var sym = CurrentDoc.Document.GetElement(id);
+          loadedSymbols.Add(sym.Name);
+        }
+      }
+
       XmlNodeList familySymbols;
 
       try
       {
+        var familyRoot = xmlDoc.GetElementsByTagName("A:family");
         if (familyRoot.Count == 1)
         {
           nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
@@ -559,9 +646,7 @@ namespace Speckle.ConnectorRevit.UI
           foreach (var symbol in familySymbols)
           {
             if (symbol is XmlElement el)
-            {
               symbols.Add(el.InnerText);
-            }
           }
         }
       }
@@ -569,15 +654,32 @@ namespace Speckle.ConnectorRevit.UI
       { }
 
       // delete the newly created xml file
-      System.IO.File.Delete(path + ".xml");
+      try
+      {
+        System.IO.File.Delete(path + ".xml");
+      }
+      catch (Exception ex)
+      {}
 
-      // var vm = new ImportFamiliesViewModel();
-      // var importFamilies = new ImportFamilies
-      // {
-      //   DataContext = vm
-      // };
-      // vm.OnRequestClose += (s, e) => importFamilies.Close();
-      // await importFamilies.ShowDialog(MainWindow.Instance);
+      var vm = new ImportFamiliesDialogViewModel(symbols, loadedSymbols);
+      var importFamilies = new ImportFamiliesDialog
+      {
+        DataContext = vm
+      };
+      vm.OnRequestClose += (s, e) => importFamilies.Close();
+
+      importFamilies.Show();
+
+      await Task.Run(async () =>
+      {
+        while (vm.isOpen == true)
+        { await Task.Delay(250); }
+      });
+
+      foreach (var sym in vm.selectedFamilySymbols)
+      {
+        System.Diagnostics.Debug.WriteLine($"{sym.Name}");
+      }
 
       return await RevitTask.RunAsync(app =>
       {
@@ -611,6 +713,15 @@ namespace Speckle.ConnectorRevit.UI
           return Mapping;
         }
       });
+    }
+
+    public async Task<bool> dialogClosed(ImportFamiliesDialogViewModel vm)
+    {
+      while (vm.isOpen == true)
+      {
+
+      }
+      return true;
     }
   }
 }

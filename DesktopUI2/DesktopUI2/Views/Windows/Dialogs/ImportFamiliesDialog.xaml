@@ -1,0 +1,215 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Windows.Dialogs.ImportFamiliesDialog"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
+  xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
+  xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="550"
+  d:DesignWidth="400"
+  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
+  mc:Ignorable="d">
+
+  <Design.DataContext>
+    <vm:ImportFamiliesDialogViewModel />
+  </Design.DataContext>
+
+  <Grid 
+    RowDefinitions="auto,auto, *, auto, auto"
+    MinWidth="400"
+    MinHeight="550">
+    <Border
+      Grid.ColumnSpan="2"
+      Margin="0,0,0,7"
+      Padding="0"
+      assists:ShadowAssist.ShadowDepth="Depth2"
+      Background="{DynamicResource MaterialDesignCardBackground}">
+      <Grid Margin="15" ColumnDefinitions="auto,*,auto">
+        <icons:MaterialIcon
+          Grid.Column="0"
+          Width="20"
+          Height="20"
+          Margin="0,0,10,0"
+          assists:ShadowAssist.ShadowDepth="0"
+          Foreground="{DynamicResource MaterialDesignBody}"
+          Kind="Wall" />
+        <TextBlock
+          Grid.Column="1"
+          Classes="Grotesk"
+          FontSize="20"
+          Text="Import Family Symbols"/>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1">
+      <TextBox
+        Margin="5,0,5,5"
+        Padding="0"
+        Classes="Solo Small"
+        Text="{Binding SearchQuery}"
+        Watermark="Search symbols">
+        <TextBox.InnerRightContent>
+          <StackPanel Orientation="Horizontal">
+            <m:FloatingButton
+              Grid.Column="1"
+              VerticalAlignment="Center"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              Background="Transparent"
+              Classes="Mini"
+              Command="{Binding ClearSearchCommand}"
+              IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+              ToolTip.Tip="Clear">
+              <Button.Content>
+                <icons:MaterialIcon
+                  Width="15"
+                  Height="15"
+                  assists:ShadowAssist.ShadowDepth="0"
+                  Foreground="{DynamicResource MaterialDesignBody}"
+                  Kind="CloseCircle" />
+              </Button.Content>
+            </m:FloatingButton>
+          </StackPanel>
+
+        </TextBox.InnerRightContent>
+        <TextBox.InnerLeftContent>
+          <icons:MaterialIcon
+            Width="15"
+            Height="15"
+            Margin="5,0,0,0"
+            Kind="Search" />
+        </TextBox.InnerLeftContent>
+      </TextBox>
+    </Grid>
+
+    <ScrollViewer 
+      VerticalScrollBarVisibility="Auto"
+      Grid.Row="2">
+        <ItemsControl Items="{Binding familySymbols}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid>  
+                <m:ColorZone
+                  Margin="5,0,5,10"
+                  HorizontalAlignment="Left"
+                  assists:ShadowAssist.ShadowDepth="Depth0"
+                  CornerRadius="25"
+                  Mode="Standard">
+                  <Grid ColumnDefinitions="auto,*">
+                    <CheckBox
+                      Margin="10,0,0,0"
+                      IsChecked="{Binding isChecked}, Mode=TwoWay"
+                      IsVisible="{Binding !isImported}"/>
+                    <icons:MaterialIcon
+                      Grid.Row="0"
+                      Width="20"
+                      Height="20"
+                      Margin="10,0,0,0"
+                      VerticalAlignment="Center"
+                      Kind="CheckboxMarked"
+                      ToolTip.Tip="Already Imported into Project"
+                      IsVisible="{Binding isImported}"
+                      Foreground="Gray"/>
+                    <TextBlock
+                      Grid.Column="1"
+                      Margin="5,10,10,10"
+                      TextWrapping="Wrap"
+                      Text="{Binding Name}"/>
+                  </Grid>
+                </m:ColorZone>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      <!--</Grid>-->
+    </ScrollViewer>
+
+    <Expander
+      Grid.Row="3"
+      Padding="15,0"
+      HorizontalAlignment="Stretch"
+      HorizontalContentAlignment="Stretch"
+      Background="Transparent"
+      Classes="Flat"
+      IsExpanded="{Binding IsExpanded}">
+      <Expander.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="Importing " />
+          <TextBlock FontWeight="Bold" Text="{Binding selectedFamilySymbols.Count, FallbackValue=?}"/>
+          <TextBlock Text=" symbols from " />
+          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+        </StackPanel>
+      </Expander.Header>
+      <ScrollViewer
+        MaxHeight="140"
+        VerticalScrollBarVisibility="Auto"
+        Grid.Row="2">
+        <ItemsControl Items="{Binding selectedFamilySymbols}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid>
+                <m:ColorZone
+                  Margin="10,10,10,0"
+                  HorizontalAlignment="Left"
+                  assists:ShadowAssist.ShadowDepth="Depth0"
+                  CornerRadius="25"
+                  Mode="Standard">
+                  <Grid ColumnDefinitions="auto,*">
+                    <CheckBox
+                      Margin="10,0,0,0"
+                      IsChecked="{Binding isChecked}, Mode=TwoWay"
+                      IsVisible="{Binding !isImported}"/>
+                    <icons:MaterialIcon
+                      Grid.Row="0"
+                      Width="20"
+                      Height="20"
+                      Margin="10,0,0,0"
+                      VerticalAlignment="Center"
+                      Kind="CheckboxMarked"
+                      ToolTip.Tip="Already Imported into Project"
+                      IsVisible="{Binding isImported}"
+                      Foreground="Gray"/>
+                    <TextBlock
+                      Grid.Column="1"
+                      Margin="5,10,10,10"
+                      TextWrapping="Wrap"
+                      Text="{Binding Name}"/>
+                  </Grid>
+                </m:ColorZone>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </ScrollViewer>
+    </Expander>
+
+    <Grid
+      Grid.Row="4"
+      Margin="15"
+      ColumnDefinitions="auto, *, auto">
+      <Button
+        HorizontalContentAlignment="Left"
+        Command="{Binding Close_Click}"
+        Content="Cancel" />
+      <Button
+        Grid.Column="2"
+        Command="{Binding ImportSymbolsCommand}"
+        Content="Import Symbols" />
+    </Grid>
+  </Grid>
+</UserControl>
