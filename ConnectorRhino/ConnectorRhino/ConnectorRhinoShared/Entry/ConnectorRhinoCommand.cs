@@ -26,7 +26,6 @@ namespace SpeckleRhino
     public static Window MainWindow { get; private set; }
 
 
-
     private static CancellationTokenSource Lifetime = null;
 
     private static Avalonia.Application AvaloniaApp { get; set; }
@@ -57,7 +56,6 @@ namespace SpeckleRhino
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
 
-
 #if DEBUG
       SpeckleRhinoConnectorPlugin.Instance.Init();
 #endif
@@ -66,7 +64,6 @@ namespace SpeckleRhino
       CreateOrFocusSpeckle();
 #endif
       Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
-
 
       return Result.Success;
     }
