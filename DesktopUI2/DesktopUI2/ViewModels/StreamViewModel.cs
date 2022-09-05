@@ -320,7 +320,9 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        string defaultMessage = "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed.";
+        string defaultMessage = string.IsNullOrEmpty(Progress.Report.ConversionLogString) ? 
+          "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed." :
+          Progress.Report.ConversionLogString;
 
         string reportInfo = $"\nOperation: {(PreviewOn ? "Preview " : "")}{(IsReceiver ? "Received at " : "Sent at ")}{DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss")}";
         reportInfo += $"\nTotal: {Report.Count} objects";

@@ -169,11 +169,6 @@
 
           <Grid RowDefinitions="auto,auto,auto,*" ColumnDefinitions="*,auto">
 
-            <!--  OLD REPORT, DEPRECATE AFTER ALL CONNECTOR BINDINGS ARE UPDATED WITH NEW APPOBJS  -->
-            <ScrollViewer Grid.Row="2" IsVisible="{Binding !HasReportItems}">
-              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Progress.Report.ConversionLogString}" />
-            </ScrollViewer>
-
             <!--  SUMMARY AND OPERATION ERRORS  -->
             <TextBlock
               Grid.Row="0"
