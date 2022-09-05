@@ -44,6 +44,23 @@ namespace DesktopUI2
       return false;
     }
 
+    #region abstract properties
+
+    /// <summary>
+    /// Indicates if previewing send has been implemented
+    /// </summary>
+    /// <returns></returns>
+    public abstract bool CanPreviewSend { get; }
+
+    /// <summary>
+    /// Indicates if previewing receive has been implemented
+    /// </summary>
+    /// <returns></returns>
+    public abstract bool CanPreviewReceive { get; }
+
+    #endregion
+
+
     #region abstract methods
 
     /// <summary>
@@ -125,6 +142,7 @@ namespace DesktopUI2
     /// <param name="progress"></param>
     /// <returns></returns>
     public abstract void PreviewSend(StreamState state, ProgressViewModel progress);
+
 
     /// <summary>
     /// Receives stream data from the server

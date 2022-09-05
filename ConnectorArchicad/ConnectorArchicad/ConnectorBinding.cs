@@ -98,10 +98,10 @@ namespace Archicad.Launcher
       return new List<ReceiveMode> { ReceiveMode.Create };
     }
 
+    public override bool CanPreviewReceive => false;
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
-      // TODO!
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
@@ -120,9 +120,10 @@ namespace Archicad.Launcher
       // TODO!
     }
 
+    public override bool CanPreviewSend => false;
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      // TODO!
+      return;
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {

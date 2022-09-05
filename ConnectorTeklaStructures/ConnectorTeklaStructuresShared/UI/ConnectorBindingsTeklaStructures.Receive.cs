@@ -20,6 +20,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
   {
     #region receiving
+    public override bool CanPreviewReceive => false;
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Exceptions.Clear();
