@@ -62,6 +62,7 @@ namespace Objects.Converter.RhinoGh
     }
     public string ViewToNative(View3D view)
     {
+      var bakedViewName = string.Empty;
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate {
 
         RhinoView _view = Doc.Views.ActiveView;
@@ -97,14 +98,14 @@ namespace Objects.Converter.RhinoGh
           viewport.ChangeToParallelProjection(true);
 
         var commitInfo = GetCommitInfo();
-        var viewName = $"{commitInfo } - {view.name}";
+        bakedViewName = $"{commitInfo } - {view.name}";
 
-        Doc.NamedViews.Add(viewName, viewport.Id);
+        Doc.NamedViews.Add(bakedViewName, viewport.Id);
       });
 
       //ConversionErrors.Add(sdfasdfaf);
 
-      return "baked";
+      return bakedViewName;
     }
 
     private void AttachViewParams(Base speckleView, ViewInfo view)

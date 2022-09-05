@@ -17,6 +17,7 @@ namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
+    public override bool CanPreviewSend => false;
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // TODO!
