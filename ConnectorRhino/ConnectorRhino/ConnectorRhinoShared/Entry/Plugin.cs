@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace SpeckleRhino
       Instance = this;
     }
 
-    internal void Init()
+    public void Init()
     {
       try
       {
@@ -95,7 +95,6 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-      Init();
 
 #if !MAC
       System.Type panelType = typeof(Panel);
@@ -144,6 +143,10 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
 
+#if MAC
+    public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled;
+#else
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+#endif
   }
 }
