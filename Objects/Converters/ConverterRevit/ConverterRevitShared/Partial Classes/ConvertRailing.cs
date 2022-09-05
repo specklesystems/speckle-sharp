@@ -55,6 +55,19 @@ namespace Objects.Converter.Revit
       if (revitRailing.GetTypeId() != railingType.Id)
         revitRailing.ChangeTypeId(railingType.Id);
 
+      if (speckleRailing.topRail != null)
+      {
+        GetElementType<TopRailType>(speckleRailing.topRail, appObj, out TopRailType topRailType);
+
+        if (GetParamValue<int>(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL) == 0)
+          TrySetParam(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL, 1);
+
+        if (railingType.TopRailType != topRailType.Id && topRailType != null)
+          railingType.TopRailType = topRailType.Id;
+
+      }
+
+
       if (isUpdate)
       {
         revitRailing.SetPath(baseCurve);
@@ -65,6 +78,17 @@ namespace Objects.Converter.Revit
         revitRailing.Flip();
 
       SetInstanceParameters(revitRailing, speckleRailing);
+   
+      if (speckleRailing.topRail != null)
+      {
+        // This call to regenerate is to reflect the generation 
+        // of the TopRail element associated with the Railing element
+        Doc.Regenerate();
+
+        var revitTopRail = Doc.GetElement(revitRailing.TopRail);
+
+        SetInstanceParameters(revitTopRail, speckleRailing.topRail);
+      }
 
       var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: status, createdId: revitRailing.UniqueId, convertedItem: revitRailing);
@@ -86,6 +110,31 @@ namespace Objects.Converter.Revit
 
       speckleRailing.displayValue = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
+      if (revitRailing.TopRail != ElementId.InvalidElementId)
+      {
+
+        var railingIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitRailing.UniqueId);
+        if (railingIndex != -1)
+        {
+          ContextObjects.RemoveAt(railingIndex);
+        }
+
+        var revitTopRail = revitRailing.Document.GetElement(revitRailing.TopRail) as TopRail;
+
+        var isSelectedInContextObjects = ContextObjects
+              .FindIndex(x => x.applicationId == revitTopRail.UniqueId);
+
+        if (isSelectedInContextObjects != -1)
+        {
+          ContextObjects.RemoveAt(isSelectedInContextObjects);
+        }
+
+        if (CanConvertToSpeckle(revitTopRail))
+        {
+          speckleRailing.topRail = TopRailToSpeckle(revitTopRail);
+          ConvertedObjectsList.Add(speckleRailing.topRail.applicationId);
+        }
+      }
       return speckleRailing;
     }
 

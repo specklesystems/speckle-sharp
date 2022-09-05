@@ -17,7 +17,8 @@ namespace Objects.BuiltElements.Revit
     public bool flipped { get; set; }
     public string elementId { get; set; }
     public Base parameters { get; set; }
-    
+    public RevitTopRail topRail { get; set; }
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -33,12 +34,13 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.flipped = flipped;
     }
-    
+
     #region Obsolete Members
     [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
+    public Mesh displayMesh
+    {
       get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
+      set => displayValue = new List<Mesh> { value };
     }
     #endregion
   }

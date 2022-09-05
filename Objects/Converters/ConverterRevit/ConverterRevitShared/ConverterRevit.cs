@@ -198,7 +198,10 @@ namespace Objects.Converter.Revit
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
           break;
-        case DB.Architecture.TopRail _:
+        case DB.Architecture.TopRail o:
+          returnObject = TopRailToSpeckle(o);
+          break;
+        case DB.Architecture.HandRail _:
           returnObject = null;
           break;
         case DB.Structure.Rebar o:
@@ -306,7 +309,7 @@ namespace Objects.Converter.Revit
     }
     private BuiltInCategory GetObjectCategory(Base @object)
     {
-      switch(@object)
+      switch (@object)
       {
         case BE.Beam _:
         case BE.Brace _:
@@ -326,7 +329,7 @@ namespace Objects.Converter.Revit
           return BuiltInCategory.OST_PipeSegments;
         case BE.Rebar _:
           return BuiltInCategory.OST_Rebar;
-        case BE.Topography _: 
+        case BE.Topography _:
           return BuiltInCategory.OST_Topography;
         case BE.Wall _:
           return BuiltInCategory.OST_Walls;
@@ -337,7 +340,7 @@ namespace Objects.Converter.Revit
         case BE.CableTray _:
           return BuiltInCategory.OST_CableTray;
         default:
-          return BuiltInCategory.OST_GenericModel;        
+          return BuiltInCategory.OST_GenericModel;
       }
     }
 
@@ -356,7 +359,7 @@ namespace Objects.Converter.Revit
           var cat = GetObjectCategory(@object);
           return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, cat);
         }
-        catch 
+        catch
         {
 
         }
