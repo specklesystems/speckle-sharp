@@ -14,6 +14,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
 
@@ -275,7 +276,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
               catch (Exception e)
               {
                 // TODO: Check this with team.
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
               }
             }
 
@@ -306,7 +307,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
               }
               catch (Exception e)
               {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message);
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
                 continue;
               }
 
@@ -399,7 +400,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
             }
             catch (Exception e)
             {
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
               return null;
             }
           }
