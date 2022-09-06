@@ -58,10 +58,6 @@ namespace SpeckleRhino
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
 
-#if DEBUG
-      SpeckleRhinoConnectorPlugin.Instance.Init();
-#endif
-
 #if MAC
       var msg = "Speckle is temporarily disabled on Rhino due to a critical bug regarding Rhino's top-menu commands. Please use Grasshopper instead while we fix this.";
       RhinoApp.CommandLineOut.WriteLine(msg);
@@ -69,6 +65,7 @@ namespace SpeckleRhino
       return Result.Nothing;
       //CreateOrFocusSpeckle();
 #endif
+      SpeckleRhinoConnectorPlugin.Instance.Init();
       Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 
       return Result.Success;
