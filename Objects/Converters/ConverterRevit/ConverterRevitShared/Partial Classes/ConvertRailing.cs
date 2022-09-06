@@ -78,7 +78,7 @@ namespace Objects.Converter.Revit
         revitRailing.Flip();
 
       SetInstanceParameters(revitRailing, speckleRailing);
-   
+
       if (speckleRailing.topRail != null)
       {
         // This call to regenerate is to reflect the generation 
@@ -132,6 +132,11 @@ namespace Objects.Converter.Revit
         if (CanConvertToSpeckle(revitTopRail))
         {
           speckleRailing.topRail = TopRailToSpeckle(revitTopRail);
+
+          //ensure top rail mesh is visible in viewer
+          //currently only the top level displayValue is visualized (or anything under 'elements')
+          //if this leads to duplicated meshes in some cases, we might need to remove the display mesh form the TopRail element
+          speckleRailing.displayValue.AddRange(speckleRailing.topRail.displayValue);
           ConvertedObjectsList.Add(speckleRailing.topRail.applicationId);
         }
       }
