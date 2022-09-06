@@ -102,6 +102,7 @@ namespace SpeckleRhino
       // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
       // You can also include the custom panel in any existing panel group by simply right
       // clicking one a panel tab and checking or un-checking the "MyPane" option.
+      Init();
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.

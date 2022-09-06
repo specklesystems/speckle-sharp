@@ -65,7 +65,6 @@ namespace SpeckleRhino
       return Result.Nothing;
       //CreateOrFocusSpeckle();
 #endif
-      SpeckleRhinoConnectorPlugin.Instance.Init();
       Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 
       return Result.Success;
