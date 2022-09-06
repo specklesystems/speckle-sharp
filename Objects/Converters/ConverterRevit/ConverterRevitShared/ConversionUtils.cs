@@ -212,7 +212,7 @@ namespace Objects.Converter.Revit
 
       //exclude parameters that don't have a value and those pointing to other elements as we don't support them
       var revitParameters = element.Parameters.Cast<DB.Parameter>()
-        .Where(x => x.HasValue && x.StorageType != StorageType.ElementId && !exclusions.Contains(GetParamInternalName(x))).ToList();
+        .Where(x => x.StorageType != StorageType.ElementId && !exclusions.Contains(GetParamInternalName(x))).ToList();
 
       //exclude parameters that failed to convert
       var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter))
@@ -636,9 +636,9 @@ namespace Objects.Converter.Revit
       }
     }
 
-#endregion
+    #endregion
 
-#region conversion "edit existing if possible" utilities
+    #region conversion "edit existing if possible" utilities
 
     /// <summary>
     /// Returns, if found, the corresponding doc element.
@@ -687,9 +687,9 @@ namespace Objects.Converter.Revit
       else
         return false;
     }
-#endregion
+    #endregion
 
-#region Reference Point
+    #region Reference Point
 
     // CAUTION: these strings need to have the same values as in the connector bindings
     const string InternalOrigin = "Internal Origin (default)";
@@ -779,9 +779,9 @@ namespace Objects.Converter.Revit
     {
       return (isPoint) ? ReferencePointTransform.OfPoint(p) : ReferencePointTransform.OfVector(p);
     }
-#endregion
+    #endregion
 
-#region Floor/ceiling/roof openings
+    #region Floor/ceiling/roof openings
 
     //a floor/roof/ceiling outline can have "voids/holes" for 3 reasons:
     // - there is a shaft cutting through it > we don't need to create an opening (the shaft will be created on its own)
@@ -853,9 +853,9 @@ namespace Objects.Converter.Revit
       return false;
     }
 
-#endregion
+    #endregion
 
-#region misc
+    #region misc
 
     public string GetTemplatePath(string templateName)
     {
@@ -873,7 +873,7 @@ namespace Objects.Converter.Revit
 
       return templatePath;
     }
-#endregion
+    #endregion
 
     private List<ICurve> GetProfiles(DB.SpatialElement room)
     {
@@ -915,7 +915,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-#region materials
+    #region materials
     public RenderMaterial GetElementRenderMaterial(DB.Element element)
     {
       var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
@@ -1034,7 +1034,7 @@ namespace Objects.Converter.Revit
       return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
     }
 
-#endregion
+    #endregion
 
 
     /// <summary>
@@ -1137,7 +1137,7 @@ namespace Objects.Converter.Revit
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-     
+
       // otherwise just create new one 
       if (docObj != null)
         Doc.Delete(docObj.Id);
