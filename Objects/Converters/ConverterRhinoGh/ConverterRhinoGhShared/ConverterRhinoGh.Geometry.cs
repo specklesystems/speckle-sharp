@@ -10,6 +10,7 @@ using Rhino.Geometry;
 using Rhino.Geometry.Collections;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -1022,7 +1023,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception e)
       {
-        notes.Add(e.Message);
+        notes.Add(e.ToFormattedString());
         return null;
       }
     }
