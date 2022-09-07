@@ -46,7 +46,7 @@
       <ProgressBar
         Width="40"
         Height="40"
-        Classes="Circle notransitions"
+        Classes="Circle"
         IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
         IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
