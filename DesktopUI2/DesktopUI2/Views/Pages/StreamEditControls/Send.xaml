@@ -3,7 +3,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:c="clr-namespace:DesktopUI2.Controls"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
@@ -28,6 +28,10 @@
           <TextBlock FontWeight="Bold" Text="{Binding SelectedFilter.Summary, FallbackValue=?}" />
           <TextBlock Text=" to " />
           <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+          <TextBlock
+            Classes="Overline"
+            Foreground="Gray"
+            Text="  (expand to edit)" />
         </StackPanel>
       </Expander.Header>
 

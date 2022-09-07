@@ -28,9 +28,11 @@
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
+    <conv:StreamEditHeightConverter x:Key="StreamEditHeightConverter" />
   </UserControl.Resources>
-  <Grid RowDefinitions="auto,*, auto">
+  <Grid RowDefinitions="auto,*, 3, auto">
     <Border
+      x:Name="header"
       Margin="0,0,0,7"
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
@@ -108,7 +110,10 @@
       RowDefinitions="*,auto,auto">
       <!--  ACTIVITY & COMMENTS & REPORT  -->
 
-      <TabControl Grid.Row="0" Background="Transparent" Name="tabStreamEdit">
+      <TabControl
+        Name="tabStreamEdit"
+        Grid.Row="0"
+        Background="Transparent">
         <TabItem>
           <TabItem.Header>
             <StackPanel Orientation="Horizontal">
@@ -167,7 +172,7 @@
             </StackPanel>
           </TabItem.Header>
 
-          <Grid RowDefinitions="auto,auto,auto,*" ColumnDefinitions="*,auto">
+          <Grid ColumnDefinitions="*,auto" RowDefinitions="auto,auto,auto,*">
 
             <!--  SUMMARY AND OPERATION ERRORS  -->
             <TextBlock
@@ -243,14 +248,17 @@
             <ListBox
               Grid.Row="2"
               Margin="0,0,0,8"
-              IsVisible="{Binding HasReportItems}"
               Classes="Chip"
+              IsVisible="{Binding HasReportItems}"
               Items="{Binding ReportFilterItems}"
               Selection="{Binding ReportSelectionModel}"
               SelectionMode="Multiple, Toggle" />
 
             <!--  APP OBJS  -->
-            <uc:Report Grid.Row="3" Grid.ColumnSpan="2" IsVisible="{Binding HasReportItems}" />
+            <uc:Report
+              Grid.Row="3"
+              Grid.ColumnSpan="2"
+              IsVisible="{Binding HasReportItems}" />
           </Grid>
 
         </TabItem>
@@ -308,59 +316,62 @@
 
     </Grid>
 
+    <!--<GridSplitter Grid.Row="2" ResizeDirection="Rows" />-->
+
     <!--  SEND/RECEIVE  -->
-    <TabControl
-      Grid.Row="2"
-      Background="{DynamicResource MaterialDesignCardBackground}"
-      SelectedIndex="{Binding IsReceiver}">
+    <ScrollViewer
+      x:Name="Scroller"
+      Grid.Row="3"
+      MaxHeight="{Binding $parent[Grid].Bounds.Height, Converter={StaticResource StreamEditHeightConverter}}">
+      <TabControl Background="{DynamicResource MaterialDesignCardBackground}" SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Kind="CubeSend"
-              ToolTip.Tip="Send">
-              <icons:MaterialIcon.RenderTransform>
-                <RotateTransform Angle="-30" />
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-            <TextBlock
-              Margin="10,0,0,0"
-              VerticalAlignment="Center"
-              Text="Send" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Send />
-      </TabItem>
+        <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Kind="CubeSend"
+                ToolTip.Tip="Send">
+                <icons:MaterialIcon.RenderTransform>
+                  <RotateTransform Angle="-30" />
+                </icons:MaterialIcon.RenderTransform>
+              </icons:MaterialIcon>
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Send" />
+            </StackPanel>
+          </TabItem.Header>
+          <uc:Send />
+        </TabItem>
 
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              Kind="CubeSend"
-              ToolTip.Tip="Receive">
-              <icons:MaterialIcon.RenderTransform>
-                <TransformGroup>
-                  <RotateTransform Angle="30" />
-                  <ScaleTransform ScaleX="-1" />
-                </TransformGroup>
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-            <TextBlock
-              Margin="10,0,0,0"
-              VerticalAlignment="Center"
-              Text="Receive" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Receive />
-      </TabItem>
-    </TabControl>
-
+        <TabItem>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                Kind="CubeSend"
+                ToolTip.Tip="Receive">
+                <icons:MaterialIcon.RenderTransform>
+                  <TransformGroup>
+                    <RotateTransform Angle="30" />
+                    <ScaleTransform ScaleX="-1" />
+                  </TransformGroup>
+                </icons:MaterialIcon.RenderTransform>
+              </icons:MaterialIcon>
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Receive" />
+            </StackPanel>
+          </TabItem.Header>
+          <uc:Receive />
+        </TabItem>
+      </TabControl>
+    </ScrollViewer>
   </Grid>
 
 </UserControl>

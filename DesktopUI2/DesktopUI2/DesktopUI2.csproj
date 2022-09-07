@@ -30,9 +30,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
-    <None Remove="Controls\PreviewButton.xaml" />
-    <None Remove="Controls\ReceiveButton.xaml" />
-    <None Remove="Controls\SendButton.xaml" />
+    <None Remove="Views\Controls\PreviewButton.xaml" />
+    <None Remove="Views\Controls\ReceiveButton.xaml" />
+    <None Remove="Views\Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\ChipListBox.xaml" />
     <None Remove="Styles\ComboBox.xaml" />
@@ -117,13 +117,13 @@
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Controls\PreviewButton.xaml">
+    <AvaloniaXaml Include="Views\Controls\PreviewButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Controls\ReceiveButton.xaml">
+    <AvaloniaXaml Include="Views\Controls\ReceiveButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Controls\SendButton.xaml">
+    <AvaloniaXaml Include="Views\Controls\SendButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Styles\MenuItem.xaml" />
@@ -245,13 +245,13 @@
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Controls\PreviewButton.xaml.cs">
+    <Compile Update="Views\Controls\PreviewButton.xaml.cs">
       <DependentUpon>PreviewButton.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Controls\ReceiveButton.xaml.cs">
+    <Compile Update="Views\Controls\ReceiveButton.xaml.cs">
       <DependentUpon>ReceiveButton.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Controls\SendButton.xaml.cs">
+    <Compile Update="Views\Controls\SendButton.xaml.cs">
       <DependentUpon>SendButton.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Filters\AllFilterView.xaml.cs">
