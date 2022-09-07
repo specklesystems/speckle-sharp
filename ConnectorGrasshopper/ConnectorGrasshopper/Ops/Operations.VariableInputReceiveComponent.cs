@@ -579,7 +579,7 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
-          ((VariableInputReceiveComponent)Parent).PrevReceivedData = null;
+          receiveComponent.PrevReceivedData = null;
           var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
@@ -588,7 +588,8 @@ namespace ConnectorGrasshopper.Ops
 
           if (myCommit == null)
           {
-            throw new Exception("Failed to find a valid commit or object to get.");
+            Done();
+            return;
           }
 
           ReceivedCommit = myCommit;
@@ -653,6 +654,8 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+            if (myCommit == null)
+              OnFail(GH_RuntimeMessageLevel.Warning, $"Commit with id {InputWrapper.CommitId} was not found in stream {InputWrapper.StreamId}.");
             return myCommit;
           }
           catch (Exception e)
@@ -665,7 +668,7 @@ namespace ConnectorGrasshopper.Ops
           return myCommit;
         case StreamWrapperType.Stream:
         case StreamWrapperType.Undefined:
-          var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1);
+          var mb = await client.BranchGet(CancellationToken, InputWrapper.StreamId, "main", 1);
           if (mb.commits.totalCount == 0)
           {
             // TODO: Warn that we're not pulling from the main branch
@@ -676,10 +679,10 @@ namespace ConnectorGrasshopper.Ops
             return mb.commits.items[0];
           }
 
-          var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1);
+          var cms = await client.StreamGetCommits(CancellationToken, InputWrapper.StreamId, 1);
           if (cms.Count == 0)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, $"This stream has no commits.");
+            OnFail(GH_RuntimeMessageLevel.Warning, $"This stream has no commits.");
             return null;
           }
           else
@@ -687,10 +690,16 @@ namespace ConnectorGrasshopper.Ops
             return cms[0];
           }
         case StreamWrapperType.Branch:
-          var br = await client.BranchGet(InputWrapper.StreamId, InputWrapper.BranchName, 1);
+          var br = await client.BranchGet(CancellationToken, InputWrapper.StreamId, InputWrapper.BranchName, 1);
+          if (br == null)
+          {
+            OnFail(GH_RuntimeMessageLevel.Warning,
+              $"The branch with name '{InputWrapper.BranchName}' doesn't exist in stream {InputWrapper.StreamId} on server {InputWrapper.ServerUrl}");
+            return null;
+          }
           if (br.commits.totalCount == 0)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, $"This branch has no commits.");
+            OnFail(GH_RuntimeMessageLevel.Warning, $"This branch has no commits.");
             return null;
           }
           return br.commits.items[0];
