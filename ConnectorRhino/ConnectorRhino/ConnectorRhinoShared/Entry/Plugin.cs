@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
@@ -21,7 +22,7 @@ namespace SpeckleRhino
     public ConnectorBindingsRhino Bindings { get; private set; }
     public MainViewModel ViewModel { get; private set; }
 
-    private bool _initialized;
+    internal bool _initialized;
 
     public SpeckleRhinoConnectorPlugin()
     {
@@ -95,6 +96,16 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
+      // The user is probably using Rhino Inside and Avalonia was already initialized there
+      if (App.Current != null)
+      {
+
+        errorMessage = "Speckle cannot be loaded in multiple application at the same time.";
+        RhinoApp.CommandLineOut.WriteLine(errorMessage);
+        return LoadReturnCode.ErrorNoDialog;
+      }
+
+
 
 #if !MAC
       System.Type panelType = typeof(Panel);
