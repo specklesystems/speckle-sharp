@@ -186,6 +186,13 @@ namespace Speckle.Core.Credentials
       var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
       var localAccounts = GetLocalAccounts();
 
+      //prevent invalid account from slipping out
+      var invalidAccounts = sqlAccounts.Where(x => x.userInfo == null || x.serverInfo == null);
+      foreach(var acc in invalidAccounts)
+      {
+        RemoveAccount(acc.id);
+      }
+
       var allAccounts = sqlAccounts.Concat(localAccounts);
 
       return allAccounts;
@@ -321,9 +328,9 @@ namespace Speckle.Core.Credentials
 
       //does nothing?
       var timeout = TimeSpan.FromMinutes(2);
-      listener.TimeoutManager.HeaderWait = timeout;
-      listener.TimeoutManager.EntityBody = timeout;
-      listener.TimeoutManager.IdleConnection = timeout;
+      //listener.TimeoutManager.HeaderWait = timeout;
+      //listener.TimeoutManager.EntityBody = timeout;
+      //listener.TimeoutManager.IdleConnection = timeout;
 
       var task = Task.Run(() =>
       {
