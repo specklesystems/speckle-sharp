@@ -438,19 +438,21 @@ namespace Speckle.Core.Api
     public string Number { get; set; }
     public string Url { get; set; }
     public Os Os { get; set; }
+    public Architecture Architecture { get; set; } = Architecture.Any;
     public DateTime Date { get; set; }
 
     [JsonIgnore]
     public string DateTimeAgo => Helpers.TimeAgo(Date);
     public bool Prerelease { get; set; } = false;
 
-    public Version(string number, string url, Os os = Os.Win)
+    public Version(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
     {
       Number = number;
       Url = url;
       Date = DateTime.Now;
       Prerelease = Number.Contains("-");
       Os = os;
+      Architecture = architecture;
     }
   }
 
@@ -458,6 +460,13 @@ namespace Speckle.Core.Api
   {
     Win,
     OSX
+  }
+
+  public enum Architecture
+  {
+    Any,
+    Arm,
+    Intel
   }
 
 
