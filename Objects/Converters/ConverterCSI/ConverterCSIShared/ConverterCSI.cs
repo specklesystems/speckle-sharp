@@ -91,6 +91,9 @@ namespace Objects.Converter.CSI
     {
       switch (@object)
       {
+        case Objects.Organization.Model o:
+          return BuiltElementModelToNative(o);
+          Report.Log($"Created Model { o.id}");
         //case osg.node o:
         //    return pointtonative(o);
         case OSG.Node o:
