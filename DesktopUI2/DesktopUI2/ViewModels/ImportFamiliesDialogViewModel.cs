@@ -1,18 +1,9 @@
-﻿using Avalonia.Metadata;
-using DesktopUI2.Models;
-using DesktopUI2.Views;
-using ReactiveUI;
-using Speckle.Core.Api;
-using Speckle.Core.Models;
-using Speckle.Core.Logging;
+﻿using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
-using Splat;
-
-using System.Diagnostics;
+using DesktopUI2.Views.Windows.Dialogs;
 
 namespace DesktopUI2.ViewModels
 {
@@ -21,50 +12,112 @@ namespace DesktopUI2.ViewModels
 
     public event EventHandler OnRequestClose;
 
-    private ConnectorBindings Bindings;
-
     public static ImportFamiliesDialogViewModel Instance { get; private set; }
 
-    public ObservableCollection<Symbol> familySymbols { get; set; }
-    private List<Symbol> _selectedFamilySymbols { get; set; }
+    private List<Symbol> _familyTypes;
+    public List<Symbol> FamilyTypes
+    {
+      get => _familyTypes;
+      set => this.RaiseAndSetIfChanged(ref _familyTypes, value);
+    }
+    public Dictionary<string, List<Symbol>> allSymbols { get; private set; }
     public ObservableCollection<Symbol> selectedFamilySymbols { get; set; } = new ObservableCollection<Symbol>();
-    public string SearchQuery { get; set; }
+    
+    private string _searchQuery;
+    public string SearchQuery 
+    {
+      get => _searchQuery;
+      set
+      {
+        isSearching = true;
+        this.RaiseAndSetIfChanged(ref _searchQuery, value);
+        FamilyTypes = new List<Symbol>(allSymbols[SelectedFamily].Where(v => v.Name.ToLower().Contains(SearchQuery.ToLower())).ToList());
+        isSearching = false;
+      }
+    }
 
-    public bool isOpen = true;
+    public bool isSearching = false;
 
-    public ImportFamiliesDialogViewModel(List<string> allSymbols, List<string> importedSymbols)
+    private string _selectedFamily;
+    public string SelectedFamily
+    {
+      get => _selectedFamily;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedFamily, value);
+        FamilyTypes = allSymbols[value];
+      }
+    }
+
+    public ObservableCollection<string> LoadedFamilies { get; set; } = new ObservableCollection<string>();
+
+    public ImportFamiliesDialogViewModel(Dictionary<string,List<Symbol>> allSymbols)
     {
       Instance = this;
-      familySymbols = new ObservableCollection<Symbol>();
-      foreach (var symbol in allSymbols)
-      {
-        if (importedSymbols.Contains(symbol))
-          familySymbols.Add(new Symbol(symbol, true));
-        else
-          familySymbols.Add(new Symbol(symbol));
-      }
+      this.allSymbols = allSymbols;
+
+      foreach (var symbol in allSymbols.Keys)
+        LoadedFamilies.Add(symbol);
+      if (LoadedFamilies.Count > 0)
+        SelectedFamily = LoadedFamilies[0];
+
     }
 
     // this constructor is only for xaml design purposes
     public ImportFamiliesDialogViewModel()
     {
       Instance = this;
-      familySymbols = new ObservableCollection<Symbol>
+      allSymbols = new Dictionary<string, List<Symbol>>
       {
-        new Symbol("W12x19"), new Symbol("W12x21", true), new Symbol("W12x35", true), 
-        new Symbol("W12x40"), new Symbol("W12x19"), new Symbol("W12x19"), new Symbol("W12x19"), 
-        new Symbol("W12x19"), new Symbol("W12x19"), new Symbol("W12x19"), new Symbol("W12x19"), 
-        new Symbol("W12x19"), new Symbol("W12x19"), new Symbol("W12x19"), new Symbol("W12x19"), 
-        new Symbol("W12x19"), new Symbol("W12x19"), new Symbol("W12x19"),
+        {
+          "WF", new List<Symbol>
+          {
+            new Symbol("W12x19", "WF"),
+            new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
+            new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
+            new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
+            new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
+            new Symbol("W12x19", "WF")
+          }
+        },
+        {
+          "diff", new List<Symbol>
+          {
+            new Symbol("W12x21", "diff", true), new Symbol("W12x35", "diff",true), new Symbol("W12x40", "diff"),
+            new Symbol("W12x19", "diff"),
+          }
+        }
       };
+
+      foreach (var symbol in allSymbols.Keys)
+        LoadedFamilies.Add(symbol);
+      if (LoadedFamilies.Count > 0)
+        SelectedFamily = LoadedFamilies[0];
+    }
+
+    public void ImportSymbolsCommand()
+    {
+      ImportFamiliesDialog.Instance.Close(null);
+    }
+
+    public void CloseDialogCommand()
+    {
+      selectedFamilySymbols = new ObservableCollection<Symbol>();
+      ImportFamiliesDialog.Instance.Close(null);
+    }
+
+    public void ClearSearchCommand()
+    {
+      SearchQuery = "";
     }
 
     public class Symbol : ReactiveObject
     {
       public string Name { get; set; }
       public bool isImported { get; set; }
+      public string FamilyName { get; set; }
 
-      private bool _isChecked;
+      private bool _isChecked = false;
       public bool isChecked 
       { 
         get => _isChecked;
@@ -77,25 +130,12 @@ namespace DesktopUI2.ViewModels
             ImportFamiliesDialogViewModel.Instance.selectedFamilySymbols.Remove(this);
         }
       }
-      public Symbol(string name, bool isImported = false)
+      public Symbol(string name, string familyName, bool isImported = false)
       {
         Name = name;
+        FamilyName = familyName;
         this.isImported = isImported;
-        isChecked = false;
       }
-    }
-
-    public void ImportSymbolsCommand()
-    {
-      isOpen = false;
-      OnRequestClose(this, new EventArgs());
-    }
-
-    public void Close_Click()
-    {
-      selectedFamilySymbols = new ObservableCollection<Symbol>();
-      isOpen = false;
-      OnRequestClose(this, new EventArgs());
     }
   }
 }

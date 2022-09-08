@@ -21,11 +21,8 @@
   </Design.DataContext>
 
   <Grid 
-    RowDefinitions="auto,auto, *, auto, auto"
-    MinWidth="400"
-    MinHeight="550">
+    RowDefinitions="auto,auto, *, auto, auto">
     <Border
-      Grid.ColumnSpan="2"
       Margin="0,0,0,7"
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
@@ -43,17 +40,19 @@
           Grid.Column="1"
           Classes="Grotesk"
           FontSize="20"
-          Text="Import Family Symbols"/>
+          Text="Import Family Types"/>
       </Grid>
     </Border>
 
-    <Grid Grid.Row="1">
+    <Grid Grid.Row="1"
+      ColumnDefinitions="*,1.5*">
       <TextBox
+        Grid.Column="1"
         Margin="5,0,5,5"
         Padding="0"
         Classes="Solo Small"
         Text="{Binding SearchQuery}"
-        Watermark="Search symbols">
+        Watermark="Search types">
         <TextBox.InnerRightContent>
           <StackPanel Orientation="Horizontal">
             <m:FloatingButton
@@ -85,22 +84,40 @@
             Kind="Search" />
         </TextBox.InnerLeftContent>
       </TextBox>
+
+      <TextBlock 
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        Text="Loaded Families" 
+        FontWeight="Bold"/>
     </Grid>
 
-    <ScrollViewer 
+    <Grid
+      Grid.Row="2"
+      ColumnDefinitions="*,1.5*">
+      <ScrollViewer 
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <ListBox
+            Items="{Binding LoadedFamilies}"
+            SelectedItem="{Binding SelectedFamily}, Mode=TwoWay">
+          </ListBox>
+        </StackPanel>
+      </ScrollViewer>
+      <ScrollViewer
       VerticalScrollBarVisibility="Auto"
-      Grid.Row="2">
-        <ItemsControl Items="{Binding familySymbols}">
+      Grid.Column="1">
+        <ItemsControl Items="{Binding FamilyTypes}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Grid>  
+              <Grid>
                 <m:ColorZone
-                  Margin="5,0,5,10"
+                  Margin="5,0,5,5"
                   HorizontalAlignment="Left"
                   assists:ShadowAssist.ShadowDepth="Depth0"
                   CornerRadius="25"
                   Mode="Standard">
-                  <Grid ColumnDefinitions="auto,*">
+                  <Grid ColumnDefinitions="auto,*,*">
                     <CheckBox
                       Margin="10,0,0,0"
                       IsChecked="{Binding isChecked}, Mode=TwoWay"
@@ -112,27 +129,27 @@
                       Margin="10,0,0,0"
                       VerticalAlignment="Center"
                       Kind="CheckboxMarked"
-                      ToolTip.Tip="Already Imported into Project"
                       IsVisible="{Binding isImported}"
+                      ToolTip.Tip="Already Imported into Project"
                       Foreground="Gray"/>
                     <TextBlock
                       Grid.Column="1"
                       Margin="5,10,10,10"
-                      TextWrapping="Wrap"
+                      TextTrimming="CharacterEllipsis"
                       Text="{Binding Name}"/>
+                    <!--<TextBlock
+                      Grid.Column="2"
+                      Margin="5,10,10,10"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding FamilyName}"/>-->
                   </Grid>
                 </m:ColorZone>
               </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel Orientation="Horizontal"/>
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
         </ItemsControl>
-      <!--</Grid>-->
-    </ScrollViewer>
+      </ScrollViewer>
+    </Grid>
 
     <Expander
       Grid.Row="3"
@@ -146,12 +163,12 @@
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="Importing " />
           <TextBlock FontWeight="Bold" Text="{Binding selectedFamilySymbols.Count, FallbackValue=?}"/>
-          <TextBlock Text=" symbols from " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+          <TextBlock Text=" types" />
         </StackPanel>
       </Expander.Header>
       <ScrollViewer
-        MaxHeight="140"
+        MaxHeight="125"
+        Background="{DynamicResource MaterialDesignCardBackground}"
         VerticalScrollBarVisibility="Auto"
         Grid.Row="2">
         <ItemsControl Items="{Binding selectedFamilySymbols}">
@@ -159,7 +176,7 @@
             <DataTemplate>
               <Grid>
                 <m:ColorZone
-                  Margin="10,10,10,0"
+                  Margin="5,5,5,0"
                   HorizontalAlignment="Left"
                   assists:ShadowAssist.ShadowDepth="Depth0"
                   CornerRadius="25"
@@ -176,7 +193,7 @@
                       Margin="10,0,0,0"
                       VerticalAlignment="Center"
                       Kind="CheckboxMarked"
-                      ToolTip.Tip="Already Imported into Project"
+                      ToolTip.Tip="Already imported into project"
                       IsVisible="{Binding isImported}"
                       Foreground="Gray"/>
                     <TextBlock
@@ -200,16 +217,18 @@
 
     <Grid
       Grid.Row="4"
-      Margin="15"
-      ColumnDefinitions="auto, *, auto">
+      ColumnDefinitions="auto, *, auto"
+      Background="{DynamicResource MaterialDesignCardBackground}">
       <Button
+        Margin="15"
         HorizontalContentAlignment="Left"
         Command="{Binding Close_Click}"
         Content="Cancel" />
       <Button
+        Margin="15"
         Grid.Column="2"
         Command="{Binding ImportSymbolsCommand}"
-        Content="Import Symbols" />
+        Content="Import" />
     </Grid>
   </Grid>
 </UserControl>

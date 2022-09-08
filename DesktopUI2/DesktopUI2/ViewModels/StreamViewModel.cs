@@ -224,6 +224,9 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
+        if (Branches == null)
+          return new List<BranchViewModel>();
+
         if (_branchesViewModel == null)
           _branchesViewModel = Branches.Select(x => new BranchViewModel(x)).ToList();
 
