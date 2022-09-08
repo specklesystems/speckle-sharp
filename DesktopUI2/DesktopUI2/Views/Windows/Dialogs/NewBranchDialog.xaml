@@ -1,0 +1,47 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Windows.Dialogs.NewBranchDialog"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d">
+  <Grid RowDefinitions="auto, auto, auto, auto">
+    <TextBlock
+      Margin="15,15,15,0"
+      Classes="Subtitle1"
+      Text="Create a new Branch"
+      TextTrimming="CharacterEllipsis" />
+
+    <TextBox
+      Grid.Row="1"
+      Margin="15,5"
+      Text="{Binding BranchName}"
+      Watermark="Branch Name" />
+
+    <TextBox
+      Grid.Row="2"
+      Margin="15,5"
+      Text="{Binding Description}"
+      Watermark="Description (optional)" />
+
+
+    <StackPanel
+      Grid.Row="3"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal">
+      <Button
+        Margin="0,0,10,0"
+        Classes="Outline"
+        Click="Close_Click"
+        Content="Cancel" />
+      <Button
+        Margin="0,0,10,0"
+        Click="Create_Click"
+        Content="Create" />
+
+    </StackPanel>
+  </Grid>
+</UserControl>

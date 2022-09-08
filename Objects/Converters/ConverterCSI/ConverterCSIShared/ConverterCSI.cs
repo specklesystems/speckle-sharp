@@ -75,6 +75,8 @@ namespace Objects.Converter.CSI
 
     public bool CanConvertToSpeckle(object @object)
     {
+      if (@object == null)
+        return false;
       foreach (var type in Enum.GetNames(typeof(ConverterCSI.CSIAPIUsableTypes)))
       {
         if (type == @object.ToString())
@@ -89,6 +91,9 @@ namespace Objects.Converter.CSI
     {
       switch (@object)
       {
+        case Objects.Organization.Model o:
+          return BuiltElementModelToNative(o);
+          Report.Log($"Created Model { o.id}");
         //case osg.node o:
         //    return pointtonative(o);
         case OSG.Node o:
@@ -302,12 +307,12 @@ namespace Objects.Converter.CSI
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
 
 
-    public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
+    public void SetContextObjects(List<ApplicationObject> objects)
     {
       throw new NotImplementedException();
     }
 
-    public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects)
+    public void SetPreviousContextObjects(List<ApplicationObject> objects)
     {
       throw new NotImplementedException();
     }

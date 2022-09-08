@@ -1,5 +1,7 @@
 ﻿using DesktopUI2;
+using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using System;
 using System.Collections.Generic;
@@ -15,9 +17,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var names = new List<string>();
       ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
       while (myEnum.MoveNext())
-      {
         names.Add(myEnum.Current.Identifier.GUID.ToString());
-      }
+
       return names;
     }
 
@@ -31,9 +32,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       {
         var phaseCollection = Model.GetPhases();
         foreach (Phase p in phaseCollection)
-        {
           phases.Add(p.PhaseName);
-        }
 
         //selectionCount = Model.Selection.GetElementIds().Count();
         categories = ConnectorTeklaStructuresUtils.GetCategoryNames(Model);
@@ -56,9 +55,14 @@ namespace Speckle.ConnectorTeklaStructures.UI
             };
     }
 
-    public override void SelectClientObjects(string args)
+    public override void ResetDocument()
     {
-      throw new NotImplementedException();
+      // TODO!
+    }
+
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
+    {
+      // TODO!
     }
 
     private List<ModelObject> GetSelectionFilterObjects(ISelectionFilter filter)
@@ -72,17 +76,13 @@ namespace Speckle.ConnectorTeklaStructures.UI
         case "manual":
           ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
           while (myEnum.MoveNext())
-          {
             selection.Add(myEnum.Current);
-          }
           return selection;
         //  return GetSelectedObjects();
         case "all":
           myEnum = Model.GetModelObjectSelector().GetAllObjects();
           while (myEnum.MoveNext())
-          {
             selection.Add(myEnum.Current);
-          }
           return selection;
 
 
@@ -96,9 +96,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
               Phase phaseTemp = new Phase();
               myEnum.Current.GetPhase(out phaseTemp);
               if (phaseTemp.PhaseName == phase)
-              {
                 selection.Add(myEnum.Current);
-              }
             }
           }
 
@@ -113,14 +111,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
             {
               myEnum = Model.GetModelObjectSelector().GetAllObjectsWithType(categories[cat]);
               while (myEnum.MoveNext())
-              {
                 selection.Add(myEnum.Current);
-              }
             }
           }
           return selection;
-
-
       }
 
       return selection;

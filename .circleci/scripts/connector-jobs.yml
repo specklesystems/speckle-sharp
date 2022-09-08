@@ -106,7 +106,6 @@ teklastructures:
       slug: teklastructures
       requires:
         - build-desktopui
-
 csi:
   - build-connector:
       slnname: ConnectorCSI

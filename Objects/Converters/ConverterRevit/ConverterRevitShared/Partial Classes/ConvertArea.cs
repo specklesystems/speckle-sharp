@@ -7,7 +7,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    //public List<ApplicationPlaceholderObject> AreaToNative(BuiltElements.Area speckleArea)
+    //public List<ApplicationObject> AreaToNative(BuiltElements.Area speckleArea)
     //{
     //  var revitRoom = GetExistingElementByApplicationId(speckleArea.applicationId) as DB.Area;
     //  var level = LevelToNative(speckleArea.level);
@@ -26,9 +26,9 @@ namespace Objects.Converter.Revit
 
     //  SetInstanceParameters(revitRoom, speckleArea);
 
-    //  var placeholders = new List<ApplicationPlaceholderObject>()
+    //  var placeholders = new List<ApplicationObject>()
     //  {
-    //    new ApplicationPlaceholderObject
+    //    new ApplicationObject
     //    {
     //    applicationId = speckleArea.applicationId,
     //    ApplicationGeneratedId = revitRoom.UniqueId,
@@ -53,19 +53,12 @@ namespace Objects.Converter.Revit
       speckleArea.outline = profiles[0];
       speckleArea.area = GetParamValue<double>(revitArea, BuiltInParameter.ROOM_AREA);
       if (profiles.Count > 1)
-      {
         speckleArea.voids = profiles.Skip(1).ToList();
-      }
 
       GetAllRevitParamsAndIds(speckleArea, revitArea);
 
       speckleArea.displayValue = GetElementDisplayMesh(revitArea);
-      Report.Log($"Converted Area {revitArea.Id}");
-
       return speckleArea;
     }
-
-
-
   }
 }

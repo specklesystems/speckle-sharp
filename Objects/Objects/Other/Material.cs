@@ -47,7 +47,7 @@ namespace Objects.Other.Revit
 
         public RevitMaterial() { }
 
-        [SchemaInfo("RevitMaterial", "Creates a Speckle material", "BIM", "Architecture")]
+        [SchemaInfo("RevitMaterial", "Creates a Speckle material", "Revit", "Architecture")]
         public RevitMaterial(string name, string category, string materialclass, int shiny, int smooth, int transparent,
       List<Parameter> parameters = null)
         {

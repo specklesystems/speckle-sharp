@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using Grasshopper.Kernel;
+using Speckle.Core.Api;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
 
@@ -19,7 +21,7 @@ namespace ConnectorGrasshopper.Transports
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("Base Path", "P", "The root folder where you want the sqlite db to be stored. Defaults to `%appdata%`.", GH_ParamAccess.item, Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+      pManager.AddTextParameter("Base Path", "P", "The root folder where you want the sqlite db to be stored. Defaults to `%appdata%`.", GH_ParamAccess.item, Helpers.UserApplicationDataPath);
       pManager.AddTextParameter("Application Name", "N", "The subfolder you want the sqlite db to be stored. Defaults to `Speckle`.", GH_ParamAccess.item, "Speckle");
       pManager.AddTextParameter("Database Name", "D", "The name of the actual database file. Defaults to `UserLocalDefaultDb`.", GH_ParamAccess.item, "UserLocalDefaultDb");
     }

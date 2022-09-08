@@ -33,7 +33,10 @@
 
         <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
       </Expander>
-      <Expander Classes="Flat Transparent" Header="This is another expander!">
+      <Expander
+        Margin="0,10"
+        Classes="Flat Transparent"
+        Header="This is another expander!">
         <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
       </Expander>
     </StackPanel>
@@ -54,7 +57,12 @@
     </Setter>
   </Style>
 
-  <Style Selector="Expander.Flat /template/ m|Card#PART_ExpanderRoot">
+
+  <Style Selector="Expander /template/ ToggleButton#PART_toggle">
+    <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+  </Style>
+
+  <Style Selector="Expander.Flat">
     <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
   </Style>
 

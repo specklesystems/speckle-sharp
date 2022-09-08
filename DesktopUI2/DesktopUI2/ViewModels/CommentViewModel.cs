@@ -22,11 +22,8 @@ namespace DesktopUI2.ViewModels
       get
       {
         return string.Join("", Comment.text.Doc.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
-
-
       }
     }
-
 
     private async Task<AccountViewModel> GetAuthorAsync()
     {
@@ -57,8 +54,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-
-
     public CommentViewModel(CommentItem item, string streamId, Client client)
     {
       Comment = item;
@@ -72,7 +67,6 @@ namespace DesktopUI2.ViewModels
           Replies.Add(reply);
         }
       }
-
     }
 
     public void OpenComment()
@@ -88,10 +82,7 @@ namespace DesktopUI2.ViewModels
 
 
       Process.Start(new ProcessStartInfo($"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}") { UseShellExecute = true });
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment View" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment View" } });
     }
-
-
-
   }
 }

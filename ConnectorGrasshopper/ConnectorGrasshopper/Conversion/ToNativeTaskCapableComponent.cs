@@ -8,6 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Utilities = Speckle.Core.Models.Utilities;
 
 namespace ConnectorGrasshopper.Conversion
@@ -78,7 +79,7 @@ namespace ConnectorGrasshopper.Conversion
           e = aggregateException.Flatten();
         
         Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
         return new GH_SpeckleBase();
       }
     }

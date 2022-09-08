@@ -318,7 +318,7 @@ namespace Speckle.DesktopUI.Utils
 
     public override void SelectClientObjects(string args)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
     public override void PersistAndUpdateStreamInFile(StreamState state)

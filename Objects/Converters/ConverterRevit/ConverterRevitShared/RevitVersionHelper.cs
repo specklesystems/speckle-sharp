@@ -33,7 +33,14 @@ namespace Objects.Converter.Revit
       Enum.TryParse(parameter.applicationUnit, out DisplayUnitType sourceUnit);
       return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
 #else
-      var sourceUnit = new ForgeTypeId(parameter.applicationUnit);
+      // if a commit is sent in <=2021 and received in 2022+, the application unit will be a different format
+      // therefore we need to check if the applicationUnit is in the wrong format
+      ForgeTypeId sourceUnit = null;
+      if (!string.IsNullOrEmpty(parameter.applicationUnit) && parameter.applicationUnit.Length >= 3 && parameter.applicationUnit.Substring(0, 3) == "DUT")
+        sourceUnit = DUTToForgeTypeId(parameter.applicationUnit);
+      else
+        sourceUnit = new ForgeTypeId(parameter.applicationUnit);
+
       return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
 #endif
     }
@@ -118,8 +125,46 @@ namespace Objects.Converter.Revit
 #endif
     }
 
-
-        
+    #region helper functions
+#if !(REVIT2019 || REVIT2020)
+    private static ForgeTypeId DUTToForgeTypeId(string s)
+    {
+      ForgeTypeId sourceUnit = null;
+      switch (s.ToLower())
+      {
+        case string a when a.Contains("millimeters"):
+          sourceUnit = UnitTypeId.Millimeters;
+          break;
+        case string a when a.Contains("centimeters"):
+          sourceUnit = UnitTypeId.Centimeters;
+          break;
+        case string a when a.Contains("meters"):
+          sourceUnit = UnitTypeId.Centimeters;
+          break;
+        case string a when a.Contains("centimeters"):
+          sourceUnit = UnitTypeId.Meters;
+          break;
+        case string a when a.Contains("feet") && a.Contains("inches"):
+          sourceUnit = UnitTypeId.FeetFractionalInches;
+          break;
+        case string a when a.Contains("feet"):
+          sourceUnit = UnitTypeId.Feet;
+          break;
+        case string a when a.Contains("inches"):
+          sourceUnit = UnitTypeId.Inches;
+          break;
+        case string a when a.Contains("degrees"):
+          sourceUnit = UnitTypeId.Degrees;
+          break;
+        case string a when a.Contains("radians"):
+          sourceUnit = UnitTypeId.Radians;
+          break;
+      }
+      return sourceUnit;
     }
+#endif
+    #endregion
+
+  }
 }
 

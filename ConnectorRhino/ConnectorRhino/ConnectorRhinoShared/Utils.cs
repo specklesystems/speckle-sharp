@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Speckle.Core.Kits;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 using Rhino;
 using Rhino.DocObjects;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
+using Rhino.Geometry;
+using Rhino.Display;
+
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+
+using DesktopUI2.ViewModels;
+using System.Drawing;
+using System.Linq;
 
 namespace SpeckleRhino
 {
@@ -75,9 +79,124 @@ namespace SpeckleRhino
     #endregion
   }
 
-  
+  #region Preview
+  public class PreviewConduit : DisplayConduit
+  {
+    private Dictionary<string, List<object>> Preview { get; set; } = new Dictionary<string, List<object>>();
+    private List<string> Selected = new List<string>();
+    public BoundingBox bbox;
+    private Color color = Color.FromArgb(200, 59, 130, 246);
+    private Color selectedColor = Color.FromArgb(200, 255, 255, 0);
+    private DisplayMaterial material;
+
+    public PreviewConduit(List<ApplicationObject> preview)
+    {
+      material = new DisplayMaterial();
+      material.Transparency = 0.8;
+      material.Diffuse = color;
+      bbox = new BoundingBox();
+
+      foreach (var previewObj in preview)
+      {
+        var converted = new List<object>();
+        foreach (var obj in previewObj.Converted)
+        {
+          switch (obj)
+          {
+            case GeometryBase o:
+              bbox.Union(o.GetBoundingBox(false));
+              break;
+            case Text3d o:
+              bbox.Union(o.BoundingBox);
+              break;
+            case InstanceObject o:
+              // todo: this needs to be handled, including how block defs are created during preview
+              //obj.Rollback = true;
+              break;
+            default:
+              break;
+          }
+          converted.Add(obj);
+        }
+        Preview.Add(previewObj.OriginalId, converted);
+      }
+    }
+
+    public void SelectPreviewObject(string id, bool unselect = false)
+    {
+      if (Preview.ContainsKey(id))
+      {
+        if (unselect)
+          Selected.Remove(id);
+        else
+          if (!Selected.Contains(id)) Selected.Add(id);
+      }
+    }
+
+    // reference: https://developer.rhino3d.com/api/RhinoCommon/html/M_Rhino_Display_DisplayConduit_CalculateBoundingBox.htm
+    protected override void CalculateBoundingBox(CalculateBoundingBoxEventArgs e)
+    {
+      base.CalculateBoundingBox(e);
+      e.IncludeBoundingBox(bbox);
+    }
+
+    protected override void CalculateBoundingBoxZoomExtents(CalculateBoundingBoxEventArgs e)
+    {
+      this.CalculateBoundingBox(e);
+    }
+
+    protected override void PreDrawObjects(Rhino.Display.DrawEventArgs e)
+    {
+      // draw preview objects
+      var display = e.Display;
+
+      foreach (var previewobj in Preview)
+      {
+        var drawColor = Selected.Contains(previewobj.Key) ?  selectedColor : color;
+        var drawMaterial = material;
+        drawMaterial.Diffuse = drawColor;
+        foreach (var obj in previewobj.Value)
+        {
+          switch (obj)
+          {
+            case Brep o:
+              display.DrawBrepShaded(o, drawMaterial);
+              break;
+            case Mesh o:
+              display.DrawMeshShaded(o, drawMaterial);
+              break;
+            case Curve o:
+              display.DrawCurve(o, drawColor);
+              break;
+            case Rhino.Geometry.Point o:
+              display.DrawPoint(o.Location, drawColor);
+              break;
+            case Point3d o:
+              display.DrawPoint(o,drawColor);
+              break;
+            case PointCloud o:
+              display.DrawPointCloud(o, 5, drawColor);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+  }
+
+  #endregion
+
   public static class Formatting
   {
+    public static string ObjectDescriptor(RhinoObject obj)
+    {
+      if (obj == null) return String.Empty;
+      var simpleType = obj.ObjectType.ToString();
+      return obj.HasName ? $"{simpleType}" : $"{simpleType} {obj.Name}";
+    }
+
     public static string TimeAgo(string timestamp)
     {
       TimeSpan timeAgo;
