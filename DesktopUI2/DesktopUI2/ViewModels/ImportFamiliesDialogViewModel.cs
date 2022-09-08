@@ -36,6 +36,27 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private bool _isTopBoxChecked = false;
+    public bool IsTopBoxChecked
+    {
+      get => _isTopBoxChecked;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _isTopBoxChecked, value);
+        if (value)
+        {
+          foreach (var type in FamilyTypes)
+            if (!type.isChecked && !type.isImported)
+              type.isChecked = true;
+        }
+        else
+        {
+          foreach (var type in FamilyTypes)
+            type.isChecked = false;
+        }
+      }
+    }
+
     public bool isSearching = false;
 
     private string _selectedFamily;
@@ -46,6 +67,7 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _selectedFamily, value);
         FamilyTypes = allSymbols[value];
+        SetTopBox();
       }
     }
 
@@ -73,7 +95,7 @@ namespace DesktopUI2.ViewModels
           "WF", new List<Symbol>
           {
             new Symbol("W12x19", "WF"),
-            new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
+            new Symbol("a very very ver long type name", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
             new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
             new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
             new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"), new Symbol("W12x19", "WF"),
@@ -111,19 +133,36 @@ namespace DesktopUI2.ViewModels
       SearchQuery = "";
     }
 
+    public void SetTopBox()
+    {
+      var allChecked = true;
+      foreach (var type in FamilyTypes)
+      {
+        if (!type.isChecked && !type.isImported)
+        {
+          allChecked = false;
+          break;
+        }
+      }
+
+      _isTopBoxChecked = allChecked;
+      this.RaisePropertyChanged("IsTopBoxChecked");
+    }
+
     public class Symbol : ReactiveObject
     {
       public string Name { get; set; }
       public bool isImported { get; set; }
       public string FamilyName { get; set; }
 
-      private bool _isChecked = false;
+      private bool _isChecked = false; 
       public bool isChecked 
       { 
         get => _isChecked;
         set
         {
           this.RaiseAndSetIfChanged(ref _isChecked, value);
+          Instance.SetTopBox();
           if (value == true)
             ImportFamiliesDialogViewModel.Instance.selectedFamilySymbols.Add(this);
           else if (value == false && Instance.selectedFamilySymbols.Contains(this))

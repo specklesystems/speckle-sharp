@@ -21,7 +21,7 @@
   </Design.DataContext>
 
   <Grid 
-    RowDefinitions="auto,auto, *, auto, auto">
+    RowDefinitions="auto,*, auto, auto">
     <Border
       Margin="0,0,0,7"
       Padding="0"
@@ -44,115 +44,171 @@
       </Grid>
     </Border>
 
-    <Grid Grid.Row="1"
-      ColumnDefinitions="*,1.5*">
-      <TextBox
+    <Grid 
+      Grid.Row="1"
+      ColumnDefinitions="*,1.5*"
+      RowDefinitions="auto, *">
+      <!--<Border
+        Margin="10,0,5,0"
+        Padding="5"
+        Grid.Column="0"
+        BorderThickness="2"
+        BorderBrush="Gray">-->
+      <TextBlock
+          Grid.Row="0"
+          Margin="10,5,0,10"
+          VerticalAlignment="Center"
+          HorizontalAlignment="Center"
+          Text="Loaded Families"
+          FontWeight="Bold"/>
+      <!--</Border>-->
+
+      <!--<Border
+        Margin="5,0,10,0"
         Grid.Column="1"
-        Margin="5,0,5,5"
-        Padding="0"
-        Classes="Solo Small"
-        Text="{Binding SearchQuery}"
-        Watermark="Search types">
-        <TextBox.InnerRightContent>
-          <StackPanel Orientation="Horizontal">
-            <m:FloatingButton
-              Grid.Column="1"
-              VerticalAlignment="Center"
-              assists:ShadowAssist.ShadowDepth="Depth0"
-              Background="Transparent"
-              Classes="Mini"
-              Command="{Binding ClearSearchCommand}"
-              IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-              ToolTip.Tip="Clear">
-              <Button.Content>
-                <icons:MaterialIcon
-                  Width="15"
-                  Height="15"
-                  assists:ShadowAssist.ShadowDepth="0"
-                  Foreground="{DynamicResource MaterialDesignBody}"
-                  Kind="CloseCircle" />
-              </Button.Content>
-            </m:FloatingButton>
+        BorderThickness="2"
+        BorderBrush="Gray">-->
+      <TextBlock
+        Margin="10,5,0,10"
+          Grid.Row="0"
+          Grid.Column="1"
+          VerticalAlignment="Center"
+          HorizontalAlignment="Center"
+          Text="Type Name"
+          FontWeight="Bold"/>
+      <!--</Border>-->
+
+      <Border
+        CornerRadius="5"
+        assists:ShadowAssist.ShadowDepth="Depth2"
+        Margin="10,0,5,10"
+        Grid.Column="0"
+        Grid.Row="1"
+        BorderThickness="0"
+        Background="{DynamicResource MaterialDesignCardBackground}">
+        <ScrollViewer
+          Grid.Row="1"
+          VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <ListBox
+              Items="{Binding LoadedFamilies}"
+              SelectedItem="{Binding SelectedFamily}, Mode=TwoWay">
+            </ListBox>
           </StackPanel>
-
-        </TextBox.InnerRightContent>
-        <TextBox.InnerLeftContent>
-          <icons:MaterialIcon
-            Width="15"
-            Height="15"
-            Margin="5,0,0,0"
-            Kind="Search" />
-        </TextBox.InnerLeftContent>
-      </TextBox>
-
-      <TextBlock 
-        VerticalAlignment="Center"
-        HorizontalAlignment="Center"
-        Text="Loaded Families" 
-        FontWeight="Bold"/>
-    </Grid>
-
-    <Grid
-      Grid.Row="2"
-      ColumnDefinitions="*,1.5*">
-      <ScrollViewer 
-        VerticalScrollBarVisibility="Auto">
-        <StackPanel>
-          <ListBox
-            Items="{Binding LoadedFamilies}"
-            SelectedItem="{Binding SelectedFamily}, Mode=TwoWay">
-          </ListBox>
-        </StackPanel>
-      </ScrollViewer>
-      <ScrollViewer
-      VerticalScrollBarVisibility="Auto"
-      Grid.Column="1">
-        <ItemsControl Items="{Binding FamilyTypes}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Grid>
-                <m:ColorZone
-                  Margin="5,0,5,5"
-                  HorizontalAlignment="Left"
+        </ScrollViewer>
+      </Border>
+      
+      <Border
+        CornerRadius="5"
+        assists:ShadowAssist.ShadowDepth="Depth2"
+        Margin="5,0,10,10"
+        Grid.Column="1"
+        Grid.Row="1"
+        Background="{DynamicResource MaterialDesignCardBackground}">
+        <Grid
+          RowDefinitions="auto, *">
+          <Grid
+            ColumnDefinitions="auto, *">
+            <CheckBox
+              VerticalContentAlignment="Center"
+              VerticalAlignment="Center"
+              Margin="8,0,0,0"
+              IsChecked="{Binding IsTopBoxChecked}"/>
+          <TextBox
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="5,7,5,5"
+            Padding="0"
+            assists:TextFieldAssist.CornerRadius="32"
+            BorderBrush="{Binding $self.Foreground}"
+            BorderThickness="1"
+            Classes="Solo"
+            Text="{Binding SearchQuery}"
+            Watermark="Search types">
+            <TextBox.InnerRightContent>
+              <StackPanel Orientation="Horizontal">
+                <m:FloatingButton
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
                   assists:ShadowAssist.ShadowDepth="Depth0"
-                  CornerRadius="25"
-                  Mode="Standard">
-                  <Grid ColumnDefinitions="auto,*,*">
-                    <CheckBox
-                      Margin="10,0,0,0"
-                      IsChecked="{Binding isChecked}, Mode=TwoWay"
-                      IsVisible="{Binding !isImported}"/>
+                  Background="Transparent"
+                  Classes="Mini"
+                  Command="{Binding ClearSearchCommand}"
+                  IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  ToolTip.Tip="Clear">
+                  <Button.Content>
                     <icons:MaterialIcon
-                      Grid.Row="0"
-                      Width="20"
-                      Height="20"
-                      Margin="10,0,0,0"
-                      VerticalAlignment="Center"
-                      Kind="CheckboxMarked"
-                      IsVisible="{Binding isImported}"
-                      ToolTip.Tip="Already Imported into Project"
-                      Foreground="Gray"/>
-                    <TextBlock
-                      Grid.Column="1"
-                      Margin="5,10,10,10"
-                      TextTrimming="CharacterEllipsis"
-                      Text="{Binding Name}"/>
-                    <!--<TextBlock
-                      Grid.Column="2"
-                      Margin="5,10,10,10"
-                      TextTrimming="CharacterEllipsis"
-                      Text="{Binding FamilyName}"/>-->
+                      Width="15"
+                      Height="15"
+                      assists:ShadowAssist.ShadowDepth="0"
+                      Foreground="{DynamicResource MaterialDesignBody}"
+                      Kind="CloseCircle" />
+                  </Button.Content>
+                </m:FloatingButton>
+              </StackPanel>
+
+            </TextBox.InnerRightContent>
+            <TextBox.InnerLeftContent>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                Margin="5,0,0,0"
+                Kind="Search" />
+            </TextBox.InnerLeftContent>
+          </TextBox>
+          </Grid>
+          <ScrollViewer
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Auto"
+            Grid.Column="0">
+            <ItemsControl Items="{Binding FamilyTypes}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid>
+                    <m:ColorZone
+                      Margin="5,0,5,5"
+                      HorizontalAlignment="Left"
+                      assists:ShadowAssist.ShadowDepth="Depth0"
+                      CornerRadius="25"
+                      Mode="Standard">
+                      <Grid ColumnDefinitions="auto,*">
+                        <CheckBox
+                          Margin="3,0,0,0"
+                          IsChecked="{Binding isChecked}, Mode=TwoWay"
+                          IsVisible="{Binding !isImported}"/>
+                        <icons:MaterialIcon
+                          Grid.Row="0"
+                          Width="20"
+                          Height="20"
+                          Margin="3,0,0,0"
+                          VerticalAlignment="Center"
+                          Kind="CheckboxMarked"
+                          IsVisible="{Binding isImported}"
+                          ToolTip.Tip="Already Imported into Project"
+                          Foreground="Gray"/>
+                        <TextBlock
+                          Grid.Column="1"
+                          Margin="5,10,10,10"
+                          TextTrimming="CharacterEllipsis"
+                          Text="{Binding Name}"/>
+                        <!--<TextBlock
+                        Grid.Column="2"
+                        Margin="5,10,10,10"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding FamilyName}"/>-->
+                      </Grid>
+                    </m:ColorZone>
                   </Grid>
-                </m:ColorZone>
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
     </Grid>
 
     <Expander
-      Grid.Row="3"
+      Grid.Row="2"
       Padding="15,0"
       HorizontalAlignment="Stretch"
       HorizontalContentAlignment="Stretch"
@@ -216,13 +272,13 @@
     </Expander>
 
     <Grid
-      Grid.Row="4"
+      Grid.Row="3"
       ColumnDefinitions="auto, *, auto"
       Background="{DynamicResource MaterialDesignCardBackground}">
       <Button
         Margin="15"
         HorizontalContentAlignment="Left"
-        Command="{Binding Close_Click}"
+        Command="{Binding CloseDialogCommand}"
         Content="Cancel" />
       <Button
         Margin="15"
