@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -120,8 +120,12 @@ namespace ConnectorGrasshopper
     private void AddSpeckleMenu(object sender, ElapsedEventArgs e)
     {
       if (Grasshopper.Instances.DocumentEditor == null || MenuHasBeenAdded) return;
+      var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
+      var menuName = "Speckle 2";
+      if (mainMenu.Items.ContainsKey(menuName))
+        mainMenu.Items.RemoveByKey(menuName);
 
-      speckleMenu = new ToolStripMenuItem("Speckle 2");
+      speckleMenu = new ToolStripMenuItem(menuName);
 
       var kitHeader = speckleMenu.DropDown.Items.Add("Select the converter you want to use.");
       kitHeader.Enabled = false;
@@ -173,7 +177,6 @@ namespace ConnectorGrasshopper
 
       try
       {
-        var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
         Grasshopper.Instances.DocumentEditor.Invoke(new Action(() =>
         {
           if (!MenuHasBeenAdded)
