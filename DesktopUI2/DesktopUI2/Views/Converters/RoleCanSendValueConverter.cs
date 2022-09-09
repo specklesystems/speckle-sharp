@@ -5,7 +5,6 @@ using System.Text;
 
 namespace DesktopUI2.Views.Converters
 {
-
   public class RoleCanSendValueConverter : IValueConverter
   {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

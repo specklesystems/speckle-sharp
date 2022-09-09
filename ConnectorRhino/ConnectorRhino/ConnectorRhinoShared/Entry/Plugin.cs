@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
+using Speckle.Core.Api;
 
 namespace SpeckleRhino
 {
@@ -20,14 +22,14 @@ namespace SpeckleRhino
     public ConnectorBindingsRhino Bindings { get; private set; }
     public MainViewModel ViewModel { get; private set; }
 
-    private bool _initialized;
+    internal bool _initialized;
 
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
     }
 
-    internal void Init()
+    public void Init()
     {
       try
       {
@@ -94,7 +96,16 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-      Init();
+      // The user is probably using Rhino Inside and Avalonia was already initialized there
+      if (App.Current != null)
+      {
+
+        errorMessage = "Speckle cannot be loaded in multiple application at the same time.";
+        RhinoApp.CommandLineOut.WriteLine(errorMessage);
+        return LoadReturnCode.ErrorNoDialog;
+      }
+
+
 
 #if !MAC
       System.Type panelType = typeof(Panel);
@@ -102,6 +113,7 @@ namespace SpeckleRhino
       // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
       // You can also include the custom panel in any existing panel group by simply right
       // clicking one a panel tab and checking or un-checking the "MyPane" option.
+      Init();
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.
@@ -115,7 +127,7 @@ namespace SpeckleRhino
         {
           // Build a path to the user's staged RUI file.
           var sb = new StringBuilder();
-          sb.Append(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+          sb.Append(Helpers.InstallApplicationDataPath);
 #if RHINO6
           sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7
@@ -143,6 +155,10 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
 
+#if MAC
+    public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled; // Temporarily disabled due to top-menu overtake by Avalonia. Waiting fix.
+#else
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+#endif
   }
 }

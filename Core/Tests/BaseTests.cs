@@ -101,9 +101,10 @@ namespace Tests
       var @base = new SampleObject();
       @base["dynamicProp"] = 123;
       var names = @base.GetMemberNames();
-      var propName = "IgnoredSchemaProp";
-      Assert.False(names.Contains(propName));
-      Assert.False(names.Contains("DeprecatedSchemaProp"));
+      Assert.That(names, Has.No.Member("IgnoredSchemaProp"));
+      Assert.That(names, Has.No.Member("DeprecatedSchemaProp"));
+      Assert.That(names, Has.Member("dynamicProp"));
+      Assert.That(names, Has.Member("attachedProp"));
     }
 
     [Test(Description = "Checks that no ignored or obsolete properties are returned")]
@@ -113,19 +114,21 @@ namespace Tests
       @base["dynamicProp"] = 123;
 
       var names = @base.GetMembers().Keys;
-      Assert.False(names.Contains("IgnoredSchemaProp"));
-      Assert.False(names.Contains("DeprecatedSchemaProp"));
+      Assert.That(names, Has.No.Member("IgnoredSchemaProp"));
+      Assert.That(names, Has.No.Member("DeprecatedSchemaProp"));
+      Assert.That(names, Has.Member("dynamicProp"));
+      Assert.That(names, Has.Member("attachedProp"));
     }
     
-    [Test(Description = "Checks that no ignored or obsolete properties are returned")]
+    [Test]
     public void CanGetDynamicMembers()
     {
       var @base = new SampleObject();
       @base["dynamicProp"] = null;
 
       var names = @base.GetDynamicMemberNames();
-      Assert.True(names.Contains("dynamicProp"));
-      Assert.True(@base["dynamicProp"] == null);
+      Assert.That(names, Has.Member("dynamicProp"));
+      Assert.Null(@base["dynamicProp"]);
     }
 
     [Test]
@@ -136,16 +139,16 @@ namespace Tests
       var value = "something";
       // Can create a new dynamic member
       @base[key] = value;
-      Assert.True((string)@base[key] == value);
+      Assert.AreEqual((string)@base[key],value);
       
       // Can overwrite existing
       value = "some other value";
       @base[key] = value;
-      Assert.True((string)@base[key] == value);
+      Assert.AreEqual((string)@base[key], value);
       
       // Accepts null values
       @base[key] = null;
-      Assert.True(@base[key] == null);
+      Assert.IsNull(@base[key]);
     }
     
     

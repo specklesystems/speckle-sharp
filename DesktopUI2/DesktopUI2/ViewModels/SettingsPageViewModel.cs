@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using DesktopUI2.Models;
+using ReactiveUI;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
@@ -14,7 +15,6 @@ namespace DesktopUI2.ViewModels
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
     private StreamViewModel _streamViewModel;
-
 
     private List<SettingViewModel> _settings;
     public List<SettingViewModel> Settings
@@ -36,6 +36,5 @@ namespace DesktopUI2.ViewModels
 
       MainViewModel.RouterInstance.NavigateBack.Execute();
     }
-
   }
 }

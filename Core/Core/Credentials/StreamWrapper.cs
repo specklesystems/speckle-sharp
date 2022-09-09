@@ -200,7 +200,7 @@ namespace Speckle.Core.Credentials
       }
 
       // Step 1: check if direct account id (?u=)
-      if (OriginalInput.Contains("?u="))
+      if (OriginalInput != null && OriginalInput.Contains("?u="))
       {
         var userId = OriginalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);

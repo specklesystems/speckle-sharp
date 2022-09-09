@@ -5,7 +5,6 @@
         <Version>2.1.0</Version>
         <Title>Objects.Converter.Grasshopper7</Title>
         <Description></Description>
-        <TargetExt>.dll</TargetExt>
         <PackageId>Speckle.Objects.Converter.Grasshopper7</PackageId>
         <Authors>Speckle</Authors>
         <Company />
@@ -19,6 +18,7 @@
         <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
         <AssemblyName>Objects.Converter.Grasshopper7</AssemblyName>
         <RootNamespace>Objects.Converter.Rhino</RootNamespace>
+        <RhinoPluginType>none</RhinoPluginType>
     </PropertyGroup>
 
     <ItemGroup>

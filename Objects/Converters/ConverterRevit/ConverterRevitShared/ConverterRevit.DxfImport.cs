@@ -6,6 +6,7 @@ using DB = Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Converters.DxfConverter;
 using Objects.Geometry;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -18,104 +19,86 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationPlaceholderObject DirectShapeToDxfImport(DirectShape ds, DB.Document doc = null)
+    public ApplicationObject DirectShapeToDxfImport(DirectShape ds, DB.Document doc = null)
     {
+      var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
       var existing = CheckForExistingObject(ds);
-      if (existing != null) return existing;
-      
+      if (existing != null)
+        return existing;
+
       var el = CreateDxfImport(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
-      return new ApplicationPlaceholderObject
-      {
-        id = ds.id,
-        applicationId = ds.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
+      return appObj;
     }
     
-    public ApplicationPlaceholderObject DirectShapeToDxfImportFamily(DirectShape ds, DB.Document doc = null)
+    public ApplicationObject DirectShapeToDxfImportFamily(DirectShape ds, DB.Document doc = null)
     {
+      var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
       var existing = CheckForExistingObject(ds);
-      if (existing != null) return existing;
-      
+      if (existing != null)
+        return existing;
+
       var el = CreateDxfImportFamily(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
-      return new ApplicationPlaceholderObject
-      {
-        id = ds.id,
-        applicationId = ds.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
+      return appObj;
     }
     
-    public ApplicationPlaceholderObject MeshToDxfImport(Mesh mesh, DB.Document doc = null)
+    public ApplicationObject MeshToDxfImport(Mesh mesh, DB.Document doc = null)
     {
+      var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var existing = CheckForExistingObject(mesh);
-      if (existing != null) return existing;
-      
+      if (existing != null)
+        return existing;
+
       var el = CreateDxfImport(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}.dxf", 1, doc);
-      return new ApplicationPlaceholderObject
-      {
-        id = mesh.id,
-        applicationId = mesh.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
+      return appObj;
     }
     
-    public ApplicationPlaceholderObject MeshToDxfImportFamily(Mesh mesh, DB.Document doc = null)
+    public ApplicationObject MeshToDxfImportFamily(Mesh mesh, DB.Document doc = null)
     {
+      var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var existing = CheckForExistingObject(mesh);
-      if (existing != null) return existing;
-      
+      if (existing != null)
+        return existing;
+
       var el = CreateDxfImportFamily(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}", 1, doc);
-      return new ApplicationPlaceholderObject
-      {
-        id = mesh.id,
-        applicationId = mesh.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
+      return appObj;
     }
 
-    public ApplicationPlaceholderObject BrepToDxfImport(Brep brep, DB.Document doc)
+    public ApplicationObject BrepToDxfImport(Brep brep, DB.Document doc)
     {
+      var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
       var existing = CheckForExistingObject(brep);
-      if (existing != null) return existing;
-      
+      if (existing != null)
+        return existing;
+
       var el = CreateDxfImport(
         new List<Base>{brep}, 
         $"Speckle-Brep-{brep.id}-{brep.applicationId}",
         1, 
         doc);
-      
-      return new ApplicationPlaceholderObject
-      {
-        id = brep.id,
-        applicationId = brep.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
+
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
+      return appObj;
     }
 
-    public ApplicationPlaceholderObject BrepToDxfImportFamily(Brep brep, DB.Document doc = null)
+    public ApplicationObject BrepToDxfImportFamily(Brep brep, DB.Document doc = null)
     {
+      var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
       var existing = CheckForExistingObject(brep);
-      if (existing != null) return existing;
-      
+      if (existing != null)
+        return existing;
+
       var el = CreateDxfImportFamily(
         new List<Base>{brep}, 
         $"Speckle-Brep-{brep.id}-{brep.applicationId}",
         1,
         doc);
-      
-      return new ApplicationPlaceholderObject
-      {
-        id = brep.id,
-        applicationId = brep.applicationId,
-        NativeObject = el,
-        ApplicationGeneratedId = el.UniqueId
-      };
+
+      appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
+      return appObj;
     }
     
     /// <summary>
@@ -153,8 +136,7 @@ namespace Objects.Converter.Revit
       dxfConverter.Doc.Entities.Add(collection.Where(x => x != null));
 
       var folderPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-        "Speckle",
+        Helpers.UserSpeckleFolderPath,
         "Temp",
         "Dxf");
 

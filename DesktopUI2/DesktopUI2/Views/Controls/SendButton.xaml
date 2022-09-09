@@ -1,5 +1,5 @@
 <UserControl
-  x:Class="DesktopUI2.Controls.SendButton"
+  x:Class="DesktopUI2.Views.Controls.SendButton"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -44,6 +44,7 @@
         Width="40"
         Height="40"
         Classes="Circle"
+        IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
         IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
         Maximum="{Binding Progress.Max}"
@@ -54,6 +55,7 @@
         Background="Transparent"
         Classes="Mini"
         Command="{Binding CancelSendOrReceiveCommand}"
+        IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
         IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
         ToolTip.Tip="Cancel">
         <Button.Content>

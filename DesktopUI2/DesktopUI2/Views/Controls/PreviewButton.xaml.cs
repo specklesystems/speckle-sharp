@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Controls
+namespace DesktopUI2.Views.Controls
 {
-  public partial class ReceiveButton : UserControl
+  public partial class PreviewButton : UserControl
   {
-    public ReceiveButton()
+    public PreviewButton()
     {
       InitializeComponent();
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -16,6 +16,7 @@ using Grasshopper.Kernel.Special;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -73,7 +74,7 @@ namespace ConnectorGrasshopper
       objectItem.ToolTipText = "The default behaviour. Output will be the specified object schema.";
 
       var tagItem =
-        schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam.Name ?? "geometry"} with {Name} attached") as
+        schemaConversionHeader.DropDownItems.Add($"Convert as {mainParam?.Name ?? "geometry"} with {Name} attached") as
           ToolStripMenuItem;
       tagItem.Checked = UseSchemaTag;
       tagItem.Enabled = mainParam != null;
@@ -214,7 +215,7 @@ namespace ConnectorGrasshopper
       }
 
       // Create new param based on property name
-      Param_GenericObject newInputParam = new Param_GenericObject();
+      SpeckleStatefulParam newInputParam = new SpeckleStatefulParam();
       newInputParam.Name = propName;
       newInputParam.NickName = propName;
       newInputParam.MutableNickName = false;
@@ -356,7 +357,7 @@ namespace ConnectorGrasshopper
         Tracker.TrackNodeRun("Create Schema Object", Name);
 
 
-      var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.GetUnitSystemName(true, false, false, false));
+      var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
 
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
@@ -383,7 +384,7 @@ namespace ConnectorGrasshopper
           }
           catch (Exception e)
           {
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
             return;
           }
         }
@@ -411,7 +412,7 @@ namespace ConnectorGrasshopper
       }
       catch (Exception e)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.InnerException?.Message ?? e.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
         return;
       }
 
@@ -434,7 +435,7 @@ namespace ConnectorGrasshopper
         }
         catch (Exception e)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, e.Message);
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, e.ToFormattedString());
         }
       }
 
@@ -470,7 +471,7 @@ namespace ConnectorGrasshopper
       {
         var type = inputValue.GetType();
         var propertyInfo = type.GetProperty("Value");
-        var value = propertyInfo.GetValue(inputValue);
+        var value = propertyInfo?.GetValue(inputValue);
         return value;
       }
 
@@ -482,11 +483,11 @@ namespace ConnectorGrasshopper
     {
       if (!values.Any()) return null;
 
-      var listElementType = t.GetElementType();
-      var list = (IList)Array.CreateInstance(listElementType, values.Count);
-      for (int i = 0; i < values.Count; i++)
+      var list = (IList)Activator.CreateInstance(t);
+      var listElementType = list.GetType().GetGenericArguments().Single();
+      foreach (var value in values)
       {
-        list[i] = (ConvertType(listElementType, values[i], param.Name));
+        list.Add(ConvertType(listElementType, value, param.Name));
       }
 
       return list;

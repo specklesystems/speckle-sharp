@@ -14,6 +14,8 @@ namespace ConnectorGrasshopper.Extras
   {
     public override GH_Exposure Exposure => GH_Exposure.hidden;
     public bool Detachable { get; set; } = true;
+
+    public bool CanInheritNames { get; set; } = true;
     public override Guid ComponentGuid => new Guid("5B5A49FC-ACDE-4C09-9317-9C466374C163");
 
     public override GH_StateTagList StateTags
@@ -82,7 +84,7 @@ namespace ConnectorGrasshopper.Extras
     public override void AddSource(IGH_Param source, int index)
     {
       base.AddSource(source, index);
-      if (KeyWatcher.TabPressed)
+      if (MutableNickName && KeyWatcher.TabPressed)
         InheritNickname();
       
     }
@@ -99,9 +101,9 @@ namespace ConnectorGrasshopper.Extras
       }
       
       Menu_AppendSeparator(menu);
-
-      Menu_AppendInheritNickname(menu);
       
+      Menu_AppendInheritNickname(menu);
+
       Menu_AppendSeparator(menu);
 
       Menu_AppendCustomMenuItems(menu);
@@ -187,7 +189,7 @@ namespace ConnectorGrasshopper.Extras
       Menu_AppendItem(
         menu,
         "Inherit names",
-        (sender, args) => { InheritNickname(); });
+        (sender, args) => { InheritNickname(); }, MutableNickName);
     }
     
     // Decompiled from Grasshopper implementation and modified for output recipient.
@@ -214,7 +216,7 @@ namespace ConnectorGrasshopper.Extras
         {
           ghParam.NewInstanceGuid();
           ghParam.Attributes.Selected = false;
-          ghParam.Attributes.Pivot = new PointF(this.Attributes.Pivot.X + 40f, this.Attributes.Pivot.Y);
+          ghParam.Attributes.Pivot = new PointF(Attributes.Parent.Bounds.Right + ghParam.Attributes.Bounds.Width/2 + 15f, Attributes.Pivot.Y);
           ghParam.Attributes.ExpireLayout();
           ghParam.MutableNickName = true;
           if (ghParam.Attributes is GH_FloatingParamAttributes)

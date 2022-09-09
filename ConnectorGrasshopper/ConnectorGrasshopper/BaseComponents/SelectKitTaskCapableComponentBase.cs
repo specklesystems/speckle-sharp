@@ -13,6 +13,7 @@ using Sentry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Objects
 {
@@ -151,7 +152,7 @@ namespace ConnectorGrasshopper.Objects
       }
       catch (Exception e)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,$"Failed to set document context:\n\t{e.Message}");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,$"Failed to set document context:\n\t{e.ToFormattedString()}");
       }
       base.BeforeSolveInstance();
     }

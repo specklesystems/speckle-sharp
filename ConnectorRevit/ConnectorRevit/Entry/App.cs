@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
-using DesktopUI2.ViewModels;
 using Revit.Async;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -135,9 +136,10 @@ namespace Speckle.ConnectorRevit.Entry
 
     private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
     {
-
-      AppInstance = new UIApplication(sender as Application);
-      AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+      try
+      {
+        AppInstance = new UIApplication(sender as Application);
+        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
 
 #if REVIT2019
@@ -146,21 +148,36 @@ namespace Speckle.ConnectorRevit.Entry
       var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
       SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
 #else
-      //DUI2 - pre build app, so that it's faster to open up
-      SpeckleRevitCommand2.InitAvalonia();
-      var bindings = new ConnectorBindingsRevit2(AppInstance);
-      bindings.RegisterAppEvents();
-      SpeckleRevitCommand2.Bindings = bindings;
-      SchedulerCommand.Bindings = bindings;
-      OneClickSendCommand.Bindings = bindings;
-      QuickShareCommand.Bindings = bindings;
+        //DUI2 - pre build app, so that it's faster to open up
+        SpeckleRevitCommand2.InitAvalonia();
+        var bindings = new ConnectorBindingsRevit2(AppInstance);
+        bindings.RegisterAppEvents();
+        SpeckleRevitCommand2.Bindings = bindings;
+        SchedulerCommand.Bindings = bindings;
+        OneClickSendCommand.Bindings = bindings;
+        QuickShareCommand.Bindings = bindings;
 
 
 
-      SpeckleRevitCommand2.RegisterPane();
+        SpeckleRevitCommand2.RegisterPane();
 
 #endif
-      //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
+        //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
+      }
+      catch (Exception ex)
+      {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        var td = new TaskDialog("Could not load Speckle");
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
+
+        TaskDialogResult tResult = td.Show();
+
+        if (TaskDialogResult.CommandLink1 == tResult)
+        {
+          Process.Start("https://speckle.community/");
+        }
+      }
     }
 
     public Result OnShutdown(UIControlledApplication application)

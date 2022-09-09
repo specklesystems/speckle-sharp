@@ -18,17 +18,13 @@ namespace Objects.Converter.Revit
       specklePad.type = revitPad.Document.GetElement(revitPad.GetTypeId()).Name;
       specklePad.outline = profiles[0];
       if (profiles.Count > 1)
-      {
         specklePad.voids = profiles.Skip(1).ToList();
-      }
 
       specklePad.level = ConvertAndCacheLevel(revitPad, BuiltInParameter.LEVEL_PARAM);
 
       GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
-
       specklePad.displayValue = GetElementDisplayMesh(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      Report.Log($"Converted BuildingPad {revitPad.Id}");
 
       return specklePad;
     }

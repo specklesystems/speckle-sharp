@@ -9,6 +9,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
@@ -126,7 +127,7 @@ namespace ConnectorGrasshopper.Streams
           Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
           {
             ExpireSolution(false);
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not create stream at {account.serverInfo.url}:\n{e.Message}");
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not create stream at {account.serverInfo.url}:\n{e.ToFormattedString()}");
           });
         }
       });

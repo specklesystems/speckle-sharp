@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Controls
+namespace DesktopUI2.Views.Pages.StreamEditControls
 {
-  public partial class SendButton : UserControl
+  public partial class Report : UserControl
   {
-    public SendButton()
+    public Report()
     {
       InitializeComponent();
     }

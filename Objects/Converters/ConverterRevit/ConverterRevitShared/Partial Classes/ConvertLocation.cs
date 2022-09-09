@@ -69,9 +69,7 @@ namespace Objects.Converter.Revit
         //no need to apply offset transform
         var analyticalModel = familyInstance.GetAnalyticalModel();
         if (analyticalModel != null && analyticalModel.GetCurve() != null)
-        {
           return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
-        }
       }
 
 #else
@@ -82,9 +80,7 @@ namespace Objects.Converter.Revit
         var analyticalModel = Doc.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(familyInstance.Id)) as AnalyticalMember;
         //no need to apply offset transform
         if (analyticalModel != null && analyticalModel.GetCurve() != null)
-        {
           return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
-        }
       }
 #endif
       Point point = familyInstance.Location switch
@@ -93,7 +89,6 @@ namespace Objects.Converter.Revit
         LocationCurve c => PointToSpeckle(c.Curve.GetEndPoint(0)),
         _ => null,
       };
-      
 
       try
       {
@@ -120,14 +115,10 @@ namespace Objects.Converter.Revit
       //no transforms are applied on points
 
       if (elem["basePoint"] as Point != null)
-      {
         return PointToNative(elem["basePoint"] as Point);
-      }
 
       if (elem["baseLine"] == null)
-      {
         throw new Speckle.Core.Logging.SpeckleException("Location is null.");
-      }
 
       //must be a curve!?
       var converted = GeometryToNative(elem["baseLine"] as Base);
@@ -169,9 +160,7 @@ namespace Objects.Converter.Revit
       var diffY = Math.Abs(curve.GetEndPoint(0).Y - curve.GetEndPoint(1).Y);
 
       if (diffX < 0.1 && diffY < 0.1)
-      {
         return true;
-      }
 
       return false;
     }

@@ -351,7 +351,7 @@ namespace Speckle.DesktopUI.Utils
     }
 
     [JsonProperty]
-    public List<ApplicationPlaceholderObject> ReceivedObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ReceivedObjects { get; set; } = new List<ApplicationObject>();
 
     private ProgressReport _progress = new ProgressReport();
     public ProgressReport Progress
