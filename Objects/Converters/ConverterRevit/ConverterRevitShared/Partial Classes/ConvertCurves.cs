@@ -89,15 +89,18 @@ namespace Objects.Converter.Revit
       if ((speckleLine as Base).applicationId == null)
         (speckleLine as Base).applicationId = (speckleLine as Base).id;
 
-      var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
+      var docObjs = GetExistingElementsByApplicationId((speckleLine as Base).applicationId);
       var appObj = new ApplicationObject(((Base)speckleLine).id, ((Base)speckleLine).speckle_type) { applicationId = ((Base)speckleLine).applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObjs.FirstOrDefault(), appObj, out appObj))
         return appObj;
 
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
+      foreach (var docObj in docObjs)
+      {
+        if (docObj != null)
+          Doc.Delete(docObj.Id);
+      }
 
       try
       {

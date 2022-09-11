@@ -669,6 +669,35 @@ namespace Objects.Converter.Revit
       return element;
     }
 
+    public List<DB.Element> GetExistingElementsByApplicationId(string applicationId)
+    {
+      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+        return null;
+
+      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+
+      var elements = new List<Element>();
+      if (@ref == null)
+      {
+        //element was not cached in a PreviousContex but might exist in the model
+        //eg: user sends some objects, moves them, receives them 
+        elements = new List<Element> { Doc.GetElement(applicationId) };
+      }
+      else
+      {
+        //return the cached objects, if they are still in the model
+        foreach (var id in @ref.CreatedIds)
+        {
+          var revElement = Doc.GetElement(id);
+          if (revElement != null)
+            elements.Add(revElement);
+        }
+          
+      }
+
+      return elements;
+    }
+
     /// <summary>
     /// Returns true if element is not null and the user-selected receive mode is set to "ignore"
     /// </summary>
