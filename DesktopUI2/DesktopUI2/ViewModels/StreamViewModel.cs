@@ -40,11 +40,14 @@ namespace DesktopUI2.ViewModels
 
     public ICommand RemoveSavedStreamCommand { get; }
 
-    private bool previewOn = false;
+    private bool _previewOn = false;
     public bool PreviewOn
     {
-      get => previewOn;
-      set => this.RaiseAndSetIfChanged(ref previewOn, value);
+      get => _previewOn;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _previewOn, value);
+      }
     }
 
     #region bindings
@@ -136,7 +139,15 @@ namespace DesktopUI2.ViewModels
 
     private Client Client { get; }
 
-    public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
+    public ReactiveCommand<Unit, Unit> GoBack
+    {
+      get
+      {
+        PreviewOn = false;
+        Bindings.ResetDocument();
+        return MainViewModel.RouterInstance.NavigateBack;
+      }
+    }
 
     //If we don't have access to this stream
     public bool NoAccess { get; set; } = false;
@@ -189,7 +200,6 @@ namespace DesktopUI2.ViewModels
       get => _branches;
       private set => this.RaiseAndSetIfChanged(ref _branches, value);
     }
-
 
     private Commit _selectedCommit;
     public Commit SelectedCommit
@@ -256,7 +266,13 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        return Progress.Report.ConversionLogString;
+        string logString = String.Empty;
+
+        if (Progress.Report.OperationErrors.Any()) logString = Progress.Report.OperationErrorsString;
+        else if (Progress.Report.ConversionLog.Any()) logString = Progress.Report.ConversionLogString;
+        else logString = "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed.";
+
+        return logString;
       }
     }
 
@@ -550,10 +566,16 @@ namespace DesktopUI2.ViewModels
       var report = new List<ApplicationObjectViewModel>();
       foreach (var applicationObject in Progress.Report.ReportObjects)
       {
-        var rvm = new ApplicationObjectViewModel(applicationObject, StreamState.IsReceiver);
+        var rvm = new ApplicationObjectViewModel(applicationObject, StreamState.IsReceiver, Progress.Report);
         report.Add(rvm);
       }
       Report = report;
+
+      if (HasReportItems) // activate report tab
+      {
+        var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
+        tabControl.SelectedIndex = tabControl.ItemCount - 1;
+      }
     }
 
     private async void GetActivity()
@@ -568,7 +590,6 @@ namespace DesktopUI2.ViewModels
         {
           var avm = new ActivityViewModel(a, Client);
           activity.Add(avm);
-
         }
         Activity = activity;
         ScrollToBottom();
@@ -589,7 +610,6 @@ namespace DesktopUI2.ViewModels
         {
           var cvm = new CommentViewModel(c, Stream.id, Client);
           comments.Add(cvm);
-
         }
         Comments = comments;
       }
@@ -610,9 +630,7 @@ namespace DesktopUI2.ViewModels
           {
             var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
             if (scroller != null)
-            {
               scroller.ScrollToEnd();
-            }
           });
         }
       }
@@ -748,16 +766,17 @@ namespace DesktopUI2.ViewModels
     {
       MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
     }
+
     public void CloseNotificationCommand()
     {
       Notification = "";
       NotificationUrl = "";
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
+      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
     public void LaunchNotificationCommand()
     {
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
+      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
 
       if (!string.IsNullOrEmpty(NotificationUrl))
         Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
@@ -832,7 +851,9 @@ namespace DesktopUI2.ViewModels
         try
         {
           UpdateStreamState();
-          Reset();
+
+          Progress.CancellationTokenSource = new System.Threading.CancellationTokenSource();
+          Progress.IsPreviewProgressing = true;
           if (IsReceiver)
           {
             Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Receive" } });
@@ -843,6 +864,7 @@ namespace DesktopUI2.ViewModels
             Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
             await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
           }
+          Progress.IsPreviewProgressing = false;
           GetReport();
         }
         catch (Exception ex)
@@ -854,7 +876,6 @@ namespace DesktopUI2.ViewModels
       {
         Progress.CancellationTokenSource.Cancel();
         Bindings.ResetDocument();
-        Reset();
       }
     }
 
@@ -902,6 +923,15 @@ namespace DesktopUI2.ViewModels
       Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
     }
 
+    public void CancelPreviewCommand()
+    {
+      Progress.CancellationTokenSource.Cancel();
+      string cancelledEvent = IsReceiver ? "Cancel Preview Receive" : "Cancel Preview Send";
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
+      Progress.IsPreviewProgressing = false;
+      PreviewOn = false;
+    }
+
     private void SaveCommand()
     {
       try
@@ -911,14 +941,9 @@ namespace DesktopUI2.ViewModels
         HomeViewModel.Instance.AddSavedStream(this);
 
         if (IsReceiver)
-        {
           Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
-        }
-
         else
-        {
           Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
-        }
       }
       catch (Exception ex)
       {
@@ -930,10 +955,9 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-
         var settingsPageViewModel = new SettingsPageViewModel(HostScreen, Settings.Select(x => new SettingViewModel(x)).ToList(), this);
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
       }
       catch (Exception e)
       {

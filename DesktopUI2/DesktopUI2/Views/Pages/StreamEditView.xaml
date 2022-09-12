@@ -108,7 +108,7 @@
       RowDefinitions="*,auto,auto">
       <!--  ACTIVITY & COMMENTS & REPORT  -->
 
-      <TabControl Grid.Row="0" Background="Transparent">
+      <TabControl Grid.Row="0" Background="Transparent" Name="tabStreamEdit">
         <TabItem>
           <TabItem.Header>
             <StackPanel Orientation="Horizontal">
@@ -169,7 +169,7 @@
 
           <Grid RowDefinitions="auto,*" ColumnDefinitions="*,auto">
             <ScrollViewer Grid.Row="1" IsVisible="{Binding !HasReportItems}">
-              <TextBlock Margin="35,0,0,10" Text="{Binding Log}" />
+              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Log}" />
             </ScrollViewer>
             <m:Card
               Grid.Row="0"

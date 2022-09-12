@@ -173,6 +173,7 @@ namespace Speckle.Core.Models
   public class ProgressReport
   {
     public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
+    public List<string> SelectedReportObjects { get; set; } = new List<string>();
 
     public void Log(ApplicationObject obj)
     {

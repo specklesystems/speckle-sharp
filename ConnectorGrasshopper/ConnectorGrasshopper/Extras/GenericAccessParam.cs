@@ -39,7 +39,7 @@ namespace ConnectorGrasshopper.Extras
         switch (Owner.Kind)
         {
           case GH_ParamKind.input:
-            (Owner as GenericAccessParam)?.InheritNickname();
+            (Owner as SpeckleStatefulParam)?.InheritNickname();
             return GH_ObjectResponse.Handled;
           case GH_ParamKind.output:
             Clipboard.SetText(DocObject.NickName);

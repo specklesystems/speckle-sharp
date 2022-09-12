@@ -221,6 +221,12 @@ namespace Speckle.ConnectorRevit
       return type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
     }
 
+    public static string ObjectDescriptor(Element obj)
+    {
+      var simpleType = obj.GetType().ToString().Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+      return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
+    }
+
     //list of currently supported Categories (for sending only)
     //exact copy of the one in the ConverterRevitShared.Categories
     //until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved

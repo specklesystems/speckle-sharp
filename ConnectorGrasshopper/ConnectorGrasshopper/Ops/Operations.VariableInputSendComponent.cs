@@ -158,6 +158,10 @@ namespace ConnectorGrasshopper.Ops
       base.AppendAdditionalMenuItems(menu);
     }
 
+    public bool HasDuplicateKeys => Params.Input.Skip(2)
+      .Select(p => p.NickName)
+      .GroupBy(x => x).Count(group => group.Count() > 1) > 0;
+    
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -167,7 +171,15 @@ namespace ConnectorGrasshopper.Ops
         base.SolveInstance(DA);
         return;
       }
-
+      
+      if (HasDuplicateKeys)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
+        CurrentComponentState = "needs_input";
+        Message = "Expired";
+        return;
+      }
+      
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
         !JustPastedIn)
       {
@@ -238,14 +250,15 @@ namespace ConnectorGrasshopper.Ops
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-
-      return new SendReceiveDataParam
+      var myParam = new SendReceiveDataParam
       {
         Name = uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
         Optional = false
       };
+      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
+      return myParam;
     }
 
     public bool DestroyParameter(GH_ParameterSide side, int index)
@@ -255,6 +268,11 @@ namespace ConnectorGrasshopper.Ops
 
     public void VariableParameterMaintenance()
     {
+      Params.Input.Skip(2)
+        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+        .ToList()
+        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
+        );
     }
 
     private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
