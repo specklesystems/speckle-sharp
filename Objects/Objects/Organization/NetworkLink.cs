@@ -70,7 +70,3 @@ namespace Objects.Organization.Revit
     Oval
   }
 }
-  
-
-  
-

@@ -115,7 +115,10 @@ namespace Speckle.ConnectorRevit.UI
             continue;
           }
 
-          var category = $"@{revitElement.Category.Name}";
+          var category = conversionResult.GetType().Name == "Network" ?
+            "@Networks" :
+            $"@{revitElement.Category.Name}";
+
           if (commitObject[category] == null)
             commitObject[category] = new List<Base>();
 

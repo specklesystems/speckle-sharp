@@ -16,12 +16,26 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject NetworkToNative(Network speckleNetwork)
     {
-      
+      foreach (var networkElement in speckleNetwork.elements)
+      {
+        var element = networkElement.element;
+        if (CanConvertToNative(element))
+        {
+          ConvertToNative(element);
+        }
+      }
+      var appObj = new ApplicationObject(speckleNetwork.id, speckleNetwork.speckle_type) { applicationId = speckleNetwork.applicationId };
+      return appObj;
     }
 
-    public Network NetworkToSpeckle(revitNetwork)
+    public Network NetworkToSpeckle(Element mepElement, out List<string> notes)
     {
-      
+      notes = new List<string>();
+      Network speckleNetwork = new Network() { name = mepElement.Name, elements = new List<Organization.NetworkElement>(), links = new List<Organization.NetworkLink>() };
+
+      GetNetworkElements(speckleNetwork, mepElement, out List<string> connectedNotes);
+      if (connectedNotes.Any()) notes.AddRange(connectedNotes);
+      return speckleNetwork;
     }
   }
 }
