@@ -11,6 +11,7 @@ using DB = Autodesk.Revit.DB;
 using STR = Objects.Structural;
 using GE = Objects.Geometry;
 using System;
+using Objects.Organization;
 
 namespace Objects.Converter.Revit
 {
@@ -116,7 +117,11 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = FamilyInstanceToSpeckle(o, out notes);
+          if (IsConnected(o))
+            returnObject = NetworkToSpeckle(o, out notes);
+          else
+            returnObject = FamilyInstanceToSpeckle(o, out notes);
+
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -167,7 +172,10 @@ namespace Objects.Converter.Revit
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = PipeToSpeckle(o);
+          if (IsConnected(o))
+            returnObject = NetworkToSpeckle(o, out notes);
+          else
+            returnObject = PipeToSpeckle(o);
           break;
         case DB.Plumbing.FlexPipe o:
           returnObject = PipeToSpeckle(o);
@@ -264,7 +272,7 @@ namespace Objects.Converter.Revit
           var material = GetElementRenderMaterial(@object as DB.Element);
           returnObject["renderMaterial"] = material;
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
         }
@@ -306,7 +314,7 @@ namespace Objects.Converter.Revit
     }
     private BuiltInCategory GetObjectCategory(Base @object)
     {
-      switch(@object)
+      switch (@object)
       {
         case BE.Beam _:
         case BE.Brace _:
@@ -326,7 +334,7 @@ namespace Objects.Converter.Revit
           return BuiltInCategory.OST_PipeSegments;
         case BE.Rebar _:
           return BuiltInCategory.OST_Rebar;
-        case BE.Topography _: 
+        case BE.Topography _:
           return BuiltInCategory.OST_Topography;
         case BE.Wall _:
           return BuiltInCategory.OST_Walls;
@@ -337,7 +345,7 @@ namespace Objects.Converter.Revit
         case BE.CableTray _:
           return BuiltInCategory.OST_CableTray;
         default:
-          return BuiltInCategory.OST_GenericModel;        
+          return BuiltInCategory.OST_GenericModel;
       }
     }
 
@@ -356,7 +364,7 @@ namespace Objects.Converter.Revit
           var cat = GetObjectCategory(@object);
           return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, cat);
         }
-        catch 
+        catch
         {
 
         }
@@ -471,6 +479,9 @@ namespace Objects.Converter.Revit
 
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
+
+        case Objects.Organization.Network o:
+          return NetworkToNative(o);
 
         case BE.Floor o:
           return FloorToNative(o);
@@ -677,14 +688,14 @@ namespace Objects.Converter.Revit
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
+        Network _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         STR.Geometry.Node _ => true,
         STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
-        _ => false
-
+        _ => false,
       };
     }
   }

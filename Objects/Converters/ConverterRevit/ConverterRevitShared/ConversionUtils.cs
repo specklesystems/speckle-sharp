@@ -2,6 +2,8 @@
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Organization;
+using Objects.Organization.Revit;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
@@ -105,6 +108,210 @@ namespace Objects.Converter.Revit
           @base["elements"] = new List<Base>();
 
         (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
+      }
+    }
+
+    /// <summary>
+    /// Gets the connected element of a MEP element and adds the to a Base object
+    /// </summary>
+    /// <param name="base"></param>
+    /// <param name="mepElement"></param>
+    public void GetNetworkElements(Network @network, Element initialElement, out List<string> notes)
+    {
+      notes = new List<string>();
+      var networkElements = new List<NetworkElement>();
+      var links = new List<NetworkLink>();
+      var elements = new List<Element>();
+      var connectionPairs = new List<Tuple<Connector, Connector>>();
+      GetConnectionPairs(initialElement, ref connectionPairs, ref elements);
+      foreach (var element in elements)
+      {
+        var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == element.UniqueId);
+
+        if (elementIndex != -1)
+          ContextObjects.RemoveAt(elementIndex);
+        else
+          continue;
+
+        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        if (CanConvertToSpeckle(element))
+        {
+          Base obj = null;
+          switch (element)
+          {
+            case DB.FamilyInstance fi:
+              obj = FamilyInstanceToSpeckle(fi, out notes);
+              break;
+            case DB.Plumbing.Pipe pipe:
+              obj = PipeToSpeckle(pipe);
+              break;
+          }
+
+          if (obj != null)
+          {
+            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
+            // var networkElement = new RevitNetworkElement() { network = @network, name = element.Name, element = obj };
+            // var networkElement = new RevitNetworkElement() { applicationId = element.UniqueId, network = @network, name = element.Name, element = obj, linkIndices = new List<int>() };
+            @network.elements.Add(new RevitNetworkElement() { applicationId = element.UniqueId, network = @network, name = element.Name, element = obj, linkIndices = new List<int>() });
+            //var linkIndices = new List<int>();
+            //var connections = connectionPairs.Where(p => p.Item1.Owner.UniqueId.Equals(element.UniqueId) || p.Item2.Owner.UniqueId.Equals(element.UniqueId));
+            //foreach (var connection in connections)
+            //{
+            //  var link = new RevitNetworkLink() { applicationId = element.UniqueId, name = $"{connection.Item1.Owner.Name} --> {connection.Item2.Owner.Name}", network = @network, elementIndices = new List<int>() };
+            //  switch (connection.Item1.Shape)
+            //  {
+            //    case ConnectorProfileType.Invalid:
+            //      link.shape = NetworkLinkShape.Unknown;
+            //      break;
+            //    case ConnectorProfileType.Round:
+            //      link.shape = NetworkLinkShape.Round;
+            //      break;
+            //    case ConnectorProfileType.Rectangular:
+            //      link.shape = NetworkLinkShape.Rectangular;
+            //      break;
+            //    case ConnectorProfileType.Oval:
+            //      link.shape = NetworkLinkShape.Oval;
+            //      break;
+            //  }
+            //  //link.elementIndices.Add(elements.FindIndex(e => e.UniqueId.Equals(connection.Item1.Owner.UniqueId)));
+            //  //link.elementIndices.Add(elements.FindIndex(e => e.UniqueId.Equals(connection.Item2.Owner.UniqueId)));
+            //  @network.links.Add(link);
+            //}
+            //@network.elements.Add(networkElement);
+            //@network.links.Add(link)
+            ConvertedObjectsList.Add(obj.applicationId);
+          }
+          else
+          {
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          }
+        }
+        else
+        {
+          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Conversion not supported");
+        }
+        Report.Log(reportObj);
+      }
+
+      foreach (var connectionPair in connectionPairs)
+      {
+        var link = new RevitNetworkLink() { name = $"{connectionPair.Item1.Owner.Name} --> {connectionPair.Item2.Owner.Name}", network = @network, elementIndices = new List<int>() };
+        switch (connectionPair.Item1.Shape)
+        {
+          case ConnectorProfileType.Invalid:
+            link.shape = NetworkLinkShape.Unknown;
+            break;
+          case ConnectorProfileType.Round:
+            link.shape = NetworkLinkShape.Round;
+            break;
+          case ConnectorProfileType.Rectangular:
+            link.shape = NetworkLinkShape.Rectangular;
+            break;
+          case ConnectorProfileType.Oval:
+            link.shape = NetworkLinkShape.Oval;
+            break;
+        }
+        var firstElementIndex = @network.elements.FindIndex(e => e.applicationId.Equals(connectionPair.Item1.Owner.UniqueId));
+        var secondElementIndex = @network.elements.FindIndex(e => e.applicationId.Equals(connectionPair.Item2.Owner.UniqueId));
+        link.elementIndices.AddRange(new List<int>() { firstElementIndex, secondElementIndex });
+        @network.links.Add(link);
+        var firstElement = @network.elements[firstElementIndex];
+        var secondElement = @network.elements[secondElementIndex];
+        firstElement.linkIndices.Add(@network.links.IndexOf(link));
+        secondElement.linkIndices.Add(@network.links.IndexOf(link));
+      }
+      if (@network.elements.Any())
+      {
+        notes.Add($"Converted and attached {@network.elements.Count} connected elements");
+        // @network.elements = convertedConnectedElements;
+        // @network.links = links; 
+      }
+    }
+
+    //private static bool IsMEPCategory(Element e)
+    //{
+    //  var mepCategories = new[]
+    //  {
+    //    BuiltInCategory.OST_PipeFitting,
+    //    BuiltInCategory.OST_PipeCurves,
+    //    BuiltInCategory.OST_PipeAccessory,
+    //    BuiltInCategory.OST_DuctFitting,
+    //    BuiltInCategory.OST_DuctCurves,
+    //    BuiltInCategory.OST_DuctAccessory,
+    //    BuiltInCategory.OST_MechanicalEquipment,
+    //    BuiltInCategory.OST_DuctTerminal,
+    //    BuiltInCategory.OST_Conduit,
+    //    BuiltInCategory.OST_ConduitFitting,
+    //    BuiltInCategory.OST_CableTray,
+    //    BuiltInCategory.OST_CableTrayFitting
+    //  };
+
+    //  return mepCategories.Any(cat => (int)cat == e.Category.Id.IntegerValue);
+    //}
+
+    private void GetConnectionPairs(Element element, ref List<Tuple<Connector, Connector>> connectionPairs, ref List<Element> elements)
+    {
+      var refConnectionPairs = GetRefConnectionPairs(element).
+        Where(e => ContextObjects.Any(obj => obj.applicationId.Equals(e.Item2.Owner.UniqueId))).ToList();
+      elements.Add(element);
+      foreach (var refConnectionPair in refConnectionPairs)
+      {
+        var connectedElement = refConnectionPair.Item2.Owner;
+        if (connectedElement != null && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId)))
+        {
+          connectionPairs.Add(refConnectionPair);
+          GetConnectionPairs(connectedElement, ref connectionPairs, ref elements);
+        }
+      }
+    }
+
+    private List<Tuple<Connector, Connector>> GetRefConnectionPairs(Element element)
+    {
+      var refConnectionPairs = new List<Tuple<Connector, Connector>>();
+      var connectors = GetConnectors(element);
+      var connectorsIterator = connectors.ForwardIterator();
+      connectorsIterator.Reset();
+      while (connectorsIterator.MoveNext())
+      {
+        var connector = connectorsIterator.Current as Connector;
+        if (connector != null && connector.IsConnected)
+        {
+          var refs = connector.AllRefs;
+          var refsIterator = refs.ForwardIterator();
+          refsIterator.Reset();
+          while (refsIterator.MoveNext())
+          {
+            var refConnector = refsIterator.Current as Connector;
+            if (refConnector != null &&
+              !refConnector.Owner.Id.Equals(element.Id) &&
+              !(refConnector.Owner is MEPSystem))
+            {
+              refConnectionPairs.Add(Tuple.Create(connector, refConnector));
+            }
+          }
+        }
+      }
+      return refConnectionPairs;
+    }
+
+    private ConnectorSet GetConnectors(Element e)
+    {
+      if (e is MEPCurve cure)
+        return cure.ConnectorManager.Connectors;
+      else
+        return (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
+    }
+
+    private bool IsConnected(Element e)
+    {
+      if (e is MEPCurve cure)
+        return cure.ConnectorManager.Connectors.Cast<Connector>().Any(c => c.IsConnected);
+      else
+      {
+        var fi = e as DB.FamilyInstance;
+        return fi?.MEPModel?.ConnectorManager?.Connectors != null ?
+          fi.MEPModel.ConnectorManager.Connectors.Cast<Connector>().Any(c => c.IsConnected) :
+          false;
       }
     }
 
