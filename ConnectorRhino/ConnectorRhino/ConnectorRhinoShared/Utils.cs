@@ -99,7 +99,8 @@ namespace SpeckleRhino
       foreach (var previewObj in preview)
       {
         var converted = new List<object>();
-        foreach (var obj in previewObj.Converted)
+        var toBeConverted = previewObj.Convertible ? previewObj.Converted : previewObj.Fallback.SelectMany(o => o.Converted).ToList();
+        foreach (var obj in toBeConverted)
         {
           switch (obj)
           {
@@ -118,7 +119,9 @@ namespace SpeckleRhino
           }
           converted.Add(obj);
         }
-        Preview.Add(previewObj.OriginalId, converted);
+
+        if (!Preview.ContainsKey(previewObj.OriginalId))
+          Preview.Add(previewObj.OriginalId, converted);
       }
     }
 
