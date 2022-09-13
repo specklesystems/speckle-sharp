@@ -190,25 +190,28 @@ namespace Speckle.Core.Transports
         using (var t = c.BeginTransaction())
         {
           var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-          using (var command = new SqliteCommand(commandText, c))
+
+          while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
           {
-            
-            while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
+            using (var command = new SqliteCommand(commandText, c, t))
             {
+
               Queue.TryDequeue(out result);
               command.Parameters.AddWithValue("@hash", result.Item1);
               command.Parameters.AddWithValue("@content", result.Item2);
               command.ExecuteNonQuery();
+
               saved++;
             }
-            t.Commit();
-            if (CancellationToken.IsCancellationRequested)
-            {
-              Queue = new ConcurrentQueue<(string, string, int)>();
-              IS_WRITING = false;
-              return;
-            }
           }
+          t.Commit();
+          if (CancellationToken.IsCancellationRequested)
+          {
+            Queue = new ConcurrentQueue<(string, string, int)>();
+            IS_WRITING = false;
+            return;
+          }
+
         }
       }
 
@@ -262,7 +265,7 @@ namespace Speckle.Core.Transports
           var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
           using (var command = new SqliteCommand(commandText, c))
           {
-            
+
             command.Parameters.AddWithValue("@hash", hash);
             command.Parameters.AddWithValue("@content", serializedObject);
             command.ExecuteNonQuery();
@@ -323,7 +326,7 @@ namespace Speckle.Core.Transports
       using var c = new SqliteConnection(ConnectionString);
       c.Open();
 
-      using var command = new SqliteCommand("SELECT * FROM objects",c);
+      using var command = new SqliteCommand("SELECT * FROM objects", c);
 
       using var reader = command.ExecuteReader();
       while (reader.Read())
@@ -344,7 +347,7 @@ namespace Speckle.Core.Transports
       using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
-        using (var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash",c))
+        using (var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash", c))
         {
           command.Parameters.AddWithValue("@hash", hash);
           command.ExecuteNonQuery();
@@ -393,7 +396,7 @@ namespace Speckle.Core.Transports
           if (CancellationToken.IsCancellationRequested) return ret;
           var commandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
           using (var command = new SqliteCommand(commandText, c))
-          { 
+          {
             command.Parameters.AddWithValue("@hash", objectId);
             using (var reader = command.ExecuteReader())
             {
