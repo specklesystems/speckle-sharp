@@ -33,7 +33,7 @@ namespace DesktopUI2.ViewModels
   {
 
     public StreamState StreamState { get; set; }
-    private IScreen HostScreen { get; set; }
+    public IScreen HostScreen { get; set; }
 
     private ConnectorBindings Bindings;
 
@@ -306,8 +306,8 @@ namespace DesktopUI2.ViewModels
         else
         {
           var filterItems = _reportSelectedFilterItems.Any() ? Report.Where(o => _reportSelectedFilterItems.Any(a => o.Status == a)).ToList() : Report;
-          return SearchQuery == "" ? 
-            filterItems : 
+          return SearchQuery == "" ?
+            filterItems :
             filterItems.Where(o => _searchQueryItems.All(a => o.SearchText.ToLower().Contains(a.ToLower()))).ToList();
         }
       }
@@ -320,13 +320,13 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        string defaultMessage = string.IsNullOrEmpty(Progress.Report.ConversionLogString) ? 
+        string defaultMessage = string.IsNullOrEmpty(Progress.Report.ConversionLogString) ?
           "\nWelcome to the report! \n\nObjects you send or receive will appear here to help you understand how your document has changed." :
           Progress.Report.ConversionLogString;
 
         string reportInfo = $"\nOperation: {(PreviewOn ? "Preview " : "")}{(IsReceiver ? "Received at " : "Sent at ")}{DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss")}";
         reportInfo += $"\nTotal: {Report.Count} objects";
-        reportInfo += Progress.Report.OperationErrors.Any() ? $"\n\nErrors: \n{Progress.Report.OperationErrorsString}":"";
+        reportInfo += Progress.Report.OperationErrors.Any() ? $"\n\nErrors: \n{Progress.Report.OperationErrorsString}" : "";
 
         return Report.Any() || Progress.Report.OperationErrors.Any() ? reportInfo : defaultMessage;
       }
@@ -477,8 +477,6 @@ namespace DesktopUI2.ViewModels
 
       }
     }
-
-    IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
     public void UpdateVisualParentAndInit(IScreen hostScreen)
     {

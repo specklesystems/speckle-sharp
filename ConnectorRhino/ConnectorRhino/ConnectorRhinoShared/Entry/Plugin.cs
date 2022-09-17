@@ -21,7 +21,6 @@ namespace SpeckleRhino
     private static string SpeckleKey = "speckle2";
 
     public ConnectorBindingsRhino Bindings { get; private set; }
-    public MainViewModel ViewModel { get; private set; }
 
     internal bool _initialized;
 
@@ -39,7 +38,6 @@ namespace SpeckleRhino
 
         SpeckleCommand.InitAvalonia();
         Bindings = new ConnectorBindingsRhino();
-        ViewModel = new MainViewModel(Bindings);
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
@@ -82,9 +80,6 @@ namespace SpeckleRhino
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      //new document => new view model (used by the panel only)
-      ViewModel = new MainViewModel(Bindings);
-
       if (e.Merge) // this is a paste or import event
       {
         // get existing streams in doc before a paste or import operation to use for cleanup
