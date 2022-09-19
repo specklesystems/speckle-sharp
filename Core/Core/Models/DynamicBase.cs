@@ -186,6 +186,7 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <returns></returns>
     public IEnumerable<PropertyInfo> GetInstanceMembers() => GetInstanceMembers(GetType()); 
+    
     public static IEnumerable<PropertyInfo> GetInstanceMembers(Type t)
     {
       PopulatePropInfoCache(t);
@@ -203,35 +204,34 @@ namespace Speckle.Core.Models
     /// Gets the names of the typed and dynamic properties that don't have a [SchemaIgnore] attribute.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<string> GetMemberNames()
-    {
-      var names = new List<string>(properties.Count);
-      foreach (var kvp in properties) names.Add(kvp.Key);
-
-      PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()].Where(x => !x.IsDefined(typeof(SchemaIgnore), true)
-                    && !x.IsDefined(typeof(ObsoleteAttribute), true));
-
-      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
-
-      return names;
-    }
-
+    [Obsolete("Use GetMembers().Keys instead")]
+    public IEnumerable<string> GetMemberNames() => GetMembers().Keys;
+    
     /// <summary>
-    ///  Gets the typed and dynamic properties that don't have a [SchemaIgnore] attribute.
+    ///  Gets the typed and dynamic properties. 
     /// </summary>
-    /// <returns></returns>
-    public Dictionary<string, object> GetMembers()
+    /// <param name="skipObsolete">Skip members that contain the  <see cref="ObsoleteAttribute"/></param>
+    /// <param name="skipSchemaIgnored">Skip members that contain the <see cref="SchemaIgnore"/> attribute.</param>
+    /// <returns>A dictionary containing the key's and values of the object.</returns>
+    public Dictionary<string, object> GetMembers(bool skipObsolete = true, bool skipSchemaIgnored = true)
     {
       // initialise with dynamic members
       var dic = new Dictionary<string, object>(properties);
 
       // add typed members
       PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()].Where(x => !x.IsDefined(typeof(SchemaIgnore), true)
-                    && !x.IsDefined(typeof(ObsoleteAttribute),true));
-
-
+      
+      var pinfos = propInfoCache[GetType()].Where(x =>
+      {
+        var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
+        var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
+        
+        // If obsolete is true and prop has obsolete attr
+        // OR
+        // If schemaIgnored is true and prop has schemaIgnore attr
+        return !((skipSchemaIgnored && hasIgnored) || (skipObsolete && hasObsolete));
+      });
+      
       foreach (var pi in pinfos)
         dic.Add(pi.Name, pi.GetValue(this));
 
@@ -246,12 +246,7 @@ namespace Speckle.Core.Models
     {
       return properties.Keys;
     }
-
-    /// <summary>
-    /// Currently we assume having only 1 property means we auto-wrap it around a DynamicBase, therefore is a wrapper. This might change in the future.
-    /// </summary>
-    public bool IsWrapper() => properties.Count == 1;
-
+    
   }
 
   /// <summary>
