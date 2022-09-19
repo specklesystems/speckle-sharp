@@ -98,5 +98,9 @@ namespace DesktopUI2.ViewModels
         RouterInstance.Navigate.Execute(HomeViewModel.Instance);
     }
 
+    public static void CloseDialog()
+    {
+      Instance.DialogBody = null;
+    }
   }
 }
