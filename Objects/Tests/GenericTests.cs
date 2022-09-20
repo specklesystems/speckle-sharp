@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
+using Objects;
+using Objects.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Tests
 {
@@ -12,7 +17,10 @@ namespace Tests
   {
     public static IEnumerable AvailableTypesInKit()
     {
-      return KitManager.GetDefaultKit().Types;
+      // Get all types in the Objects assembly that inherit from Base
+      return Assembly.GetAssembly(typeof(ObjectsKit))
+        .GetTypes()
+        .Where(t => typeof(Base).IsAssignableFrom(t));
     }
     
     [Test(Description = "Checks that all objects inside the Default Kit have empty constructors.")]
