@@ -198,7 +198,25 @@ namespace Tests
       @base[key] = null;
       Assert.IsNull(@base[key]);
     }
-    
+
+    [Test]
+    public void CanShallowCopy()
+    {
+      var sample = new SampleObject();
+      var copy = sample.ShallowCopy();
+
+      var selectedMembers = DynamicBaseMemberType.Dynamic
+                            | DynamicBaseMemberType.Instance
+                            | DynamicBaseMemberType.SchemaIgnored;
+      var sampleMembers = sample.GetMembers(selectedMembers);
+      var copyMembers = copy.GetMembers(selectedMembers);
+
+      foreach (var kvp in copyMembers)
+      {
+        Assert.Contains(kvp.Key,sampleMembers.Keys);
+        Assert.That(kvp.Value, Is.EqualTo(sample[kvp.Key]));
+      }
+    }
     
     public class SampleObject : Base
     {
