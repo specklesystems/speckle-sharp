@@ -74,7 +74,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-objects:
     docker:
-      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
+      - image: "mcr.microsoft.com/dotnet/core/sdk:5.0" # dotnet core 3.1 sdk
       - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
     steps:
       - checkout
@@ -83,7 +83,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: dotnet restore Objects/Objects.sln
       - run:
           name: Build Objects
-          command: dotnet build --no-restore Objects/Objects.sln -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run:
           name: Test Objects
           command: dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
