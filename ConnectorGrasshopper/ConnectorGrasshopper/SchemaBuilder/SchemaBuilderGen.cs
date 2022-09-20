@@ -1,4 +1,4 @@
-﻿
+
 
 using System;
 using Grasshopper.Kernel;
@@ -1270,19 +1270,6 @@ public class LoadNode1SchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Loading.LoadNode.ctor(Objects.Structural.Loading.LoadCase,System.Collections.Generic.List`1[Objects.Structural.Geometry.Node],Objects.Structural.Geometry.Axis,Objects.Structural.Loading.LoadDirection,System.Double,System.String)","Objects.Structural.Loading.LoadNode");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
-public class Material1SchemaComponent: CreateSchemaObjectBase {
-     
-    public Material1SchemaComponent(): base("Material (with properties)", "Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Speckle 2 Structural", "Materials") { }
-    
-    public override Guid ComponentGuid => new Guid("15412d80-2db7-dede-ddba-eed400b9d083");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.Materials.Material");
         base.AddedToDocument(document);
     }
 }
