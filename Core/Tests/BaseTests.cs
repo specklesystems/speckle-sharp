@@ -99,25 +99,27 @@ namespace Tests
     public void CanGetMemberNames()
     {
       var @base = new SampleObject();
-      @base["dynamicProp"] = 123;
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = 123;
       var names = @base.GetMemberNames();
-      Assert.That(names, Has.No.Member("IgnoredSchemaProp"));
-      Assert.That(names, Has.No.Member("ObsoleteSchemaProp"));
-      Assert.That(names, Has.Member("dynamicProp"));
-      Assert.That(names, Has.Member("attachedProp"));
+      Assert.That(names, Has.No.Member(nameof(@base.IgnoredSchemaProp)));
+      Assert.That(names, Has.No.Member(nameof(@base.ObsoleteSchemaProp)));
+      Assert.That(names, Has.Member(dynamicProp));
+      Assert.That(names, Has.Member(nameof(@base.attachedProp)));
     }
 
     [Test(Description = "Checks that no ignored or obsolete properties are returned")]
     public void CanGetMembers()
     {
       var @base = new SampleObject();
-      @base["dynamicProp"] = 123;
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = 123;
 
       var names = @base.GetMembers().Keys;
-      Assert.That(names, Has.No.Member("IgnoredSchemaProp"));
-      Assert.That(names, Has.No.Member("ObsoleteSchemaProp"));
-      Assert.That(names, Has.Member("dynamicProp"));
-      Assert.That(names, Has.Member("attachedProp"));
+      Assert.That(names, Has.No.Member(nameof(@base.IgnoredSchemaProp)));
+      Assert.That(names, Has.No.Member(nameof(@base.ObsoleteSchemaProp)));
+      Assert.That(names, Has.Member(dynamicProp));
+      Assert.That(names, Has.Member(nameof(@base.attachedProp)));
     }
     
     [Test(Description = "Checks that only instance properties are returned, excluding obsolete and ignored.")]
@@ -127,17 +129,18 @@ namespace Tests
       @base["dynamicProp"] = 123;
 
       var names = @base.GetMembers(DynamicBaseMemberType.Instance).Keys;
-      Assert.That(names, Has.Member("attachedProp"));
+      Assert.That(names, Has.Member(nameof(@base.attachedProp)));
     }
     
     [Test(Description = "Checks that only dynamic properties are returned")]
     public void CanGetMembers_OnlyDynamic()
     {
       var @base = new SampleObject();
-      @base["dynamicProp"] = 123;
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = 123;
 
       var names = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
-      Assert.That(names, Has.Member("dynamicProp"));
+      Assert.That(names, Has.Member(dynamicProp));
       Assert.That(names.Count, Is.EqualTo(1));
     }
     
@@ -148,8 +151,8 @@ namespace Tests
       @base["dynamicProp"] = 123;
 
       var names = @base.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.SchemaIgnored).Keys;
-      Assert.That(names, Has.Member("IgnoredSchemaProp"));
-      Assert.That(names, Has.Member("attachedProp"));
+      Assert.That(names, Has.Member(nameof(@base.IgnoredSchemaProp)));
+      Assert.That(names, Has.Member(nameof(@base.attachedProp)));
     }
         
     [Test(Description = "Checks that all typed properties (including obsolete ones) are returned")]
@@ -159,8 +162,8 @@ namespace Tests
       @base["dynamicProp"] = 123;
 
       var names = @base.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Obsolete).Keys;
-      Assert.That(names, Has.Member("ObsoleteSchemaProp"));
-      Assert.That(names, Has.Member("attachedProp"));
+      Assert.That(names, Has.Member(nameof(@base.ObsoleteSchemaProp)));
+      Assert.That(names, Has.Member(nameof(@base.attachedProp)));
     }
     
     
@@ -168,11 +171,12 @@ namespace Tests
     public void CanGetDynamicMembers()
     {
       var @base = new SampleObject();
-      @base["dynamicProp"] = null;
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = null;
 
       var names = @base.GetDynamicMemberNames();
-      Assert.That(names, Has.Member("dynamicProp"));
-      Assert.Null(@base["dynamicProp"]);
+      Assert.That(names, Has.Member(dynamicProp));
+      Assert.Null(@base[dynamicProp]);
     }
 
     [Test]
