@@ -84,6 +84,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build Objects
           command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run:
+          name: Test Objects
+          command: dotnet test Objects/Tests/Tests.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - store_test_results:
+          path: TestResults
+      - store_artifacts:
+          path: TestResults
+      - codecov/upload
 
   build-desktopui:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
