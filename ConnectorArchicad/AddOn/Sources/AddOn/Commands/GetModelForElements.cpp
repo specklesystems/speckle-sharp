@@ -143,7 +143,11 @@ namespace AddOnCommands {
 			return GS::Array<API_Guid>();
 		}
 
+#ifdef ServerMainVers_2600
+		switch (header.type.typeID) {
+#else
 		switch (header.typeID) {
+#endif
 		case API_CurtainWallID:					return GetCurtainWallSubElements(applicationId);
 		case API_BeamID:						return GetBeamSubElements(applicationId);
 		case API_ColumnID:						return GetColumnSubElements(applicationId);

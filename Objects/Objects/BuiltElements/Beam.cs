@@ -107,3 +107,63 @@ namespace Objects.BuiltElements.TeklaStructures
 
   }
 }
+
+namespace Objects.BuiltElements.Archicad
+{
+    public class ArchicadBeam : Objects.BuiltElements.Beam
+    {
+        public int? floorIndex { get; set; }
+        public Point begC { get; set; }
+        public Point endC { get; set; }
+        public short aboveViewLinePen { get; set; }
+        public short refPen { get; set; }
+        public short cutContourLinePen { get; set; }
+        public System.Int32 sequence { get; set; }
+        public bool isAutoOnStoryVisibility { get; set; }
+        public double offset { get; set; }
+        public double level { get; set; }
+        public double curveAngle { get; set; }
+        public double verticalCurveHeight { get; set; }
+        public string beamShape { get; set; }
+        public short hiddenLinePen { get; set; }
+        public short anchorPoint { get; set; }
+        public short belowViewLinePen { get; set; }
+        public bool isFlipped { get; set; }
+        public bool isSlanted { get; set; }
+        public double slantAngle { get; set; }
+        public double profileAngle { get; set; }
+        public System.Int32 nSegments { get; set; }
+        public System.Int32 nCuts { get; set; }
+        public System.Int32 nSchemes { get; set; }
+        public System.Int32 nProfiles { get; set; }
+        public bool useCoverFill { get; set; }
+        public bool useCoverFillFromSurface { get; set; }
+        public short coverFillOrientationComesFrom3D { get; set; }
+        public short coverFillForegroundPen { get; set; }
+        public short coverFillBackgroundPen { get; set; }
+        public string modelElemStructureType { get; set; }
+
+        [JsonProperty("Segments")]
+        public Dictionary<string, Segment> Segments { get; set; }
+
+        [JsonProperty("Schemes")]
+        public Dictionary<string, Scheme> Schemes { get; set; }
+
+        [JsonProperty("Cuts")]
+        public Dictionary<string, Cut> Cuts { get; set; }
+
+        [JsonProperty("Holes")]
+        public Dictionary<string, Hole> Holes { get; set; }
+
+        public ArchicadBeam() { }
+
+        [SchemaInfo("ArchicadBeam", "Creates an Archicad Structures beam by curve.", "Archicad", "Structure")]
+
+        public ArchicadBeam(Point begC, Point endC/*, ICurve baseLine */)
+        {
+            this.begC = begC;
+            this.endC = endC;
+        }
+
+    }
+}

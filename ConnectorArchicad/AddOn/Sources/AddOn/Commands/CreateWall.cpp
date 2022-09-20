@@ -27,7 +27,11 @@ namespace AddOnCommands
     GS::UniString guidString;
     os.Get(ApplicationIdFieldName, guidString);
     element.header.guid = APIGuidFromString(guidString.ToCStr());
+#ifdef ServerMainVers_2600
+    element.header.type.typeID = API_WallID;
+#else
     element.header.typeID = API_WallID;
+#endif
 
     err = Utility::GetBaseElementData(element, nullptr);
     if (err != NoError)

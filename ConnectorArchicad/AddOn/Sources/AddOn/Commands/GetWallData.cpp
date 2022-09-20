@@ -106,7 +106,11 @@ namespace AddOnCommands
         continue;
       }
 
+#ifdef ServerMainVers_2600
+      if (element.header.type.typeID != API_WallID)
+#else
       if (element.header.typeID != API_WallID)
+#endif
       {
         continue;
       }
