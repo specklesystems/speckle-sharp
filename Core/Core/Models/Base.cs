@@ -215,7 +215,11 @@ namespace Speckle.Core.Models
       myDuplicate.id = id;
       myDuplicate.applicationId = applicationId;
 
-      foreach (var kvp in GetMembers(true,false))
+      foreach (var kvp in GetMembers(
+                 DynamicBaseMemberType.Instance 
+                 | DynamicBaseMemberType.Dynamic 
+                 | DynamicBaseMemberType.SchemaIgnored)
+               )
       {
         var p = GetType().GetProperty(kvp.Key);
         if (p != null && !p.CanWrite)

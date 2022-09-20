@@ -210,30 +210,34 @@ namespace Speckle.Core.Models
     /// <summary>
     ///  Gets the typed and dynamic properties. 
     /// </summary>
-    /// <param name="skipObsolete">Skip members that contain the  <see cref="ObsoleteAttribute"/></param>
-    /// <param name="skipSchemaIgnored">Skip members that contain the <see cref="SchemaIgnore"/> attribute.</param>
+    /// <param name="includeMembers">Specifies which members should be included in the resulting dictionary. Can be concatenated with "|"</param>
     /// <returns>A dictionary containing the key's and values of the object.</returns>
-    public Dictionary<string, object> GetMembers(bool skipObsolete = true, bool skipSchemaIgnored = true)
+    public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic)
     {
-      // initialise with dynamic members
-      var dic = new Dictionary<string, object>(properties);
+      // Initialize an empty dict
+      var dic = new Dictionary<string, object>();
 
-      // add typed members
-      PopulatePropInfoCache(GetType());
-      
-      var pinfos = propInfoCache[GetType()].Where(x =>
+      // Add dynamic members
+      if (includeMembers.HasFlag(DynamicBaseMemberType.Dynamic))
+        dic = new Dictionary<string, object>(properties);
+
+      if (includeMembers.HasFlag(DynamicBaseMemberType.Instance))
       {
-        var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
-        var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
-        
-        // If obsolete is true and prop has obsolete attr
-        // OR
-        // If schemaIgnored is true and prop has schemaIgnore attr
-        return !((skipSchemaIgnored && hasIgnored) || (skipObsolete && hasObsolete));
-      });
-      
-      foreach (var pi in pinfos)
-        dic.Add(pi.Name, pi.GetValue(this));
+        PopulatePropInfoCache(GetType());
+        var pinfos = propInfoCache[GetType()].Where(x =>
+        {
+          var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
+          var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
+          
+          // If obsolete is false and prop has obsolete attr
+          // OR
+          // If schemaIgnored is true and prop has schemaIgnore attr
+          return !((!includeMembers.HasFlag(DynamicBaseMemberType.SchemaIgnored) && hasIgnored) ||
+                   (!includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete));
+        });
+        foreach (var pi in pinfos)
+          dic.Add(pi.Name, pi.GetValue(this));
+      }
 
       return dic;
     }
@@ -246,9 +250,32 @@ namespace Speckle.Core.Models
     {
       return properties.Keys;
     }
-    
   }
 
+  /// <summary>
+  /// Represents all different types of members that can be returned by <see cref="DynamicBase.GetMembers"/>
+  /// </summary>
+  [Flags]
+  public enum DynamicBaseMemberType
+  {
+    /// <summary>
+    /// The typed members of the DynamicBase object
+    /// </summary>
+    Instance = 1,
+    /// <summary>
+    /// The dynamically added members of the DynamicBase object
+    /// </summary>
+    Dynamic = 2,
+    /// <summary>
+    /// The typed members flagged with <see cref="ObsoleteAttribute"/> attribute.
+    /// </summary>
+    Obsolete = 4,
+    /// <summary>
+    /// The typed members flagged with <see cref="SchemaIgnored"/> attribute.
+    /// </summary>
+    SchemaIgnored = 8,
+  }
+  
   /// <summary>
   /// This attribute is used internally to hide the this[key]{get; set;} property from inner reflection on members.
   /// For more info see this discussion: https://speckle.community/t/why-do-i-keep-forgetting-base-objects-cant-use-item-as-a-dynamic-member/3246/5
