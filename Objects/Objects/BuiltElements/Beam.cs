@@ -72,7 +72,7 @@ namespace Objects.BuiltElements.TeklaStructures
     [DetachProperty]
     public SectionProfile profile { get; set; }
     [DetachProperty]
-    public Material material { get; set; }
+    public StructuralMaterial material { get; set; }
         [DetachProperty]
         public string finish { get; set; }
         [DetachProperty]
@@ -92,7 +92,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public TeklaBeam() { }
 
     [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]
-    public TeklaBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, Material material)
+    public TeklaBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, StructuralMaterial material)
     {
       this.baseLine = baseLine;
       this.profile = profile;

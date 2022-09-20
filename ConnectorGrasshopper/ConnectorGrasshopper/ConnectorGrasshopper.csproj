@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{109B3382-634B-408A-8A5C-4CD09CB92641}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -13,6 +13,7 @@
     <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
     <TargetExt>.gha</TargetExt>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TransformOnBuild>false</TransformOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
@@ -39,12 +40,12 @@
       <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
     </Compile>
   </ItemGroup>
-<!--
+
   <Target Name="GenerateT4" BeforeTargets="BeforeRebuild">
     <Message Text="Restoring T4 tool..." Importance="high" />
     <Exec Command="dotnet tool restore" />
     <Message Text="Generating T4 templates..." Importance="high" />
-    <Exec Command="dotnet t4 -o $(ProjectDir)SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)SchemaBuilder" />
+    <Exec Command="dotnet t4 -o $(ProjectDir)SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)" />
   </Target>
--->
+
 </Project>

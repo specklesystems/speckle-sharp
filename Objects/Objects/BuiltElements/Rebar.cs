@@ -52,7 +52,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public string size { get; set; }
 
     [DetachProperty]
-    public Material material { get; set; }
+    public StructuralMaterial material { get; set; }
   }
   public class Hook :Base {
     public Hook()
