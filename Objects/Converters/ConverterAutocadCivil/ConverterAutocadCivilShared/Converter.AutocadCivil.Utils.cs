@@ -1,4 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -6,10 +10,10 @@ using Speckle.Core.Models;
 
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-#if (CIVIL2021 || CIVIL2022)
+using Autodesk.AutoCAD.Geometry;
+
+
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 #endif
 
@@ -54,6 +58,119 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
+    /// <summary>
+    /// Removes invalid characters for Autocad layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidAutocadChars(string str)
+    {
+      // using this to handle rhino nested layer syntax
+      // replace "::" layer delimiter with "$" (acad standard)
+      string cleanDelimiter = str.Replace("::", "$");
+
+      // remove all other invalid chars
+      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
+    }
+    #region Reference Point
+
+    // CAUTION: these strings need to have the same values as in the connector bindings
+    const string InternalOrigin = "Internal Origin (default)";
+    const string UCS = "Current User Coordinate System";
+    private Matrix3d _transform;
+    private Matrix3d ReferencePointTransform
+    {
+      get
+      {
+        if (_transform == null || _transform == new Matrix3d())
+        {
+          // get from settings
+          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
+          _transform = GetReferencePointTransform(referencePointSetting);
+        }
+        return _transform;
+      }
+    }
+
+    private Matrix3d GetReferencePointTransform(string type)
+    {
+      var referencePointTransform = Matrix3d.Identity;
+
+      switch (type)
+      {
+        case InternalOrigin:
+          break;
+        case UCS:
+          var cs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
+          if (cs != null)
+            referencePointTransform = Matrix3d.AlignCoordinateSystem(
+                Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis,
+                cs.Origin, cs.Xaxis, cs.Yaxis, cs.Zaxis);
+          break;
+        default: // try to see if this is a named UCS
+          using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+          {
+            var UCSTable = tr.GetObject(Doc.Database.UcsTableId, OpenMode.ForRead) as UcsTable;
+            if (UCSTable.Has(type))
+            {
+              var ucsRecord = tr.GetObject(UCSTable[type], OpenMode.ForRead) as UcsTableRecord;
+              referencePointTransform = Matrix3d.AlignCoordinateSystem(
+                Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis,
+                ucsRecord.Origin, ucsRecord.XAxis, ucsRecord.YAxis, ucsRecord.XAxis.CrossProduct(ucsRecord.YAxis));
+            }
+            tr.Commit();
+          }
+          break;
+      }
+
+      return referencePointTransform;
+    }
+
+    /// <summary>
+    /// For sending out of AutocadCivil, transforms a point relative to the reference point
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public Point3d ToExternalCoordinates(Point3d p)
+    {
+      return p.TransformBy(ReferencePointTransform.Inverse());
+    }
+
+    /// <summary>
+    /// For sending out of AutocadCivil, transforms a vector relative to the reference point
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public Vector3d ToExternalCoordinates(Vector3d v)
+    {
+      return v.TransformBy(ReferencePointTransform.Inverse());
+    }
+
+    /// <summary>
+    /// For receiving in to AutocadCivil, transforms a point relative to the reference point
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public Point3d ToInternalCoordinates(Point3d p)
+    {
+      return p.TransformBy(ReferencePointTransform);
+    }
+
+    /// <summary>
+    /// For receiving in to AutocadCivil, transforms a vector relative to the reference point
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    public Vector3d ToInternalCoordinates(Vector3d v)
+    {
+      return v.TransformBy(ReferencePointTransform);
+    }
+    #endregion
+
+    #region app props
+    public static string AutocadPropName = "AutocadProps";
+    #endregion
+
     #region units
     private string _modelUnits;
     public string ModelUnits
@@ -64,7 +181,7 @@ namespace Objects.Converter.AutocadCivil
         {
           _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
 
-#if (CIVIL2021 || CIVIL2022)
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
           if (_modelUnits == Units.None)
           {
             // try to get the drawing unit instead
@@ -126,19 +243,5 @@ namespace Objects.Converter.AutocadCivil
     }
     #endregion
 
-    /// <summary>
-    /// Removes invalid characters for Autocad layer and block names
-    /// </summary>
-    /// <param name="str"></param>
-    /// <returns></returns>
-    public static string RemoveInvalidAutocadChars(string str)
-    {
-      // using this to handle rhino nested layer syntax
-      // replace "::" layer delimiter with "$" (acad standard)
-      string cleanDelimiter = str.Replace("::", "$");
-
-      // remove all other invalid chars
-      return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
-    }
   }
 }

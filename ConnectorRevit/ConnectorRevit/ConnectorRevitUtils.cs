@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
@@ -127,7 +128,7 @@ namespace Speckle.ConnectorRevit
       return new FilteredWorksetCollector(doc).Where(x => x.Kind == WorksetKind.UserWorkset).Select(x => x.Name).ToList();
     }
 
-    private async static Task<List<string>> GetParameterNamesAsync(Document doc)
+    private static async Task<List<string>> GetParameterNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
@@ -164,7 +165,7 @@ namespace Speckle.ConnectorRevit
       return GetParameterNamesAsync(doc).Result;
     }
 
-    private async static Task<List<string>> GetViewNamesAsync(Document doc)
+    private static async Task<List<string>> GetViewNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
@@ -210,6 +211,22 @@ namespace Speckle.ConnectorRevit
       return false;
     }
 
+    /// <summary>
+    /// Removes all inherited classes from speckle type string
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static string SimplifySpeckleType(string type)
+    {
+      return type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+    }
+
+    public static string ObjectDescriptor(Element obj)
+    {
+      var simpleType = obj.GetType().ToString().Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+      return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
+    }
+
     //list of currently supported Categories (for sending only)
     //exact copy of the one in the ConverterRevitShared.Categories
     //until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
@@ -246,6 +263,7 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Lines,
       BuiltInCategory.OST_Mass,
       BuiltInCategory.OST_MassFloor,
+      BuiltInCategory.OST_Materials,
       BuiltInCategory.OST_MechanicalEquipment,
       BuiltInCategory.OST_Parking,
       BuiltInCategory.OST_PipeCurves,
@@ -274,7 +292,6 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_StructuralFoundation,
       BuiltInCategory.OST_StructuralFraming,
       BuiltInCategory.OST_PathRein,
-      BuiltInCategory.OST_Rebar,
       BuiltInCategory.OST_StructuralStiffener,
       BuiltInCategory.OST_StructuralTruss,
       BuiltInCategory.OST_SwitchSystem,
@@ -283,7 +300,31 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_Cornices,
       BuiltInCategory.OST_Walls,
       BuiltInCategory.OST_Windows,
-      BuiltInCategory.OST_Wire
+      BuiltInCategory.OST_Wire,
+      BuiltInCategory.OST_Casework,
+      BuiltInCategory.OST_CurtainWallPanels,
+      BuiltInCategory.OST_CurtainWallMullions,
+      BuiltInCategory.OST_Entourage,
+      BuiltInCategory.OST_Furniture,
+      BuiltInCategory.OST_FurnitureSystems,
+      BuiltInCategory.OST_Planting,
+      BuiltInCategory.OST_PlumbingFixtures,
+      BuiltInCategory.OST_Ramps,
+      BuiltInCategory.OST_SpecialityEquipment,
+      BuiltInCategory.OST_Rebar,
+#if !REVIT2019 && !REVIT2020 && !REVIT2021
+      BuiltInCategory.OST_AudioVisualDevices,
+      BuiltInCategory.OST_FireProtection,
+      BuiltInCategory.OST_FoodServiceEquipment,
+      BuiltInCategory.OST_Hardscape,
+      BuiltInCategory.OST_MedicalEquipment,
+      BuiltInCategory.OST_Signage,
+      BuiltInCategory.OST_TemporaryStructure,
+      BuiltInCategory.OST_VerticalCirculation,
+#endif
+#if !REVIT2019 && !REVIT2020 && !REVIT2021 && !REVIT2022
+       BuiltInCategory.OST_MechanicalControlDevices,
+#endif
   };
   }
 }

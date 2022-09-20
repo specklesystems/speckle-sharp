@@ -140,7 +140,7 @@ namespace DesktopUI2.Models
     public List<string> SelectedObjectIds { get; set; } = new List<string>();
 
     [JsonProperty]
-    public List<ApplicationPlaceholderObject> ReceivedObjects { get; set; } = new List<ApplicationPlaceholderObject>();
+    public List<ApplicationObject> ReceivedObjects { get; set; } = new List<ApplicationObject>();
 
     public StreamState(StreamAccountWrapper streamAccountWrapper)
     {

@@ -9,11 +9,12 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamDetailsComponent : GH_Component
+  public class StreamDetailsComponent : GH_SpeckleComponent
   {
     public StreamDetailsComponent() : base("Stream Details", "sDet", "Extracts the details of a given stream, use is limited to 20 streams.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.STREAMS)
@@ -54,7 +55,7 @@ namespace ConnectorGrasshopper.Streams
       if (error != null)
       {
         Message = null;
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.ToFormattedString());
         error = null;
         streams = null;
       }
@@ -81,6 +82,9 @@ namespace ConnectorGrasshopper.Streams
         {
           tooManyItems = true;
         }
+        
+        if(DA.Iteration == 0)
+          Tracker.TrackNodeRun();
 
         Task.Run(async () =>
         {
@@ -109,12 +113,10 @@ namespace ConnectorGrasshopper.Streams
                 }
                 catch (Exception e)
                 {
-                  error = e.InnerException ?? e;
+                  error = e;
                   return;
                 }
-
-                Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
-
+                
                 var client = new Client(account);
 
                 var task = client.StreamGet(item.Value?.StreamId);

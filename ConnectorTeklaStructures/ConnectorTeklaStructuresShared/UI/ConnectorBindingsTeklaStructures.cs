@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Models;
 using Speckle.ConnectorTeklaStructures.Util;
 using System.Timers;
@@ -15,34 +16,14 @@ namespace Speckle.ConnectorTeklaStructures.UI
   {
     public static Model Model { get; set; }
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
-
-    public Timer SelectionTimer;
     public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
 
 
     public ConnectorBindingsTeklaStructures(Model model)
     {
       Model = model;
-      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-      SelectionTimer.Start();
+ 
     }
-
-    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      if (Model == null)
-      {
-        return;
-      }
-
-      var selection = GetSelectedObjects();
-      //TO DO
-
-
-      //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
-      //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
-    }
-
 
     public override List<ReceiveMode> GetReceiveModes()
     {
@@ -69,6 +50,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public override List<string> GetObjectsInView()
     {
       throw new NotImplementedException();
+    }
+
+    public override async System.Threading.Tasks.Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
     #endregion
   }

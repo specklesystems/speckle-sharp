@@ -155,5 +155,12 @@ namespace Objects.Geometry
 
       return true;
     }
+
+    public bool TransformTo(Transform transform, out ITransformable transformed)
+    {
+      var res = TransformTo(transform, out Surface surface);
+      transformed = surface;
+      return res;
+    }
   }
 }

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DesktopUI2;
+using DesktopUI2.ViewModels;
 using Rhino;
-using Rhino.Commands;
 using Rhino.PlugIns;
+using Speckle.Core.Api;
 
 namespace SpeckleRhino
 {
@@ -17,13 +19,37 @@ namespace SpeckleRhino
 
     private static string SpeckleKey = "speckle2";
 
+    public ConnectorBindingsRhino Bindings { get; private set; }
+    public MainViewModel ViewModel { get; private set; }
+
+    internal bool _initialized;
+
     public SpeckleRhinoConnectorPlugin()
     {
       Instance = this;
-      RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
-      RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
-      SpeckleCommand.InitAvalonia();
-    
+    }
+
+    public void Init()
+    {
+      try
+      {
+        if (_initialized)
+          return;
+
+        SpeckleCommand.InitAvalonia();
+        Bindings = new ConnectorBindingsRhino();
+        ViewModel = new MainViewModel(Bindings);
+
+        RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
+        RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+
+        _initialized = true;
+      }
+      catch (Exception ex)
+      {
+
+      }
+
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -42,13 +68,22 @@ namespace SpeckleRhino
         return;
       }
 
-      var bindings = new ConnectorBindingsRhino();
-      if (bindings.GetStreamsInFile().Count > 0)
-        SpeckleCommand.CreateOrFocusSpeckle();
+      if (Bindings.GetStreamsInFile().Count > 0)
+      {
+#if MAC
+      SpeckleCommand.CreateOrFocusSpeckle();
+#else
+        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+#endif
+
+      }
     }
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
     {
+      //new document => new view model (used by the panel only)
+      ViewModel = new MainViewModel(Bindings);
+
       if (e.Merge) // this is a paste or import event
       {
         // get existing streams in doc before a paste or import operation to use for cleanup
@@ -61,6 +96,26 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
+      // The user is probably using Rhino Inside and Avalonia was already initialized there
+      if (App.Current != null)
+      {
+
+        errorMessage = "Speckle cannot be loaded in multiple application at the same time.";
+        RhinoApp.CommandLineOut.WriteLine(errorMessage);
+        return LoadReturnCode.ErrorNoDialog;
+      }
+
+
+
+#if !MAC
+      System.Type panelType = typeof(Panel);
+      // Register my custom panel class type with Rhino, the custom panel my be display
+      // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
+      // You can also include the custom panel in any existing panel group by simply right
+      // clicking one a panel tab and checking or un-checking the "MyPane" option.
+      Init();
+      Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
+#endif
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
 
@@ -72,7 +127,7 @@ namespace SpeckleRhino
         {
           // Build a path to the user's staged RUI file.
           var sb = new StringBuilder();
-          sb.Append(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+          sb.Append(Helpers.InstallApplicationDataPath);
 #if RHINO6
           sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7
@@ -100,6 +155,10 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
 
+#if MAC
+    public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled; // Temporarily disabled due to top-menu overtake by Avalonia. Waiting fix.
+#else
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+#endif
   }
 }

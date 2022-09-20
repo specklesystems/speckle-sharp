@@ -7,7 +7,7 @@ using Material.Icons.Avalonia;
 
 namespace DesktopUI2.Views.Windows.Dialogs
 {
-  public partial class Dialog : Window
+  public partial class Dialog : DialogUserControl
   {
     public Dialog()
     {
@@ -15,10 +15,6 @@ namespace DesktopUI2.Views.Windows.Dialogs
     }
     public Dialog(string title, string message, DialogIconKind icon)
     {
-#if DEBUG
-      this.AttachDevTools();
-#endif
-
       AvaloniaXamlLoader.Load(this);
       var TitleBox = this.FindControl<TextBlock>("Title");
       var MessageBox = this.FindControl<TextBlock>("Message");
@@ -52,7 +48,7 @@ namespace DesktopUI2.Views.Windows.Dialogs
 
     public void Close_Click(object sender, RoutedEventArgs e)
     {
-      this.Close();
+      this.Close(null);
     }
   }
 }

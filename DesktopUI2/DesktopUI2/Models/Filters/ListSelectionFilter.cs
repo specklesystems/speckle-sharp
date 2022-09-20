@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.Views.Filters;
+﻿using DesktopUI2.Views.Filters;
+using System;
 using System.Collections.Generic;
 
 namespace DesktopUI2.Models.Filters
@@ -13,7 +13,7 @@ namespace DesktopUI2.Models.Filters
     public string Description { get; set; }
     public List<string> Values { get; set; }
     public List<string> Selection { get; set; } = new List<string>();
-    public UserControl View { get; set; } = new ListFilterView();
+    public Type ViewType { get; } = typeof(ListFilterView);
 
     public string Summary
     {

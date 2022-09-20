@@ -35,15 +35,24 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino6", "ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{D484DB4F-FB51-478F-B8F9-8FE3370AB392}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper6", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper6\ConverterGrasshopper6.csproj", "{9454D346-A629-40E0-9EE2-7C6933ED1530}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper7", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper", "..\ConnectorGrasshopper\ConnectorGrasshopper\ConnectorGrasshopper.csproj", "{109B3382-634B-408A-8A5C-4CD09CB92641}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9454D346-A629-40E0-9EE2-7C6933ED1530} = {9454D346-A629-40E0-9EE2-7C6933ED1530}
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E} = {CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}
+		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D} = {EAA8D25F-A118-4B16-BC6C-A71463B3C53D}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "..\ConnectorGrasshopper\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "..\Core\Transports\DiskTransport\DiskTransport.csproj", "{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{f1703d03-3edb-4389-add9-39c52c6aea19}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
 		Debug Mac|x64 = Debug Mac|x64
@@ -167,6 +176,100 @@ Global
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.ActiveCfg = Release|Any CPU
 		{D648BB69-B992-4D34-906E-7A547374B86C}.Release|x64.Build.0 = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Debug|x64.Build.0 = Debug|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release Mac|x64.Build.0 = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|x64.ActiveCfg = Release|Any CPU
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392}.Release|x64.Build.0 = Release|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Debug|x64.Build.0 = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release|x64.ActiveCfg = Release|Any CPU
+		{9454D346-A629-40E0-9EE2-7C6933ED1530}.Release|x64.Build.0 = Release|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Debug|x64.Build.0 = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release|x64.ActiveCfg = Release|Any CPU
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release|x64.Build.0 = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|x64.Build.0 = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|Any CPU.Build.0 = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|x64.ActiveCfg = Release|Any CPU
+		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|x64.Build.0 = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Debug|x64.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|x64.ActiveCfg = Release|Any CPU
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|x64.Build.0 = Release|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug|x64.Build.0 = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release|x64.ActiveCfg = Release|Any CPU
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -181,8 +284,24 @@ Global
 		{A64ACBF9-DB82-4839-AF99-57ED2E7989F4} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{F7D586E0-5452-428D-B704-3FF142DE248B} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{D648BB69-B992-4D34-906E-7A547374B86C} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
+		{D484DB4F-FB51-478F-B8F9-8FE3370AB392} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
+		{9454D346-A629-40E0-9EE2-7C6933ED1530} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
+		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
+		{109B3382-634B-408A-8A5C-4CD09CB92641} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
+		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
+		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{9454d346-a629-40e0-9ee2-7c6933ed1530}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{cae61ac4-e81a-4e69-8dd0-07b7cdf77e2e}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{f1703d03-3edb-4389-add9-39c52c6aea19}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

@@ -5,11 +5,14 @@ using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
 {
@@ -51,6 +54,11 @@ namespace DesktopUI2
     public override string GetDocumentLocation()
     {
       return "C:/Wow/Some/Document/Here";
+    }
+
+    public override void ResetDocument()
+    {
+      return;
     }
 
     public override string GetFileName()
@@ -109,7 +117,13 @@ namespace DesktopUI2
     {
       return new List<ISetting>
       {
-        new ListBoxSetting {Name = "Reference Point", Icon = "mdiCrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"} }
+        new ListBoxSetting {Name = "Reference Point", Icon = "CrosshairsGps", Description = "Hello world. This is a setting.", Values = new List<string>() {"Default", "Project Base Point", "Survey Point"}, Selection = "Default"},
+        new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
+        new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving"},
+        new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
+          Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
+        new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Selection = "Default", Description = "Determines the display style of imported meshes" },
+        new MappingSeting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = new List<string>() {"none", "alot", "some"}, Description = "Sends or receives stream objects in relation to this document point"},
       };
     }
 
@@ -155,7 +169,7 @@ namespace DesktopUI2
           {
             id = "123",
             name = "main",
-            commits = new Commits()
+            commits = new Speckle.Core.Api.Commits()
             {
               items = new List<Commit>()
               {
@@ -189,7 +203,7 @@ namespace DesktopUI2
           {
             id = "123",
             name = "main",
-            commits = new Commits()
+            commits = new Speckle.Core.Api.Commits()
             {
               items = new List<Commit>()
               {
@@ -247,12 +261,13 @@ namespace DesktopUI2
       return collection;
     }
 
-    public override void SelectClientObjects(string args)
+    public override void SelectClientObjects(List<string> objs, bool deselect = false)
     {
-      throw new NotImplementedException();
+      // TODO!
     }
 
-    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    public override bool CanPreviewReceive => true;
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
@@ -269,17 +284,20 @@ namespace DesktopUI2
         pd["A1"] = i;
         pd["A2"] = i + 2;
 
+        var appObj = new ApplicationObject(i.ToString(), "Some Object");
+
         try
         {
           if (i % 7 == 0)
-            throw new Exception($"Something happened.");
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Something happened.");
+          else
+            appObj.Update(status: ApplicationObject.State.Created);
         }
         catch (Exception e)
         {
-          //TODO
-          //state.Errors.Add(e);
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
         }
-
+        progress.Report.Log(appObj);
         progress.Update(pd);
       }
 
@@ -299,10 +317,66 @@ namespace DesktopUI2
       return state;
     }
 
-    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
+    {
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["A1"] = 1;
+      pd["A2"] = 1;
+      progress.Max = 100;
+      progress.Update(pd);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        if (progress.CancellationTokenSource.IsCancellationRequested)
+          return state;
+
+        await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+        pd["A1"] = i;
+        pd["A2"] = i + 2;
+
+        var appObj = new ApplicationObject(i.ToString(), "Some Object");
+
+        try
+        {
+          if (i % 7 == 0)
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Something happened.");
+          else
+            appObj.Update(status: ApplicationObject.State.Created);
+        }
+        catch (Exception e)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+        }
+        progress.Report.Log(appObj);
+        progress.Update(pd);
+      }
+
+      // Mock some errors
+      for (int i = 0; i < 3; i++)
+      {
+        var r = new Random(i);
+        if (r.NextDouble() > 0.5)
+        {
+          try
+          {
+            //progress.Report.LogOperationError(new Exception($"Critical operation error!"));
+            throw new Exception($"Number {i} fail");
+          }
+          catch (Exception e)
+          {
+            progress.Report.LogOperationError(e);
+          }
+        }
+      }
+
+      return state;
+    }
+
+    public override bool CanPreviewSend => true;
+    public override async void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // Let's fake some progress barsssss
-      progress.Report.Log("Starting fake sending");
+      //progress.Report.Log("Starting fake sending");
       var pd = new ConcurrentDictionary<string, int>();
       pd["A1"] = 1;
       pd["A2"] = 1;
@@ -314,11 +388,59 @@ namespace DesktopUI2
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
-          progress.Report.Log("Fake sending was cancelled");
-          return null;
+          //progress.Report.Log("Fake sending was cancelled");
+          return;
         }
 
         progress.Report.Log("Done fake task " + i);
+        await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+        pd["A1"] = i;
+        pd["A2"] = i + 2;
+
+        progress.Update(pd);
+      }
+
+      // Mock "some" errors
+      for (int i = 0; i < 10; i++)
+      {
+        try
+        {
+          throw new Exception($"Number {i} failed");
+        }
+        catch (Exception e)
+        {
+          progress.Report.LogOperationError(e);
+          //TODO
+          //state.Errors.Add(e);
+        }
+      }
+      return;
+    }
+
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
+    {
+      // Let's fake some progress barsssss
+      //progress.Report.Log("Starting fake sending");
+      var pd = new ConcurrentDictionary<string, int>();
+      pd["A1"] = 1;
+      pd["A2"] = 1;
+
+      progress.Max = 100;
+      progress.Update(pd);
+
+      for (int i = 1; i < 100; i += 10)
+      {
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          //progress.Report.Log("Fake sending was cancelled");
+          return null;
+        }
+
+        var r = new Random(i);
+        var status = (ApplicationObject.State)r.Next(5);
+        var appObj = new ApplicationObject(i.ToString(), "Some Object") { Status = status, Log = new List<string>() { "Some description"} };
+        progress.Report.Log(appObj);
+
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;
@@ -351,6 +473,12 @@ namespace DesktopUI2
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

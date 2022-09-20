@@ -8,11 +8,12 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  public class StreamListComponent : GH_Component
+  public class StreamListComponent : GH_SpeckleComponent
   {
     public StreamListComponent() : base("Stream List", "sList", "Lists all the streams for this account", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
@@ -45,7 +46,7 @@ namespace ConnectorGrasshopper.Streams
       if (error != null)
       {
         Message = null;
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.ToFormattedString());
         error = null;
         streams = null;
       }
@@ -81,8 +82,8 @@ namespace ConnectorGrasshopper.Streams
 
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
-        Logging.Analytics.TrackEvent(account, Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
-
+        Tracker.TrackNodeRun();
+        
         Task.Run(async () =>
         {
           try

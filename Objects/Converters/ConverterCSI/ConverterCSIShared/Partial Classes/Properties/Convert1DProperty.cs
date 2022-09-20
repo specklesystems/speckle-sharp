@@ -15,7 +15,7 @@ namespace Objects.Converter.CSI
     public object Property1DToNative(Property1D property1D)
     {
       int numbMaterial = 0;
-      string[] materials = null;
+      string[] materials = new string[] { };
       Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
       if (property1D.material != null)
       {
@@ -125,6 +125,9 @@ namespace Objects.Converter.CSI
       Model.PropFrame.GetMaterial(name, ref materialProp);
       speckleStructProperty1D.material = MaterialToSpeckle(materialProp);
       speckleStructProperty1D.profile = SectionToSpeckle(name);
+
+      speckleStructProperty1D.applicationId = $"{speckleStructProperty1D.material.applicationId}:{speckleStructProperty1D.profile.applicationId}";
+
       return speckleStructProperty1D;
     }
 

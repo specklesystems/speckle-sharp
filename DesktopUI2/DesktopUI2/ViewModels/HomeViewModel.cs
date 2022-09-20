@@ -1,9 +1,7 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
-using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
@@ -183,7 +181,7 @@ namespace DesktopUI2.ViewModels
           try
           {
             value.UpdateVisualParentAndInit(HostScreen);
-            MainWindowViewModel.RouterInstance.Navigate.Execute(value);
+            MainViewModel.RouterInstance.Navigate.Execute(value);
             Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
             _selectedSavedStream = value;
           }
@@ -261,7 +259,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -281,7 +279,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -294,7 +292,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -334,7 +332,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -360,9 +358,9 @@ namespace DesktopUI2.ViewModels
             {
 
               if (SelectedFilter == Filter.favorite)
-                Streams.AddRange((await client.FavoriteStreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+                Streams.AddRange((await client.FavoriteStreamsGet(25)).Select(x => new StreamAccountWrapper(x, account.Account)));
               else
-                Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+                Streams.AddRange((await client.StreamsGet(25)).Select(x => new StreamAccountWrapper(x, account.Account)));
             }
             //SEARCH
             else
@@ -370,13 +368,13 @@ namespace DesktopUI2.ViewModels
               //do not search favorite streams, too much hassle
               if (SelectedFilter == Filter.favorite)
                 SelectedFilter = Filter.all;
-              Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
+              Streams.AddRange((await client.StreamSearch(SearchQuery, 25)).Select(x => new StreamAccountWrapper(x, account.Account)));
             }
 
           }
           catch (Exception e)
           {
-            Dialogs.ShowDialog($"Could not get streams for {account.Account.userInfo.email} on {account.Account.serverInfo.url}.", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
           }
         }
         Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
@@ -385,12 +383,9 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
-
     }
-
-
 
     internal async void Init()
     {
@@ -409,11 +404,11 @@ namespace DesktopUI2.ViewModels
         catch { }
 
 
-        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName());
+        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -433,29 +428,28 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
-
 
     public async void RemoveAccountCommand(Account account)
     {
       try
       {
         AccountManager.RemoveAccount(account.id);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
         Init();
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
     public void OpenProfileCommand(Account account)
     {
       Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
-      Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
+      Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account View" } });
     }
 
     public void LaunchManagerCommand()
@@ -464,7 +458,7 @@ namespace DesktopUI2.ViewModels
       {
         string path = "";
 
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -473,7 +467,7 @@ namespace DesktopUI2.ViewModels
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-          path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe");
+          path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
         }
 
         if (File.Exists(path))
@@ -481,12 +475,12 @@ namespace DesktopUI2.ViewModels
 
         else
         {
-          Process.Start(new ProcessStartInfo($"https://speckle-releases.netlify.app/") { UseShellExecute = true });
+          Process.Start(new ProcessStartInfo($"https://releases.speckle.systems/") { UseShellExecute = true });
         }
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
     public async void AddAccountCommand()
@@ -497,26 +491,26 @@ namespace DesktopUI2.ViewModels
 
 
         var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
-        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        await dialog.ShowDialog(MainWindow.Instance);
+        var result = await dialog.ShowDialog<string>();
 
-        if (dialog.Add)
+        if (result != null)
         {
           Uri u;
-          if (!Uri.TryCreate(dialog.Url, UriKind.Absolute, out u))
+          if (!Uri.TryCreate(result, UriKind.Absolute, out u))
             Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
           else
           {
             try
             {
-              Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
 
-              await AccountManager.AddAccount(dialog.Url);
+              await AccountManager.AddAccount(result);
               await Task.Delay(1000);
               Init();
             }
             catch (Exception e)
             {
+              Log.CaptureException(e, Sentry.SentryLevel.Error);
               Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
             }
           }
@@ -526,7 +520,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
 
@@ -557,14 +551,10 @@ namespace DesktopUI2.ViewModels
 
     public async void NewStreamCommand()
     {
-
       var dialog = new NewStreamDialog(Accounts);
-      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-      await dialog.ShowDialog(MainWindow.Instance);
+      var result = await dialog.ShowDialog<bool>();
 
-
-
-      if (dialog.Create)
+      if (result)
       {
         try
         {
@@ -581,6 +571,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
+          Log.CaptureException(e, Sentry.SentryLevel.Error);
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -602,15 +593,15 @@ namespace DesktopUI2.ViewModels
         defaultText = clipboard;
 
       var dialog = new AddFromUrlDialog(defaultText);
-      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-      await dialog.ShowDialog(MainWindow.Instance);
+
+      var result = await dialog.ShowDialog<string>();
 
 
-      if (dialog.Add)
+      if (result != null)
       {
         try
         {
-          var sw = new StreamWrapper(dialog.Url);
+          var sw = new StreamWrapper(result);
           var account = await sw.GetAccount();
           var client = new Client(account);
           var stream = await client.StreamGet(sw.StreamId);
@@ -633,6 +624,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception e)
         {
+          Log.CaptureException(e, Sentry.SentryLevel.Error);
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -673,45 +665,44 @@ namespace DesktopUI2.ViewModels
 
     private void OpenStream(StreamState streamState)
     {
-      MainWindowViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
+      MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
     }
 
     public void ToggleDarkThemeCommand()
     {
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Theme" } });
-      var paletteHelper = new PaletteHelper();
-      ITheme theme = paletteHelper.GetTheme();
-      var isDark = theme.GetBaseTheme() == BaseThemeMode.Dark;
+      var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
+      var isDark = materialTheme.CurrentTheme.GetBaseTheme() == BaseThemeMode.Dark;
 
       ChangeTheme(isDark);
 
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
-
     }
 
     private void ChangeTheme(bool isDark)
     {
-      var paletteHelper = new PaletteHelper();
-      var theme = paletteHelper.GetTheme();
+
+      if (Application.Current == null)
+        return;
+
+      var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
+      var theme = materialTheme.CurrentTheme;
 
       if (isDark)
-        theme.SetBaseTheme(BaseThemeMode.Light.GetBaseTheme());
+        theme.SetBaseTheme(Theme.Light);
       else
-        theme.SetBaseTheme(BaseThemeMode.Dark.GetBaseTheme());
-      paletteHelper.SetTheme(theme);
-    }
+        theme.SetBaseTheme(Theme.Dark);
 
+      materialTheme.CurrentTheme = theme;
+    }
 
     public void RefreshCommand()
     {
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
+      ApiUtils.ClearCache();
       Init();
     }
-
-
   }
-
-
 }

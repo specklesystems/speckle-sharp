@@ -1,4 +1,5 @@
-﻿using DesktopUI2.Views;
+﻿using Avalonia.Controls.Selection;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Windows;
 using ReactiveUI;
 using Speckle.Core.Logging;
@@ -12,8 +13,6 @@ using System.Web;
 
 namespace DesktopUI2.ViewModels
 {
-
-
   public class ProgressViewModel : ReactiveObject
   {
     public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
@@ -49,7 +48,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _progressTitle, value);
       }
     }
-
 
     private string _progressSummary;
     public string ProgressSummary
@@ -97,10 +95,23 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private bool _isPreviewProgressing = false;
+    public bool IsPreviewProgressing
+    {
+      get => _isPreviewProgressing;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _isPreviewProgressing, value);
+      }
+    }
+
     public void Update(ConcurrentDictionary<string, int> pd)
     {
-      ProgressDict = pd;
-      Value = pd.Values.Last();
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        ProgressDict = pd;
+        Value = pd.Values.Last();
+      });
     }
 
     public void GetHelpCommand()
@@ -112,13 +123,6 @@ namespace DesktopUI2.ViewModels
         report += Report.OperationErrorsString;
       }
 
-      if (Report.ConversionErrorsCount > 0)
-      {
-        if (Report.OperationErrorsCount > 0)
-          report += "\n\n";
-        report += "CONVERSION ERRORS\n\n";
-        report += Report.ConversionErrorsString;
-      }
       var safeReport = HttpUtility.UrlEncode(report);
       Process.Start(new ProcessStartInfo($"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help") { UseShellExecute = true });
     }
@@ -127,16 +131,6 @@ namespace DesktopUI2.ViewModels
     {
       CancellationTokenSource.Cancel();
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancelled Quick Op" } });
-    }
-
-    public void OpenReportCommand()
-    {
-      var report = new Report();
-      report.Title = $"Report";
-      report.DataContext = this;
-      report.WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterOwner;
-      report.ShowDialog(MainWindow.Instance);
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Open Report" } });
     }
   }
 }

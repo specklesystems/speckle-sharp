@@ -10,6 +10,7 @@ using Rhino.Geometry;
 using Rhino.Geometry.Collections;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -428,6 +429,8 @@ namespace Objects.Converter.RhinoGh
     public PolyCurve PolycurveToNative(Polycurve p)
     {
       PolyCurve myPolyc = new PolyCurve();
+      var notes = new List<string>();
+
       foreach (var segment in p.segments)
       {
         try
@@ -436,7 +439,9 @@ namespace Objects.Converter.RhinoGh
           myPolyc.Append((RH.Curve)ConvertToNative((Base)segment));
         }
         catch
-        { }
+        {
+          notes.Add($"Could not append curve {segment.GetType()} to PolyCurve");
+        }
       }
 
       if (p.domain != null)
@@ -532,7 +537,6 @@ namespace Objects.Converter.RhinoGh
       var tolerance = 0.0;
 
       curve.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
-
       Polyline displayValue;
 
       if (poly.Count == 2)
@@ -577,6 +581,8 @@ namespace Objects.Converter.RhinoGh
       var ptsList = curve.GetPoints().Select(o => PointToNative(o).Location).ToList();
 
       var nurbsCurve = NurbsCurve.Create(false, curve.degree, ptsList);
+      if (nurbsCurve == null)
+        return null;
 
       for (int j = 0; j < nurbsCurve.Points.Count; j++)
       {
@@ -640,7 +646,7 @@ namespace Objects.Converter.RhinoGh
 
       var speckleMesh = new Mesh(verts, faces, colors, textureCoordinates, u)
       {
-        volume = mesh.Volume(),
+        volume = mesh.IsClosed ? mesh.Volume() : 0,
         bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u)
       };
 
@@ -804,32 +810,20 @@ namespace Objects.Converter.RhinoGh
     /// </summary>
     /// <param name="brep">BREP to be converted.</param>
     /// <returns></returns>
-    public Brep BrepToSpeckle(RH.Brep brep, string units = null)
+    public Brep BrepToSpeckle(RH.Brep brep, string units = null, RH.Mesh previewMesh = null)
     {
       var tol = Doc.ModelAbsoluteTolerance;
       //tol = 0;
       var u = units ?? ModelUnits;
-      brep.Repair(tol); //should maybe use ModelAbsoluteTolerance ?
+      brep.Repair(tol);
       // foreach (var f in brep.Faces)
       // {
       //   f.RebuildEdges(tol, false, false);
       // }
       // Create complex
-      var joinedMesh = new RH.Mesh();
-      var mySettings = MeshingParameters.Default;
-      switch (SelectedMeshSettings)
-      {
-        case MeshSettings.Default:
-          mySettings = new MeshingParameters(0.05, 0.05);
-          break;
-        case MeshSettings.CurrentDoc:
-          mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
-          break;
-      }
-      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-      joinedMesh.Weld(Math.PI);
+      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
+      var spcklBrep = new Brep(displayValue: MeshToSpeckle(displayMesh, u), provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
@@ -946,14 +940,34 @@ namespace Objects.Converter.RhinoGh
       return spcklBrep;
     }
 
+    private RH.Mesh GetBrepDisplayMesh(RH.Brep brep)
+    {
+      var joinedMesh = new RH.Mesh();
+
+      var mySettings = MeshingParameters.Default;
+      switch (SelectedMeshSettings)
+      {
+        case MeshSettings.Default:
+          mySettings = new MeshingParameters(0.05, 0.05);
+          break;
+        case MeshSettings.CurrentDoc:
+          mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
+          break;
+      }
+      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+      joinedMesh.Weld(Math.PI);
+      return joinedMesh;
+    }
+
     /// <summary>
     /// Converts a Speckle <see cref="Brep"/> instance to a Rhino <see cref="Rhino.Geometry.Brep"/>
     /// </summary>
     /// <param name="brep">The Speckle Brep to convert</param>
     /// <returns></returns>
     /// <exception cref="Exception">Throws exception if the provenance is not Rhino</exception>
-    public RH.Brep BrepToNative(Brep brep)
+    public RH.Brep BrepToNative(Brep brep, out List<string> notes)
     {
+      notes = new List<string>();
       var tol = Doc.ModelAbsoluteTolerance;
       try
       {
@@ -1001,14 +1015,14 @@ namespace Objects.Converter.RhinoGh
             rhTrim.SetTolerances(tol, tol);
           });
         });
-
+        
         newBrep.Repair(tol);
 
         return newBrep;
       }
       catch (Exception e)
       {
-        Report.LogConversionError(new Exception("Failed to convert brep.", e));
+        notes.Add(e.ToFormattedString());
         return null;
       }
     }

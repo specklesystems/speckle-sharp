@@ -1,4 +1,4 @@
-﻿#if (CIVIL2021 || CIVIL2022)
+﻿#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -355,6 +355,7 @@ namespace Objects.Converter.AutocadCivil
       int spiralSegmentCount = System.Convert.ToInt32(System.Math.Ceiling(spiral.Length / tessellation));
       spiralSegmentCount = (spiralSegmentCount < 10) ? 10 : spiralSegmentCount;
       double spiralSegmentLength = spiral.Length / spiralSegmentCount;
+      
       List<Point2d> points = new List<Point2d>();
       points.Add(spiral.StartPoint);
       for (int i = 1; i < spiralSegmentCount; i++)
@@ -373,7 +374,7 @@ namespace Objects.Converter.AutocadCivil
         length += points[j].GetDistanceTo(points[j - 1]);
       }
       var poly = new Polyline();
-      poly.value = PointsToFlatList(points);
+      poly.value = points.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
       poly.units = ModelUnits;
       poly.closed = (spiral.StartPoint != spiral.EndPoint) ? false : true;
       poly.length = length;
@@ -562,7 +563,8 @@ namespace Objects.Converter.AutocadCivil
         triangle.Dispose();
       }
 
-      var vertices = PointsToFlatList(_vertices);
+      var vertices = _vertices.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
+
       mesh = new Mesh(vertices, faces);
       mesh.units = ModelUnits;
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
@@ -609,7 +611,7 @@ namespace Objects.Converter.AutocadCivil
         cell.Dispose();
       }
 
-      var vertices = PointsToFlatList(_vertices);
+      var vertices = _vertices.Select(o => PointToSpeckle(o).ToList()).SelectMany(o => o).ToList();
       mesh = new Mesh(vertices, faces);
       mesh.units = ModelUnits;
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
@@ -636,7 +638,7 @@ namespace Objects.Converter.AutocadCivil
 
       _structure.location = PointToSpeckle(structure.Location, ModelUnits);
       _structure.pipeIds = pipeIds;
-      _structure.displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody) };
+      _structure.displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody, out List<string> notes) };
       _structure.units = ModelUnits;
 
       // assign additional structure props
@@ -670,7 +672,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameterOrWidth;
       _pipe.length = pipe.Length3DToInsideEdge;
-      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody) };
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Solid3dBody, out List<string> notes) };
       _pipe.units = ModelUnits;
 
       // assign additional pipe props
@@ -709,7 +711,7 @@ namespace Objects.Converter.AutocadCivil
       _pipe.baseCurve = curve;
       _pipe.diameter = pipe.InnerDiameter;
       _pipe.length = pipe.Length3DCenterToCenter;
-      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Get3dBody()) };
+      _pipe.displayValue = new List<Mesh> { SolidToSpeckle(pipe.Get3dBody(), out List<string> notes) };
       _pipe.units = ModelUnits;
 
       // assign additional pipe props

@@ -14,7 +14,7 @@ namespace Archicad.Launcher
     public static Window? MainWindow { get; private set; }
     public static ArchicadBinding? Bindings { get; set; }
 
-    public static void Main(string[ ] args)
+    public static void Main(string[] args)
     {
       if (args.Length == 0)
       {
@@ -35,7 +35,7 @@ namespace Archicad.Launcher
       // BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
     }
 
-    public static void CreateOrFocusSpeckle(string[ ] args)
+    public static void CreateOrFocusSpeckle(string[] args)
     {
       if (MainWindow == null)
         BuildAvaloniaApp().Start(AppMain, args);
@@ -54,9 +54,9 @@ namespace Archicad.Launcher
       .LogToTrace()
       .UseReactiveUI();
 
-    private static void AppMain(Application app, string[ ] args)
+    private static void AppMain(Application app, string[] args)
     {
-      var viewModel = new MainWindowViewModel(Bindings);
+      var viewModel = new MainViewModel(Bindings);
       MainWindow = new MainWindow { DataContext = viewModel };
 
       app.Run(MainWindow);

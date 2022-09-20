@@ -1,5 +1,6 @@
 ﻿using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorTeklaStructures.Util;
 using Speckle.Core.Api;
@@ -22,14 +23,27 @@ namespace Speckle.ConnectorTeklaStructures.UI
   {
     #region sending
 
+    private List<ISetting> CurrentSettings { get; set; }
+
+    public override bool CanPreviewSend => false;
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      return;
+    }
+
     public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
       //var converter = new ConverterTeklaStructures();
       var converter = kit.LoadConverter(ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
       converter.SetContextDocument(Model);
       Exceptions.Clear();
+
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
 
       var commitObj = new Base();
       int objCount = 0;
@@ -51,14 +65,13 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      progress.Max = totalObjectCount;
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
 
 
-      //if( commitObj["@Stories"] == null)
-      //{
-      //    commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "TeklaStructures"));
-      //}
+
+
 
       foreach (ModelObject obj in selectedObjects)
       {
@@ -126,7 +139,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var client = state.Client;
 
       var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
-
+      progress.Max = totalObjectCount;
       var objectId = await Operations.Send(
           @object: commitObj,
           cancellationToken: progress.CancellationTokenSource.Token,

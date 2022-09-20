@@ -28,6 +28,7 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<Surface> Surfaces { get; set; }
+    
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> SurfacesValue
@@ -66,6 +67,7 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<ICurve> Curve3D { get; set; }
+    
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> Curve3DValues
@@ -86,6 +88,7 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<ICurve> Curve2D { get; set; }
+    
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> Curve2DValues
@@ -106,6 +109,7 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<Point> Vertices { get; set; }
+    
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> VerticesValue
@@ -136,23 +140,110 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of edges in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(5000)]
+    [JsonIgnore]
     public List<BrepEdge> Edges { get; set; }
+    
+    [DetachProperty, SchemaIgnore]
+    [Chunkable(62500)]
+    public List<double?> EdgesValue
+    {
+      get
+      {
+        return Edges.SelectMany(e =>
+        {
+          var ints = new List<double?>();
+          ints.Add(e.Curve3dIndex);
+          ints.Add(e.StartIndex);
+          ints.Add(e.EndIndex);
+          ints.Add(Convert.ToInt32(e.ProxyCurveIsReversed));
+          ints.Add(e.Domain.start);
+          ints.Add(e.Domain.end);
+          ints.AddRange(e.TrimIndices.Select(Convert.ToDouble).Cast<double?>());
+          return ints.Prepend(ints.Count);
+        }).ToList();
+      }
+      set
+      {
+        Edges = new List<BrepEdge>();
+        if (value == null || value.Count == 0) return;
+        var i = 0;
+        while (i < value.Count)
+        {
+          int n = Convert.ToInt32(value[i]);
+
+          var loopValues = value.GetRange(i + 1, n);
+          var curve3dIndex = Convert.ToInt32(loopValues[0]);
+          var startIndex = Convert.ToInt32(loopValues[1]);
+          var endIndex = Convert.ToInt32(loopValues[2]);
+          var proxyReversed = Convert.ToBoolean(loopValues[3]);
+          var domainStart = loopValues[4];
+          var domainEnd = loopValues[5];
+          Interval domain = null;
+          if (domainStart.HasValue && domainEnd.HasValue)
+          {
+            domain = new Interval(domainStart.Value, domainEnd.Value);
+          }
+          var trimIndices = loopValues
+            .GetRange(6, loopValues.Count - 6)
+            .Select(d => Convert.ToInt32(d))
+            .ToArray();
+          
+          var edge = new BrepEdge(this, curve3dIndex, trimIndices, startIndex, endIndex, proxyReversed, domain);
+          Edges.Add(edge);
+          i += n + 1;
+        }
+      }
+    }
 
     /// <summary>
     /// Gets or sets the list of closed UV loops in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(5000)]
+    [JsonIgnore]
     public List<BrepLoop> Loops { get; set; }
+    
+    [DetachProperty, SchemaIgnore]
+    [Chunkable(62500)]
+    public List<int> LoopsValue
+    {
+      get
+      {
+        return Loops.SelectMany(l =>
+        {
+          var ints = new List<int>();
+          ints.Add(l.FaceIndex);
+          ints.Add((int)l.Type);
+          ints.AddRange(l.TrimIndices);
+          return ints.Prepend(ints.Count);
+        }).ToList();
+      }
+      set
+      {
+        Loops = new List<BrepLoop>();
+        if (value == null || value.Count == 0) return;
+        var i = 0;
+        while (i < value.Count)
+        {
+          int n = value[i];
 
+          var loopValues = value.GetRange(i + 1, n);
+          var faceIndex = loopValues[0];
+          var type = (BrepLoopType)loopValues[1];
+          var trimIndices = loopValues.GetRange(2, loopValues.Count - 2);
+          var loop = new BrepLoop(this, faceIndex, trimIndices, type);
+          Loops.Add(loop);
+          i += n + 1;
+        }
+      }
+    }
+
+    
     /// <summary>
     /// Gets or sets the list of UV trim segments for each surface in this <see cref="Brep"/> instance.
     /// </summary>
     [JsonIgnore]
     public List<BrepTrim> Trims { get; set; }
     [DetachProperty, SchemaIgnore]
+    
     [Chunkable(62500)]
     public List<int> TrimsValue
     {
@@ -179,7 +270,7 @@ namespace Objects.Geometry
         var list = new List<BrepTrim>();
         for(int i = 0; i < value.Count; i+=9)
         {
-          var trim = new BrepTrim()
+          var trim = new BrepTrim
           {
             EdgeIndex = value[i],
             StartIndex = value[i + 1],
@@ -200,9 +291,45 @@ namespace Objects.Geometry
     /// <summary>
     /// Gets or sets the list of faces in this <see cref="Brep"/> instance.
     /// </summary>
-    [DetachProperty]
-    [Chunkable(5000)]
+    [JsonIgnore]
     public List<BrepFace> Faces { get; set; }
+
+    [DetachProperty, SchemaIgnore]
+    [Chunkable(62500)]
+    public List<int> FacesValue
+    {
+      get
+      {
+        return Faces.SelectMany(f =>
+        {
+          var ints = new List<int>();
+          ints.Add(f.SurfaceIndex);
+          ints.Add(f.OuterLoopIndex);
+          ints.Add(f.OrientationReversed ? 1 : 0);
+          ints.AddRange(f.LoopIndices);
+          return ints.Prepend(ints.Count);
+        }).ToList();
+      }
+      set
+      {
+        Faces = new List<BrepFace>();
+        if (value == null || value.Count == 0) return;
+        var i = 0;
+        while (i < value.Count)
+        {
+          int n = value[i];
+
+          var faceValues = value.GetRange(i + 1, n);
+          var surfIndex = faceValues[0];
+          var outerLoopIndex = faceValues[1];
+          var orientationIsReversed = faceValues[2] == 1;
+          var loopIndices = faceValues.GetRange(3, faceValues.Count - 3);
+          var face = new BrepFace(this, surfIndex, loopIndices, outerLoopIndex, orientationIsReversed);
+          Faces.Add(face);
+          i += n + 1;
+        }
+      }
+    }
 
     /// <summary>
     /// Gets or sets if this <see cref="Brep"/> instance is closed or not.
@@ -257,7 +384,7 @@ namespace Objects.Geometry
         lock (e)
           if (e.Brep != null)
           {
-            e = new BrepEdge(this, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.Curve3dIndex, e.ProxyCurveIsReversed,
+            e = new BrepEdge(this, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex, e.ProxyCurveIsReversed,
               e.Domain);
             Edges[i] = e;
           }
@@ -323,7 +450,7 @@ namespace Objects.Geometry
       var surfaces = new List<Surface>(Surfaces.Count);
       foreach ( var srf in Surfaces )
       {
-        srf.TransformTo(transform, out var surface);
+        srf.TransformTo(transform, out Surface surface);
         surfaces.Add(surface);
       }
 
@@ -334,7 +461,7 @@ namespace Objects.Geometry
         displayValue = displayValues,
         Surfaces = surfaces,
         Curve3D = transform.ApplyToCurves(Curve3D, out bool success3D),
-        Curve2D = transform.ApplyToCurves(Curve2D, out bool success2D),
+        Curve2D = new List<ICurve>(Curve2D),
         Vertices = transform.ApplyToPoints(Vertices),
         Edges = new List<BrepEdge>(Edges.Count),
         Loops = new List<BrepLoop>(Loops.Count),
@@ -346,7 +473,7 @@ namespace Objects.Geometry
       };
 
       foreach ( var e in Edges )
-        brep.Edges.Add(new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.Curve3dIndex,
+        brep.Edges.Add(new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex,
           e.ProxyCurveIsReversed,
           e.Domain));
 
@@ -360,7 +487,7 @@ namespace Objects.Geometry
       foreach ( var f in Faces )
         brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
 
-      return success2D && success3D;
+      return success3D;
     }
     
     #region Obsolete Members
@@ -370,6 +497,13 @@ namespace Objects.Geometry
       set => displayValue = new List<Mesh> {value};
     }
     #endregion
+
+    public bool TransformTo(Transform transform, out ITransformable transformed)
+    {
+      var res = TransformTo(transform, out Brep brep);
+      transformed = brep;
+      return res;
+    }
   }
 
   /// <summary>
@@ -381,141 +515,6 @@ namespace Objects.Geometry
     Inward = -1,
     Outward = 1,
     Unknown = 2
-  }
-
-  /// <summary>
-  /// Represents a face on a <see cref="Brep"/>
-  /// </summary>
-  public class BrepFace : Base
-  {
-    [JsonIgnore] public Brep Brep { get; set; }
-    public int SurfaceIndex { get; set; }
-    public List<int> LoopIndices { get; set; }
-    public int OuterLoopIndex { get; set; }
-    public bool OrientationReversed { get; set; }
-
-    public BrepFace()
-    {
-    }
-
-    public BrepFace(Brep brep, int surfaceIndex, List<int> loopIndices, int outerLoopIndex, bool orientationReversed)
-    {
-      Brep = brep;
-      SurfaceIndex = surfaceIndex;
-      LoopIndices = loopIndices;
-      OuterLoopIndex = outerLoopIndex;
-      OrientationReversed = orientationReversed;
-    }
-
-    [JsonIgnore] public BrepLoop OuterLoop => Brep.Loops[OuterLoopIndex];
-    [JsonIgnore] public Surface Surface => Brep.Surfaces[SurfaceIndex];
-    [JsonIgnore] public List<BrepLoop> Loops => LoopIndices.Select(i => Brep.Loops[i]).ToList();
-  }
-
-  /// <summary>
-  /// Represents a UV Trim Closed Loop on one of the <see cref="Brep"/>'s surfaces.
-  /// </summary>
-  public class BrepLoop : Base
-  {
-    [JsonIgnore] public Brep Brep { get; set; }
-    public int FaceIndex { get; set; }
-    public List<int> TrimIndices { get; set; }
-    public BrepLoopType Type { get; set; }
-
-    public BrepLoop()
-    {
-    }
-
-    public BrepLoop(Brep brep, int faceIndex, List<int> trimIndices, BrepLoopType type)
-    {
-      Brep = brep;
-      FaceIndex = faceIndex;
-      TrimIndices = trimIndices;
-      Type = type;
-    }
-
-    [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
-    [JsonIgnore] public List<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]).ToList();
-  }
-
-  /// <summary>
-  /// Represents a UV Trim curve for one of the <see cref="Brep"/>'s surfaces.
-  /// </summary>
-  public class BrepTrim : Base
-  {
-    [JsonIgnore] public Brep Brep { get; set; }
-    public int EdgeIndex { get; set; }
-    public int StartIndex { get; set; }
-    public int EndIndex { get; set; }
-    public int FaceIndex { get; set; }
-    public int LoopIndex { get; set; }
-    public int CurveIndex { get; set; }
-    public int IsoStatus { get; set; }
-    public BrepTrimType TrimType { get; set; }
-    public bool IsReversed { get; set; }
-
-    public Interval Domain { get; set; }
-
-    public BrepTrim()
-    {
-    }
-
-    public BrepTrim(Brep brep, int edgeIndex, int faceIndex, int loopIndex, int curveIndex, int isoStatus,
-      BrepTrimType trimType, bool reversed, int startIndex, int endIndex)
-    {
-      Brep = brep;
-      EdgeIndex = edgeIndex;
-      FaceIndex = faceIndex;
-      LoopIndex = loopIndex;
-      CurveIndex = curveIndex;
-      IsoStatus = isoStatus;
-      TrimType = trimType;
-      IsReversed = reversed;
-    }
-
-    [JsonIgnore] public BrepFace Face => Brep.Faces[FaceIndex];
-
-    [JsonIgnore] public BrepLoop Loop => Brep.Loops[LoopIndex];
-
-    [JsonIgnore] public BrepEdge Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
-
-    [JsonIgnore] public ICurve Curve2d => Brep.Curve2D[CurveIndex];
-  }
-
-  /// <summary>
-  /// Represents an edge of the <see cref="Brep"/>.
-  /// </summary>
-  public class BrepEdge : Base
-  {
-    [JsonIgnore] public Brep Brep { get; set; }
-    public int Curve3dIndex { get; set; }
-    public int[] TrimIndices { get; set; }
-    public int StartIndex { get; set; }
-    public int EndIndex { get; set; }
-
-    public bool ProxyCurveIsReversed { get; set; }
-
-    public Interval Domain { get; set; }
-    public BrepEdge()
-    {
-    }
-
-    public BrepEdge(Brep brep, int curve3dIndex, int[] trimIndices, int startIndex, int endIndex,
-      bool proxyCurvedIsReversed, Interval domain)
-    {
-      Brep = brep;
-      Curve3dIndex = curve3dIndex;
-      TrimIndices = trimIndices;
-      StartIndex = startIndex;
-      EndIndex = endIndex;
-      ProxyCurveIsReversed = proxyCurvedIsReversed;
-      Domain = domain;
-    }
-
-    [JsonIgnore] public Point StartVertex => Brep.Vertices[StartIndex];
-    [JsonIgnore] public Point EndVertex => Brep.Vertices[EndIndex];
-    [JsonIgnore] public IEnumerable<BrepTrim> Trims => TrimIndices.Select(i => Brep.Trims[i]);
-    [JsonIgnore] public ICurve Curve => Brep.Curve3D[Curve3dIndex];
   }
 
 

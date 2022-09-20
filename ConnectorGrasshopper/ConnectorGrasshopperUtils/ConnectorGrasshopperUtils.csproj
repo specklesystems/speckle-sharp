@@ -9,7 +9,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>ConnectorGrasshopperUtils</RootNamespace>
         <AssemblyName>ConnectorGrasshopperUtils</AssemblyName>
-        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -43,9 +43,13 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\Core\Core\Core.csproj">
-        <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
+        <Project>{6321CA2D-5275-42A3-A034-170A0040E19E}</Project>
         <Name>Core</Name>
       </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.115" />
+      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

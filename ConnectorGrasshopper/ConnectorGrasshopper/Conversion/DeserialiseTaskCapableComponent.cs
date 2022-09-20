@@ -5,10 +5,11 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper
 {
-  public class DeserializeTaskCapableComponent: GH_TaskCapableComponent<Base>
+  public class DeserializeTaskCapableComponent: GH_SpeckleTaskCapableComponent<Base>
   {
     public override Guid ComponentGuid => new Guid("0336F3D1-2FEE-4B66-980D-63DB624980C9");
     private CancellationTokenSource source;
@@ -63,7 +64,7 @@ namespace ConnectorGrasshopper
       catch (Exception e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-          $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {e.InnerException?.Message ?? e.Message}");
+          $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {e.ToFormattedString()}");
         return null;
       }
     }

@@ -1,4 +1,4 @@
-
+﻿
 
 using System;
 using Grasshopper.Kernel;
@@ -66,6 +66,32 @@ public class BeamSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Beam.ctor(Objects.ICurve)","Objects.BuiltElements.Beam");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class BlockDefinitionSchemaComponent: CreateSchemaObjectBase {
+     
+    public BlockDefinitionSchemaComponent(): base("Block Definition", "Block Definition", "A Speckle Block definition", "Speckle 2 BIM", "Objects.Other") { }
+    
+    public override Guid ComponentGuid => new Guid("91f1164e-b519-d72f-d64b-e68bb14836e3");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.BlockDefinition.ctor(System.String,System.Collections.Generic.List`1[Speckle.Core.Models.Base],Objects.Geometry.Point)","Objects.Other.BlockDefinition");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class BlockInstanceSchemaComponent: CreateSchemaObjectBase {
+     
+    public BlockInstanceSchemaComponent(): base("Block Instance", "Block Instance", "A Speckle Block Instance", "Speckle 2 BIM", "Objects.Other") { }
+    
+    public override Guid ComponentGuid => new Guid("28238ece-f2e0-fe7d-e25f-e8f8cb35e629");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.BlockInstance.ctor(Objects.Other.BlockDefinition,Objects.Other.Transform)","Objects.Other.BlockInstance");
         base.AddedToDocument(document);
     }
 }
@@ -1249,19 +1275,6 @@ public class LoadNode1SchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
-public class MaterialSchemaComponent: CreateSchemaObjectBase {
-     
-    public MaterialSchemaComponent(): base("Material", "Material", "Creates a Speckle structural material", "Speckle 2 Structural", "Materials") { }
-    
-    public override Guid ComponentGuid => new Guid("a2ec94ca-c50c-01bf-3d12-0c8feb41004b");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String)","Objects.Structural.Materials.Material");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
 public class Material1SchemaComponent: CreateSchemaObjectBase {
      
     public Material1SchemaComponent(): base("Material (with properties)", "Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Speckle 2 Structural", "Materials") { }
@@ -1270,6 +1283,32 @@ public class Material1SchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.Materials.Material");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class MaterialSchemaComponent: CreateSchemaObjectBase {
+     
+    public MaterialSchemaComponent(): base("RevitMaterial", "RevitMaterial", "Creates a Speckle material", "Speckle 2 BIM", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("a2ec94ca-c50c-01bf-3d12-0c8feb41004b");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.Material.ctor(System.String)","Objects.Other.Material");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class MaterialQuantitySchemaComponent: CreateSchemaObjectBase {
+     
+    public MaterialQuantitySchemaComponent(): base("MaterialQuantity", "MaterialQuantity", "Creates the quantity of a material", "Speckle 2 BIM", "Objects.Other") { }
+    
+    public override Guid ComponentGuid => new Guid("c94a9777-99bb-d501-281a-c10300309038");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.MaterialQuantity.ctor(Objects.Other.Material,System.Double,System.Double,System.String)","Objects.Other.MaterialQuantity");
         base.AddedToDocument(document);
     }
 }
@@ -2085,6 +2124,19 @@ public class RevitLevel1SchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class RevitMaterialSchemaComponent: CreateSchemaObjectBase {
+     
+    public RevitMaterialSchemaComponent(): base("RevitMaterial", "RevitMaterial", "Creates a Speckle material", "Speckle 2 Revit", "Architecture") { }
+    
+    public override Guid ComponentGuid => new Guid("c291d027-7a6a-8950-a2aa-77e134675750");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.Revit.RevitMaterial.ctor(System.String,System.String,System.String,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])","Objects.Other.Revit.RevitMaterial");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class RevitPipeSchemaComponent: CreateSchemaObjectBase {
      
     public RevitPipeSchemaComponent(): base("RevitPipe", "RevitPipe", "Creates a Revit pipe", "Speckle 2 Revit", "MEP") { }
@@ -2181,6 +2233,8 @@ public class RevitWallOpeningSchemaComponent: CreateSchemaObjectBase {
     public RevitWallOpeningSchemaComponent(): base("Revit Wall Opening (Deprecated)", "Revit Wall Opening (Deprecated)", "Creates a Speckle Wall opening for revit", "Speckle 2 BIM", "Architecture") { }
     
     public override Guid ComponentGuid => new Guid("a1bd278d-fab5-0034-7aba-807b66122022");
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitWallOpening.ctor(Objects.ICurve,Objects.BuiltElements.Revit.RevitWall)","Objects.BuiltElements.Revit.RevitWallOpening");
@@ -2191,7 +2245,7 @@ public class RevitWallOpeningSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class RevitWallOpening1SchemaComponent: CreateSchemaObjectBase {
      
-    public RevitWallOpening1SchemaComponent(): base("Revit Wall Opening", "Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Speckle 2 BIM", "Architecture") { }
+    public RevitWallOpening1SchemaComponent(): base("Revit Wall Opening", "Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Speckle 2 Revit", "Architecture") { }
     
     public override Guid ComponentGuid => new Guid("541bfed0-738d-e1bd-1130-de05ec4bbf9e");
     

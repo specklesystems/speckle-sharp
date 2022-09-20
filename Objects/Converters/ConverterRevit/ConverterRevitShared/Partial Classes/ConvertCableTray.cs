@@ -11,10 +11,22 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> CableTrayToNative(BuiltElements.CableTray speckleCableTray)
+    public ApplicationObject CableTrayToNative(BuiltElements.CableTray speckleCableTray)
     {
       var speckleRevitCableTray = speckleCableTray as RevitCableTray;
-      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray);
+
+      var docObj = GetExistingElementByApplicationId((speckleCableTray).applicationId);
+      var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
+      if (!GetElementType<CableTrayType>(speckleCableTray, appObj, out CableTrayType cableTrayType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       Element cableTray = null;
       if (speckleCableTray.baseCurve is Line)
@@ -22,29 +34,19 @@ namespace Objects.Converter.Revit
         DB.Line baseLine = LineToNative(speckleCableTray.baseCurve as Line);
         XYZ startPoint = baseLine.GetEndPoint(0);
         XYZ endPoint = baseLine.GetEndPoint(1);
-        DB.Level lineLevel = ConvertLevelToRevit(speckleRevitCableTray != null ? speckleRevitCableTray.level : LevelFromCurve(baseLine));
+        DB.Level lineLevel = ConvertLevelToRevit(speckleRevitCableTray != null ? speckleRevitCableTray.level : LevelFromCurve(baseLine), out ApplicationObject.State levelState);
         CableTray lineCableTray = CableTray.Create(Doc, cableTrayType.Id, startPoint, endPoint, lineLevel.Id);
         cableTray = lineCableTray;
       }
       else
       {
-        Report.LogConversionError(new Exception($"CableTray BaseCurve of type ${speckleCableTray.baseCurve.GetType()} cannot be used to create a Revit CableTray"));
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"BaseCurve of type ${speckleCableTray.baseCurve.GetType()} cannot be used to create a Revit CableTray");
+        return appObj;
       }
-
-      var docObj = GetExistingElementByApplicationId(((Base)speckleCableTray).applicationId);
-
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleCableTray.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj}
-      };
 
       // deleting instead of updating for now!
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       if (speckleRevitCableTray != null)
       {
@@ -54,22 +56,16 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(cableTray, speckleRevitCableTray);
       }
 
-      var placeholders = new List<ApplicationPlaceholderObject>
-      {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleCableTray.applicationId, ApplicationGeneratedId = cableTray.UniqueId, NativeObject = cableTray}
-      };
-      Report.Log($"Created CableTray {cableTray.Id}");
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: cableTray.UniqueId, convertedItem: cableTray);
+      return appObj;
     }
 
     public BuiltElements.CableTray CableTrayToSpeckle(DB.Electrical.CableTray revitCableTray)
     {
       var baseGeometry = LocationToSpeckle(revitCableTray);
       if (!(baseGeometry is Line baseLine))
-      {
         throw new Speckle.Core.Logging.SpeckleException("Only line based CableTrays are currently supported.");
-      }
+
       var cableTrayType = revitCableTray.Document.GetElement(revitCableTray.GetTypeId()) as CableTrayType;
 
       // SPECKLE CABLETRAY

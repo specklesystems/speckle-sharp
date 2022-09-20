@@ -5,12 +5,16 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+using Utilities = Speckle.Core.Models.Utilities;
 
+using Arc = Objects.Geometry.Arc;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
+using Dimension = Objects.Other.Dimension;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
 using HatchLoopType = Objects.Other.HatchLoopType;
+using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Speckle.Core.Models;
@@ -18,6 +22,7 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
 using Objects.Other;
 using Autodesk.AutoCAD.Colors;
+using System.Reflection;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -276,17 +281,16 @@ namespace Objects.Converter.AutocadCivil
     // Blocks
     public BlockInstance BlockReferenceToSpeckle(BlockReference reference)
     {
-      /*
-      // skip if dynamic block
-      if (reference.IsDynamicBlock)
-        return null;
-      */
-
       // get record
       BlockDefinition definition = null;
       var attributes = new Dictionary<string, string>();
 
-      BlockTableRecord btr = (BlockTableRecord)Trans.GetObject(reference.BlockTableRecord, OpenMode.ForRead);
+      var btrObjId = reference.BlockTableRecord;
+      if (reference.IsDynamicBlock)
+        btrObjId = reference.AnonymousBlockTableRecord != ObjectId.Null ? 
+          reference.AnonymousBlockTableRecord : reference.DynamicBlockTableRecord;
+
+      var btr = (BlockTableRecord)Trans.GetObject(btrObjId, OpenMode.ForRead);
       definition = BlockRecordToSpeckle(btr);
       foreach (ObjectId id in reference.AttributeCollection)
       {
@@ -333,7 +337,7 @@ namespace Objects.Converter.AutocadCivil
       BlockReference br = new BlockReference(insertionPoint, definitionId);
       br.BlockTransform = convertedTransform;
       // add attributes if there are any
-      var attributes = instance["attributes"] as Dictionary<string, string>;
+      var attributes = instance["attributes"] as Dictionary<string, object>;
       if (attributes != null)
       {
         // TODO: figure out how to add attributes
@@ -351,17 +355,13 @@ namespace Objects.Converter.AutocadCivil
     }
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
-      // skip if this is from an external reference
-      if (record.IsFromExternalReference)
-        return null;
-
       // get geometry
       var geometry = new List<Base>();
       foreach (ObjectId id in record)
       {
         DBObject obj = Trans.GetObject(id, OpenMode.ForRead);
         Entity objEntity = obj as Entity;
-        if (CanConvertToSpeckle(obj))
+        if (CanConvertToSpeckle(obj) && (objEntity != null && objEntity.Visible))
         {
           Base converted = ConvertToSpeckle(obj);
           if (converted != null)
@@ -374,7 +374,7 @@ namespace Objects.Converter.AutocadCivil
 
       var definition = new BlockDefinition()
       {
-        name = record.Name,
+        name = GetBlockDefName(record),
         basePoint = PointToSpeckle(record.Origin),
         geometry = geometry,
         units = ModelUnits
@@ -452,6 +452,58 @@ namespace Objects.Converter.AutocadCivil
 
       return blockId;
     }
+
+    /// <summary>
+    /// Get the name of the block definition from BlockTableRecord.
+    /// If btr is a Dynamic Block, name is formatted as "DynamicBlockName"_"VisibilityName"
+    /// </summary>
+    /// <param name="btr">BlockTableRecord object</param>
+    /// <returns>block table record name</returns>
+    private string GetBlockDefName(BlockTableRecord btr)
+    {
+      var fullName = btr.Name;
+      var curVisibilityName = string.Empty;
+
+      if (btr.IsAnonymous || btr.IsDynamicBlock)
+      {
+        var referenceIds = btr.GetBlockReferenceIds(true, false);
+        ObjectId referenceId = referenceIds.Count > 0 ? referenceIds[0] : ObjectId.Null;
+        BlockReference reference = referenceId != ObjectId.Null ? Trans.GetObject(referenceId, OpenMode.ForRead) as BlockReference : null;
+        if (reference == null) return fullName;
+
+        if (btr.IsAnonymous)
+        {
+          BlockTableRecord dynamicBlock = reference.DynamicBlockTableRecord != ObjectId.Null ? 
+            Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord : null;
+          if (dynamicBlock != null) fullName = dynamicBlock.Name;
+        }
+
+        var descriptiveProps = new List<string>();
+        foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
+          if (prop.VisibleInCurrentVisibilityState && !prop.ReadOnly && IsSimpleType(prop.Value, out string value))
+            descriptiveProps.Add(value);
+
+        if (descriptiveProps.Count > 0) fullName = $"{fullName}_{String.Join("_", descriptiveProps.ToArray())}";
+      }
+
+      return fullName;
+    }
+    private bool IsSimpleType(object value, out string stringValue)
+    {
+      stringValue = String.Empty;
+      var type = value.GetType();
+      if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+      {
+        // nullable type, check if the nested type is simple.
+        return IsSimpleType(type.GetGenericArguments()[0], out stringValue);
+      }
+      if (type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(decimal)))
+      {
+        stringValue = value.ToString();
+        return true;
+      }
+      return false;
+    }
     private void ConvertWithDisplay(Base obj, DisplayStyle style, RenderMaterial material, ref List<Entity> converted, bool TryUseObjDisplay = false)
     {
       if (TryUseObjDisplay && obj["displayStyle"] as DisplayStyle != null) style = obj["displayStyle"] as DisplayStyle;
@@ -477,12 +529,16 @@ namespace Objects.Converter.AutocadCivil
       _text.value = text.TextString;
       _text.units = ModelUnits;
 
-      // autocad specific props
-      _text["horizontalAlignment"] = text.HorizontalMode.ToString();
-      _text["verticalAlignment"] = text.VerticalMode.ToString();
-      _text["position"] = PointToSpeckle(text.Position);
-      _text["widthFactor"] = text.WidthFactor;
-      _text["isMText"] = false;
+      // autocad props
+      var excludeProps = new List<string>()
+      {
+        "Height",
+        "Rotation",
+        "TextString"
+      };
+      Base props = Utilities.GetApplicationProps(text, typeof(DBText), true, excludeProps);
+      props["TextPosition"] = PointToSpeckle(text.Position);
+      _text[AutocadPropName] = props;
 
       return _text;
     }
@@ -499,13 +555,57 @@ namespace Objects.Converter.AutocadCivil
       _text.richText = text.ContentsRTF;
       _text.units = ModelUnits;
 
-      // autocad specific props
-      _text["position"] = PointToSpeckle(text.Location);
-      _text["isMText"] = true;
+      // autocad props
+      var excludeProps = new List<string>()
+      {
+        "Height",
+        "Rotation",
+        "Contents",
+        "ContentsRTF"
+      };
+      Base props = Utilities.GetApplicationProps(text, typeof(MText), true, excludeProps);
+      props["TextPosition"] = PointToSpeckle(text.Location);
+      _text[AutocadPropName] = props;
 
       return _text;
     }
-    public MText MTextToNative(Text text)
+    public Entity AcadTextToNative(Text text)
+    {
+      Entity _text = null;
+      Base sourceAppProps = text[AutocadPropName] as Base;
+      if (sourceAppProps == null) return TextToNative(text);
+
+      Point textPosition = sourceAppProps["TextPosition"] != null ? sourceAppProps["TextPosition"] as Point : text.plane.origin;
+      ObjectId textStyle = sourceAppProps["TextStyleName"] != null ? GetTextStyle(sourceAppProps["TextStyleName"] as string) : Doc.Database.Textstyle;
+
+      string className = sourceAppProps["class"] as string;
+      switch (className)
+      {
+        case "MText":
+          MText mText = TextToNative(text);
+          mText.Location = PointToNative(textPosition);
+          mText.TextStyleId = textStyle;
+          Utilities.SetApplicationProps(mText, typeof(MText), sourceAppProps);
+          _text = mText;
+          break;
+        case "DBText":
+          var dbText = new DBText();
+          dbText.TextString = text.value;
+          dbText.Height = ScaleToNative(text.height, text.units);
+          dbText.Position = PointToNative(textPosition);
+          dbText.Rotation = text.rotation;
+          dbText.Normal = VectorToNative(text.plane.normal);
+          dbText.TextStyleId = textStyle;
+          Utilities.SetApplicationProps(dbText, typeof(DBText), sourceAppProps);
+          _text = dbText;
+          break;
+        default:
+          _text = TextToNative(text);
+          break;
+      }
+      return _text;
+    }
+    public MText TextToNative(Text text)
     {
       var _text = new MText();
 
@@ -514,24 +614,23 @@ namespace Objects.Converter.AutocadCivil
       else
         _text.ContentsRTF = text.richText;
       _text.TextHeight = ScaleToNative(text.height, text.units);
-      _text.Location = (text["position"] != null) ? PointToNative(text["position"] as Point) : PointToNative(text.plane.origin);
+      _text.Location = PointToNative(text.plane.origin);
       _text.Rotation = text.rotation;
       _text.Normal = VectorToNative(text.plane.normal);
 
       return _text;
     }
-    public DBText DBTextToNative(Text text)
-    {
-      var _text = new DBText();
-      _text.TextString = text.value;
-      _text.Height = ScaleToNative(text.height, text.units);
-      _text.Position = (text["position"] != null) ? PointToNative(text["position"] as Point) : PointToNative(text.plane.origin);
-      _text.Rotation = text.rotation;
-      _text.Normal = VectorToNative(text.plane.normal);
-      double widthFactor = text["widthFactor"] as double? ?? 1;
-      _text.WidthFactor = widthFactor;
 
-      return _text;
+    private ObjectId GetTextStyle(string styleName)
+    {
+      var textStyleTable = Trans.GetObject(Doc.Database.TextStyleTableId, OpenMode.ForRead) as DimStyleTable;
+      foreach (ObjectId id in textStyleTable)
+      {
+        var textStyle = Trans.GetObject(id, OpenMode.ForRead) as DimStyleTableRecord;
+        if (textStyle.Name == styleName)
+          return id;
+      }
+      return ObjectId.Null;
     }
     private Point3d GetTextCenter(Extents3d extents)
     {
@@ -585,6 +684,319 @@ namespace Objects.Converter.AutocadCivil
           break;
       }
       return new Point3d(x, y, z);
+    }
+
+    // Dimension
+    public Dimension DimensionToSpeckle(AcadDB.Dimension dimension)
+    {
+      Dimension _dimension = null;
+      Base props = null;
+      var ignore = new List<string>() {
+        "DimensionText",
+        "Measurement" };
+
+      switch (dimension)
+      {
+        case AlignedDimension o:
+          var alignedDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = false };
+          var alignedNormal = new Vector3d(o.XLine2Point.X - o.XLine1Point.X, o.XLine2Point.Y - o.XLine1Point.Y, o.XLine2Point.Z - o.XLine1Point.Z).GetPerpendicularVector();
+          alignedDimension.direction = VectorToSpeckle(alignedNormal);
+          alignedDimension.position = PointToSpeckle(o.DimLinePoint);
+          alignedDimension.measured = new List<Point>() { PointToSpeckle(o.XLine1Point), PointToSpeckle(o.XLine2Point) };
+          props = Utilities.GetApplicationProps(o, typeof(AlignedDimension), true, ignore);
+          _dimension = alignedDimension;
+          break;
+        case RotatedDimension o:
+          var rotatedDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = false };
+          var rotatedNormal = new Vector3d(o.XLine2Point.X - o.XLine1Point.X, o.XLine2Point.Y - o.XLine1Point.Y, o.XLine2Point.Z - o.XLine1Point.Z).GetPerpendicularVector();
+          rotatedDimension.direction = VectorToSpeckle(rotatedNormal.RotateBy(o.Rotation, Vector3d.ZAxis));
+          rotatedDimension.position = PointToSpeckle(o.DimLinePoint);
+          rotatedDimension.measured = new List<Point>() { PointToSpeckle(o.XLine1Point), PointToSpeckle(o.XLine2Point) };
+          props = Utilities.GetApplicationProps(o, typeof(RotatedDimension), true, ignore);
+          _dimension = rotatedDimension;
+          break;
+        case OrdinateDimension o:
+          var ordinateDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = true};
+          ordinateDimension.direction = o.UsingXAxis ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
+          ordinateDimension.position = PointToSpeckle(o.LeaderEndPoint);
+          ordinateDimension.measured = new List<Point>() { PointToSpeckle(o.Origin), PointToSpeckle(o.DefiningPoint) };
+          props = Utilities.GetApplicationProps(o, typeof(OrdinateDimension), true, ignore);
+          _dimension = ordinateDimension;
+          break;
+        case RadialDimension o:
+          var radialDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement};
+          radialDimension.measured = new Line(PointToSpeckle(o.Center), PointToSpeckle(o.ChordPoint), ModelUnits);
+          radialDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
+          props = Utilities.GetApplicationProps(o, typeof(RadialDimension), true, ignore);
+          _dimension = radialDimension;
+          break;
+        case DiametricDimension o:
+          var diametricDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          diametricDimension.measured = new Line(PointToSpeckle(o.FarChordPoint), PointToSpeckle(o.ChordPoint), ModelUnits);
+          diametricDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
+          props = Utilities.GetApplicationProps(o, typeof(DiametricDimension), true, ignore);
+          _dimension = diametricDimension;
+          break;
+        case ArcDimension o:
+          var arcDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          arcDimension.measured = ArcToSpeckle(new CircularArc3d(o.XLine1Point, o.ArcPoint, o.XLine2Point));
+          arcDimension.position = PointToSpeckle(o.ArcPoint);
+          props = Utilities.GetApplicationProps(o, typeof(ArcDimension), true, ignore);
+          _dimension = arcDimension;
+          break;
+        case LineAngularDimension2 o:
+          var lineAngularDimension = new AngleDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          var line1 = new Line(PointToSpeckle(o.XLine1Start), PointToSpeckle(o.XLine1End), ModelUnits);
+          var line2 = new Line(PointToSpeckle(o.XLine2Start), PointToSpeckle(o.XLine2End), ModelUnits);
+          lineAngularDimension.measured = new List<Line>() { line1, line2 };
+          lineAngularDimension.position = PointToSpeckle(o.ArcPoint);
+          props = Utilities.GetApplicationProps(o, typeof(LineAngularDimension2), true, ignore);
+          _dimension = lineAngularDimension;
+          break;
+        case Point3AngularDimension o:
+          var pointAngularDimension = new AngleDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          var point1 = new Line(PointToSpeckle(o.ArcPoint), PointToSpeckle(o.XLine1Point), ModelUnits);
+          var point2 = new Line(PointToSpeckle(o.ArcPoint), PointToSpeckle(o.XLine2Point), ModelUnits);
+          pointAngularDimension.measured = new List<Line>() { point1, point2 };
+          pointAngularDimension.position = PointToSpeckle(o.ArcPoint);
+          props = Utilities.GetApplicationProps(o, typeof(Point3AngularDimension), true, ignore);
+          _dimension = pointAngularDimension;
+          break;
+      }
+      if (_dimension != null && props != null)
+      {
+        _dimension.textPosition = PointToSpeckle(dimension.TextPosition);
+        _dimension[AutocadPropName] = props;
+      }
+      return _dimension;
+    }
+    public AcadDB.Dimension AcadDimensionToNative(Dimension dimension)
+    {
+      AcadDB.Dimension _dimension = null;
+      Base sourceAppProps = dimension[AutocadPropName] as Base;
+      if (sourceAppProps == null) return DimensionToNative(dimension);
+
+      ObjectId dimensionStyle = sourceAppProps["DimensionStyleName"] != null ? GetDimensionStyle(sourceAppProps["DimensionStyleName"] as string) : Doc.Database.Dimstyle;
+      if (dimensionStyle == ObjectId.Null) dimensionStyle = Doc.Database.Dimstyle;
+      Point3d position = PointToNative(dimension.position);
+      string className = sourceAppProps["class"] as string;
+      switch (className)
+      {
+        case "AlignedDimension":
+          var alignedSpeckle = dimension as DistanceDimension;
+          if (alignedSpeckle == null || alignedSpeckle.measured.Count < 2) return null;
+          try
+          {
+            var alignedStart = PointToNative(alignedSpeckle.measured[0]);
+            var alignedEnd = PointToNative(alignedSpeckle.measured[1]);
+            var alignedDimension = new AlignedDimension(alignedStart, alignedEnd, position, dimension.value, dimensionStyle);
+            Utilities.SetApplicationProps(alignedDimension, typeof(AlignedDimension), sourceAppProps);
+            _dimension = alignedDimension;
+          }
+          catch { };
+          break;
+        case "RotatedDimension":
+          var rotatedSpeckle = dimension as DistanceDimension;
+          if (rotatedSpeckle == null || rotatedSpeckle.measured.Count < 2) return null;
+          double rotation = sourceAppProps["Rotation"] as double? ?? 0;
+          try
+          {
+            var rotatedStart = PointToNative(rotatedSpeckle.measured[0]);
+            var rotatedEnd = PointToNative(rotatedSpeckle.measured[1]);
+            var rotatedDimension = new RotatedDimension(rotation, rotatedStart, rotatedEnd, position, dimension.value, dimensionStyle);
+            Utilities.SetApplicationProps(rotatedDimension, typeof(RotatedDimension), sourceAppProps);
+            _dimension = rotatedDimension;
+          }
+          catch { }
+          break;
+        case "OrdinateDimension":
+          try
+          {
+            var ordinateDimension = DimensionToNative(dimension) as OrdinateDimension;
+            if (ordinateDimension != null)
+              Utilities.SetApplicationProps(ordinateDimension, typeof(OrdinateDimension), sourceAppProps);
+            _dimension = ordinateDimension;
+          }
+          catch { }
+          break;
+        case "RadialDimension":
+          try
+          {
+            var radialDimension = DimensionToNative(dimension) as RadialDimension;
+            if (radialDimension != null)
+              Utilities.SetApplicationProps(radialDimension, typeof(RadialDimension), sourceAppProps);
+            _dimension = radialDimension;
+          }
+          catch { }
+          break;
+        case "DiametricDimension":
+          var diametricSpeckle = dimension as LengthDimension;
+          if (diametricSpeckle == null || diametricSpeckle.measured as Line == null) return null;
+          try
+          {
+            var line = diametricSpeckle.measured as Line;
+            var start = PointToNative(line.start);
+            var end = PointToNative(line.end);
+            double leaderLength = ScaleToNative(sourceAppProps["LeaderLength"] as double? ?? 0, ModelUnits);
+            var diametricDimension = new DiametricDimension(end, start, leaderLength, dimension.value, dimensionStyle);
+            sourceAppProps["LeaderLength"] = leaderLength;
+            Utilities.SetApplicationProps(diametricDimension, typeof(DiametricDimension), sourceAppProps);
+            _dimension = diametricDimension;
+          }
+          catch { }
+          break;
+        case "ArcDimension":
+          var arcSpeckle = dimension as LengthDimension;
+          if (arcSpeckle == null || arcSpeckle.measured as Arc == null) return null;
+          try
+          {
+            var arc = ArcToNative(arcSpeckle.measured as Arc);
+            var arcDimension = new ArcDimension(arc.Center, arc.StartPoint, arc.EndPoint, position, dimension.value, dimensionStyle);
+            Utilities.SetApplicationProps(arcDimension, typeof(ArcDimension), sourceAppProps);
+            _dimension = arcDimension;
+          }
+          catch { }
+          break;
+        case "LineAngularDimension2":
+          try
+          {
+            var lineAngularDimension = DimensionToNative(dimension) as LineAngularDimension2;
+            if (lineAngularDimension != null)
+              Utilities.SetApplicationProps(lineAngularDimension, typeof(LineAngularDimension2), sourceAppProps);
+            _dimension = lineAngularDimension;
+          }
+          catch { }
+          break;
+        case "Point3AngularDimension":
+          try
+          {
+            var pointAngularDimension = DimensionToNative(dimension) as Point3AngularDimension;
+            if (pointAngularDimension != null)
+              Utilities.SetApplicationProps(pointAngularDimension, typeof(Point3AngularDimension), sourceAppProps);
+            _dimension = pointAngularDimension;
+          }
+          catch { }
+          break;
+        default:
+          _dimension = DimensionToNative(dimension);
+          break;
+      }
+      if (_dimension != null)
+      {
+        _dimension.TextPosition = PointToNative(dimension.textPosition);
+        _dimension.DimensionStyle = dimensionStyle;
+      }
+      return _dimension;
+    }
+    public AcadDB.Dimension DimensionToNative(Dimension dimension)
+    {
+      AcadDB.Dimension _dimension = null;
+      var style = Doc.Database.Dimstyle;
+      var position = PointToNative(dimension.position);
+      switch (dimension)
+      {
+        case LengthDimension o:
+          switch (o.measured)
+          {
+            case Arc a:
+              var arcCenter = PointToNative(a.plane.origin);
+              var arcStart = PointToNative(a.startPoint);
+              var arcEnd = PointToNative(a.endPoint);
+              try
+              {
+                var arcDimension = new ArcDimension(arcCenter, arcStart, arcEnd, position, dimension.value, style);
+                _dimension = arcDimension;
+              }
+              catch { }
+              break;
+            case Line l:
+              var radialStart = PointToNative(l.start);
+              var radialEnd = PointToNative(l.end);
+              double leaderLength = radialEnd.DistanceTo(position);
+              try
+              {
+                var radialDimension = new RadialDimension(radialStart, radialEnd, leaderLength, dimension.value, style);
+                _dimension = radialDimension;
+              }
+              catch { }
+              break;
+          }
+          break;
+        case AngleDimension o:
+          try
+          {
+            if (o.measured.Count < 2) break;
+            var line1Start = PointToNative(o.measured[0].start);
+            var line1End = PointToNative(o.measured[0].end);
+            var line2Start = PointToNative(o.measured[1].start);
+            var line2End = PointToNative(o.measured[1].end);
+            if (Math.Round(line1Start.DistanceTo(line2Start), 3) == 0)
+              _dimension = new Point3AngularDimension(line1Start, line1End, line2End, position, dimension.value, style);
+            else
+              _dimension = new LineAngularDimension2(line1Start, line1End, line2Start, line2End, position, dimension.value, style);
+          }
+          catch { }
+          break;
+        case DistanceDimension o:
+          if (o.measured.Count < 2) break;
+          try
+          {
+            var start = PointToNative(o.measured[0]);
+            var end = PointToNative(o.measured[1]);
+            var normal = VectorToNative(o.direction);
+
+            if (o.isOrdinate)
+            {
+              bool useXAxis = normal.IsParallelTo(Vector3d.XAxis) ? true : false;
+              var ordinateDimension = new OrdinateDimension(useXAxis, end, position, dimension.value, style);
+              ordinateDimension.Origin = start;
+              _dimension = ordinateDimension;
+            }
+            else
+            {
+              var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
+              var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
+              if (dir.IsParallelTo(normal,Tolerance.Global))
+                _dimension = new AlignedDimension(start, end, position, dimension.value, style);
+              else
+                _dimension = new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
+            }
+          }
+          catch { }
+          break;
+        default:
+          break;
+      }
+      //if (_dimension != null)
+       // _dimension.TextPosition = PointToNative(dimension.textPosition);
+      return _dimension;
+    }
+    private ObjectId GetDimensionStyle(string styleName)
+    {
+      var dimStyleTable = Trans.GetObject(Doc.Database.DimStyleTableId, OpenMode.ForRead) as DimStyleTable;
+      foreach (ObjectId id in dimStyleTable)
+      {
+        var dimStyle = Trans.GetObject(id, OpenMode.ForRead) as DimStyleTableRecord;
+        if (dimStyle.Name == styleName)
+          return id;
+      }
+      return ObjectId.Null;
+    }
+
+    // Proxy Entity
+    public Base ProxyEntityToSpeckle(ProxyEntity proxy)
+    {
+      // Currently not possible to retrieve geometry of proxy entities, so sending props as a base instead
+      var _proxy = new Base();
+      _proxy["bbox"] = BoxToSpeckle(proxy.GeometricExtents);
+      var props = Utilities.GetApplicationProps(proxy, typeof(ProxyEntity), false);
+      props["ApplicationDescription"] = proxy.ApplicationDescription;
+      props["OriginalClassName"] = proxy.OriginalClassName;
+      props["OriginalDxfName"] = proxy.OriginalDxfName;
+      props["ProxyFlags"] = proxy.ProxyFlags;
+      if (props != null) _proxy[AutocadPropName] = props;
+
+      return _proxy;
     }
   }
 }

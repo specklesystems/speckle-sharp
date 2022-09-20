@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using ConnectorRevit;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.UI
@@ -76,9 +77,42 @@ namespace Speckle.ConnectorRevit.UI
       return elementIds;
     }
 
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
+    {
+      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
+      if (selection != null)
+      {
+        if (!deselect)
+        {
+          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
+          if (currentSelection != null) currentSelection.AddRange(selection);
+          else currentSelection = selection;
+          try
+          {
+            CurrentDoc.Selection.SetElementIds(currentSelection);
+            CurrentDoc.ShowElements(currentSelection);
+          }
+          catch (Exception e) { }
+        }
+        else
+        {
+          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
+          CurrentDoc.Selection.SetElementIds(updatedSelection);
+          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
+        }
+      }
+    }
+
     private List<Document> GetLinkedDocuments()
     {
       var docs = new List<Document>();
+
+      // Get settings and return empty list if we should not send linked models
+      var sendLinkedModels = CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
+      if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
+        return docs;
+
+
       //TODO: is the name the most safe way to look for it?
       var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document).OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(RevitLinkType)).ToElements().Cast<RevitLinkType>().Select(x => x.Name.Replace(".rvt", ""));
       foreach (Document revitDoc in RevitApp.Application.Documents)

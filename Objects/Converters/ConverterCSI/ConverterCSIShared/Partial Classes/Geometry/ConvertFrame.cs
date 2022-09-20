@@ -14,6 +14,27 @@ namespace Objects.Converter.CSI
   public partial class ConverterCSI
   {
 
+    public object updateFrametoNative(Element1D element1D)
+    {
+      string GUID = "";
+      Model.FrameObj.GetGUID(element1D.name, ref GUID);
+      if (GUID == element1D.applicationId)
+      {
+        string pt1 = "";
+        string pt2 = "";
+        //Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
+        //var specklePt1 = element1D.end1Node.basePoint;
+        //var specklePt2 = element1D.end2Node.basePoint;
+        //Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
+        //Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
+        setFrameElementProperties(element1D, element1D.name);
+      }
+      else
+      {
+        return FrameToNative(element1D);
+      }
+      return element1D.name;
+    }
     public object FrameToNative(Element1D element1D)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
@@ -23,7 +44,7 @@ namespace Objects.Converter.CSI
       string units = ModelUnits();
       string newFrame = "";
       Line baseline = element1D.baseLine;
-      string[] properties = null;
+      string[] properties = new string[] { };
       int number = 0;
       Model.PropFrame.GetNameList(ref number, ref properties);
       if (!properties.Contains(element1D.property.name))
@@ -31,106 +52,55 @@ namespace Objects.Converter.CSI
         Property1DToNative(element1D.property);
         Model.PropFrame.GetNameList(ref number, ref properties);
       }
+      Point end1node;
+      Point end2node;
       if (baseline != null)
       {
-        Point end1node = baseline.start;
-        Point end2node = baseline.end;
-        if (properties.Contains(element1D.property.name))
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
-        }
-        else
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
-        }
+        end1node = baseline.start;
+        end2node = baseline.end;
       }
       else
       {
-        Point end1node = element1D.end1Node.basePoint;
-        Point end2node = element1D.end2Node.basePoint;
-        if (properties.Contains(element1D.property.name))
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame, element1D.property.name);
-        }
-        else
-        {
-          Model.FrameObj.AddByCoord(end1node.x, end1node.y, end1node.z, end2node.x, end2node.y, end2node.z, ref newFrame);
-        }
+        end1node = element1D.end1Node.basePoint;
+        end2node = element1D.end2Node.basePoint;
       }
 
-      bool[] end1Release = null;
-      bool[] end2Release = null;
-      double[] startV, endV;
-      startV = null;
-      endV = null;
-      if (element1D.end1Releases != null && element1D.end2Releases != null)
+      if (properties.Contains(element1D.property.name))
       {
-        end1Release = RestraintToNative(element1D.end1Releases);
-        end2Release = RestraintToNative(element1D.end2Releases);
-        startV = PartialRestraintToNative(element1D.end1Releases);
-        endV = PartialRestraintToNative(element1D.end2Releases);
+        Model.FrameObj.AddByCoord(
+          ScaleToNative(end1node.x, end1node.units),
+          ScaleToNative(end1node.y, end1node.units),
+          ScaleToNative(end1node.z, end1node.units),
+          ScaleToNative(end2node.x, end2node.units),
+          ScaleToNative(end2node.y, end2node.units),
+          ScaleToNative(end2node.z, end2node.units),
+          ref newFrame,
+          element1D.property.name
+        );
       }
-
-
-      if (element1D.orientationAngle != null)
+      else
       {
-        Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
+        Model.FrameObj.AddByCoord(
+          ScaleToNative(end1node.x, end1node.units),
+          ScaleToNative(end1node.y, end1node.units),
+          ScaleToNative(end1node.z, end1node.units),
+          ScaleToNative(end2node.x, end2node.units),
+          ScaleToNative(end2node.y, end2node.units),
+          ScaleToNative(end2node.z, end2node.units),
+          ref newFrame
+        );
       }
-      end1Release = end1Release.Select(b => !b).ToArray();
-      end2Release = end2Release.Select(b => !b).ToArray();
+      setFrameElementProperties(element1D, newFrame);
 
-      Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
+
       if (element1D.name != null)
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
       else
       {
-        Model.FrameObj.ChangeName(newFrame, element1D.id);
+        Model.FrameObj.SetGUID(newFrame, element1D.id);
       }
-      if (element1D is CSIElement1D)
-      {
-
-        var CSIelement1D = (CSIElement1D)element1D;
-        if (CSIelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment); }
-        if (CSIelement1D.PierAssignment != null) { Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment); }
-        if (CSIelement1D.CSILinearSpring != null) { Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name); }
-        if (CSIelement1D.DesignProcedure != null)
-        {
-          switch (CSIelement1D.DesignProcedure)
-          {
-            case DesignProcedure.ProgramDetermined:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 0);
-              break;
-            case DesignProcedure.CompositeBeamDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 3);
-              break;
-            case DesignProcedure.CompositeColumnDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 13);
-              break;
-            case DesignProcedure.SteelFrameDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 1);
-              break;
-            case DesignProcedure.ConcreteFrameDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 2);
-              break;
-            case DesignProcedure.SteelJoistDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 4);
-              break;
-            case DesignProcedure.NoDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 7);
-              break;
-          }
-          if (CSIelement1D.Modifiers != null)
-          {
-            var modifiers = CSIelement1D.Modifiers;
-            Model.FrameObj.SetModifiers(CSIelement1D.name, ref modifiers);
-          }
-        }
-      }
-
-
-
 
       return element1D.name;
     }
@@ -180,6 +150,7 @@ namespace Objects.Converter.CSI
           }
         case eFrameDesignOrientation.Null:
           {
+            //speckleStructFrame.memberType = MemberType.Generic1D;
             speckleStructFrame.type = ElementType1D.Null;
             break;
           }
@@ -290,6 +261,74 @@ namespace Objects.Converter.CSI
 
 
       return speckleStructFrame;
+    }
+
+    public void setFrameElementProperties(Element1D element1D, string newFrame)
+    {
+      bool[] end1Release = null;
+      bool[] end2Release = null;
+      double[] startV, endV;
+      startV = null;
+      endV = null;
+      if (element1D.end1Releases != null && element1D.end2Releases != null)
+      {
+        end1Release = RestraintToNative(element1D.end1Releases);
+        end2Release = RestraintToNative(element1D.end2Releases);
+        startV = PartialRestraintToNative(element1D.end1Releases);
+        endV = PartialRestraintToNative(element1D.end2Releases);
+      }
+
+
+      if (element1D.orientationAngle != null)
+      {
+        Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
+      }
+      end1Release = end1Release.Select(b => !b).ToArray();
+      end2Release = end2Release.Select(b => !b).ToArray();
+
+      Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
+      if (element1D is CSIElement1D)
+      {
+
+        var CSIelement1D = (CSIElement1D)element1D;
+        if (CSIelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment); }
+        if (CSIelement1D.PierAssignment != null) { Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment); }
+        if (CSIelement1D.CSILinearSpring != null) { Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name); }
+        if (CSIelement1D.DesignProcedure != null)
+        {
+          switch (CSIelement1D.DesignProcedure)
+          {
+            case DesignProcedure.ProgramDetermined:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 0);
+              break;
+            case DesignProcedure.CompositeBeamDesign:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 3);
+              break;
+            case DesignProcedure.CompositeColumnDesign:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 13);
+              break;
+            case DesignProcedure.SteelFrameDesign:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 1);
+              break;
+            case DesignProcedure.ConcreteFrameDesign:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 2);
+              break;
+            case DesignProcedure.SteelJoistDesign:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 4);
+              break;
+            case DesignProcedure.NoDesign:
+              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 7);
+              break;
+          }
+          if (CSIelement1D.Modifiers != null)
+          {
+            var modifiers = CSIelement1D.Modifiers;
+            Model.FrameObj.SetModifiers(CSIelement1D.name, ref modifiers);
+          }
+        }
+      }
+
+
     }
   }
 }

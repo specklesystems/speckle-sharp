@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -60,11 +61,10 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional");
           return;
         }
-
+        
+        //TODO: Original node 
         if (DA.Iteration == 0)
-        {
-          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Create Object" } });
-        }
+          Tracker.TrackNodeRun("Create Object");
 
 
         Params.Input.ForEach(ighParam =>
@@ -125,7 +125,7 @@ namespace ConnectorGrasshopper.Objects
         foreach (var error in Converter.Report.ConversionErrors)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            error.Message + ": " + error.InnerException?.Message);
+            error.ToFormattedString());
         }
         Converter.Report.ConversionErrors.Clear();
       }
@@ -174,7 +174,7 @@ namespace ConnectorGrasshopper.Objects
             catch (Exception e)
             {
               Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.Message}");
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.ToFormattedString()}");
               hasErrors = true;
             }
 
@@ -185,7 +185,7 @@ namespace ConnectorGrasshopper.Objects
             catch (Exception e)
             {
               Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
               hasErrors = true;
             }
           }
@@ -203,7 +203,7 @@ namespace ConnectorGrasshopper.Objects
             catch (Exception e)
             {
               Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.Message}");
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
               hasErrors = true;
             }
           }
@@ -220,7 +220,7 @@ namespace ConnectorGrasshopper.Objects
       {
         // If we reach this, something happened that we weren't expecting...
         Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
       }
 
       return new Base();

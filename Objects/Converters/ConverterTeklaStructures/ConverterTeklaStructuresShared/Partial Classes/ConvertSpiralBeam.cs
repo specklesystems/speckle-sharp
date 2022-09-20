@@ -47,7 +47,7 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.TeklaBeamType = TeklaBeamType.SpiralBeam;
       //var refLine = SpiralBeam.GetReferenceLine(false);
       var solid = SpiralBeam.GetSolid();
-      speckleBeam.displayMesh = GetMeshFromSolid(solid);
+      speckleBeam.displayValue = new List<Mesh> { GetMeshFromSolid(solid) };
 
       speckleBeam.startPoint = new Point(SpiralBeam.StartPoint.X, SpiralBeam.StartPoint.Y, SpiralBeam.StartPoint.Z);
       speckleBeam.rotationAxisPt1 = new Point(SpiralBeam.RotationAxisBasePoint.X, SpiralBeam.RotationAxisBasePoint.Y, SpiralBeam.RotationAxisBasePoint.Z);
@@ -59,9 +59,9 @@ namespace Objects.Converter.TeklaStructures
 
       var vol = new double();
       var area = new double();
-      SpiralBeam.GetReportProperty("ASSEMBLY.MAINPART.VOLUME", ref vol);
+      SpiralBeam.GetReportProperty("VOLUME", ref vol);
       speckleBeam.volume = vol;
-      SpiralBeam.GetReportProperty("ASSEMBLY.MAINPART.AREA", ref area);
+      SpiralBeam.GetReportProperty("AREA", ref area);
       speckleBeam.area = area;
 
       return speckleBeam;

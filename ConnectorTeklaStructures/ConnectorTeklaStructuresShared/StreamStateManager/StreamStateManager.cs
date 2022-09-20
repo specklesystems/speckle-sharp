@@ -74,11 +74,15 @@ namespace ConnectorTeklaStructures.Storage
         _speckleFilePath = null;
         return;
       }
-      string TeklaStructuresFileName = Path.GetFileNameWithoutExtension(TeklaStructuresModelfilePath);
-      string TeklaStructuresModelFolder = Path.GetDirectoryName(TeklaStructuresModelfilePath);
-      string speckleFolderPath = Path.Combine(TeklaStructuresModelFolder, "speckle");
-      string speckleFilePath = Path.Combine(TeklaStructuresModelFolder, "speckle", $"{TeklaStructuresFileName}.txt");
-      try
+            //string TeklaStructuresFileName = Path.GetFileNameWithoutExtension(TeklaStructuresModelfilePath);
+            //string TeklaStructuresModelFolder = Path.GetDirectoryName(TeklaStructuresModelfilePath);
+            //string speckleFolderPath = Path.Combine(TeklaStructuresModelFolder, "speckle");
+            //string speckleFilePath = Path.Combine(TeklaStructuresModelFolder, "speckle", $"{TeklaStructuresFileName}.txt");
+            string TeklaStructuresFileName = Path.GetFileNameWithoutExtension(model.GetInfo().ModelName);
+            string speckleFolderPath = Path.Combine(TeklaStructuresModelfilePath, "speckle");
+            string speckleFilePath = Path.Combine(speckleFolderPath, $"{TeklaStructuresFileName}.txt");
+
+            try
       {
         if (!Directory.Exists(speckleFolderPath))
         {

@@ -19,11 +19,13 @@ namespace Speckle.ConnectorTeklaStructures.UI
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
   {
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
-    }
     #region receiving
+    public override bool CanPreviewReceive => false;
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Exceptions.Clear();
@@ -32,6 +34,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var converter = kit.LoadConverter(ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
       converter.SetContextDocument(Model);
       //var previouslyRecieveObjects = state.ReceivedObjects;
+
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
 
       if (converter == null)
       {
@@ -75,7 +83,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
                   progress.Report.LogOperationError(e);
                   progress.CancellationTokenSource.Cancel();
                 }),
-                //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+               onTotalChildrenCountKnown: count => { progress.Max = count; },
                 disposeTransports: true
                 );
 
@@ -111,7 +119,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
+      conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
       Action updateProgressAction = () =>
@@ -180,6 +188,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
     private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
       List<Base> objects = new List<Base>();
+
 
       if (obj is Base @base)
       {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -19,7 +20,7 @@ namespace ConnectorGrasshopper.Objects
     public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
 
-    public GetObjectValueByKeyTaskComponent() : base("Speckle Object Value by Key", "Object K/V",
+    public GetObjectValueByKeyTaskComponent() : base("Speckle Object Value by Key", "SOVK",
       "Gets the value of a specific key in a Speckle object.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.OBJECTS)
     {
     }
@@ -44,13 +45,10 @@ namespace ConnectorGrasshopper.Objects
         var key = "";
         DA.GetData(0, ref speckleObj);
         DA.GetData(1, ref key);
+        
         if (DA.Iteration == 0)
-        {
-          Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Object Value By Key" } });
-
-        }
-
-
+          Tracker.TrackNodeRun("Object Value by Key");
+        
         var @base = speckleObj?.Value;
         var task = Task.Run(() => DoWork(@base, key, CancelToken));
         TaskList.Add(task);
@@ -69,7 +67,7 @@ namespace ConnectorGrasshopper.Objects
         foreach (var error in Converter.Report.ConversionErrors)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            error.Message + ": " + error.InnerException?.Message);
+            error.ToFormattedString());
         }
         Converter.Report.ConversionErrors.Clear();
       }
@@ -87,7 +85,7 @@ namespace ConnectorGrasshopper.Objects
           }
         default:
           Params.Output[0].Access = GH_ParamAccess.item;
-          DA.SetData(0, GH_Convert.ToGoo(value));
+          DA.SetData(0, Extras.Utilities.WrapInGhType(value));
           break;
       }
 
@@ -125,7 +123,7 @@ namespace ConnectorGrasshopper.Objects
       {
         // If we reach this, something happened that we weren't expecting...
         Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
 
       }
       return value;

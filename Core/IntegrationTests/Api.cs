@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Tests;
@@ -13,7 +14,7 @@ namespace TestsIntegration
   {
     public Account firstUserAccount, secondUserAccount;
 
-    public Client myClient;
+    public Client myClient, secondClient;
     public ServerTransport myServerTransport, otherServerTransport;
 
     private string streamId = "";
@@ -29,6 +30,7 @@ namespace TestsIntegration
       secondUserAccount = Fixtures.SeedUser();
 
       myClient = new Client(firstUserAccount);
+      secondClient = new Client(secondUserAccount);
       myServerTransport = new ServerTransport(firstUserAccount, null);
       myServerTransport.Api.CompressPayloads = false;
       otherServerTransport = new ServerTransport(firstUserAccount, null);
@@ -52,6 +54,13 @@ namespace TestsIntegration
       Assert.NotNull(res);
     }
 
+    [Test]
+    public async Task ServerVersion()
+    {
+      var res = await myClient.GetServerVersion();
+      
+      Assert.NotNull(res);
+    }
 
     [Test, Order(0)]
     public async Task StreamCreate()
@@ -110,15 +119,55 @@ namespace TestsIntegration
     [Test, Order(30)]
     public async Task StreamGrantPermission()
     {
-      var res = await myClient.StreamGrantPermission(
-        new StreamGrantPermissionInput
+      var exception = Assert.ThrowsAsync<SpeckleException>( async () => await myClient.StreamGrantPermission(
+        new StreamPermissionInput
         {
-          streamId = streamId,
-          userId = secondUserAccount.userInfo.id,
-          role = "stream:owner"
+          streamId = streamId, userId = secondUserAccount.userInfo.id, role = "stream:owner"
         }
+      ) );
+      
+      StringAssert.Contains("no longer supported", exception.Message);
+    }
+    
+    [Test, Order(31)]
+    public async Task StreamInviteCreate()
+    {
+      var res = await myClient.StreamInviteCreate(
+        new StreamInviteCreateInput { streamId = streamId, email = secondUserAccount.userInfo.email, message = "Whasssup!" }
       );
 
+      Assert.IsTrue(res);
+
+      Assert.ThrowsAsync<SpeckleException>(async () =>
+        await myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = streamId }));
+    }
+    
+    [Test, Order(32)]
+    public async Task StreamInviteGet()
+    {
+      var invites = await secondClient.GetAllPendingInvites();
+      
+      Assert.NotNull(invites);
+    }
+
+    [Test, Order(33)]
+    public async Task StreamInviteUse()
+    {
+      var invites = await secondClient.GetAllPendingInvites();
+
+      var res = await secondClient.StreamInviteUse(invites[ 0 ].streamId, invites[ 0 ].token);
+
+      Assert.IsTrue(res);
+    }
+    
+    [Test, Order(34)]
+    public async Task StreamUpdatePermission()
+    {
+      var res = await myClient.StreamUpdatePermission(new StreamPermissionInput
+      {
+        role = "stream:reviewer", streamId = streamId, userId = secondUserAccount.userInfo.id
+      });
+      
       Assert.IsTrue(res);
     }
 
@@ -131,18 +180,7 @@ namespace TestsIntegration
 
       Assert.IsTrue(res);
     }
-
-    [Test, Order(41)]
-    public async Task StreamInviteCreate()
-    {
-      var res = await myClient.StreamInviteCreate(
-        new StreamInviteCreateInput { streamId = streamId, email = "test@test.com", message = "Whasssup!" }
-      );
-
-      Assert.IsTrue(res);
-    }
-
-
+    
     #region branches
 
     [Test, Order(41)]
@@ -320,6 +358,18 @@ namespace TestsIntegration
     }
     #endregion
 
+    #region comments
+
+    [Test, Order(52)]
+    public async Task StreamGetComments()
+    {
+      var res = await myClient.StreamGetActivity(streamId);
+
+      Assert.NotNull(res);
+      //Assert.AreEqual(commitId, res[0].);
+    }
+    #endregion
+
     #region send/receive bare
 
     //[Test, Order(60)]
@@ -333,7 +383,7 @@ namespace TestsIntegration
     //  myObject["@Points"] = ptsList;
 
     //  var otherTransport = new ServerTransport(firstUserAccount, null);
-    //  otherTransport.StreamId = 
+    //  otherTransport.StreamId =
 
     //  objectId = await Operations.Send(myObject, new List<ITransport>() { myServerTransport }, disposeTransports: true);
     //}

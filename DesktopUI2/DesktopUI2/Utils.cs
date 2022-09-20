@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
-using DesktopUI2.Views;
+using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using Material.Dialog.Icons;
@@ -19,8 +19,7 @@ namespace DesktopUI2
     public static async void ShowDialog(string title, string message, DialogIconKind icon)
     {
       Dialog d = new Dialog(title, message, icon);
-      d.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-      await d.ShowDialog(MainWindow.Instance);
+      await d.ShowDialog();
     }
 
     public static IDialogWindow<DialogResult> SendReceiveDialog(string header, object dataContext)
@@ -34,7 +33,7 @@ namespace DesktopUI2
         NegativeResult = new DialogResult("cancel"),
         Borderless = true,
 
-        Width = MainWindow.Instance.Width - 20,
+        //Width = MainWindow.Instance.Width - 20,
         DialogButtons = new DialogButton[]
           {
             new DialogButton
@@ -105,8 +104,15 @@ namespace DesktopUI2
   public static class ApiUtils
   {
     private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+    private static Dictionary<string, AccountViewModel> CachedAccounts = new Dictionary<string, AccountViewModel>();
 
-    public static async Task<User> GetUser(string userId, Client client)
+    public static void ClearCache()
+    {
+      CachedAccounts = new Dictionary<string, AccountViewModel>();
+      CachedUsers = new Dictionary<string, User>();
+    }
+
+    private static async Task<User> GetUser(string userId, Client client)
     {
       if (CachedUsers.ContainsKey(userId))
         return CachedUsers[userId];
@@ -117,6 +123,22 @@ namespace DesktopUI2
         CachedUsers[userId] = user;
 
       return user;
+    }
+
+    public static async Task<AccountViewModel> GetAccount(string userId, Client client)
+    {
+      if (CachedAccounts.ContainsKey(userId))
+        return CachedAccounts[userId];
+
+      User user = await GetUser(userId, client);
+
+      if (user == null)
+        return null;
+
+      var avm = new AccountViewModel(user);
+      CachedAccounts[userId] = avm;
+      return avm;
+
     }
   }
 

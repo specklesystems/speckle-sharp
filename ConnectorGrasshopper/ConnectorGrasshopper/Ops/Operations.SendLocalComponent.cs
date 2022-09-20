@@ -9,6 +9,7 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -38,6 +39,12 @@ namespace ConnectorGrasshopper.Ops
     {
       pManager.AddGenericParameter("localDataId", "id", "ID of the local data sent.", GH_ParamAccess.item);
     }
+
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      base.SolveInstance(DA);
+      if(DA.Iteration == 0) Tracker.TrackNodeRun();
+    }
   }
 
   public class SendLocalWorker : WorkerInstance
@@ -55,8 +62,6 @@ namespace ConnectorGrasshopper.Ops
       try
       {
         Parent.Message = "Sending...";
-        Logging.Analytics.TrackEvent(Logging.Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
-
         var converter = (Parent as SendLocalComponent)?.Converter;
         converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
         var converted = Utilities.DataTreeToNestedLists(data, converter);
@@ -67,7 +72,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         Console.WriteLine(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
       }
 
       Done();

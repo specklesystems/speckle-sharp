@@ -16,13 +16,15 @@ using SCT = Speckle.Core.Transports;
 namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
-
   {
-    #region sending
+    public override bool CanPreviewSend => false;
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      // TODO!
+    }
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      //throw new NotImplementedException();
       var kit = KitManager.GetDefaultKit();
       //var converter = new ConverterCSI();
       var appName = GetHostAppVersion(Model);
@@ -34,9 +36,7 @@ namespace Speckle.ConnectorCSI.UI
       int objCount = 0;
 
       if (state.Filter != null)
-      {
         state.SelectedObjectIds = GetSelectionFilterObjects(state.Filter);
-      }
 
       var totalObjectCount = state.SelectedObjectIds.Count();
 
@@ -47,9 +47,9 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      progress.Max = totalObjectCount;
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
-
 
       //if( commitObj["@Stories"] == null)
       //{
@@ -59,9 +59,7 @@ namespace Speckle.ConnectorCSI.UI
       foreach (var applicationId in state.SelectedObjectIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        {
           return null;
-        }
 
         Base converted = null;
         string containerName = string.Empty;
@@ -77,7 +75,6 @@ namespace Speckle.ConnectorCSI.UI
           continue;
         }
 
-
         var typeAndName = ConnectorCSIUtils.ObjectIDsTypesAndNames
             .Where(pair => pair.Key == applicationId)
             .Select(pair => pair.Value).FirstOrDefault();
@@ -90,7 +87,6 @@ namespace Speckle.ConnectorCSI.UI
           progress.Report.LogConversionError(exception);
           continue;
         }
-
 
         //if (converted != null)
         //{
@@ -108,24 +104,15 @@ namespace Speckle.ConnectorCSI.UI
 
       Base ElementCount = converter.ConvertToSpeckle(("ElementsCount", "CSI"));
       if (ElementCount.applicationId != null)
-      {
         objCount = Convert.ToInt32(ElementCount.applicationId);
-      }
       else
-      {
         objCount = 0;
-      }
-
 
       if (commitObj["@Model"] == null)
-      {
         commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "CSI"));
-      }
-
+      
       if (commitObj["AnalysisResults"] == null)
-      {
         commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "CSI"));
-      }
 
       progress.Report.Merge(converter.Report);
 
@@ -136,20 +123,20 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
         return null;
-      }
 
       var streamId = state.StreamId;
       var client = state.Client;
 
       var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
-
+      progress.Max = totalObjectCount;
       var objectId = await Operations.Send(
           @object: commitObj,
           cancellationToken: progress.CancellationTokenSource.Token,
           transports: transports,
-          onProgressAction: dict => progress.Update(dict),
+          onProgressAction: dict => {
+            progress.Update(dict);
+          },
           onErrorAction: (Action<string, Exception>)((s, e) =>
           {
             progress.Report.LogOperationError(e);
@@ -158,12 +145,8 @@ namespace Speckle.ConnectorCSI.UI
           disposeTransports: true
           );
 
-
       if (progress.Report.OperationErrorsCount != 0)
-      {
-        //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
         return null;
-      }
 
       var actualCommit = new CommitCreateInput
       {
@@ -179,13 +162,8 @@ namespace Speckle.ConnectorCSI.UI
       try
       {
         var commitId = await client.CommitCreate(actualCommit);
-
-        //await state.RefreshStream();
         state.PreviousCommitId = commitId;
         return commitId;
-
-        //PersistAndUpdateStreamInFile(state);
-        //RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
       }
       catch (Exception e)
       {
@@ -195,7 +173,5 @@ namespace Speckle.ConnectorCSI.UI
       return null;
       //return state;
     }
-
-    #endregion
   }
 }

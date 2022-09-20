@@ -11,15 +11,19 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> SpaceToNative(Space speckleSpace)
+    public ApplicationObject SpaceToNative(Space speckleSpace)
     {
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
-      if (revitSpace != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleSpace.applicationId, ApplicationGeneratedId = revitSpace.UniqueId, NativeObject = revitSpace } };
+      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitSpace, appObj, out appObj))
+        return appObj;
 
-      var level = ConvertLevelToRevit(speckleSpace.level);
+      var levelState = ApplicationObject.State.Unknown;
+      var level = ConvertLevelToRevit(speckleSpace.level, out levelState);
       var basePoint = PointToNative(speckleSpace.basePoint);
-      var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel);
+      var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel, out levelState);
       // create new space if none existing, include zone information if available
       if (revitSpace == null)
       {
@@ -77,18 +81,8 @@ namespace Objects.Converter.Revit
       }
 
       SetInstanceParameters(revitSpace, speckleSpace);
-
-      var placeholders = new List<ApplicationPlaceholderObject>()
-              {
-                new ApplicationPlaceholderObject
-                {
-                applicationId = speckleSpace.applicationId,
-                ApplicationGeneratedId = revitSpace.UniqueId,
-                NativeObject = revitSpace
-                }
-              };
-      Report.Log($"Created Space {revitSpace.Id}");
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSpace.UniqueId, convertedItem: revitSpace);
+      return appObj;
     }
 
     public BuiltElements.Space SpaceToSpeckle(DB.Space revitSpace)
@@ -105,9 +99,7 @@ namespace Objects.Converter.Revit
       speckleSpace.topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
       speckleSpace.outline = profiles[0];
       if (profiles.Count > 1)
-      {
         speckleSpace.voids = profiles.Skip(1).ToList();
-      }
       speckleSpace.area = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_AREA);
       speckleSpace.volume = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_VOLUME);
       speckleSpace.spaceType = revitSpace.SpaceType.ToString();
@@ -116,7 +108,6 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 
       speckleSpace.displayValue = GetElementDisplayMesh(revitSpace);
-      Report.Log($"Converted Space {revitSpace.Id}");
 
       return speckleSpace;
     }

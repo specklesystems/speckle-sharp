@@ -20,12 +20,8 @@ namespace Objects.Converter.Revit
       }
 
       if (subElements != null)
-      {
         foreach (var sb in subElements)
-        {
           allSolids.AddRange(GetElementSolids(sb));
-        }
-      }
 
       return GetMeshesFromSolids(allSolids, element.Document);
 
@@ -108,7 +104,7 @@ namespace Objects.Converter.Revit
       {
         if (element is DB.Mesh mesh)
         {
-          var revitMaterial = d.GetElement(mesh.MaterialElementId) as Material;
+          var revitMaterial = d.GetElement(mesh.MaterialElementId) as DB.Material;
           Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
 
           ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices);
@@ -125,7 +121,7 @@ namespace Objects.Converter.Revit
     {
       //Lazy initialised Dictionary of Revit material (hash) -> Speckle material
       private readonly Dictionary<int, RenderMaterial> materialMap = new Dictionary<int, RenderMaterial>();
-      public RenderMaterial GetOrCreateMaterial(Material revitMaterial)
+      public RenderMaterial GetOrCreateMaterial(DB.Material revitMaterial)
       {
         if (revitMaterial == null) return null;
 
@@ -139,14 +135,14 @@ namespace Objects.Converter.Revit
         return material;
       }
 
-      private static int Hash(Material mat)
+      private static int Hash(DB.Material mat)
         => mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
 
       //Mesh to use for null materials (because dictionary keys can't be null)
       private Mesh nullMesh;
       //Lazy initialised Dictionary of revit material (hash) -> Speckle Mesh
       private readonly Dictionary<int, Mesh> meshMap = new Dictionary<int, Mesh>();
-      public Mesh GetOrCreateMesh(Material mat, string units)
+      public Mesh GetOrCreateMesh(DB.Material mat, string units)
       {
         if (mat == null) return nullMesh ??= new Mesh { units = units };
 
@@ -186,7 +182,7 @@ namespace Objects.Converter.Revit
       {
         if (geometryObject is Solid gSolid) // already solid
         {
-          if (gSolid.Faces.Size > 0 && Math.Abs(gSolid.Volume) > 0) // skip invalid solid
+          if (gSolid.Faces.Size > 0 && Math.Abs(gSolid.SurfaceArea) > 0) // skip invalid solid
             solids.Add(gSolid);
         }
         else if (geometryObject is GeometryInstance gInstance) // find solids from GeometryInstance
@@ -241,7 +237,7 @@ namespace Objects.Converter.Revit
       {
         foreach (Face face in solid.Faces)
         {
-          Material faceMaterial = d.GetElement(face.MaterialElementId) as Material;
+          DB.Material faceMaterial = d.GetElement(face.MaterialElementId) as DB.Material;
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
           if(!MeshMap.ContainsKey(m))
           {

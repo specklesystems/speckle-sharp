@@ -160,6 +160,10 @@
     <Setter Property="Width" Value="NaN" />
     <Setter Property="Padding" Value="5" />
   </Style>
+  <Style Selector="cc|FloatingButton.Invisible">
+    <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+    <Setter Property="assists:ButtonAssist.HoverColor" Value="Transparent" />
+  </Style>
 
   <!--  Extended state transition (currently it doesnt works due AvaloniaUI bug)  -->
 

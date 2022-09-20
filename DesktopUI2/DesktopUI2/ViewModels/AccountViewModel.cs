@@ -3,6 +3,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace DesktopUI2.ViewModels
@@ -14,6 +15,16 @@ namespace DesktopUI2.ViewModels
     public string Id { get; }
 
     public Account Account { get; private set; }
+
+    public string SimpleName
+    {
+      get
+      {
+        if (HomeViewModel.Instance.Accounts.Any(x => x.Account.userInfo.id == Id))
+          return "You";
+        return Name;
+      }
+    }
 
     public string FullAccountName
     {
@@ -87,6 +98,20 @@ namespace DesktopUI2.ViewModels
       get => _avatarUrl;
       set
       {
+        //if the user manually uploaded their avatar it'll be a base64 string of the image
+        //otherwise if linked the account eg via google, it'll be a link
+        if (value != null && value.StartsWith("data:"))
+        {
+          try
+          {
+            SetImage(Convert.FromBase64String(value.Split(',')[1]));
+            return;
+          }
+          catch
+          {
+            value = null;
+          }
+        }
 
         if (value == null && Id != null)
         {
@@ -98,6 +123,7 @@ namespace DesktopUI2.ViewModels
         }
         DownloadImage(AvatarUrl);
       }
+
     }
 
     private Avalonia.Media.Imaging.Bitmap _avatarImage = null;
@@ -112,12 +138,7 @@ namespace DesktopUI2.ViewModels
       try
       {
         byte[] bytes = e.Result;
-
-        System.IO.Stream stream = new MemoryStream(bytes);
-
-        var image = new Avalonia.Media.Imaging.Bitmap(stream);
-        _avatarImage = image;
-        this.RaisePropertyChanged("AvatarImage");
+        SetImage(bytes);
       }
       catch (Exception ex)
       {
@@ -126,5 +147,11 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private void SetImage(byte[] bytes)
+    {
+      System.IO.Stream stream = new MemoryStream(bytes);
+      AvatarImage = new Avalonia.Media.Imaging.Bitmap(stream);
+
+    }
   }
 }

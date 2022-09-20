@@ -18,10 +18,10 @@ namespace Speckle.Core.Transports.ServerUtils
   {
     private int BATCH_SIZE_HAS_OBJECTS = 100000;
     private int BATCH_SIZE_GET_OBJECTS = 10000;
-    private int MAX_OBJECT_SIZE = 10_000_000;
+    private int MAX_OBJECT_SIZE = 25_000_000;
     private int MAX_MULTIPART_COUNT = 5;
-    private int MAX_MULTIPART_SIZE = 10_000_000;
-    private int MAX_REQUEST_SIZE = 50_000_000;
+    private int MAX_MULTIPART_SIZE = 25_000_000;
+    private int MAX_REQUEST_SIZE = 100_000_000;
 
     private int DOWNLOAD_BATCH_SIZE = 1000;
     private int RETRY_COUNT = 3;
@@ -139,15 +139,14 @@ namespace Speckle.Core.Transports.ServerUtils
       {
         using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
         {
-          while (reader.Peek() > 0)
+          string line;
+          while ((line = reader.ReadLine()) != null)
           {
             if (CancellationToken.IsCancellationRequested)
               return;
 
-            var line = reader.ReadLine();
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             onObjectCallback(pcs[0], pcs[1]);
-
           }
         }
       }

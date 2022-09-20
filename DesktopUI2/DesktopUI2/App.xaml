@@ -9,16 +9,10 @@
     <local:ViewLocator />
   </Application.DataTemplates>
   <Application.Styles>
+    <themes:MaterialThemeBase />
     <StyleInclude Source="avares://Material.Avalonia/Material.Avalonia.Templates.xaml" />
     <StyleInclude Source="avares://Material.Icons.Avalonia/App.xaml" />
     <StyleInclude Source="/Styles/Styles.xaml" />
   </Application.Styles>
-  <Application.Resources>
-    <style:SpeckleTheme
-      BaseTheme="Inherit"
-      PrimaryColor="Grey"
-      SecondaryColor="Orange" />
-  </Application.Resources>
-
-
+  <Application.Resources />
 </Application>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamo", "ConnectorDynamo\ConnectorDynamo.csproj", "{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}"
 EndProject
@@ -38,18 +38,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2021", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2022", "..\Objects\Converters\ConverterDynamo\ConverterDynamoRevit2022\ConverterDynamoRevit2022.csproj", "{88D1CCC9-6FDE-452F-BC7C-D03560CE57D2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2023", "..\Objects\Converters\ConverterDynamo\ConverterDynamoRevit2023\ConverterDynamoRevit2023.csproj", "{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterDxf", "..\Objects\Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{BF4DCC7D-5F05-4900-BA97-148652AA6E79}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{2a97fbbe-9ee1-4f52-adf1-26ccdb739797}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2a97fbbe-9ee1-4f52-adf1-26ccdb739797}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
-		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4fb7ca53-b611-4ba3-831b-8bb8eaa0611c}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
-		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{88d1ccc9-6fde-452f-bc7c-d03560ce57d2}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{88d1ccc9-6fde-452f-bc7c-d03560ce57d2}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{f9c3aec5-95cf-4fbc-8c19-189597f24171}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{f9c3aec5-95cf-4fbc-8c19-189597f24171}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -95,6 +88,14 @@ Global
 		{88D1CCC9-6FDE-452F-BC7C-D03560CE57D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88D1CCC9-6FDE-452F-BC7C-D03560CE57D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88D1CCC9-6FDE-452F-BC7C-D03560CE57D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -110,8 +111,23 @@ Global
 		{485AACF5-F27C-427C-AD55-719062E6BD0B} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 		{2A97FBBE-9EE1-4F52-ADF1-26CCDB739797} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
 		{88D1CCC9-6FDE-452F-BC7C-D03560CE57D2} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
+		{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207} = {6E326DD0-9617-4A93-B410-69AFFB446B1C}
+		{BF4DCC7D-5F05-4900-BA97-148652AA6E79} = {A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{0b3d9ae3-def6-4cd6-be44-9c7cf190e207}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{0b3d9ae3-def6-4cd6-be44-9c7cf190e207}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{2a97fbbe-9ee1-4f52-adf1-26ccdb739797}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2a97fbbe-9ee1-4f52-adf1-26ccdb739797}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4fb7ca53-b611-4ba3-831b-8bb8eaa0611c}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{88d1ccc9-6fde-452f-bc7c-d03560ce57d2}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{88d1ccc9-6fde-452f-bc7c-d03560ce57d2}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{f9c3aec5-95cf-4fbc-8c19-189597f24171}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{f9c3aec5-95cf-4fbc-8c19-189597f24171}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

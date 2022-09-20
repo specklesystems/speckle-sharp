@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Models;
 using Speckle.ConnectorCSI.Util;
 using System.Timers;
 using CSiAPIv1;
 using Speckle.Core.Kits;
+using System.Threading.Tasks;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -14,39 +16,16 @@ namespace Speckle.ConnectorCSI.UI
   {
     public static cSapModel Model { get; set; }
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
-
-    public Timer SelectionTimer;
     public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
-
-
     public ConnectorBindingsCSI(cSapModel model)
     {
       Model = model;
-      SelectionTimer = new Timer(2000) { AutoReset = true, Enabled = true };
-      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-      SelectionTimer.Start();
-    }
-
-    private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-      if (Model == null)
-      {
-        return;
-      }
-
-      var selection = GetSelectedObjects();
-      //TO DO
-
-
-      //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selection.Count });
-      //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selection });
     }
 
     public override List<ReceiveMode> GetReceiveModes()
     {
-      return new List<ReceiveMode> { ReceiveMode.Create };
+      return new List<ReceiveMode> { ReceiveMode.Create, ReceiveMode.Update };
     }
-
 
     #region boilerplate
     public override string GetActiveViewName()
@@ -85,12 +64,18 @@ namespace Speckle.ConnectorCSI.UI
       throw new NotImplementedException();
     }
 
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
+    }
+
+    public override void ResetDocument()
+    {
+      // TODO!
+    }
 
     #endregion
-
-
-
-
 
   }
 }

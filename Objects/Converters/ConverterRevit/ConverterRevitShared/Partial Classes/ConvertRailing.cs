@@ -9,28 +9,34 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
+    public ApplicationObject RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
     {
+      var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
+      var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitRailing, appObj, out appObj))
+        return appObj;
+
       if (speckleRailing.path == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only line based Railings are currently supported.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Path was null");
+        return appObj;
       }
 
-      var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
-
-      if (revitRailing != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
+      if (!GetElementType<RailingType>(speckleRailing, appObj, out RailingType railingType))
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleRailing.applicationId, ApplicationGeneratedId = revitRailing.UniqueId, NativeObject = revitRailing}
-      };
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
-      var railingType = GetElementType<RailingType>(speckleRailing);
-      Level level = ConvertLevelToRevit(speckleRailing.level);
+      Level level = ConvertLevelToRevit(speckleRailing.level, out ApplicationObject.State levelState);
+      if (level == null) //we currently don't support railings hosted on stairs, and these have null level
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Level was null");
+        return appObj;
+      }
 
-      //we currently don't support railings hosted on stairs, and these have null level
-      if (level == null)
-        return null;
       var baseCurve = CurveArrayToCurveLoop(CurveToNative(speckleRailing.path));
 
       //if it's a new element, we don't need to update certain properties
@@ -42,13 +48,25 @@ namespace Objects.Converter.Revit
       }
       if (revitRailing == null)
       {
-        throw (new Exception($"Failed to create railing ${speckleRailing.applicationId}."));
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Creation returned null");
+        return appObj;
       }
 
       if (revitRailing.GetTypeId() != railingType.Id)
-      {
         revitRailing.ChangeTypeId(railingType.Id);
+
+      if (speckleRailing.topRail != null)
+      {
+        GetElementType<TopRailType>(speckleRailing.topRail, appObj, out TopRailType topRailType);
+
+        if (GetParamValue<int>(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL) == 0)
+          TrySetParam(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL, 1);
+
+        if (railingType.TopRailType != topRailType.Id && topRailType != null)
+          railingType.TopRailType = topRailType.Id;
+
       }
+
 
       if (isUpdate)
       {
@@ -57,31 +75,30 @@ namespace Objects.Converter.Revit
       }
 
       if (speckleRailing.flipped != revitRailing.Flipped)
-      {
         revitRailing.Flip();
-      }
 
       SetInstanceParameters(revitRailing, speckleRailing);
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
+      if (speckleRailing.topRail != null)
       {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleRailing.applicationId,
-        ApplicationGeneratedId = revitRailing.UniqueId,
-        NativeObject = revitRailing
-        }
-      };
+        // This call to regenerate is to reflect the generation 
+        // of the TopRail element associated with the Railing element
+        Doc.Regenerate();
 
+        var revitTopRail = Doc.GetElement(revitRailing.TopRail);
+
+        SetInstanceParameters(revitTopRail, speckleRailing.topRail);
+      }
+
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: revitRailing.UniqueId, convertedItem: revitRailing);
       Doc.Regenerate();
-      Report.Log($"{(isUpdate ? "Updated" : "Created")} Railing {revitRailing.Id}");
-      return placeholders;
+      return appObj;
     }
 
     //TODO: host railings, where possible
     private RevitRailing RailingToSpeckle(Railing revitRailing)
     {
-
       var railingType = revitRailing.Document.GetElement(revitRailing.GetTypeId()) as RailingType;
       var speckleRailing = new RevitRailing();
       //speckleRailing.family = railingType.FamilyName;
@@ -91,10 +108,38 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
-
       speckleRailing.displayValue = GetElementDisplayMesh(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
-      Report.Log($"Converted Railing {revitRailing.Id}");
 
+      if (revitRailing.TopRail != ElementId.InvalidElementId)
+      {
+
+        var railingIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitRailing.UniqueId);
+        if (railingIndex != -1)
+        {
+          ContextObjects.RemoveAt(railingIndex);
+        }
+
+        var revitTopRail = revitRailing.Document.GetElement(revitRailing.TopRail) as TopRail;
+
+        var isSelectedInContextObjects = ContextObjects
+              .FindIndex(x => x.applicationId == revitTopRail.UniqueId);
+
+        if (isSelectedInContextObjects != -1)
+        {
+          ContextObjects.RemoveAt(isSelectedInContextObjects);
+        }
+
+        if (CanConvertToSpeckle(revitTopRail))
+        {
+          speckleRailing.topRail = TopRailToSpeckle(revitTopRail);
+
+          //ensure top rail mesh is visible in viewer
+          //currently only the top level displayValue is visualized (or anything under 'elements')
+          //if this leads to duplicated meshes in some cases, we might need to remove the display mesh form the TopRail element
+          speckleRailing.displayValue.AddRange(speckleRailing.topRail.displayValue);
+          ConvertedObjectsList.Add(speckleRailing.topRail.applicationId);
+        }
+      }
       return speckleRailing;
     }
 

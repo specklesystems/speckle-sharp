@@ -6,10 +6,11 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Conversion
 {
-  public class SerializeTaskCapableComponent : GH_TaskCapableComponent<string>
+  public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<string>
   {
     private CancellationTokenSource source;
     public override Guid ComponentGuid => new Guid("6F6A5347-8DE1-44FA-8D26-C73FD21650A9");
@@ -47,6 +48,7 @@ namespace ConnectorGrasshopper.Conversion
 
         GH_SpeckleBase item = null;
         DA.GetData(0, ref item);
+        if(DA.Iteration == 0) Tracker.TrackNodeRun();
         var task = Task.Run(() => DoWork(item, DA), source.Token);
         TaskList.Add(task);
         return;
@@ -70,7 +72,7 @@ namespace ConnectorGrasshopper.Conversion
         }
         catch (Exception e)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
           return null;
         }
 

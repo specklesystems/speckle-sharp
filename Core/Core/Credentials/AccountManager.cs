@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
+using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
@@ -105,7 +106,7 @@ namespace Speckle.Core.Credentials
 
         var request = new GraphQLRequest
         {
-          Query = @"query { user { id name email company avatar} serverInfo { name company adminContact description version} }"
+          Query = @"query { user { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
         };
 
         var res = await client.SendQueryAsync<UserServerInfoResponse>(request).ConfigureAwait(false);
@@ -129,12 +130,8 @@ namespace Speckle.Core.Credentials
     public static string GetDefaultServerUrl()
     {
       var defaultServerUrl = "https://speckle.xyz";
-      var local = Environment.SpecialFolder.ApplicationData;
-      var system = Environment.SpecialFolder.CommonApplicationData;
 
-      var folder = Assembly.GetAssembly(typeof(AccountManager)).Location.Contains("ProgramData") ? system : local;
-
-      var customServerFile = Path.Combine(Environment.GetFolderPath(folder), "Speckle", "server");
+      var customServerFile = Path.Combine(Helpers.UserSpeckleFolderPath, "server");
       if (File.Exists(customServerFile))
       {
         var customUrl = File.ReadAllText(customServerFile);
@@ -168,10 +165,13 @@ namespace Speckle.Core.Credentials
       if (defaultAccount == null)
       {
         var firstAccount = GetAccounts().FirstOrDefault();
-        if (firstAccount == null)
-        {
-          Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.SentryLevel.Info);
-        }
+        // We disabled this logging cause of the infinite loop:
+        // - Log.CaptureException -> Log.Initialize -> AccountManager.GetDefaultAccount -> null -> Log.CaptureException
+        // check with Matteo if we really need this
+        // if (firstAccount == null)
+        // {
+        //   Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.SentryLevel.Info);
+        // }
         return firstAccount;
       }
       return defaultAccount;
@@ -186,6 +186,13 @@ namespace Speckle.Core.Credentials
       var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
       var localAccounts = GetLocalAccounts();
 
+      //prevent invalid account from slipping out
+      var invalidAccounts = sqlAccounts.Where(x => x.userInfo == null || x.serverInfo == null);
+      foreach(var acc in invalidAccounts)
+      {
+        RemoveAccount(acc.id);
+      }
+
       var allAccounts = sqlAccounts.Concat(localAccounts);
 
       return allAccounts;
@@ -199,7 +206,7 @@ namespace Speckle.Core.Credentials
     private static IEnumerable<Account> GetLocalAccounts()
     {
       var accounts = new List<Account>();
-      var accountsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts");
+      var accountsDir = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts");
       if (!Directory.Exists(accountsDir))
       {
         return accounts;
@@ -240,6 +247,20 @@ namespace Speckle.Core.Credentials
         var url = account.serverInfo.url;
         var userServerInfo = await GetUserServerInfo(account.token, url);
 
+        //the token has expired
+        //TODO: once we get a token expired exception from the server use that instead
+        if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+        {
+          var tokenResponse = await GetRefreshedToken(account.refreshToken, url);
+          userServerInfo = await GetUserServerInfo(tokenResponse.token, url);
+
+          if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+            continue;
+
+          account.token = tokenResponse.token;
+          account.refreshToken = tokenResponse.refreshToken;
+        }
+
         account.userInfo = userServerInfo.user;
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;
@@ -256,6 +277,34 @@ namespace Speckle.Core.Credentials
     {
       //TODO: reset default account
       AccountStorage.DeleteObject(id);
+
+      var accounts = GetAccounts();
+
+      if (accounts.Any() && !accounts.Any(x => x.isDefault))
+      {
+        ChangeDefaultAccount(accounts.First().id);
+      }
+    }
+
+    /// <summary>
+    /// Changes the default account
+    /// </summary>
+    /// <param name="id"></param>
+    public static void ChangeDefaultAccount(string id)
+    {
+      foreach (var account in GetAccounts())
+      {
+        if (account.id != id)
+        {
+          account.isDefault = false;
+        }
+        else
+        {
+          account.isDefault = true;
+        }
+
+        AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+      }
     }
 
 
@@ -279,9 +328,9 @@ namespace Speckle.Core.Credentials
 
       //does nothing?
       var timeout = TimeSpan.FromMinutes(2);
-      listener.TimeoutManager.HeaderWait = timeout;
-      listener.TimeoutManager.EntityBody = timeout;
-      listener.TimeoutManager.IdleConnection = timeout;
+      //listener.TimeoutManager.HeaderWait = timeout;
+      //listener.TimeoutManager.EntityBody = timeout;
+      //listener.TimeoutManager.IdleConnection = timeout;
 
       var task = Task.Run(() =>
       {
@@ -378,6 +427,49 @@ namespace Speckle.Core.Credentials
           appSecret = "sca",
           accessCode = accessCode,
           challenge = challenge,
+        };
+
+        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+        {
+          string json = JsonConvert.SerializeObject(body);
+
+          streamWriter.Write(json);
+          streamWriter.Flush();
+          streamWriter.Close();
+        }
+
+        var httpResponse = (HttpWebResponse)await Task.Factory.FromAsync<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse, null);
+
+        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+        {
+          var result = streamReader.ReadToEnd();
+          return JsonConvert.DeserializeObject<TokenExchangeResponse>(result);
+        }
+
+
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+
+
+    }
+
+    private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
+    {
+      try
+      {
+        var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{server}/auth/token");
+        httpWebRequest.ContentType = "application/json";
+        httpWebRequest.Method = "POST";
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+        var body = new
+        {
+          appId = "sca",
+          appSecret = "sca",
+          refreshToken = refreshToken
         };
 
         using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
