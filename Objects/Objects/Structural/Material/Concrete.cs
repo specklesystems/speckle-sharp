@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Materials
 {
-  public class Concrete : Material
+  public class Concrete : StructuralMaterial
   {
     public double compressiveStrength { get; set; } //forgo using "strength" property in Material class
     public double tensileStrength { get; set; } //design calc impacts

@@ -10,7 +10,7 @@ namespace Objects.Structural.GSA.Properties
         public int nativeId { get; set; }
 
         [DetachProperty]
-        public Material designMaterial { get; set; }
+        public StructuralMaterial designMaterial { get; set; }
         public double cost { get; set; }
         public double additionalMass { get; set; }
         public string concreteSlabProp { get; set; }
@@ -18,7 +18,7 @@ namespace Objects.Structural.GSA.Properties
         public GSAProperty2D() { }
 
         [SchemaInfo("GSAProperty2D", "Creates a Speckle structural 2D element property for GSA", "GSA", "Properties")]
-        public GSAProperty2D(int nativeId, string name, Material material, double thickness)
+        public GSAProperty2D(int nativeId, string name, StructuralMaterial material, double thickness)
         {
             this.nativeId = nativeId;
             this.name = name;

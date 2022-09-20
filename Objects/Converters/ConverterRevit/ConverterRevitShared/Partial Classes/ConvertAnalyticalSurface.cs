@@ -161,7 +161,7 @@ namespace Objects.Converter.Revit
       var materialAsset = ((PropertySetElement)structMaterial.Document.GetElement(structMaterial.StructuralAssetId)).GetStructuralAsset();
       var materialType = structMaterial.MaterialClass;
 
-      Structural.Materials.Material speckleMaterial = null;
+      Structural.Materials.StructuralMaterial speckleMaterial = null;
       switch (materialType)
       {
         case "Concrete":
@@ -232,7 +232,7 @@ namespace Objects.Converter.Revit
           speckleMaterial = timberMaterial;
           break;
         default:
-          var defaultMaterial = new Structural.Materials.Material
+          var defaultMaterial = new Structural.Materials.StructuralMaterial
           {
             name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId).Name
           };
