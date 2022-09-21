@@ -91,7 +91,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           path: TestResults
       - store_artifacts:
           path: TestResults
-      - codecov/upload
+      # Upload to codecov if necessary
+      # Currently disabled until we figure out a strategy to
+      # upload Core and Objects at once
+      # - codecov/upload
 
   build-desktopui:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
