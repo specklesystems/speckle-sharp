@@ -73,17 +73,28 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - codecov/upload
 
   build-objects:
-    executor:
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
+      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
     steps:
       - checkout
       - run:
           name: Restore Objects
-          command: nuget restore Objects/Objects.sln
+          command: dotnet restore Objects/Objects.sln
       - run:
           name: Build Objects
-          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run:
+          name: Test Objects
+          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - store_test_results:
+          path: TestResults
+      - store_artifacts:
+          path: TestResults
+      # Upload to codecov if necessary
+      # Currently disabled until we figure out a strategy to
+      # upload Core and Objects at once
+      # - codecov/upload
 
   build-desktopui:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
