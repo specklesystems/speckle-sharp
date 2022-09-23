@@ -413,6 +413,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
           if (progress.Report.OperationErrorsCount != 0)
             return;
 
+          // add applicationID xdata before bake
+          var regAppTable = (RegAppTable)tr.GetObject(Doc.Database.RegAppTableId, OpenMode.ForRead);
+          if (!regAppTable.Has(ApplicationIdKey))
+          {
+            using (RegAppTableRecord regAppRecord = new RegAppTableRecord())
+            {
+              regAppRecord.Name = ApplicationIdKey;
+              regAppTable.UpgradeOpen();
+              regAppTable.Add(regAppRecord);
+              regAppTable.DowngradeOpen();
+              tr.AddNewlyCreatedDBObject(regAppRecord, true);
+            }
+          }
+
           // bake
           foreach (var commitObj in commitObjs)
           {
@@ -426,25 +440,38 @@ namespace Speckle.ConnectorAutocadCivil.UI
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                toRemove = Utils.GetObjectsByApplicationId(commitObj.applicationId);
-                //toRemove.ForEach(o => Doc.Objects.Delete(o));
+                toRemove = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
+                if (toRemove.Count > 0)
+                {
+                  isUpdate = true;
+                  foreach (var objId in toRemove)
+                  {
+                    try
+                    {
+                      DBObject obj = tr.GetObject(objId, OpenMode.ForWrite);
+                      obj.Erase();
+                    }
+                    catch(Exception e)
+                    { }
+                  }
+                }
                 break;
               default:
                 break;
             }
-            if (toRemove.Count() > 0) isUpdate = true;
 
             // bake
             if (commitObj.Convertible)
-              BakeObject(commitObj, converter, tr);
+              BakeObject(commitObj, converter, tr, isUpdate);
             else
             {
               foreach (var fallback in commitObj.Fallback)
-                BakeObject(fallback, converter, tr, commitObj);
+                BakeObject(fallback, converter, tr, isUpdate, commitObj);
               commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
                 ApplicationObject.State.Failed : isUpdate ?
                 ApplicationObject.State.Updated : ApplicationObject.State.Created;
             }
+            Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
 
             // log to progress report and update progress
             progress.Report.Log(commitObj);
@@ -578,7 +605,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return convertedList;
     }
 
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, bool isUpdate, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
@@ -621,12 +648,25 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 }
 #endif
 
+                // set application id
+                var appId = parent != null ? parent.applicationId : obj.applicationId;
+                try
+                {
+                  var rb = new ResultBuffer(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), new TypedValue(1000, appId));
+                  var newObj = tr.GetObject(res, OpenMode.ForWrite);
+                  newObj.XData = rb;
+                }
+                catch (Exception e)
+                {
+                  appObj.Log.Add($"Could not attach applicationId: {e.Message}");
+                }
+
                 tr.TransactionManager.QueueForGraphicsFlush();
 
                 if (parent != null)
-                  parent.Update(createdId: res.ToString());
+                  parent.Update(createdId: res.Handle.ToString());
                 else
-                  appObj.Update(createdId: res.ToString());
+                  appObj.Update(createdId: res.Handle.ToString());
 
                 bakedCount++;
               }
@@ -655,6 +695,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
             break;
         }
       }
+
+      if (bakedCount == 0)
+      {
+        if (parent != null)
+          parent.Update(logItem: $"fallback {appObj.id}: could not bake object");
+        else
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
+      }
+      else
+        appObj.Status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
     }
 
     private void DeleteBlocksWithPrefix(string prefix, Transaction tr)

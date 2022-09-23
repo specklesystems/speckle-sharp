@@ -47,6 +47,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static string Slug = HostApplications.Civil.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
+    public static string ApplicationIdKey = "applicationId";
 
     #region extension methods
 
@@ -369,9 +370,40 @@ namespace Speckle.ConnectorAutocadCivil
     }
 #endregion
 
-    public static List<ObjectId> GetObjectsByApplicationId(string appId) //TODO: USE XDATA FOR APPIDS
+    public static List<ObjectId> GetObjectsByApplicationId(this Document doc, Transaction tr, string appId) //TODO: USE XDATA FOR APPIDS
     {
-      return new List<ObjectId>();
+      var foundObjects = new List<ObjectId>();
+
+      // first see if this appid is a handle (autocad appid)
+      if (doc.Database.TryGetObjectId(Utils.GetHandle(appId), out ObjectId id))
+        return new List<ObjectId>() { id };
+
+      // Create a TypedValue array to define the filter criteria
+      TypedValue[] acTypValAr = new TypedValue[1];
+      acTypValAr.SetValue(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), 0);
+
+      // Create a selection filter for the applicationID xdata entry and find all objs with this field
+      SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var res = editor.SelectAll(acSelFtr);
+      if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
+        return foundObjects;
+
+      // loop through all obj with an appId 
+      foreach (var appIdObj in res.Value.GetObjectIds())
+      {
+        // get the db object from id
+        var obj = tr.GetObject(id, OpenMode.ForRead);
+        if (obj != null)
+          foreach (var entry in obj.XData)
+            if (entry.Value as string == appId)
+            {
+              foundObjects.Add(id);
+              break;
+            }
+      }
+
+      return foundObjects;
     }
     public static string ObjectDescriptor(DBObject obj)
     {
