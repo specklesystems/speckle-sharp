@@ -955,7 +955,7 @@ namespace SpeckleRhino
         progress.Update(conversionProgressDict);
 
         // set application ids, also set for speckle schema base object if it exists
-        converted.applicationId = guid;
+        converted.applicationId = applicationId;
         if (converted["@SpeckleSchema"] != null)
         {
           var newSchemaBase = converted["@SpeckleSchema"] as Base;

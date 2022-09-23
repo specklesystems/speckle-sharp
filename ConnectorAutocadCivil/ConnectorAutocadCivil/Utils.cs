@@ -369,6 +369,17 @@ namespace Speckle.ConnectorAutocadCivil
     }
 #endregion
 
+    public static List<ObjectId> GetObjectsByApplicationId(string appId) //TODO: USE XDATA FOR APPIDS
+    {
+      return new List<ObjectId>();
+    }
+    public static string ObjectDescriptor(DBObject obj)
+    {
+      if (obj == null) return String.Empty;
+      var simpleType = obj.GetType().ToString();
+      return $"{simpleType}";
+    }
+
     /// <summary>
     /// Retrieves the document's units.
     /// </summary>

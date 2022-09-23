@@ -181,7 +181,36 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      // TODO!
+        var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+        var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
+        foreach (var arg in args)
+        {
+          try
+          {
+            if (Doc.Database.TryGetObjectId(Utils.GetHandle(arg), out ObjectId id))
+            {
+              if (deselect)
+              {
+                if (currentSelection.Contains(id))
+                  currentSelection.Remove(id);
+              }
+              else
+              {
+                if (!currentSelection.Contains(id))
+                  currentSelection.Add(id);
+              }
+            }
+          }
+          catch
+          {
+
+          }
+        }
+        if (currentSelection.Count == 0)
+          editor.SetImpliedSelection(new ObjectId[0]);
+        else
+          Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
+        Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     }
 
     public override void ResetDocument()
@@ -393,12 +422,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
             var isUpdate = false;
-            var toRemove = new List<Entity>();
+            var toRemove = new List<ObjectId>();
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                toRemove = GetObjectsByApplicationId(commitObj.applicationId);
-                toRemove.ForEach(o => Doc.Objects.Delete(o));
+                toRemove = Utils.GetObjectsByApplicationId(commitObj.applicationId);
+                //toRemove.ForEach(o => Doc.Objects.Delete(o));
                 break;
               default:
                 break;
@@ -412,7 +441,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             {
               foreach (var fallback in commitObj.Fallback)
                 BakeObject(fallback, converter, tr, commitObj);
-              commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == previewObj.Fallback.Count ?
+              commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
                 ApplicationObject.State.Failed : isUpdate ?
                 ApplicationObject.State.Updated : ApplicationObject.State.Created;
             }
@@ -722,10 +751,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.VersionedAppName);
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
+      if (converter == null)
+        throw new Exception("Could not find any Kit!");
+
       var streamId = state.StreamId;
       var client = state.Client;
+      progress.Report = new ProgressReport();
 
       if (state.Filter != null)
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
@@ -740,7 +772,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
         return null;
       }
 
@@ -826,44 +858,47 @@ namespace Speckle.ConnectorAutocadCivil.UI
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;
 
-        bool renamedlayers = false;
-
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
+          // handle user cancellation
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
           {
             tr.Commit();
             return;
           }
 
-          conversionProgressDict["Conversion"]++;
-          progress.Update(conversionProgressDict);
-
           // get the db object from id
           Handle hn = Utils.GetHandle(autocadObjectHandle);
           DBObject obj = hn.GetObject(tr, out string type, out string layer);
 
+          // create applicationobject for reporting
+          Base converted = null;
+          var descriptor = Utils.ObjectDescriptor(obj);
+          var applicationId = autocadObjectHandle; // TODO: ADD TEST FOR XDATA APPID
+          ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor) { applicationId = applicationId };
+
           if (obj == null)
           {
-            progress.Report.Log($"Skipped not found object: ${autocadObjectHandle}.");
+            progress.Report.LogOperationError(new Exception($"Failed to find doc object ${autocadObjectHandle}."));
             continue;
           }
 
           if (!converter.CanConvertToSpeckle(obj))
           {
-            progress.Report.Log($"Skipped not supported type: ${type}. Object ${obj.Id} not sent.");
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in AutoCAD/Civil3D");
+            progress.Report.Log(reportObj);
             continue;
           }
 
           try
           {
             // convert obj
-            Base converted = null;
-            string containerName = string.Empty;
+            converter.Report.Log(reportObj); // Log object so converter can access
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
-              progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+              progress.Report.Log(reportObj);
               continue;
             }
 
@@ -879,35 +914,34 @@ namespace Speckle.ConnectorAutocadCivil.UI
               converted["propertySets"] = propertySets;
 #endif
 
-            if (obj is BlockReference)
-              containerName = "Blocks";
-            else
-            {
-              // remove invalid chars from layer name
-              string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-              containerName = cleanLayerName;
-              if (!cleanLayerName.Equals(layer))
-                renamedlayers = true;
-            }
+            string containerName = obj is BlockReference ? 
+              "Blocks" : 
+              Utils.RemoveInvalidDynamicPropChars(layer); // remove invalid chars from layer name
 
             if (commitObject[$"@{containerName}"] == null)
               commitObject[$"@{containerName}"] = new List<Base>();
             ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
+            // set application id
+            converted.applicationId = applicationId;
+
+            // update progress
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
 
-            converted.applicationId = autocadObjectHandle;
+            // log report object
+            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
+            progress.Report.Log(reportObj);
+
+            convertedCount++;
           }
           catch (Exception e)
           {
-            progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}: {e.Message}"));
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+            progress.Report.Log(reportObj);
+            continue;
           }
-          convertedCount++;
         }
-
-        if (renamedlayers)
-          progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
 
         tr.Commit();
       }

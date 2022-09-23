@@ -340,7 +340,7 @@ namespace Objects.Converter.AutocadCivil
 
         case Alignment o:
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
-          acadObj = AlignmentToNative(o);
+          acadObj = AlignmentToNative(o, out notes);
 #endif
           acadObj = PolylineToNativeDB(o.displayValue);
           break;
