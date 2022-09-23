@@ -7,6 +7,7 @@ using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
+using Rhino.Runtime;
 using Speckle.Core.Api;
 
 namespace SpeckleRhino
@@ -96,11 +97,16 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-      // The user is probably using Rhino Inside and Avalonia was already initialized there
-      if (App.Current != null)
+      string processName = "";
+      System.Version processVersion = null;
+      HostUtils.GetCurrentProcessInfo(out processName, out processVersion);
+
+      // The user is probably using Rhino Inside and Avalonia was already initialized there  or will be initialized later and will throw an error
+      // https://speckle.community/t/revit-command-failure-for-external-command/3489/27
+      if (!processName.Equals("rhino", StringComparison.InvariantCultureIgnoreCase))
       {
 
-        errorMessage = "Speckle cannot be loaded in multiple application at the same time.";
+        errorMessage = "Speckle does not currently support Rhino.Inside";
         RhinoApp.CommandLineOut.WriteLine(errorMessage);
         return LoadReturnCode.ErrorNoDialog;
       }
