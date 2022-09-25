@@ -342,7 +342,9 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception e)
           {
-            Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
+            //NOTE: the line below crashes revit at startup! We need to investigate more
+            //Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
           }
         }
         Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
