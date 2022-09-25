@@ -159,40 +159,8 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public StreamAccountWrapper SelectedStream
-    {
-      set
-      {
-        if (value != null)
-        {
-          var streamState = new StreamState(value);
-          OpenStream(streamState);
-        }
-      }
-    }
 
-    private StreamViewModel _selectedSavedStream;
-    public StreamViewModel SelectedSavedStream
-    {
-      set
-      {
-        if (value != null && !value.NoAccess)
-        {
-          try
-          {
-            value.UpdateVisualParentAndInit(HostScreen);
-            MainViewModel.RouterInstance.Navigate.Execute(value);
-            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
-            _selectedSavedStream = value;
-          }
-          catch (Exception ex)
-          {
-
-          }
-        }
-      }
-    }
-
+    private StreamViewModel _selectedSavedStream = null;
     private ObservableCollection<StreamViewModel> _savedStreams = new ObservableCollection<StreamViewModel>();
     public ObservableCollection<StreamViewModel> SavedStreams
     {
@@ -535,20 +503,6 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(streamAcc.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
     }
 
-    public void SendCommand(object parameter)
-    {
-      var streamAcc = parameter as StreamAccountWrapper;
-      var streamState = new StreamState(streamAcc);
-      OpenStream(streamState);
-    }
-
-    public void ReceiveCommand(object parameter)
-    {
-      var streamAcc = parameter as StreamAccountWrapper;
-      var streamState = new StreamState(streamAcc) { IsReceiver = true };
-      OpenStream(streamState);
-    }
-
     public async void NewStreamCommand()
     {
       var dialog = new NewStreamDialog(Accounts);
@@ -563,7 +517,7 @@ namespace DesktopUI2.ViewModels
           var stream = await client.StreamGet(streamId);
           var streamState = new StreamState(dialog.Account, stream);
 
-          OpenStream(streamState);
+          MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
 
           Analytics.TrackEvent(dialog.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Create" } });
 
@@ -618,7 +572,7 @@ namespace DesktopUI2.ViewModels
             streamState.BranchName = commit.branchName;
           }
 
-          OpenStream(streamState);
+          MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
 
           Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Add From URL" } });
         }
@@ -663,9 +617,34 @@ namespace DesktopUI2.ViewModels
       return !InProgress;
     }
 
-    private void OpenStream(StreamState streamState)
+
+
+    private void OpenStreamCommand(object streamAccountWrapper)
     {
-      MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
+      if (streamAccountWrapper != null)
+      {
+        var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
+        MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
+      }
+    }
+
+
+    private void OpenSavedStreamCommand(object streamViewModel)
+    {
+      if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
+      {
+        try
+        {
+          svm.UpdateVisualParentAndInit(HostScreen);
+          MainViewModel.RouterInstance.Navigate.Execute(svm);
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Edit" } });
+          _selectedSavedStream = svm;
+        }
+        catch (Exception ex)
+        {
+
+        }
+      }
     }
 
     public void ToggleDarkThemeCommand()
