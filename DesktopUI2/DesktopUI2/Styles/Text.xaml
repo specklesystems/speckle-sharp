@@ -18,13 +18,13 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="TextBlock.Grotesk">
-    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="FontSize" Value="14" />
   </Style>
 
   <Style Selector="Button &gt; TextBlock, TextBlock.ButtonText">
-    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="FontWeight" Value="Medium" />
   </Style>
