@@ -38,6 +38,7 @@ namespace Speckle.Core.Credentials
     public string refreshToken { get; set; }
 
     public bool isDefault { get; set; } = false;
+    public bool isOnline { get; set; } = true;
 
     public ServerInfo serverInfo { get; set; }
 

@@ -188,7 +188,7 @@ namespace Speckle.Core.Credentials
 
       //prevent invalid account from slipping out
       var invalidAccounts = sqlAccounts.Where(x => x.userInfo == null || x.serverInfo == null);
-      foreach(var acc in invalidAccounts)
+      foreach (var acc in invalidAccounts)
       {
         RemoveAccount(acc.id);
       }
@@ -245,25 +245,36 @@ namespace Speckle.Core.Credentials
       foreach (var account in GetAccounts())
       {
         var url = account.serverInfo.url;
-        var userServerInfo = await GetUserServerInfo(account.token, url);
 
-        //the token has expired
-        //TODO: once we get a token expired exception from the server use that instead
-        if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+        try
         {
-          var tokenResponse = await GetRefreshedToken(account.refreshToken, url);
-          userServerInfo = await GetUserServerInfo(tokenResponse.token, url);
+          var userServerInfo = await GetUserServerInfo(account.token, url);
 
+
+          //the token has expired
+          //TODO: once we get a token expired exception from the server use that instead
           if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
-            continue;
+          {
+            var tokenResponse = await GetRefreshedToken(account.refreshToken, url);
+            userServerInfo = await GetUserServerInfo(tokenResponse.token, url);
 
-          account.token = tokenResponse.token;
-          account.refreshToken = tokenResponse.refreshToken;
+            if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+              throw new SpeckleException("Could not refresh token");
+
+            account.token = tokenResponse.token;
+            account.refreshToken = tokenResponse.refreshToken;
+          }
+
+          account.isOnline = true;
+          account.userInfo = userServerInfo.user;
+          account.serverInfo = userServerInfo.serverInfo;
+          account.serverInfo.url = url;
+
         }
-
-        account.userInfo = userServerInfo.user;
-        account.serverInfo = userServerInfo.serverInfo;
-        account.serverInfo.url = url;
+        catch (Exception ex)
+        {
+          account.isOnline = false;
+        }
 
         AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
       }
