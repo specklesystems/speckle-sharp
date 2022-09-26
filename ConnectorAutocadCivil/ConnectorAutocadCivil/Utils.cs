@@ -375,8 +375,9 @@ namespace Speckle.ConnectorAutocadCivil
       var foundObjects = new List<ObjectId>();
 
       // first see if this appid is a handle (autocad appid)
-      if (doc.Database.TryGetObjectId(Utils.GetHandle(appId), out ObjectId id))
-        return new List<ObjectId>() { id };
+      if (Utils.GetHandle(appId, out Handle handle))
+        if (doc.Database.TryGetObjectId(handle, out ObjectId id))
+          return new List<ObjectId>() { id };
 
       // Create a TypedValue array to define the filter criteria
       TypedValue[] acTypValAr = new TypedValue[1];
@@ -393,12 +394,12 @@ namespace Speckle.ConnectorAutocadCivil
       foreach (var appIdObj in res.Value.GetObjectIds())
       {
         // get the db object from id
-        var obj = tr.GetObject(id, OpenMode.ForRead);
+        var obj = tr.GetObject(appIdObj, OpenMode.ForRead);
         if (obj != null)
           foreach (var entry in obj.XData)
             if (entry.Value as string == appId)
             {
-              foundObjects.Add(id);
+              foundObjects.Add(appIdObj);
               break;
             }
       }
@@ -444,9 +445,15 @@ namespace Speckle.ConnectorAutocadCivil
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public static Handle GetHandle(string str)
+    public static bool GetHandle(string str, out Handle handle)
     {
-      return new Handle(Convert.ToInt64(str, 16));
+      handle = new Handle();
+      try
+      {
+        handle = new Handle(Convert.ToInt64(str, 16));
+      }
+      catch { return false; }
+      return true;
     }
 
     /// <summary>

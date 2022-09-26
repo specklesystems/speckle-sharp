@@ -187,19 +187,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           try
           {
-            if (Doc.Database.TryGetObjectId(Utils.GetHandle(arg), out ObjectId id))
-            {
-              if (deselect)
+            if (Utils.GetHandle(arg, out Handle handle))
+              if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
               {
-                if (currentSelection.Contains(id))
-                  currentSelection.Remove(id);
+                if (deselect)
+                {
+                  if (currentSelection.Contains(id))
+                    currentSelection.Remove(id);
+                }
+                else
+                {
+                  if (!currentSelection.Contains(id))
+                    currentSelection.Add(id);
+                }
               }
-              else
-              {
-                if (!currentSelection.Contains(id))
-                  currentSelection.Add(id);
-              }
-            }
           }
           catch
           {
@@ -346,6 +347,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
           {
             converter.Report.LogOperationError(new Exception($"Failed to remove existing layers or blocks starting with {commitPrefix} before importing new geometry."));
           }
+
+          // clear previously stored objects
+          StoredObjects.Clear();
 
           // flatten the commit object to retrieve children objs
           int count = 0;
@@ -814,10 +818,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       // remove deleted object ids
       var deletedElements = new List<string>();
-      foreach (var handle in state.SelectedObjectIds)
-        if (Doc.Database.TryGetObjectId(Utils.GetHandle(handle), out ObjectId id))
-          if (id.IsErased || id.IsNull)
-            deletedElements.Add(handle);
+      foreach (var selectedId in state.SelectedObjectIds)
+        if (Utils.GetHandle(selectedId, out Handle handle))
+          if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+            if (id.IsErased || id.IsNull)
+              deletedElements.Add(selectedId);
+
       state.SelectedObjectIds = state.SelectedObjectIds.Where(o => !deletedElements.Contains(o)).ToList();
 
       if (state.SelectedObjectIds.Count == 0)
@@ -918,20 +924,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
 
           // get the db object from id
-          Handle hn = Utils.GetHandle(autocadObjectHandle);
-          DBObject obj = hn.GetObject(tr, out string type, out string layer);
+          DBObject obj = null;
+          string layer = null;
+          if (Utils.GetHandle(autocadObjectHandle, out Handle hn))
+          {
+            obj = hn.GetObject(tr, out string type, out layer);
+          }
+          else
+          {
+            progress.Report.LogOperationError(new Exception($"Failed to find doc object ${autocadObjectHandle}."));
+            continue;
+          }
 
           // create applicationobject for reporting
           Base converted = null;
           var descriptor = Utils.ObjectDescriptor(obj);
           var applicationId = autocadObjectHandle; // TODO: ADD TEST FOR XDATA APPID
           ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor) { applicationId = applicationId };
-
-          if (obj == null)
-          {
-            progress.Report.LogOperationError(new Exception($"Failed to find doc object ${autocadObjectHandle}."));
-            continue;
-          }
 
           if (!converter.CanConvertToSpeckle(obj))
           {
