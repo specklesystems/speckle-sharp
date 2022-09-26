@@ -18,7 +18,7 @@ namespace Objects.BuiltElements.TeklaStructures
     [DetachProperty]
     public SectionProfile profile { get; set; }
     [DetachProperty]
-    public Material material { get; set; }
+    public StructuralMaterial material { get; set; }
     [DetachProperty]
     public string finish { get; set; }
     [DetachProperty]
@@ -45,7 +45,7 @@ namespace Objects.BuiltElements.TeklaStructures
 
 
     [SchemaInfo("ContourPlate", "Creates a TeklaStructures contour plate.", "Tekla", "Structure")]
-    public TeklaContourPlate(SectionProfile profile, Polyline outline, string finish, string classNumber, string units, Material material = null, TeklaPosition position = null, Base rebars = null)
+    public TeklaContourPlate(SectionProfile profile, Polyline outline, string finish, string classNumber, string units, StructuralMaterial material = null, TeklaPosition position = null, Base rebars = null)
     {
       this.profile = profile;
       this.outline = outline;

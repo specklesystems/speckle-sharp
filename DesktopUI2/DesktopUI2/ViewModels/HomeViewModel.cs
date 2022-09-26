@@ -358,9 +358,9 @@ namespace DesktopUI2.ViewModels
             {
 
               if (SelectedFilter == Filter.favorite)
-                Streams.AddRange((await client.FavoriteStreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+                Streams.AddRange((await client.FavoriteStreamsGet(25)).Select(x => new StreamAccountWrapper(x, account.Account)));
               else
-                Streams.AddRange((await client.StreamsGet()).Select(x => new StreamAccountWrapper(x, account.Account)));
+                Streams.AddRange((await client.StreamsGet(25)).Select(x => new StreamAccountWrapper(x, account.Account)));
             }
             //SEARCH
             else
@@ -368,7 +368,7 @@ namespace DesktopUI2.ViewModels
               //do not search favorite streams, too much hassle
               if (SelectedFilter == Filter.favorite)
                 SelectedFilter = Filter.all;
-              Streams.AddRange((await client.StreamSearch(SearchQuery)).Select(x => new StreamAccountWrapper(x, account.Account)));
+              Streams.AddRange((await client.StreamSearch(SearchQuery, 25)).Select(x => new StreamAccountWrapper(x, account.Account)));
             }
 
           }
