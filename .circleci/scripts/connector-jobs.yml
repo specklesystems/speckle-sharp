@@ -143,6 +143,3 @@ archicad:
       slnname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
       slug: archicad
-  - setup-archicad-dev-mac:
-      requires:
-        - get-ci-tools

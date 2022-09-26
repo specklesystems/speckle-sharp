@@ -320,24 +320,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           paths:
             - ConnectorArchicad/AddOn/Build
 
-  setup-archicad-dev-mac: # get Archicad dev kit
-    macos:
-      xcode: 12.5.1
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Install cmake
-          command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake
-      - run:
-          name: cmake AddOn
-          command: |
-            cd ConnectorArchicad/AddOn
-            mkdir Build
-            cmake -B "./Build/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
-
   deploy-connectors: # Uploads all installers found to S3
     docker:
       - image: cimg/base:2021.01
