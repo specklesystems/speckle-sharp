@@ -395,7 +395,7 @@ namespace Objects.Converter.RhinoGh
       // add application id
       try
       {
-        _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId)
+        _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
       }
       catch { }
 
