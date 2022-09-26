@@ -183,18 +183,18 @@
           </ListBox>
         </StackPanel>
       </ScrollViewer>
-      <StackPanel
-        Orientation="Horizontal"
-        HorizontalAlignment="Right">
+      <Grid
+        ColumnDefinitions="*, auto, *">
         <Button
           MaxWidth="200"
           CornerRadius="20"
           Margin="5"
           HorizontalAlignment="Left"
           Command="{Binding ImportFamilyCommand}">
-          Import
+          Import Types
         </Button>
         <Button
+          Grid.Column="2"
           MaxWidth="200"
           CornerRadius="20"
           Margin="5"
@@ -202,7 +202,7 @@
           Command="{Binding Done}">
           Done
         </Button>
-      </StackPanel>
+      </Grid>
     </StackPanel>
 
   </Grid>

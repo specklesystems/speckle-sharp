@@ -1,15 +1,12 @@
 ﻿using Avalonia;
 using DesktopUI2.Views.Windows.Dialogs;
-using Newtonsoft.Json;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Runtime.Serialization;
-using System.Xml.Serialization;
 
 namespace DesktopUI2.ViewModels
 {
@@ -27,6 +24,7 @@ namespace DesktopUI2.ViewModels
     private string TypeCatMisc = "Miscellaneous"; // needs to match string in connectorRevit.Mappings
 
     private bool isSearching = false;
+    public bool DoneMapping = false;
     private Dictionary<string,List<string>> _hostTypeValuesDict { get; } = new Dictionary<string, List<string>>();
     private string _searchQuery;
     public string SearchQuery
@@ -56,7 +54,8 @@ namespace DesktopUI2.ViewModels
       get => _selectedType;
       set
       {
-        SelectedMappingValue.OutgoingType = value;
+        if (SelectedMappingValue != null)
+          SelectedMappingValue.OutgoingType = value;
         this.RaiseAndSetIfChanged(ref _selectedType, value);
       }
     }
@@ -169,7 +168,7 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    public MappingViewModel(Dictionary<string, List<MappingValue>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, ProgressViewModel progress, bool newTypesExist = false)
+    public MappingViewModel(Dictionary<string, List<MappingValue>> firstPassMapping, Dictionary<string, List<string>> hostTypesDict, bool newTypesExist = false)
     {
       Mapping = new Dictionary<string, List<MappingValue>>();
       Bindings = Locator.Current.GetService<ConnectorBindings>();
@@ -236,13 +235,14 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public async void ImportFamilyCommand()
+    public void ImportFamilyCommand()
     {
-      Mapping = await Bindings.ImportFamilyCommand(Mapping);
+      MappingViewDialog.Instance.Close(Mapping);
     }
 
     public void Done()
     {
+      DoneMapping = true;
       MappingViewDialog.Instance.Close(Mapping);
     }
   }

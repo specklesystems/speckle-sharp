@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
-
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <LangVersion>9.0</LangVersion>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
@@ -11,6 +11,7 @@
         <PackageReference Include="NUnit" Version="3.13.1" />
         <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
         <PackageReference Include="coverlet.collector" Version="3.0.2" />
+        <PackageReference Include="JunitXml.TestLogger" Version="3.0.114" />
     </ItemGroup>
 
     <ItemGroup>

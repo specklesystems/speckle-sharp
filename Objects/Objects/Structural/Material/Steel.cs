@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Materials
 {
-  public class Steel : Material
+  public class Steel : StructuralMaterial
   {
     public double yieldStrength { get; set; } //or yieldStress
     public double ultimateStrength { get; set; } //ultimateStress

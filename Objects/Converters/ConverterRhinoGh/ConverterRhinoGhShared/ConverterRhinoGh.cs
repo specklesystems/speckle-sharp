@@ -99,6 +99,7 @@ namespace Objects.Converter.RhinoGh
 
     // speckle user string for custom schemas
     private string SpeckleSchemaKey = "SpeckleSchema";
+    private string ApplicationIdKey = "applicationId";
 
     public RH.Mesh GetRhinoRenderMesh(RhinoObject rhinoObj)
     {
@@ -129,7 +130,8 @@ namespace Objects.Converter.RhinoGh
 
       if (@object is RhinoObject ro)
       {
-        reportObj = new ApplicationObject(ro.Id.ToString(), ro.ObjectType.ToString());
+        var applicationId = ro.Attributes.GetUserString(ApplicationIdKey) ?? ro.Id.ToString();
+        reportObj = new ApplicationObject(ro.Id.ToString(), ro.ObjectType.ToString()) { applicationId = applicationId };
         material = RenderMaterialToSpeckle(ro.GetMaterial(true));
         style = DisplayStyleToSpeckle(ro.Attributes);
 

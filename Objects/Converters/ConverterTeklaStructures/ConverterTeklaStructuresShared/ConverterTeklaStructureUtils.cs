@@ -350,9 +350,9 @@ namespace Objects.Converter.TeklaStructures
 
     #endregion
 
-    public Structural.Materials.Material GetMaterial(string teklaMaterialString)
+    public Structural.Materials.StructuralMaterial GetMaterial(string teklaMaterialString)
     {
-      Structural.Materials.Material speckleMaterial = null;
+      Structural.Materials.StructuralMaterial speckleMaterial = null;
 
       MaterialItem materialItem = new MaterialItem();
       if (materialItem.Select(teklaMaterialString))
@@ -368,7 +368,7 @@ namespace Objects.Converter.TeklaStructures
             speckleMaterial.materialType = Structural.MaterialType.Concrete;
             break;
           default:
-            speckleMaterial = new Structural.Materials.Material();
+            speckleMaterial = new Structural.Materials.StructuralMaterial();
             break;
         }
         speckleMaterial.name = materialItem.MaterialName;

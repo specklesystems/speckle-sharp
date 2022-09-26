@@ -1,26 +1,25 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
-using Speckle.Core.Credentials;
-using System;
+using ReactiveUI;
+using Speckle.Core.Logging;
 using System.Collections.Generic;
+using Avalonia.Interactivity;
+using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace DesktopUI2.Views.Windows.Dialogs
 {
-  public partial class MappingViewDialog : ReactiveUserControl<MappingViewModel>, ICloseable
+  public partial class ImportFamiliesDialog : ReactiveUserControl<ImportFamiliesDialogViewModel>, ICloseable
   {
     #region DialogUserControlSettings
 
     private object? _dialogResult;
 
     public event EventHandler Closed;
-
 
     public Task ShowDialog()
     {
@@ -53,10 +52,10 @@ namespace DesktopUI2.Views.Windows.Dialogs
 
       // wait for file dialog (if the user is importing types) to close before calling
       // "MainViewModel.Instance.DialogBody = null"
-
     }
     #endregion
-    public MappingViewDialog()
+
+    public ImportFamiliesDialog()
     {
       InitializeComponent();
     }
@@ -66,7 +65,7 @@ namespace DesktopUI2.Views.Windows.Dialogs
       AvaloniaXamlLoader.Load(this);
     }
 
-    public static MappingViewDialog Instance { get; private set; }
+    public static ImportFamiliesDialog Instance { get; private set; }
 
   }
 }
