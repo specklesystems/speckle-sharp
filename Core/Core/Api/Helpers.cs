@@ -188,7 +188,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception ex)
       {
-        new SpeckleException($"Could not check for connector updates: {slug}", ex, true, SentryLevel.Warning);
+        //new SpeckleException($"Could not check for connector updates: {slug}", ex, true, SentryLevel.Warning);
       }
 
       return false;
