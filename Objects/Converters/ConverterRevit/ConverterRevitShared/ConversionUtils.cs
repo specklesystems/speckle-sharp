@@ -681,7 +681,9 @@ namespace Objects.Converter.Revit
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
-        elements = new List<Element> { Doc.GetElement(applicationId) };
+        var revElement = Doc.GetElement(applicationId);
+        if (revElement != null)
+          elements.Add(revElement);
       }
       else
       {

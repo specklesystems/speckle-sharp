@@ -14,6 +14,27 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    #region speckle
+    public ApplicationObject CreateAppObject(string id, string applicationId, string speckle_type)
+    {
+      var docObjs = GetExistingElementsByApplicationId(applicationId);
+      var appObj = new ApplicationObject(id, speckle_type) { applicationId = applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObjs.FirstOrDefault(), appObj, out appObj))
+        return appObj;
+
+      foreach (var docObj in docObjs)
+      {
+        if (docObj != null)
+        {
+          // TODO: try updating lines
+          Doc.Delete(docObj.Id);
+        }
+      }
+
+      return appObj;
+    }
     public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
     {
       var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
@@ -25,20 +46,11 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject AlignmentToNative(Alignment alignment)
     {
-      var docObj = GetExistingElementByApplicationId(alignment.applicationId);
-      var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      var appObj = CreateAppObject(alignment.id, alignment.applicationId, alignment.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
 
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
-
       var curves = CurveToNative(alignment.curves);
-      var placeholders = new List<ApplicationObject>();
       var curveEnumerator = curves.GetEnumerator();
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
@@ -52,17 +64,9 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject ModelCurveToNative(ModelCurve speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
 
       var curves = CurveToNative(speckleCurve.baseCurve);
       var curveEnumerator = curves.GetEnumerator();
@@ -89,18 +93,10 @@ namespace Objects.Converter.Revit
       if ((speckleLine as Base).applicationId == null)
         (speckleLine as Base).applicationId = (speckleLine as Base).id;
 
-      var docObjs = GetExistingElementsByApplicationId((speckleLine as Base).applicationId);
-      var appObj = new ApplicationObject(((Base)speckleLine).id, ((Base)speckleLine).speckle_type) { applicationId = ((Base)speckleLine).applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObjs.FirstOrDefault(), appObj, out appObj))
+      var speckleCurve = speckleLine as Base;
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-
-      foreach (var docObj in docObjs)
-      {
-        if (docObj != null)
-          Doc.Delete(docObj.Id);
-      }
 
       try
       {
@@ -155,17 +151,9 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject DetailCurveToNative(DetailCurve speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
 
       var crvEnum = CurveToNative(speckleCurve.baseCurve).GetEnumerator();
       while (crvEnum.MoveNext() && crvEnum.Current != null)
@@ -204,19 +192,11 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
 
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
 
       try
       {
@@ -241,36 +221,33 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
 
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       // try update existing (update model curve geometry curve based on speckle curve)
-      if (docObj != null)
-      {
-        try
-        {
-          var docCurve = docObj as DB.ModelCurve;
-          var revitGeom = docCurve.GeometryCurve;
-          var speckleGeom = baseCurve.get_Item(0);
-          bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
-          if (!fullOverlap)
-            docCurve.SetGeometryCurve(speckleGeom, false);
+      //if (docObj != null)
+      //{
+      //  try
+      //  {
+      //    var docCurve = docObj as DB.ModelCurve;
+      //    var revitGeom = docCurve.GeometryCurve;
+      //    var speckleGeom = baseCurve.get_Item(0);
+      //    bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
+      //    if (!fullOverlap)
+      //      docCurve.SetGeometryCurve(speckleGeom, false);
 
-          appObj.Update(status: ApplicationObject.State.Updated, createdId: docCurve.UniqueId, convertedItem: docCurve);
-          return appObj;
-        }
-        catch
-        {
-          //delete and try to create new line as fallback
-          Doc.Delete(docObj.Id);
-        }
-      }
+      //    appObj.Update(status: ApplicationObject.State.Updated, createdId: docCurve.UniqueId, convertedItem: docCurve);
+      //    return appObj;
+      //  }
+      //  catch
+      //  {
+      //    //delete and try to create new line as fallback
+      //    Doc.Delete(docObj.Id);
+      //  }
+      //}
 
       try
       {
