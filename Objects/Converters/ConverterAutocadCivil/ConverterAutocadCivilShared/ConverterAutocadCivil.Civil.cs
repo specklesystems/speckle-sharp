@@ -182,8 +182,10 @@ namespace Objects.Converter.AutocadCivil
 
       return _alignment;
     }
-    public CivilDB.Alignment AlignmentToNative(Alignment alignment)
+
+    public CivilDB.Alignment AlignmentToNative(Alignment alignment, out List<string> notes)
     {
+      notes = new List<string>();
       var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
       var layer = Doc.Database.LayerZero;
 
@@ -262,7 +264,7 @@ namespace Objects.Converter.AutocadCivil
       }
       catch (Exception e)
       {
-        Report.LogConversionError(e);
+        notes.Add(e.Message);
         return null; 
       }
     }

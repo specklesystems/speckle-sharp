@@ -84,10 +84,13 @@ namespace Objects.Converter.AutocadCivil
       Trans = Doc.TransactionManager.TopTransaction; // set the stream transaction here! make sure it is the top level transaction
     }
 
+    private string ApplicationIdKey = "applicationId";
+
     public Base ConvertToSpeckle(object @object)
     {
       Base @base = null;
       ApplicationObject reportObj = null;
+      DisplayStyle style = null;
       List<string> notes = new List<string>();
 
       switch (@object)
@@ -99,7 +102,10 @@ namespace Objects.Converter.AutocadCivil
           if (schema != null)
             return ObjectToSpeckleBuiltElement(o);
           */
-          reportObj = new ApplicationObject(obj.Id.ToString(), obj.GetType().ToString());
+          var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
+          reportObj = new ApplicationObject(obj.Id.ToString(), obj.GetType().ToString()) { applicationId = appId };
+          style = DisplayStyleToSpeckle(obj as Entity);
+          
           switch (obj)
           {
             case DBPoint o:
@@ -198,43 +204,42 @@ namespace Objects.Converter.AutocadCivil
               break;
 #endif
           }
-
-          DisplayStyle style = DisplayStyleToSpeckle(obj as Entity);
-          if (style != null)
-            @base["displayStyle"] = style;
           break;
-
         case Acad.Geometry.Point3d o:
           @base = PointToSpeckle(o);
           break;
-
         case Acad.Geometry.Vector3d o:
           @base = VectorToSpeckle(o);
           break;
-
         case Acad.Geometry.Line3d o:
           @base = LineToSpeckle(o);
           break;
-
         case Acad.Geometry.LineSegment3d o:
           @base = LineToSpeckle(o);
           break;
-
         case Acad.Geometry.CircularArc3d o:
           @base = ArcToSpeckle(o);
           break;
-
         case Acad.Geometry.Plane o:
           @base = PlaneToSpeckle(o);
           break;
-
         case Acad.Geometry.Curve3d o:
           @base = CurveToSpeckle(o) as Base;
           break;
-
         default:
-          throw new NotSupportedException();
+          if (reportObj != null)
+          {
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
+            Report.UpdateReportObject(reportObj);
+          }
+          return @base;
       }
+
+      if (@base is null) return @base;
+
+      if (style != null)
+        @base["displayStyle"] = style;
+
       if (reportObj != null)
       {
         reportObj.Update(log: notes);
@@ -331,12 +336,11 @@ namespace Objects.Converter.AutocadCivil
 
         case Text o:
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
-          Report.Log($"Created Text {o.id}");
           break;
 
         case Alignment o:
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
-          acadObj = AlignmentToNative(o);
+          acadObj = AlignmentToNative(o, out notes);
 #endif
           acadObj = PolylineToNativeDB(o.displayValue);
           break;
@@ -461,6 +465,5 @@ namespace Objects.Converter.AutocadCivil
           return false;
       }
     }
-
   }
 }

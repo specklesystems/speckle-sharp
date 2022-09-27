@@ -47,6 +47,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static string Slug = HostApplications.Civil.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
+    public static string ApplicationIdKey = "applicationId";
 
     #region extension methods
 
@@ -369,6 +370,49 @@ namespace Speckle.ConnectorAutocadCivil
     }
 #endregion
 
+    public static List<ObjectId> GetObjectsByApplicationId(this Document doc, Transaction tr, string appId) //TODO: USE XDATA FOR APPIDS
+    {
+      var foundObjects = new List<ObjectId>();
+
+      // first see if this appid is a handle (autocad appid)
+      if (Utils.GetHandle(appId, out Handle handle))
+        if (doc.Database.TryGetObjectId(handle, out ObjectId id))
+          return new List<ObjectId>() { id };
+
+      // Create a TypedValue array to define the filter criteria
+      TypedValue[] acTypValAr = new TypedValue[1];
+      acTypValAr.SetValue(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), 0);
+
+      // Create a selection filter for the applicationID xdata entry and find all objs with this field
+      SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var res = editor.SelectAll(acSelFtr);
+      if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
+        return foundObjects;
+
+      // loop through all obj with an appId 
+      foreach (var appIdObj in res.Value.GetObjectIds())
+      {
+        // get the db object from id
+        var obj = tr.GetObject(appIdObj, OpenMode.ForRead);
+        if (obj != null)
+          foreach (var entry in obj.XData)
+            if (entry.Value as string == appId)
+            {
+              foundObjects.Add(appIdObj);
+              break;
+            }
+      }
+
+      return foundObjects;
+    }
+    public static string ObjectDescriptor(DBObject obj)
+    {
+      if (obj == null) return String.Empty;
+      var simpleType = obj.GetType().ToString();
+      return $"{simpleType}";
+    }
+
     /// <summary>
     /// Retrieves the document's units.
     /// </summary>
@@ -401,9 +445,15 @@ namespace Speckle.ConnectorAutocadCivil
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public static Handle GetHandle(string str)
+    public static bool GetHandle(string str, out Handle handle)
     {
-      return new Handle(Convert.ToInt64(str, 16));
+      handle = new Handle();
+      try
+      {
+        handle = new Handle(Convert.ToInt64(str, 16));
+      }
+      catch { return false; }
+      return true;
     }
 
     /// <summary>

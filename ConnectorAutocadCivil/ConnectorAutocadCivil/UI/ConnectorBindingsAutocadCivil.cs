@@ -28,6 +28,18 @@ namespace Speckle.ConnectorAutocadCivil.UI
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
+    private static string ApplicationIdKey = "applicationId";
+
+    /// <summary>
+    /// Stored Base objects from commit flattening on receive: key is the Base id
+    /// </summary>
+    public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+
+    /// <summary>
+    /// Stored document line types used for baking objects on receive
+    /// </summary>
+    public Dictionary<string, ObjectId> LineTypeDictionary = new Dictionary<string, ObjectId>();
+    
     public List<string> GetLayers()
     {
       var layers = new List<string>();
@@ -51,7 +63,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override List<ReceiveMode> GetReceiveModes()
     {
-      return new List<ReceiveMode> { ReceiveMode.Create };
+      return new List<ReceiveMode> { ReceiveMode.Create, ReceiveMode.Update };
     }
 
     #region local streams 
@@ -127,7 +139,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
-
     
     private List<ISetting> CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
     // CAUTION: these strings need to have the same values as in the converter
@@ -170,7 +181,37 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      // TODO!
+        var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+        var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
+        foreach (var arg in args)
+        {
+          try
+          {
+            if (Utils.GetHandle(arg, out Handle handle))
+              if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+              {
+                if (deselect)
+                {
+                  if (currentSelection.Contains(id))
+                    currentSelection.Remove(id);
+                }
+                else
+                {
+                  if (!currentSelection.Contains(id))
+                    currentSelection.Add(id);
+                }
+              }
+          }
+          catch
+          {
+
+          }
+        }
+        if (currentSelection.Count == 0)
+          editor.SetImpliedSelection(new ObjectId[0]);
+        else
+          Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
+        Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     }
 
     public override void ResetDocument()
@@ -194,10 +235,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     }
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.VersionedAppName);
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
       if (converter == null)
         throw new Exception("Could not find any Kit!");
+
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
       var stream = await state.Client.StreamGet(state.StreamId);
@@ -273,6 +314,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           // set the context doc for conversion - this is set inside the transaction loop because the converter retrieves this transaction for all db editing when the context doc is set!
           converter.SetContextDocument(Doc);
+          converter.ReceiveMode = state.ReceiveMode;
 
           // set converter settings as tuples (setting slug, setting selection)
           var settings = new Dictionary<string, string>();
@@ -282,11 +324,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
           converter.SetConverterSettings(settings);
 
           // keep track of conversion progress here
+          progress.Report = new ProgressReport();
           var conversionProgressDict = new ConcurrentDictionary<string, int>();
-          conversionProgressDict["Conversion"] = 1;
-
-          // keep track of any layer name changes for notification here
-          bool changedLayerNames = false;
+          conversionProgressDict["Conversion"] = 0;
 
           // create a commit prefix: used for layers and block definition names
           var commitPrefix = Formatting.CommitInfo(stream.name, state.BranchName, id);
@@ -308,89 +348,140 @@ namespace Speckle.ConnectorAutocadCivil.UI
             converter.Report.LogOperationError(new Exception($"Failed to remove existing layers or blocks starting with {commitPrefix} before importing new geometry."));
           }
 
+          // clear previously stored objects
+          StoredObjects.Clear();
+
           // flatten the commit object to retrieve children objs
           int count = 0;
-          var commitObjs = FlattenCommitObject(commitObject, converter, commitPrefix, state, ref count);
+          var commitObjs = FlattenCommitObject(commitObject, converter, progress, commitPrefix, ref count);
 
           // open model space block table record for write
           BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
 
-          // More efficient this way than doing this per object
-          var lineTypeDictionary = new Dictionary<string, ObjectId>();
+          // Get doc line types for bake: more efficient this way than doing this per object
+          LineTypeDictionary.Clear();
           var lineTypeTable = (LinetypeTable)tr.GetObject(Doc.Database.LinetypeTableId, OpenMode.ForRead);
           foreach (ObjectId lineTypeId in lineTypeTable)
           {
             var linetype = (LinetypeTableRecord)tr.GetObject(lineTypeId, OpenMode.ForRead);
-            lineTypeDictionary.Add(linetype.Name, lineTypeId);
+            LineTypeDictionary.Add(linetype.Name, lineTypeId);
           }
 
+          // conversion
           foreach (var commitObj in commitObjs)
           {
-            // create the object's bake layer if it doesn't already exist
-            (Base obj, string layerName) = commitObj;
+            // handle user cancellation
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+              return;
 
-            conversionProgressDict["Conversion"]++;
-            progress.Update(conversionProgressDict);
-
-            object converted = null;
-            try
-            {
-              converted = converter.ConvertToNative(obj);
-            }
-            catch (Exception e)
-            {
-              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}: {e.Message}"));
-              continue;
-            }
-            var convertedEntity = converted as Entity;
-
-            if (convertedEntity != null)
-            {
-              if (GetOrMakeLayer(layerName, tr, out string cleanName))
+            // convert base (or base fallback values) and store in appobj converted prop
+            if (commitObj.Convertible)
+              try
               {
-                // record if layer name has been modified
-                if (!cleanName.Equals(layerName))
-                  changedLayerNames = true;
-
-                var res = convertedEntity.Append(cleanName);
-                if (res.IsValid)
-                {
-                  // handle display - fallback to rendermaterial if no displaystyle exists
-                  Base display = obj[@"displayStyle"] as Base;
-                  if (display == null) display = obj[@"renderMaterial"] as Base;
-                  if (display != null) Utils.SetStyle(display, convertedEntity, lineTypeDictionary);
-
-                  // add property sets if this is Civil3D
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
-                  if (obj["propertySets"] is IReadOnlyList<object> list)
-                  {
-                    var propertySets = new List<Dictionary<string, object>>();
-                    foreach (var listObj in list)
-                      propertySets.Add(listObj as Dictionary<string, object>);
-                    convertedEntity.SetPropertySets(Doc, propertySets);
-                  }
-#endif
-
-                  tr.TransactionManager.QueueForGraphicsFlush();
-                }
-                else
-                {
-                  progress.Report.LogConversionError(new Exception($"Failed to add converted object {obj.id} of type {obj.speckle_type} to the document."));
-                }
-
+                commitObj.Converted = ConvertObject(commitObj, converter);
               }
-              else
-                progress.Report.LogOperationError(new Exception($"Failed to create layer {layerName} to bake objects into."));
-            }
-            else if (converted == null)
+              catch(Exception e)
+              {
+                commitObj.Log.Add($"Failed conversion: {e.Message}");
+              }
+            else
+              foreach (var fallback in commitObj.Fallback)
+              {
+                try
+                {
+                  fallback.Converted = ConvertObject(fallback, converter);
+                }
+                catch (Exception e)
+                {
+                  commitObj.Log.Add($"Fallback {fallback.id} failed conversion: {e.Message}");
+                }
+                commitObj.Log.AddRange(fallback.Log);
+              }
+
+            // if the object wasnt converted, log fallback status
+            if (commitObj.Converted == null || commitObj.Converted.Count == 0)
             {
-              progress.Report.LogConversionError(new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}."));
+              var convertedFallback = commitObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
+              if (convertedFallback != null && convertedFallback.Count() > 0)
+                commitObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
+              else
+                commitObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
             }
+
+            // add to progress report
+            progress.Report.Log(commitObj);
           }
           progress.Report.Merge(converter.Report);
 
-          if (changedLayerNames)
-            progress.Report.Log($"Layer names were modified: one or more layers contained invalid characters {Utils.invalidChars}");
+          // handle operation errors
+          if (progress.Report.OperationErrorsCount != 0)
+            return;
+
+          // add applicationID xdata before bake
+          var regAppTable = (RegAppTable)tr.GetObject(Doc.Database.RegAppTableId, OpenMode.ForRead);
+          if (!regAppTable.Has(ApplicationIdKey))
+          {
+            using (RegAppTableRecord regAppRecord = new RegAppTableRecord())
+            {
+              regAppRecord.Name = ApplicationIdKey;
+              regAppTable.UpgradeOpen();
+              regAppTable.Add(regAppRecord);
+              regAppTable.DowngradeOpen();
+              tr.AddNewlyCreatedDBObject(regAppRecord, true);
+            }
+          }
+
+          // bake
+          foreach (var commitObj in commitObjs)
+          {
+            // handle user cancellation
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+              return;
+
+            // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
+            var isUpdate = false;
+            var toRemove = new List<ObjectId>();
+            switch (state.ReceiveMode)
+            {
+              case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
+                toRemove = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
+                if (toRemove.Count > 0)
+                {
+                  isUpdate = true;
+                  foreach (var objId in toRemove)
+                  {
+                    try
+                    {
+                      DBObject obj = tr.GetObject(objId, OpenMode.ForWrite);
+                      obj.Erase();
+                    }
+                    catch(Exception e)
+                    { }
+                  }
+                }
+                break;
+              default:
+                break;
+            }
+
+            // bake
+            if (commitObj.Convertible)
+              BakeObject(commitObj, converter, tr, isUpdate);
+            else
+            {
+              foreach (var fallback in commitObj.Fallback)
+                BakeObject(fallback, converter, tr, isUpdate, commitObj);
+              commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
+                ApplicationObject.State.Failed : isUpdate ?
+                ApplicationObject.State.Updated : ApplicationObject.State.Created;
+            }
+            Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+
+            // log to progress report and update progress
+            progress.Report.Log(commitObj);
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
+          }
 
           // remove commit info from doc userdata
           Doc.UserData.Remove("commit");
@@ -400,28 +491,55 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
     }
     // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-    private List<Tuple<Base, string>> FlattenCommitObject(object obj, ISpeckleConverter converter, string layer, StreamState state, ref int count, bool foundConvertibleMember = false)
+    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter, ProgressViewModel progress, string layer, ref int count, bool foundConvertibleMember = false)
     {
-      var objects = new List<Tuple<Base, string>>();
+      var objects = new List<ApplicationObject>();
 
       if (obj is Base @base)
       {
+        var speckleType = @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+        var appObj = new ApplicationObject(@base.id, speckleType) { applicationId = @base.applicationId, Container = layer };
         if (converter.CanConvertToNative(@base))
         {
-          objects.Add(new Tuple<Base, string>(@base, layer));
+          appObj.Convertible = true;
+          if (StoredObjects.ContainsKey(@base.id))
+            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id. Skipped other object");
+          else
+            StoredObjects.Add(@base.id, @base);
+          objects.Add(appObj);
           return objects;
         }
         else
         {
-          List<string> props = @base.GetDynamicMembers().ToList();
+          appObj.Convertible = false;
+
+          // handle fallback displayvalues separately
+          // NOTE: deprecated displayMesh!!
+          bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
-            props.Add("displayValue");
-          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
-            props.Add("displayMesh");
+          {
+            var fallbackObjects = FlattenCommitObject(@base["displayValue"], converter, progress, layer, ref count, foundConvertibleMember);
+            if (fallbackObjects.Count > 0)
+            {
+              appObj.Fallback.AddRange(fallbackObjects);
+              foundConvertibleMember = true;
+              hasFallback = true;
+            }
+          }
+          if (hasFallback)
+          {
+            if (StoredObjects.ContainsKey(@base.id))
+              appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id. Skipped other object");
+            else
+              StoredObjects.Add(@base.id, @base);
+            objects.Add(appObj);
+          }
+
+          // handle any children elements, these are added as separate previewObjects
+          List<string> props = @base.GetDynamicMembers().ToList();
           if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
             props.Add("elements");
           int totalMembers = props.Count;
-
           foreach (var prop in props)
           {
             count++;
@@ -430,15 +548,21 @@ namespace Speckle.ConnectorAutocadCivil.UI
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
             string acLayerName = $"{layer}${objLayerName}";
 
-            var nestedObjects = FlattenCommitObject(@base[prop], converter, acLayerName, state, ref count, foundConvertibleMember);
-            if (nestedObjects.Count > 0)
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, progress, acLayerName, ref count, foundConvertibleMember);
+            var validNestedObjects = nestedObjects.Where(o => o.Convertible == true || o.Fallback.Count > 0)?.ToList();
+            if (validNestedObjects != null && validNestedObjects.Count > 0)
             {
               objects.AddRange(nestedObjects);
               foundConvertibleMember = true;
             }
           }
+
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
+          {
+            appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Rhino");
+            objects.Add(appObj);
+          }
+
           return objects;
         }
       }
@@ -447,7 +571,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, layer, state, ref count));
+          objects.AddRange(FlattenCommitObject(listObj, converter, progress, layer, ref count));
         return objects;
       }
 
@@ -455,11 +579,136 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         count = 0;
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, layer, state, ref count));
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, progress, layer, ref count));
         return objects;
       }
 
       return objects;
+    }
+
+    private List<object> ConvertObject(ApplicationObject appObj, ISpeckleConverter converter)
+    {
+      var obj = StoredObjects[appObj.OriginalId];
+      var convertedList = new List<object>();
+
+      var converted = converter.ConvertToNative(obj);
+      if (converted == null)
+        return convertedList;
+
+      //Iteratively flatten any lists
+      void FlattenConvertedObject(object item)
+      {
+        if (item is IList list)
+          foreach (object child in list)
+            FlattenConvertedObject(child);
+        else
+          convertedList.Add(item);
+      }
+      FlattenConvertedObject(converted);
+
+      return convertedList;
+    }
+
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, bool isUpdate, ApplicationObject parent = null)
+    {
+      var obj = StoredObjects[appObj.OriginalId];
+      int bakedCount = 0;
+
+      foreach (var convertedItem in appObj.Converted)
+      {
+        switch (convertedItem)
+        {
+          case Entity o:
+
+            if (o == null)
+              continue;
+
+            string layerPath = appObj.Container;
+            if (GetOrMakeLayer(layerPath, tr, out string cleanName))
+            {
+              var res = o.Append(cleanName);
+              if (res.IsValid)
+              {
+                // handle display - fallback to rendermaterial if no displaystyle exists
+                Base display = obj[@"displayStyle"] as Base;
+                if (display == null) display = obj[@"renderMaterial"] as Base;
+                if (display != null) Utils.SetStyle(display, o, LineTypeDictionary);
+
+                // add property sets if this is Civil3D
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
+                try
+                {
+                  if (obj["propertySets"] is IReadOnlyList<object> list)
+                  {
+                    var propertySets = new List<Dictionary<string, object>>();
+                    foreach (var listObj in list)
+                      propertySets.Add(listObj as Dictionary<string, object>);
+                    o.SetPropertySets(Doc, propertySets);
+                  }
+                }
+                catch (Exception e)
+                {
+                  appObj.Log.Add($"Could not attach property sets: {e.Message}");
+                }
+#endif
+
+                // set application id
+                var appId = parent != null ? parent.applicationId : obj.applicationId;
+                try
+                {
+                  var rb = new ResultBuffer(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), new TypedValue(1000, appId));
+                  var newObj = tr.GetObject(res, OpenMode.ForWrite);
+                  newObj.XData = rb;
+                }
+                catch (Exception e)
+                {
+                  appObj.Log.Add($"Could not attach applicationId: {e.Message}");
+                }
+
+                tr.TransactionManager.QueueForGraphicsFlush();
+
+                if (parent != null)
+                  parent.Update(createdId: res.Handle.ToString());
+                else
+                  appObj.Update(createdId: res.Handle.ToString());
+
+                bakedCount++;
+              }
+              else
+              {
+                var bakeMessage = $"Could not bake to document.";
+                if (parent != null)
+                  parent.Update(logItem: $"fallback {appObj.id}: {bakeMessage}");
+                else
+                  appObj.Update(logItem: bakeMessage);
+                continue;
+              }
+
+            }
+            else
+            {
+              var layerMessage = $"Could not create layer {layerPath}.";
+              if (parent != null)
+                parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
+              else
+                appObj.Update(logItem: layerMessage);
+              continue;
+            }
+            break;
+          default:
+            break;
+        }
+      }
+
+      if (bakedCount == 0)
+      {
+        if (parent != null)
+          parent.Update(logItem: $"fallback {appObj.id}: could not bake object");
+        else
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
+      }
+      else
+        appObj.Status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
     }
 
     private void DeleteBlocksWithPrefix(string prefix, Transaction tr)
@@ -556,25 +805,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(Utils.VersionedAppName);
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
+      if (converter == null)
+        throw new Exception("Could not find any Kit!");
+
       var streamId = state.StreamId;
       var client = state.Client;
+      progress.Report = new ProgressReport();
 
       if (state.Filter != null)
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
 
       // remove deleted object ids
       var deletedElements = new List<string>();
-      foreach (var handle in state.SelectedObjectIds)
-        if (Doc.Database.TryGetObjectId(Utils.GetHandle(handle), out ObjectId id))
-          if (id.IsErased || id.IsNull)
-            deletedElements.Add(handle);
+      foreach (var selectedId in state.SelectedObjectIds)
+        if (Utils.GetHandle(selectedId, out Handle handle))
+          if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+            if (id.IsErased || id.IsNull)
+              deletedElements.Add(selectedId);
+
       state.SelectedObjectIds = state.SelectedObjectIds.Where(o => !deletedElements.Contains(o)).ToList();
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
         return null;
       }
 
@@ -660,44 +914,50 @@ namespace Speckle.ConnectorAutocadCivil.UI
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;
 
-        bool renamedlayers = false;
-
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
+          // handle user cancellation
           if (progress.CancellationTokenSource.Token.IsCancellationRequested)
           {
             tr.Commit();
             return;
           }
 
-          conversionProgressDict["Conversion"]++;
-          progress.Update(conversionProgressDict);
-
           // get the db object from id
-          Handle hn = Utils.GetHandle(autocadObjectHandle);
-          DBObject obj = hn.GetObject(tr, out string type, out string layer);
-
-          if (obj == null)
+          DBObject obj = null;
+          string layer = null;
+          if (Utils.GetHandle(autocadObjectHandle, out Handle hn))
           {
-            progress.Report.Log($"Skipped not found object: ${autocadObjectHandle}.");
+            obj = hn.GetObject(tr, out string type, out layer);
+          }
+          else
+          {
+            progress.Report.LogOperationError(new Exception($"Failed to find doc object ${autocadObjectHandle}."));
             continue;
           }
 
+          // create applicationobject for reporting
+          Base converted = null;
+          var descriptor = Utils.ObjectDescriptor(obj);
+          var applicationId = autocadObjectHandle; // TODO: ADD TEST FOR XDATA APPID
+          ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor) { applicationId = applicationId };
+
           if (!converter.CanConvertToSpeckle(obj))
           {
-            progress.Report.Log($"Skipped not supported type: ${type}. Object ${obj.Id} not sent.");
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in AutoCAD/Civil3D");
+            progress.Report.Log(reportObj);
             continue;
           }
 
           try
           {
             // convert obj
-            Base converted = null;
-            string containerName = string.Empty;
+            converter.Report.Log(reportObj); // Log object so converter can access
             converted = converter.ConvertToSpeckle(obj);
             if (converted == null)
             {
-              progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}."));
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+              progress.Report.Log(reportObj);
               continue;
             }
 
@@ -713,35 +973,34 @@ namespace Speckle.ConnectorAutocadCivil.UI
               converted["propertySets"] = propertySets;
 #endif
 
-            if (obj is BlockReference)
-              containerName = "Blocks";
-            else
-            {
-              // remove invalid chars from layer name
-              string cleanLayerName = Utils.RemoveInvalidDynamicPropChars(layer);
-              containerName = cleanLayerName;
-              if (!cleanLayerName.Equals(layer))
-                renamedlayers = true;
-            }
+            string containerName = obj is BlockReference ? 
+              "Blocks" : 
+              Utils.RemoveInvalidDynamicPropChars(layer); // remove invalid chars from layer name
 
             if (commitObject[$"@{containerName}"] == null)
               commitObject[$"@{containerName}"] = new List<Base>();
             ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
+            // set application id
+            converted.applicationId = applicationId;
+
+            // update progress
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
 
-            converted.applicationId = autocadObjectHandle;
+            // log report object
+            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
+            progress.Report.Log(reportObj);
+
+            convertedCount++;
           }
           catch (Exception e)
           {
-            progress.Report.LogConversionError(new Exception($"Failed to convert object {autocadObjectHandle} of type {type}: {e.Message}"));
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+            progress.Report.Log(reportObj);
+            continue;
           }
-          convertedCount++;
         }
-
-        if (renamedlayers)
-          progress.Report.Log("Replaced illegal chars ./ with - in one or more layer names.");
 
         tr.Commit();
       }

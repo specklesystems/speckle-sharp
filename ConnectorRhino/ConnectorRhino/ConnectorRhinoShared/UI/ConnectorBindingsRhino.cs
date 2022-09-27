@@ -769,12 +769,10 @@ namespace SpeckleRhino
           attributes.SetUserString(key, userStrings[key] as string);
 
       // set application id
+      var appId = parent != null ? parent.applicationId : obj.applicationId;
       try
       {
-        if (parent != null)
-          attributes.SetUserString(ApplicationIdKey, parent.applicationId);
-        else
-          attributes.SetUserString(ApplicationIdKey, obj.applicationId);
+        attributes.SetUserString(ApplicationIdKey, appId);
       }
       catch { }
 
@@ -955,7 +953,7 @@ namespace SpeckleRhino
         progress.Update(conversionProgressDict);
 
         // set application ids, also set for speckle schema base object if it exists
-        converted.applicationId = guid;
+        converted.applicationId = applicationId;
         if (converted["@SpeckleSchema"] != null)
         {
           var newSchemaBase = converted["@SpeckleSchema"] as Base;
