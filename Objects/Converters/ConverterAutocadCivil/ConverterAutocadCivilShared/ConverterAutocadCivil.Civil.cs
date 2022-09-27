@@ -248,17 +248,29 @@ namespace Objects.Converter.AutocadCivil
       }
 #endregion
 
+      // if this is in update mode, edit the alignment instead
+      if (ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+      {
+        ObjectId existingAlignment = ObjectId.Null;
+
+      }
+
       // create alignment entity curves
       try
       {
-        var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label); // ⚠ this will throw if name is not unique!!
+        var id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label); // ⚠ this will throw if name is not unique!!
 
         if (id == ObjectId.Null)
           return null;
         var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
         var entities = _alignment.Entities;
+
         foreach (var curve in alignment.curves)
           AddAlignmentEntity(curve, ref entities);
+
+        // set start station
+        if (alignment.startStation != null)
+          _alignment.ReferencePointStation = alignment.startStation;
 
         return _alignment;
       }

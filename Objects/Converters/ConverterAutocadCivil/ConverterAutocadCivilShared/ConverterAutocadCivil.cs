@@ -338,12 +338,11 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
-        case Alignment o:
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
+        case Alignment o:
           acadObj = AlignmentToNative(o, out notes);
-#endif
-          acadObj = PolylineToNativeDB(o.displayValue);
           break;
+#endif
 
         case ModelCurve o:
           acadObj = CurveToNativeDB(o.baseCurve);
