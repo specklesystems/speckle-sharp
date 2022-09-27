@@ -15,6 +15,8 @@ namespace Speckle.ConnectorDynamo.Functions
   {
     private ISpeckleConverter _converter { get; set; }
 
+    public EventHandler<OnErrorEventArgs> OnError;
+    
     public BatchConverter()
     {
       var kit = KitManager.GetDefaultKit();
@@ -70,7 +72,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (IsList(@object))
       {
         var list = ((IEnumerable)@object).Cast<object>().ToList();
-        return list.Select(x => RecurseTreeToSpeckle(x)).ToList();
+        return list.Select(RecurseTreeToSpeckle).ToList();
       }
 
       if (@object is DesignScript.Builtin.Dictionary dsDic)
@@ -126,12 +128,8 @@ namespace Speckle.ConnectorDynamo.Functions
 
 
       if (value is Base || value is null || value.GetType().IsSimpleType())
-      {
         return value;
-      }
-
-
-
+      
       return result;
     }
 
@@ -197,10 +195,7 @@ namespace Speckle.ConnectorDynamo.Functions
       // case 1: it's an item that has a direct conversion method, eg a point
       if (_converter.CanConvertToNative(@base))
         return TryConvertItemToNative(@base);
-      // if (IsDataTree(@base))
-      // {
-      //   return ConvertDataTreeToNative(@base);
-      // }
+
       // case 2: it's a wrapper Base
       //       2a: if there's only one member unpack it
       //       2b: otherwise return dictionary of unpacked members
@@ -234,7 +229,7 @@ namespace Speckle.ConnectorDynamo.Functions
     private object TryConvertItemToNative(object value)
     {
       if (value == null)
-        return value;
+        return null;
 
       //it's a simple type or not a Base
       if (value.GetType().IsSimpleType() || !(value is Base))
@@ -254,8 +249,7 @@ namespace Speckle.ConnectorDynamo.Functions
         var dicD = dynamicMembers.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
 
         var dic = dicI.Concat(dicD).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-
+        
         return dic;
       }
 
@@ -263,12 +257,11 @@ namespace Speckle.ConnectorDynamo.Functions
       {
         return _converter.ConvertToNative(@base);
       }
-      catch (Exception ex)
+      catch (Exception e)
       {
-        throw new SpeckleException(ex.Message, ex);
+        OnError?.Invoke(this, new OnErrorEventArgs(e));
+        return null;
       }
-
-      return null;
     }
 
 
@@ -289,6 +282,16 @@ namespace Speckle.ConnectorDynamo.Functions
 
       Type type = @object.GetType();
       return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+    }
+  }
+
+  public class OnErrorEventArgs : EventArgs
+  {
+    public Exception Error;
+
+    public OnErrorEventArgs(Exception error)
+    {
+      Error = error;
     }
   }
 }
