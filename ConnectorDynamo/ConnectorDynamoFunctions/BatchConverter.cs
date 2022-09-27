@@ -199,15 +199,17 @@ namespace Speckle.ConnectorDynamo.Functions
       // case 2: it's a wrapper Base
       //       2a: if there's only one member unpack it
       //       2b: otherwise return dictionary of unpacked members
-      var members = @base.GetMemberNames();
+      var members = @base.GetMemberNames().ToList();
 
-      if (members.Count() == 1)
+      if (members.Count == 1)
       {
         var converted = RecurseTreeToNative(@base[members.ElementAt(0)]);
         return converted;
       }
 
-      return members.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
+      var regex = new Regex("::");
+      var dict =  members.ToDictionary(x => regex.Replace(x, "//"), x => RecurseTreeToNative(@base[x]));
+      return dict;
     }
 
 
