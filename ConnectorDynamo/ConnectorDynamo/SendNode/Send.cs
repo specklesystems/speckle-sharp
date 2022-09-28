@@ -14,6 +14,7 @@ using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo.SendNode
@@ -239,6 +240,9 @@ namespace Speckle.ConnectorDynamo.SendNode
         long totalCount = 0;
         Base @base = null;
         var converter = new BatchConverter();
+        var errors = new List<Exception>();
+        converter.OnError += (sender, args) => errors.Add(args.Error);
+        
         try
         {
           @base = converter.ConvertRecursivelyToSpeckle(_data);
@@ -251,6 +255,13 @@ namespace Speckle.ConnectorDynamo.SendNode
           throw new SpeckleException("Conversion error", e);
         }
 
+        if (errors.Count > 0)
+        {
+          Message = "Conversion errors";
+          foreach (var error in errors)
+            Warning(error.ToFormattedString());
+        }
+        
         if (totalCount == 0)
           throw new SpeckleException("Zero objects converted successfully. Send stopped.");
 
