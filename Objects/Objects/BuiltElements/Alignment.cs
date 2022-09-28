@@ -10,9 +10,6 @@ namespace Objects.BuiltElements
 {
   public class Alignment : Base, IDisplayValue<Polyline>
   {
-    [JsonIgnore, Obsolete("Use curves property")]
-    public ICurve baseCurve { get; set; }
-
     public List<ICurve> curves { get; set; }
 
     public string name { get; set; }
@@ -38,5 +35,26 @@ namespace Objects.BuiltElements
 
     public Alignment() { }
 
+  }
+}
+
+namespace Objects.BuiltElements.Civil
+{
+  public class CivilAlignment : Alignment
+  {
+    public string type { get; set; }
+
+    public string site { get; set; }
+
+    public string style { get; set; }
+
+    public double offset { get; set; }
+
+    /// <summary>
+    /// Name of parent alignment if this is an offset alignment
+    /// </summary>
+    public string parent { get; set; }
+
+    public CivilAlignment() { }
   }
 }

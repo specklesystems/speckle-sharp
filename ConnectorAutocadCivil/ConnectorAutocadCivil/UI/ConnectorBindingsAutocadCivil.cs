@@ -441,12 +441,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (progress.CancellationTokenSource.Token.IsCancellationRequested)
               return;
 
-            // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
-            var toRemove = new List<ObjectId>();
+            // find existing doc objects if they exist
+            var existingObjs = new List<ObjectId>();
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                toRemove = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
+                existingObjs = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
                 break;
               default:
                 break;
@@ -454,13 +454,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // bake
             if (commitObj.Convertible)
-              BakeObject(commitObj, converter, tr, toRemove);
+              BakeObject(commitObj, converter, tr, existingObjs);
             else
             {
               foreach (var fallback in commitObj.Fallback)
-                BakeObject(fallback, converter, tr, toRemove, commitObj);
+                BakeObject(fallback, converter, tr, existingObjs, commitObj);
               commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
-                ApplicationObject.State.Failed : toRemove.Count > 0 ?
+                ApplicationObject.State.Failed : existingObjs.Count > 0 ?
                 ApplicationObject.State.Updated : ApplicationObject.State.Created;
             }
             Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
@@ -601,6 +601,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
+      bool remove = true;
 
       foreach (var convertedItem in appObj.Converted)
       {
@@ -698,23 +699,25 @@ namespace Speckle.ConnectorAutocadCivil.UI
       else
       {
         // remove existing objects if they exist
-        foreach (var objId in toRemove)
+        if (remove)
         {
-          try
+          foreach (var objId in toRemove)
           {
-            DBObject objToRemove = tr.GetObject(objId, OpenMode.ForWrite);
-            objToRemove.Erase();
+            try
+            {
+              DBObject objToRemove = tr.GetObject(objId, OpenMode.ForWrite);
+              objToRemove.Erase();
+            }
+            catch (Exception e)
+            {
+              if (parent != null)
+                parent.Log.Add(e.Message);
+              else
+                appObj.Log.Add(e.Message);
+            }
           }
-          catch (Exception e)
-          {
-            if (parent != null)
-              parent.Log.Add(e.Message);
-            else
-              appObj.Log.Add(e.Message);
-          }
+          appObj.Status = toRemove.Count > 0 ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
         }
-
-        appObj.Status = toRemove.Count > 0 ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       }
     }
 
