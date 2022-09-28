@@ -45,6 +45,7 @@ namespace Objects.Converter.Revit
           RevitColumn revitColumn = new RevitColumn();
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
+          revitColumn.units = speckleStick.units;
           appObj = ColumnToNative(revitColumn);
           DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitColumn, speckleStick, offset1, offset2);
