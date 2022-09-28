@@ -10,14 +10,24 @@ using System.Reflection;
 
 namespace Objects
 {
+  /// <summary>
+  /// The default Speckle Kit
+  /// </summary>
   public class ObjectsKit : ISpeckleKit
   {
-
+    /// <inheritdoc/>
     public string Description => "The default Speckle Kit.";
+    
+    /// <inheritdoc/>
     public string Name => "Objects";
+    
+    /// <inheritdoc/>
     public string Author => "Speckle";
+    
+    /// <inheritdoc/>
     public string WebsiteOrEmail => "https://speckle.systems";
 
+    /// <inheritdoc/>
     public IEnumerable<Type> Types
     {
       get
