@@ -601,7 +601,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
-      bool remove = true;
+      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated ? false : true;
 
       foreach (var convertedItem in appObj.Converted)
       {
