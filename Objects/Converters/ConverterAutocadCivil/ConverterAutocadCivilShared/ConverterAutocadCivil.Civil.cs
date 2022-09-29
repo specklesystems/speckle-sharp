@@ -604,7 +604,7 @@ namespace Objects.Converter.AutocadCivil
         }
 
         // get face
-        faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+        faces.AddRange(new List<int> { 3, faceIndices[0], faceIndices[1], faceIndices[2] });
 
         triangle.Dispose();
       }
@@ -652,7 +652,7 @@ namespace Objects.Converter.AutocadCivil
         }
 
         // get face
-        faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+        faces.AddRange(new List<int> { 4, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
 
         cell.Dispose();
       }

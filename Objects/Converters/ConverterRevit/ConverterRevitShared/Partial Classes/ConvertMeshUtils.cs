@@ -292,7 +292,7 @@ namespace Objects.Converter.Revit
       {
         var triangle = mesh.get_Triangle(i);
 
-        faces.Add(0); // TRIANGLE flag
+        faces.Add(3); // TRIANGLE flag
         faces.Add((int)triangle.get_Index(0) + faceIndexOffset);
         faces.Add((int)triangle.get_Index(1) + faceIndexOffset);
         faces.Add((int)triangle.get_Index(2) + faceIndexOffset);

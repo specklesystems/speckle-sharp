@@ -83,9 +83,9 @@ namespace Objects.Converter.Dynamo
     /// </summary>
     /// <param name="points"></param>
     /// <returns></returns>
-    public double[] PointListToFlatArray(IEnumerable<DS.Point> points)
+    public List<double> PointListToFlatList(IEnumerable<DS.Point> points)
     {
-      return points.SelectMany(pt => PointToArray(pt)).ToArray();
+      return points.SelectMany(pt => PointToArray(pt)).ToList();
     }
 
     public double[] PointToArray(DS.Point pt)
@@ -195,7 +195,7 @@ namespace Objects.Converter.Dynamo
     {
       var u = units ?? ModelUnits;
       var l = new Line(
-        PointListToFlatArray(new DS.Point[] { line.StartPoint, line.EndPoint }),
+        PointListToFlatList(new DS.Point[] { line.StartPoint, line.EndPoint }),
         u);
 
       CopyProperties(l, line);
@@ -234,7 +234,7 @@ namespace Objects.Converter.Dynamo
     public Polyline PolylineToSpeckle(DS.Polygon polygon, string units = null)
     {
       var u = units ?? ModelUnits;
-      var poly = new Polyline(PointListToFlatArray(polygon.Points), u)
+      var poly = new Polyline(PointListToFlatList(polygon.Points), u)
       {
         closed = true,
       };
@@ -617,7 +617,7 @@ namespace Objects.Converter.Dynamo
         // SpeckleCurve DisplayValue
         DS.Curve[] curves = curve.ApproximateWithArcAndLineSegments();
         List<double> polylineCoordinates =
-          curves.SelectMany(c => PointListToFlatArray(new DS.Point[2] { c.StartPoint, c.EndPoint })).ToList();
+          curves.SelectMany(c => PointListToFlatList(new DS.Point[2] { c.StartPoint, c.EndPoint })).ToList();
         polylineCoordinates.AddRange(PointToArray(curves.Last().EndPoint));
         curves.ForEach(c => c.Dispose());
 
@@ -626,7 +626,7 @@ namespace Objects.Converter.Dynamo
 
         Curve spkCurve = new Curve(displayValue, u);
         spkCurve.weights = curve.Weights().ToList();
-        spkCurve.points = PointListToFlatArray(curve.ControlPoints()).ToList();
+        spkCurve.points = PointListToFlatList(curve.ControlPoints());
         spkCurve.knots = dsKnots;
         spkCurve.degree = curve.Degree;
         spkCurve.periodic = curve.IsPeriodic;
@@ -663,7 +663,7 @@ namespace Objects.Converter.Dynamo
         // display value
         DS.Curve[] curves = helix.ApproximateWithArcAndLineSegments();
         List<double> polylineCoordinates =
-          curves.SelectMany(c => PointListToFlatArray(new DS.Point[2] { c.StartPoint, c.EndPoint })).ToList();
+          curves.SelectMany(c => PointListToFlatList(new DS.Point[2] { c.StartPoint, c.EndPoint })).ToList();
         polylineCoordinates.AddRange(PointToArray(curves.Last().EndPoint));
         curves.ForEach(c => c.Dispose());
         Polyline displayValue = new Polyline(polylineCoordinates, u);
@@ -705,23 +705,23 @@ namespace Objects.Converter.Dynamo
     public Mesh MeshToSpeckle(DS.Mesh mesh, string units = null)
     {
       var u = units ?? ModelUnits;
-      var vertices = PointListToFlatArray(mesh.VertexPositions);
+      var vertices = PointListToFlatList(mesh.VertexPositions);
       var defaultColour = System.Drawing.Color.FromArgb(255, 100, 100, 100);
 
       var faces = mesh.FaceIndices.SelectMany(f =>
         {
           if (f.Count == 4)
           {
-            return new int[5] { 1, (int)f.A, (int)f.B, (int)f.C, (int)f.D };
+            return new int[] { 4, (int)f.A, (int)f.B, (int)f.C, (int)f.D };
           }
           else
           {
-            return new int[4] { 0, (int)f.A, (int)f.B, (int)f.C };
+            return new int[] { 3, (int)f.A, (int)f.B, (int)f.C };
           }
         })
-        .ToArray();
+        .ToList();
 
-      var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToArray();
+      var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToList();
       //double[] textureCoords;
 
       //if (SpeckleRhinoConverter.AddMeshTextureCoordinates)

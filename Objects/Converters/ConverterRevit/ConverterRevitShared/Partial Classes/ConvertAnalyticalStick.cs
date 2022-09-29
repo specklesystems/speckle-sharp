@@ -28,6 +28,7 @@ namespace Objects.Converter.Revit
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
           revitBeam.baseLine = speckleStick.baseLine;
+          revitBeam.applicationId = speckleStick.applicationId;
           appObj = BeamToNative(revitBeam);
           DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBeam, speckleStick, offset1, offset2);
@@ -37,6 +38,7 @@ namespace Objects.Converter.Revit
           RevitBrace revitBrace = new RevitBrace();
           revitBrace.type = speckleStick.property.name.Replace('X', 'x');
           revitBrace.baseLine = speckleStick.baseLine;
+          revitBrace.applicationId = speckleStick.applicationId;
           appObj = BraceToNative(revitBrace);
           DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBrace, speckleStick, offset1, offset2);
@@ -46,6 +48,7 @@ namespace Objects.Converter.Revit
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
           revitColumn.units = speckleStick.units;
+          revitColumn.applicationId = speckleStick.applicationId;
           appObj = ColumnToNative(revitColumn);
           DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitColumn, speckleStick, offset1, offset2);

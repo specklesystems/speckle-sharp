@@ -578,7 +578,7 @@ namespace Objects.Converter.Revit
         var A = triangle.get_Index(0);
         var B = triangle.get_Index(1);
         var C = triangle.get_Index(2);
-        faces.Add(0);
+        faces.Add(3);
         faces.AddRange(new int[]
         {
           (int)A, (int)B, (int)C
