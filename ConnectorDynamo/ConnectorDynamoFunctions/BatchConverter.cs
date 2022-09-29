@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Speckle.Core.Logging;
 
@@ -14,18 +15,19 @@ namespace Speckle.ConnectorDynamo.Functions
   public class BatchConverter
   {
     private ISpeckleConverter _converter { get; set; }
-
+    private ISpeckleKit _kit
+    {
+      get;
+      set;
+    }
     public EventHandler<OnErrorEventArgs> OnError;
     
     public BatchConverter()
     {
       var kit = KitManager.GetDefaultKit();
-
-      if (kit == null)
-        throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
-
+      _kit = kit ?? throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
       _converter = kit.LoadConverter(Utils.GetAppName());
-
+      
       if (_converter == null)
         throw new SpeckleException("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
 
@@ -34,9 +36,7 @@ namespace Speckle.ConnectorDynamo.Functions
         _converter.SetContextDocument(Globals.RevitDocument);
 
     }
-
-
-
+    
     /// <summary>
     /// Helper method to convert a tree-like structure (nested lists) to Speckle
     /// </summary>
@@ -88,13 +88,17 @@ namespace Speckle.ConnectorDynamo.Functions
       //is item
       return TryConvertItemToSpeckle(@object);
     }
-
+    
     private Base DictionaryToBase(DesignScript.Builtin.Dictionary dsDic)
     {
+      var regex = new Regex("//");
       var @base = new Base();
       foreach (var key in dsDic.Keys)
       {
-        @base[key] = RecurseTreeToSpeckle(dsDic.ValueAtKey(key));
+        // Dynamo does not support `::` in dictionary keys. We use `//` instead.
+        // Upon send, any `//` must be replaced by `::` again.
+        var replace = regex.Replace(key, "::");
+        @base[replace] = RecurseTreeToSpeckle(dsDic.ValueAtKey(key));
       }
 
       return @base;
@@ -102,10 +106,50 @@ namespace Speckle.ConnectorDynamo.Functions
 
     private Base DictionaryToBase(Dictionary<string, object> dic)
     {
+      var hasSpeckleType = dic.Keys.Contains("speckle_type");
       var @base = new Base();
+      var type = @base.GetType();
+      if (hasSpeckleType)
+      {
+        var s = dic["speckle_type"] as string;
+
+        var baseType = typeof(Base);
+        type = _kit.Types.FirstOrDefault((t => t.FullName == s)) ?? baseType;
+        if(type != baseType)
+          @base = Activator.CreateInstance(type) as Base;
+      }
+      var regex = new Regex("//");
       foreach (var key in dic.Keys)
       {
-        @base[key] = RecurseTreeToSpeckle(dic[key]);
+        // Dynamo does not support `::` in dictionary keys. We use `//` instead.
+        // Upon send, any `//` must be replaced by `::` again.
+        var replacedKey = regex.Replace(key, "::");
+        
+        var propInfo = type.GetProperty(key);
+        var convertedValue = RecurseTreeToSpeckle(dic[key]);
+
+        if (propInfo == null)
+        {
+          // Key is dynamic, just add it as is
+          @base[replacedKey] = convertedValue;
+          continue;
+        }
+        // It's an instance field, check if we can set it
+        if (!propInfo.CanWrite) continue;
+        
+        // Check if it's a list, and if so, try to create the according typed instance.
+        if (IsList(convertedValue))
+        {
+          var list = convertedValue as IList;
+          var genericTypeDefinition = propInfo.PropertyType;
+          var typedValue = Activator.CreateInstance(genericTypeDefinition) as IList;
+          foreach (var item in list)
+          {
+            typedValue.Add(item);
+          }
+          convertedValue = typedValue;
+        }
+        @base[replacedKey] = convertedValue;
       }
 
       return @base;
@@ -122,7 +166,7 @@ namespace Speckle.ConnectorDynamo.Functions
         }
         catch (Exception ex)
         {
-          var spcklEx = new SpeckleException("Could not convert " + value.GetType() + " to Speckle:", ex, false);
+          var spcklEx = new SpeckleException($"Could not convert {value.GetType().Name} to Speckle:", ex, false);
           OnError?.Invoke(this, new OnErrorEventArgs(spcklEx));
           return null;
         }
@@ -263,12 +307,12 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       catch (Exception e)
       {
-        OnError?.Invoke(this, new OnErrorEventArgs(e));
+        var spcklError = new Exception($"Could not convert {@base.GetType().Name}(id={@base.id}) to Dynamo.", e);
+        OnError?.Invoke(this, new OnErrorEventArgs(spcklError));
         return null;
       }
     }
-
-
+    
     public static bool IsList(object @object)
     {
       if (@object == null)
