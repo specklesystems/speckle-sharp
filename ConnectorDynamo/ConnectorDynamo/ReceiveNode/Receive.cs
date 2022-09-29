@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -299,7 +299,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           }
           else
           {
-            Message = "";
+            Message = "Conversion error";
             _errors.Add(e);
           }
         }
@@ -311,7 +311,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           LastCommitId = ((Commit)data["commit"]).id;
           InMemoryCache.Set(LastCommitId, data);
-          //Message = "";
+          Message = "";
         }
       }
       catch (Exception e)
@@ -344,9 +344,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     internal void LoadInputs(EngineController engine)
     {
       // Report any errors of the receive operation upon input load. This ensures they're not erased.
-      foreach (var error in _errors)
-        Warning(error.ToFormattedString());
-      _errors = new List<Exception>();
+      if (_errors.Count > 0)
+      {
+        foreach (var error in _errors)
+          Warning(error.ToFormattedString());
+        Message = "Conversion error";
+        _errors = new List<Exception>();
+      }
       
       // Load inputs
       var oldStream = Stream;
