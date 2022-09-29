@@ -134,7 +134,7 @@ namespace Speckle.Core.Models
         }
         catch (Exception ex)
         {
-          throw new SpeckleException(ex.Message, ex);
+          throw new SpeckleException($"Failed to set value for {GetType().Name}.{prop.Name}", ex);
         }
       }
     }
