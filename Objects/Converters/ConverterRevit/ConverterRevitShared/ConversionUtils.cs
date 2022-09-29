@@ -348,8 +348,12 @@ namespace Objects.Converter.Revit
         .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
 
       //Set the phase parameter
-      string phasename = speckleElement["phase"].ToString();
-      TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phasename));
+      try
+      {
+        string phasename = speckleElement["phase"].ToString();
+        TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phasename));
+      }
+      catch(Exception e) { }
 
       foreach (var spk in filteredSpeckleParameters)
       {
