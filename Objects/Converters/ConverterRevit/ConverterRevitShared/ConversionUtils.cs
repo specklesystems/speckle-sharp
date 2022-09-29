@@ -360,7 +360,6 @@ namespace Objects.Converter.Revit
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
         try
         {
-
           switch (rp.StorageType)
           {
             case StorageType.Double:
@@ -407,6 +406,8 @@ namespace Objects.Converter.Revit
               {
                 rp.Set(Convert.ToString(sp.value));
               }
+              break;
+            default:
               break;
           }
         }
