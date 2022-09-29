@@ -347,6 +347,9 @@ namespace Objects.Converter.Revit
       var filteredSpeckleParameters = speckleParameters.GetMembers()
         .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
 
+      //Set the phase parameter
+      string phasename = speckleElement["phase"].ToString();
+      TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phasename));
 
       foreach (var spk in filteredSpeckleParameters)
       {
@@ -357,6 +360,7 @@ namespace Objects.Converter.Revit
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
         try
         {
+
           switch (rp.StorageType)
           {
             case StorageType.Double:
@@ -403,8 +407,6 @@ namespace Objects.Converter.Revit
               {
                 rp.Set(Convert.ToString(sp.value));
               }
-              break;
-            default:
               break;
           }
         }
@@ -474,6 +476,20 @@ namespace Objects.Converter.Revit
         }
 
       }
+    }
+
+    /// <summary>
+    /// Queries a Revit Document for phases by the given name.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <param name="phaseName">The name of the Phase</param>
+    /// <returns>the phase which has the same name. null if none or multiple phases were found.</returns>
+    private Element GetRevitPhase(DB.Document document, string phaseName )
+    {
+      var phases = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Phases)
+        .Where(ph => ph.Name.Equals(phaseName));
+      if (phases.Count() == 1) return phases.First();
+      else return null;
     }
 
    
