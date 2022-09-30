@@ -53,6 +53,7 @@
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\ShareControls\ChangeRoleDialog.xaml" />
     <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
@@ -141,6 +142,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\MainUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\ChangeRoleDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\SharedControls\StreamDetails.xaml">
@@ -269,6 +273,9 @@
     </Compile>
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\ShareControls\ChangeRoleDialog.xaml.cs">
+      <DependentUpon>ChangeRoleDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\SharedControls\StreamDetails.xaml.cs">
       <DependentUpon>StreamDetails.xaml</DependentUpon>

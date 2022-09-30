@@ -8,7 +8,7 @@
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-  xmlns:local="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
+  xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
@@ -23,278 +23,23 @@
     <conv:OpacityValueConverter x:Key="OpacityValueConverter" />
   </UserControl.Resources>
 
-  <ListBox
-    Background="Transparent"
-    BorderThickness="0"
-    Classes="NoScroll"
-    Items="{Binding SavedStreams}"
-    SelectedItem="{Binding SelectedSavedStream}">
-    <ListBox.Styles>
-      <Style Selector="ListBoxItem:not(:pointerover) m|FloatingButton#HoverButtons">
+  <ItemsRepeater Background="Transparent" Items="{Binding SavedStreams}">
+    <ItemsRepeater.Styles>
+      <Style Selector="Button.Invisible:not(:pointerover) m|FloatingButton#HoverButtons">
         <Setter Property="IsVisible" Value="False" />
       </Style>
-      <Style Selector="ListBoxItem:pointerover m|FloatingButton#HoverButtons">
+      <Style Selector="Button.Invisible:pointerover m|FloatingButton#HoverButtons">
         <Setter Property="IsVisible" Value="True" />
       </Style>
-      <!--  DISABLE CLICK EFFECT IF NO ACCESS  -->
-      <!--  hides ripple  -->
-      <Style Selector="ListBoxItem /template/ Border#selectedBorder, ListBoxItem /template/ Border#pointerOverBorder">
-        <Setter Property="IsVisible" Value="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" />
-      </Style>
-      <!--  fades out bg  -->
-      <Style Selector="ListBoxItem">
-        <Setter Property="Opacity" Value="{Binding NoAccess, Converter={StaticResource OpacityValueConverter}}" />
-      </Style>
-      <!--  disables click  -->
-      <Style Selector="ListBoxItem">
-        <Setter Property="ap:BlockSelection.IsSelectionBlocked" Value="{Binding NoAccess}" />
-      </Style>
-
-      <!--  DISABLE CLICK EFFECT IF IS REMOVING  -->
-      <!--  hides ripple  -->
-      <Style Selector="ListBoxItem /template/ Border#selectedBorder, ListBoxItem /template/ Border#pointerOverBorder">
-        <Setter Property="IsVisible" Value="{Binding IsRemovingStream, Converter={x:Static BoolConverters.Not}}" />
-      </Style>
-      <!--  fades out bg in MainGrid  -->
-      <!--  disables click  -->
-      <Style Selector="ListBoxItem">
-        <Setter Property="ap:BlockSelection.IsSelectionBlocked" Value="{Binding IsRemovingStream}" />
-      </Style>
-    </ListBox.Styles>
-    <ListBox.ItemTemplate>
+    </ItemsRepeater.Styles>
+    <ItemsRepeater.ItemTemplate>
       <DataTemplate>
         <Grid>
-          <Grid
-            Name="MainGrid"
-            Margin="4,0"
-            ColumnDefinitions="*, auto"
-            IsEnabled="{Binding IsRemovingStream, Converter={x:Static BoolConverters.Not}}"
-            Opacity="{Binding IsRemovingStream, Converter={StaticResource OpacityValueConverter}}"
-            RowDefinitions="auto,auto">
-            <Grid IsEnabled="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}" RowDefinitions="Auto,Auto,Auto">
-              <TextBlock
-                Margin="0,0,0,5"
-                Classes="Grotesk"
-                Text="{Binding Stream.name}"
-                TextTrimming="CharacterEllipsis" />
-              <!--  SENDER  -->
-              <Grid Grid.Row="1" ColumnDefinitions="auto,auto,auto">
-                <Grid
-                  Grid.Column="0"
-                  ColumnDefinitions="auto,auto,auto,auto,*"
-                  IsVisible="{Binding StreamState.IsReceiver, Converter={x:Static BoolConverters.Not}}">
-                  <icons:MaterialIcon
-                    Margin="0,0,5,0"
-                    Foreground="Gray"
-                    Kind="SourceBranch" />
-                  <TextBlock
-                    Grid.Column="1"
-                    Classes="Caption"
-                    Text="{Binding StreamState.BranchName}"
-                    TextTrimming="CharacterEllipsis" />
-                  <icons:MaterialIcon
-                    Grid.Column="2"
-                    Margin="10,0,5,0"
-                    Foreground="Gray"
-                    Kind="{Binding StreamState.Filter.Icon}" />
-                  <TextBlock
-                    Grid.Column="3"
-                    Classes="Caption"
-                    Text="{Binding StreamState.Filter.Name}"
-                    TextTrimming="CharacterEllipsis" />
-
-                </Grid>
-                <!--  RECEIVER  -->
-                <Grid
-                  Grid.Column="0"
-                  ColumnDefinitions="auto,auto,auto *"
-                  IsVisible="{Binding StreamState.IsReceiver}">
-                  <icons:MaterialIcon
-                    Margin="0,0,2,0"
-                    Foreground="Gray"
-                    Kind="SourceBranch" />
-                  <TextBlock
-                    Grid.Column="1"
-                    Classes="Caption"
-                    Text="{Binding StreamState.BranchName}"
-                    TextTrimming="CharacterEllipsis" />
-
-                  <icons:MaterialIcon
-                    Grid.Column="2"
-                    Margin="5,0,0,0"
-                    Foreground="Gray"
-                    Kind="SourceCommit" />
-                  <TextBlock
-                    Grid.Column="3"
-                    Classes="Caption"
-                    Text="{Binding StreamState.CommitId}"
-                    TextTrimming="CharacterEllipsis" />
-
-                </Grid>
-                <StackPanel
-                  Grid.Column="1"
-                  Margin="10,0,5,0"
-                  Orientation="Horizontal"
-                  Spacing="5">
-                  <icons:MaterialIcon
-                    Foreground="Gray"
-                    IsVisible="{Binding StreamState.SchedulerEnabled}"
-                    Kind="ClockCheck"
-                    ToolTip.Tip="Scheduler is enabled on this stream" />
-                  <icons:MaterialIcon
-                    VerticalAlignment="Center"
-                    Foreground="Gray"
-                    IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                    Kind="Heart"
-                    ToolTip.Tip="This is a favorite stream" />
-                  <icons:MaterialIcon
-                    VerticalAlignment="Center"
-                    Foreground="Gray"
-                    IsVisible="{Binding StreamState.AutoReceive}"
-                    Kind="CallReceived"
-                    ToolTip.Tip="Auto Receive is ON for this stream" />
-                </StackPanel>
-
-              </Grid>
-              <!--  DETAILS - visible when not progressing  -->
-              <Grid
-                Grid.Row="2"
-                Margin="0,5,0,0"
-                ColumnDefinitions="auto,auto,*"
-                IsVisible="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}">
-                <TextBlock
-                  Classes="Overline"
-                  Text="{Binding LastUpdated}"
-                  TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                  Grid.Column="1"
-                  Classes="Overline"
-                  Text=" - " />
-                <TextBlock
-                  Grid.Column="2"
-                  Classes="Overline"
-                  Text="{Binding LastUsed}"
-                  TextTrimming="CharacterEllipsis" />
-
-              </Grid>
-
-              <!--  DETAILS - visible when progressing  -->
-              <Grid
-                Grid.Row="2"
-                Margin="0,5,0,0"
-                ColumnDefinitions="auto"
-                IsVisible="{Binding Progress.IsProgressing}">
-                <TextBlock
-                  Classes="Overline"
-                  Text="{Binding Progress.ProgressSummary}"
-                  TextTrimming="CharacterEllipsis" />
-              </Grid>
-
-            </Grid>
-
-            <!--  ACTION BUTTONS  -->
-            <StackPanel
-              Grid.Column="1"
-              Orientation="Horizontal"
-              Spacing="5">
-              <m:FloatingButton
-                Name="HoverButtons"
-                VerticalAlignment="Center"
-                assists:ShadowAssist.ShadowDepth="Depth0"
-                Background="Transparent"
-                Classes="Mini"
-                Command="{Binding AskRemoveSavedStreamCommand}"
-                IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-                ToolTip.Tip="Remove this stream">
-                <Button.Content>
-                  <icons:MaterialIcon
-                    Width="15"
-                    Height="15"
-                    assists:ShadowAssist.ShadowDepth="0"
-                    Foreground="Gray"
-                    Kind="Delete" />
-
-                </Button.Content>
-              </m:FloatingButton>
-
-              <!--<Menu Name="HoverButtons" Items="{Binding MenuItems}">
-              <Menu.Styles>
-                <Style Selector="MenuItem">
-                  <Setter Property="Header" Value="{Binding Header}" />
-                  <Setter Property="Icon" Value="{Binding Icon}" />
-                  <Setter Property="MinWidth" Value="28" />
-                  <Setter Property="Items" Value="{Binding Items}" />
-                  <Setter Property="Command" Value="{Binding Command}" />
-                  <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
-                </Style>
-              </Menu.Styles>
-
-            </Menu>-->
-              <Grid IsEnabled="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}">
-                <!--  RECEIVE BTN  -->
-                <c:ReceiveButton IsVisible="{Binding IsReceiver}" />
-                <!--  SEND BTN  -->
-                <c:SendButton IsVisible="{Binding IsReceiver, Converter={x:Static BoolConverters.Not}}" />
-              </Grid>
-            </StackPanel>
-
-            <Grid
-              Grid.Row="1"
-              Grid.ColumnSpan="2"
-              IsEnabled="{Binding NoAccess, Converter={x:Static BoolConverters.Not}}"
-              RowDefinitions="auto,auto,auto">
-              <!--  NOTIFICATION  -->
-              <m:ColorZone
-                Grid.Row="1"
-                Margin="0,10,0,0"
-                assists:ShadowAssist.ShadowDepth="Depth0"
-                CornerRadius="25"
-                IsVisible="{Binding ShowNotification}"
-                Mode="PrimaryMid">
-                <Grid ColumnDefinitions="*, auto">
-                  <Button
-                    Margin="0,0,3,0"
-                    VerticalAlignment="Center"
-                    CornerRadius="25,0,0,25"
-                    Classes="Flat"
-                    Command="{Binding LaunchNotificationCommand}"
-                    ToolTip.Tip="View online">
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock
-                        VerticalAlignment="Center"
-                        Classes="Overline"
-                        FontWeight="Medium"
-                        Foreground="White"
-                        Text="{Binding Notification}"
-                        TextWrapping="Wrap" />
-                      <icons:MaterialIcon
-                        Margin="5,0"
-                        VerticalAlignment="Center"
-                        Foreground="White"
-                        Kind="ExternalLink" />
-                    </StackPanel>
-                  </Button>
-                  <m:FloatingButton
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    Classes="Mini"
-                    Command="{Binding CloseNotificationCommand}"
-                    ToolTip.Tip="Close notification">
-                    <Button.Content>
-                      <icons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Foreground="White"
-                        Kind="Close" />
-
-                    </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
-              </m:ColorZone>
-            </Grid>
-          </Grid>
-          <Grid IsVisible="{Binding IsRemovingStream, FallbackValue=False}">
+          <!--  REMOVING STREAM POPUP  -->
+          <Border
+            Padding="5,7"
+            Background="{DynamicResource MaterialDesignCardBackground}"
+            IsVisible="{Binding IsRemovingStream, FallbackValue=False}">
 
             <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
               <TextBlock
@@ -306,22 +51,273 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="10">
-                <Button Command="{Binding CancelRemoveSavedStreamCommand}" Content="Cancel" />
+                <Button
+                  Classes="Mini"
+									Background="{DynamicResource PrimaryHueMidBrush}"
+                  Command="{Binding CancelRemoveSavedStreamCommand}"
+                  Content="Cancel" />
                 <Button
                   Background="Red"
+                  Classes="Mini"
                   Command="{Binding RemoveSavedStreamCommand}"
                   CommandParameter="{Binding StreamState.Id}"
                   Content="Remove" />
               </StackPanel>
             </StackPanel>
+          </Border>
+          <Grid ColumnDefinitions="*,auto">
+            <!--  BUTTON  -->
+            <Button
+              Padding="5,7"
+              Classes="Invisible"
+              Command="{Binding $parent[local:HomeView].DataContext.OpenSavedStreamCommand}"
+              CommandParameter="{Binding}"
+              IsEnabled="{Binding StreamEnabled}">
+
+              <Grid
+                Name="MainGrid"
+                Margin="4,0"
+                ColumnDefinitions="*, auto"
+                RowDefinitions="auto,auto">
+                <Grid RowDefinitions="Auto,Auto,Auto">
+                  <TextBlock
+                    Margin="0,0,0,5"
+                    Classes="Grotesk"
+                    Text="{Binding Stream.name}"
+                    TextTrimming="CharacterEllipsis" />
+                  <!--  SENDER  -->
+                  <Grid Grid.Row="1" ColumnDefinitions="auto,auto,auto">
+                    <Grid
+                      Grid.Column="0"
+                      ColumnDefinitions="auto,auto,auto,auto,*"
+                      IsVisible="{Binding !StreamState.IsReceiver}">
+                      <icons:MaterialIcon
+                        Margin="0,0,5,0"
+                        Foreground="Gray"
+                        Kind="SourceBranch" />
+                      <TextBlock
+                        Grid.Column="1"
+                        Classes="Caption"
+                        Text="{Binding StreamState.BranchName}"
+                        TextTrimming="CharacterEllipsis" />
+                      <icons:MaterialIcon
+                        Grid.Column="2"
+                        Margin="10,0,5,0"
+                        Foreground="Gray"
+                        Kind="{Binding StreamState.Filter.Icon}" />
+                      <TextBlock
+                        Grid.Column="3"
+                        Classes="Caption"
+                        Text="{Binding StreamState.Filter.Name}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    </Grid>
+                    <!--  RECEIVER  -->
+                    <Grid
+                      Grid.Column="0"
+                      ColumnDefinitions="auto,auto,auto *"
+                      IsVisible="{Binding StreamState.IsReceiver}">
+                      <icons:MaterialIcon
+                        Margin="0,0,2,0"
+                        Foreground="Gray"
+                        Kind="SourceBranch" />
+                      <TextBlock
+                        Grid.Column="1"
+                        Classes="Caption"
+                        Text="{Binding StreamState.BranchName}"
+                        TextTrimming="CharacterEllipsis" />
+
+                      <icons:MaterialIcon
+                        Grid.Column="2"
+                        Margin="5,0,0,0"
+                        Foreground="Gray"
+                        Kind="SourceCommit" />
+                      <TextBlock
+                        Grid.Column="3"
+                        Classes="Caption"
+                        Text="{Binding StreamState.CommitId}"
+                        TextTrimming="CharacterEllipsis" />
+
+                    </Grid>
+                    <StackPanel
+                      Grid.Column="1"
+                      Margin="10,0,5,0"
+                      Orientation="Horizontal"
+                      Spacing="5">
+                      <icons:MaterialIcon
+                        Foreground="Gray"
+                        IsVisible="{Binding StreamState.SchedulerEnabled}"
+                        Kind="ClockCheck"
+                        ToolTip.Tip="Scheduler is enabled on this stream" />
+                      <icons:MaterialIcon
+                        VerticalAlignment="Center"
+                        Foreground="Gray"
+                        IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                        Kind="Heart"
+                        ToolTip.Tip="This is a favorite stream" />
+                      <icons:MaterialIcon
+                        VerticalAlignment="Center"
+                        Foreground="Gray"
+                        IsVisible="{Binding StreamState.AutoReceive}"
+                        Kind="CallReceived"
+                        ToolTip.Tip="Auto Receive is ON for this stream" />
+                    </StackPanel>
+
+                  </Grid>
+                  <!--  DETAILS - visible when not progressing  -->
+                  <Grid
+                    Grid.Row="2"
+                    Margin="0,5,0,0"
+                    ColumnDefinitions="auto,auto,*"
+                    IsVisible="{Binding !Progress.IsProgressing}">
+                    <TextBlock
+                      Classes="Overline"
+                      Text="{Binding LastUpdated}"
+                      TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                      Grid.Column="1"
+                      Classes="Overline"
+                      Text=" - " />
+                    <TextBlock
+                      Grid.Column="2"
+                      Classes="Overline"
+                      Text="{Binding LastUsed}"
+                      TextTrimming="CharacterEllipsis" />
+
+                  </Grid>
+
+                  <!--  DETAILS - visible when progressing  -->
+                  <Grid
+                    Grid.Row="2"
+                    Margin="0,5,0,0"
+                    ColumnDefinitions="auto"
+                    IsVisible="{Binding Progress.IsProgressing}">
+                    <TextBlock
+                      Classes="Overline"
+                      Text="{Binding Progress.ProgressSummary}"
+                      TextTrimming="CharacterEllipsis" />
+                  </Grid>
+
+                </Grid>
+
+                <!--  ACTION BUTTONS  -->
+                <StackPanel
+                  Grid.Column="1"
+                  Orientation="Horizontal"
+                  Spacing="5">
+                  <!--  DELETE BTN  -->
+                  <m:FloatingButton
+                    Name="HoverButtons"
+                    VerticalAlignment="Center"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    Background="Transparent"
+                    Classes="Mini"
+                    Command="{Binding AskRemoveSavedStreamCommand}"
+                    IsEnabled="{Binding !Progress.IsProgressing}"
+                    ToolTip.Tip="Remove this stream">
+                    <Button.Content>
+                      <icons:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        assists:ShadowAssist.ShadowDepth="0"
+                        Foreground="Gray"
+                        Kind="Delete" />
+
+                    </Button.Content>
+                  </m:FloatingButton>
+
+                  <!--  RECEIVE BTN  -->
+                  <c:ReceiveButton IsVisible="{Binding IsReceiver}" />
+                  <!--  SEND BTN  -->
+                  <c:SendButton IsVisible="{Binding !IsReceiver}" />
+
+                </StackPanel>
+
+                <Grid
+                  Grid.Row="1"
+                  Grid.ColumnSpan="2"
+                  RowDefinitions="auto,auto,auto">
+                  <!--  NOTIFICATION  -->
+                  <m:ColorZone
+                    Grid.Row="1"
+                    Margin="0,10,0,0"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    CornerRadius="25"
+                    IsVisible="{Binding ShowNotification}"
+                    Mode="PrimaryMid">
+                    <Grid ColumnDefinitions="*, auto">
+                      <Button
+                        Margin="0,0,3,0"
+                        VerticalAlignment="Center"
+                        Classes="Flat"
+                        Command="{Binding LaunchNotificationCommand}"
+                        CornerRadius="25,0,0,25"
+                        ToolTip.Tip="View online">
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock
+                            VerticalAlignment="Center"
+                            Classes="Overline"
+                            FontWeight="Medium"
+                            Foreground="White"
+                            Text="{Binding Notification}"
+                            TextWrapping="Wrap" />
+                          <icons:MaterialIcon
+                            Margin="5,0"
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Kind="ExternalLink" />
+                        </StackPanel>
+                      </Button>
+                      <m:FloatingButton
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        Classes="Mini"
+                        Command="{Binding CloseNotificationCommand}"
+                        ToolTip.Tip="Close notification">
+                        <Button.Content>
+                          <icons:MaterialIcon
+                            Width="15"
+                            Height="15"
+                            Foreground="White"
+                            Kind="Close" />
+
+                        </Button.Content>
+                      </m:FloatingButton>
+                    </Grid>
+                  </m:ColorZone>
+                </Grid>
+              </Grid>
+            </Button>
+
+            <!--  DELETE BTN 2 (for disabled streams)  -->
+            <m:FloatingButton
+              Grid.Column="1"
+              Margin="5"
+              VerticalAlignment="Center"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              Background="Transparent"
+              Classes="Mini"
+              Command="{Binding AskRemoveSavedStreamCommand}"
+              IsEnabled="{Binding !IsRemovingStream}"
+              IsVisible="{Binding NoAccess}"
+              ToolTip.Tip="Remove this stream">
+              <Button.Content>
+                <icons:MaterialIcon
+                  Width="15"
+                  Height="15"
+                  assists:ShadowAssist.ShadowDepth="0"
+                  Foreground="Gray"
+                  Kind="Delete" />
+
+              </Button.Content>
+            </m:FloatingButton>
           </Grid>
-
-
         </Grid>
       </DataTemplate>
-    </ListBox.ItemTemplate>
+    </ItemsRepeater.ItemTemplate>
 
-  </ListBox>
+  </ItemsRepeater>
 
 
 </UserControl>

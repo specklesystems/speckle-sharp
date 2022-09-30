@@ -8,7 +8,9 @@ namespace DesktopUI2.Views.Converters
   {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-      return value != null && value.ToString() == "stream:owner";
+      var canShare = value != null && value.ToString() == "stream:owner";
+      var negate = parameter != null && parameter.ToString() == "not";
+      return negate ? !canShare : canShare;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
