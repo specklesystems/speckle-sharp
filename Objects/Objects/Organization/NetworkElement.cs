@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Speckle.Newtonsoft.Json;
+using Objects.BuiltElements;
 
 namespace Objects.Organization
 {
@@ -38,8 +39,30 @@ namespace Objects.Organization.Revit
 {
   public class RevitNetworkElement : NetworkElement
   {
+    public FittingType FittingType { get; set; }
     public RevitNetworkElement() { }
 
+    public bool ConnectorBasedCreation()
+    {
+      return FittingType == FittingType.Elbow
+        || FittingType == FittingType.Tee
+        || FittingType == FittingType.Union
+        || FittingType == FittingType.Transition
+        || FittingType == FittingType.Cross
+        || FittingType == FittingType.Tap;
+    }
+  }
+
+  public enum FittingType
+  {
+    Elbow = 0,
+    Tee = 1,
+    Union = 2,
+    Transition = 3,
+    Cross = 4,
+    Tap = 5,
+    Other = 6,
+    Invalid = -1
   }
 }
   

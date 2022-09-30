@@ -163,7 +163,10 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = DuctToSpeckle(o, out notes);
+          if (IsConnected(o))
+            returnObject = NetworkToSpeckle(o, out notes);
+          else
+            returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
           returnObject = DuctToSpeckle(o);
@@ -480,7 +483,7 @@ namespace Objects.Converter.Revit
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
-        case Objects.Organization.Network o:
+        case Network o:
           return NetworkToNative(o);
 
         case BE.Floor o:

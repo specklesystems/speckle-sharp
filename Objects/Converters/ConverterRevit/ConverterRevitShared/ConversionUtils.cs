@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
+using FittingType = Objects.Organization.Revit.FittingType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -136,49 +137,26 @@ namespace Objects.Converter.Revit
         ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
         if (CanConvertToSpeckle(element))
         {
+          FittingType fittingType = FittingType.Invalid;
           Base obj = null;
           switch (element)
           {
             case DB.FamilyInstance fi:
+              fittingType = GetFittingType(fi);
               obj = FamilyInstanceToSpeckle(fi, out notes);
               break;
             case DB.Plumbing.Pipe pipe:
               obj = PipeToSpeckle(pipe);
+              break;
+            case DB.Mechanical.Duct duct:
+              obj = DuctToSpeckle(duct, out notes);
               break;
           }
 
           if (obj != null)
           {
             reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
-            // var networkElement = new RevitNetworkElement() { network = @network, name = element.Name, element = obj };
-            // var networkElement = new RevitNetworkElement() { applicationId = element.UniqueId, network = @network, name = element.Name, element = obj, linkIndices = new List<int>() };
-            @network.elements.Add(new RevitNetworkElement() { applicationId = element.UniqueId, network = @network, name = element.Name, element = obj, linkIndices = new List<int>() });
-            //var linkIndices = new List<int>();
-            //var connections = connectionPairs.Where(p => p.Item1.Owner.UniqueId.Equals(element.UniqueId) || p.Item2.Owner.UniqueId.Equals(element.UniqueId));
-            //foreach (var connection in connections)
-            //{
-            //  var link = new RevitNetworkLink() { applicationId = element.UniqueId, name = $"{connection.Item1.Owner.Name} --> {connection.Item2.Owner.Name}", network = @network, elementIndices = new List<int>() };
-            //  switch (connection.Item1.Shape)
-            //  {
-            //    case ConnectorProfileType.Invalid:
-            //      link.shape = NetworkLinkShape.Unknown;
-            //      break;
-            //    case ConnectorProfileType.Round:
-            //      link.shape = NetworkLinkShape.Round;
-            //      break;
-            //    case ConnectorProfileType.Rectangular:
-            //      link.shape = NetworkLinkShape.Rectangular;
-            //      break;
-            //    case ConnectorProfileType.Oval:
-            //      link.shape = NetworkLinkShape.Oval;
-            //      break;
-            //  }
-            //  //link.elementIndices.Add(elements.FindIndex(e => e.UniqueId.Equals(connection.Item1.Owner.UniqueId)));
-            //  //link.elementIndices.Add(elements.FindIndex(e => e.UniqueId.Equals(connection.Item2.Owner.UniqueId)));
-            //  @network.links.Add(link);
-            //}
-            //@network.elements.Add(networkElement);
-            //@network.links.Add(link)
+            @network.elements.Add(new RevitNetworkElement() { applicationId = element.UniqueId, network = @network, name = element.Name, element = obj, linkIndices = new List<int>(), FittingType = fittingType });
             ConvertedObjectsList.Add(obj.applicationId);
           }
           else
@@ -196,24 +174,36 @@ namespace Objects.Converter.Revit
       foreach (var connectionPair in connectionPairs)
       {
         var link = new RevitNetworkLink() { name = $"{connectionPair.Item1.Owner.Name} --> {connectionPair.Item2.Owner.Name}", network = @network, elementIndices = new List<int>() };
-        switch (connectionPair.Item1.Shape)
-        {
-          case ConnectorProfileType.Invalid:
-            link.shape = NetworkLinkShape.Unknown;
-            break;
-          case ConnectorProfileType.Round:
-            link.shape = NetworkLinkShape.Round;
-            break;
-          case ConnectorProfileType.Rectangular:
-            link.shape = NetworkLinkShape.Rectangular;
-            break;
-          case ConnectorProfileType.Oval:
-            link.shape = NetworkLinkShape.Oval;
-            break;
-        }
         var firstElementIndex = @network.elements.FindIndex(e => e.applicationId.Equals(connectionPair.Item1.Owner.UniqueId));
         var secondElementIndex = @network.elements.FindIndex(e => e.applicationId.Equals(connectionPair.Item2.Owner.UniqueId));
         link.elementIndices.AddRange(new List<int>() { firstElementIndex, secondElementIndex });
+        var origin = connectionPair.Item1.Origin;
+        var familyInstanceConnector = connectionPair.Item1.Owner is DB.FamilyInstance ?
+          connectionPair.Item1 :
+          connectionPair.Item2;
+        link.domain = RevitToSpeckleDomain(familyInstanceConnector.Domain);
+        link.shape = RevitToSpeckleShape(familyInstanceConnector.Shape);
+        link.category = familyInstanceConnector.Owner.Category.Name;
+        link.type = Doc.GetElement(familyInstanceConnector.MEPSystem.GetTypeId()).Name;
+        var curve = connectionPair.Item1.Owner as MEPCurve ?? connectionPair.Item2.Owner as MEPCurve;
+        link.origin = new Point(origin.X, origin.Y, origin.Z, Speckle.Core.Kits.Units.Feet);
+        link.connectionIndex = familyInstanceConnector.Id;
+        link.direction = new Vector(familyInstanceConnector.CoordinateSystem.BasisZ.X, familyInstanceConnector.CoordinateSystem.BasisZ.Y, familyInstanceConnector.CoordinateSystem.BasisZ.Z, Speckle.Core.Kits.Units.Feet);
+        link.connectedToCurve = curve != null;
+        if (link.connectedToCurve)
+        {
+          link.diameter = link.shape == NetworkLinkShape.Round ? curve.Diameter : 0;
+          link.height = link.shape != NetworkLinkShape.Round ? curve.Height : 0;
+          link.width = link.shape != NetworkLinkShape.Round ? curve.Width : 0;
+        }
+        else
+        {
+          link.diameter = link.shape == NetworkLinkShape.Round ? connectionPair.Item1.Radius * 2 : 0;
+          link.height = link.shape != NetworkLinkShape.Round ? connectionPair.Item1.Height : 0;
+          link.width = link.shape != NetworkLinkShape.Round ? connectionPair.Item1.Width : 0;
+        }
+
+
         @network.links.Add(link);
         var firstElement = @network.elements[firstElementIndex];
         var secondElement = @network.elements[secondElementIndex];
@@ -223,45 +213,119 @@ namespace Objects.Converter.Revit
       if (@network.elements.Any())
       {
         notes.Add($"Converted and attached {@network.elements.Count} connected elements");
-        // @network.elements = convertedConnectedElements;
-        // @network.links = links; 
       }
     }
 
-    //private static bool IsMEPCategory(Element e)
-    //{
-    //  var mepCategories = new[]
-    //  {
-    //    BuiltInCategory.OST_PipeFitting,
-    //    BuiltInCategory.OST_PipeCurves,
-    //    BuiltInCategory.OST_PipeAccessory,
-    //    BuiltInCategory.OST_DuctFitting,
-    //    BuiltInCategory.OST_DuctCurves,
-    //    BuiltInCategory.OST_DuctAccessory,
-    //    BuiltInCategory.OST_MechanicalEquipment,
-    //    BuiltInCategory.OST_DuctTerminal,
-    //    BuiltInCategory.OST_Conduit,
-    //    BuiltInCategory.OST_ConduitFitting,
-    //    BuiltInCategory.OST_CableTray,
-    //    BuiltInCategory.OST_CableTrayFitting
-    //  };
+    #region Fitting Utilities
 
-    //  return mepCategories.Any(cat => (int)cat == e.Category.Id.IntegerValue);
-    //}
+    private FittingType GetFittingType(DB.FamilyInstance familyInstance)
+    {
+      PartType partType = (PartType)familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
+
+      if (partType == PartType.Elbow ||
+          partType == PartType.ChannelCableTrayElbow ||
+          partType == PartType.ChannelCableTrayVerticalElbow ||
+          partType == PartType.JunctionBoxElbow ||
+          partType == PartType.LadderCableTrayElbow ||
+          partType == PartType.LadderCableTrayVerticalElbow)
+      {
+        return FittingType.Elbow;
+      }
+      else if (partType == PartType.Tee ||
+          partType == PartType.ChannelCableTrayTee ||
+          partType == PartType.JunctionBoxTee ||
+          partType == PartType.LadderCableTrayTee ||
+          partType == PartType.LateralTee)
+      {
+        return FittingType.Tee;
+      }
+      else if (partType == PartType.Cross ||
+          partType == PartType.ChannelCableTrayCross ||
+          partType == PartType.JunctionBoxCross ||
+          partType == PartType.LadderCableTrayCross ||
+          partType == PartType.LateralCross)
+      {
+        return FittingType.Cross;
+      }
+      else if (partType == PartType.Union ||
+          partType == PartType.ChannelCableTrayUnion ||
+          partType == PartType.LadderCableTrayUnion)
+      {
+        return FittingType.Union;
+      }
+      else if (partType == PartType.Transition ||
+          partType == PartType.ChannelCableTrayTransition ||
+          partType == PartType.LadderCableTrayTransition)
+      {
+        return FittingType.Transition;
+      }
+      else if (partType == PartType.TapAdjustable ||
+          partType == PartType.TapPerpendicular)
+      {
+        return FittingType.Tap;
+      }
+      else if (IsFittingInstance(familyInstance))
+      {
+        return FittingType.Other;
+      }
+      return FittingType.Invalid;
+    }
+
+    private bool IsFittingInstance(DB.FamilyInstance familyInstance)
+    {
+      var fittingCategories = new List<BuiltInCategory> { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting, BuiltInCategory.OST_ConduitFitting };
+      return fittingCategories.Any(c => (int)c == familyInstance.Category.Id.IntegerValue);
+    }
+
+    public ConnectorProfileType SpeckleToRevitShape(NetworkLinkShape shape)
+    {
+      return GetValues<ConnectorProfileType>().FirstOrDefault(s => (int)s == (int)shape);
+    }
+
+    public NetworkLinkShape RevitToSpeckleShape(ConnectorProfileType shape)
+    {
+      return GetValues<NetworkLinkShape>().FirstOrDefault(s => (int)s == (int)shape);
+    }
+
+    public Domain SpeckleToRevitDomain(NetworkLinkDomain domain)
+    {
+      return GetValues<Domain>().FirstOrDefault(d => (int)d == (int)domain);
+    }
+
+    public NetworkLinkDomain RevitToSpeckleDomain(Domain domain)
+    {
+      return GetValues<NetworkLinkDomain>().FirstOrDefault(d => (int)d == (int)domain);
+    }
+
+    private static T[] GetValues<T>()
+    {
+      return Enum.GetValues(typeof(T)).Cast<T>().ToArray();
+    }
+
+    #endregion
 
     private void GetConnectionPairs(Element element, ref List<Tuple<Connector, Connector>> connectionPairs, ref List<Element> elements)
     {
+      var refs = GetRefConnectionPairs(element);
       var refConnectionPairs = GetRefConnectionPairs(element).
         Where(e => ContextObjects.Any(obj => obj.applicationId.Equals(e.Item2.Owner.UniqueId))).ToList();
       elements.Add(element);
-      foreach (var refConnectionPair in refConnectionPairs)
+      foreach (var refConnectionPair in refs)
       {
         var connectedElement = refConnectionPair.Item2.Owner;
-        if (connectedElement != null && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId)))
+        if (connectedElement != null
+          && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId))
+          && ContextObjects.Any(obj => obj.applicationId.Equals(connectedElement.UniqueId)))
         {
           connectionPairs.Add(refConnectionPair);
           GetConnectionPairs(connectedElement, ref connectionPairs, ref elements);
         }
+        //else
+        //{
+        //  connectionPairs.Add(refConnectionPair);
+
+        //  //connectionPairs.Add(Tuple.Create<Connector, Connector>(refConnectionPair.Item1, null));
+        //}
       }
     }
 

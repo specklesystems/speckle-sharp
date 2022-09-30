@@ -38,7 +38,15 @@ namespace Objects.Organization.Revit
     /// </summary>
     public NetworkLinkShape shape { get; set; }
 
+    public Point origin { get; set; }
+
+    public int connectionIndex { get; set; }
+
     public Vector direction { get; set; }
+
+    public bool connectedToCurve { get; set; }
+
+    public NetworkLinkDomain domain { get; set; }
 
     public bool connected { get; set; }
 
@@ -46,7 +54,7 @@ namespace Objects.Organization.Revit
 
     public double width { get; set; }
 
-    public double radius { get; set; }
+    public double diameter { get; set; }
 
     /// <summary>
     /// The system type
@@ -64,9 +72,21 @@ namespace Objects.Organization.Revit
   /// </summary>
   public enum NetworkLinkShape
   {
-    Unknown,
-    Rectangular,
-    Round,
-    Oval
+    Unknown = -1,
+    Round = 0,
+    Rectangular = 1,
+    Oval = 2
+  }
+
+  /// <summary>
+  /// Represents the connector domain of a <see cref="NetworkLink"/>.
+  /// </summary>
+  public enum NetworkLinkDomain
+  {
+    Unknown = 0,
+    Duct = 1,
+    Conduit = 2,
+    Piping = 3,
+    CableTray = 4
   }
 }

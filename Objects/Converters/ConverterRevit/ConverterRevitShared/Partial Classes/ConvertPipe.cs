@@ -95,7 +95,7 @@ namespace Objects.Converter.Revit
       }
 
       if (speckleRevitPipe != null)
-        SetInstanceParameters(pipe, speckleRevitPipe);
+        //SetInstanceParameters(pipe, speckleRevitPipe);
 
       TrySetParam(pipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM, specklePipe.diameter, specklePipe.units);
 
