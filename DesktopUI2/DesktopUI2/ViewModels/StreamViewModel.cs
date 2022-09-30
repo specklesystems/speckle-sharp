@@ -1036,13 +1036,13 @@ namespace DesktopUI2.ViewModels
 
         Reset();
         Progress.IsProgressing = true;
-        await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+        var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
           LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
+          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive }, { "sourceHostApp", state.LastSourceApp } });
         }
 
         GetActivity();
