@@ -1,11 +1,10 @@
-﻿using Autodesk.DesignScript.Runtime;
+using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Speckle.Core.Logging;
 
@@ -88,20 +87,20 @@ namespace Speckle.ConnectorDynamo.Functions
       //is item
       return TryConvertItemToSpeckle(@object);
     }
-    
+
+    private static Dictionary<string, object> DynamoDictionaryToDictionary(DesignScript.Builtin.Dictionary dsDic)
+    {
+      var dict = new Dictionary<string, object>();
+      
+      dsDic.Keys.ToList().ForEach(key =>
+      {
+        dict[key] = dsDic.ValueAtKey(key);
+      });
+      return dict;
+    }
     private Base DictionaryToBase(DesignScript.Builtin.Dictionary dsDic)
     {
-      var regex = new Regex("//");
-      var @base = new Base();
-      foreach (var key in dsDic.Keys)
-      {
-        // Dynamo does not support `::` in dictionary keys. We use `//` instead.
-        // Upon send, any `//` must be replaced by `::` again.
-        var replace = regex.Replace(key, "::");
-        @base[replace] = RecurseTreeToSpeckle(dsDic.ValueAtKey(key));
-      }
-
-      return @base;
+      return DictionaryToBase(DynamoDictionaryToDictionary(dsDic));
     }
 
     private Base DictionaryToBase(Dictionary<string, object> dic)
@@ -111,10 +110,11 @@ namespace Speckle.ConnectorDynamo.Functions
       var type = @base.GetType();
       if (hasSpeckleType)
       {
+        // If the dictionary contains a `speckle_type` key, try to find and create an instance of that type
         var s = dic["speckle_type"] as string;
-
+        
         var baseType = typeof(Base);
-        type = _kit.Types.FirstOrDefault((t => t.FullName == s)) ?? baseType;
+        type = _kit.Types.FirstOrDefault(t => t.FullName == s) ?? baseType;
         if(type != baseType)
           @base = Activator.CreateInstance(type) as Base;
       }
@@ -264,7 +264,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (IsList(@object))
       {
         var list = ((IEnumerable)@object).Cast<object>();
-        return list.Select(x => RecurseTreeToNative(x)).ToList();
+        return list.Select(RecurseTreeToNative).ToList();
       }
       if (@object is Base @base && IsDataTree(@base))
       {
@@ -286,7 +286,6 @@ namespace Speckle.ConnectorDynamo.Functions
       }
 
       var @base = (Base)value;
-
       //it's an unsupported Base, return a dictionary
       if (!_converter.CanConvertToNative(@base))
       {
@@ -332,7 +331,8 @@ namespace Speckle.ConnectorDynamo.Functions
       return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
     }
   }
-
+  
+  [IsVisibleInDynamoLibrary(false)]
   public class OnErrorEventArgs : EventArgs
   {
     public Exception Error;
