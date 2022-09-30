@@ -376,14 +376,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // convert base (or base fallback values) and store in appobj converted prop
             if (commitObj.Convertible)
+            {
+              converter.Report.Log(commitObj); // Log object so converter can access
               try
               {
                 commitObj.Converted = ConvertObject(commitObj, converter);
               }
-              catch(Exception e)
+              catch (Exception e)
               {
                 commitObj.Log.Add($"Failed conversion: {e.Message}");
               }
+            }
             else
               foreach (var fallback in commitObj.Fallback)
               {
@@ -438,27 +441,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (progress.CancellationTokenSource.Token.IsCancellationRequested)
               return;
 
-            // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
-            var isUpdate = false;
-            var toRemove = new List<ObjectId>();
+            // find existing doc objects if they exist
+            var existingObjs = new List<ObjectId>();
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                toRemove = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
-                if (toRemove.Count > 0)
-                {
-                  isUpdate = true;
-                  foreach (var objId in toRemove)
-                  {
-                    try
-                    {
-                      DBObject obj = tr.GetObject(objId, OpenMode.ForWrite);
-                      obj.Erase();
-                    }
-                    catch(Exception e)
-                    { }
-                  }
-                }
+                existingObjs = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
                 break;
               default:
                 break;
@@ -466,13 +454,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // bake
             if (commitObj.Convertible)
-              BakeObject(commitObj, converter, tr, isUpdate);
+              BakeObject(commitObj, converter, tr, existingObjs);
             else
             {
               foreach (var fallback in commitObj.Fallback)
-                BakeObject(fallback, converter, tr, isUpdate, commitObj);
+                BakeObject(fallback, converter, tr, existingObjs, commitObj);
               commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
-                ApplicationObject.State.Failed : isUpdate ?
+                ApplicationObject.State.Failed : existingObjs.Count > 0 ?
                 ApplicationObject.State.Updated : ApplicationObject.State.Created;
             }
             Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
@@ -608,10 +596,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return convertedList;
     }
 
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, bool isUpdate, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, List<ObjectId> toRemove, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
+      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated ? false : true;
 
       foreach (var convertedItem in appObj.Converted)
       {
@@ -707,7 +696,28 @@ namespace Speckle.ConnectorAutocadCivil.UI
           appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
       }
       else
-        appObj.Status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      {
+        // remove existing objects if they exist
+        if (remove)
+        {
+          foreach (var objId in toRemove)
+          {
+            try
+            {
+              DBObject objToRemove = tr.GetObject(objId, OpenMode.ForWrite);
+              objToRemove.Erase();
+            }
+            catch (Exception e)
+            {
+              if (parent != null)
+                parent.Log.Add(e.Message);
+              else
+                appObj.Log.Add(e.Message);
+            }
+          }
+          appObj.Status = toRemove.Count > 0 ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+        }
+      }
     }
 
     private void DeleteBlocksWithPrefix(string prefix, Transaction tr)

@@ -335,12 +335,11 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
-        case Alignment o:
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
-          acadObj = AlignmentToNative(o, out notes);
-#endif
-          acadObj = PolylineToNativeDB(o.displayValue);
+        case Alignment o:
+          acadObj = AlignmentToNative(o);
           break;
+#endif
 
         case ModelCurve o:
           acadObj = CurveToNativeDB(o.baseCurve);
@@ -355,12 +354,17 @@ namespace Objects.Converter.AutocadCivil
           throw new NotSupportedException();
       }
 
-      if (reportObj != null)
+      switch (acadObj)
       {
-        reportObj.Update(log: notes);
-        Report.UpdateReportObject(reportObj);
+        case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
+          acadObj = o.Converted.Any() ? o.Converted.FirstOrDefault() : null;
+          if (reportObj != null) reportObj.Update(status: o.Status, createdIds: o.CreatedIds, container: o.Container, log: o.Log);
+          break;
+        default:
+          if (reportObj != null) reportObj.Update(log: notes);
+          break;
       }
-
+      if (reportObj != null) Report.UpdateReportObject(reportObj);
       return acadObj;
     }
 

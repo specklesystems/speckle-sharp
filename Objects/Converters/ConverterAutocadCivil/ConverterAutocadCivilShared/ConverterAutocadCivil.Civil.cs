@@ -13,6 +13,7 @@ using Autodesk.AutoCAD.Geometry;
 using Acad = Autodesk.AutoCAD.Geometry;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
+using Objects.BuiltElements.Civil;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Interval = Objects.Primitive.Interval;
@@ -85,9 +86,21 @@ namespace Objects.Converter.AutocadCivil
           return Civil.SpiralType.Clothoid;
       }
     }
-    public Alignment AlignmentToSpeckle(CivilDB.Alignment alignment)
+    public CivilAlignment AlignmentToSpeckle(CivilDB.Alignment alignment)
     {
-      var _alignment = new Alignment();
+      var _alignment = new CivilAlignment();
+
+      // get alignment props
+      _alignment.type = alignment.AlignmentType.ToString();
+      _alignment.offset = alignment.IsOffsetAlignment ? alignment.OffsetAlignmentInfo.NominalOffset : 0;
+      if (alignment.SiteName != null)
+        _alignment.site = alignment.SiteName;
+      if (alignment.StyleName != null)
+        _alignment.style = alignment.StyleName;
+      if (alignment.Description != null)
+        _alignment["description"] = alignment.Description;
+      if (alignment.Name != null)
+        _alignment.name = alignment.Name;
 
       // get alignment stations
       _alignment.startStation = alignment.StartingStation;
@@ -95,6 +108,18 @@ namespace Objects.Converter.AutocadCivil
       var stations = alignment.GetStationSet(CivilDB.StationTypes.All).ToList();
       List<Station> _stations = stations.Select(o => StationToSpeckle(o)).ToList();
       if (_stations.Count > 0) _alignment["@stations"] = _stations;
+
+      // handle station equations
+      var equations = new List<double>();
+      var directions = new List<bool>();
+      foreach (var stationEquation in alignment.StationEquations)
+      {
+        equations.AddRange(new List<double> { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead });
+        bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
+        directions.Add(equationIncreasing);
+      }
+      _alignment.stationEquations = equations;
+      _alignment.stationEquationDirections = directions;
 
       // get the alignment subentity curves
       List<ICurve> curves = new List<ICurve>();
@@ -144,129 +169,148 @@ namespace Objects.Converter.AutocadCivil
           curves.Add(polycurve);
         }
       }
-
-      /* this isn't very accurate, basecurve is usually a polycurve with lines and arcs
-      // get display poly
-      var poly = alignment.BaseCurve as Autodesk.AutoCAD.DatabaseServices.Polyline;
-      using (Polyline2d poly2d = poly.ConvertTo(false))
-      {
-        _alignment.displayValue = CurveToSpeckle(poly) as Polyline;
-      }
-      */
-
       _alignment.curves = curves;
-      if (alignment.Name != null)
-        _alignment.name = alignment.Name;
 
-      // handle station equations
-      var equations = new List<double>();
-      var directions = new List<bool>();
-      foreach (var stationEquation in alignment.StationEquations)
+
+      // if offset alignment, also set parent and offset side
+      if (alignment.IsOffsetAlignment)
       {
-        equations.AddRange(new List<double> { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead });
-        bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
-        directions.Add(equationIncreasing);
+        _alignment["offsetSide"] = alignment.OffsetAlignmentInfo.Side.ToString();
+        try
+        {
+          var parent = Trans.GetObject(alignment.OffsetAlignmentInfo.ParentAlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+          if (parent != null && parent.Name != null)
+            _alignment.parent = parent.Name;
+        }
+        catch { }
       }
-      _alignment.stationEquations = equations;
-      _alignment.stationEquationDirections = directions;
-
-      _alignment.units = ModelUnits;
-
-      // add civil3d props if they exist
-      if (alignment.SiteName != null)
-        _alignment["site"] = alignment.SiteName;
-      if (alignment.StyleName != null)
-        _alignment["style"] = alignment.StyleName;
-      if (alignment.Description != null)
-        _alignment["description"] = alignment.Description;
 
       return _alignment;
     }
 
-    public CivilDB.Alignment AlignmentToNative(Alignment alignment, out List<string> notes)
+    public ApplicationObject AlignmentToNative(Alignment alignment)
     {
-      notes = new List<string>();
-      var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
-      var layer = Doc.Database.LayerZero;
+      var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
+      var existingObjs = GetExistingElementsByApplicationId(alignment.applicationId);
+      var civilAlignment = alignment as CivilAlignment;
 
+      // get civil doc
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       var civilDoc = CivilApplication.ActiveDocument;
       if (civilDoc == null)
-        return null;
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+        return appObj;
+      }
 
+      // create or retrieve alignment, and parent if it exists
+      CivilDB.Alignment _alignment = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.Alignment : null;
+      var parent = civilAlignment != null ? GetFromObjectIdCollection(civilAlignment.parent, civilDoc.GetAlignmentIds()) : ObjectId.Null;
+      bool isUpdate = true;
+      if (_alignment == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create) // just create a new alignment
+      {
+        isUpdate = false;
+
+        // get civil props for creation
 #region properties
-      var site = ObjectId.Null;
-      var style = civilDoc.Styles.AlignmentStyles.First();
-      var label = civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
+        var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
+        var layer = Doc.Database.LayerZero;
 
-      // get site
-      if (alignment["site"] != null)
-      {
-        var _site = alignment["site"] as string;
-        if (_site != string.Empty)
-        {
-          foreach (ObjectId docSite in civilDoc.GetSiteIds())
-          {
-            var siteEntity = Trans.GetObject(docSite, OpenMode.ForRead) as CivilDB.Site;
-            if (siteEntity.Name.Equals(_site))
-            {
-              site = docSite;
-              break;
-            }
-          }
-        }
-      }
+        // type
+        var type = CivilDB.AlignmentType.Centerline;
+        if (civilAlignment != null)
+          if (Enum.TryParse(civilAlignment.type, out CivilDB.AlignmentType civilType))
+            type = civilType;
 
-      // get style
-      if (alignment["style"] != null)
-      {
-        var _style = alignment["style"] as string;
-        foreach (var docStyle in civilDoc.Styles.AlignmentStyles)
-        {
-          var styleEntity = Trans.GetObject(docStyle, OpenMode.ForRead) as CivilDB.Styles.AlignmentStyle;
-          if (styleEntity.Name.Equals(_style))
-          {
-            style = docStyle;
-            break;
-          }
-        }
-      }
+        // site
+        var site = civilAlignment != null ? 
+          GetFromObjectIdCollection(civilAlignment.site, civilDoc.GetSiteIds()) : ObjectId.Null;
 
-      // get labelset
-      if (alignment["label"] != null)
-      {
-        var _label = alignment["label"] as string;
-        foreach (var docLabelSet in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles)
-        {
-          var labelEntity = Trans.GetObject(docLabelSet, OpenMode.ForRead) as CivilDB.Styles.AlignmentLabelSetStyle;
-          if (labelEntity.Name.Equals(_label))
-          {
-            label = docLabelSet;
-            break;
-          }
-        }
-      }
+        // style
+        var docStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.AlignmentStyles) docStyles.Add(styleId);
+        var style = civilAlignment != null ? 
+          GetFromObjectIdCollection(civilAlignment.style, docStyles) :  civilDoc.Styles.AlignmentStyles.First();
+
+        // label set style
+        var labelStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles) labelStyles.Add(styleId);
+        var label = civilAlignment != null ?
+          GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
 #endregion
 
-      // create alignment entity curves
-      try
-      {
-        var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label); // ⚠ this will throw if name is not unique!!
+        try
+        {
+          // add new alignment to doc
+          // ⚠ this will throw if name is not unique!!
+          var id = ObjectId.Null;
+          switch (type)
+          {
+            case CivilDB.AlignmentType.Offset:
+              // create only if parent exists in doc
+              if (parent == ObjectId.Null) goto default;
+              try
+              {
+                id = CivilDB.Alignment.CreateOffsetAlignment(name, parent, civilAlignment.offset, style);
+              }
+              catch
+              {
+                id = CivilDB.Alignment.CreateOffsetAlignment(CivilDB.Alignment.GetNextUniqueName(name), parent, civilAlignment.offset, style);
+              }
+              break;
+            default:
+              try
+              {
+                id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
+              }
+              catch
+              {
+                id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label);
+              }
+              break;
+          }
+          if (!id.IsValid)
+          {
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
+            return appObj;
+          }
+          _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+        }
+        catch (Exception e)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+          return appObj;
+        }
+      }
 
-        if (id == ObjectId.Null)
-          return null;
-        var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+      if (_alignment == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"returned null after bake");
+        return appObj;
+      }
+
+      if (isUpdate) appObj.Container = _alignment.Layer; // set the appobj container to be the same layer as the existing alignment
+
+      if (parent != ObjectId.Null)
+      {
+        _alignment.OffsetAlignmentInfo.NominalOffset = civilAlignment.offset; // just update the offset
+      }
+      else
+      {
+        // create alignment entity curves
         var entities = _alignment.Entities;
+        if (isUpdate) _alignment.Entities.Clear(); // remove existing curves
         foreach (var curve in alignment.curves)
           AddAlignmentEntity(curve, ref entities);
+      }
 
-        return _alignment;
-      }
-      catch (Exception e)
-      {
-        notes.Add(e.Message);
-        return null; 
-      }
+      // set start station
+      _alignment.ReferencePointStation = alignment.startStation;
+
+      // update appobj
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: _alignment.Handle.ToString(), convertedItem: _alignment);
+      return appObj;
     }
 
 #region helper methods
