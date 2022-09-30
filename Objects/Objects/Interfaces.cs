@@ -54,13 +54,6 @@ namespace Objects
   #endregion
 
   #region Built elements
-
-  [Obsolete("Use " + nameof(IDisplayValue<Mesh>) + " instead")]
-  public interface IDisplayMesh
-  {
-    [Obsolete("Use " + nameof(IDisplayValue<Mesh>) + "." + nameof(IDisplayValue<Mesh>.displayValue) + " instead")]
-    Mesh displayMesh { get; set; }
-  }
   
   /// <summary>
   /// Specifies displayable <see cref="Base"/> value(s) to be used as a fallback

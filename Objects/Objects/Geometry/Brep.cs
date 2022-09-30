@@ -12,7 +12,7 @@ using Objects.Primitive;
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayValue<List<Mesh>>
   {
     public string provenance { get; set; }
     public Box bbox { get; set; }
@@ -490,14 +490,6 @@ namespace Objects.Geometry
       return success3D;
     }
     
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
-
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Brep brep);
