@@ -554,7 +554,6 @@ namespace SpeckleRhino
           appObj.Convertible = false;
 
           // handle fallback display separately
-          // NOTE: deprecated displayMesh!!
           bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
           {

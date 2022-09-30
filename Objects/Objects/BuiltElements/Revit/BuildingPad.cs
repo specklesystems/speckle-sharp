@@ -8,7 +8,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class BuildingPad : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class BuildingPad : Base, IDisplayValue<List<Mesh>>
   {
     public ICurve outline { get; set; }
     
@@ -28,13 +28,5 @@ namespace Objects.BuiltElements.Revit
     public string units { get; set; }
 
     public BuildingPad() { }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }

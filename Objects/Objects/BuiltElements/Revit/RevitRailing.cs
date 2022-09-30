@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitRailing : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class RevitRailing : Base, IDisplayValue<List<Mesh>>
   {
     //public string family { get; set; }
     public string type { get; set; }
@@ -34,15 +34,6 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.flipped = flipped;
     }
-
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-    #endregion
   }
 
   // Used only to transfer parameters of the top railing

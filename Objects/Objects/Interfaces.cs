@@ -91,19 +91,6 @@ namespace Objects
   #region Built elements
   
   /// <summary>
-  /// Specifies a <see cref="Mesh"/> value to be used as fallback if a displayable form cannot be converted.
-  /// </summary>
-  [Obsolete("Use " + nameof(IDisplayValue<Mesh>) + " instead")]
-  public interface IDisplayMesh
-  {
-    /// <summary>
-    /// The <see cref="Mesh"/> representation of an object. Used to display the object if it cannot be converted.
-    /// </summary>
-    [Obsolete("Use " + nameof(IDisplayValue<Mesh>) + "." + nameof(IDisplayValue<Mesh>.displayValue) + " instead")]
-    Mesh displayMesh { get; set; }
-  }
-  
-  /// <summary>
   /// Specifies displayable <see cref="Base"/> value(s) to be used as a fallback
   /// if a displayable form cannot be converted.
   /// </summary>

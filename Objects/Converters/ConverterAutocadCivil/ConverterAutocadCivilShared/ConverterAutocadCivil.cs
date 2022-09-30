@@ -313,9 +313,6 @@ namespace Objects.Converter.AutocadCivil
         case Surface o: 
           return SurfaceToNative(o);
 
-        case Brep o:
-          acadObj = (o.displayMesh != null) ? MeshToNativeDB(o.displayMesh) : null;
-          break;
         */
 
         case Mesh o:
