@@ -368,9 +368,15 @@ namespace Speckle.ConnectorAutocadCivil
       }
       return objs;
     }
-#endregion
+    #endregion
 
-    public static List<ObjectId> GetObjectsByApplicationId(this Document doc, Transaction tr, string appId) //TODO: USE XDATA FOR APPIDS
+    /// <summary>
+    /// Returns, if found, the corresponding doc element.
+    /// The doc object can be null if the user deleted it. 
+    /// </summary>
+    /// <param name="appId">Id of the application that originally created the element, in AutocadCivil it's the handle</param>
+    /// <returns>The element, if found, otherwise null</returns>
+    public static List<ObjectId> GetObjectsByApplicationId(this Document doc, Transaction tr, string appId)
     {
       var foundObjects = new List<ObjectId>();
 

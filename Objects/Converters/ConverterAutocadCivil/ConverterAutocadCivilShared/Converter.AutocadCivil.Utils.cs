@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.EditorInput;
 
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
@@ -72,6 +73,93 @@ namespace Objects.Converter.AutocadCivil
       // remove all other invalid chars
       return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
     }
+
+    /// <summary>
+    /// Retrieves the handle from an input string
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static bool GetHandle(string str, out Handle handle)
+    {
+      handle = new Handle();
+      try
+      {
+        handle = new Handle(Convert.ToInt64(str, 16));
+      }
+      catch { return false; }
+      return true;
+    }
+
+    /// <summary>
+    /// Returns, if found, the corresponding doc element.
+    /// The doc object can be null if the user deleted it. 
+    /// </summary>
+    /// <param name="applicationId">Id of the application that originally created the element, in autocadcivil it's the handle</param>
+    /// <returns>The element, if found, otherwise null</returns>
+    public List<ObjectId> GetExistingElementsByApplicationId(string applicationId)
+    {
+      var ids = new List<ObjectId>();
+
+      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+        return ids;
+
+      // first see if this appid is a handle (autocad appid)
+      if (GetHandle(applicationId, out Handle handle))
+        if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+          return new List<ObjectId>() { id };
+
+      // Create a TypedValue array to define the filter criteria
+      TypedValue[] acTypValAr = new TypedValue[1];
+      acTypValAr.SetValue(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), 0);
+
+      // Create a selection filter for the applicationID xdata entry and find all objs with this field
+      SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
+      var res = Doc.Editor.SelectAll(acSelFtr);
+      if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
+        return ids;
+
+      // loop through all obj with an appId 
+      foreach (var appIdObj in res.Value.GetObjectIds())
+      {
+        // get the db object from id
+        var obj = Trans.GetObject(appIdObj, OpenMode.ForRead);
+        if (obj != null)
+          foreach (var entry in obj.XData)
+            if (entry.Value as string == applicationId)
+            {
+              ids.Add(appIdObj);
+              break;
+            }
+      }
+
+      return ids;
+    }
+
+    public ObjectId GetFromObjectIdCollection(string name, ObjectIdCollection collection)
+    {
+      var id = ObjectId.Null;
+      if (string.IsNullOrEmpty(name)) return id;
+
+      foreach (ObjectId collectionId in collection)
+      {
+        var entity = Trans.GetObject(collectionId, OpenMode.ForRead);
+        if (entity != null)
+        {
+          var props = entity.GetType().GetProperty("Name");
+          if (props != null)
+          {
+            var entityName = props.GetValue(entity) as string;
+            if (entityName == name)
+            {
+              id = collectionId;
+              break;
+            }
+          }
+        }
+      }
+      return id;
+    }
+
     #region Reference Point
 
     // CAUTION: these strings need to have the same values as in the connector bindings

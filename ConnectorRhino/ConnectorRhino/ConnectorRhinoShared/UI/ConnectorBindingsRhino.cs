@@ -627,9 +627,9 @@ namespace SpeckleRhino
     }
 
     // conversion and bake
-    private List<object> ConvertObject(ApplicationObject previewObj, ISpeckleConverter converter)
+    private List<object> ConvertObject(ApplicationObject appObj, ISpeckleConverter converter)
     {
-      var obj = StoredObjects[previewObj.OriginalId];
+      var obj = StoredObjects[appObj.OriginalId];
       var convertedList = new List<object>();
 
       var converted = converter.ConvertToNative(obj);
@@ -649,28 +649,28 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(ApplicationObject previewObj, ISpeckleConverter converter, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, ApplicationObject parent = null)
     {
-      var obj = StoredObjects[previewObj.OriginalId];
+      var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
       // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
-      if (!previewObj.Converted.Any() && (obj.speckle_type.Contains("Block") || obj.speckle_type.Contains("View")))
+      if (!appObj.Converted.Any() && (obj.speckle_type.Contains("Block") || obj.speckle_type.Contains("View")))
       {
-        previewObj.Converted = ConvertObject(previewObj, converter);
+        appObj.Converted = ConvertObject(appObj, converter);
       }
-      foreach (var convertedItem in previewObj.Converted)
+      foreach (var convertedItem in appObj.Converted)
       {
         switch (convertedItem)
         {
           case GeometryBase o:
-            string layerPath = previewObj.Container;
+            string layerPath = appObj.Container;
             if (!o.IsValidWithLog(out string log))
             {
               var invalidMessage = $"{log.Replace("\n", "").Replace("\r", "")}";
               if (parent != null)
-                parent.Update(logItem: $"fallback {previewObj.id}: {invalidMessage}");
+                parent.Update(logItem: $"fallback {appObj.id}: {invalidMessage}");
               else
-                previewObj.Update(logItem: invalidMessage);
+                appObj.Update(logItem: invalidMessage);
               continue;
             }
             Layer bakeLayer = Doc.GetLayer(layerPath, true);
@@ -678,9 +678,9 @@ namespace SpeckleRhino
             {
               var layerMessage = $"Could not create layer {layerPath}.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {previewObj.id}: {layerMessage}");
+                parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
               else
-                previewObj.Update(logItem: layerMessage);
+                appObj.Update(logItem: layerMessage);
               continue;
             }
             var attributes = new ObjectAttributes();
@@ -707,16 +707,16 @@ namespace SpeckleRhino
             {
               var bakeMessage = $"Could not bake to document.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {previewObj.id}: {bakeMessage}");
+                parent.Update(logItem: $"fallback {appObj.id}: {bakeMessage}");
               else
-                previewObj.Update(logItem: bakeMessage);
+                appObj.Update(logItem: bakeMessage);
               continue;
             }
 
             if (parent != null)
               parent.Update(createdId: id.ToString());
             else
-              previewObj.Update(createdId: id.ToString());
+              appObj.Update(createdId: id.ToString());
 
             bakedCount++;
 
@@ -736,14 +736,14 @@ namespace SpeckleRhino
             if (parent != null)
               parent.Update(createdId: o.Id.ToString());
             else
-              previewObj.Update(status: ApplicationObject.State.Created, createdId: o.Id.ToString());
+              appObj.Update(status: ApplicationObject.State.Created, createdId: o.Id.ToString());
             bakedCount++;
             break;
           case string o: // this was prbly a view, baked during conversion
             if (parent != null)
               parent.Update(createdId: o);
             else
-              previewObj.Update(status: ApplicationObject.State.Created, createdId: o);
+              appObj.Update(status: ApplicationObject.State.Created, createdId: o);
             bakedCount++;
             break;
           default:
@@ -754,12 +754,12 @@ namespace SpeckleRhino
       if (bakedCount == 0)
       {
         if (parent != null)
-          parent.Update(logItem: $"fallback {previewObj.id}: could not bake object");
+          parent.Update(logItem: $"fallback {appObj.id}: could not bake object");
         else
-          previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
       }
       else
-        previewObj.Update(status: ApplicationObject.State.Created);
+        appObj.Update(status: ApplicationObject.State.Created);
     }
 
     private void SetUserInfo(Base obj, ObjectAttributes attributes, ApplicationObject parent = null)
