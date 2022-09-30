@@ -164,8 +164,6 @@ namespace Archicad
           var specialKeys = @base.GetMembers();
           if ( specialKeys.ContainsKey("displayValue") )
             objects.AddRange(FlattenCommitObject(specialKeys[ "displayValue" ]));
-          else if ( specialKeys.ContainsKey("displayMesh") )   // to be depreciated
-            objects.AddRange(FlattenCommitObject(specialKeys[ "displayMesh" ]));
           if ( specialKeys.ContainsKey("elements") ) // for built elements like roofs, walls, and floors.
             objects.AddRange(FlattenCommitObject(specialKeys[ "elements" ]));
 
