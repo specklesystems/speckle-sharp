@@ -82,6 +82,7 @@ namespace Speckle.Core.Kits
     public static HostApplication PowerBI = new HostApplication("Power BI", "powerbi");
     public static HostApplication Blender = new HostApplication("Blender", "blender");
     public static HostApplication QGIS = new HostApplication("QGIS", "qgis");
+    public static HostApplication ArcGIS = new HostApplication("ArcGIS", "arcgis");
     public static HostApplication SketchUp = new HostApplication("SketchUp", "sketchup");
     public static HostApplication Archicad = new HostApplication("Archicad", "archicad");
     public static HostApplication TopSolid = new HostApplication("TopSolid", "topsolid");
@@ -119,7 +120,8 @@ namespace Speckle.Core.Kits
       if (appname.Contains("unreal")) return Unreal;
       if (appname.Contains("powerbi")) return PowerBI;
       if (appname.Contains("blender")) return Blender;
-      if (appname.Contains("teklastrucqgistures")) return QGIS;
+      if (appname.Contains("qgis")) return QGIS;
+      if (appname.Contains("arcgis")) return ArcGIS;
       if (appname.Contains("sketchup")) return SketchUp;
       if (appname.Contains("archicad")) return Archicad;
       if (appname.Contains("topsolid")) return TopSolid;
