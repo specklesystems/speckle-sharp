@@ -10,11 +10,11 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
@@ -115,7 +115,7 @@ namespace Archicad.Launcher
       return state;
     }
 
-    public override void SelectClientObjects(List<string> args, bool deselect = false) 
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
       // TODO!
     }
@@ -135,7 +135,7 @@ namespace Archicad.Launcher
       var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
       if (commitObject is not null)
       {
-        return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
+        return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);
       }
 
       return null;
