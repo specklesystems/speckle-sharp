@@ -1,11 +1,11 @@
-﻿using Dynamo.ViewModels;
-using Dynamo.Wpf.Extensions;
-using Speckle.ConnectorDynamo.Functions;
-using System;
-using Speckle.Core.Logging;
-using Speckle.Core.Kits;
+﻿using System;
 using Dynamo.Applications.Models;
+using Dynamo.ViewModels;
+using Dynamo.Wpf.Extensions;
 using RevitServices.Persistence;
+using Speckle.ConnectorDynamo.Functions;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Extension
 {
@@ -32,7 +32,7 @@ namespace Speckle.ConnectorDynamo.Extension
         //sets a read-only property using reflection WatchHandler
         //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
-        Setup.Init(VersionedHostApplications.DynamoRevit, HostApplications.Dynamo.Slug);
+        Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit), HostApplications.Dynamo.Slug);
       }
       catch (Exception e)
       {
@@ -54,7 +54,7 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Startup(ViewStartupParams p)
     {
-      Setup.Init(VersionedHostApplications.DynamoSandbox, HostApplications.Dynamo.Slug);
+      Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox), HostApplications.Dynamo.Slug);
     }
   }
 }

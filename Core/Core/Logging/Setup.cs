@@ -59,7 +59,7 @@ namespace Speckle.Core.Logging
     /// <summary>
     /// Set from the connectors, defines which current host application we're running on - includes the version.
     /// </summary>
-    internal static string VersionedHostApplication { get; private set; } = VersionedHostApplications.Other;
+    internal static string VersionedHostApplication { get; private set; } = HostApplications.Other.Slug;
 
 
   }

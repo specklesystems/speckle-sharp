@@ -1042,7 +1042,12 @@ namespace DesktopUI2.ViewModels
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
           LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive }, { "sourceHostApp", state.LastSourceApp } });
+          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive,
+            new Dictionary<string, object>() {
+              { "mode", StreamState.ReceiveMode },
+              { "auto", StreamState.AutoReceive },
+              { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastSourceApp).Slug },
+              { "sourceHostAppVersion", state.LastSourceApp } });
         }
 
         GetActivity();

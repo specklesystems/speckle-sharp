@@ -39,7 +39,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     /// Stored document line types used for baking objects on receive
     /// </summary>
     public Dictionary<string, ObjectId> LineTypeDictionary = new Dictionary<string, ObjectId>();
-    
+
     public List<string> GetLayers()
     {
       var layers = new List<string>();
@@ -139,7 +139,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." }
       };
     }
-    
+
     private List<ISetting> CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
     // CAUTION: these strings need to have the same values as in the converter
     const string InternalOrigin = "Internal Origin (default)";
@@ -181,37 +181,37 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-        var editor = Application.DocumentManager.MdiActiveDocument.Editor;
-        var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
-        foreach (var arg in args)
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
+      foreach (var arg in args)
+      {
+        try
         {
-          try
-          {
-            if (Utils.GetHandle(arg, out Handle handle))
-              if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+          if (Utils.GetHandle(arg, out Handle handle))
+            if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+            {
+              if (deselect)
               {
-                if (deselect)
-                {
-                  if (currentSelection.Contains(id))
-                    currentSelection.Remove(id);
-                }
-                else
-                {
-                  if (!currentSelection.Contains(id))
-                    currentSelection.Add(id);
-                }
+                if (currentSelection.Contains(id))
+                  currentSelection.Remove(id);
               }
-          }
-          catch
-          {
-
-          }
+              else
+              {
+                if (!currentSelection.Contains(id))
+                  currentSelection.Add(id);
+              }
+            }
         }
-        if (currentSelection.Count == 0)
-          editor.SetImpliedSelection(new ObjectId[0]);
-        else
-          Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
-        Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+        catch
+        {
+
+        }
+      }
+      if (currentSelection.Count == 0)
+        editor.SetImpliedSelection(new ObjectId[0]);
+      else
+        Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
+      Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     }
 
     public override void ResetDocument()
@@ -265,6 +265,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       string referencedObject = commit.referencedObject;
       Base commitObject = null;
+
+      state.LastSourceApp = commit.sourceApplication;
+
       try
       {
         commitObject = await Operations.Receive(
@@ -983,8 +986,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
               converted["propertySets"] = propertySets;
 #endif
 
-            string containerName = obj is BlockReference ? 
-              "Blocks" : 
+            string containerName = obj is BlockReference ?
+              "Blocks" :
               Utils.RemoveInvalidDynamicPropChars(layer); // remove invalid chars from layer name
 
             if (commitObject[$"@{containerName}"] == null)

@@ -153,6 +153,7 @@ namespace Speckle.ConnectorDynamo.Functions
         return null;
 
       var transport = new ServerTransport(account, stream.StreamId);
+
       var @base = Operations.Receive(
         commit.referencedObject,
         cancellationToken,
@@ -170,7 +171,7 @@ namespace Speckle.ConnectorDynamo.Functions
           streamId = stream.StreamId,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = VersionedHostApplications.DynamoRevit
+          sourceApplication = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit)
         }).Wait();
       }
       catch
@@ -184,7 +185,11 @@ namespace Speckle.ConnectorDynamo.Functions
       var converter = new BatchConverter();
       var data = converter.ConvertRecursivelyToNative(@base);
 
-      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
+      {
+        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
+        { "sourceHostAppVersion", commit.sourceApplication }
+      });
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }
