@@ -15,8 +15,7 @@ namespace Objects.Geometry
   /// <summary>
   /// Represents a "Boundary Representation" Solid
   /// </summary>
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayMesh,
-                      IDisplayValue<List<Mesh>>
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayValue<List<Mesh>>
   {
     public string provenance { get; set; }
 
@@ -548,19 +547,7 @@ namespace Objects.Geometry
 
       return success3D;
     }
-
-    #region Obsolete Members
-
-    /// <inheritdoc/>
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-
-    #endregion
-
+    
     /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
