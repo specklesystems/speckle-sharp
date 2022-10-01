@@ -30,16 +30,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public TeklaWeldType typeAbove { get; set; }
     public TeklaWeldType typeBelow { get; set; }
     public TeklaWeldIntermittentType intermittentType { get; set; }
-
-
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-    #endregion
+    
     public Welds() { }
 
   }

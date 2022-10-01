@@ -505,7 +505,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
           appObj.Convertible = false;
 
           // handle fallback displayvalues separately
-          // NOTE: deprecated displayMesh!!
           bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
           {

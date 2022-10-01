@@ -12,7 +12,7 @@ using Objects.Structural.Materials;
 
 namespace Objects.BuiltElements
 {
-  public class Rebar : Base, IHasVolume, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Rebar : Base, IHasVolume, IDisplayValue<List<Mesh>>
   {
     public List<ICurve> curves { get; set; } = new List<ICurve>();
     
@@ -23,14 +23,6 @@ namespace Objects.BuiltElements
     public double volume { get; set; }
 
     public Rebar() { }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }
 

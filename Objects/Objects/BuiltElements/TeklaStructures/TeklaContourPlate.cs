@@ -25,24 +25,11 @@ namespace Objects.BuiltElements.TeklaStructures
     public string classNumber { get; set; }
     [DetachProperty]
     public TeklaPosition position { get; set; }
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
+
     [DetachProperty]
     public Base rebars { get; set; }
     public List<TeklaContourPoint> contour { get; set; } // Use for ToNative to Tekla. Other programs can use Area.outline.
-
-    public string units { get; set; }
-
-
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-    #endregion
-
+    
 
     [SchemaInfo("ContourPlate", "Creates a TeklaStructures contour plate.", "Tekla", "Structure")]
     public TeklaContourPlate(SectionProfile profile, Polyline outline, string finish, string classNumber, string units, StructuralMaterial material = null, TeklaPosition position = null, Base rebars = null)

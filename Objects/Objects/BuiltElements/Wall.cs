@@ -9,7 +9,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
-  public class Wall : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Wall : Base, IDisplayValue<List<Mesh>>
   {
     public double height { get; set; }
 
@@ -39,14 +39,6 @@ namespace Objects.BuiltElements
       this.baseLine = baseLine;
       this.elements = elements;
     }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }
 

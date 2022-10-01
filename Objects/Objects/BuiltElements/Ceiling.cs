@@ -8,7 +8,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
-  public class Ceiling : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Ceiling : Base, IDisplayValue<List<Mesh>>
   {
     public ICurve outline { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
@@ -31,14 +31,6 @@ namespace Objects.BuiltElements
       this.voids = voids;
       this.elements = elements;
     }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }
 
