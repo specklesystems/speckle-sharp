@@ -77,8 +77,23 @@ namespace Speckle.Core.Kits
     public static HostApplication SAFE = new HostApplication("SAFE", "safe");
     public static HostApplication TeklaStructures = new HostApplication("Tekla Structures", "teklastructures");
     public static HostApplication Dxf = new HostApplication("DXF Converter", "dxf");
+    public static HostApplication Excel = new HostApplication("Excel", "excel");
+    public static HostApplication Unreal = new HostApplication("Unreal", "unreal");
+    public static HostApplication PowerBI = new HostApplication("Power BI", "powerbi");
+    public static HostApplication Blender = new HostApplication("Blender", "blender");
+    public static HostApplication QGIS = new HostApplication("QGIS", "qgis");
+    public static HostApplication SketchUp = new HostApplication("SketchUp", "sketchup");
+    public static HostApplication Archicad = new HostApplication("Archicad", "archicad");
+    public static HostApplication TopSolid = new HostApplication("TopSolid", "topsolid");
+    public static HostApplication Python = new HostApplication("Python", "python");
+    public static HostApplication NET = new HostApplication(".NET", "net");
     public static HostApplication Other = new HostApplication("Other", "other");
 
+    /// <summary>
+    /// Gets a HostApplication form a string. It could be the versioned name or a string coming from a process running.
+    /// </summary>
+    /// <param name="appname">String with the name of the app</param>
+    /// <returns></returns>
     public static HostApplication GetHostAppFromString(string appname)
     {
       appname = appname.ToLowerInvariant().Replace(" ", "");
@@ -99,6 +114,17 @@ namespace Speckle.Core.Kits
       if (appname.Contains("csibridge")) return CSIBridge;
       if (appname.Contains("safe")) return SAFE;
       if (appname.Contains("teklastructures")) return TeklaStructures;
+      if (appname.Contains("dxf")) return Dxf;
+      if (appname.Contains("excel")) return Excel;
+      if (appname.Contains("unreal")) return Unreal;
+      if (appname.Contains("powerbi")) return PowerBI;
+      if (appname.Contains("blender")) return Blender;
+      if (appname.Contains("teklastrucqgistures")) return QGIS;
+      if (appname.Contains("sketchup")) return SketchUp;
+      if (appname.Contains("archicad")) return Archicad;
+      if (appname.Contains("topsolid")) return TopSolid;
+      if (appname.Contains("python")) return Python;
+      if (appname.Contains("net")) return NET;
       return new HostApplication(appname, appname);
 
     }
