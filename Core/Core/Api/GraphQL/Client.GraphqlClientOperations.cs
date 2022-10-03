@@ -194,6 +194,7 @@ namespace Speckle.Core.Api
                         createdAt
                         updatedAt
                         commentCount
+                        favoritedDate
                         favoritesCount
                         collaborators {{
                           id
