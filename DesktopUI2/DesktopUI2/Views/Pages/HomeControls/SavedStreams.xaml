@@ -131,6 +131,7 @@
                     <TextBlock
                       Grid.Column="7"
                       Classes="Overline"
+                      FontStyle="Italic"
                       Text="{Binding StreamState.Filter.Summary}"
                       TextTrimming="CharacterEllipsis" />
 
