@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,10 +29,10 @@ namespace ConnectorGrasshopper
 
     public override GH_LoadingInstruction PriorityLoad()
     {
-      var version = VersionedHostApplications.Grasshopper6;
+      var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
       if (RhinoApp.Version.Major == 7)
-        version = VersionedHostApplications.Grasshopper7;
-      
+        version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+
       try
       {
         // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
@@ -158,7 +158,7 @@ namespace ConnectorGrasshopper
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateTabsMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-  
+
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;
@@ -225,9 +225,9 @@ namespace ConnectorGrasshopper
           SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
         };
       });
-      
+
       tabsMenu.DropDown.Items.Add(new ToolStripSeparator());
-      
+
       var showDevItem = new ToolStripMenuItem("Show Developer components", null, (o, args) =>
       {
         SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
@@ -241,12 +241,14 @@ namespace ConnectorGrasshopper
     private void CreateMeshingSettingsMenu()
     {
       var defaultSetting = new ToolStripMenuItem(
-        "Default") { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
+        "Default")
+      { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
 
       var currentDocSetting = new ToolStripMenuItem(
         "Current Rhino doc")
       {
-        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc, CheckOnClick = true
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc,
+        CheckOnClick = true
       };
       currentDocSetting.Click += (sender, args) =>
       {
@@ -261,7 +263,7 @@ namespace ConnectorGrasshopper
       var meshMenu = new ToolStripMenuItem("Select the default meshing parameters:");
       meshMenu.DropDown.Items.Add(defaultSetting);
       meshMenu.DropDown.Items.Add(currentDocSetting);
-      
+
       KeepOpenOnDropdownCheck(meshMenu);
       speckleMenu.DropDown.Items.Add(meshMenu);
     }
@@ -299,8 +301,8 @@ namespace ConnectorGrasshopper
       };
       KeepOpenOnDropdownCheck(schemaConversionHeader);
     }
-    
-    public static void KeepOpenOnDropdownCheck (ToolStripMenuItem ctl)
+
+    public static void KeepOpenOnDropdownCheck(ToolStripMenuItem ctl)
     {
       foreach (var item in ctl.DropDownItems.OfType<ToolStripMenuItem>())
       {

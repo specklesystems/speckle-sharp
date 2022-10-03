@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Rhino;
-using Rhino.DocObjects;
-using Rhino.Geometry;
-using Rhino.Display;
-using RH = Rhino.Geometry;
-using Grasshopper.Kernel.Types;
-
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
+﻿using Grasshopper.Kernel.Types;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
-
+using Rhino;
+using Rhino.Display;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -32,6 +28,7 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
+using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Transform = Objects.Other.Transform;
@@ -43,13 +40,13 @@ namespace Objects.Converter.RhinoGh
   public partial class ConverterRhinoGh : ISpeckleConverter
   {
 #if RHINO6 && GRASSHOPPER
-    public static string RhinoAppName = VersionedHostApplications.Grasshopper6;
+    public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
 #elif RHINO7 && GRASSHOPPER
-    public static string RhinoAppName = VersionedHostApplications.Grasshopper7;
+    public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
 #elif RHINO6
-    public static string RhinoAppName = VersionedHostApplications.Rhino6;
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
 #elif RHINO7
-    public static string RhinoAppName = VersionedHostApplications.Rhino7;
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
 #endif
 
     public enum MeshSettings
@@ -103,10 +100,10 @@ namespace Objects.Converter.RhinoGh
 
     public RH.Mesh GetRhinoRenderMesh(RhinoObject rhinoObj)
     {
-      ObjRef[] meshObjRefs = RhinoObject.GetRenderMeshes(new List<RhinoObject>{rhinoObj}, false, false);
+      ObjRef[] meshObjRefs = RhinoObject.GetRenderMeshes(new List<RhinoObject> { rhinoObj }, false, false);
       if (meshObjRefs == null || meshObjRefs.Length == 0) return null;
       if (meshObjRefs.Length == 1) return meshObjRefs[0]?.Mesh();
-      
+
       var joinedMesh = new RH.Mesh();
       foreach (var t in meshObjRefs)
       {
@@ -217,8 +214,8 @@ namespace Objects.Converter.RhinoGh
         case RH.Mesh o:
           @base = MeshToSpeckle(o);
           break;
-        
-# if GRASSHOPPER
+
+#if GRASSHOPPER
         case RH.Transform o:
           @base = TransformToSpeckle(o);
           Report.Log("Converter Transform");
@@ -227,7 +224,7 @@ namespace Objects.Converter.RhinoGh
           @base = DisplayMaterialToSpeckle(o);
           break;
 #endif
-        
+
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
@@ -365,7 +362,7 @@ namespace Objects.Converter.RhinoGh
               break;
 
             case "Topography":
-              schemaBase = displayMesh != null ? MeshToTopography(displayMesh) :  BrepToTopography(o);
+              schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : BrepToTopography(o);
               break;
 
             default:
@@ -396,7 +393,7 @@ namespace Objects.Converter.RhinoGh
             case "DirectShape":
               schemaBase = ExtrusionToDirectShape(o, args);
               break;
-            
+
             case "Topography":
               schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : MeshToTopography(o.GetMesh(MeshType.Default));
               break;
@@ -631,11 +628,11 @@ namespace Objects.Converter.RhinoGh
           break;
 
         case RenderMaterial o:
-          #if GRASSHOPPER
+#if GRASSHOPPER
             rhinoObj = RenderMaterialToDisplayMaterial(o);
-          #else
-            rhinoObj = RenderMaterialToNative(o);
-          #endif
+#else
+          rhinoObj = RenderMaterialToNative(o);
+#endif
           break;
         case Transform o:
           rhinoObj = TransformToNative(o);
@@ -700,7 +697,7 @@ namespace Objects.Converter.RhinoGh
         case RH.Brep _:
         case NurbsSurface _:
           return true;
-        
+
 #if GRASSHOPPER
         // This types are ONLY supported in GH!
         case RH.Transform _:
@@ -712,7 +709,7 @@ namespace Objects.Converter.RhinoGh
         case InstanceDefinition _:
         case InstanceObject _:
         case TextEntity _:
-        case RH.Dimension _: 
+        case RH.Dimension _:
           return true;
 #endif
         default:

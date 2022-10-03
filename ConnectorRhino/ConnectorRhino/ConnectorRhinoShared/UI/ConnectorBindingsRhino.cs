@@ -7,27 +7,23 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
-
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
-
-using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
 using static DesktopUI2.ViewModels.MappingViewModel;
-
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 
 namespace SpeckleRhino
@@ -75,7 +71,7 @@ namespace SpeckleRhino
 
     public override List<ReceiveMode> GetReceiveModes()
     {
-      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create};
+      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create };
     }
 
     #region Local streams I/O with local file
@@ -143,7 +139,7 @@ namespace SpeckleRhino
     {
       var objs = new List<string>();
       var Converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      
+
       if (Converter == null || Doc == null) return objs;
 
       var selected = Doc.Objects.GetSelectedObjects(true, false).ToList();
@@ -204,7 +200,7 @@ namespace SpeckleRhino
         {
           continue; // this was a named view!
         }
-        
+
         if (obj != null)
         {
           if (deselect) obj.Select(false, true, false, true, true, true);
@@ -227,7 +223,7 @@ namespace SpeckleRhino
       if (PreviewConduit != null)
         PreviewConduit.Enabled = false;
       else
-        Doc.Objects.UnselectAll(true); 
+        Doc.Objects.UnselectAll(true);
 
       Doc.Views.Redraw();
     }
@@ -262,7 +258,7 @@ namespace SpeckleRhino
           progress.Report.LogOperationError(new Exception($"Could not retrieve commit {commit.id} from server"));
           progress.CancellationTokenSource.Cancel();
         }
-          
+
         SelectedReceiveCommit = commit.id;
         Preview.Clear();
         StoredObjects.Clear();
@@ -316,7 +312,7 @@ namespace SpeckleRhino
       }
       else // just generate the log
       {
-        foreach(var previewObj in Preview)
+        foreach (var previewObj in Preview)
           progress.Report.Log(previewObj);
       }
 
@@ -357,6 +353,8 @@ namespace SpeckleRhino
       Commit commit = await GetCommitFromState(state, progress);
       if (commit == null) return null;
 
+      state.LastSourceApp = commit.sourceApplication;
+
       if (SelectedReceiveCommit != commit.id)
       {
         Preview.Clear();
@@ -377,6 +375,8 @@ namespace SpeckleRhino
         commitObject = await GetCommit(commit, state, progress);
       if (progress.Report.OperationErrorsCount != 0)
         return null;
+
+
 
       RhinoApp.InvokeOnUiThread((Action)delegate
       {
@@ -447,8 +447,8 @@ namespace SpeckleRhino
           {
             foreach (var fallback in previewObj.Fallback)
               BakeObject(fallback, converter, previewObj);
-            previewObj.Status = previewObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == previewObj.Fallback.Count ? 
-              ApplicationObject.State.Failed : isUpdate ? 
+            previewObj.Status = previewObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == previewObj.Fallback.Count ?
+              ApplicationObject.State.Failed : isUpdate ?
               ApplicationObject.State.Updated : ApplicationObject.State.Created;
           }
 
@@ -840,13 +840,13 @@ namespace SpeckleRhino
         progress.Report.LogOperationError(new Exception("No valid objects selected, nothing will be sent!"));
         return;
       }
-        
+
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
       Doc.Objects.UnselectAll(false);
       SelectClientObjects(existingIds);
       Doc.Views.Redraw();
     }
-    
+
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       // check for converter 
@@ -1029,7 +1029,7 @@ namespace SpeckleRhino
 
       //return state;
     }
-    
+
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
     {
       var objs = new List<string>();

@@ -1,31 +1,31 @@
-﻿using System;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
-using STR = Objects.Structural;
 using GE = Objects.Geometry;
-using System;
+using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
 #if REVIT2023
-    public static string RevitAppName = VersionedHostApplications.Revit2023;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
 #elif REVIT2022
-    public static string RevitAppName = VersionedHostApplications.Revit2022;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2022);
 #elif REVIT2021
-    public static string RevitAppName = VersionedHostApplications.Revit2021;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2021);
 #elif REVIT2020
-    public static string RevitAppName = VersionedHostApplications.Revit2020;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2020);
 #else
-    public static string RevitAppName = VersionedHostApplications.Revit2019;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
     #region ISpeckleConverter props
@@ -267,7 +267,7 @@ namespace Objects.Converter.Revit
           var material = GetElementRenderMaterial(@object as DB.Element);
           returnObject["renderMaterial"] = material;
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
         }

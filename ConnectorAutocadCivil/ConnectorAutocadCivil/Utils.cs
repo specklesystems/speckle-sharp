@@ -22,27 +22,27 @@ namespace Speckle.ConnectorAutocadCivil
   {
 
 #if AUTOCAD2021
-    public static string VersionedAppName = VersionedHostApplications.Autocad2021;
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2021);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
 #elif AUTOCAD2022
-    public static string VersionedAppName = VersionedHostApplications.Autocad2022;
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
 #elif AUTOCAD2023
-    public static string VersionedAppName = VersionedHostApplications.Autocad2023;
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
 #elif CIVIL2021
-    public static string VersionedAppName = VersionedHostApplications.Civil2021;
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2022
-    public static string VersionedAppName = VersionedHostApplications.Civil2022;
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2023
-    public static string VersionedAppName = VersionedHostApplications.Civil2023;
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
 #endif
@@ -280,7 +280,7 @@ namespace Speckle.ConnectorAutocadCivil
       {
         propertySets = PropertyDataServices.GetPropertySets(obj);
       }
-      catch (Exception e) 
+      catch (Exception e)
       { }
       if (propertySets == null) return sets;
 

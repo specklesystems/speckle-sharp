@@ -12,15 +12,15 @@ namespace Speckle.ConnectorRevit
   public static class ConnectorRevitUtils
   {
 #if REVIT2023
-    public static string RevitAppName = VersionedHostApplications.Revit2023;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
 #elif REVIT2022
-    public static string RevitAppName = VersionedHostApplications.Revit2022;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2022);
 #elif REVIT2021
-    public static string RevitAppName = VersionedHostApplications.Revit2021;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2021);
 #elif REVIT2020
-    public static string RevitAppName = VersionedHostApplications.Revit2020;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2020);
 #else
-    public static string RevitAppName = VersionedHostApplications.Revit2019;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
     private static List<string> _cachedParameters = null;

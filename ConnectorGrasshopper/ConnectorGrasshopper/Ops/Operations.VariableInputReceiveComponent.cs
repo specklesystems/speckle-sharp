@@ -22,6 +22,7 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -439,7 +440,10 @@ namespace ConnectorGrasshopper.Ops
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
           account = new Account
           {
-            id = wrapper?.StreamId, serverInfo = new ServerInfo() { url = wrapper?.ServerUrl }, token = "", refreshToken = ""
+            id = wrapper?.StreamId,
+            serverInfo = new ServerInfo() { url = wrapper?.ServerUrl },
+            token = "",
+            refreshToken = ""
           };
         }
         ApiClient = new Client(account);
@@ -560,8 +564,8 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
-        
-        Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
+
+
 
         var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
@@ -593,6 +597,11 @@ namespace ConnectorGrasshopper.Ops
           }
 
           ReceivedCommit = myCommit;
+          Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>()
+          { { "auto", receiveComponent.AutoReceive },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
+            { "sourceHostAppVersion", myCommit.sourceApplication }
+          });
 
           if (CancellationToken.IsCancellationRequested)
           {
@@ -778,7 +787,7 @@ namespace ConnectorGrasshopper.Ops
           var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null };
           dataTree = treeBuilder.Build(prop);
         }
-        
+
         DA.SetDataTree(param, dataTree);
         parent.PrevReceivedData.Add(name, dataTree);
       });

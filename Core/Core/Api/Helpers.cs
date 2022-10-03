@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -83,7 +84,11 @@ namespace Speckle.Core.Api
         objectId = branch.commits.items[0].referencedObject;
       }
 
-      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
+          {
+            { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
+            { "sourceHostAppVersion", commit.sourceApplication }
+          });
 
       var receiveRes = await Operations.Receive(
         objectId,

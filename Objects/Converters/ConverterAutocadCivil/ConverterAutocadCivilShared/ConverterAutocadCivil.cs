@@ -1,4 +1,6 @@
-﻿using Objects.Other;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -22,8 +24,6 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
@@ -35,17 +35,17 @@ namespace Objects.Converter.AutocadCivil
   public partial class ConverterAutocadCivil : ISpeckleConverter
   {
 #if AUTOCAD2021
-    public static string AutocadAppName = VersionedHostApplications.Autocad2021;
+    public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2021);
 #elif AUTOCAD2022
-    public static string AutocadAppName = VersionedHostApplications.Autocad2022;
+    public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
 #elif AUTOCAD2023
-    public static string AutocadAppName = VersionedHostApplications.Autocad2023;
+    public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
 #elif CIVIL2021
-    public static string AutocadAppName = VersionedHostApplications.Civil2021;
+    public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
 #elif CIVIL2022
-    public static string AutocadAppName = VersionedHostApplications.Civil2022;
+    public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
 #elif CIVIL2023
-    public static string AutocadAppName = VersionedHostApplications.Civil2023;
+    public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
 #endif
 
     public ConverterAutocadCivil()
@@ -105,7 +105,7 @@ namespace Objects.Converter.AutocadCivil
           var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
           reportObj = new ApplicationObject(obj.Id.ToString(), obj.GetType().ToString()) { applicationId = appId };
           style = DisplayStyleToSpeckle(obj as Entity);
-          
+
           switch (obj)
           {
             case DBPoint o:
@@ -261,7 +261,7 @@ namespace Objects.Converter.AutocadCivil
     public object ConvertToNative(Base @object)
     {
       // determine if this object has autocad props
-      bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false; 
+      bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false;
       object acadObj = null;
       var reportObj = Report.GetReportObject(@object.id, out int index) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
       List<string> notes = new List<string>();
