@@ -302,6 +302,85 @@ namespace Objects.Converter.Revit
       return Enum.GetValues(typeof(T)).Cast<T>().ToArray();
     }
 
+    public static void RotateFamilyInstance(DB.FamilyInstance familyInstance, DB.Transform originalTransform, bool handFlipped, bool facingFlipped)
+    {
+      var currentTransform = familyInstance.GetTotalTransform();
+      currentTransform.Origin = originalTransform.Origin;
+      var basePoint = originalTransform.Origin;
+      var document = familyInstance.Document;
+      while (!originalTransform.AlmostEqual(currentTransform))
+      {
+        if (!currentTransform.BasisX.IsAlmostEqualTo(originalTransform.BasisX))
+        {
+          double angleX = currentTransform.BasisX.AngleTo(originalTransform.BasisX);
+          var crossProductX = currentTransform.BasisX.CrossProduct(originalTransform.BasisX).Normalize();
+          var axisX = !crossProductX.IsAlmostEqualTo(DB.XYZ.Zero) ?
+              DB.Line.CreateUnbound(basePoint, crossProductX) :
+              DB.Line.CreateUnbound(basePoint, originalTransform.BasisX.CrossProduct(originalTransform.BasisY));
+          familyInstance.Location.Rotate(axisX, angleX);
+          currentTransform = familyInstance.GetTotalTransform();
+          if (!currentTransform.BasisX.IsAlmostEqualTo(originalTransform.BasisX))
+          {
+            familyInstance.Location.Rotate(axisX, -2 * angleX);
+            currentTransform = familyInstance.GetTotalTransform();
+          }
+        }
+        if (!currentTransform.BasisY.IsAlmostEqualTo(originalTransform.BasisY))
+        {
+          var angleY = currentTransform.BasisY.AngleTo(originalTransform.BasisY);
+          var crossProductY = currentTransform.BasisY.CrossProduct(originalTransform.BasisY).Normalize();
+          var axisY = !crossProductY.IsAlmostEqualTo(DB.XYZ.Zero) ?
+              DB.Line.CreateUnbound(basePoint, crossProductY) :
+              DB.Line.CreateUnbound(basePoint, originalTransform.BasisY.CrossProduct(originalTransform.BasisX));
+          familyInstance.Location.Rotate(axisY, angleY);
+          currentTransform = familyInstance.GetTotalTransform();
+          if (!currentTransform.BasisY.IsAlmostEqualTo(originalTransform.BasisY))
+          {
+            familyInstance.Location.Rotate(axisY, -2 * angleY);
+            currentTransform = familyInstance.GetTotalTransform();
+          }
+        }
+        if (!currentTransform.BasisZ.IsAlmostEqualTo(originalTransform.BasisZ))
+        {
+          var angleZ = currentTransform.BasisZ.AngleTo(originalTransform.BasisZ);
+          var crossProductZ = currentTransform.BasisZ.CrossProduct(originalTransform.BasisZ).Normalize();
+          var axisZ = !crossProductZ.IsAlmostEqualTo(XYZ.Zero) ?
+              DB.Line.CreateUnbound(basePoint, crossProductZ) :
+              DB.Line.CreateUnbound(basePoint, originalTransform.BasisZ.CrossProduct(originalTransform.BasisY));
+          familyInstance.Location.Rotate(axisZ, angleZ);
+          currentTransform = familyInstance.GetTotalTransform();
+          if (!currentTransform.BasisZ.IsAlmostEqualTo(originalTransform.BasisZ))
+          {
+            familyInstance.Location.Rotate(axisZ, -2 * angleZ);
+            currentTransform = familyInstance.GetTotalTransform();
+          }
+        }
+        currentTransform.Origin = originalTransform.Origin;
+      }
+      if (handFlipped)
+      {
+        if (!familyInstance.flipHand() && ElementTransformUtils.CanMirrorElement(document, familyInstance.Id))
+        {
+          var plane = DB.Plane.CreateByNormalAndOrigin(originalTransform.BasisX, originalTransform.Origin);
+          ElementTransformUtils.MirrorElement(document, familyInstance.Id, plane);
+          document.Delete(familyInstance.Id);
+          var mirroredElementId = new ElementId(new FilteredElementCollector(document).WhereElementIsNotElementType().Max(e => e.Id.IntegerValue));
+          familyInstance = document.GetElement(mirroredElementId) as DB.FamilyInstance;
+        }
+      }
+      if (facingFlipped)
+      {
+        if (!familyInstance.flipFacing() && ElementTransformUtils.CanMirrorElement(document, familyInstance.Id))
+        {
+          var plane = DB.Plane.CreateByNormalAndOrigin(originalTransform.BasisY, originalTransform.Origin);
+          ElementTransformUtils.MirrorElement(document, familyInstance.Id, plane);
+          document.Delete(familyInstance.Id);
+          var mirroredElementId = new ElementId(new FilteredElementCollector(document).WhereElementIsNotElementType().Max(e => e.Id.IntegerValue));
+          familyInstance = document.GetElement(mirroredElementId) as DB.FamilyInstance;
+        }
+      }
+    }
+
     #endregion
 
     private void GetConnectionPairs(Element element, ref List<Tuple<Connector, Connector>> connectionPairs, ref List<Element> elements)

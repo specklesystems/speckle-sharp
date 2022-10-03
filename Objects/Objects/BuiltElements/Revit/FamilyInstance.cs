@@ -30,6 +30,14 @@ namespace Objects.BuiltElements.Revit
     /// </summary>
     public double rotation { get; set; }
 
+    public Point basisX { get; set; }
+
+    public Point basisY { get; set; }
+
+    public Point basisZ { get; set; }
+
+    public Point origin { get; set; }
+
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
     public bool mirrored { get; set; }

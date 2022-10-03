@@ -173,34 +173,50 @@ namespace Objects.Converter.Revit
         else
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
       }
+      #region OLD ROTATION CODE
+      ////required for face flipping to work!
+      //Doc.Regenerate();
 
-      //required for face flipping to work!
-      Doc.Regenerate();
+      //if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
+      //  familyInstance.flipHand();
 
-      if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
-        familyInstance.flipHand();
+      //if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
+      //  familyInstance.flipFacing();
 
-      if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
-        familyInstance.flipFacing();
+      //// NOTE: do not check for the CanRotate prop as it doesn't work (at least on some families I tried)!
+      //// some point based families don't have a rotation, so keep this in a try catch
+      //try
+      //{
+      //  if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
+      //  {
+      //    var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+      //    (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+      //  }
+      //}
+      //catch { }
 
-      // NOTE: do not check for the CanRotate prop as it doesn't work (at least on some families I tried)!
-      // some point based families don't have a rotation, so keep this in a try catch
-      try
+      //SetInstanceParameters(familyInstance, speckleFi);
+      //if (speckleFi.mirrored)
+      //  appObj.Update(logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so.");
+
+      //var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      //appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
+      #endregion
+
+      //rotate the family instance per original transform
+      Transform currentTransform = familyInstance.GetTotalTransform();
+      Transform originalTransform = new Transform(currentTransform)
       {
-        if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
-        {
-          var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-          (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
-        }
-      }
-      catch { }
-
+        BasisX = new XYZ(speckleFi.basisX.x, speckleFi.basisX.y, speckleFi.basisX.z),
+        BasisY = new XYZ(speckleFi.basisY.x, speckleFi.basisY.y, speckleFi.basisY.z),
+        BasisZ = new XYZ(speckleFi.basisZ.x, speckleFi.basisZ.y, speckleFi.basisZ.z),
+        Origin = new XYZ(speckleFi.origin.x, speckleFi.origin.y, speckleFi.origin.z)
+      };
+      RotateFamilyInstance(familyInstance, originalTransform, speckleFi.handFlipped, speckleFi.facingFlipped);
       SetInstanceParameters(familyInstance, speckleFi);
-      if (speckleFi.mirrored)
-        appObj.Update(logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so.");
-
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
+
       return appObj;
     }
 
@@ -262,6 +278,11 @@ namespace Objects.Converter.Revit
       speckleFi.handFlipped = revitFi.HandFlipped;
       speckleFi.level = lev1 != null ? lev1 : lev2;
       speckleFi.mirrored = revitFi.Mirrored;
+      var transform = revitFi.GetTotalTransform();
+      speckleFi.origin = new Point(transform.Origin.X, transform.Origin.Y, transform.Origin.Z, Speckle.Core.Kits.Units.Feet);
+      speckleFi.basisX = new Point(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z, Speckle.Core.Kits.Units.Feet);
+      speckleFi.basisY = new Point(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z, Speckle.Core.Kits.Units.Feet);
+      speckleFi.basisZ = new Point(transform.BasisZ.X, transform.BasisZ.Y, transform.BasisZ.Z, Speckle.Core.Kits.Units.Feet);
 
       if (revitFi.Location is LocationPoint)
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
