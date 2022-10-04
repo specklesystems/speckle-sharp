@@ -87,13 +87,4 @@ namespace Objects.BuiltElements.Archicad
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double height { get; set; }
     }
-
-    public class Property : Base
-    {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public object? Value { get; set; }
-
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public bool IsDefaultValue { get; set; }
-    }
 }

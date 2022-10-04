@@ -209,16 +209,12 @@ namespace Objects.BuiltElements.Archicad
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, Hole>? Holes { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<string, Property>? Properties { get; set; }
-
         public ArchicadBeam() { }
 
         [SchemaInfo("ArchicadBeam", "Creates an Archicad Structures beam by curve.", "Archicad", "Structure")]
 
-        public ArchicadBeam ([SchemaMainParam] ICurve baseLine, Point begC, Point endC)
+        public ArchicadBeam (Point begC, Point endC)
         {
-            this.baseLine = baseLine;
             this.begC = begC;
             this.endC = endC;
         }

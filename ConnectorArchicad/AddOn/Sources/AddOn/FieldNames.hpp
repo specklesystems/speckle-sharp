@@ -107,8 +107,6 @@ namespace Beam
 	static const char* centerz = "centerz";
 	static const char* width = "width";
 	static const char* height = "height";
-	// Properties
-	static const char* properties = "Properties";
 }
 
 
