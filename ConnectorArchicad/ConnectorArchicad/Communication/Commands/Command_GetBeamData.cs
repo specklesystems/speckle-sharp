@@ -41,7 +41,6 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<ArchicadBeam>> Execute()
     {
-      // TODO @ Must implement Archicad-side command interpretation of "GetBeamData"
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetBeamData", new Parameters(ApplicationIds));
       foreach (var beam in result.Datas)
         beam.units = Units.Meters;

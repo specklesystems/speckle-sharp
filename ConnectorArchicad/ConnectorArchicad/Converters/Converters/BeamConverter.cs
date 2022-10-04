@@ -27,6 +27,7 @@ namespace Archicad.Converters
           case Objects.BuiltElements.Beam beam:
             var baseLine = (Line)beam.baseLine;
             var newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam(
+              baseLine,
               Utils.ScaleToNative(baseLine.start),
               Utils.ScaleToNative(baseLine.end)
               );

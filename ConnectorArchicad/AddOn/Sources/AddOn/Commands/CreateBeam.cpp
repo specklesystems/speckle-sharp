@@ -225,15 +225,13 @@ namespace AddOnCommands
         GS::ObjectState allSegments;
         if (os.Contains(Beam::segmentData))
             os.Get(Beam::segmentData, allSegments);
-        if (allSegments.IsEmpty())
-            return Error;
 
         for (UInt32 idx = 0; idx < element.beam.nSegments; ++idx) {
             GS::ObjectState currentSegment;
             allSegments.Get(GS::String::SPrintf(Beam::BeamSegmentName, idx + 1), currentSegment);
-
+            
+            memo->beamSegments[idx] = defaultBeamSegment;
             if (!currentSegment.IsEmpty()) {
-                memo->beamSegments[idx] = defaultBeamSegment;
 
                 if (currentSegment.Contains(Beam::circleBased))
                     currentSegment.Get(Beam::circleBased, memo->beamSegments[idx].assemblySegmentData.circleBased);
@@ -319,16 +317,14 @@ namespace AddOnCommands
         GS::ObjectState allSchemes;
         if (os.Contains(Beam::schemeData))
             os.Get(Beam::schemeData, allSchemes);
-        if (allSchemes.IsEmpty())
-            return Error;
 
         for (UInt32 idx = 0; idx < element.beam.nSchemes; ++idx) {
             if (!allSchemes.IsEmpty()) {
                 GS::ObjectState currentScheme;
                 allSchemes.Get(GS::String::SPrintf(Beam::SchemeName, idx + 1), currentScheme);
 
+                memo->assemblySegmentSchemes[idx] = defaultBeamSegmentScheme;
                 if (!currentScheme.IsEmpty()) {
-                    memo->assemblySegmentSchemes[idx] = defaultBeamSegmentScheme;
 
                     if (currentScheme.Contains(Beam::lengthType))
                     {
@@ -359,15 +355,13 @@ namespace AddOnCommands
         GS::ObjectState allCuts;
         if (os.Contains(Beam::cutData))
             os.Get(Beam::cutData, allCuts);
-        if (allCuts.IsEmpty())
-            return Error;
 
         for (UInt32 idx = 0; idx < element.beam.nCuts; ++idx) {
             GS::ObjectState currentCut;
             allCuts.Get(GS::String::SPrintf(Beam::CutName, idx + 1), currentCut);
 
+            memo->assemblySegmentCuts[idx] = defaultBeamSegmentCut;
             if (!currentCut.IsEmpty()) {
-                memo->assemblySegmentCuts[idx] = defaultBeamSegmentCut;
 
                 if (currentCut.Contains(Beam::cutType)) {
                     API_AssemblySegmentCutTypeID realCutType = APIAssemblySegmentCut_Vertical;

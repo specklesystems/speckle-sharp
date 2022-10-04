@@ -9,83 +9,91 @@ namespace Objects.BuiltElements.Archicad
 {
     public class Segment : Base
     {
-        [JsonProperty("circleBased")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool circleBased { get; set; }
 
-        [JsonProperty("modelElemStructureType")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string modelElemStructureType { get; set; }
 
-        [JsonProperty("nominalHeight")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double nominalHeight { get; set; }
 
-        [JsonProperty("nominalWidth")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double nominalWidth { get; set; }
 
-        [JsonProperty("isHomogeneous")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool isHomogeneous { get; set; }
 
-        [JsonProperty("endWith")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double endWith { get; set; }
 
-        [JsonProperty("endHeight")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double endHeight { get; set; }
 
-        [JsonProperty("isEndWidthAndHeightLinked")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool isEndWidthAndHeightLinked { get; set; }
 
-        [JsonProperty("isWidthAndHeightLinked")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool isWidthAndHeightLinked { get; set; }
 
-        [JsonProperty("profileAttrName")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string profileAttrName { get; set; }
 
-        [JsonProperty("buildingMaterial")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string buildingMaterial { get; set; }
     }
 
     public class Scheme : Base
     {
-        [JsonProperty("lengthType")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string lengthType { get; set; }
 
-        [JsonProperty("fixedLength")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double fixedLength { get; set; }
 
-        [JsonProperty("lengthProportion")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double lengthProportion { get; set; }
     }
 
     public class Cut : Base
     {
-        [JsonProperty("cutType")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string cutType { get; set; }
 
-        [JsonProperty("customAngle")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double customAngle { get; set; }
     }
 
     public class Hole : Base
     {
-        [JsonProperty("holeType")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string holeType { get; set; }
 
-        [JsonProperty("holeContureOn")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool holeContureOn { get; set; }
 
-        [JsonProperty("holeID")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public System.Int32 holeID { get; set; }
 
-        [JsonProperty("centerx")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double centerx { get; set; }
 
-        [JsonProperty("centerz")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double centerz { get; set; }
 
-        [JsonProperty("width")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double width { get; set; }
 
-        [JsonProperty("height")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double height { get; set; }
     }
 
+    public class Property : Base
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public object? Value { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool IsDefaultValue { get; set; }
+    }
 }

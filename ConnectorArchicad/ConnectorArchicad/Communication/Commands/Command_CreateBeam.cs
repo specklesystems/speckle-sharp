@@ -44,7 +44,6 @@ namespace Archicad.Communication.Commands
       Datas = datas;
     }
 
-    // TODO @ Must implement Archicad-side command interpretation of "GetBeamData"
     public async Task<IEnumerable<string>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateBeam", new Parameters(Datas));
