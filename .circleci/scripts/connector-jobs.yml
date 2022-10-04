@@ -21,7 +21,7 @@ rhino:
       projname: ConnectorRhino7
       installername: SpeckleRhinoInstall
       build-config: Release Mac
-      slug: rhino-mac
+      slug: rhino
       requires:
         - build-desktopui
       converter-files: "
@@ -37,7 +37,7 @@ rhino:
       build-config: Release Mac
       installername: SpeckleGhInstall
       installer: true
-      slug: grasshopper-mac
+      slug: grasshopper
       requires:
         - build-desktopui
       converter-files: "
