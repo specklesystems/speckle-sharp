@@ -81,9 +81,14 @@ namespace Beam
 	static const char* segmentData = "Segments";
 	static const char* circleBased = "circleBased";
 	static const char* profileAttrName = "profileAttrName";
+	static const char* buildingMaterial = "buildingMaterial";
 	static const char* nominalWidth = "nominalWidth";
 	static const char* nominalHeight = "nominalHeight";
 	static const char* isWidthAndHeightLinked = "isWidthAndHeightLinked";
+	static const char* isHomogeneous = "isHomogeneous";
+	static const char* endWidth = "endWidth";
+	static const char* endHeight = "endHeight";
+	static const char* isEndWidthAndHeightLinked = "isEndWidthAndHeightLinked";
 	// From API_AssemblySegmentSchemeData
 	static const char* schemeData = "Schemes";
 	static const char* lengthType = "lengthType";

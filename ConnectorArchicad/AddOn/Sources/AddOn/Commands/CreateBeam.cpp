@@ -251,6 +251,22 @@ namespace AddOnCommands
                     currentSegment.Get(Beam::isWidthAndHeightLinked, memo->beamSegments[idx].assemblySegmentData.isWidthAndHeightLinked);
                 ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamSegmentType, assemblySegmentData.isWidthAndHeightLinked);
 
+                if (currentSegment.Contains(Beam::isHomogeneous))
+                    currentSegment.Get(Beam::isHomogeneous, memo->beamSegments[idx].assemblySegmentData.isHomogeneous);
+                ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamSegmentType, assemblySegmentData.isHomogeneous);
+
+                if (currentSegment.Contains(Beam::endWidth))
+                    currentSegment.Get(Beam::endWidth, memo->beamSegments[idx].assemblySegmentData.endWidth);
+                ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamSegmentType, assemblySegmentData.endWidth);
+                
+                if (currentSegment.Contains(Beam::endHeight))
+                    currentSegment.Get(Beam::endHeight, memo->beamSegments[idx].assemblySegmentData.endHeight);
+                ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamSegmentType, assemblySegmentData.endHeight);
+                
+                if (currentSegment.Contains(Beam::isEndWidthAndHeightLinked))
+                    currentSegment.Get(Beam::isEndWidthAndHeightLinked, memo->beamSegments[idx].assemblySegmentData.isEndWidthAndHeightLinked);
+                ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamSegmentType, assemblySegmentData.isEndWidthAndHeightLinked);
+                
                 if (currentSegment.Contains(Beam::modelElemStructureType))
                 {
                     API_ModelElemStructureType realStructureType = API_BasicStructure;
@@ -269,7 +285,7 @@ namespace AddOnCommands
                     currentSegment.Get(Beam::profileAttrName, attrName);
 
                     if (!attrName.IsEmpty()) {
-                        API_Attribute     attrib;
+                        API_Attribute attrib;
                         BNZeroMemory(&attrib, sizeof(API_Attribute));
                         attrib.header.typeID = API_ProfileID;
                         CHCopyC(attrName.ToCStr(), attrib.header.name);
@@ -277,6 +293,22 @@ namespace AddOnCommands
 
                         if (err == NoError)
                             memo->beamSegments[idx].assemblySegmentData.profileAttr = attrib.header.index;
+                    }
+                }
+
+                if (currentSegment.Contains(Beam::buildingMaterial)) {
+                    GS::UniString attrName;
+                    currentSegment.Get(Beam::buildingMaterial, attrName);
+
+                    if (!attrName.IsEmpty()) {
+                        API_Attribute attrib;
+                        BNZeroMemory(&attrib, sizeof(API_Attribute));
+                        attrib.header.typeID = API_BuildingMaterialID;
+                        CHCopyC(attrName.ToCStr(), attrib.header.name);
+                        err = ACAPI_Attribute_Get(&attrib);
+
+                        if (err == NoError)
+                            memo->beamSegments[idx].assemblySegmentData.buildingMaterial = attrib.header.index;
                     }
                 }
             }
@@ -362,8 +394,6 @@ namespace AddOnCommands
             os.Get(Beam::holeData, allHoles);
             holesCount = allHoles.GetFieldCount();
         }
-        if (allHoles.IsEmpty())
-            return Error;
 
         if (holesCount > 0) {
             memo->beamHoles = reinterpret_cast<API_Beam_Hole**> (BMAllocateHandle(holesCount * sizeof(API_Beam_Hole), ALLOCATE_CLEAR, 0));

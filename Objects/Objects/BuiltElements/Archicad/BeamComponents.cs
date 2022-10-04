@@ -21,12 +21,26 @@ namespace Objects.BuiltElements.Archicad
         [JsonProperty("nominalWidth")]
         public double nominalWidth { get; set; }
 
+        [JsonProperty("isHomogeneous")]
+        public bool isHomogeneous { get; set; }
+
+        [JsonProperty("endWith")]
+        public double endWith { get; set; }
+
+        [JsonProperty("endHeight")]
+        public double endHeight { get; set; }
+
+        [JsonProperty("isEndWidthAndHeightLinked")]
+        public bool isEndWidthAndHeightLinked { get; set; }
+
         [JsonProperty("isWidthAndHeightLinked")]
         public bool isWidthAndHeightLinked { get; set; }
 
         [JsonProperty("profileAttrName")]
         public string profileAttrName { get; set; }
 
+        [JsonProperty("buildingMaterial")]
+        public string buildingMaterial { get; set; }
     }
 
     public class Scheme : Base

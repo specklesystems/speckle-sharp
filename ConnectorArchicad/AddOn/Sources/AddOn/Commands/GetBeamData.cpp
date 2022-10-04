@@ -63,16 +63,26 @@ static GS::ObjectState SerializeBeamType(const API_Element& elem, const API_Elem
             currentSegment.Add(Beam::nominalHeight, beamSegment.assemblySegmentData.nominalHeight);
             currentSegment.Add(Beam::nominalWidth, beamSegment.assemblySegmentData.nominalWidth);
             currentSegment.Add(Beam::isWidthAndHeightLinked, beamSegment.assemblySegmentData.isWidthAndHeightLinked);
+			currentSegment.Add(Beam::isHomogeneous, beamSegment.assemblySegmentData.isHomogeneous);
+			currentSegment.Add(Beam::endWidth, beamSegment.assemblySegmentData.endWidth);
+			currentSegment.Add(Beam::endHeight, beamSegment.assemblySegmentData.endHeight);
+			currentSegment.Add(Beam::isEndWidthAndHeightLinked, beamSegment.assemblySegmentData.isEndWidthAndHeightLinked);
 
+			API_Attribute attrib;
             switch (beamSegment.assemblySegmentData.modelElemStructureType)
             {
 				case API_CompositeStructure:
 					DBASSERT(beamSegment.assemblySegmentData.modelElemStructureType != API_CompositeStructure)
 					break;
 				case API_BasicStructure:
+					BNZeroMemory(&attrib, sizeof(API_Attribute));
+					attrib.header.typeID = API_BuildingMaterialID;
+					attrib.header.index = beamSegment.assemblySegmentData.buildingMaterial;
+					ACAPI_Attribute_Get(&attrib);
+
+					currentSegment.Add(Beam::buildingMaterial, GS::UniString{ attrib.header.name });
 					break;
 				case API_ProfileStructure:
-					API_Attribute attrib;
 					BNZeroMemory(&attrib, sizeof(API_Attribute));
 					attrib.header.typeID = API_ProfileID;
 					attrib.header.index = beamSegment.assemblySegmentData.profileAttr;
