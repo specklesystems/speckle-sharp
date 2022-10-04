@@ -130,9 +130,11 @@ def createConfigFile(deploy: bool, outputPath: str):
                         jobAttrs["requires"] += ["test-core"]
                     # Add name to all jobs
                     name = f"{slug}-build"
-                    jobAttrs["name"] = name
-                    jobs_before_deploy.append(name)
-                    print(f"    Added connector job: {name}")
+                    if "name" not in jobAttrs.keys():
+                        jobAttrs["name"] = name
+                    n = jobAttrs["name"]
+                    jobs_before_deploy.append(n)
+                    print(f"    Added connector job: {n}")
                     # Add tags if marked for deployment
                     if deploy:
                         jobAttrs["installer"] = True
