@@ -105,6 +105,7 @@ namespace DesktopUI2.ViewModels
     }
 
     public string NotificationUrl { get; set; }
+    public bool SuccessfulSend { get; set; } = false;
 
     private string _notification;
     public string Notification
@@ -114,12 +115,18 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _notification, value);
         this.RaisePropertyChanged("ShowNotification");
+        this.RaisePropertyChanged("ShowSharePrompt");
       }
     }
 
     public bool ShowNotification
     {
       get => !string.IsNullOrEmpty(Notification);
+    }
+
+    public bool ShowSharePrompt
+    {
+      get => !string.IsNullOrEmpty(Notification) && !IsReceiver && SuccessfulSend && Stream.collaborators.Count == 1;
     }
 
     private bool _isRemovingStream;
@@ -958,6 +965,7 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
+        SuccessfulSend = true;
         UpdateStreamState();
 
         HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
@@ -975,6 +983,7 @@ namespace DesktopUI2.ViewModels
 
           Notification = $"Sent successfully, view online";
           NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
+          SuccessfulSend = true;
         }
         else
         {
