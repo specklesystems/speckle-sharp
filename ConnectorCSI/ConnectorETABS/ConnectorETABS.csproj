@@ -11,9 +11,11 @@
     <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <!--these four make so that the SQLite is copied in the after build target-->
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+		<LangVersion>8</LangVersion>
+		<StartAction>Program</StartAction>
+		<StartProgram>C:\Program Files\Computers and Structures\ETABS 19\ETABS.exe</StartProgram>
+		<PlatformTarget>x64</PlatformTarget>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -24,7 +26,6 @@
     <DefineConstants>TRACE;DEBUG;ETABS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -104,7 +105,7 @@
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-	<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
+	<!--<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
 		<Copy SourceFiles="$(SolutionDir)\..\Core\Core\bin\Debug\net4.8\runtimes\win-x64\native\e_sqlite3.dll" DestinationFolder="$(OutDir)" />
-	</Target>
+	</Target>-->
 </Project>
