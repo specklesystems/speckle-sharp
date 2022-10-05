@@ -237,7 +237,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
@@ -603,7 +606,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
-      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated ? false : true;
+      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated || appObj.Status == ApplicationObject.State.Failed ? false : true;
 
       foreach (var convertedItem in appObj.Converted)
       {
@@ -819,7 +822,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
 
       var streamId = state.StreamId;
       var client = state.Client;

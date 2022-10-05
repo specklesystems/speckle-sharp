@@ -257,6 +257,7 @@ namespace Objects.Converter.AutocadCivil
 
     #region app props
     public static string AutocadPropName = "AutocadProps";
+    public static string CivilPropName = "CivilProps";
     #endregion
 
     #region units
