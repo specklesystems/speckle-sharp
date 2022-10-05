@@ -187,12 +187,11 @@ namespace Speckle.ConnectorDynamo.Functions
       
       var data = converter.ConvertRecursivelyToNative(@base);
       
-      if(commit.sourceApplication != null)
-        Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
-        {
-          { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
-          { "sourceHostAppVersion", commit.sourceApplication }
-        });
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
+      {
+        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
+        { "sourceHostAppVersion", commit.sourceApplication }
+      });
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }
