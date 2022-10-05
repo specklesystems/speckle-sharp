@@ -87,7 +87,17 @@ namespace Speckle.Core.Models
       {
         var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
-
+        var obsoleteAttr = prop.GetCustomAttribute<ObsoleteAttribute>(true);
+        var jsonIgnoredAttr = prop.GetCustomAttribute<JsonIgnoreAttribute>(true);
+        
+        if (obsoleteAttr != null || jsonIgnoredAttr != null)
+        {
+          // Skip properties from the count that are:
+          // - Obsolete
+          // - Ignored by the serializer
+          continue;
+        }
+        
         object value = prop.GetValue(@base);
 
         if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute == null)
