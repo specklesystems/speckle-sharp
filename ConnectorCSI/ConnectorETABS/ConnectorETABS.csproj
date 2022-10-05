@@ -12,11 +12,8 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
-    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
-    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+    <!--these four make so that the SQLite is copied in the after build target-->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -27,6 +24,7 @@
     <DefineConstants>TRACE;DEBUG;ETABS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -103,10 +101,10 @@
     <PackageReference Include="Speckle.Newtonsoft.Json">
       <Version>12.0.3.1</Version>
     </PackageReference>
-    <PackageReference Include="Stylet">
-      <Version>1.3.6</Version>
-    </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+	<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
+		<Copy SourceFiles="$(SolutionDir)\..\Core\Core\bin\Debug\net4.8\runtimes\win-x64\native\e_sqlite3.dll" DestinationFolder="$(OutDir)" />
+	</Target>
 </Project>
