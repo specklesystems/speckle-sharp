@@ -4,7 +4,7 @@
     {
       "label": "cmake build AddOn", // not tested on mac - may not work!
       "type": "shell",
-      "command": "cmake -G 'Xcode' -DAC_API_DEVKIT_DIR='/Applications/GRAPHISOFT/ARCHICAD 25/ARCHICAD.exe'",
+      "command": "cmake -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR='../../../../../../Dependencies/SDKs/ARCHICAD/APIDevKit25/macOS' ..",
       "windows": {
         "command": "cmake -B ./Build/ -DAC_API_DEVKIT_DIR='C:/Program Files/GRAPHISOFT/API Development Kit 25.3002'"
       },
