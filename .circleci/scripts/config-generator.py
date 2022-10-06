@@ -177,11 +177,12 @@ def createConfigFile(deploy: bool, outputPath: str):
 
 def getNewDeployJob(jobName: str):
     slug = jobName.split("-build")[0]
-    isMac = slug.find("-mac") != -1
+    isMac = jobName.find("-mac") != -1
     deployJob: Dict[str, Any] = {
         "slug": slug.split("-mac")[0] if isMac else slug,
-        "name": slug + "-deploy",
+        "name": slug + "-deploy-mac" if isMac else slug + "-deploy" ,
         "os": "OSX" if isMac else "Win",
+        "arch": "Any",
         "extension": "zip" if isMac else "exe",
         "requires": ["deploy-connectors", jobName],
         "filters": getTagFilter([jobName]),
