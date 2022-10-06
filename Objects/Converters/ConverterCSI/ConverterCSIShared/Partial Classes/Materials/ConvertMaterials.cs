@@ -41,7 +41,6 @@ namespace Objects.Converter.CSI
       }
       string materialName = material.name;
 
-      //Material Problem 
       if (material.designCode != null)
       {
         Model.PropMaterial.AddMaterial(ref materialName, eMaterialType, material.designCode, material.codeYear, material.grade);
@@ -119,6 +118,13 @@ namespace Objects.Converter.CSI
         GetIsotropicMaterial(materialName, ref speckleMaterial);
       }
     }
+    public void SetSteelMaterial(StructuralMaterial structuralMaterial, string etabsMaterialName){
+      //Support only isotropic Steel Material setting
+      //Lossy transformation since Speckle classes are missing material properties
+      Model.PropMaterial.SetOSteel_1(etabsMaterialName, structuralMaterial.strength, 0,0, 0, 0, 7, 0, 0, 0, 0);
+      Model.PropMaterial.SetMPIsotropic(etabsMaterialName, structuralMaterial.elasticModulus, structuralMaterial.poissonsRatio, structuralMaterial.thermalExpansivity, structuralMaterial.shearModulus);
+    
+     }
 
     public void GetConcreteMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
@@ -139,6 +145,10 @@ namespace Objects.Converter.CSI
       }
     }
 
+    public void SetConcreteMaterial(StructuralMaterial structuralMaterial, string etabsMaterialName){
+      Model.PropMaterial.SetOConcrete_1(etabsMaterialName, structuralMaterial.strength, false, 0, 0, 7, 0, 0, 0);
+    }
+
     public void GetRebarMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double fy, fu, eFy, eFu, strainAtHardening, strainUltimate, finalSlope;
@@ -154,6 +164,9 @@ namespace Objects.Converter.CSI
       // Rebar can only be set to uniaxial
       GetUniaxialMaterial(materialName, ref speckleMaterial);
     }
+    public void SetRebarMaterial(StructuralMaterial structuralMaterial, string etabsMaterialName){
+
+    }
 
     public void GetIsotropicMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
@@ -167,7 +180,7 @@ namespace Objects.Converter.CSI
       speckleMaterial.thermalExpansivity = a;
       speckleMaterial.shearModulus = g;
     }
-
+  
     public void GetUniaxialMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double e = 0;
