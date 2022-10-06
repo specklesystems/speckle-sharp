@@ -101,8 +101,8 @@ namespace Beam
 	// From API_Beam_Hole
 	static const char* holeData = "Holes";
 	static const char* holeType = "holeType";
-	static const char* holeContureOn = "holeContureOn";
-	static const char* holeID = "holeID";
+	static const char* holeContourOn = "holeContourOn";
+	static const char* holeId = "holeId";
 	static const char* centerx = "centerx";
 	static const char* centerz = "centerz";
 	static const char* width = "width";

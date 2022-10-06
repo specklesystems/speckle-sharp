@@ -90,9 +90,9 @@ namespace AddOnCommands
             os.Get(Beam::sequence, element.beam.sequence);
         ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamType, sequence);
 
-        if (os.Contains(Beam::holeContureOn))
-            os.Get(Beam::holeContureOn, element.beam.holeContureOn);
-        ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamType, holeContureOn);
+        if (os.Contains(Beam::holeContourOn))
+            os.Get(Beam::holeContourOn, element.beam.holeContourOn);
+        ACAPI_ELEMENT_MASK_SET(beamMask, API_BeamType, holeContourOn);
 
         if (os.Contains(Beam::isAutoOnStoryVisibility))
             os.Get(Beam::isAutoOnStoryVisibility, element.beam.isAutoOnStoryVisibility);
@@ -407,11 +407,11 @@ namespace AddOnCommands
                         (*memo->beamHoles)[idx].holeType = realHoleType;
                     }
 
-                    if (currentHole.Contains(Beam::holeContureOn))
-                        currentHole.Get(Beam::holeContureOn, (*memo->beamHoles)[idx].holeContureOn);
+                    if (currentHole.Contains(Beam::holeContourOn))
+                        currentHole.Get(Beam::holeContourOn, (*memo->beamHoles)[idx].holeContourOn);
 
-                    if (currentHole.Contains(Beam::holeID))
-                        currentHole.Get(Beam::holeID, (*memo->beamHoles)[idx].holeID);
+                    if (currentHole.Contains(Beam::holeId))
+                        currentHole.Get(Beam::holeId, (*memo->beamHoles)[idx].holeId);
 
                     if (currentHole.Contains(Beam::centerx))
                         currentHole.Get(Beam::centerx, (*memo->beamHoles)[idx].centerx);

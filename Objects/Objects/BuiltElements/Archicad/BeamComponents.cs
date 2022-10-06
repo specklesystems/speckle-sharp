@@ -70,10 +70,10 @@ namespace Objects.BuiltElements.Archicad
         public string holeType { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public bool holeContureOn { get; set; }
+        public bool holeContourOn { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public System.Int32 holeID { get; set; }
+        public System.Int32 holeId { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double centerx { get; set; }
