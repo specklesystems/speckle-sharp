@@ -69,7 +69,17 @@
             Foreground="White"
             Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <sc:StreamDetails Grid.Row="1" />
+          <sc:StreamDetails Grid.Row="1">
+            <sc:StreamDetails.Styles>
+              <Style Selector="TextBlock">
+                <Setter Property="Foreground" Value="White" />
+              </Style>
+              <Style Selector="icons|MaterialIcon.StreamCard">
+                <Setter Property="Foreground" Value="White" />
+              </Style>
+
+            </sc:StreamDetails.Styles>
+          </sc:StreamDetails>
         </Grid>
         <!--  SHARE STREAM  -->
         <m:FloatingButton

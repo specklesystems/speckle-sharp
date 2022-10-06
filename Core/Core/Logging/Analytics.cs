@@ -84,7 +84,7 @@ namespace Speckle.Core.Logging
       string email = "";
       string server = "";
 
-      if (LastEmail != null && LastServer != null)
+      if (LastEmail != null && LastServer != null && LastServer != "no-account-server")
       {
         email = LastEmail;
         server = LastServer;
