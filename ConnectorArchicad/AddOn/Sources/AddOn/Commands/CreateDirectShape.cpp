@@ -23,7 +23,11 @@ namespace AddOnCommands {
 			return APIERR_CANCEL;
 		}
 
+#ifdef ServerMainVers_2600
+		if (head.type.typeID != API_MorphID) {
+#else
 		if (head.typeID != API_MorphID) {
+#endif
 			return APIERR_CANCEL;
 		}
 
@@ -39,7 +43,11 @@ namespace AddOnCommands {
 		}
 
 		API_Element element = {};
+#ifdef ServerMainVers_2600
+		element.header.type.typeID = API_MorphID;
+#else
 		element.header.typeID = API_MorphID;
+#endif
 		err = ACAPI_Element_GetDefaults(&element, nullptr);
 		if (err != NoError) {
 			return GS::NoValue;
