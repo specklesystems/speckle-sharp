@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +16,7 @@ using Ceiling = Objects.BuiltElements.Ceiling;
 using Floor = Objects.BuiltElements.Floor;
 using Room = Objects.BuiltElements.Archicad.Room;
 using Wall = Objects.BuiltElements.Wall;
+using Beam = Objects.BuiltElements.Beam;
 
 namespace Archicad
 {
@@ -116,6 +117,8 @@ namespace Archicad
         return Converters[ elementType ];
       if ( elementType.IsSubclassOf(typeof(Wall)) )
         return Converters[ typeof(Wall) ];
+      if (elementType.IsSubclassOf(typeof(Beam)))
+        return Converters[typeof(Beam)];
       if ( elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)) )
         return Converters[ typeof(Floor) ];
       if ( elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)) )
@@ -130,6 +133,7 @@ namespace Archicad
         switch
         {
           Wall _ => true,
+          Beam _ => true,
           Floor _ => true,
           Ceiling _ => true,
           Room _ => true,

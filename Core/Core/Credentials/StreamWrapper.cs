@@ -273,7 +273,7 @@ namespace Speckle.Core.Credentials
     private async Task ValidateWithAccount(Account acc)
     {
       if (ServerUrl != acc.serverInfo.url)
-        throw new SpeckleException($"Account is not from server {ServerUrl}");
+        throw new SpeckleException($"Account is not from server {ServerUrl}", false);
       
       var client = new Client(acc);
       // First check if the stream exists
@@ -284,13 +284,13 @@ namespace Speckle.Core.Credentials
       catch
       {
         throw new SpeckleException(
-          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
+          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.", false);
       }
 
       // Check if the branch exists
       if (Type == StreamWrapperType.Branch && await client.BranchGet(StreamId, BranchName, 1) == null)
         throw new SpeckleException(
-          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}");
+          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", false);
     }
 
     public override string ToString()

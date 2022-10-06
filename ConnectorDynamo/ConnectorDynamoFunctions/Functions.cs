@@ -183,6 +183,8 @@ namespace Speckle.ConnectorDynamo.Functions
         return null;
 
       var converter = new BatchConverter();
+      converter.OnError += (sender, args) => onErrorAction?.Invoke("C", args.Error);
+      
       var data = converter.ConvertRecursivelyToNative(@base);
 
       Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()

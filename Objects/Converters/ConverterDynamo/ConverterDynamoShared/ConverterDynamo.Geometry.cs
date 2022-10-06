@@ -761,9 +761,12 @@ namespace Objects.Converter.Dynamo
 
     public DS.Mesh MeshToNative(Mesh mesh)
     {
+      // Triangulate the mesh's NGons, since they're not supported in Dynamo
+      mesh.TriangulateMesh(true);
+      
       var points = ArrayToPointList(mesh.vertices, mesh.units);
-      List<IndexGroup> faces = new List<IndexGroup>();
-      int i = 0;
+      var faces = new List<IndexGroup>();
+      var i = 0;
       var faceIndices = new List<int>(mesh.faces);
       while (i < faceIndices.Count)
       {
@@ -784,11 +787,9 @@ namespace Objects.Converter.Dynamo
         }
         else
         {
-          // Ngon!
-          var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh);
-          faceIndices.AddRange(triangleFaces);
+          var fcount = faceIndices[i];
+          i += fcount + 1;
         }
-
       }
 
       var dsMesh = DS.Mesh.ByPointsFaceIndices(points, faces);
