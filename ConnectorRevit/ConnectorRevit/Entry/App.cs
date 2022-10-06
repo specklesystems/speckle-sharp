@@ -157,7 +157,9 @@ namespace Speckle.ConnectorRevit.Entry
         OneClickSendCommand.Bindings = bindings;
         QuickShareCommand.Bindings = bindings;
 
-
+        //This is also called in DUI, adding it here to know 
+        Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
+        Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
         SpeckleRevitCommand2.RegisterPane();
 

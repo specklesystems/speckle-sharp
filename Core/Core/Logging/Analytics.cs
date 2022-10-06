@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -52,7 +53,11 @@ namespace Speckle.Core.Logging
       /// <summary>
       /// Event triggered when the import/export alert is launched or closed
       /// </summary>
-      ImportExportAlert
+      ImportExportAlert,
+      /// <summary>
+      /// Event triggered when the connector is registered
+      /// </summary>
+      Registered
     };
 
 
@@ -73,6 +78,7 @@ namespace Speckle.Core.Logging
     /// </summary>
     /// <param name="eventName">Name of the even</param>
     /// <param name="customProperties">Additional parameters to pass in to event</param>
+    /// <param name="isAction">True if it's an action performed by a logged user</param>
     public static void TrackEvent(Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
     {
       string email = "";
@@ -87,10 +93,25 @@ namespace Speckle.Core.Logging
       {
         var acc = Credentials.AccountManager.GetDefaultAccount();
         if (acc == null)
-          return;
+        {
+          var macAddr = NetworkInterface
+          .GetAllNetworkInterfaces()
+          .Where(nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+          .Select(nic => nic.GetPhysicalAddress().ToString())
+          .FirstOrDefault();
 
-        email = acc.GetHashedEmail();
-        server = acc.GetHashedServer();
+
+          email = macAddr;
+          server = "no-account-server";
+          isAction = false;
+        }
+        else
+        {
+          email = acc.GetHashedEmail();
+          server = acc.GetHashedServer();
+        }
+
+
       }
 
       TrackEvent(email, server, eventName, customProperties, isAction);
@@ -102,6 +123,7 @@ namespace Speckle.Core.Logging
     /// <param name="account">Account to use, it will be anonymized</param>
     /// <param name="eventName">Name of the event</param>
     /// <param name="customProperties">Additional parameters to pass to the event</param>
+    /// <param name="isAction">True if it's an action performed by a logged user</param>
     public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
     {
       if (account == null)
