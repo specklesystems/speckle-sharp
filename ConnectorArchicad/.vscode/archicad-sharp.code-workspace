@@ -1,16 +1,16 @@
 {
   "folders": [
     {
-      "path": "..\\AddOn"
+      "path": "../AddOn"
     },
     {
-      "path": "..\\ConnectorArchicad"
+      "path": "../ConnectorArchicad"
     },
     {
-      "path": "..\\..\\Objects\\Objects"
+      "path": "../../Objects/Objects"
     },
     {
-      "path": "..\\..\\.circleci"
+      "path": "../../.circleci"
     },
     {
       "path": "."
