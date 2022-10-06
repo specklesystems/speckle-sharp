@@ -184,6 +184,10 @@ namespace Objects.Converter.Revit
       speckleElement["units"] = ModelUnits;
       speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
       speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
+
+      Phase phaseCreated = Doc.GetElement(revitElement.CreatedPhaseId) as Phase;
+      if (phaseCreated != null)
+        speckleElement["phaseCreated"] = phaseCreated.Name;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -328,6 +332,10 @@ namespace Objects.Converter.Revit
       if (speckleParameters == null || speckleParameters.GetDynamicMemberNames().Count() == 0)
         return;
 
+      // Set the phaseCreated parameter
+      if (speckleElement["phaseCreated"] is string phaseCreated && !string.IsNullOrEmpty(phaseCreated))
+        TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phaseCreated));
+
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
@@ -346,14 +354,6 @@ namespace Objects.Converter.Revit
       // We only loop params we can set and that actually exist on the revit element
       var filteredSpeckleParameters = speckleParameters.GetMembers()
         .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
-
-      //Set the phase parameter
-      try
-      {
-        string phasename = speckleElement["phase"].ToString();
-        TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phasename));
-      }
-      catch(Exception e) { }
 
       foreach (var spk in filteredSpeckleParameters)
       {
