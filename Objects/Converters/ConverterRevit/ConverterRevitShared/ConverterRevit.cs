@@ -117,7 +117,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          if (IsConnected(o))
+          if (IsConnectable(o))
             returnObject = NetworkToSpeckle(o, out notes);
           else
             returnObject = FamilyInstanceToSpeckle(o, out notes);
@@ -163,31 +163,28 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          if (IsConnected(o))
-            returnObject = NetworkToSpeckle(o, out notes);
-          else
-            returnObject = DuctToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = DuctToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          if (IsConnected(o))
-            returnObject = NetworkToSpeckle(o, out notes);
-          else
-            returnObject = PipeToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = PipeToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = CableTrayToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes);
+          break;
+        case DB.Electrical.Conduit o:
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -531,6 +528,9 @@ namespace Objects.Converter.Revit
         case BE.CableTray o:
           return CableTrayToNative(o);
 
+        case BE.Conduit o:
+          return ConduitToNative(o);
+
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
 
@@ -602,6 +602,7 @@ namespace Objects.Converter.Revit
         DB.Plumbing.FlexPipe _ => true,
         DB.Electrical.Wire _ => true,
         DB.Electrical.CableTray _ => true,
+        DB.Electrical.Conduit _ => true,
         DB.CurtainGridLine _ => true, //these should be handled by curtain walls
         DB.Architecture.BuildingPad _ => true,
         DB.Architecture.Stairs _ => true,
@@ -685,6 +686,7 @@ namespace Objects.Converter.Revit
         BE.Pipe _ => true,
         BE.Wire _ => true,
         BE.CableTray _ => true,
+        BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,

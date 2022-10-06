@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertConduit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCableTray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectTeklaMeshElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterial.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Units.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Revit\ConnectionPair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOptions.cs" />
   </ItemGroup>
 </Project>

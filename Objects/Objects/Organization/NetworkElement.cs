@@ -18,7 +18,7 @@ namespace Objects.Organization
     /// <summary>
     /// The Base object representing the element in the network (eg Pipe, Duct, etc)
     /// </summary>
-    public Base element {get; set;}
+    public Base element { get; set; }
 
     /// <summary>
     /// The index of the links in <see cref="network"/> that are connected to this element
@@ -39,18 +39,22 @@ namespace Objects.Organization.Revit
 {
   public class RevitNetworkElement : NetworkElement
   {
-    public FittingType FittingType { get; set; }
+    public FittingType fittingType { get; set; }
     public RevitNetworkElement() { }
 
-    public bool ConnectorBasedCreation()
-    {
-      return FittingType == FittingType.Elbow
-        || FittingType == FittingType.Tee
-        || FittingType == FittingType.Union
-        || FittingType == FittingType.Transition
-        || FittingType == FittingType.Cross
-        || FittingType == FittingType.Tap;
-    }
+    public bool connectorBasedCreation { get; set; }
+
+    public bool isCurve { get; set; }
+
+    //public bool ConnectorBasedCreation()
+    //{
+    //  return FittingType == FittingType.Elbow
+    //    || FittingType == FittingType.Tee
+    //    || FittingType == FittingType.Union
+    //    || FittingType == FittingType.Transition
+    //    || FittingType == FittingType.Cross
+    //    || FittingType == FittingType.Tap;
+    //}
   }
 
   public enum FittingType
@@ -65,7 +69,7 @@ namespace Objects.Organization.Revit
     Invalid = -1
   }
 }
-  
 
-  
+
+
 

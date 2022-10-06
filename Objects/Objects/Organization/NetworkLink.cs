@@ -1,12 +1,12 @@
 ﻿using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using Speckle.Newtonsoft.Json;
 
 namespace Objects.Organization
 {
