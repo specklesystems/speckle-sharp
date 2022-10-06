@@ -149,8 +149,8 @@ static GS::ObjectState SerializeBeamType(const API_Element& elem, const API_Elem
         for (GSSize idx = 0; idx < holesCount; idx++) {
 			GS::ObjectState currentHole;
 			currentHole.Add(Beam::holeType, beamHoleTypeNames.Get((*memo.beamHoles)[idx].holeType));
-			currentHole.Add(Beam::holeContourOn, (*memo.beamHoles)[idx].holeContourOn);
-			currentHole.Add(Beam::holeId, (*memo.beamHoles)[idx].holeId);
+			currentHole.Add(Beam::holeContourOn, (*memo.beamHoles)[idx].holeContureOn);
+			currentHole.Add(Beam::holeId, (*memo.beamHoles)[idx].holeID);
 			currentHole.Add(Beam::centerx, (*memo.beamHoles)[idx].centerx);
 			currentHole.Add(Beam::centerz, (*memo.beamHoles)[idx].centerz);
 			currentHole.Add(Beam::width, (*memo.beamHoles)[idx].width);
