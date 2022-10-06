@@ -49,6 +49,10 @@ namespace Speckle.Core.Logging
       /// Event triggered when a node is first created in a visual programming environment, it should contain the name of the action and the host application
       /// </summary>
       NodeCreate,
+      /// <summary>
+      /// Event triggered when the import/export alert is launched or closed
+      /// </summary>
+      ImportExportAlert
     };
 
 
@@ -69,7 +73,7 @@ namespace Speckle.Core.Logging
     /// </summary>
     /// <param name="eventName">Name of the even</param>
     /// <param name="customProperties">Additional parameters to pass in to event</param>
-    public static void TrackEvent(Events eventName, Dictionary<string, object> customProperties = null)
+    public static void TrackEvent(Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
     {
       string email = "";
       string server = "";
@@ -89,7 +93,7 @@ namespace Speckle.Core.Logging
         server = acc.GetHashedServer();
       }
 
-      TrackEvent(email, server, eventName, customProperties);
+      TrackEvent(email, server, eventName, customProperties, isAction);
     }
 
     /// <summary>
@@ -98,12 +102,12 @@ namespace Speckle.Core.Logging
     /// <param name="account">Account to use, it will be anonymized</param>
     /// <param name="eventName">Name of the event</param>
     /// <param name="customProperties">Additional parameters to pass to the event</param>
-    public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null)
+    public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
     {
       if (account == null)
-        TrackEvent(eventName, customProperties);
+        TrackEvent(eventName, customProperties, isAction);
       else
-        TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties);
+        TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties, isAction);
     }
 
     /// <summary>
@@ -113,7 +117,8 @@ namespace Speckle.Core.Logging
     /// <param name="hashedServer">Server URL anonymized</param>
     /// <param name="eventName">Name of the event</param>
     /// <param name="customProperties">Additional parameters to pass to the event</param>
-    private static void TrackEvent(string hashedEmail, string hashedServer, Events eventName, Dictionary<string, object> customProperties = null)
+    /// <param name="isAction">True if it's an action performed by a logged user</param>
+    private static void TrackEvent(string hashedEmail, string hashedServer, Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
     {
       LastEmail = hashedEmail;
       LastServer = hashedServer;
@@ -137,8 +142,11 @@ namespace Speckle.Core.Logging
             { "hostAppVersion", Setup.VersionedHostApplication },
             { "core_version", Assembly.GetExecutingAssembly().GetName().Version.ToString()},
             { "$os",  GetOs() },
-            { "type", "action" }
+
           };
+
+          if (isAction)
+            properties.Add("type", "action");
 
           if (customProperties != null)
             properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

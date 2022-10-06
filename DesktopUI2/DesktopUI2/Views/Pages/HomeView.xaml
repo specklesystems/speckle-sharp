@@ -59,30 +59,28 @@
 
   </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
-    <m:Card Padding="10,7" CornerRadius="0">
+    <m:Card
+      Padding="10,7"
+      Background="{DynamicResource PrimaryHueMidBrush}"
+      CornerRadius="0">
       <Grid ColumnDefinitions="auto,*">
         <StackPanel
           VerticalAlignment="Bottom"
           Orientation="Horizontal"
           Spacing="6">
           <Image Height="30" Source="../../Assets/logo.png" />
-          <!--<TextBlock
-            FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
-            FontSize="18"
-            FontWeight="Bold"
-            Foreground="{DynamicResource PrimaryHueMidBrush}"
-            Text="SPECKLE" />-->
           <TextBlock
             FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk"
             FontSize="18"
             FontWeight="Medium"
+            Foreground="White"
             Text="{Binding Title}" />
 
           <TextBlock
             Margin="0,0,0,4"
             VerticalAlignment="Bottom"
             FontSize="8"
-            Foreground="Gray"
+            Foreground="White"
             Text="{Binding Version}" />
         </StackPanel>
 
@@ -92,6 +90,25 @@
           VerticalAlignment="Bottom"
           Orientation="Horizontal"
           Spacing="6">
+
+          <m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding TestCommand}"
+            ToolTip.Tip="Test stuff">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                assists:ShadowAssist.ShadowDepth="0"
+                Foreground="{DynamicResource MaterialDesignBody}"
+                Kind="Bomb" />
+
+            </Button.Content>
+          </m:FloatingButton>
           <m:FloatingButton
             Grid.Column="1"
             VerticalAlignment="Center"
@@ -105,7 +122,7 @@
                 Width="15"
                 Height="15"
                 assists:ShadowAssist.ShadowDepth="0"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="SunMoonStars" />
 
             </Button.Content>
@@ -123,7 +140,7 @@
                 Width="15"
                 Height="15"
                 assists:ShadowAssist.ShadowDepth="0"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="Refresh" />
             </Button.Content>
           </m:FloatingButton>

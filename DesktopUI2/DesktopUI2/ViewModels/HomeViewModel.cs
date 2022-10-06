@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
@@ -684,6 +685,16 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
       ApiUtils.ClearCache();
       Init();
+    }
+
+    public void TestCommand()
+    {
+      var dialog = new ImportExportAlert();
+      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      dialog.Show();
+      dialog.Activate();
+      dialog.Focus();
+
     }
   }
 }
