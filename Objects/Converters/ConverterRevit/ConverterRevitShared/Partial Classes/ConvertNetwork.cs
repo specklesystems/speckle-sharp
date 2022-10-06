@@ -136,6 +136,7 @@ namespace Objects.Converter.Revit
       // check if all the elements are connected, some connectors may be unconnected
       // due using of temp curves and until all the ones are created no way to connect
       // them between each other
+
       var links = speckleNetwork.links.Cast<RevitNetworkLink>().ToArray();
       foreach (var link in links)
       {
