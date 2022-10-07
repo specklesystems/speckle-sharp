@@ -53,7 +53,13 @@ namespace Objects.Converter.Revit
       var convertedMEPCurves = convertedElements.Where(e => e.Value is MEPCurve).ToArray();
       foreach (var networkElement in connectorBasedCreationElements)
       {
-        FamilySymbol familySymbol = GetElementType<FamilySymbol>(networkElement.element);
+        //FamilySymbol familySymbol = GetElementType<FamilySymbol>(networkElement.element);
+        if (!GetElementType(networkElement.element, appObj, out FamilySymbol familySymbol))
+        {
+          appObj.Update(status: ApplicationObject.State.Failed);
+          continue;
+        }
+        
         FamilyInstance familyInstance = null;
 
         var tempCurves = new Dictionary<int, MEPCurve>();

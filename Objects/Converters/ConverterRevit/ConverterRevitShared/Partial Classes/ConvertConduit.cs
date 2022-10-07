@@ -22,7 +22,13 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var conduitType = GetElementType<ConduitType>(speckleConduit);
+      //var conduitType = GetElementType<ConduitType>(speckleConduit);
+
+      if (!GetElementType(speckleConduit, appObj, out ConduitType conduitType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       Element conduit = null;
       if (speckleConduit.baseCurve is Line)

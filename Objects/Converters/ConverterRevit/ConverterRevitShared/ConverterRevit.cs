@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BE = Objects.BuiltElements;
@@ -8,8 +10,6 @@ using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
 using GE = Objects.Geometry;
-using System;
-using Objects.Organization;
 using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit
