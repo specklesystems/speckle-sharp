@@ -70,7 +70,7 @@ namespace Objects.Converter.Revit
         default:
           var polycurve = PolycurveFromTopology(speckleElement.topology);
           var level = LevelFromPoint(PointToNative(speckleElement.topology[0].basePoint));
-          RevitFloor revitFloor = new RevitFloor(speckleElement.property.name, speckleElement.property.name, polycurve, level);
+          RevitFloor revitFloor = new RevitFloor(speckleElement.property.name, speckleElement.property.name, polycurve, level, true);
           return FloorToNative(revitFloor);
       }
     }
@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
       }
 
       speckleElement2D.topology = edgeNodes;
-      speckleElement2D["displayValue"] = displayLine;
+      speckleElement2D.displayValue = GetElementDisplayMesh(revitSurface, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       var voidNodes = new List<List<Node>> { };
       var voidLoops = revitSurface.GetLoops(AnalyticalLoopType.Void);
@@ -286,6 +286,13 @@ namespace Objects.Converter.Revit
       }
 
       speckleElement2D.topology = edgeNodes;
+      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+      if (analyticalToPhysicalManager.HasAssociation(revitSurface.Id))
+      {
+        var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
+        var physicalElement = Doc.GetElement(physicalElementId);
+        speckleElement2D.displayValue = GetElementDisplayMesh(physicalElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      }
       //speckleElement2D["displayValue"] = displayLine;
 
       //speckleElement2D.voids = voidNodes;

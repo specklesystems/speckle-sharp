@@ -93,13 +93,13 @@ namespace Objects.Converter.CSI
       setFrameElementProperties(element1D, newFrame);
 
 
-      if (element1D.name != null)
+      if (!string.IsNullOrEmpty(element1D.name))
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
       else
       {
-        Model.FrameObj.SetGUID(newFrame, element1D.id);
+        Model.FrameObj.SetGUID(newFrame, element1D.applicationId ?? element1D.id);
       }
 
       return element1D.name;
