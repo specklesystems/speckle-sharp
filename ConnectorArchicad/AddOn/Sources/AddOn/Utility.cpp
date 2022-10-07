@@ -12,7 +12,11 @@ namespace Utility {
 
 		GSErrCode error = ACAPI_Element_GetHeader(&elemHead);
 		if (error == NoError)
+#ifdef ServerMainVers_2600
+			return elemHead.type.typeID;
+#else
 			return elemHead.typeID;
+#endif
 
 		return API_ZombieElemID;
 	}

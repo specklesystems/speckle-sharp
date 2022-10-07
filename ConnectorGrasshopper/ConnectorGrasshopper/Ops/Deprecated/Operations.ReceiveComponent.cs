@@ -22,6 +22,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
@@ -472,7 +473,7 @@ namespace ConnectorGrasshopper.Ops
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
           var msg = exception.Message.Contains("401")
             ? "You don't have access to this stream/transport , or it doesn't exist."
-            : exception.Message;
+            : exception.ToFormattedString();
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
@@ -492,7 +493,7 @@ namespace ConnectorGrasshopper.Ops
         }
         catch (Exception e)
         {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
           Done();
           return;
         }
@@ -572,8 +573,7 @@ namespace ConnectorGrasshopper.Ops
       {
         // If we reach this, something happened that we weren't expecting...
         Logging.Log.CaptureException(e);
-        var msg = e.InnerException?.Message ?? e.Message;
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, msg));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         Done();
       }
     }
@@ -591,7 +591,7 @@ namespace ConnectorGrasshopper.Ops
           }
           catch (Exception e)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, e.Message);
+            OnFail(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
             return null;
           }
         case StreamWrapperType.Object:

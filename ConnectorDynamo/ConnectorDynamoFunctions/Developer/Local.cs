@@ -18,6 +18,8 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
       Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Send Local" } });
 
       var converter = new BatchConverter();
+      converter.OnError += (sender, args) => throw args.Error;
+      
       var @base = converter.ConvertRecursivelyToSpeckle(data);
       var objectId = Task.Run(async () => await Operations.Send(@base, disposeTransports: true)).Result;
 
@@ -36,6 +38,9 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
 
       var @base = Task.Run(async () => await Operations.Receive(localDataId, disposeTransports: true)).Result;
       var converter = new BatchConverter();
+      // If a conversion error occurs, throw error.
+      converter.OnError += (sender, args) => throw args.Error;
+      
       var data = converter.ConvertRecursivelyToNative(@base);
       return data;
     }

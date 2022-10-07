@@ -29,15 +29,15 @@ namespace Objects.Converter.Dynamo
   {
 
 #if REVIT2023
-    public static string AppName = VersionedHostApplications.DynamoRevit2023;
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2023);
 #elif REVIT2022
-    public static string AppName = VersionedHostApplications.DynamoRevit2022;
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2022);
 #elif REVIT2021
-    public static string AppName = VersionedHostApplications.DynamoRevit2021;
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2021);
 #elif REVIT
-    public static string AppName = VersionedHostApplications.DynamoRevit;
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
 #else
-    public static string AppName = VersionedHostApplications.DynamoSandbox;
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox);
 #endif
 
     public string Description => "Default Speckle Kit for Dynamo";
@@ -178,7 +178,7 @@ namespace Objects.Converter.Dynamo
 
         case Box o:
           return BoxToNative(o);
-        
+
         case Transform o:
           return TransformToNative(o);
         default:

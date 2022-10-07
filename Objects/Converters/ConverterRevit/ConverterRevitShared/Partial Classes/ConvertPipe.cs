@@ -20,14 +20,17 @@ namespace Objects.Converter.Revit
       // check to see if pipe already exists in the doc
       var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
       var appObj = new ApplicationObject(specklePipe.id, specklePipe.speckle_type) { applicationId = specklePipe.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       // get system info
-      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe);
+      if (!GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj, out DB.Plumbing.PipeType pipeType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       var systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType()
        .OfClass(typeof(DB.Plumbing.PipingSystemType)).ToElements().Cast<ElementType>().ToList();
       var systemFamily = speckleRevitPipe?.systemType ?? "";
@@ -59,7 +62,23 @@ namespace Objects.Converter.Revit
         case Polyline _:
         case Curve _:
           var speckleRevitFlexPipe = specklePipe as RevitFlexPipe;
-          var flexPipeType = (speckleRevitFlexPipe != null) ? GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe) : GetElementType<DB.Plumbing.FlexPipeType>(specklePipe);
+          DB.Plumbing.FlexPipeType flexPipeType = null;
+          if (speckleRevitFlexPipe != null)
+          {
+            if (!GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe, appObj, out flexPipeType))
+            {
+              appObj.Update(status: ApplicationObject.State.Failed);
+              return appObj;
+            }
+          }
+          else
+          {
+            if (!GetElementType<DB.Plumbing.FlexPipeType>(specklePipe, appObj, out flexPipeType))
+            {
+              appObj.Update(status: ApplicationObject.State.Failed);
+              return appObj;
+            }
+          }
 
           // get points
           Polyline basePoly = specklePipe.baseCurve as Polyline;

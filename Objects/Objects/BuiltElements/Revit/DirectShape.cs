@@ -9,7 +9,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class DirectShape : Base, IDisplayMesh, IDisplayValue<List<Base>>
+  public class DirectShape : Base, IDisplayValue<List<Base>>
   {
     public string name { get; set; }
     public RevitCategory category { get; set; }
@@ -47,13 +47,5 @@ namespace Objects.BuiltElements.Revit
       || @base is ICurve
       || @base is Mesh
       || @base is Brep;
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault() is Mesh m? m : null;
-      set => displayValue = new List<Base> {value};
-    }
-    #endregion
   }
 }

@@ -16,14 +16,12 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
-      //try update existing 
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
       var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj)) 
         return appObj;
-      }
 
       if (speckleBeam.baseLine == null)
       {
@@ -31,7 +29,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleBeam);
+      if (!GetElementType<FamilySymbol>(speckleBeam, appObj, out DB.FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;

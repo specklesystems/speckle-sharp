@@ -28,9 +28,11 @@
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
+    <conv:StreamEditHeightConverter x:Key="StreamEditHeightConverter" />
   </UserControl.Resources>
-  <Grid RowDefinitions="auto,*, auto">
+  <Grid RowDefinitions="auto,*, 3, auto">
     <Border
+      x:Name="header"
       Margin="0,0,0,7"
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
@@ -68,7 +70,7 @@
             TextTrimming="CharacterEllipsis" />
           <sc:StreamDetails Grid.Row="1" />
         </Grid>
-        <!--  TEMPORARILY DISABLED  -->
+        <!--  SHARE STREAM  -->
         <m:FloatingButton
           Grid.Column="2"
           VerticalAlignment="Center"
@@ -76,7 +78,6 @@
           Background="Transparent"
           Classes="Mini"
           Command="{Binding ShareCommand}"
-          IsVisible="False"
           ToolTip.Tip="Share">
           <Button.Content>
             <icons:MaterialIcon
@@ -108,7 +109,10 @@
       RowDefinitions="*,auto,auto">
       <!--  ACTIVITY & COMMENTS & REPORT  -->
 
-      <TabControl Grid.Row="0" Background="Transparent" Name="tabStreamEdit">
+      <TabControl
+        Name="tabStreamEdit"
+        Grid.Row="0"
+        Background="Transparent">
         <TabItem>
           <TabItem.Header>
             <StackPanel Orientation="Horizontal">
@@ -167,12 +171,19 @@
             </StackPanel>
           </TabItem.Header>
 
-          <Grid RowDefinitions="auto,*" ColumnDefinitions="*,auto">
-            <ScrollViewer Grid.Row="1" IsVisible="{Binding !HasReportItems}">
-              <TextBlock TextWrapping="Wrap" Margin="35,0,0,10" Text="{Binding Log}" />
-            </ScrollViewer>
-            <m:Card
+          <Grid ColumnDefinitions="*,auto" RowDefinitions="auto,auto,auto,*">
+
+            <!--  SUMMARY AND OPERATION ERRORS  -->
+            <TextBlock
               Grid.Row="0"
+              Margin="10,0,0,0"
+              VerticalAlignment="Center"
+              Text="{Binding Log}"
+              TextWrapping="Wrap" />
+
+            <!--  SEARCH AND FILTER  -->
+            <m:Card
+              Grid.Row="1"
               Grid.Column="0"
               Margin="5,10,5,10"
               Padding="0"
@@ -214,7 +225,7 @@
               </TextBox>
             </m:Card>
             <m:FloatingButton
-              Grid.Row="0"
+              Grid.Row="1"
               Grid.Column="1"
               HorizontalAlignment="Right"
               VerticalAlignment="Center"
@@ -232,7 +243,21 @@
                   Kind="ContentCopy" />
               </Button.Content>
             </m:FloatingButton>
-            <uc:Report Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding HasReportItems}" />
+
+            <ListBox
+              Grid.Row="2"
+              Margin="0,0,0,8"
+              Classes="Chip"
+              IsVisible="{Binding HasReportItems}"
+              Items="{Binding ReportFilterItems}"
+              Selection="{Binding ReportSelectionModel}"
+              SelectionMode="Multiple, Toggle" />
+
+            <!--  APP OBJS  -->
+            <uc:Report
+              Grid.Row="3"
+              Grid.ColumnSpan="2"
+              IsVisible="{Binding HasReportItems}" />
           </Grid>
 
         </TabItem>
@@ -288,61 +313,98 @@
         </Grid>
       </m:ColorZone>
 
+      <!--  SHARE PROMPT  -->
+      <m:ColorZone
+        Grid.Row="2"
+        Margin="0,0,0,10"
+        assists:ShadowAssist.ShadowDepth="Depth0"
+        CornerRadius="25"
+        IsVisible="{Binding ShowSharePrompt}"
+        Mode="PrimaryLight">
+        <Grid ColumnDefinitions="*, auto">
+          <Button
+            Margin="0,0,3,0"
+            VerticalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding ShareCommand}"
+            CornerRadius="25,0,0,25"
+            ToolTip.Tip="Share stream">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock
+                VerticalAlignment="Center"
+                Classes="Overline"
+                FontWeight="Medium"
+                Foreground="White"
+                Text="Enable multiplayer mode!"
+                TextWrapping="Wrap" />
+              <icons:MaterialIcon
+                Margin="5,0"
+                VerticalAlignment="Center"
+                Foreground="White"
+                Kind="UsersAdd" />
+            </StackPanel>
+          </Button>
+        </Grid>
+      </m:ColorZone>
+
     </Grid>
 
+    <!--<GridSplitter Grid.Row="2" ResizeDirection="Rows" />-->
+
     <!--  SEND/RECEIVE  -->
-    <TabControl
-      Grid.Row="2"
-      Background="{DynamicResource MaterialDesignCardBackground}"
-      SelectedIndex="{Binding IsReceiver}">
+    <ScrollViewer
+      x:Name="Scroller"
+      Grid.Row="3"
+      MaxHeight="{Binding $parent[Grid].Bounds.Height, Converter={StaticResource StreamEditHeightConverter}}">
+      <TabControl Background="{DynamicResource MaterialDesignCardBackground}" SelectedIndex="{Binding IsReceiver}">
 
-      <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Kind="CubeSend"
-              ToolTip.Tip="Send">
-              <icons:MaterialIcon.RenderTransform>
-                <RotateTransform Angle="-30" />
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-            <TextBlock
-              Margin="10,0,0,0"
-              VerticalAlignment="Center"
-              Text="Send" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Send />
-      </TabItem>
+        <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Kind="CubeSend"
+                ToolTip.Tip="Send">
+                <icons:MaterialIcon.RenderTransform>
+                  <RotateTransform Angle="-30" />
+                </icons:MaterialIcon.RenderTransform>
+              </icons:MaterialIcon>
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Send" />
+            </StackPanel>
+          </TabItem.Header>
+          <uc:Send />
+        </TabItem>
 
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              Kind="CubeSend"
-              ToolTip.Tip="Receive">
-              <icons:MaterialIcon.RenderTransform>
-                <TransformGroup>
-                  <RotateTransform Angle="30" />
-                  <ScaleTransform ScaleX="-1" />
-                </TransformGroup>
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-            <TextBlock
-              Margin="10,0,0,0"
-              VerticalAlignment="Center"
-              Text="Receive" />
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Receive />
-      </TabItem>
-    </TabControl>
-
+        <TabItem>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                Kind="CubeSend"
+                ToolTip.Tip="Receive">
+                <icons:MaterialIcon.RenderTransform>
+                  <TransformGroup>
+                    <RotateTransform Angle="30" />
+                    <ScaleTransform ScaleX="-1" />
+                  </TransformGroup>
+                </icons:MaterialIcon.RenderTransform>
+              </icons:MaterialIcon>
+              <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Text="Receive" />
+            </StackPanel>
+          </TabItem.Header>
+          <uc:Receive />
+        </TabItem>
+      </TabControl>
+    </ScrollViewer>
   </Grid>
 
 </UserControl>

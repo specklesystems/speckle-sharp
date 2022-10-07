@@ -6,14 +6,26 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.IO" #>
 <#
-	var buildPath = $@".\bin\Debug";
+	var buildPath = $@".\bin\Release";
+
+	var CiPath2 = $@"C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release";
 	var files = Directory.EnumerateFiles(buildPath, "*.dll");
-	var x = 4;
+	var CiPath = $@"C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\";
+	var enumerateDirectories = Directory.EnumerateDirectories(buildPath);
+	var emptyFiles =  new List<string>() {};
+	foreach (var dir in enumerateDirectories)
+	{
+		var files2 = Directory.EnumerateFiles(dir, "*.dll");
+		foreach (var file in files2)
+		{
+			emptyFiles.Add(file);
+		}
+	}
 
 #><?xml version="1.0" encoding="utf-8"?>
 <TEP Version="1.0">
 
-	<Product Id="SpeckleTeklaConnector" UpgradeCode="B61394A0-BFC9-4A5A-9F85-F4FB89F6E857" Version="2.6" Language="1033"
+	<Product Id="SpeckleTeklaConnector" UpgradeCode="B61394A0-BFC9-4A5A-9F85-F4FB89F6E857" Version="2.8" Language="1033"
 		Name="Speckle Connector Tekla Structures" Manufacturer="Speckle"  Description= "This extension adds Speckle"
 		IconPath="%TEPDEFINITIONFILEFOLDER%\logo.png" Type = "Environment">
 		<TeklaVersions>
@@ -25,7 +37,7 @@
 	 
 	<SourcePathVariables>
 		<SourcePathVariable Id="TepOutputFolder" Value="%TEPDEFINITIONFILEFOLDER%\output" Comment="This provides the location where the package builder is to save the package."/>
-		<SourcePathVariable Id="BinariesFolder" Value="%TEPDEFINITIONFILEFOLDER%\ConnectorTeklaStructures2021\bin\Release"/>
+		<SourcePathVariable Id="BinariesFolder" Value="%TEPDEFINITIONFILEFOLDER%\bin\Release"/>
     </SourcePathVariables>
 
 	<TargetPathVariables>
@@ -44,10 +56,17 @@
    foreach (var path in files)
    {
 #>
-		<File Id="<#= Path.GetFileName(path) #>" Source="<#= "%BinariesFolder%\\"  + Path.GetFileName(path) #>" Target="%BinariesTargetDirectory%"/>
+		<File Id="<#= Path.GetFileName(path) #>" Source="<#= CiPath + Path.GetFileName(path) #>" Target="%BinariesTargetDirectory%"/>
 <#
    }
-#> </Component>
+#>
+<#foreach (var path in emptyFiles){
+#>
+		<File Id="<#=  path.Replace(buildPath, "")  #>" Source="<#= CiPath2 + path.Replace(buildPath, "") #>" Target= "<#= "%BinariesTargetDirectory%\\"  + path.Replace(buildPath, "").Split('\\' )[1] #>"/>
+<#
+   }
+#>
+</Component>
 
 	<Feature Id="TheExtensionFeature" Title="ExtensionFeature">
 		<ComponentRef ReferenceId="TheExtensionComponent" />

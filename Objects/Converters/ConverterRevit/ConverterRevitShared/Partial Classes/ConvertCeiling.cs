@@ -39,7 +39,13 @@ namespace Objects.Converter.Revit
 #if REVIT2022
     public ApplicationObject CeilingToNative(Ceiling speckleCeiling)
     {
+      var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
       var appObj = new ApplicationObject(speckleCeiling.id, speckleCeiling.speckle_type) { applicationId = speckleCeiling.applicationId };
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+      
       if (speckleCeiling.outline == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Missing an outline curve.");
@@ -66,12 +72,9 @@ namespace Objects.Converter.Revit
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
       }
 
-      var ceilingType = GetElementType<CeilingType>(speckleCeiling);
-
-      var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+      if (!GetElementType<CeilingType>(speckleCeiling, appObj, out CeilingType ceilingType))
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
    

@@ -11,7 +11,7 @@ namespace Objects.BuiltElements.Revit
   /// <summary>
   /// A generic Revit element for which we don't have direct conversions
   /// </summary>
-  public class RevitElement : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class RevitElement : Base, IDisplayValue<List<Mesh>>
   {
     public string family { get; set; }
     public string type { get; set; }
@@ -23,13 +23,5 @@ namespace Objects.BuiltElements.Revit
     public List<Mesh> displayValue { get; set; }
     
     public RevitElement() { }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }

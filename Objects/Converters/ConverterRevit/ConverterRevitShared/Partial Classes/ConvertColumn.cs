@@ -15,7 +15,12 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject ColumnToNative(Column speckleColumn)
     {
+      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
       var appObj = new ApplicationObject(speckleColumn.id, speckleColumn.speckle_type) { applicationId = speckleColumn.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
 
       if (speckleColumn.baseLine == null)
       {
@@ -23,7 +28,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleColumn);
+      if (!GetElementType<FamilySymbol>(speckleColumn, appObj, out DB.FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
       var baseLine = CurveToNative(speckleColumn.baseLine).get_Item(0);
 
       // If the start point elevation is higher than the end point elevation, reverse the line.
@@ -55,13 +65,6 @@ namespace Objects.Converter.Revit
       }
 
       //try update existing 
-      var docObj = GetExistingElementByApplicationId(speckleColumn.applicationId);
-      
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
-        return appObj;
-      }
 
       bool isUpdate = false;
       if (docObj != null)
@@ -142,9 +145,9 @@ namespace Objects.Converter.Revit
         if (speckleRevitColumn.facingFlipped != revitColumn.FacingFlipped)
           revitColumn.flipFacing();
 
-        //do change offset for slanted columns, it's automatic
+        //don't change offset for slanted columns, it's automatic
         if (!isLineBased)
-          SetOffsets(revitColumn, speckleRevitColumn);
+          SetOffsets(revitColumn, speckleRevitColumn, level, topLevel);
 
         SetInstanceParameters(revitColumn, speckleRevitColumn);
       }
@@ -160,7 +163,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="speckleElement"></param>
     /// <param name="familyInstance"></param>
-    private void SetOffsets(DB.FamilyInstance familyInstance, RevitColumn speckleRevitColumn)
+    private void SetOffsets(DB.FamilyInstance familyInstance, RevitColumn speckleRevitColumn, Level level, Level topLevel)
     {
       var topOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       var baseOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
@@ -173,23 +176,28 @@ namespace Objects.Converter.Revit
       var baseOffset = ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units);
       var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
-      //these have been set previously
-      //DB.Level level = Doc.GetElement(baseLevelParam.AsElementId()) as DB.Level;
-      //DB.Level topLevel = Doc.GetElement(topLevelParam.AsElementId()) as DB.Level;
+      // the column length cannot be 0 for even an instance or Revit will throw a fit.
+      // Make sure that setting the offset on one side of the column before setting the
+      // other side doesn't leave the length of the column as approximately 0
+      var colHeightAfterBaseOffset = level.Elevation + baseOffset - topLevel.Elevation;
+      var colHeightAfterTopOffset = topLevel.Elevation + topOffset - level.Elevation;
 
-      //checking if BASE offset needs to be set before or after TOP offset
-      //      if ((topLevel != null && level.Elevation + baseOffset == topLevel.Elevation) ||
-      //       (topLevel!=null && topLevel.Elevation == level.Elevation && baseOffset > 0)) //edge case
-      //    {
-      baseOffsetParam.Set(baseOffset);
-      topOffsetParam.Set(topOffset);
-      //    }
-      //    else
-      //    {
-      //       topOffsetParam.Set(topOffset);
-      //      baseOffsetParam.Set(baseOffset);
-      //    }
-
+      if (Math.Abs(colHeightAfterBaseOffset) > TOLERANCE)
+      {
+        baseOffsetParam.Set(baseOffset);
+        topOffsetParam.Set(topOffset);
+      }
+      else if (Math.Abs(colHeightAfterTopOffset) > TOLERANCE)
+      {
+        topOffsetParam.Set(topOffset);
+        baseOffsetParam.Set(baseOffset);
+      }
+      else
+      {
+        baseOffsetParam.Set(baseOffset/2); // temporarily set this value to something else so the sides of the column can switch places
+        topOffsetParam.Set(topOffset);
+        baseOffsetParam.Set(baseOffset);
+      }
     }
 
     public Base ColumnToSpeckle(DB.FamilyInstance revitColumn, out List<string> notes)

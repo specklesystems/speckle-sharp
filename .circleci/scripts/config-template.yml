@@ -73,17 +73,28 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - codecov/upload
 
   build-objects:
-    executor:
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
+      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
     steps:
       - checkout
       - run:
           name: Restore Objects
-          command: nuget restore Objects/Objects.sln
+          command: dotnet restore Objects/Objects.sln
       - run:
           name: Build Objects
-          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run:
+          name: Test Objects
+          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - store_test_results:
+          path: TestResults
+      - store_artifacts:
+          path: TestResults
+      # Upload to codecov if necessary
+      # Currently disabled until we figure out a strategy to
+      # upload Core and Objects at once
+      # - codecov/upload
 
   build-desktopui:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
@@ -128,17 +139,26 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             if(-Not [string]::IsNullOrEmpty($env:CIRCLE_TAG) -And -Not $semver.Contains('-')) { New-Item -Force "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/latest.yml" -ItemType File -Value "version: $semver" }
           environment:
             WORKFLOW_NUM: << pipeline.number >>
-
-      - run: # Creates the inno installer
+      - run:
           name: Build Installer
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
           shell: cmd.exe #does not work in powershell
           environment:
             SLUG: << parameters.slug >>
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - speckle-sharp-ci-tools/Installers
+      # - when:
+      #     condition:
+      #       equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
+      #     steps:
+      #       - run:
+      #           name: Build TSEP
+      #           command: speckle-sharp-ci-tools/TSEPBuilder/TeklaExtensionPackage.BatchBuilder.exe -I C:/Users/circleci/project/ConnectorTeklaStructures/ConnectorTeklaStructures2021/ManifestGenerator.xml -O C:/Users/circleci/project/speckle-sharp-ci-tools/Installers/<<parameters.slug>>/<<parameters.dllname>>.tsep
+      - when:
+          condition: << pipeline.git.tag >>
+          steps:
+            - persist_to_workspace:
+                root: ./
+                paths:
+                  - speckle-sharp-ci-tools/Installers
 
   deploy-connector-new:
     docker:
@@ -246,10 +266,13 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - speckle-sharp-ci-tools/Installers
+      - when:
+          condition: << pipeline.git.tag >>
+          steps:
+            - persist_to_workspace:
+                root: ./
+                paths:
+                  - speckle-sharp-ci-tools/Installers
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:

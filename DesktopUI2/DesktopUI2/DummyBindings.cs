@@ -5,12 +5,14 @@ using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
 {
@@ -121,6 +123,7 @@ namespace DesktopUI2
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default",
           Values = new List<string>() { "Architectural Walls", "Structural Walls", "Structural Framing" } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = new List<string>() { "Default", "DXF", "Family DXF"}, Selection = "Default", Description = "Determines the display style of imported meshes" },
+        new MappingSeting {Slug = "recieve-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = new List<string>() {"none", "alot", "some"}, Description = "Sends or receives stream objects in relation to this document point"},
       };
     }
 
@@ -263,6 +266,7 @@ namespace DesktopUI2
       // TODO!
     }
 
+    public override bool CanPreviewReceive => true;
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       var pd = new ConcurrentDictionary<string, int>();
@@ -280,17 +284,20 @@ namespace DesktopUI2
         pd["A1"] = i;
         pd["A2"] = i + 2;
 
+        var appObj = new ApplicationObject(i.ToString(), "Some Object");
+
         try
         {
           if (i % 7 == 0)
-            throw new Exception($"Something happened.");
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Something happened.");
+          else
+            appObj.Update(status: ApplicationObject.State.Created);
         }
         catch (Exception e)
         {
-          //TODO
-          //state.Errors.Add(e);
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
         }
-
+        progress.Report.Log(appObj);
         progress.Update(pd);
       }
 
@@ -327,37 +334,45 @@ namespace DesktopUI2
         pd["A1"] = i;
         pd["A2"] = i + 2;
 
+        var appObj = new ApplicationObject(i.ToString(), "Some Object");
+
         try
         {
           if (i % 7 == 0)
-            throw new Exception($"Something happened.");
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Something happened.");
+          else
+            appObj.Update(status: ApplicationObject.State.Created);
         }
         catch (Exception e)
         {
-          //TODO
-          progress.Report.LogConversionError(e);
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
         }
-
+        progress.Report.Log(appObj);
         progress.Update(pd);
       }
 
       // Mock some errors
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 3; i++)
       {
-        progress.Report.Log($"Hello this is a sample line {i}");
-        try
+        var r = new Random(i);
+        if (r.NextDouble() > 0.5)
         {
-          throw new Exception($"Number {i} fail");
-        }
-        catch (Exception e)
-        {
-          progress.Report.LogOperationError(e);
+          try
+          {
+            //progress.Report.LogOperationError(new Exception($"Critical operation error!"));
+            throw new Exception($"Number {i} fail");
+          }
+          catch (Exception e)
+          {
+            progress.Report.LogOperationError(e);
+          }
         }
       }
 
       return state;
     }
 
+    public override bool CanPreviewSend => true;
     public override async void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // Let's fake some progress barsssss
@@ -421,7 +436,11 @@ namespace DesktopUI2
           return null;
         }
 
-        progress.Report.Log("Done fake task " + i);
+        var r = new Random(i);
+        var status = (ApplicationObject.State)r.Next(5);
+        var appObj = new ApplicationObject(i.ToString(), "Some Object") { Status = status, Log = new List<string>() { "Some description"} };
+        progress.Report.Log(appObj);
+
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
         pd["A1"] = i;
         pd["A2"] = i + 2;
@@ -454,6 +473,12 @@ namespace DesktopUI2
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

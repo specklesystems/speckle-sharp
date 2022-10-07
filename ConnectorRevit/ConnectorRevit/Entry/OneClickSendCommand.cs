@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Autodesk.Revit.Attributes;
@@ -9,6 +10,7 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -45,26 +47,24 @@ namespace Speckle.ConnectorRevit.Entry
     public static void CreateOrFocusSpeckle(bool showWindow = true)
     {
 
-
-      if (MainWindow == null)
-      {
-        var viewModel = new MainViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
-
-        //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
-        //to avoid an annoying error when closing revit
-        var cts = new CancellationTokenSource();
-        cts.CancelAfter(100);
-        AvaloniaApp.Run(cts.Token);
-
-
-      }
-
       try
       {
+        if (MainWindow == null)
+        {
+          var viewModel = new MainViewModel(Bindings);
+          MainWindow = new MainWindow
+          {
+            DataContext = viewModel
+          };
+
+          //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
+          //to avoid an annoying error when closing revit
+          var cts = new CancellationTokenSource();
+          cts.CancelAfter(100);
+          AvaloniaApp.Run(cts.Token);
+        }
+
+
         if (showWindow)
         {
           MainWindow.Show();
@@ -85,6 +85,17 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        var td = new TaskDialog("Error");
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
+
+        TaskDialogResult tResult = td.Show();
+
+        if (TaskDialogResult.CommandLink1 == tResult)
+        {
+          Process.Start("https://speckle.community/");
+        }
       }
     }
 

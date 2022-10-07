@@ -18,6 +18,7 @@ namespace Speckle.ConnectorRevit.UI
   {
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
+    public override bool CanPreviewSend => true;
 
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {

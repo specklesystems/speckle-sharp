@@ -8,7 +8,7 @@ using Objects.Structural.Materials;
 
 namespace Objects.Structural.GSA.Materials
 {
-    public class GSAMaterial : Material
+    public class GSAMaterial : StructuralMaterial
     {
         public int nativeId { get; set; }
         public string colour { get; set; }

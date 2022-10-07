@@ -16,10 +16,10 @@ namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
+    public override bool CanPreviewReceive => false;
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
-      // TODO!
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
@@ -62,6 +62,8 @@ namespace Speckle.ConnectorCSI.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
+
+      state.LastSourceApp = commit.sourceApplication;
 
       var commitObject = await Operations.Receive(
                 referencedObject,
@@ -145,6 +147,7 @@ namespace Speckle.ConnectorCSI.UI
     {
       try
       {
+        converter.ReceiveMode = state.ReceiveMode;
         converter.ConvertToNative(obj);
       }
       catch (Exception e)

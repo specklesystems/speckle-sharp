@@ -64,7 +64,7 @@ namespace DesktopUI2.ViewModels
           Icon = "Refresh";
           break;
         case ApplicationObject.State.Skipped:
-          Icon = "Cancel";
+          Icon = "Refresh";
           Opacity = 0.6;
           break;
         case ApplicationObject.State.Removed:

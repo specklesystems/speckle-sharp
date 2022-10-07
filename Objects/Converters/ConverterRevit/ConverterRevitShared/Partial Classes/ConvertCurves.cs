@@ -14,32 +14,35 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
+    #region speckle to native
+    public ApplicationObject CreateAppObject(string id, string applicationId, string speckle_type)
     {
-      var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
-      speckleCurve.elementId = revitCurve.Id.ToString();
-      speckleCurve.applicationId = revitCurve.UniqueId;
-      speckleCurve.units = ModelUnits;
-      return speckleCurve;
+      var docObjs = GetExistingElementsByApplicationId(applicationId);
+      var appObj = new ApplicationObject(id, speckle_type) { applicationId = applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObjs.FirstOrDefault(), appObj, out appObj))
+        return appObj;
+
+      foreach (var docObj in docObjs)
+      {
+        if (docObj != null)
+        {
+          // TODO: try updating lines
+          Doc.Delete(docObj.Id);
+        }
+      }
+
+      return appObj;
     }
 
     public ApplicationObject AlignmentToNative(Alignment alignment)
     {
-      var docObj = GetExistingElementByApplicationId(alignment.applicationId);
-      var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+      var appObj = CreateAppObject(alignment.id, alignment.applicationId, alignment.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-      }
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
 
       var curves = CurveToNative(alignment.curves);
-      var placeholders = new List<ApplicationObject>();
       var curveEnumerator = curves.GetEnumerator();
       while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
       {
@@ -47,122 +50,15 @@ namespace Objects.Converter.Revit
         DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
         appObj.Update(createdId: revitCurve.UniqueId);
       }
-
+      appObj.Update(status: ApplicationObject.State.Created);
       return appObj;
-    }
-
-    public ApplicationObject ModelCurveToNative(ModelCurve speckleCurve)
-    {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
-        return appObj;
-      }
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
-
-      var curves = CurveToNative(speckleCurve.baseCurve);
-      var curveEnumerator = curves.GetEnumerator();
-      while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
-      {
-        var baseCurve = curveEnumerator.Current as DB.Curve;
-        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
-
-        var lineStyles = revitCurve.GetLineStyleIds();
-        var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
-        if (lineStyleId != null)
-          revitCurve.LineStyle = Doc.GetElement(lineStyleId);
-
-        appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
-      }
-
-      return appObj;
-    }
-
-    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationObject ModelCurveToNative(ICurve speckleLine)
-    {
-      // if it comes from GH it doesn't have an applicationId, the use the hash id
-      if ((speckleLine as Base).applicationId == null)
-        (speckleLine as Base).applicationId = (speckleLine as Base).id;
-
-      var docObj = GetExistingElementByApplicationId((speckleLine as Base).applicationId);
-      var appObj = new ApplicationObject(((Base)speckleLine).id, ((Base)speckleLine).speckle_type) { applicationId = ((Base)speckleLine).applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
-        return appObj;
-      }
-
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
-
-      try
-      {
-        return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine, appObj);
-      }
-      catch (Exception e)
-      {
-        // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
-        if (speckleLine is IDisplayValue<Geometry.Polyline> d)
-          return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(),
-            speckleLine, appObj);
-        else
-        {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
-          return appObj;
-        }
-      }
-    }
-
-    public ApplicationObject ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine, ApplicationObject appObj)
-    {
-      while (curveEnum.MoveNext() && curveEnum.Current != null)
-      {
-        var curve = curveEnum.Current as DB.Curve;
-        // Curves must be bound in order to be valid model curves
-        if (!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
-        DB.ModelCurve revitCurve = null;
-
-        if (Doc.IsFamilyDocument)
-          revitCurve = Doc.FamilyCreate.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
-        else
-          revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
-
-        appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
-      }
-
-      return appObj;
-    }
-
-    public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
-    {
-      var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
-      speckleCurve.elementId = revitCurve.Id.ToString();
-      speckleCurve.applicationId = revitCurve.UniqueId;
-      speckleCurve.units = ModelUnits;
-      return speckleCurve;
     }
 
     public ApplicationObject DetailCurveToNative(DetailCurve speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-      }
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
 
       var crvEnum = CurveToNative(speckleCurve.baseCurve).GetEnumerator();
       while (crvEnum.MoveNext() && crvEnum.Current != null)
@@ -186,35 +82,73 @@ namespace Objects.Converter.Revit
 
         appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
-
+      appObj.Update(status: ApplicationObject.State.Created, logItem: $"Created as {appObj.CreatedIds.Count} detail curves");
       return appObj;
     }
 
-    public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
+    public ApplicationObject ModelCurveToNative(ModelCurve speckleCurve)
     {
-      var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve));
-      speckleCurve.elementId = revitCurve.Id.ToString();
-      speckleCurve.applicationId = revitCurve.UniqueId;
-      speckleCurve.units = ModelUnits;
-      return speckleCurve;
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
+        return appObj;
+
+      var curves = CurveToNative(speckleCurve.baseCurve);
+      var curveEnumerator = curves.GetEnumerator();
+      while (curveEnumerator.MoveNext() && curveEnumerator.Current != null)
+      {
+        var baseCurve = curveEnumerator.Current as DB.Curve;
+        DB.ModelCurve revitCurve = Doc.Create.NewModelCurve(baseCurve, NewSketchPlaneFromCurve(baseCurve, Doc));
+
+        var lineStyles = revitCurve.GetLineStyleIds();
+        var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
+        if (lineStyleId != null)
+          revitCurve.LineStyle = Doc.GetElement(lineStyleId);
+
+        appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
+      }
+      appObj.Update(status: ApplicationObject.State.Created);
+      return appObj;
+    }
+
+    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
+    public ApplicationObject ModelCurveToNative(ICurve speckleLine)
+    {
+      // if it comes from GH it doesn't have an applicationId, the use the hash id
+      if ((speckleLine as Base).applicationId == null)
+        (speckleLine as Base).applicationId = (speckleLine as Base).id;
+
+      var speckleCurve = speckleLine as Base;
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
+        return appObj;
+
+      try
+      {
+        return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine, appObj);
+      }
+      catch (Exception e)
+      {
+        // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
+        if (speckleLine is IDisplayValue<Geometry.Polyline> d)
+        {
+          appObj.Update(logItem: $"Curve failed conversion (probably a closed period curve or non-planar nurbs): used polyline display value instead.");
+          return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(), speckleLine, appObj);
+        }
+        else
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          return appObj;
+        }
+      }
     }
 
     public ApplicationObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-      }
 
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
-
-      //delete and re-create line
-      //TODO: check if can be modified
-      if (docObj != null)
-        Doc.Delete(docObj.Id);
 
       try
       {
@@ -228,48 +162,35 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
-    {
-      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve));
-      speckleCurve.elementId = revitCurve.Id.ToString();
-      speckleCurve.applicationId = revitCurve.UniqueId;
-      speckleCurve.units = ModelUnits;
-      return speckleCurve;
-    }
-
     public ApplicationObject SpaceSeparationLineToNative(SpaceSeparationLine speckleCurve)
     {
-      var docObj = GetExistingElementByApplicationId(speckleCurve.applicationId);
-      var appObj = new ApplicationObject(speckleCurve.id, speckleCurve.speckle_type) { applicationId = speckleCurve.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+      var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
+      if (appObj.Status == ApplicationObject.State.Skipped)
         return appObj;
-      }
 
       var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
       // try update existing (update model curve geometry curve based on speckle curve)
-      if (docObj != null)
-      {
-        try
-        {
-          var docCurve = docObj as DB.ModelCurve;
-          var revitGeom = docCurve.GeometryCurve;
-          var speckleGeom = baseCurve.get_Item(0);
-          bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
-          if (!fullOverlap)
-            docCurve.SetGeometryCurve(speckleGeom, false);
+      //if (docObj != null)
+      //{
+      //  try
+      //  {
+      //    var docCurve = docObj as DB.ModelCurve;
+      //    var revitGeom = docCurve.GeometryCurve;
+      //    var speckleGeom = baseCurve.get_Item(0);
+      //    bool fullOverlap = speckleGeom.Intersect(revitGeom) == SetComparisonResult.Equal;
+      //    if (!fullOverlap)
+      //      docCurve.SetGeometryCurve(speckleGeom, false);
 
-          appObj.Update(status: ApplicationObject.State.Updated, createdId: docCurve.UniqueId, convertedItem: docCurve);
-          return appObj;
-        }
-        catch
-        {
-          //delete and try to create new line as fallback
-          Doc.Delete(docObj.Id);
-        }
-      }
+      //    appObj.Update(status: ApplicationObject.State.Updated, createdId: docCurve.UniqueId, convertedItem: docCurve);
+      //    return appObj;
+      //  }
+      //  catch
+      //  {
+      //    //delete and try to create new line as fallback
+      //    Doc.Delete(docObj.Id);
+      //  }
+      //}
 
       try
       {
@@ -282,6 +203,70 @@ namespace Objects.Converter.Revit
       }
       return appObj;
     }
+
+    public ApplicationObject ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine, ApplicationObject appObj)
+    {
+      while (curveEnum.MoveNext() && curveEnum.Current != null)
+      {
+        var curve = curveEnum.Current as DB.Curve;
+        // Curves must be bound in order to be valid model curves
+        if (!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
+        DB.ModelCurve revitCurve = null;
+
+        if (Doc.IsFamilyDocument)
+          revitCurve = Doc.FamilyCreate.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+        else
+          revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+
+        if (revitCurve != null)
+          appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
+      }
+      if (appObj.CreatedIds.Count > 1) appObj.Update(logItem: $"Created as {appObj.CreatedIds.Count} model curves");
+      appObj.Update(status: ApplicationObject.State.Created);
+      return appObj;
+    }
+
+    #endregion
+
+    #region native to speckle
+
+    public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
+    {
+      var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
+    {
+      var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
+    {
+      var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
+    {
+      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.applicationId = revitCurve.UniqueId;
+      speckleCurve.units = ModelUnits;
+      return speckleCurve;
+    }
+
+    #endregion
 
     /// <summary>
     /// Credits: Grevit

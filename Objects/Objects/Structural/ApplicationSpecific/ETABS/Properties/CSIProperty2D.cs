@@ -41,7 +41,7 @@ namespace Objects.Structural.CSI.Properties
             public WaffleSlab() { }
 
             [SchemaInfo("WaffleSlab","Create an CSI Waffle Slab","CSI", "Properties")]
-            public WaffleSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double Thickness ,double overAllDepth, double stemWidthBot, double stemWidthTop, double ribSpacingDir1, double ribSpacingDir2)
+            public WaffleSlab(string PropertyName, ShellType shell, StructuralMaterial ConcreteMaterial, double Thickness ,double overAllDepth, double stemWidthBot, double stemWidthTop, double ribSpacingDir1, double ribSpacingDir2)
             {
 
                 type2D = CSIPropertyType2D.Slab;
@@ -75,7 +75,7 @@ namespace Objects.Structural.CSI.Properties
             public RibbedSlab() { }
 
             [SchemaInfo("RibbedSlab", "Create an CSI Ribbed Slab", "CSI", "Properties")]
-            public RibbedSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double Thickness ,double overAllDepth, double stemWidthBot, double stemWidthTop, double ribSpacing, int ribsParallelTo)
+            public RibbedSlab(string PropertyName, ShellType shell, StructuralMaterial ConcreteMaterial, double Thickness ,double overAllDepth, double stemWidthBot, double stemWidthTop, double ribSpacing, int ribsParallelTo)
             {
                 type2D = CSIPropertyType2D.Slab;
                 slabType = SlabType.Ribbed;
@@ -101,7 +101,7 @@ namespace Objects.Structural.CSI.Properties
       }
 
       [SchemaInfo("Slab", "Create an CSI Slab", "CSI", "Properties")]
-            public Slab(string PropertyName, ShellType shell, Material ConcreteMaterial,double Thickness )
+            public Slab(string PropertyName, ShellType shell, StructuralMaterial ConcreteMaterial,double Thickness )
             {
 
                 type2D = CSIPropertyType2D.Slab;
@@ -133,7 +133,7 @@ namespace Objects.Structural.CSI.Properties
             public DeckFilled() { }
 
             [SchemaInfo("DeckFilled", "Create an CSI Filled Deck", "CSI", "Properties")]
-            public DeckFilled(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
+            public DeckFilled(string PropertyName, ShellType shell, StructuralMaterial ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
             {
                 type2D = CSIPropertyType2D.Deck;
                 slabType = SlabType.Null;
@@ -170,7 +170,7 @@ namespace Objects.Structural.CSI.Properties
 
 
             [SchemaInfo("DeckUnFilled", "Create an CSI UnFilled Deck", "CSI", "Properties")]
-            public DeckUnFilled(string PropertyName, ShellType shell, Material Material, double DeckThickness,double slabDepth, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
+            public DeckUnFilled(string PropertyName, ShellType shell, StructuralMaterial Material, double DeckThickness,double slabDepth, double ribDepth, double ribWidthTop, double ribWidthBot, double ribSpacing, double shearThickness, double unitWeight)
             {
                 type2D = CSIPropertyType2D.Deck;
                 slabType = SlabType.Null;
@@ -203,7 +203,7 @@ namespace Objects.Structural.CSI.Properties
             public double ShearStudHt { get; set; }
 
             [SchemaInfo("DeckSlab", "Create an CSI Slab Deck", "CSI", "Properties")]
-            public DeckSlab(string PropertyName, ShellType shell, Material ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt)
+            public DeckSlab(string PropertyName, ShellType shell, StructuralMaterial ConcreteMaterial, double DeckThickness,double slabDepth, double shearStudDia, double shearStudFu, double shearStudHt)
             {
                 type2D = CSIPropertyType2D.Deck;
                 slabType = SlabType.Null;

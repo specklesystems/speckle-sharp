@@ -40,7 +40,12 @@ namespace Speckle.ConnectorRevit.Entry
   {
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "speckle-manager", "SpeckleManager.exe"));
+      var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
+      if (File.Exists(path))
+        Process.Start(path);
+
+      else
+        TaskDialog.Show("No Manager found", "Seems like Manager is not installed on this pc.");
       return Result.Succeeded;
     }
   }

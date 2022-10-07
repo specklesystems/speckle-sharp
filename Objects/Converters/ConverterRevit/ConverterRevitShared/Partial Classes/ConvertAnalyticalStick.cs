@@ -28,6 +28,7 @@ namespace Objects.Converter.Revit
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
           revitBeam.baseLine = speckleStick.baseLine;
+          revitBeam.applicationId = speckleStick.applicationId;
           appObj = BeamToNative(revitBeam);
           DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBeam, speckleStick, offset1, offset2);
@@ -37,6 +38,7 @@ namespace Objects.Converter.Revit
           RevitBrace revitBrace = new RevitBrace();
           revitBrace.type = speckleStick.property.name.Replace('X', 'x');
           revitBrace.baseLine = speckleStick.baseLine;
+          revitBrace.applicationId = speckleStick.applicationId;
           appObj = BraceToNative(revitBrace);
           DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitBrace, speckleStick, offset1, offset2);
@@ -45,6 +47,8 @@ namespace Objects.Converter.Revit
           RevitColumn revitColumn = new RevitColumn();
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
+          revitColumn.units = speckleStick.units;
+          revitColumn.applicationId = speckleStick.applicationId;
           appObj = ColumnToNative(revitColumn);
           DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
           SetAnalyticalPros(nativeRevitColumn, speckleStick, offset1, offset2);
@@ -279,7 +283,7 @@ namespace Objects.Converter.Revit
         structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
       var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
 
-      Structural.Materials.Material speckleMaterial = null;
+      Structural.Materials.StructuralMaterial speckleMaterial = null;
 
       switch (materialType)
       {
@@ -287,7 +291,7 @@ namespace Objects.Converter.Revit
           var concreteMaterial = new Concrete
           {
             name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name,
-            //type = Structural.MaterialType.Concrete,
+            materialType = Structural.MaterialType.Concrete,
             grade = null,
             designCode = null,
             codeYear = null,
@@ -311,7 +315,7 @@ namespace Objects.Converter.Revit
           var steelMaterial = new Steel
           {
             name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name,
-            //type = Structural.MaterialType.Steel,
+            materialType = Structural.MaterialType.Steel,
             grade = materialAsset.Name,
             designCode = null,
             codeYear = null,
@@ -331,7 +335,7 @@ namespace Objects.Converter.Revit
           var timberMaterial = new Timber
           {
             name = structMat.Document.GetElement(structMat.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Timber,
+            materialType = Structural.MaterialType.Timber,
             grade = materialAsset.WoodGrade,
             designCode = null,
             codeYear = null,
@@ -351,7 +355,7 @@ namespace Objects.Converter.Revit
           speckleMaterial = timberMaterial;
           break;
         default:
-          var defaultMaterial = new Objects.Structural.Materials.Material
+          var defaultMaterial = new Objects.Structural.Materials.StructuralMaterial
           {
             name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name
           };
@@ -580,15 +584,15 @@ namespace Objects.Converter.Revit
         structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
       var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
 
-      Structural.Materials.Material speckleMaterial = null;
+      Structural.Materials.StructuralMaterial speckleMaterial = null;
 
       switch (materialType)
       {
         case StructuralMaterialType.Concrete:
           var concreteMaterial = new Concrete
           {
-             name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
-            //type = Structural.MaterialType.Concrete,
+            name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
+            materialType = Structural.MaterialType.Concrete,
             grade = null,
             designCode = null,
             codeYear = null,
@@ -612,7 +616,7 @@ namespace Objects.Converter.Revit
           var steelMaterial = new Steel
           {
             name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
-            //type = Structural.MaterialType.Steel,
+            materialType = Structural.MaterialType.Steel,
             grade = materialAsset.Name,
             designCode = null,
             codeYear = null,
@@ -632,7 +636,7 @@ namespace Objects.Converter.Revit
           var timberMaterial = new Timber
           {
             name = structMat.Document.GetElement(structMat.StructuralAssetId).Name,
-            //type = Structural.MaterialType.Timber,
+            materialType = Structural.MaterialType.Timber,
             grade = materialAsset.WoodGrade,
             designCode = null,
             codeYear = null,
@@ -652,7 +656,7 @@ namespace Objects.Converter.Revit
           speckleMaterial = timberMaterial;
           break;
         default:
-          var defaultMaterial = new Objects.Structural.Materials.Material
+          var defaultMaterial = new Objects.Structural.Materials.StructuralMaterial
           {
             name = stickFamily.Document.GetElement(revitStick.MaterialId).Name,
           };

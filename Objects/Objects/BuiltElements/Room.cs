@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Objects.BuiltElements
 {
-  public class Room : Base, IHasArea, IHasVolume, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Room : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   {
     public string name { get; set; }
     public string number { get; set; }
@@ -54,14 +54,5 @@ namespace Objects.BuiltElements
       this.basePoint = basePoint;
       this["parameters"] = parameters.ToBase();
     }
-
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-    #endregion
   }
 }

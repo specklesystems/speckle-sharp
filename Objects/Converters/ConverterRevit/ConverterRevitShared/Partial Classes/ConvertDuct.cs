@@ -18,12 +18,11 @@ namespace Objects.Converter.Revit
       var speckleRevitDuct = speckleDuct as RevitDuct;
       var docObj = GetExistingElementByApplicationId(speckleDuct.applicationId);
       var appObj = new ApplicationObject(speckleDuct.id, speckleDuct.speckle_type) { applicationId = speckleDuct.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
-      
+
       var systemFamily = (speckleRevitDuct != null) ? speckleRevitDuct.systemName : "";
       List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType()
           .OfClass(typeof(MechanicalSystemType)).ToElements().Cast<ElementType>().ToList();
@@ -37,7 +36,11 @@ namespace Objects.Converter.Revit
       Element duct = null;
       if (speckleDuct.baseCurve == null || speckleDuct.baseCurve is Line)
       {
-        var ductType = GetElementType<DuctType>(speckleDuct);
+        if (!GetElementType<DuctType>(speckleDuct, appObj, out DuctType ductType))
+        {
+          appObj.Update(status: ApplicationObject.State.Failed);
+          return appObj;
+        }
 
         DB.Line baseLine = (speckleDuct.baseCurve != null) ? LineToNative(speckleDuct.baseCurve as Line) : LineToNative(speckleDuct.baseLine);
         XYZ startPoint = baseLine.GetEndPoint(0);
@@ -48,7 +51,11 @@ namespace Objects.Converter.Revit
       }
       else if (speckleDuct.baseCurve is Polyline polyline)
       {
-        var ductType = GetElementType<FlexDuctType>(speckleDuct);
+        if (!GetElementType<FlexDuctType>(speckleDuct, appObj, out FlexDuctType ductType))
+        {
+          appObj.Update(status: ApplicationObject.State.Failed);
+          return appObj;
+        }
 
         var speckleRevitFlexDuct = speckleDuct as RevitFlexDuct;
         var points = polyline.GetPoints().Select(o => PointToNative(o)).ToList();

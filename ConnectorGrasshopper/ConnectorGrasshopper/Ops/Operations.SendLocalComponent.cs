@@ -9,6 +9,7 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -71,7 +72,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         Console.WriteLine(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
       }
 
       Done();

@@ -15,11 +15,10 @@ namespace Objects.Converter.Revit
     {
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
       var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
-      if (revitGrid != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitGrid.UniqueId, convertedItem: revitGrid);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitGrid, appObj, out appObj))
         return appObj;
-      }
 
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
 

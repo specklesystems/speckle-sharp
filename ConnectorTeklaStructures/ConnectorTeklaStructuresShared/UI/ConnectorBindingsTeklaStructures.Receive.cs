@@ -20,6 +20,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
   {
     #region receiving
+    public override bool CanPreviewReceive => false;
+    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Exceptions.Clear();
@@ -66,6 +72,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
+
+      state.LastSourceApp = commit.sourceApplication;
 
       var commitObject = await Operations.Receive(
                 referencedObject,
@@ -182,6 +190,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
     private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
       List<Base> objects = new List<Base>();
+
 
       if (obj is Base @base)
       {

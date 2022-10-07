@@ -1,5 +1,5 @@
 <UserControl
-  x:Class="DesktopUI2.Controls.PreviewButton"
+  x:Class="DesktopUI2.Views.Controls.PreviewButton"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -70,6 +70,6 @@
         </Button.Content>
       </m:FloatingButton>
     </Grid>
-    
+
   </Grid>
 </UserControl>

@@ -84,7 +84,12 @@ namespace AddOnCommands {
 			GSErrCode err = ACAPI_Element_Get(&element);
 			if (err != NoError) continue;
 
-			if (element.header.typeID != API_SlabID) continue;
+#ifdef ServerMainVers_2600
+			if (element.header.type.typeID != API_SlabID)
+#else
+			if (element.header.typeID != API_SlabID)
+#endif
+				continue;
 
 			err = ACAPI_Element_GetMemo(guid, &elementMemo);
 			if (err != NoError) continue;

@@ -18,16 +18,19 @@ namespace Objects.Converter.Revit
 
       var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
       var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type) { applicationId = speckleWire.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"
         ? DB.Electrical.WiringType.Chamfer
         : DB.Electrical.WiringType.Arc;
-      var wireType = GetElementType<DB.Electrical.WireType>(speckleWire);
+      if (!GetElementType<DB.Electrical.WireType>(speckleWire, appObj, out DB.Electrical.WireType wireType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       // get construction points (if wire is from Revit, these are not the same as the geometry points)
       var points = new List<XYZ>();

@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Avalonia.Threading;
 using ConnectorRevit.Revit;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -17,10 +19,13 @@ using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
+  
   public partial class ConnectorBindingsRevit2
   {
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+
+    public override bool CanPreviewReceive => false;
 
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
@@ -33,6 +38,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
+    /// 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       //make sure to instance a new copy so all values are reset correctly
@@ -65,6 +71,9 @@ namespace Speckle.ConnectorRevit.UI
       {
         myCommit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
+
+      state.LastSourceApp = myCommit.sourceApplication;
+
       string referencedObject = myCommit.referencedObject;
 
       var commitObject = await Operations.Receive(
@@ -105,6 +114,26 @@ namespace Speckle.ConnectorRevit.UI
       Preview.Clear();
       StoredObjects.Clear();
 
+
+      Preview = FlattenCommitObject(commitObject, converter);
+      foreach (var previewObj in Preview)
+        progress.Report.Log(previewObj);
+
+      converter.ReceiveMode = state.ReceiveMode;
+      // needs to be set for editing to work 
+      converter.SetPreviousContextObjects(previouslyReceiveObjects);
+      // needs to be set for openings in floors and roofs to work
+      converter.SetContextObjects(Preview);
+
+      try
+      {
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+      }
+      catch (Exception ex)
+      {
+        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
+      }
+
       await RevitTask.RunAsync(app =>
       {
         using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
@@ -113,17 +142,8 @@ namespace Speckle.ConnectorRevit.UI
           failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
           failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
-
           t.Start();
-          Preview = FlattenCommitObject(commitObject, converter);
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-
-          converter.ReceiveMode = state.ReceiveMode;
-          // needs to be set for editing to work 
-          converter.SetPreviousContextObjects(previouslyReceiveObjects);
-          // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(Preview);
+          
           var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
@@ -143,7 +163,7 @@ namespace Speckle.ConnectorRevit.UI
 
       });
 
-      if (converter.Report.ConversionErrors.Any(x => x.Message.Contains("fatal error")))
+      if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
         return null; // the commit is being rolled back
 
       return state;
@@ -154,7 +174,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.CreatedIds.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
         var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
@@ -187,25 +207,41 @@ namespace Speckle.ConnectorRevit.UI
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
 
-          //skip element if is froma  linked file and setting is off
+          var s = new CancellationTokenSource();
+          DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
+          Dispatcher.UIThread.MainLoop(s.Token);
+
+          //skip element if is from a linked file and setting is off
           if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
             continue;
 
           var convRes = converter.ConvertToNative(@base);
-          if (convRes is ApplicationObject placeholder)
-          {
-            placeholders.Add(placeholder);
-            obj.Update(status: placeholder.Status, createdIds: placeholder.CreatedIds, converted: placeholder.Converted, log: placeholder.Log);
-            progress.Report.Log(obj);
-          }
-          else
-          {
 
+          //regenerate the document and then implement a hack to "refresh" the view
+          CurrentDoc.Document.Regenerate();
+
+          // get the active ui view
+          var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+          var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+
+          // "refresh" the active view
+          uiView.Zoom(1);
+
+          switch (convRes)
+          {
+            case ApplicationObject o:
+              placeholders.Add(o);
+              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
+              progress.Report.UpdateReportObject(obj);
+              break;
+            default:
+              break;
           }
         }
         catch (Exception e)
         {
-          progress.Report.LogConversionError(e);
+          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          progress.Report.UpdateReportObject(obj);
         }
       }
 

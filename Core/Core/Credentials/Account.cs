@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
+using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Logging;
 
@@ -37,6 +38,7 @@ namespace Speckle.Core.Credentials
     public string refreshToken { get; set; }
 
     public bool isDefault { get; set; } = false;
+    public bool isOnline { get; set; } = true;
 
     public ServerInfo serverInfo { get; set; }
 
