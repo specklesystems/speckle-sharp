@@ -59,7 +59,7 @@ namespace Archicad.Launcher
 
     public override string GetHostAppNameVersion()
     {
-      return "Archicad 26";
+      return "Archicad";
     }
 
     public override string GetHostAppName()
