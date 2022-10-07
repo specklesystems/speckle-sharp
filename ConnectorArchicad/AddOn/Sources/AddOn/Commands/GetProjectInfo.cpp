@@ -5,7 +5,6 @@
 namespace AddOnCommands
 {
 
-  static const char* Untitled = "Untitled";
   static const char* ProjectNameFieldName = "name";
   static const char* ProjectLocationFieldName = "location";
   static const char* ProjectLengthUnitsFieldName = "lengthUnit";
