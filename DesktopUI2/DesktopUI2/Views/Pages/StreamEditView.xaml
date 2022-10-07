@@ -36,7 +36,7 @@
       Margin="0,0,0,7"
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
-      Background="{DynamicResource MaterialDesignCardBackground}">
+      Background="{DynamicResource PrimaryHueMidBrush}">
       <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
         <m:FloatingButton
           VerticalAlignment="Center"
@@ -53,7 +53,7 @@
               <icons:MaterialIcon
                 Width="24"
                 Height="24"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="ChevronLeft" />
             </Viewbox>
           </Button.Content>
@@ -66,9 +66,20 @@
           <TextBlock
             Classes="Grotesk"
             FontSize="20"
+            Foreground="White"
             Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <sc:StreamDetails Grid.Row="1" />
+          <sc:StreamDetails Grid.Row="1">
+            <sc:StreamDetails.Styles>
+              <Style Selector="TextBlock">
+                <Setter Property="Foreground" Value="White" />
+              </Style>
+              <Style Selector="icons|MaterialIcon.StreamCard">
+                <Setter Property="Foreground" Value="White" />
+              </Style>
+
+            </sc:StreamDetails.Styles>
+          </sc:StreamDetails>
         </Grid>
         <!--  SHARE STREAM  -->
         <m:FloatingButton
@@ -84,7 +95,7 @@
               Width="15"
               Height="15"
               assists:ShadowAssist.ShadowDepth="0"
-              Foreground="{DynamicResource MaterialDesignBody}"
+              Foreground="White"
               Kind="UsersAdd" />
           </Button.Content>
         </m:FloatingButton>
