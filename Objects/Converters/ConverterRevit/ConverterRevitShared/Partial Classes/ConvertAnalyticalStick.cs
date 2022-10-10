@@ -8,9 +8,7 @@ using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -46,7 +44,6 @@ namespace Objects.Converter.Revit
 
       var baseLine = CurveToNative(speckleStick.baseLine).get_Item(0);
       DB.Level level = null;
-      AnalyticalMember revitMember = null;
 
       level ??= ConvertLevelToRevit(LevelFromCurve(baseLine), out ApplicationObject.State levelState);
       var isUpdate = false;
@@ -57,6 +54,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
+      AnalyticalMember revitMember = null;
       if (docObj != null && docObj is AnalyticalMember analyticalMember)
       {      
         // update location
