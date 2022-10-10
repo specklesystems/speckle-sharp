@@ -32,7 +32,7 @@ jobs:
             - run: git branch internal_circleci
             - path-filtering/set-parameters:
                 mapping: |
-                  Core/.* run_core true
+                  Core/.* core true
                   (Core|Objects|ConnectorRhino|ConnectorGrasshopper|.*/ConverterRhinoGh)/.* rhino true
                   (Core|Objects|ConnectorRevit|.*/ConverterRevit)/.* revit true
                   (Core|Objects|ConnectorDynamo|.*/ConverterDynamo)/.* dynamo true
@@ -62,4 +62,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?(\/all)?$/
+              only: /^(nugets\/)?([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w+)?(\/all)?$/

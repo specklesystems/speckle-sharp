@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -24,14 +25,7 @@ namespace Speckle.Core.Kits
         if (_kitsFolder != null)
           return _kitsFolder;
 
-        var local = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Speckle", "Kits");
-        var system = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "Speckle", "Kits");
-
-        if (Assembly.GetAssembly(typeof(KitManager)).Location.Contains("ProgramData"))
-          return system;
-
-        return local;
-
+        return Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits");
       }
       set
       {

@@ -14,7 +14,7 @@ using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
-using CSiAPIv1; 
+using CSiAPIv1;
 
 namespace Objects.Converter.CSI
 {
@@ -82,6 +82,7 @@ namespace Objects.Converter.CSI
 
           if (element is Element1D && !(element is CSITendon))
           {
+
             var CSIelement = (Element1D)element;
             if (CSIelement.type == ElementType1D.Link)
             {
@@ -89,13 +90,27 @@ namespace Objects.Converter.CSI
             }
             else
             {
-              FrameToNative((Element1D)element);
+            if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+              {
+                updateFrametoNative((Element1D)element);
+            }
+            else
+              {
+                FrameToNative((Element1D)element);
+              }
             }
           }
 
           else if (element is Element2D)
           {
-            AreaToNative((Element2D)element);
+            var CSIElement = (Element2D)element;
+          if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+            {
+              updateExistingArea(CSIElement);
+            }
+          else{
+              AreaToNative(CSIElement);
+            }
           }
           else if (element is CSIStories)
           {
@@ -108,7 +123,13 @@ namespace Objects.Converter.CSI
       {
         foreach (Node node in model.nodes)
         {
-          PointToNative(node);
+        if(ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update){
+            updatePoint(node);
+        }else{
+            PointToNative(node);
+          }
+          
+          
         }
       }
 
@@ -147,6 +168,7 @@ namespace Objects.Converter.CSI
 
         }
       }
+      Model.View.RefreshWindow();
 
       return "Finished";
     }

@@ -17,55 +17,56 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> StructuralModelToNative(Model speckleStructModel)
+    public ApplicationObject StructuralModelToNative(Model speckleStructModel)
     {
-      List<ApplicationPlaceholderObject> placeholderObjects = new List<ApplicationPlaceholderObject> { };
+      var lengthUnits = speckleStructModel.specs.settings.modelUnits.length;
+      var appObj = new ApplicationObject(speckleStructModel.id, speckleStructModel.speckle_type) { applicationId = speckleStructModel.applicationId };
       foreach (Node node in speckleStructModel.nodes)
       {
-        var Application = AnalyticalNodeToNative(node);
-        placeholderObjects.Concat(Application);
+        var _node = AnalyticalNodeToNative(node);
+        appObj.Update(createdIds: _node.CreatedIds, converted: _node.Converted);
       }
       foreach (var element in speckleStructModel.elements)
       {
         
-        if (element is Element1D)
+        if (element is Element1D element1D)
         {
+          element1D.units = lengthUnits;
           try
           {
-            if(element is CSIElement1D){
-              var Application = AnalyticalStickToNative((CSIElement1D)element);
-              placeholderObjects.Concat(Application);
+            if (element is CSIElement1D csiElement1D)
+            {
+              var _csiStick = AnalyticalStickToNative(csiElement1D);
+              appObj.Update(createdIds: _csiStick.CreatedIds, converted: _csiStick.Converted);
             }
-            else { var Application = AnalyticalStickToNative((Element1D)element);
-              placeholderObjects.Concat(Application);
+            else
+            { 
+              var _stick = AnalyticalStickToNative((Element1D)element);
+              appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
             }
-
-
-            
           }
           catch { }
-
         }
         else
         {
           try
           {
-            if (element is CSIElement2D)
+            if (element is CSIElement2D csiElement2D)
             {
-              var Application = AnalyticalSurfaceToNative((CSIElement2D)element);
-              placeholderObjects.Concat(Application);
+              var _csiStick = AnalyticalSurfaceToNative(csiElement2D);
+              appObj.Update(createdIds: _csiStick.CreatedIds, converted: _csiStick.Converted);
             }
             else
             {
-              var Application = AnalyticalSurfaceToNative((Element2D)element);
-              placeholderObjects.Concat(Application);
+              var _stick = AnalyticalSurfaceToNative((Element2D)element);
+              appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
             }
           }
           catch { }
         }
       }
 
-      return placeholderObjects;
+      return appObj;
     }
 
   }

@@ -16,28 +16,29 @@ namespace Objects.Converter.Revit
     //TODO: allow updates to family..?
 
     //NOTE: FaceWalls cannot be updated, as well we can't seem to get their base face easily so they are ToNatvie only
-    public List<ApplicationPlaceholderObject> FaceWallToNative(RevitFaceWall speckleWall)
+    public ApplicationObject FaceWallToNative(RevitFaceWall speckleWall)
     {
+      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
+      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitWall, appObj, out appObj))
+        return appObj;
+
       if (speckleWall.surface == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only surface based FaceWalls are currently supported.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Facewall surface was null");
+        return appObj;
       }
-
-      // Cannot update revit wall to new mass face
-      FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
-      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleWall.applicationId, ApplicationGeneratedId = revitWall.UniqueId, NativeObject = revitWall } };
 
       if (revitWall != null)
-      {
         Doc.Delete(revitWall.Id);
-      }
 
       var templatePath = GetTemplatePath("Mass");
       if (!File.Exists(templatePath))
       {
-        Report.LogConversionError(new Exception($"Could not find file {Path.GetFileName(templatePath)}"));
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find file {Path.GetFileName(templatePath)}");
+        return appObj;
       }
 
       var tempMassFamilyPath = CreateMassFamily(templatePath, speckleWall.surface, speckleWall.applicationId);
@@ -50,10 +51,7 @@ namespace Objects.Converter.Revit
       {
         File.Delete(tempMassFamilyPath);
       }
-      catch
-      {
-
-      }
+      catch { }
 
       var mass = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
       // NOTE: must set a schedule level!
@@ -72,11 +70,15 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       Reference faceRef = GetFaceRef(mass);
 
-      var wallType = GetElementType<WallType>(speckleWall);
+      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
-        Report.LogConversionError(new Exception($"Wall type not valid for face wall ${speckleWall.applicationId}."));
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Wall type {wallType.Name} not valid for facewall");
+        return appObj;
       }
 
       revitWall = null;
@@ -89,27 +91,16 @@ namespace Objects.Converter.Revit
 
       if (revitWall == null)
       {
-        throw (new Exception($"Failed to create face wall ${speckleWall.applicationId}."));
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Revit wall creation returned null");
+        return appObj;
       }
 
       Doc.Delete(mass.Id);
 
       SetInstanceParameters(revitWall, speckleWall);
-
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleWall.applicationId,
-        ApplicationGeneratedId = revitWall.UniqueId,
-        NativeObject = revitWall
-        }
-      };
-
-      var hostedElements = SetHostedElements(speckleWall, revitWall);
-      placeholders.AddRange(hostedElements);
-      Report.Log($"Created FaceWall {revitWall.Id}");
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
+      appObj = SetHostedElements(speckleWall, revitWall, appObj);
+      return appObj;
     }
 
     private Reference GetFaceRef(Element e)
@@ -125,17 +116,9 @@ namespace Objects.Converter.Revit
       {
         Solid geomSolid = geomObj as Solid;
         if (null != geomSolid)
-        {
           foreach (Face geomFace in geomSolid.Faces)
-          {
             if (FaceWall.IsValidFaceReferenceForFaceWall(e.Document, geomFace.Reference))
-            {
               return geomFace.Reference;
-            }
-
-          }
-        }
-
       }
       return null;
     }
@@ -176,7 +159,6 @@ namespace Objects.Converter.Revit
         }
 
         t.Commit();
-
       }
       var famName = "SpeckleMass_" + name;
       string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
@@ -187,7 +169,5 @@ namespace Objects.Converter.Revit
       Report.Log($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
-
   }
-
 }

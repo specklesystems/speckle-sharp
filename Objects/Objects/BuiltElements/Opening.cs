@@ -55,7 +55,7 @@ namespace Objects.BuiltElements.Revit
       this.host = host;
     }
     
-    [SchemaInfo("Revit Wall Opening", "Creates a Speckle Wall opening for revit", "BIM", "Architecture")]
+    [SchemaInfo("Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Revit", "Architecture")]
     public RevitWallOpening(Polyline outline, RevitWall host = null)
     {
       if(outline == null) throw new SpeckleException("Outline cannot be null", false);

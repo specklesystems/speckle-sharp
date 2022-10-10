@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
@@ -71,7 +72,7 @@ namespace ConnectorGrasshopper.Streams
       if (error != null)
       {
         Message = null;
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.ToFormattedString());
         error = null;
         stream = null;
       }
@@ -101,7 +102,7 @@ namespace ConnectorGrasshopper.Streams
           catch (Exception e)
           {
             stream = null;
-            error = e.InnerException ?? e;
+            error = e;
           }
           finally
           {

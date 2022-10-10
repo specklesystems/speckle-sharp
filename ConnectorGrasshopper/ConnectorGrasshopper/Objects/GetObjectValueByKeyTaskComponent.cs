@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -66,7 +67,7 @@ namespace ConnectorGrasshopper.Objects
         foreach (var error in Converter.Report.ConversionErrors)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-            error.Message + ": " + error.InnerException?.Message);
+            error.ToFormattedString());
         }
         Converter.Report.ConversionErrors.Clear();
       }
@@ -122,7 +123,7 @@ namespace ConnectorGrasshopper.Objects
       {
         // If we reach this, something happened that we weren't expecting...
         Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
 
       }
       return value;

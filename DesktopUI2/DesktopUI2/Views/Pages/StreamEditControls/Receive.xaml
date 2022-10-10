@@ -3,7 +3,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:c="clr-namespace:DesktopUI2.Controls"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
@@ -26,10 +26,17 @@
           <TextBlock Text="Receiving " />
           <TextBlock FontWeight="Bold" Text="{Binding SelectedCommit.id, FallbackValue=?}" />
           <TextBlock Text=" from " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.name, FallbackValue=?}" />
+          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+          <TextBlock
+            Classes="Overline"
+            Foreground="Gray"
+            Text="  (expand to edit)" />
         </StackPanel>
       </Expander.Header>
-      <Grid ColumnDefinitions="auto,*, auto, *" RowDefinitions="auto, auto,auto,auto">
+      <Grid
+        Margin="15,0"
+        ColumnDefinitions="auto,*, auto, *"
+        RowDefinitions="auto, auto,auto,auto">
 
         <!--  SELECT BRANCH  -->
         <icons:MaterialIcon
@@ -43,7 +50,7 @@
           Margin="5,10,5,10"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
-          Items="{Binding Branches}"
+          Items="{Binding BranchesViewModel}"
           PlaceholderText="Select a branch"
           SelectedItem="{Binding SelectedBranch}">
           <ComboBox.ItemTemplate>
@@ -52,10 +59,10 @@
                 <icons:MaterialIcon
                   Margin="0,0,5,0"
                   Foreground="DarkGray"
-                  Kind="SourceBranch" />
+                  Kind="{Binding Icon}" />
                 <TextBlock
                   Grid.Column="1"
-                  Text="{Binding name}"
+                  Text="{Binding Branch.name}"
                   TextTrimming="CharacterEllipsis" />
               </Grid>
             </DataTemplate>
@@ -195,7 +202,7 @@
           assists:ShadowAssist.ShadowDepth="Depth0"
           Background="Transparent"
           Command="{Binding SaveCommand}"
-          IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+          IsEnabled="{Binding !Progress.IsProgressing}"
           ToolTip.Tip="Save this sender to the file without sending">
           <Button.Content>
             <icons:MaterialIcon
@@ -207,6 +214,9 @@
 
           </Button.Content>
         </m:FloatingButton>
+
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
 
         <!--  RECEIVE BTN  -->
         <c:ReceiveButton />
