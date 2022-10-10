@@ -305,21 +305,6 @@ namespace Objects.Converter.Revit
         }
       }
 
-      //Node: Adds the Revit phase parameter "Phase creatd" to the stream
-      if (returnObject != null)
-      {
-        try
-        {
-          Phase ph = (@object as DB.Element).Document.GetElement((@object as DB.Element).CreatedPhaseId) as Phase;
-          if (ph != null) returnObject["phase"] = ph.Name;
-        }
-        catch (System.Exception e)
-        {
-          Report.Log(e.Message);
-        }
-      }
-
-
       return returnObject;
     }
 
