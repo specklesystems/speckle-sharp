@@ -33,7 +33,7 @@ namespace DesktopUI2.ViewModels
   {
 
     public StreamState StreamState { get; set; }
-    private IScreen HostScreen { get; set; }
+    public IScreen HostScreen { get; set; }
 
     private ConnectorBindings Bindings;
 
@@ -494,8 +494,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
-
     public void UpdateVisualParentAndInit(IScreen hostScreen)
     {
       HostScreen = hostScreen;
@@ -577,7 +575,7 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
+        var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.White } };
         menu.Items = new List<MenuItemViewModel> {
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),

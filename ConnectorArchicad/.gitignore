@@ -19,7 +19,11 @@
 # Mono auto generated files
 mono_crash.*
 
+# Args to run with
+ConnectorArchicad/Properties/launchSettings.json
+
 # Build results
+AddOn/Build*
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/

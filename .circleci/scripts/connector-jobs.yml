@@ -17,11 +17,12 @@ rhino:
       requires:
         - build-desktopui
   - build-connector-mac:
+      name: rhino-build-mac
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       installername: SpeckleRhinoInstall
       build-config: Release Mac
-      slug: rhino-mac
+      slug: rhino
       requires:
         - build-desktopui
       converter-files: "
@@ -32,12 +33,13 @@ rhino:
         Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
         "
   - build-connector-mac:
+      name: grasshopper-build-mac
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       build-config: Release Mac
       installername: SpeckleGhInstall
       installer: true
-      slug: grasshopper-mac
+      slug: grasshopper
       requires:
         - build-desktopui
       converter-files: "

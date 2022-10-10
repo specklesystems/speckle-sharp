@@ -97,6 +97,7 @@ namespace Speckle.Core.Kits
     /// <returns></returns>
     public static HostApplication GetHostAppFromString(string appname)
     {
+      if (appname == null) return Other;
       appname = appname.ToLowerInvariant().Replace(" ", "");
       if (appname.Contains("dynamo")) return Dynamo;
       if (appname.Contains("revit")) return Revit;
