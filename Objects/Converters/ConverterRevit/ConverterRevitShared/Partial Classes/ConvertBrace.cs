@@ -9,7 +9,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> BraceToNative(Brace speckleBrace)
+    public ApplicationObject BraceToNative(Brace speckleBrace)
     {
       //reuse ConversionLog.Addic in Beam class, at these are basically the same thing
       if (speckleBrace is RevitBrace rb)
@@ -35,17 +35,20 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private Base BraceToSpeckle(DB.FamilyInstance myFamily)
+    private Base BraceToSpeckle(DB.FamilyInstance myFamily, out List<string> notes)
     {
-      var myBeam = BeamToSpeckle(myFamily) as RevitBeam;
+      notes = new List<string>();
+      var myBeam = BeamToSpeckle(myFamily, out notes) as RevitBeam;
 
       var myBrace = new RevitBrace()
       {
+        applicationId = myBeam.applicationId,
         type = myBeam.type,
         baseLine = myBeam.baseLine,
         level = myBeam.level,
         family = myBeam.family,
-        parameters = myBeam.parameters
+        parameters = myBeam.parameters,
+        displayValue = myBeam.displayValue,
       };
       return myBrace;
     }

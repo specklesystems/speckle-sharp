@@ -22,8 +22,10 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -395,6 +397,10 @@ namespace ConnectorGrasshopper.Ops
         AutoReceive = false;
         StreamWrapper = wrapper;
         LastInfoMessage = null;
+        Task.Run(async () =>
+        {
+          await ResetApiClient(wrapper);
+        });
         return;
       }
 
@@ -421,11 +427,33 @@ namespace ConnectorGrasshopper.Ops
 
     private async Task ResetApiClient(StreamWrapper wrapper)
     {
-      ApiClient?.Dispose();
-      var acc = await wrapper.GetAccount();
-      ApiClient = new Client(acc);
-      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      try
+      {
+        ApiClient?.Dispose();
+        Account account = null;
+        try
+        {
+          account = wrapper?.GetAccount().Result;
+        }
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
+          account = new Account
+          {
+            id = wrapper?.StreamId,
+            serverInfo = new ServerInfo() { url = wrapper?.ServerUrl },
+            token = "",
+            refreshToken = ""
+          };
+        }
+        ApiClient = new Client(account);
+        ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
+        ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+      }
     }
 
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
@@ -524,7 +552,7 @@ namespace ConnectorGrasshopper.Ops
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
           var msg = exception.Message.Contains("401")
             ? "You don't have access to this stream/transport , or it doesn't exist."
-            : exception.InnerException != null ? exception.InnerException.Message : exception.Message;
+            : exception.ToFormattedString();
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
@@ -537,21 +565,9 @@ namespace ConnectorGrasshopper.Ops
           });
         };
 
-        Client client;
-        try
-        {
-          client = new Client(InputWrapper?.GetAccount().Result);
-        }
-        catch (Exception e)
-        {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
-          Done();
-          return;
-        }
 
-        Speckle.Core.Logging.Analytics.TrackEvent(client.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
 
-        var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
+        var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
         // Means it's a copy paste of an empty non-init component; set the record and exit fast unless ReceiveOnOpen is true.
@@ -567,8 +583,8 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
-          ((VariableInputReceiveComponent)Parent).PrevReceivedData = null;
-          var myCommit = await GetCommit(InputWrapper, client, (level, message) =>
+          receiveComponent.PrevReceivedData = null;
+          var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
 
@@ -576,10 +592,16 @@ namespace ConnectorGrasshopper.Ops
 
           if (myCommit == null)
           {
-            throw new Exception("Failed to find a valid commit or object to get.");
+            Done();
+            return;
           }
 
           ReceivedCommit = myCommit;
+          Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>()
+          { { "auto", receiveComponent.AutoReceive },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
+            { "sourceHostAppVersion", myCommit.sourceApplication }
+          });
 
           if (CancellationToken.IsCancellationRequested)
           {
@@ -600,7 +622,7 @@ namespace ConnectorGrasshopper.Ops
 
           try
           {
-            await client.CommitReceived(new CommitReceivedInput
+            await receiveComponent.ApiClient.CommitReceived(new CommitReceivedInput
             {
               streamId = InputWrapper.StreamId,
               commitId = myCommit.id,
@@ -627,8 +649,7 @@ namespace ConnectorGrasshopper.Ops
       {
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        var msg = e.InnerException?.Message ?? e.Message;
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, msg));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         Done();
       }
     }
@@ -642,11 +663,13 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+            if (myCommit == null)
+              OnFail(GH_RuntimeMessageLevel.Warning, $"Commit with id {InputWrapper.CommitId} was not found in stream {InputWrapper.StreamId}.");
             return myCommit;
           }
           catch (Exception e)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, e.Message);
+            OnFail(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
             return null;
           }
         case StreamWrapperType.Object:
@@ -654,7 +677,7 @@ namespace ConnectorGrasshopper.Ops
           return myCommit;
         case StreamWrapperType.Stream:
         case StreamWrapperType.Undefined:
-          var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1);
+          var mb = await client.BranchGet(CancellationToken, InputWrapper.StreamId, "main", 1);
           if (mb.commits.totalCount == 0)
           {
             // TODO: Warn that we're not pulling from the main branch
@@ -665,10 +688,10 @@ namespace ConnectorGrasshopper.Ops
             return mb.commits.items[0];
           }
 
-          var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1);
+          var cms = await client.StreamGetCommits(CancellationToken, InputWrapper.StreamId, 1);
           if (cms.Count == 0)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, $"This stream has no commits.");
+            OnFail(GH_RuntimeMessageLevel.Warning, $"This stream has no commits.");
             return null;
           }
           else
@@ -676,10 +699,16 @@ namespace ConnectorGrasshopper.Ops
             return cms[0];
           }
         case StreamWrapperType.Branch:
-          var br = await client.BranchGet(InputWrapper.StreamId, InputWrapper.BranchName, 1);
+          var br = await client.BranchGet(CancellationToken, InputWrapper.StreamId, InputWrapper.BranchName, 1);
+          if (br == null)
+          {
+            OnFail(GH_RuntimeMessageLevel.Warning,
+              $"The branch with name '{InputWrapper.BranchName}' doesn't exist in stream {InputWrapper.StreamId} on server {InputWrapper.ServerUrl}");
+            return null;
+          }
           if (br.commits.totalCount == 0)
           {
-            OnFail(GH_RuntimeMessageLevel.Error, $"This branch has no commits.");
+            OnFail(GH_RuntimeMessageLevel.Warning, $"This branch has no commits.");
             return null;
           }
           return br.commits.items[0];
@@ -758,7 +787,7 @@ namespace ConnectorGrasshopper.Ops
           var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null };
           dataTree = treeBuilder.Build(prop);
         }
-        
+
         DA.SetDataTree(param, dataTree);
         parent.PrevReceivedData.Add(name, dataTree);
       });

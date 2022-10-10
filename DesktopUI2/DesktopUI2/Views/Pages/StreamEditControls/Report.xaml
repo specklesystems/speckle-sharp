@@ -1,0 +1,72 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.StreamEditControls.Report"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="550"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <viewModels:DesignSavedStreamViewModel />
+  </Design.DataContext>
+  <ScrollViewer>
+    <ItemsRepeater Items="{Binding FilteredReport}">
+      <ItemsRepeater.ItemTemplate>
+        <DataTemplate>
+          <m:ColorZone
+            Margin="0,10,0,0"
+            HorizontalAlignment="Stretch"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            CornerRadius="25"
+            Mode="Standard"
+            Opacity="{Binding Opacity}">
+            <StackPanel Orientation="Vertical">
+              <Grid ColumnDefinitions="auto,*,auto">
+                <icons:MaterialIcon
+                  Width="15"
+                  Height="15"
+                  Margin="10,0,0,0"
+                  VerticalAlignment="Center"
+                  Foreground="{DynamicResource PrimaryHueMidBrush}"
+                  Kind="{Binding Icon}"
+                  ToolTip.Tip="{Binding Status}" />
+                <Grid Grid.Column="1" ColumnDefinitions="*,*">
+                  <TextBlock
+                    Grid.Column="0"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Text="{Binding Id}"
+                    TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <!--  PREVIEW BTN  -->
+                <c:PreviewButton
+                  Grid.Column="2"
+                  Margin="0,0,5,0"
+                  HorizontalAlignment="Right" />
+              </Grid>
+              <TextBlock
+                Margin="35,0,0,10"
+                Foreground="{Binding Color}"
+                IsVisible="{Binding Log, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Text="{Binding Log}"
+                TextWrapping="Wrap" />
+            </StackPanel>
+          </m:ColorZone>
+        </DataTemplate>
+      </ItemsRepeater.ItemTemplate>
+    </ItemsRepeater>
+  </ScrollViewer>
+</UserControl>

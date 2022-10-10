@@ -24,12 +24,12 @@ namespace Objects.Converters.DxfConverter
             Doc?.Save(path);
         }
 
-        public void SetContextObjects(List<ApplicationPlaceholderObject> objects)
+        public void SetContextObjects(List<ApplicationObject> objects)
         {
             // No context tracking
         }
 
-        public void SetPreviousContextObjects(List<ApplicationPlaceholderObject> objects)
+        public void SetPreviousContextObjects(List<ApplicationObject> objects)
         {
             // No context tracking
         }

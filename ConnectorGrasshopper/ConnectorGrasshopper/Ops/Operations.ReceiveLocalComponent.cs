@@ -11,6 +11,7 @@ using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
@@ -141,7 +142,7 @@ namespace ConnectorGrasshopper.Ops
       {
         // If we reach this, something happened that we weren't expecting...
         Logging.Log.CaptureException(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString()));
         Parent.Message = "Error";
       }
       Done();

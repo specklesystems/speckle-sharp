@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FreeformElement : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class FreeformElement : Base, IDisplayValue<List<Mesh>>
   {
     public Base parameters { get; set; }
 
@@ -86,14 +86,5 @@ namespace Objects.BuiltElements.Revit
       @base is Mesh
       || @base is Brep
       || @base is Geometry.Curve;
-
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh
-    {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> { value };
-    }
-    #endregion
   }
 }

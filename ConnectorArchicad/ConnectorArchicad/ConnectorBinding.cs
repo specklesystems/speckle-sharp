@@ -14,6 +14,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
@@ -58,7 +59,7 @@ namespace Archicad.Launcher
 
     public override string GetHostAppNameVersion()
     {
-      return "Archicad 25";
+      return "Archicad 26";
     }
 
     public override string GetHostAppName()
@@ -87,39 +88,54 @@ namespace Archicad.Launcher
       return new List<StreamState>();
     }
 
+    public override void ResetDocument()
+    {
+      // TODO!
+    }
+
     public override List<ReceiveMode> GetReceiveModes()
     {
       return new List<ReceiveMode> { ReceiveMode.Create };
+    }
+
+    public override bool CanPreviewReceive => false;
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
       if (commitObject is null)
-      {
         return null;
-      }
 
       state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, progress.CancellationTokenSource.Token);
 
       return state;
     }
 
-    public override void SelectClientObjects(string args) { }
+    public override void SelectClientObjects(List<string> args, bool deselect = false)
+    {
+      // TODO!
+    }
 
+    public override bool CanPreviewSend => false;
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      return;
+    }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       if (state.Filter is null)
-      {
         return null;
-      }
 
       state.SelectedObjectIds = state.Filter.Selection;
 
       var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
       if (commitObject is not null)
       {
-        return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, Speckle.Core.Kits.Applications.Archicad);
+        return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);
       }
 
       return null;
@@ -131,6 +147,12 @@ namespace Archicad.Launcher
     {
       var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null };
       return stream.ToString();
+    }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

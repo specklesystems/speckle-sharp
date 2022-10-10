@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
 
@@ -12,7 +13,6 @@ namespace TestsUnit
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
     private static string accountPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts", "TestAccount.json");
-
 
     public static void UpdateOrSaveAccount(Account account)
     {

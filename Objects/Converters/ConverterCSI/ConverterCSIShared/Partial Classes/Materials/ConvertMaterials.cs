@@ -8,7 +8,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public object MaterialToNative(Objects.Structural.Materials.Material material)
+    public object MaterialToNative(Objects.Structural.Materials.StructuralMaterial material)
     {
       var matType = material.materialType;
       var eMaterialType = eMatType.Steel;
@@ -54,9 +54,9 @@ namespace Objects.Converter.CSI
       return material.name;
     }
 
-    public Structural.Materials.Material MaterialToSpeckle(string name)
+    public Structural.Materials.StructuralMaterial MaterialToSpeckle(string name)
     {
-      var speckleStructMaterial = new Structural.Materials.Material();
+      var speckleStructMaterial = new Structural.Materials.StructuralMaterial();
       speckleStructMaterial.name = name;
       eMatType matType = new eMatType();
       int color = 0;
@@ -101,7 +101,7 @@ namespace Objects.Converter.CSI
     }
 
     #region Helper functions
-    public void GetSteelMaterial(string materialName, ref Structural.Materials.Material speckleMaterial)
+    public void GetSteelMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double fy, fu, eFy, eFu, strainAtHardening, strainAtMaxStress, strainAtRupture, finalSlope;
       fy = fu = eFy = eFu = strainAtHardening = strainAtMaxStress = strainAtRupture = finalSlope = 0;
@@ -120,7 +120,7 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public void GetConcreteMaterial(string materialName, ref Structural.Materials.Material speckleMaterial)
+    public void GetConcreteMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double fc, fcsFactor, strainAtFc, strainUltimate, finalSlope, frictionAngle, dilatationalAngle;
       fc = fcsFactor = strainAtFc = strainUltimate = finalSlope = frictionAngle = dilatationalAngle = 0;
@@ -139,7 +139,7 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public void GetRebarMaterial(string materialName, ref Structural.Materials.Material speckleMaterial)
+    public void GetRebarMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double fy, fu, eFy, eFu, strainAtHardening, strainUltimate, finalSlope;
       fy = fu = eFy = eFu = strainAtHardening = strainUltimate = finalSlope = 0;
@@ -155,7 +155,7 @@ namespace Objects.Converter.CSI
       GetUniaxialMaterial(materialName, ref speckleMaterial);
     }
 
-    public void GetIsotropicMaterial(string materialName, ref Structural.Materials.Material speckleMaterial)
+    public void GetIsotropicMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double e, u, a, g;
       e = u = a = g = 0;
@@ -168,7 +168,7 @@ namespace Objects.Converter.CSI
       speckleMaterial.shearModulus = g;
     }
 
-    public void GetUniaxialMaterial(string materialName, ref Structural.Materials.Material speckleMaterial)
+    public void GetUniaxialMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double e = 0;
       double a = 0;

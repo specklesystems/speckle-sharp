@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
@@ -11,15 +12,15 @@ namespace Speckle.ConnectorRevit
   public static class ConnectorRevitUtils
   {
 #if REVIT2023
-    public static string RevitAppName = VersionedHostApplications.Revit2023;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
 #elif REVIT2022
-    public static string RevitAppName = VersionedHostApplications.Revit2022;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2022);
 #elif REVIT2021
-    public static string RevitAppName = VersionedHostApplications.Revit2021;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2021);
 #elif REVIT2020
-    public static string RevitAppName = VersionedHostApplications.Revit2020;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2020);
 #else
-    public static string RevitAppName = VersionedHostApplications.Revit2019;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
     private static List<string> _cachedParameters = null;
@@ -210,7 +211,21 @@ namespace Speckle.ConnectorRevit
       return false;
     }
 
+    /// <summary>
+    /// Removes all inherited classes from speckle type string
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static string SimplifySpeckleType(string type)
+    {
+      return type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+    }
 
+    public static string ObjectDescriptor(Element obj)
+    {
+      var simpleType = obj.GetType().ToString().Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+      return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
+    }
 
     //list of currently supported Categories (for sending only)
     //exact copy of the one in the ConverterRevitShared.Categories

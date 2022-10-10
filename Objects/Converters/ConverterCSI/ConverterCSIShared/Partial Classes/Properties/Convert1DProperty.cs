@@ -15,7 +15,7 @@ namespace Objects.Converter.CSI
     public object Property1DToNative(Property1D property1D)
     {
       int numbMaterial = 0;
-      string[] materials = null;
+      string[] materials = new string[] { };
       Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
       if (property1D.material != null)
       {
@@ -26,7 +26,7 @@ namespace Objects.Converter.CSI
       }
       else
       {
-        Structural.Materials.Material material = new Structural.Materials.Material("default", Structural.MaterialType.Steel, "Grade 50", "United States", "ASTM A992");
+        Structural.Materials.StructuralMaterial material = new Structural.Materials.StructuralMaterial("default", Structural.MaterialType.Steel, "Grade 50", "United States", "ASTM A992");
         property1D.material = material;
         MaterialToNative(property1D.material);
       }

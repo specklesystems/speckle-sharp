@@ -1,9 +1,11 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
+using DesktopUI2.Models;
 using DesktopUI2.Views.Pages.ShareControls;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -133,6 +135,9 @@ namespace DesktopUI2.ViewModels.Share
 
       foreach (var collab in stream.Stream.collaborators)
       {
+        //skip myself
+        if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
+          continue;
         AddedUsers.Add(new AccountViewModel(collab));
       }
     }
@@ -181,10 +186,14 @@ namespace DesktopUI2.ViewModels.Share
     private async void SearchUsers()
     {
       ShowProgress = true;
-      var acc = AccountManager.GetDefaultAccount();
 
-      var client = new Client(acc);
-      Users = (await client.UserSearch(SearchQuery)).Select(x => new AccountViewModel(x)).ToList();
+      //exclude existing ones
+      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery)).Where(x => !AddedUsers.Any(u => u.Id == x.id));
+      //exclude myself
+      users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
+
+
+      Users = users.Select(x => new AccountViewModel(x)).ToList();
 
       ShowProgress = false;
       DropDownOpen = true;
@@ -201,7 +210,8 @@ namespace DesktopUI2.ViewModels.Share
         {
           try
           {
-            await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { email = user.Name, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!" });
+            await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { email = user.Name, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!", role = user.Role });
+            Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Invite Email" } });
           }
           catch (Exception e)
           {
@@ -213,7 +223,21 @@ namespace DesktopUI2.ViewModels.Share
         {
           try
           {
-            await _stream.StreamState.Client.StreamGrantPermission(new StreamGrantPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = "stream:contributor" });
+            await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { userId = user.Id, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!", role = "stream:" + user.Role });
+            Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Invite User" } });
+          }
+          catch (Exception e)
+          {
+
+          }
+        }
+        //update permissions
+        else
+        {
+          try
+          {
+            await _stream.StreamState.Client.StreamUpdatePermission(new StreamPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = "stream:" + user.Role });
+            Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Update Permissions" } });
           }
           catch (Exception e)
           {
@@ -230,6 +254,7 @@ namespace DesktopUI2.ViewModels.Share
           try
           {
             await _stream.StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId });
+            Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Remove User" } });
           }
           catch (Exception e)
           {
@@ -251,6 +276,11 @@ namespace DesktopUI2.ViewModels.Share
       MainViewModel.RouterInstance.NavigateBack.Execute();
     }
 
+    private async void CloseCommand()
+    {
+      MainViewModel.RouterInstance.NavigateBack.Execute();
+    }
+
 
     private void ClearSearchCommand()
     {
@@ -268,6 +298,19 @@ namespace DesktopUI2.ViewModels.Share
       this.RaisePropertyChanged("HasAddedUsers");
     }
 
+    private async void ChangeRoleSeletedUsersCommand()
+    {
+      var dialog = new ChangeRoleDialog();
+      var result = await dialog.ShowDialog<string>();
 
+      if (result != null)
+      {
+        foreach (var item in SelectionModel.SelectedItems.ToList())
+        {
+          item.Role = "stream:" + result;
+        }
+      }
+
+    }
   }
 }

@@ -29,22 +29,22 @@ namespace ConnectorGrasshopper
 
     public override GH_LoadingInstruction PriorityLoad()
     {
-      var version = VersionedHostApplications.Grasshopper6;
+      var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
       if (RhinoApp.Version.Major == 7)
-        version = VersionedHostApplications.Grasshopper7;
-      
+        version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+
       try
       {
-        typeof(Setup).InvokeMember(
-          "Init",
-          BindingFlags.Static | BindingFlags.InvokeMethod,
-          null,
-          null,
-          new object[] { version, HostApplications.Grasshopper.Slug });
+        // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
+        typeof(Setup).GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
+                     .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
       }
-      catch (MissingMethodException e)
+      catch (Exception e)
       {
-        Console.WriteLine(e);
+        // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
+        // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
+        // Recommended practice is to assume that our connector would be installed alongside theirs.
+        Log.CaptureException(e);
       }
 
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
@@ -120,8 +120,12 @@ namespace ConnectorGrasshopper
     private void AddSpeckleMenu(object sender, ElapsedEventArgs e)
     {
       if (Grasshopper.Instances.DocumentEditor == null || MenuHasBeenAdded) return;
+      var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
+      var menuName = "Speckle 2";
+      if (mainMenu.Items.ContainsKey(menuName))
+        mainMenu.Items.RemoveByKey(menuName);
 
-      speckleMenu = new ToolStripMenuItem("Speckle 2");
+      speckleMenu = new ToolStripMenuItem(menuName);
 
       var kitHeader = speckleMenu.DropDown.Items.Add("Select the converter you want to use.");
       kitHeader.Enabled = false;
@@ -154,7 +158,7 @@ namespace ConnectorGrasshopper
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateTabsMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-  
+
       // Help items
       var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
       helpHeader.Enabled = false;
@@ -173,7 +177,6 @@ namespace ConnectorGrasshopper
 
       try
       {
-        var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
         Grasshopper.Instances.DocumentEditor.Invoke(new Action(() =>
         {
           if (!MenuHasBeenAdded)
@@ -222,9 +225,9 @@ namespace ConnectorGrasshopper
           SpeckleGHSettings.SetTabVisibility(category, tmi.Checked);
         };
       });
-      
+
       tabsMenu.DropDown.Items.Add(new ToolStripSeparator());
-      
+
       var showDevItem = new ToolStripMenuItem("Show Developer components", null, (o, args) =>
       {
         SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
@@ -238,12 +241,14 @@ namespace ConnectorGrasshopper
     private void CreateMeshingSettingsMenu()
     {
       var defaultSetting = new ToolStripMenuItem(
-        "Default") { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
+        "Default")
+      { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
 
       var currentDocSetting = new ToolStripMenuItem(
         "Current Rhino doc")
       {
-        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc, CheckOnClick = true
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc,
+        CheckOnClick = true
       };
       currentDocSetting.Click += (sender, args) =>
       {
@@ -258,7 +263,7 @@ namespace ConnectorGrasshopper
       var meshMenu = new ToolStripMenuItem("Select the default meshing parameters:");
       meshMenu.DropDown.Items.Add(defaultSetting);
       meshMenu.DropDown.Items.Add(currentDocSetting);
-      
+
       KeepOpenOnDropdownCheck(meshMenu);
       speckleMenu.DropDown.Items.Add(meshMenu);
     }
@@ -296,8 +301,8 @@ namespace ConnectorGrasshopper
       };
       KeepOpenOnDropdownCheck(schemaConversionHeader);
     }
-    
-    public static void KeepOpenOnDropdownCheck (ToolStripMenuItem ctl)
+
+    public static void KeepOpenOnDropdownCheck(ToolStripMenuItem ctl)
     {
       foreach (var item in ctl.DropDownItems.OfType<ToolStripMenuItem>())
       {

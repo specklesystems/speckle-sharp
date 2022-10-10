@@ -1,0 +1,75 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Controls.PreviewButton"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon">
+      <Setter Property="RenderTransform" Value="scaleX(-1)" />
+    </Style>
+  </UserControl.Styles>
+  <Grid>
+    <m:FloatingButton
+      VerticalAlignment="Center"
+      assists:ShadowAssist.ShadowDepth="Depth0"
+      Background="Transparent"
+      Classes="Invisible"
+      Command="{Binding PreviewCommand}"
+      IsEnabled="{Binding !Progress.IsProgressing}"
+      ToolTip.Tip="Preview objects to send or receive">
+      <Button.Content>
+        <Panel>
+          <icons:MaterialIcon
+            Name="previewOn"
+            Width="20"
+            Height="20"
+            assists:ShadowAssist.ShadowDepth="0"
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding PreviewOn}"
+            Kind="Lightbulb" />
+          <icons:MaterialIcon
+            Name="previewOff"
+            Width="20"
+            Height="20"
+            assists:ShadowAssist.ShadowDepth="0"
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding !PreviewOn}"
+            Kind="LightbulbOutline" />
+        </Panel>
+      </Button.Content>
+    </m:FloatingButton>
+
+    <Grid>
+      <ProgressBar
+        Width="40"
+        Height="40"
+        Classes="Circle"
+        IsIndeterminate="True"
+        IsVisible="{Binding Progress.IsPreviewProgressing, FallbackValue=False}"
+        Maximum="{Binding Progress.Max}"
+        Value="{Binding Progress.Value}" />
+      <m:FloatingButton
+        assists:ButtonAssist.HoverColor="Transparent"
+        assists:ShadowAssist.ShadowDepth="0"
+        Background="Transparent"
+        Classes="Mini"
+        Command="{Binding CancelPreviewCommand}"
+        IsVisible="{Binding Progress.IsPreviewProgressing, FallbackValue=False}"
+        ToolTip.Tip="Cancel">
+        <Button.Content>
+          <icons:MaterialIcon
+            Width="15"
+            Height="15"
+            Foreground="{DynamicResource PrimaryHueDarkBrush}"
+            Kind="Close" />
+        </Button.Content>
+      </m:FloatingButton>
+    </Grid>
+
+  </Grid>
+</UserControl>

@@ -18,9 +18,9 @@
   <Grid Margin="0,3,0,0" ColumnDefinitions="auto,auto,auto,auto,auto,auto,auto,auto,auto,*">
     <icons:MaterialIcon
       Grid.Column="0"
-      Height="12"
+      Margin="0,0,3,0"
       VerticalAlignment="Center"
-      Foreground="Gray"
+      Classes="StreamCard"
       Kind="Users"
       ToolTip.Tip="Number of collaborators on this stream" />
     <TextBlock
@@ -29,10 +29,9 @@
       Text="{Binding Stream.collaborators.Count}" />
     <icons:MaterialIcon
       Grid.Column="2"
-      Height="12"
-      Margin="3,0,0,0"
+      Margin="3,0"
       VerticalAlignment="Center"
-      Foreground="Gray"
+      Classes="StreamCard"
       Kind="Comments"
       ToolTip.Tip="Number of comments on this stream" />
     <TextBlock
@@ -41,10 +40,9 @@
       Text="{Binding Stream.commentCount}" />
     <icons:MaterialIcon
       Grid.Column="4"
-      Height="12"
-      Margin="3,0,0,0"
+      Margin="3,0"
       VerticalAlignment="Center"
-      Foreground="Gray"
+      Classes="StreamCard"
       Kind="Hearts"
       ToolTip.Tip="Number of people who favorited this stream" />
     <TextBlock
@@ -69,10 +67,5 @@
       Classes="Overline"
       Text="{Binding Stream.id}"
       TextTrimming="CharacterEllipsis" />
-
-
-
-
-
   </Grid>
 </UserControl>

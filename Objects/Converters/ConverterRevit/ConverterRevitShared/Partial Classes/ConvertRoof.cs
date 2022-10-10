@@ -13,11 +13,19 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<ApplicationPlaceholderObject> RoofToNative(Roof speckleRoof)
+    public ApplicationObject RoofToNative(Roof speckleRoof)
     {
+      var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
+      var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type) { applicationId = speckleRoof.applicationId };
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
       if (speckleRoof.outline == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException("Only outline based Roof are currently supported.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof outline was null");
+        return appObj;
       }
 
       DB.RoofBase revitRoof = null;
@@ -25,24 +33,20 @@ namespace Objects.Converter.Revit
       var outline = CurveToNative(speckleRoof.outline);
 
       var speckleRevitRoof = speckleRoof as RevitRoof;
+      var levelState = ApplicationObject.State.Unknown;
       if (speckleRevitRoof != null)
-      {
-        level = ConvertLevelToRevit(speckleRevitRoof.level);
-      }
+        level = ConvertLevelToRevit(speckleRevitRoof.level, out levelState);
       else
+        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
+
+      if (!GetElementType<RoofType>(speckleRoof, appObj, out RoofType roofType))
       {
-        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)));
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
       }
 
-      var roofType = GetElementType<RoofType>((Base)speckleRoof);
-
-      var docObj = GetExistingElementByApplicationId(((Base)speckleRoof).applicationId);
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject> { new ApplicationPlaceholderObject { applicationId = speckleRoof.applicationId, ApplicationGeneratedId = docObj.UniqueId, NativeObject = docObj } };
       if (docObj != null)
-      {
         Doc.Delete(docObj.Id);
-      }
 
       switch (speckleRoof)
       {
@@ -82,7 +86,6 @@ namespace Objects.Converter.Revit
                     revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), (double)slopeAngle * Math.PI / 180);
                     hasSlopedSide = true;
                   }
-
                 }
 
                 if (offset != null)
@@ -96,15 +99,14 @@ namespace Objects.Converter.Revit
             if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope != 0)
             {
               for (var i = 0; i < curveArray.Size; i++)
-              {
                 revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), true);
-              }
+
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
             }
 
             if (speckleFootprintRoof.cutOffLevel != null)
             {
-              var cutOffLevel = ConvertLevelToRevit(speckleFootprintRoof.cutOffLevel);
+              var cutOffLevel = ConvertLevelToRevit(speckleFootprintRoof.cutOffLevel, out levelState);
               TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
             }
 
@@ -112,9 +114,8 @@ namespace Objects.Converter.Revit
             break;
           }
         default:
-          Report.LogConversionError(new Exception("Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof"));
-          return null;
-
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof");
+          return  appObj;
       }
 
       Doc.Regenerate();
@@ -125,24 +126,20 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        Report.LogConversionError(new Exception($"Could not create openings in roof {speckleRoof.applicationId}", ex));
+        appObj.Update(logItem: $"Could not create openings: {ex.Message}");
       }
 
       if (speckleRevitRoof != null)
-      {
         SetInstanceParameters(revitRoof, speckleRevitRoof);
-      }
 
-      var placeholders = new List<ApplicationPlaceholderObject>() { new ApplicationPlaceholderObject { applicationId = speckleRevitRoof.applicationId, ApplicationGeneratedId = revitRoof.UniqueId, NativeObject = revitRoof } };
-
-      var hostedElements = SetHostedElements(speckleRoof, revitRoof);
-      placeholders.AddRange(hostedElements);
-      Report.Log($"Created Roof {revitRoof.Id}");
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, convertedItem: revitRoof);
+      appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
+      return appObj;
     }
 
-    private Roof RoofToSpeckle(DB.RoofBase revitRoof)
+    private Roof RoofToSpeckle(DB.RoofBase revitRoof, out List<string> notes)
     {
+      notes = new List<string>();
       var profiles = GetProfiles(revitRoof);
 
       var speckleRoof = new RevitRoof();
@@ -167,7 +164,6 @@ namespace Objects.Converter.Revit
             var speckleExtrusionRoof = new RevitExtrusionRoof
             {
               start = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_START_PARAM),
-
               end = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_END_PARAM)
             };
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
@@ -187,9 +183,7 @@ namespace Objects.Converter.Revit
       {
         speckleRoof.outline = profiles[0];
         if (profiles.Count > 1)
-        {
           speckleRoof.voids = profiles.Skip(1).ToList();
-        }
       }
 
       GetAllRevitParamsAndIds(speckleRoof, revitRoof,
@@ -197,8 +191,8 @@ namespace Objects.Converter.Revit
 
       speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
-      GetHostedElements(speckleRoof, revitRoof);
-      Report.Log($"Converted Roof {revitRoof.Id}");
+      GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
+      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleRoof;
     }
 
@@ -221,9 +215,7 @@ namespace Objects.Converter.Revit
               foreach (DB.ModelCurve curve in crvLoop)
               {
                 if (curve == null)
-                {
                   continue;
-                }
 
                 var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting
                 segment["slopeAngle"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_SLOPE);
@@ -233,9 +225,7 @@ namespace Objects.Converter.Revit
 
                 //roud profiles are returned duplicated!
                 if (curve is ModelArc arc && RevitVersionHelper.IsCurveClosed(arc.GeometryCurve))
-                {
                   break;
-                }
               }
               profiles.Add(poly);
             }
@@ -249,9 +239,7 @@ namespace Objects.Converter.Revit
             foreach (DB.ModelCurve curve in crvloop)
             {
               if (curve == null)
-              {
                 continue;
-              }
 
               poly.segments.Add(CurveToSpeckle(curve.GeometryCurve));
             }

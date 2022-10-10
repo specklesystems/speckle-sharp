@@ -9,24 +9,26 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
-    public List<ApplicationPlaceholderObject> ProfileWallToNative(RevitProfileWall speckleRevitWall)
+    public ApplicationObject ProfileWallToNative(RevitProfileWall speckleRevitWall)
     {
+      var revitWall = GetExistingElementByApplicationId(speckleRevitWall.applicationId) as DB.Wall;
+      var appObj = new ApplicationObject(speckleRevitWall.id, speckleRevitWall.speckle_type) { applicationId = speckleRevitWall.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitWall, appObj, out appObj))
+        return appObj;
+
       if (speckleRevitWall.profile == null)
       {
-        throw new Speckle.Core.Logging.SpeckleException($"Failed to create wall ${speckleRevitWall.applicationId}. Profile Wall does not have a profile.");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Does not have a profile.");
+        return appObj;
       }
 
-      var revitWall = GetExistingElementByApplicationId(speckleRevitWall.applicationId) as DB.Wall;
-
-      if (revitWall != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-        return new List<ApplicationPlaceholderObject>
+      if (!GetElementType<WallType>(speckleRevitWall, appObj, out WallType wallType))
       {
-        new ApplicationPlaceholderObject
-          {applicationId = speckleRevitWall.applicationId, ApplicationGeneratedId = revitWall.UniqueId, NativeObject = revitWall}
-      };
-
-      var wallType = GetElementType<WallType>(speckleRevitWall);
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       // Level level = null;
       var structural = speckleRevitWall.structural;
       var profile = new List<DB.Curve>();
@@ -47,44 +49,26 @@ namespace Objects.Converter.Revit
 
       revitWall = DB.Wall.Create(Doc, profile, structural);
 
-
       if (revitWall == null)
       {
-        throw (new Exception($"Failed to create wall ${speckleRevitWall.applicationId}."));
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Wall creation returned null");
+        return appObj;
       }
 
-      var level = ConvertLevelToRevit(speckleRevitWall.level);
+      var level = ConvertLevelToRevit(speckleRevitWall.level, out ApplicationObject.State levelState);
       TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
 
       var offset = minZ - level.Elevation;
       TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, offset);
 
-
       if (revitWall.WallType.Name != wallType.Name)
-      {
         revitWall.ChangeTypeId(wallType.Id);
-      }
-
 
       SetInstanceParameters(revitWall, speckleRevitWall);
 
-      var placeholders = new List<ApplicationPlaceholderObject>()
-      {
-        new ApplicationPlaceholderObject
-        {
-        applicationId = speckleRevitWall.applicationId,
-        ApplicationGeneratedId = revitWall.UniqueId,
-        NativeObject = revitWall
-        }
-      };
-
-      var hostedElements = SetHostedElements(speckleRevitWall, revitWall);
-      placeholders.AddRange(hostedElements);
-      Report.Log($"Created ProfileWall {revitWall.Id}");
-      return placeholders;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
+      appObj = SetHostedElements(speckleRevitWall, revitWall, appObj);
+      return appObj;
     }
-
-
-
   }
 }

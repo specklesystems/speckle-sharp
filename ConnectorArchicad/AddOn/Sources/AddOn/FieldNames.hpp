@@ -10,6 +10,7 @@ static const char* FloorIndexFieldName = "floorIndex";
 static const char* ShapeFieldName = "shape";
 
 static const char* WallsFieldName = "walls";
+static const char* BeamsFieldName = "beams";
 static const char* SlabsFieldName = "slabs";
 static const char* ZonesFieldName = "zones";
 static const char* RoofsFieldName = "roofs";
@@ -36,6 +37,76 @@ namespace Wall
   static const char* BaseOffsetFieldName = "baseOffset";
   static const char* TopOffsetFieldName = "topOffset";
   static const char* FlippedFieldName = "flipped";
+}
+
+
+namespace Beam
+{
+	// Naming
+	static const char* BeamSegmentName = "Segment #%d";
+	static const char* SchemeName = "Scheme #%d";
+	static const char* CutName = "Cut #%d";
+	static const char* HoleName = "Hole #%d";
+	// Main
+	static const char* begC = "begC";
+	static const char* endC = "endC";
+	static const char* aboveViewLinePen = "aboveViewLinePen";
+	static const char* refPen = "refPen";
+	static const char* cutContourLinePen = "cutContourLinePen";
+	static const char* sequence = "sequence";
+	static const char* isAutoOnStoryVisibility = "isAutoOnStoryVisibility";
+	static const char* offset = "offset";
+	static const char* level = "level";
+	static const char* curveAngle = "curveAngle";
+	static const char* verticalCurveHeight = "verticalCurveHeight";
+	static const char* beamShape = "beamShape";
+	static const char* hiddenLinePen = "hiddenLinePen";
+	static const char* anchorPoint = "anchorPoint";
+	static const char* belowViewLinePen = "belowViewLinePen";
+	static const char* isFlipped = "isFlipped";
+	static const char* isSlanted = "isSlanted";
+	static const char* slantAngle = "slantAngle";
+	static const char* profileAngle = "profileAngle";
+	static const char* nSegments = "nSegments";
+	static const char* nCuts = "nCuts";
+	static const char* nSchemes = "nSchemes";
+	static const char* nProfiles = "nProfiles";
+	static const char* useCoverFill = "useCoverFill";
+	static const char* useCoverFillFromSurface = "useCoverFillFromSurface";
+	static const char* coverFillOrientationComesFrom3D = "coverFillOrientationComesFrom3D";
+	static const char* coverFillForegroundPen = "coverFillForegroundPen";
+	static const char* coverFillBackgroundPen = "coverFillBackgroundPen";
+	static const char* modelElemStructureType = "modelElemStructureType";
+	// From API_BeamSegmentType
+	static const char* segmentData = "Segments";
+	static const char* circleBased = "circleBased";
+	static const char* profileAttrName = "profileAttrName";
+	static const char* buildingMaterial = "buildingMaterial";
+	static const char* nominalWidth = "nominalWidth";
+	static const char* nominalHeight = "nominalHeight";
+	static const char* isHomogeneous = "isHomogeneous";
+	static const char* endWidth = "endWidth";
+	static const char* endHeight = "endHeight";
+	static const char* isEndWidthAndHeightLinked = "isEndWidthAndHeightLinked";
+	static const char* isWidthAndHeightLinked = "isWidthAndHeightLinked";
+	// From API_AssemblySegmentSchemeData
+	static const char* schemeData = "Schemes";
+	static const char* lengthType = "lengthType";
+	static const char* fixedLength = "fixedLength";
+	static const char* lengthProportion = "lengthProportion";
+	// From API_AssemblySegmentCutData
+	static const char* cutData = "Cuts";
+	static const char* cutType = "cutType";
+	static const char* customAngle = "customAngle";
+	// From API_Beam_Hole
+	static const char* holeData = "Holes";
+	static const char* holeType = "holeType";
+	static const char* holeContourOn = "holeContourOn";
+	static const char* holeId = "holeId";
+	static const char* centerx = "centerx";
+	static const char* centerz = "centerz";
+	static const char* width = "width";
+	static const char* height = "height";
 }
 
 

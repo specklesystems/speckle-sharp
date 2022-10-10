@@ -351,7 +351,7 @@ public class DeckFilledSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("151a2166-f739-501f-d3bc-f1a24bdd4093");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+DeckFilled.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+DeckFilled");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+DeckFilled.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.StructuralMaterial,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+DeckFilled");
         base.AddedToDocument(document);
     }
 }
@@ -364,7 +364,7 @@ public class DeckSlabSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("b8102cde-4ea3-0583-9580-4a9530154440");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+DeckSlab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+DeckSlab");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+DeckSlab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.StructuralMaterial,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+DeckSlab");
         base.AddedToDocument(document);
     }
 }
@@ -377,7 +377,7 @@ public class DeckUnFilledSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("680e6f0c-d140-e8c4-27e1-28d353a87b8f");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+DeckUnFilled.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+DeckUnFilled");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+DeckUnFilled.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.StructuralMaterial,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+DeckUnFilled");
         base.AddedToDocument(document);
     }
 }
@@ -1009,7 +1009,7 @@ public class GSAProperty1DSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("347df789-96b7-21f2-fc2f-5bfd26dfbe6f");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.GSA.Properties.GSAProperty1D.ctor(System.Int32,System.String,Objects.Structural.Materials.Material,Objects.Structural.Properties.Profiles.SectionProfile,System.Double,System.Double)","Objects.Structural.GSA.Properties.GSAProperty1D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.GSA.Properties.GSAProperty1D.ctor(System.Int32,System.String,Objects.Structural.Materials.StructuralMaterial,Objects.Structural.Properties.Profiles.SectionProfile,System.Double,System.Double)","Objects.Structural.GSA.Properties.GSAProperty1D");
         base.AddedToDocument(document);
     }
 }
@@ -1022,7 +1022,7 @@ public class GSAProperty2DSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("562e2664-bdf3-8b98-6e09-cc6584cf2146");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.GSA.Properties.GSAProperty2D.ctor(System.Int32,System.String,Objects.Structural.Materials.Material,System.Double)","Objects.Structural.GSA.Properties.GSAProperty2D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.GSA.Properties.GSAProperty2D.ctor(System.Int32,System.String,Objects.Structural.Materials.StructuralMaterial,System.Double)","Objects.Structural.GSA.Properties.GSAProperty2D");
         base.AddedToDocument(document);
     }
 }
@@ -1277,25 +1277,12 @@ public class LoadNode1SchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class MaterialSchemaComponent: CreateSchemaObjectBase {
      
-    public MaterialSchemaComponent(): base("Material", "Material", "Creates a Speckle structural material", "Speckle 2 Structural", "Materials") { }
+    public MaterialSchemaComponent(): base("RevitMaterial", "RevitMaterial", "Creates a Speckle material", "Speckle 2 BIM", "Architecture") { }
     
     public override Guid ComponentGuid => new Guid("a2ec94ca-c50c-01bf-3d12-0c8feb41004b");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String)","Objects.Structural.Materials.Material");
-        base.AddedToDocument(document);
-    }
-}
-
-// This is generated code:
-public class Material1SchemaComponent: CreateSchemaObjectBase {
-     
-    public Material1SchemaComponent(): base("Material (with properties)", "Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Speckle 2 Structural", "Materials") { }
-    
-    public override Guid ComponentGuid => new Guid("15412d80-2db7-dede-ddba-eed400b9d083");
-    
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.Material.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.Materials.Material");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Other.Material.ctor(System.String)","Objects.Other.Material");
         base.AddedToDocument(document);
     }
 }
@@ -1503,7 +1490,7 @@ public class Property1D1SchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("301fb47d-9a12-ed72-4dbf-55d23ac5c432");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Property1D.ctor(System.String,Objects.Structural.Materials.Material,Objects.Structural.Properties.Profiles.SectionProfile)","Objects.Structural.Properties.Property1D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Property1D.ctor(System.String,Objects.Structural.Materials.StructuralMaterial,Objects.Structural.Properties.Profiles.SectionProfile)","Objects.Structural.Properties.Property1D");
         base.AddedToDocument(document);
     }
 }
@@ -1529,7 +1516,7 @@ public class Property2D1SchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("a1f72576-5106-26da-625e-6c5dfe798b4f");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Property2D.ctor(System.String,Objects.Structural.Materials.Material,Objects.Structural.PropertyType2D,System.Double)","Objects.Structural.Properties.Property2D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Property2D.ctor(System.String,Objects.Structural.Materials.StructuralMaterial,Objects.Structural.PropertyType2D,System.Double)","Objects.Structural.Properties.Property2D");
         base.AddedToDocument(document);
     }
 }
@@ -1555,7 +1542,7 @@ public class Property3D1SchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("5cc8c1d0-c3a7-0c95-f2b6-f8f7b4afdc95");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Property3D.ctor(System.String,Objects.Structural.PropertyType3D,Objects.Structural.Materials.Material)","Objects.Structural.Properties.Property3D");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Properties.Property3D.ctor(System.String,Objects.Structural.PropertyType3D,Objects.Structural.Materials.StructuralMaterial)","Objects.Structural.Properties.Property3D");
         base.AddedToDocument(document);
     }
 }
@@ -2126,7 +2113,7 @@ public class RevitLevel1SchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class RevitMaterialSchemaComponent: CreateSchemaObjectBase {
      
-    public RevitMaterialSchemaComponent(): base("RevitMaterial", "RevitMaterial", "Creates a Speckle material", "Speckle 2 BIM", "Architecture") { }
+    public RevitMaterialSchemaComponent(): base("RevitMaterial", "RevitMaterial", "Creates a Speckle material", "Speckle 2 Revit", "Architecture") { }
     
     public override Guid ComponentGuid => new Guid("c291d027-7a6a-8950-a2aa-77e134675750");
     
@@ -2245,7 +2232,7 @@ public class RevitWallOpeningSchemaComponent: CreateSchemaObjectBase {
 // This is generated code:
 public class RevitWallOpening1SchemaComponent: CreateSchemaObjectBase {
      
-    public RevitWallOpening1SchemaComponent(): base("Revit Wall Opening", "Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Speckle 2 BIM", "Architecture") { }
+    public RevitWallOpening1SchemaComponent(): base("Revit Wall Opening", "Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Speckle 2 Revit", "Architecture") { }
     
     public override Guid ComponentGuid => new Guid("541bfed0-738d-e1bd-1130-de05ec4bbf9e");
     
@@ -2276,7 +2263,7 @@ public class RibbedSlabSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("e5db5889-0924-136f-be6d-39c7de9a3649");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+RibbedSlab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32)","Objects.Structural.CSI.Properties.CSIProperty2D+RibbedSlab");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+RibbedSlab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.StructuralMaterial,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32)","Objects.Structural.CSI.Properties.CSIProperty2D+RibbedSlab");
         base.AddedToDocument(document);
     }
 }
@@ -2343,7 +2330,7 @@ public class SlabSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("27930f28-6811-7f66-f432-07dd5585f6e0");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+Slab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+Slab");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+Slab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.StructuralMaterial,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+Slab");
         base.AddedToDocument(document);
     }
 }
@@ -2414,6 +2401,32 @@ public class StoreySchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class StructuralMaterialSchemaComponent: CreateSchemaObjectBase {
+     
+    public StructuralMaterialSchemaComponent(): base("Structural Material", "Structural Material", "Creates a Speckle structural material", "Speckle 2 Structural", "Materials") { }
+    
+    public override Guid ComponentGuid => new Guid("3e877a75-b3fb-0111-2128-1432ab15c4cf");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.StructuralMaterial.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String)","Objects.Structural.Materials.StructuralMaterial");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class StructuralMaterial1SchemaComponent: CreateSchemaObjectBase {
+     
+    public StructuralMaterial1SchemaComponent(): base("Structural Material (with properties)", "Structural Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Speckle 2 Structural", "Materials") { }
+    
+    public override Guid ComponentGuid => new Guid("ef78155b-0786-9846-38cd-41ce70911972");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.Materials.StructuralMaterial.ctor(System.String,Objects.Structural.MaterialType,System.String,System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.Materials.StructuralMaterial");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class TeeSchemaComponent: CreateSchemaObjectBase {
      
     public TeeSchemaComponent(): base("Tee", "Tee", "Creates a Speckle structural Tee section profile", "Speckle 2 Structural", "Section Profile") { }
@@ -2434,7 +2447,7 @@ public class TeklaBeamSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("5a4187bc-05d8-2447-7238-cdbc4b2fae45");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaBeam.ctor(Objects.ICurve,Objects.Structural.Properties.Profiles.SectionProfile,Objects.Structural.Materials.Material)","Objects.BuiltElements.TeklaStructures.TeklaBeam");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaBeam.ctor(Objects.ICurve,Objects.Structural.Properties.Profiles.SectionProfile,Objects.Structural.Materials.StructuralMaterial)","Objects.BuiltElements.TeklaStructures.TeklaBeam");
         base.AddedToDocument(document);
     }
 }
@@ -2447,7 +2460,7 @@ public class TeklaContourPlateSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("3b092935-3c2f-c084-eea5-077630507a49");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaContourPlate.ctor(Objects.Structural.Properties.Profiles.SectionProfile,Objects.Geometry.Polyline,System.String,System.String,System.String,Objects.Structural.Materials.Material,Objects.BuiltElements.TeklaStructures.TeklaPosition,Speckle.Core.Models.Base)","Objects.BuiltElements.TeklaStructures.TeklaContourPlate");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.TeklaStructures.TeklaContourPlate.ctor(Objects.Structural.Properties.Profiles.SectionProfile,Objects.Geometry.Polyline,System.String,System.String,System.String,Objects.Structural.Materials.StructuralMaterial,Objects.BuiltElements.TeklaStructures.TeklaPosition,Speckle.Core.Models.Base)","Objects.BuiltElements.TeklaStructures.TeklaContourPlate");
         base.AddedToDocument(document);
     }
 }
@@ -2486,7 +2499,7 @@ public class WaffleSlabSchemaComponent: CreateSchemaObjectBase {
     public override Guid ComponentGuid => new Guid("b8956ee0-8372-db59-654a-c11c4af5e0f6");
     
     public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+WaffleSlab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.Material,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+WaffleSlab");
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Structural.CSI.Properties.CSIProperty2D+WaffleSlab.ctor(System.String,Objects.Structural.CSI.Analysis.ShellType,Objects.Structural.Materials.StructuralMaterial,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)","Objects.Structural.CSI.Properties.CSIProperty2D+WaffleSlab");
         base.AddedToDocument(document);
     }
 }

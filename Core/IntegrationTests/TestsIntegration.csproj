@@ -5,7 +5,9 @@
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.1.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -6,6 +6,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Conversion
 {
@@ -71,7 +72,7 @@ namespace ConnectorGrasshopper.Conversion
         }
         catch (Exception e)
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.Message);
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
           return null;
         }
 

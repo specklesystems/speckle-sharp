@@ -252,8 +252,10 @@ namespace Objects.Converter.RhinoGh
       return _definition;
     }
 
-    public InstanceDefinition BlockDefinitionToNative(BlockDefinition definition)
+    public InstanceDefinition BlockDefinitionToNative(BlockDefinition definition, out List<string> notes)
     {
+      notes = new List<string>();
+
       // get modified definition name with commit info
       var commitInfo = GetCommitInfo();
       var blockName = $"{commitInfo} - {definition.name}";
@@ -276,15 +278,26 @@ namespace Objects.Converter.RhinoGh
           switch (geo)
           {
             case BlockInstance o:
-              var instance = BlockInstanceToNative(o);
+              var instanceNotes = new List<string>();
+              var instance = BlockInstanceToNative(o, out instanceNotes);
               if (instance != null)
               {
                 converted.Add(instance.DuplicateGeometry());
                 Doc.Objects.Delete(instance);
               }
+              else
+              {
+                notes.AddRange(instanceNotes);
+                notes.Add($"Could not create nested Instance of definition {o.blockDefinition.name}");
+              }
               break;
             default:
               var convertedObj = ConvertToNative(geo);
+              if (converted == null)
+              {
+                notes.Add($"Could not create definition geometry {geo.speckle_type} ({geo.id})");
+                continue;
+              }
               if (convertedObj.GetType().IsArray)
                 foreach (object o in (Array)convertedObj)
                   converted.Add((GeometryBase)o);
@@ -353,10 +366,15 @@ namespace Objects.Converter.RhinoGh
       return _instance;
     }
 
-    public InstanceObject BlockInstanceToNative(BlockInstance instance)
+    public InstanceObject BlockInstanceToNative(BlockInstance instance, out List<string> notes)
     {
       // get the block definition
-      InstanceDefinition definition = BlockDefinitionToNative(instance.blockDefinition);
+      InstanceDefinition definition = BlockDefinitionToNative(instance.blockDefinition, out notes);
+      if (definition == null)
+      {
+        notes.Add("Could not create block definition");
+        return null;
+      }
 
       // get the transform
       // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
@@ -365,14 +383,23 @@ namespace Objects.Converter.RhinoGh
       var transform = TransformToNative(iT, units);
 
       // create the instance
-      if (definition == null)
-        return null;
       Guid instanceId = Doc.Objects.AddInstanceObject(definition.Index, transform);
 
       if (instanceId == Guid.Empty)
+      {
+        notes.Add("Could not add instance to doc");
         return null;
+      }
 
-      return Doc.Objects.FindId(instanceId) as InstanceObject;
+      var _instance = Doc.Objects.FindId(instanceId) as InstanceObject;
+      // add application id
+      try
+      {
+        _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
+      }
+      catch { }
+
+      return _instance;
     }
 
     public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)

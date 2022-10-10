@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -52,19 +53,60 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentCreated += Application_DocumentCreated;
       RevitApp.Application.DocumentCreating += Application_DocumentCreating;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
+      RevitApp.Application.DocumentOpening += Application_DocumentOpening; ;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Application.DocumentSaved += Application_DocumentSaved;
       RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
       RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
       RevitApp.Application.FileExported += Application_FileExported;
+      RevitApp.Application.FileExporting += Application_FileExporting;
+      RevitApp.Application.FileImporting += Application_FileImporting;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
     }
 
+    private void Application_FileExporting(object sender, FileExportingEventArgs e)
+    {
+      ShowImportExportAlert();
+    }
 
+    private void Application_FileImporting(object sender, FileImportingEventArgs e)
+    {
+      ShowImportExportAlert();
+    }
 
+    private void ShowImportExportAlert()
+    {
+      var config = ConfigManager.Load();
+      if (config.ShowImportExportAlert)
+      {
+        Analytics.TrackEvent(Analytics.Events.ImportExportAlert, new Dictionary<string, object>() { { "name", "Show" } });
+        var dialog = new ImportExportAlert();
+        dialog.LaunchAction = () =>
+        {
+          try
+          {
+            SpeckleRevitCommand2.RegisterPane();
+            var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand2.PanelId);
+            panel.Show();
+          }
+          catch (Exception ex)
+          {
+            Log.CaptureException(ex, Sentry.SentryLevel.Error);
+          }
+        };
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        dialog.Show();
+        dialog.Topmost = true;
+      }
+    }
+
+    private void Application_DocumentOpening(object sender, Autodesk.Revit.DB.Events.DocumentOpeningEventArgs e)
+    {
+
+    }
 
     private void Application_DocumentCreating(object sender, Autodesk.Revit.DB.Events.DocumentCreatingEventArgs e)
     {
@@ -103,7 +145,8 @@ namespace Speckle.ConnectorRevit.UI
 
         var dialog = new QuickOpsDialog();
         dialog.DataContext = progress;
-        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        dialog.Topmost = true;
         dialog.Show();
 
         if (message != null)
@@ -136,8 +179,7 @@ namespace Speckle.ConnectorRevit.UI
         if (e.Document == null || e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
           return;
 
-        if (SpeckleRevitCommand2.UseDockablePanel)
-          (App.Panel as Panel).Init();
+        SpeckleRevitCommand2.RegisterPane();
 
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
@@ -181,8 +223,7 @@ namespace Speckle.ConnectorRevit.UI
     { }
     private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
     {
-      if (SpeckleRevitCommand2.UseDockablePanel)
-        (App.Panel as Panel).Init();
+      SpeckleRevitCommand2.RegisterPane();
 
       //clear saved streams if opening a new doc
       if (UpdateSavedStreams != null)
@@ -191,15 +232,14 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
-      if (SpeckleRevitCommand2.UseDockablePanel)
-        (App.Panel as Panel).Init();
 
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
         if (SpeckleRevitCommand2.UseDockablePanel)
         {
-          var panel = RevitApp.GetDockablePane(SpeckleRevitCommand2.PanelId);
+          SpeckleRevitCommand2.RegisterPane();
+          var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand2.PanelId);
           panel.Show();
         }
         else
