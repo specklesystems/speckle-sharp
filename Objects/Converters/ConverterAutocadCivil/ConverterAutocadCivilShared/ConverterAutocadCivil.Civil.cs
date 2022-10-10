@@ -581,25 +581,6 @@ namespace Objects.Converter.AutocadCivil
     public Mesh SurfaceToSpeckle(CivilDB.TinSurface surface)
     {
       Mesh mesh = null;
-      // if this is civil 2021 or 2022, won't be able to test for face visibility. extract border and store vertices inside border
-#if !CIVIL2023
-      var border = new Point3dCollection();
-      var borderIds = surface.ExtractBorder(Autodesk.Civil.SurfaceExtractionSettingsType.Model);
-      foreach (ObjectId borderId in borderIds)
-      {
-        if (borderId.ObjectClass == RXClass.GetClass(typeof(Polyline3d)))
-        {
-          var poly = borderId.GetObject(OpenMode.ForRead) as Polyline3d;
-          foreach (ObjectId vertexId in poly)
-          {
-            var vertex = (PolylineVertex3d)Trans.GetObject(vertexId, OpenMode.ForRead);
-            border.Add(vertex.Position);
-          }
-          break;
-        }
-      }
-      var containedVertices = surface.GetVerticesInsideBorder(border).Select(o => o.Location).ToList();
-#endif
 
       // output vars
       var _vertices = new List<Acad.Point3d>();
@@ -610,13 +591,6 @@ namespace Objects.Converter.AutocadCivil
 
 #if CIVIL2023 // skip any triangles that are hidden in the surface!
         if (!triangle.IsVisible)
-        {
-          triangle.Dispose();
-          continue;
-        }
-#else // skip if this face has at least one vertex that is not in the contained vertex list
-        var allVerticesContained = !triangleVertices.Except(containedVertices).Any();
-        if (!allVerticesContained)
         {
           triangle.Dispose();
           continue;
