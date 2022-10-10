@@ -33,7 +33,7 @@ namespace DesktopUI2.ViewModels
   {
 
     public StreamState StreamState { get; set; }
-    public IScreen HostScreen { get; set; }
+    private IScreen HostScreen { get; set; }
 
     private ConnectorBindings Bindings;
 
@@ -493,6 +493,8 @@ namespace DesktopUI2.ViewModels
 
       }
     }
+
+    IScreen IRoutableViewModel.HostScreen => throw new NotImplementedException();
 
     public void UpdateVisualParentAndInit(IScreen hostScreen)
     {
