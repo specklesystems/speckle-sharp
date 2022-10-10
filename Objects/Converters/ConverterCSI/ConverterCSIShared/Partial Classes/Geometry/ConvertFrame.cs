@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -93,13 +93,13 @@ namespace Objects.Converter.CSI
       setFrameElementProperties(element1D, newFrame);
 
 
-      if (!string.IsNullOrEmpty(element1D.name))
+      if (element1D.name != null)
       {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
       }
       else
       {
-        Model.FrameObj.SetGUID(newFrame, element1D.applicationId ?? element1D.id);
+        Model.FrameObj.SetGUID(newFrame, element1D.id);
       }
 
       return element1D.name;
