@@ -555,9 +555,9 @@ namespace Objects.Converter.Revit
       var type = element["type"] as string;
 
       // if the object is structural, we keep the type name in a different location
-      if (element is Objects.Structural.Geometry.Element1D element1D)
+      if (element is OSG.Element1D element1D)
         type = element1D.property.name.Replace('X', 'x');
-      else if (element is Objects.Structural.Geometry.Element2D element2D)
+      else if (element is OSG.Element2D element2D)
         type = element2D.property.name;
 
       ElementType match = null;
