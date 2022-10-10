@@ -278,7 +278,7 @@ namespace Objects.Converter.Revit
           var material = GetElementRenderMaterial(@object as DB.Element);
           returnObject["renderMaterial"] = material;
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
         }
@@ -305,6 +305,20 @@ namespace Objects.Converter.Revit
         }
       }
 
+      //Node: Adds the Revit phase parameter "Phase creatd" to the stream
+      if (returnObject != null)
+      {
+        try
+        {
+          Phase ph = (@object as DB.Element).Document.GetElement((@object as DB.Element).CreatedPhaseId) as Phase;
+          if (ph != null) returnObject["phase"] = ph.Name;
+        }
+        catch (System.Exception e)
+        {
+          Report.Log(e.Message);
+        }
+      }
+
 
       return returnObject;
     }
@@ -320,7 +334,7 @@ namespace Objects.Converter.Revit
     }
     private BuiltInCategory GetObjectCategory(Base @object)
     {
-      switch(@object)
+      switch (@object)
       {
         case BE.Beam _:
         case BE.Brace _:
@@ -340,7 +354,7 @@ namespace Objects.Converter.Revit
           return BuiltInCategory.OST_PipeSegments;
         case BE.Rebar _:
           return BuiltInCategory.OST_Rebar;
-        case BE.Topography _: 
+        case BE.Topography _:
           return BuiltInCategory.OST_Topography;
         case BE.Wall _:
           return BuiltInCategory.OST_Walls;
@@ -351,7 +365,7 @@ namespace Objects.Converter.Revit
         case BE.CableTray _:
           return BuiltInCategory.OST_CableTray;
         default:
-          return BuiltInCategory.OST_GenericModel;        
+          return BuiltInCategory.OST_GenericModel;
       }
     }
 
@@ -370,12 +384,12 @@ namespace Objects.Converter.Revit
           var cat = GetObjectCategory(@object);
           return DirectShapeToNative(meshes, cat);
         }
-        catch 
+        catch
         {
 
         }
 
-        
+
 
       }
       //Family Document
