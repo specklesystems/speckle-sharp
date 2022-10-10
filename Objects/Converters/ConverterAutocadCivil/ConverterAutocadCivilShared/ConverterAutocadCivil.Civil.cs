@@ -541,8 +541,8 @@ namespace Objects.Converter.AutocadCivil
       // featureline
       var _featureline = new Featureline();
 
-      _featureline.curve = PolylineToSpeckle(polyline);
-      _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
+      _featureline.displayValue = PolylineToSpeckle(polyline);
+      _featureline.curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
       _featureline.name = (featureline.Name != null) ? featureline.Name : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
