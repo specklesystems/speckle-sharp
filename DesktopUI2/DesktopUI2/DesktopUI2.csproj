@@ -73,6 +73,7 @@
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
+    <None Remove="Views\Windows\Dialogs\ImportExportAlert.xaml" />
     <None Remove="Views\Windows\Dialogs\ImportFamiliesDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewBranchDialog.xaml" />
@@ -213,6 +214,9 @@
     <AvaloniaXaml Include="Views\Windows\Dialogs\Dialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\ImportExportAlert.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\ImportFamiliesDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -324,6 +328,9 @@
     </Compile>
     <Compile Update="Views\Windows\Dialogs\Dialog.xaml.cs">
       <DependentUpon>Dialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\ImportExportAlert.xaml.cs">
+      <DependentUpon>ImportExportAlert.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\ImportFamiliesDialog.xaml.cs">
       <DependentUpon>ImportFamiliesDialog.xaml</DependentUpon>

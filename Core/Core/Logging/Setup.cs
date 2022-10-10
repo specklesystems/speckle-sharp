@@ -19,6 +19,8 @@ namespace Speckle.Core.Logging
   {
     public static Mutex mutex;
 
+    private static bool initialized = false;
+
     static Setup()
     {
       //Set fallback values
@@ -34,6 +36,11 @@ namespace Speckle.Core.Logging
 
     public static void Init(string versionedHostApplication, string hostApplication)
     {
+      if (initialized)
+        return;
+
+      initialized = true;
+
       HostApplication = hostApplication;
       VersionedHostApplication = versionedHostApplication;
 

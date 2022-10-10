@@ -186,10 +186,10 @@ namespace Speckle.ConnectorDynamo.Functions
       converter.OnError += (sender, args) => onErrorAction?.Invoke("C", args.Error);
       
       var data = converter.ConvertRecursivelyToNative(@base);
-
+      
       Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
       {
-        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
+        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
         { "sourceHostAppVersion", commit.sourceApplication }
       });
 

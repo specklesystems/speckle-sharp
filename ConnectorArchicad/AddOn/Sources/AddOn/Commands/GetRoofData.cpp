@@ -1,4 +1,4 @@
-﻿#include "GetRoofData.hpp"
+#include "GetRoofData.hpp"
 #include <locale>
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
@@ -11,9 +11,12 @@ namespace AddOnCommands
   static GS::ObjectState SerializeRoofType(const API_RoofType& roof, const API_ElementMemo& memo,
                                            const API_ElementQuantity& quantity)
   {
+    UNUSED_PARAMETER (memo);
+    UNUSED_PARAMETER (quantity);
+
     GS::ObjectState os;
-    memo.coords;
-    quantity.roof.volume;
+    // memo.coords;
+    // quantity.roof.volume;
     // The identifier of the room
     os.Add(ApplicationIdFieldName, APIGuidToString(roof.head.guid));
     // GS::UniString roomName = roof.roomName;
@@ -56,7 +59,12 @@ namespace AddOnCommands
       GSErrCode err = ACAPI_Element_Get(&element);
       if (err != NoError) continue;
 
-      if (element.header.typeID != API_RoofID) continue;
+#ifdef ServerMainVers_2600
+      if (element.header.type.typeID != API_RoofID)
+#else
+      if (element.header.typeID != API_RoofID)
+#endif
+        continue;
       err = ACAPI_Element_GetMemo(guid, &elementMemo, APIMemoMask_All);
       if (err != NoError) continue;
 

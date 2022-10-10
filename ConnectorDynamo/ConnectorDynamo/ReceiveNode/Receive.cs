@@ -289,17 +289,23 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           hasErrors = true;
           var msg = e.ToFormattedString();
-          var notAuth = msg.Contains("401");
-          if(notAuth)
+          if(msg.Contains("401 "))
           {
             Message = "Not authorized";
             Warning(msg);
             ReceiveEnabled = false;
             _cancellationToken.Cancel();
           }
+          else if(msg.Contains("404 "))
+          {
+            Message = "Not found";
+            Warning(msg);
+            ReceiveEnabled = false;
+            _cancellationToken.Cancel();
+          }
           else
           {
-            Message = "Conversion error";
+            //Message = "Conversion error";
             _errors.Add(e);
           }
         }
