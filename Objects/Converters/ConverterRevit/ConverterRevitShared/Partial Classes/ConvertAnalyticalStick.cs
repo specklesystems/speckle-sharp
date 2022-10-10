@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -22,6 +23,84 @@ namespace Objects.Converter.Revit
       XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0,0,0));
       XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0,0,0));
 
+#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
+      appObj = CreatePhysicalMember(speckleStick);
+      DB.FamilyInstance physicalMember = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
+      SetAnalyticalProps(physicalMember, speckleStick, offset1, offset2);
+#else
+      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+
+      // check for existing member
+      var docObj = GetExistingElementByApplicationId(speckleStick.applicationId);
+      appObj = new ApplicationObject(speckleStick.id, speckleStick.speckle_type) { applicationId = speckleStick.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
+      if (speckleStick.baseLine == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Analytical Members are currently supported.");
+        return appObj;
+      }
+
+      var baseLine = CurveToNative(speckleStick.baseLine).get_Item(0);
+      DB.Level level = null;
+      AnalyticalMember revitMember = null;
+
+      level ??= ConvertLevelToRevit(LevelFromCurve(baseLine), out ApplicationObject.State levelState);
+      var isUpdate = false;
+
+      if (!GetElementType<FamilySymbol>(speckleStick, appObj, out DB.FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
+      if (docObj != null && docObj is AnalyticalMember analyticalMember)
+      {      
+        // update location
+        analyticalMember.SetCurve(baseLine);
+
+        //update type
+        analyticalMember.SectionTypeId = familySymbol.Id;
+        isUpdate = true;
+        revitMember = analyticalMember;
+      }
+
+      //create family instance
+      if (revitMember == null)
+      {
+        revitMember = AnalyticalMember.Create(Doc, baseLine);
+        //set type
+        revitMember.SectionTypeId = familySymbol.Id;
+      }
+
+      // set or update analytical properties
+      SetAnalyticalProps(revitMember, speckleStick, offset1, offset2);
+
+      DB.FamilyInstance physicalMember = null;
+      // if there isn't an associated physical element to the analytical element, create it
+      if (!analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+      {
+        var physicalMemberAppObj = CreatePhysicalMember(speckleStick);
+        physicalMember = (DB.FamilyInstance)physicalMemberAppObj.Converted.FirstOrDefault();
+
+        appObj.Update(createdId: physicalMember.UniqueId, convertedItem: physicalMember);
+      }
+
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: revitMember.UniqueId, convertedItem: revitMember);
+#endif
+      return appObj;
+    }
+
+    private ApplicationObject CreatePhysicalMember(Element1D speckleStick)
+    {
+      ApplicationObject appObj = null;
+      XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0, 0, 0));
+      XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0, 0, 0));
+
       switch (speckleStick.type)
       {
         case ElementType1D.Beam:
@@ -29,36 +108,40 @@ namespace Objects.Converter.Revit
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
           revitBeam.baseLine = speckleStick.baseLine;
+#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
           revitBeam.applicationId = speckleStick.applicationId;
+#endif
           appObj = BeamToNative(revitBeam);
-          DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
-          SetAnalyticalPros(nativeRevitBeam, speckleStick, offset1, offset2);
 
           return appObj;
+
         case ElementType1D.Brace:
           RevitBrace revitBrace = new RevitBrace();
           revitBrace.type = speckleStick.property.name.Replace('X', 'x');
           revitBrace.baseLine = speckleStick.baseLine;
+#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
           revitBrace.applicationId = speckleStick.applicationId;
+#endif
           appObj = BraceToNative(revitBrace);
-          DB.FamilyInstance nativeRevitBrace = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
-          SetAnalyticalPros(nativeRevitBrace, speckleStick, offset1, offset2);
+
           return appObj;
+
         case ElementType1D.Column:
           RevitColumn revitColumn = new RevitColumn();
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
           revitColumn.units = speckleStick.units;
+#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
           revitColumn.applicationId = speckleStick.applicationId;
+#endif
           appObj = ColumnToNative(revitColumn);
-          DB.FamilyInstance nativeRevitColumn = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
-          SetAnalyticalPros(nativeRevitColumn, speckleStick, offset1, offset2);
+
           return appObj;
       }
       return appObj;
     }
 
-    private void SetAnalyticalPros(Element element, Element1D element1d, XYZ offset1, XYZ offset2)
+    private void SetAnalyticalProps(Element element, Element1D element1d, XYZ offset1, XYZ offset2)
     {
 #if !REVIT2023
       var analyticalModel = (AnalyticalModelStick)element.GetAnalyticalModel();
@@ -67,11 +150,12 @@ namespace Objects.Converter.Revit
       analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
       analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
 #else
-      var analyticalMember = AnalyticalMember.Create(Doc, CurveToNative(element1d.baseLine).get_Item(0));
-      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
-      analyticalToPhysicalManager.AddAssociation(analyticalMember.Id, element.Id);
-      analyticalMember.SetReleaseConditions(new ReleaseConditions(true, Convert.ToBoolean(element1d.end1Releases.stiffnessX), Convert.ToBoolean(element1d.end1Releases.stiffnessY), Convert.ToBoolean(element1d.end1Releases.stiffnessZ), Convert.ToBoolean(element1d.end1Releases.stiffnessXX), Convert.ToBoolean(element1d.end1Releases.stiffnessYY), Convert.ToBoolean(element1d.end1Releases.stiffnessZZ)));
-      analyticalMember.SetReleaseConditions(new ReleaseConditions(false, Convert.ToBoolean(element1d.end2Releases.stiffnessX), Convert.ToBoolean(element1d.end2Releases.stiffnessY), Convert.ToBoolean(element1d.end2Releases.stiffnessZ), Convert.ToBoolean(element1d.end2Releases.stiffnessXX), Convert.ToBoolean(element1d.end2Releases.stiffnessYY), Convert.ToBoolean(element1d.end2Releases.stiffnessZZ)));
+      if (element is AnalyticalMember analyticalMember)
+      {
+        analyticalMember.SetReleaseConditions(new ReleaseConditions(true, Convert.ToBoolean(element1d.end1Releases.stiffnessX), Convert.ToBoolean(element1d.end1Releases.stiffnessY), Convert.ToBoolean(element1d.end1Releases.stiffnessZ), Convert.ToBoolean(element1d.end1Releases.stiffnessXX), Convert.ToBoolean(element1d.end1Releases.stiffnessYY), Convert.ToBoolean(element1d.end1Releases.stiffnessZZ)));
+        analyticalMember.SetReleaseConditions(new ReleaseConditions(false, Convert.ToBoolean(element1d.end2Releases.stiffnessX), Convert.ToBoolean(element1d.end2Releases.stiffnessY), Convert.ToBoolean(element1d.end2Releases.stiffnessZ), Convert.ToBoolean(element1d.end2Releases.stiffnessXX), Convert.ToBoolean(element1d.end2Releases.stiffnessYY), Convert.ToBoolean(element1d.end2Releases.stiffnessZZ)));
+      }
+      //TODO Set offsets
 #endif
     }
 #if !REVIT2023
