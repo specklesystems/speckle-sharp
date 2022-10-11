@@ -191,6 +191,10 @@ namespace Objects.Converter.Revit
       speckleElement["units"] = ModelUnits;
       speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
       speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
+
+      Phase phaseCreated = Doc.GetElement(revitElement.CreatedPhaseId) as Phase;
+      if (phaseCreated != null)
+        speckleElement["phaseCreated"] = phaseCreated.Name;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -331,6 +335,10 @@ namespace Objects.Converter.Revit
       if (speckleParameters == null || speckleParameters.GetDynamicMemberNames().Count() == 0)
         return;
 
+      // Set the phaseCreated parameter
+      if (speckleElement["phaseCreated"] is string phaseCreated && !string.IsNullOrEmpty(phaseCreated))
+        TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phaseCreated));
+
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
@@ -349,7 +357,6 @@ namespace Objects.Converter.Revit
       // We only loop params we can set and that actually exist on the revit element
       var filteredSpeckleParameters = speckleParameters.GetMembers()
         .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
-
 
       foreach (var spk in filteredSpeckleParameters)
       {
@@ -478,6 +485,31 @@ namespace Objects.Converter.Revit
 
       }
     }
+
+    /// <summary>
+    /// Queries a Revit Document for phases by the given name.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <param name="phaseName">The name of the Phase</param>
+    /// <returns>the phase which has the same name. null if none or multiple phases were found.</returns>
+    private Phase GetRevitPhase(DB.Document document, string phaseName)
+    {
+      // cache the phases if we haven't already done so
+      if (Phases.Count == 0)
+      {
+        var phases = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Phases).ToList();
+        foreach (var phase in phases)
+        {
+          Phases[phase.Name] = phase as Phase;
+        }
+      }
+      if (Phases.ContainsKey(phaseName))
+        return Phases[phaseName];
+
+      return null;
+    }
+
+   
 
     #endregion
 
