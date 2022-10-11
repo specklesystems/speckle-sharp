@@ -121,6 +121,8 @@ namespace Objects.Converter.AutocadCivil
       // loop through all obj with an appId 
       foreach (var appIdObj in res.Value.GetObjectIds())
       {
+        if (appIdObj.IsErased) continue;
+
         // get the db object from id
         var obj = Trans.GetObject(appIdObj, OpenMode.ForRead);
         if (obj != null)
@@ -257,6 +259,7 @@ namespace Objects.Converter.AutocadCivil
 
     #region app props
     public static string AutocadPropName = "AutocadProps";
+    public static string CivilPropName = "CivilProps";
     #endregion
 
     #region units
