@@ -70,7 +70,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - store_artifacts:
           path: TestResults
 
-      - codecov/upload
+      #- codecov/upload
 
   build-objects:
     docker:
