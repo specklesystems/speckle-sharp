@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -262,7 +263,8 @@ namespace Objects.Converter.Revit
       // we might want to try later on to capture it more intelligently from inside conversion routines.
       if (returnObject != null
           && returnObject["renderMaterial"] == null
-          && returnObject["displayValue"] == null)
+          && returnObject["displayValue"] == null
+          && !(returnObject is Model))
       {
         try
         {
@@ -276,7 +278,7 @@ namespace Objects.Converter.Revit
       }
 
       //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null)
+      if (returnObject != null && !(returnObject is Model))
       {
         try
         {
