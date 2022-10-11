@@ -155,10 +155,6 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
 
-#if MAC
-    public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled; // Temporarily disabled due to top-menu overtake by Avalonia. Waiting fix.
-#else
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
-#endif
   }
 }

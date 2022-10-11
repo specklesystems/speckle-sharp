@@ -64,9 +64,9 @@ namespace SpeckleRhino
       Rhino.UI.Dialogs.ShowMessage(msg, "Speckle has been disabled", Rhino.UI.ShowMessageButton.OK, Rhino.UI.ShowMessageIcon.Exclamation);
       return Result.Nothing;
       //CreateOrFocusSpeckle();
-#endif
+#else
       Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
-
+#endif
       return Result.Success;
     }
 
