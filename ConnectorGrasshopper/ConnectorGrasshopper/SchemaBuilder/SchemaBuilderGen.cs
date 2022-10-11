@@ -32,6 +32,19 @@ public class AngleSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class ArchicadBeamSchemaComponent: CreateSchemaObjectBase {
+     
+    public ArchicadBeamSchemaComponent(): base("ArchicadBeam", "ArchicadBeam", "Creates an Archicad Structures beam by curve.", "Speckle 2 Archicad", "Structure") { }
+    
+    public override Guid ComponentGuid => new Guid("73860182-c94b-d570-f568-1ab73eec8bfd");
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Archicad.ArchicadBeam.ctor(Objects.Geometry.Point,Objects.Geometry.Point)","Objects.BuiltElements.Archicad.ArchicadBeam");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class AreaSchemaComponent: CreateSchemaObjectBase {
      
     public AreaSchemaComponent(): base("Area", "Area", "Creates a Speckle area", "Speckle 2 BIM", "Other") { }
