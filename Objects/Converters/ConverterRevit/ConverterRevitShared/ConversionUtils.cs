@@ -491,12 +491,21 @@ namespace Objects.Converter.Revit
     /// <param name="document"></param>
     /// <param name="phaseName">The name of the Phase</param>
     /// <returns>the phase which has the same name. null if none or multiple phases were found.</returns>
-    private Element GetRevitPhase(DB.Document document, string phaseName )
+    private Phase GetRevitPhase(DB.Document document, string phaseName)
     {
-      var phases = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Phases)
-        .Where(ph => ph.Name.Equals(phaseName));
-      if (phases.Count() == 1) return phases.First();
-      else return null;
+      // cache the phases if we haven't already done so
+      if (Phases.Count == 0)
+      {
+        var phases = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Phases).ToList();
+        foreach (var phase in phases)
+        {
+          Phases[phase.Name] = phase as Phase;
+        }
+      }
+      if (Phases.ContainsKey(phaseName))
+        return Phases[phaseName];
+
+      return null;
     }
 
    

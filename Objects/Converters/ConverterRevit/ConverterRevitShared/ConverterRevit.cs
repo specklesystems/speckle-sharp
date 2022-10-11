@@ -71,6 +71,8 @@ namespace Objects.Converter.Revit
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
+    public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
+
     public ReceiveMode ReceiveMode { get; set; }
 
 
