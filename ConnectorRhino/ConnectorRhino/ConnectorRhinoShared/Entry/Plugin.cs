@@ -47,9 +47,9 @@ namespace SpeckleRhino
       }
       catch (Exception ex)
       {
-        RhinoApp.CommandLineOut.WriteLine($"Speckle error — { ex.ToFormattedString()}");
+        RhinoApp.CommandLineOut.WriteLine($"Speckle error — {ex.ToFormattedString()}");
       }
-    
+
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -165,7 +165,10 @@ namespace SpeckleRhino
 
       return LoadReturnCode.Success;
     }
-
-    public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled;
+#if MAC
+public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled;
+#else
+    public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+#endif
   }
 }
