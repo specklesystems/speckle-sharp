@@ -47,10 +47,6 @@
         <Name>Core</Name>
       </ProjectReference>
     </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.115" />
-      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115" />
-    </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
