@@ -262,6 +262,7 @@ namespace Objects.Converter.AutocadCivil
     {
       // determine if this object has autocad props
       bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false;
+      bool isFromCivil = @object[CivilPropName] != null ? true : false;
       object acadObj = null;
       var reportObj = Report.GetReportObject(@object.id, out int index) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
       List<string> notes = new List<string>();
@@ -316,7 +317,11 @@ namespace Objects.Converter.AutocadCivil
         */
 
         case Mesh o:
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
+          acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
+#else
           acadObj = MeshToNativeDB(o);
+#endif
           break;
 
         case Dimension o:

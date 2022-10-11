@@ -249,7 +249,10 @@ namespace SpeckleRhino
         // check for converter 
         var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
         if (converter == null)
-          throw new Exception("Could not find any Kit!");
+        {
+          progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+          return null;
+        }
         converter.SetContextDocument(Doc);
 
         var commitObject = await GetCommit(commit, state, progress);
@@ -346,7 +349,10 @@ namespace SpeckleRhino
       // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
       converter.SetContextDocument(Doc);
       converter.ReceiveMode = state.ReceiveMode;
 
@@ -852,7 +858,10 @@ namespace SpeckleRhino
       // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
       converter.SetContextDocument(Doc);
 
       var streamId = state.StreamId;

@@ -12,6 +12,7 @@
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,9 +44,6 @@
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -68,6 +66,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
+    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -76,6 +75,7 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
+    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
   <ItemGroup>

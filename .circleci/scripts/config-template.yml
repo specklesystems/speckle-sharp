@@ -170,6 +170,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
       extension:
         type: string
+      arch:
+        type: string
+        default: Any
     steps:
       - checkout
       - attach_workspace:
@@ -182,7 +185,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
+            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >> -o << parameters.os >> -a << parameters.arch >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
 
   build-connector-mac:
     macos:
@@ -324,18 +327,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: cimg/base:2021.01
     steps:
-      - attach_workspace:
-          at: ./
       - run:
-          name: List contents
-          command: ls -R speckle-sharp-ci-tools/Installers
-      - aws-s3/copy:
-          arguments: "--recursive --endpoint=https://$SPACES_REGION.digitaloceanspaces.com --acl public-read"
-          aws-access-key-id: SPACES_KEY
-          aws-region: SPACES_REGION
-          aws-secret-access-key: SPACES_SECRET
-          from: '"speckle-sharp-ci-tools/Installers/"'
-          to: s3://speckle-releases/installers/
+          name: Proceed to deploy
+          command: echo "This step is just here to wait for all build jobs before proceeding to deploy each of them individually. If a job fails, no connector will be deployed."
 
 # The main workflows for our monorepo pipeline.
 # There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.
