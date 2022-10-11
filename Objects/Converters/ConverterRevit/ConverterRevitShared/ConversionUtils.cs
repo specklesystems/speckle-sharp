@@ -195,6 +195,10 @@ namespace Objects.Converter.Revit
       Phase phaseCreated = Doc.GetElement(revitElement.CreatedPhaseId) as Phase;
       if (phaseCreated != null)
         speckleElement["phaseCreated"] = phaseCreated.Name;
+
+      var category = revitElement.Category;
+      if (category != null)
+        speckleElement["category"] = category.Name;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -509,7 +513,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-   
+
 
     #endregion
 
@@ -737,7 +741,7 @@ namespace Objects.Converter.Revit
           if (revElement != null)
             elements.Add(revElement);
         }
-          
+
       }
 
       return elements;
