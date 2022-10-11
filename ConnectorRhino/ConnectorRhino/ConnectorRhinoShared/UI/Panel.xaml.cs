@@ -17,11 +17,8 @@ namespace SpeckleRhino
       try
       {
         InitializeComponent();
-        //set here otherwise we get errors about re-used visual parents when closing and re-opening the panel
-        //there might be other solutions too. If changing this behaviour make sure to refresh the view model
-        //when opening a new file as well
-        var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
-        this.DataContext = viewModel;
+        //Set in the Plugin so that it's not disposed each time the panel is closed
+        this.DataContext = SpeckleRhinoConnectorPlugin.Instance.ViewModel;
         AvaloniaHost.Content = new MainUserControl();
       }
       catch (Exception ex)
@@ -29,7 +26,7 @@ namespace SpeckleRhino
 
       }
 
-
+      
 
     }
 
