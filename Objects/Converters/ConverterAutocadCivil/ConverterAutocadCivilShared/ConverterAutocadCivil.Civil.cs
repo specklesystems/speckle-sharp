@@ -32,7 +32,6 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
-using Autodesk.AutoCAD.Runtime;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -587,7 +586,7 @@ namespace Objects.Converter.AutocadCivil
       var faces = new List<int>();
       foreach (var triangle in surface.GetTriangles(false))
       {
-        var triangleVertices = new List<Point3d> { triangle.Vertex1.Location, triangle.Vertex1.Location, triangle.Vertex3.Location };
+        var triangleVertices = new List<Point3d> { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
 
 #if CIVIL2023 // skip any triangles that are hidden in the surface!
         if (!triangle.IsVisible)
@@ -750,23 +749,32 @@ namespace Objects.Converter.AutocadCivil
       {
         appObj.Container = _surface.Layer; // set the appobj container to be the same layer as the existing alignment
         _surface.DeleteVertices(_surface.Vertices); // remove existing vertices
-      } 
+      }
 
-      // create or update surface entity vertices
+      // add all vertices
       var vertices = new Point3dCollection();
-      mesh.GetPoints().Select(o => PointToNative(o)).ToList().ForEach(o => vertices.Add(o));
+      var meshVertices = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
+      meshVertices.ForEach(o => vertices.Add(o));
       _surface.AddVertices(vertices);
+      
 
-      // create or update surface entity lines
+      // loop through faces to create an edge dictionary by vertex, which includes all other vertices this vertex is connected to
       int i = 0;
-      var surfaceVertices = _surface.Vertices.ToList();
+      var edges = new Dictionary<Point3d, List<Point3d>>();
+      foreach (var vertex in meshVertices)
+        edges.Add(vertex, new List<Point3d>());
+        
       while (i < mesh.faces.Count)
       {
         if (mesh.faces[i] == 3) // triangle
         {
-          try { _surface.AddLine(surfaceVertices[i + 1], surfaceVertices[i + 2]); } catch { }
-          try { _surface.AddLine(surfaceVertices[i + 2], surfaceVertices[i + 3]); } catch { }
-          try { _surface.AddLine(surfaceVertices[i + 3], surfaceVertices[i + 1]); } catch { }
+          var v1 = meshVertices[mesh.faces[i + 1]];
+          var v2 = meshVertices[mesh.faces[i + 2]];
+          var v3 = meshVertices[mesh.faces[i + 3]];
+          edges[v1].Add(v2);
+          edges[v2].Add(v3);
+          edges[v3].Add(v1);
+
           i += 4;
         }
         else // this was not a triangulated surface! return null
@@ -776,9 +784,47 @@ namespace Objects.Converter.AutocadCivil
         }
       }
 
-      // refresh surface
-      _surface.Rebuild();
+      // loop through each surface vertex edge and create any that don't exist 
+      foreach (Point3d edgeStart in edges.Keys)
+      {
+        var vertex = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
+        var correctEdges = new List<Point3d>();
+        foreach (CivilDB.TinSurfaceEdge currentEdge in vertex.Edges)
+        {
+          if (edges[edgeStart].Contains(currentEdge.Vertex2.Location))
+            correctEdges.Add(currentEdge.Vertex2.Location);
+          currentEdge.Dispose();
+        }
+        vertex.Dispose();
 
+        foreach (var vertexToAdd in edges[edgeStart]) 
+        {
+          if (correctEdges.Contains(vertexToAdd)) continue;
+          var a1 = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
+          var a2 = _surface.FindVertexAtXY(vertexToAdd.X, vertexToAdd.Y);
+          _surface.AddLine(a1, a2);
+          a1.Dispose();
+          a2.Dispose();
+        }
+      }
+      
+
+      // loop through and delete any edges
+      var edgesToDelete = new List<CivilDB.TinSurfaceEdge>();
+      foreach(CivilDB.TinSurfaceVertex vertex in _surface.Vertices)
+      {
+        if (vertex.Edges.Count > edges[vertex.Location].Count)
+          foreach (CivilDB.TinSurfaceEdge modifiedEdge in vertex.Edges)
+            if (!edges[vertex.Location].Contains(modifiedEdge.Vertex2.Location) && !edges[modifiedEdge.Vertex2.Location].Contains(vertex.Location))
+              edgesToDelete.Add(modifiedEdge);
+        vertex.Dispose();
+      }
+      if (edgesToDelete.Count > 0)
+      {
+        _surface.DeleteLines(edgesToDelete);
+        _surface.Rebuild();
+      }
+      
       // update appobj
       var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: status, createdId: _surface.Handle.ToString(), convertedItem: _surface);
