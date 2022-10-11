@@ -14,14 +14,17 @@
           VerticalAlignment="Center"
           Content="Hello!" />
 
-        <TextBlock Classes="Grotesk" Text="Test Text" />
+        <TextBlock Classes="Medium SpeckleFont" Text="Test Text" />
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  <Style Selector="TextBlock.Grotesk">
-    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk" />
+  <Style Selector="TextBlock.Medium">
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="FontSize" Value="14" />
+  </Style>
+
+  <Style Selector="TextBlock.SpeckleFont">
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk" />
   </Style>
 
   <Style Selector="Button &gt; TextBlock, TextBlock.ButtonText">
@@ -29,6 +32,7 @@
     <Setter Property="FontSize" Value="14" />
     <Setter Property="FontWeight" Value="Medium" />
   </Style>
+
 
   <Style Selector="icons|MaterialIcon.StreamCard">
     <Setter Property="Foreground" Value="Gray" />

@@ -19,7 +19,7 @@
     Spacing="20">
     <TextBlock
       Margin="0"
-      Classes="Grotesk"
+      Classes="Medium SpeckleFont"
       FontSize="20"
       Foreground="White"
       Text="Did you know?"
