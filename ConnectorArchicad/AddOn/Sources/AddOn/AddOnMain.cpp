@@ -112,7 +112,7 @@ private:
   GS::Array<GS::UniString> GetExecutableArguments()
   {
     UShort portNumber = 0;
-	{
+    {
       const auto err = ACAPI_Goodies(APIAny_GetHttpConnectionPortID, &portNumber);
 
       if (err != NoError) {
@@ -125,7 +125,7 @@ private:
       API_ServerApplicationInfo serverApplicationInfo;
       ACAPI_GetReleaseNumber (&serverApplicationInfo);
 
-	  archicadVersion = serverApplicationInfo.mainVersion;
+      archicadVersion = serverApplicationInfo.mainVersion;
     }
 
     return GS::Array<GS::UniString> { GS::ValueToUniString(portNumber), GS::ValueToUniString(archicadVersion) };
