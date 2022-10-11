@@ -15,6 +15,7 @@ using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
+using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
 
@@ -553,12 +554,13 @@ namespace Objects.Converter.Revit
       var family = element["family"] as string;
       var type = element["type"] as string;
 
-      ElementType match = null;
+      // if the object is structural, we keep the type name in a different location
+      if (element is OSG.Element1D element1D)
+        type = element1D.property.name.Replace('X', 'x');
+      else if (element is OSG.Element2D element2D)
+        type = element2D.property.name;
 
-      //if (family == null && type == null)
-      //{
-      //  match = types.First();
-      //}
+      ElementType match = null;
 
       if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
         match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
@@ -607,6 +609,14 @@ namespace Objects.Converter.Revit
 
     private ElementFilter GetCategoryFilter(Base element)
     {
+      if (element is OSG.Element1D element1D)
+      {
+        if (element1D.type == OSG.ElementType1D.Column)
+          return new ElementMulticategoryFilter(Categories.columnCategories);
+        else if (element1D.type == OSG.ElementType1D.Beam || element1D.type == OSG.ElementType1D.Brace)
+          return new ElementMulticategoryFilter(Categories.beamCategories);
+      }
+
       switch (element)
       {
         case BuiltElements.Wall _:
@@ -619,6 +629,7 @@ namespace Objects.Converter.Revit
         case Duct _:
           return new ElementMulticategoryFilter(Categories.ductCategories);
         case Floor _:
+        case OSG.Element2D _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
         case Pipe _:
           return new ElementMulticategoryFilter(Categories.pipeCategories);
