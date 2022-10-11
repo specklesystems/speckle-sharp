@@ -8,6 +8,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
+using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
 {
@@ -58,12 +59,19 @@ namespace SpeckleRhino
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
 
+      try
+      {
 #if MAC
-      CreateOrFocusSpeckle();
+        CreateOrFocusSpeckle();
 #else
-      Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 #endif
-      return Result.Success;
+        return Result.Success;
+      } catch (Exception e)
+      {
+        RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
+        return Result.Failure;
+      }
     }
 
     public static void CreateOrFocusSpeckle()

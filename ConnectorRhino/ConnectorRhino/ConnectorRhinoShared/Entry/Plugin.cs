@@ -8,6 +8,7 @@ using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
 using Speckle.Core.Api;
+using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
 {
@@ -47,9 +48,9 @@ namespace SpeckleRhino
       }
       catch (Exception ex)
       {
-
+        RhinoApp.CommandLineOut.WriteLine($"Speckle error — { ex.ToFormattedString()}");
       }
-
+    
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -71,7 +72,13 @@ namespace SpeckleRhino
       if (Bindings.GetStreamsInFile().Count > 0)
       {
 #if MAC
-      SpeckleCommand.CreateOrFocusSpeckle();
+        try
+        {
+          SpeckleCommand.CreateOrFocusSpeckle();
+        } catch (Exception ex)
+        {
+          RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
+        }
 #else
         Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 #endif
@@ -155,6 +162,6 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
 
-    public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+    public override PlugInLoadTime LoadTime => PlugInLoadTime.Disabled;
   }
 }
