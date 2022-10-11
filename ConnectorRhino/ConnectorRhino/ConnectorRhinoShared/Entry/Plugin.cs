@@ -7,6 +7,7 @@ using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
+using Rhino.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Models.Extensions;
 
@@ -21,7 +22,6 @@ namespace SpeckleRhino
     private static string SpeckleKey = "speckle2";
 
     public ConnectorBindingsRhino Bindings { get; private set; }
-    public MainViewModel ViewModel { get; private set; }
 
     internal bool _initialized;
 
@@ -39,7 +39,6 @@ namespace SpeckleRhino
 
         SpeckleCommand.InitAvalonia();
         Bindings = new ConnectorBindingsRhino();
-        ViewModel = new MainViewModel(Bindings);
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
@@ -91,9 +90,6 @@ namespace SpeckleRhino
 
     private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
     {
-      //new document => new view model (used by the panel only)
-      ViewModel = new MainViewModel(Bindings);
-
       if (e.Merge) // this is a paste or import event
       {
         // get existing streams in doc before a paste or import operation to use for cleanup
@@ -106,11 +102,16 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-      // The user is probably using Rhino Inside and Avalonia was already initialized there
-      if (App.Current != null)
+      string processName = "";
+      System.Version processVersion = null;
+      HostUtils.GetCurrentProcessInfo(out processName, out processVersion);
+
+      // The user is probably using Rhino Inside and Avalonia was already initialized there  or will be initialized later and will throw an error
+      // https://speckle.community/t/revit-command-failure-for-external-command/3489/27
+      if (!processName.Equals("rhino", StringComparison.InvariantCultureIgnoreCase))
       {
 
-        errorMessage = "Speckle cannot be loaded in multiple application at the same time.";
+        errorMessage = "Speckle does not currently support Rhino.Inside";
         RhinoApp.CommandLineOut.WriteLine(errorMessage);
         return LoadReturnCode.ErrorNoDialog;
       }
