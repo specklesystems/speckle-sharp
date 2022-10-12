@@ -718,12 +718,12 @@ namespace Objects.Converter.Revit
 
     public List<DB.Element> GetExistingElementsByApplicationId(string applicationId)
     {
+      var elements = new List<Element>();
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
-        return null;
+        return elements;
 
       var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
-      var elements = new List<Element>();
       if (@ref == null)
       {
         //element was not cached in a PreviousContex but might exist in the model
