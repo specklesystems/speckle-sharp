@@ -1028,16 +1028,20 @@ namespace Objects.Converter.Revit
     {
       if (speckleMaterial == null) return ElementId.InvalidElementId;
 
+      string matName = null;
+      if (!string.IsNullOrEmpty(speckleMaterial.name))
+        matName = Regex.Replace(speckleMaterial.name, "[\\[\\]{}|;<>?`~]", "");
+
       // Try and find an existing material
       var existing = new FilteredElementCollector(Doc)
         .OfClass(typeof(DB.Material))
         .Cast<DB.Material>()
-        .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
+        .FirstOrDefault(m => string.Equals(m.Name, matName, StringComparison.CurrentCultureIgnoreCase));
 
       if (existing != null) return existing.Id;
 
       // Create new material
-      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
+      ElementId materialId = DB.Material.Create(Doc, matName ?? Guid.NewGuid().ToString());
       DB.Material mat = Doc.GetElement(materialId) as DB.Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);

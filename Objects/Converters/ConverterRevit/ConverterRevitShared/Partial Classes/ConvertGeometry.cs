@@ -25,6 +25,7 @@ using Surface = Objects.Geometry.Surface;
 using Transform = Objects.Other.Transform;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
+using System.Text.RegularExpressions;
 
 namespace Objects.Converter.Revit
 {
