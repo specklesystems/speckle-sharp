@@ -198,7 +198,17 @@ namespace Objects.Converter.Revit
 
       var category = revitElement.Category;
       if (category != null)
-        speckleElement["category"] = category.Name;
+      {
+        if (speckleElement["category"] is RevitCategory)
+        {
+          speckleElement["category"] = Categories.GetSchemaBuilderCategoryFromBuiltIn(category.Name);
+        }
+        else
+        {
+          speckleElement["category"] = category.Name;
+        }
+      }
+        
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
