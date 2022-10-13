@@ -1028,9 +1028,7 @@ namespace Objects.Converter.Revit
     {
       if (speckleMaterial == null) return ElementId.InvalidElementId;
 
-      string matName = null;
-      if (!string.IsNullOrEmpty(speckleMaterial.name))
-        matName = Regex.Replace(speckleMaterial.name, "[\\[\\]{}|;<>?`~]", "");
+      string matName = RemoveProhibitedCharacters(speckleMaterial.name);
 
       // Try and find an existing material
       var existing = new FilteredElementCollector(Doc)
@@ -1225,6 +1223,13 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
 
       return null;
+    }
+
+    private string RemoveProhibitedCharacters(string s)
+    {
+      if (string.IsNullOrEmpty(s))
+        return s;
+      return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
   }
 }
