@@ -19,7 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
 {
@@ -47,6 +49,8 @@ namespace DesktopUI2.ViewModels
     public string Title => "for " + Bindings.GetHostAppNameVersion();
     public string Version => "v" + Bindings.ConnectorVersion;
     public ReactiveCommand<string, Unit> RemoveSavedStreamCommand { get; }
+
+    private CancellationTokenSource StreamGetCancelTokenSource = null;
 
     private bool _showProgress;
     public bool InProgress
@@ -147,6 +151,8 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private Action streamSearchDebouncer = null;
+
     private string _searchQuery = "";
 
     public string SearchQuery
@@ -155,8 +161,9 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
-        GetStreams().ConfigureAwait(false);
-        this.RaisePropertyChanged("StreamsText");
+        if (!string.IsNullOrEmpty(SearchQuery) && SearchQuery.Length <= 2)
+          return;
+        streamSearchDebouncer();
       }
     }
 
@@ -221,6 +228,7 @@ namespace DesktopUI2.ViewModels
 
         Bindings = Locator.Current.GetService<ConnectorBindings>();
         this.RaisePropertyChanged("SavedStreams");
+        streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
         Init();
 
         var config = ConfigManager.Load();
@@ -309,27 +317,33 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        if (!HasAccounts || (!string.IsNullOrEmpty(SearchQuery) && SearchQuery.Length <= 2))
+        if (!HasAccounts)
           return;
 
         InProgress = true;
+        StreamGetCancelTokenSource?.Cancel();
+        StreamGetCancelTokenSource = new CancellationTokenSource();
 
-        Streams = new List<StreamAccountWrapper>();
+        var streams = new List<StreamAccountWrapper>();
 
         foreach (var account in Accounts)
         {
+          if (StreamGetCancelTokenSource.IsCancellationRequested)
+            return;
+
           try
           {
             var client = new Client(account.Account);
+            var result = new List<Stream>();
 
             //NO SEARCH
             if (SearchQuery == "")
             {
 
               if (SelectedFilter == Filter.favorite)
-                Streams.AddRange((await client.FavoriteStreamsGet(25)).Select(x => new StreamAccountWrapper(x, account.Account)));
+                result = await client.FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25);
               else
-                Streams.AddRange((await client.StreamsGet(25)).Select(x => new StreamAccountWrapper(x, account.Account)));
+                result = await client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
             }
             //SEARCH
             else
@@ -337,18 +351,28 @@ namespace DesktopUI2.ViewModels
               //do not search favorite streams, too much hassle
               if (SelectedFilter == Filter.favorite)
                 SelectedFilter = Filter.all;
-              Streams.AddRange((await client.StreamSearch(SearchQuery, 25)).Select(x => new StreamAccountWrapper(x, account.Account)));
+              result = await client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
             }
+
+            if (StreamGetCancelTokenSource.IsCancellationRequested)
+              return;
+
+            streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
 
           }
           catch (Exception e)
           {
+            if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
+              return;
             Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
             //NOTE: the line below crashes revit at startup! We need to investigate more
             //Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
           }
         }
-        Streams = Streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+        if (StreamGetCancelTokenSource.IsCancellationRequested)
+          return;
+
+        Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
 
         InProgress = false;
       }
@@ -356,6 +380,12 @@ namespace DesktopUI2.ViewModels
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
+    }
+
+    private void SearchStreams()
+    {
+      GetStreams().ConfigureAwait(false);
+      this.RaisePropertyChanged("StreamsText");
     }
 
     internal async void Init()
