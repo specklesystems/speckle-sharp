@@ -329,7 +329,7 @@ namespace Objects.Converter.AutocadCivil
           break;
 
         case BlockInstance o:
-          acadObj = BlockInstanceToNativeDB(o, out BlockReference reference);
+          acadObj = BlockInstanceToNativeDB(o);
           break;
 
         case BlockDefinition o:
