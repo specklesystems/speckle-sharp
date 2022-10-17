@@ -25,6 +25,7 @@ namespace Objects.BuiltElements.Revit
     /// </summary>
     [JsonIgnore]
     [SchemaIgnore]
+    [Obsolete("Use 'baseGeometries' instead", true)]
     public Base baseGeometry
     {
       set
@@ -65,7 +66,7 @@ namespace Objects.BuiltElements.Revit
     {
       if (!IsValidObject(baseGeometry))
         throw new Exception("Freeform elements can only be created from BREPs or Meshes");
-      this.baseGeometry = baseGeometry;
+      this.baseGeometries = new List<Base>{baseGeometry};
       this.parameters = parameters.ToBase();
     }
 

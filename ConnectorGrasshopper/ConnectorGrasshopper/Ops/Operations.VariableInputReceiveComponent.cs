@@ -429,7 +429,12 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        ApiClient?.Dispose();
+        var hasInternet = await Helpers.UserHasInternet();
+        if (!hasInternet)
+        {
+          throw new Exception("You are not connected to the internet.");
+        }
+        
         Account account = null;
         try
         {
@@ -446,6 +451,7 @@ namespace ConnectorGrasshopper.Ops
             refreshToken = ""
           };
         }
+        ApiClient?.Dispose();
         ApiClient = new Client(account);
         ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
         ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
@@ -564,8 +570,7 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
-
-
+        
 
         var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
@@ -583,6 +588,12 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
+          var hasInternet = await Helpers.UserHasInternet();
+          if (!hasInternet)
+          {
+            throw new Exception("You are not connected to the internet.");
+          }
+          
           receiveComponent.PrevReceivedData = null;
           var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
           {
