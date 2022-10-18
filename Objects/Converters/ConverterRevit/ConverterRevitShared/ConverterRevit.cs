@@ -348,7 +348,7 @@ namespace Objects.Converter.Revit
     {
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.Parse(recieveModelMesh ?? "false") == true)
       {
         try
         {
