@@ -230,13 +230,13 @@ namespace Objects.Converter.AutocadCivil
         var docStyles = new ObjectIdCollection();
         foreach (ObjectId styleId in civilDoc.Styles.AlignmentStyles) docStyles.Add(styleId);
         var style = civilAlignment != null ? 
-          GetFromObjectIdCollection(civilAlignment.style, docStyles) :  civilDoc.Styles.AlignmentStyles.First();
+          GetFromObjectIdCollection(civilAlignment.style, docStyles, true) :  civilDoc.Styles.AlignmentStyles.First();
 
         // label set style
         var labelStyles = new ObjectIdCollection();
         foreach (ObjectId styleId in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles) labelStyles.Add(styleId);
         var label = civilAlignment != null ?
-          GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
+          GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles, true) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
 #endregion
 
         try
