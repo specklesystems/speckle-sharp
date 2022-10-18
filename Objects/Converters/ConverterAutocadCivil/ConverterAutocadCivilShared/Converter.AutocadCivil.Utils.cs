@@ -137,18 +137,19 @@ namespace Objects.Converter.AutocadCivil
       return ids;
     }
 
-    public ObjectId GetFromObjectIdCollection(string name, ObjectIdCollection collection)
+    public ObjectId GetFromObjectIdCollection(string name, ObjectIdCollection collection, bool useFirstIfNull = false)
     {
       var id = ObjectId.Null;
-      if (string.IsNullOrEmpty(name)) return id;
+      if ((string.IsNullOrEmpty(name) && !useFirstIfNull) || (string.IsNullOrEmpty(name) && collection.Count == 0))
+        return id; 
 
       foreach (ObjectId collectionId in collection)
       {
         var entity = Trans.GetObject(collectionId, OpenMode.ForRead);
         if (entity != null)
         {
-          var props = entity.GetType().GetProperty("Name");
-          if (props != null)
+          var props = entity.GetType().GetProperty("Name", BindingFlags.Instance | BindingFlags.Public);
+          if (props != null && props.CanRead)
           {
             var entityName = props.GetValue(entity) as string;
             if (entityName == name)
@@ -159,6 +160,10 @@ namespace Objects.Converter.AutocadCivil
           }
         }
       }
+
+      if (id == ObjectId.Null && useFirstIfNull && collection.Count > 0)
+        id = collection[0];
+
       return id;
     }
 
