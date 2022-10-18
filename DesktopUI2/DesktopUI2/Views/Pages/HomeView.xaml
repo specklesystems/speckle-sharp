@@ -192,6 +192,7 @@
             <MenuItem
               Width="30"
               Height="30"
+              Foreground="White"
               Header="{icons:MaterialIconExt AccountMultiple}">
 
               <MenuItem
