@@ -82,7 +82,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D "); //hack for ADSK store;
 
     public override string GetHostAppName() => Utils.Slug;
 
@@ -715,10 +715,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
             }
             catch (Exception e)
             {
-              if (parent != null)
-                parent.Log.Add(e.Message);
-              else
-                appObj.Log.Add(e.Message);
+              if (!e.Message.Contains("eWasErased")) // this couldve been previously received and deleted
+              {
+                if (parent != null)
+                  parent.Log.Add(e.Message);
+                else
+                  appObj.Log.Add(e.Message);
+              }
             }
           }
           appObj.Status = toRemove.Count > 0 ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
