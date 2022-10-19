@@ -11,11 +11,11 @@
     <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-		<RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-		<LangVersion>8</LangVersion>
-		<StartAction>Program</StartAction>
-		<StartProgram>C:\Program Files\Computers and Structures\ETABS 19\ETABS.exe</StartProgram>
-		<PlatformTarget>x64</PlatformTarget>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <LangVersion>8</LangVersion>
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Program Files\Computers and Structures\ETABS 19\ETABS.exe</StartProgram>
+    <PlatformTarget>x64</PlatformTarget>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -105,7 +105,7 @@
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-	<!--<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
+  <!--<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
 		<Copy SourceFiles="$(SolutionDir)\..\Core\Core\bin\Debug\net4.8\runtimes\win-x64\native\e_sqlite3.dll" DestinationFolder="$(OutDir)" />
 	</Target>-->
 </Project>
