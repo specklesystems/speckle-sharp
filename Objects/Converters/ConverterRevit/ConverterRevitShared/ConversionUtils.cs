@@ -75,14 +75,13 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        ContextObjects.RemoveAt(isSelectedInContextObjects);
-
         ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
         if (CanConvertToSpeckle(element))
         {
           var obj = ConvertToSpeckle(element);
           if (obj != null)
           {
+            ContextObjects.RemoveAt(isSelectedInContextObjects);
             reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
             convertedHostedElements.Add(obj);
             ConvertedObjectsList.Add(obj.applicationId);
