@@ -19,6 +19,7 @@ namespace Speckle.ConnectorDynamo.Functions
       get;
       set;
     }
+    
     public EventHandler<OnErrorEventArgs> OnError;
     
     public BatchConverter()
@@ -329,17 +330,6 @@ namespace Speckle.ConnectorDynamo.Functions
 
       Type type = @object.GetType();
       return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
-    }
-  }
-  
-  [IsVisibleInDynamoLibrary(false)]
-  public class OnErrorEventArgs : EventArgs
-  {
-    public Exception Error;
-
-    public OnErrorEventArgs(Exception error)
-    {
-      Error = error;
     }
   }
 }

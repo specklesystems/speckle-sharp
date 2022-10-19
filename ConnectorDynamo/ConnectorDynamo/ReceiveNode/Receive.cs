@@ -324,12 +324,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       {
         if (!_cancellationToken.IsCancellationRequested)
         {
-          //_cancellationToken.Cancel();
+          _cancellationToken.Cancel();
           var msg = e.ToFormattedString();
           Message = msg.Contains("401") || msg.Contains("don't have access") ? "Not authorized" : "Error";
           Warning(msg);
           _errors.Add(e);
-          //throw;
+          throw;
         }
       }
       finally
