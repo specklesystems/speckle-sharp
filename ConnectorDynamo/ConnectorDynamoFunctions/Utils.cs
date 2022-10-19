@@ -25,13 +25,13 @@ namespace Speckle.ConnectorDynamo.Functions
           var version = (string)type2.GetProperty("VersionNumber").GetValue(app, null);
 
           if (version.Contains("2024"))
-            return HostApplications.Dynamo.GetVersion(HostAppVersion.v2024);
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2024);
           if (version.Contains("2023"))
-            return HostApplications.Dynamo.GetVersion(HostAppVersion.v2023);
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2023);
           if (version.Contains("2022"))
-            return HostApplications.Dynamo.GetVersion(HostAppVersion.v2022);
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2022);
           if (version.Contains("2021"))
-            return HostApplications.Dynamo.GetVersion(HostAppVersion.v2021);
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2021);
           else
             return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
 
