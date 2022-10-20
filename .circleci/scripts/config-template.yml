@@ -295,7 +295,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 name: Zip Connector files
                 command: |
                   cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish"
-                  zip -r <<parameters.slug>>-mac.zip ./<< parameters.bundlename >>
+                  zip -r <<parameters.slug>>-mac.zip "./<< parameters.bundlename >>"
             # Copy installer files
             - run:
                 name: Copy files to installer
