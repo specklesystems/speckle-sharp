@@ -52,14 +52,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private bool _sendComplete;
-    public bool SendComplete
-    {
-      get => _sendComplete;
-      set => this.RaiseAndSetIfChanged(ref _sendComplete, value);
-
-    }
-
     private bool _sendClicked;
     public bool SendClicked
     {
@@ -104,19 +96,19 @@ namespace DesktopUI2.ViewModels
       SavedStreams = Bindings.GetStreamsInFile();
 
       if (FileStream == null)
-        LoadFileStream();
+        await LoadFileStream();
       // check if objs are selected and set streamstate filter
       var filters = Bindings.GetSelectionFilters();
       var selection = Bindings.GetSelectedObjects();
       if (selection.Count > 0)
       {
-        FileStream.Filter = filters.Where(o => o.Slug == "manual").First();
+        FileStream.Filter = filters.First(o => o.Slug == "manual");
         FileStream.Filter.Selection = selection;
         FileStream.CommitMessage = "Sent selection";
       }
       else
       {
-        FileStream.Filter = filters.Where(o => o.Slug == "all").First();
+        FileStream.Filter = filters.First(o => o.Slug == "all");
         FileStream.CommitMessage = "Sent everything";
       }
       FileStream.BranchName = "main";
@@ -132,7 +124,7 @@ namespace DesktopUI2.ViewModels
       try
       {
         Progress = new ProgressViewModel();
-        Progress.ProgressTitle = "Sharing via Speckle 🚀";
+        Progress.ProgressTitle = "Sending to Speckle 🚀...";
         Progress.IsProgressing = true;
 
         Id = await Bindings.SendStream(FileStream, Progress);
@@ -142,14 +134,12 @@ namespace DesktopUI2.ViewModels
         {
           Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "method", "OneClick" } });
           FileStream.LastUsed = DateTime.Now.ToString();
-
-          SendComplete = true;
         }
-        //else
-        //  ShareViewModel.RouterInstance.NavigateBack.Execute();
       }
       catch (Exception ex)
-      { }
+      {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+      }
 
       if (Bindings.UpdateSavedStreams != null)
         Bindings.UpdateSavedStreams(SavedStreams);
@@ -158,7 +148,7 @@ namespace DesktopUI2.ViewModels
         HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
     }
 
-    private void LoadFileStream()
+    private async Task LoadFileStream()
     {
       // get default account
       var account = AccountManager.GetDefaultAccount();
@@ -180,15 +170,15 @@ namespace DesktopUI2.ViewModels
       }
       else // try to find stream in account
       {
-        Stream foundStream = Task.Run(async () => await SearchStreams(client)).Result;
+        Stream foundStream = await SearchStreams(client);
 
         if (foundStream == null) // create the stream
         {
           var description = $"Automatic stream for {_fileName}";
           try
           {
-            string streamId = Task.Run(async () => await client.StreamCreate(new StreamCreateInput { description = description, name = _fileName, isPublic = false })).Result;
-            foundStream = Task.Run(async () => await client.StreamGet(streamId)).Result;
+            string streamId = await client.StreamCreate(new StreamCreateInput { description = description, name = _fileName, isPublic = false });
+            foundStream = await client.StreamGet(streamId);
           }
           catch (Exception e) { }
         }
@@ -214,8 +204,19 @@ namespace DesktopUI2.ViewModels
       return stream;
     }
 
+    private void ShareCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, new StreamViewModel(FileStream, HostScreen, null)));
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
+    }
+
     private void CloseSendModal()
     {
+      if (Progress.IsProgressing)
+      {
+        Progress.CancelCommand();
+      }
       SendClicked = false;
     }
 

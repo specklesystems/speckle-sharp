@@ -83,13 +83,14 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       ChangeTheme(config.DarkTheme);
 
-      Router.Navigate.Execute(new OneClickViewModel(this));
-      //Router.Navigate.Execute(new HomeViewModel(this));
-
-
-
-
-
+      if (config.OneClickMode)
+      {
+        Router.Navigate.Execute(new OneClickViewModel(this));
+      }
+      else
+      {
+        Router.Navigate.Execute(new HomeViewModel(this));
+      }
     }
 
     //https://github.com/AvaloniaUI/Avalonia/issues/5290

@@ -90,71 +90,50 @@
         Margin="5,10,5,5"
         IsVisible="{Binding HasAccounts}"
         RowDefinitions="*,auto">
-        <Button
+        <StackPanel
           Margin="40"
           VerticalAlignment="Center"
-          Command="{Binding Send}"
-          CornerRadius="40"
-          IsDefault="True"
-          IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-          ToolTip.Tip="Send the current model to Speckle">
-          <Button.Content>
-            <StackPanel
-              Margin="10"
-              Orientation="Horizontal"
-              Spacing="12">
-
-              <icons:MaterialIcon
-                Name="send"
-                Width="20"
-                Height="20"
-                Foreground="White"
-                Kind="CubeSend">
-                <icons:MaterialIcon.Transitions>
-                  <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
-                  </Transitions>
-                </icons:MaterialIcon.Transitions>
-              </icons:MaterialIcon>
-              <TextBlock
-                Classes="ButtonText"
-                FontWeight="Bold"
-                Text="SEND" />
-            </StackPanel>
-
-          </Button.Content>
-        </Button>
-
-
-        <Grid>
-          <ProgressBar
-            Width="40"
-            Height="40"
-            Classes="Circle"
-            IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
-            IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
-            IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
-            Maximum="{Binding Progress.Max}"
-            Value="{Binding Progress.Value}" />
-          <m:FloatingButton
-            assists:ButtonAssist.HoverColor="Transparent"
-            assists:ShadowAssist.ShadowDepth="0"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding CancelSendOrReceiveCommand}"
-            IsEnabled="{Binding !Progress.IsPreviewProgressing, FallbackValue=True}"
-            IsVisible="{Binding Progress.IsProgressing, FallbackValue=False}"
-            ToolTip.Tip="Cancel">
+          Orientation="Vertical"
+          Spacing="20">
+          <Button
+            Command="{Binding Send}"
+            CornerRadius="40"
+            IsDefault="True"
+            IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
+            ToolTip.Tip="Send the current model to Speckle">
             <Button.Content>
+              <StackPanel
+                Margin="10"
+                Orientation="Horizontal"
+                Spacing="12">
 
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                Foreground="{DynamicResource PrimaryHueDarkBrush}"
-                Kind="Close" />
+                <icons:MaterialIcon
+                  Name="send"
+                  Width="20"
+                  Height="20"
+                  Foreground="White"
+                  Kind="CubeSend">
+                  <icons:MaterialIcon.Transitions>
+                    <Transitions>
+                      <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+                    </Transitions>
+                  </icons:MaterialIcon.Transitions>
+                </icons:MaterialIcon>
+                <TextBlock
+                  Classes="ButtonText"
+                  FontWeight="Bold"
+                  Text="SEND" />
+              </StackPanel>
+
             </Button.Content>
-          </m:FloatingButton>
-        </Grid>
+          </Button>
+          <TextBlock
+            Opacity="0.5"
+            Text="💡Send the whole model or just the selected objects"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+        </StackPanel>
+
 
         <Button
           Grid.Row="1"
@@ -222,11 +201,12 @@
     </Grid>
 
     <!--  SENDING & SENT COMPLETED POPUP  -->
-    <Border Background="{DynamicResource PrimaryHueMidBrush}" IsVisible="{Binding SendClicked, FallbackValue=False}">
-      <Grid RowDefinitions="auto, *">
+    <Border Background="{DynamicResource PrimaryHueMidBrush}" IsVisible="{Binding SendClicked, FallbackValue=True}">
+      <Grid RowDefinitions="*">
         <m:FloatingButton
-          Margin="20"
+          Margin="0,20,20,0"
           HorizontalAlignment="Right"
+          VerticalAlignment="Top"
           assists:ShadowAssist.ShadowDepth="0"
           Background="Transparent"
           Classes=""
@@ -246,67 +226,37 @@
           </Button.Content>
         </m:FloatingButton>
         <!--  SENDING  -->
-        <Grid
+        <StackPanel
           Grid.Row="1"
-          HorizontalAlignment="Center"
+          Margin="20"
+          HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
-          IsVisible="{Binding SendComplete, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
-          RowDefinitions="auto, auto, auto, auto">
+          IsVisible="{Binding Progress.IsProgressing}"
+          Orientation="Vertical"
+          Spacing="15">
           <TextBlock
-            Margin="15,15,15,0"
             Classes="Subtitle1"
             Foreground="White"
-            Text="{Binding Progress.ProgressTitle, FallbackValue='Operation X'}"
+            Text="{Binding Progress.ProgressTitle, FallbackValue='Operation XYZ'}"
             TextTrimming="CharacterEllipsis" />
           <ProgressBar
-            Grid.Row="1"
-            Margin="15,15,15,0"
             IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
             IsVisible="{Binding Progress.IsProgressing}"
-            Maximum="{Binding Max}"
-            Value="{Binding Value}" />
+            Maximum="{Binding Progress.Max}"
+            Value="{Binding Progress.Value}" />
           <TextBlock
-            Grid.Row="2"
-            Margin="15,15,15,0"
             Foreground="White"
             Text="{Binding Progress.ProgressSummary, FallbackValue='Operation in progress...'}"
             TextTrimming="CharacterEllipsis" />
-          <StackPanel
-            Grid.Row="3"
-            Margin="15"
-            HorizontalAlignment="Right"
-            Orientation="Horizontal">
-            <Button
-              Margin="0,0,10,0"
-              Classes="Outline"
-              Command="{Binding Progress.CancelCommand}"
-              Content="Cancel"
-              Foreground="White"
-              IsVisible="{Binding Progress.IsProgressing}" />
-            <!--<Button
-        Margin="0,0,10,0"
-        Classes="Outline"
-        Command="{Binding Progress.OpenReportCommand}"
-        Content="Open Report"
-        Foreground="White"
-        IsVisible="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}" />-->
-            <!--<Button
-        Margin="0,0,10,0"
-        Background="White"
-        Click="Close_Click"
-        Content="Close"
-        Foreground="{DynamicResource PrimaryHueMidBrush}"
-        IsEnabled="{Binding IsProgressing, Converter={x:Static BoolConverters.Not}}" />-->
-          </StackPanel>
-        </Grid>
+        </StackPanel>
 
         <!--  SEND COMPLETED  -->
-        <Grid
+        <StackPanel
           Grid.Row="1"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
-          IsVisible="{Binding SendComplete, FallbackValue=True}"
-          RowDefinitions="auto, auto, auto, auto">
+          IsVisible="{Binding !Progress.IsProgressing}"
+          Orientation="Vertical">
           <TextBlock
             Margin="30"
             HorizontalAlignment="Center"
@@ -316,7 +266,6 @@
             TextAlignment="Center"
             TextWrapping="Wrap" />
           <Button
-            Grid.Row="1"
             Margin="0"
             HorizontalAlignment="Center"
             Background="White"
@@ -337,8 +286,26 @@
             </Grid>
           </Button>
           <Button
-            Grid.Row="2"
-            Margin="0,20,0,40"
+            Margin="0,20,0,0"
+            HorizontalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding ShareCommand}"
+            CornerRadius="25"
+            Foreground="White">
+            <Grid Margin="0" ColumnDefinitions="auto,*">
+
+              <icons:MaterialIcon VerticalAlignment="Center" Kind="UsersAdd" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="8,0"
+                Padding="0"
+                VerticalAlignment="Center"
+                Text="Enable multiplayer mode!"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </Button>
+          <Button
+            Margin="0,5,0,40"
             HorizontalAlignment="Center"
             Classes="Flat"
             Command="{Binding CopyCommand}"
@@ -357,7 +324,7 @@
                 TextTrimming="CharacterEllipsis" />
             </Grid>
           </Button>
-        </Grid>
+        </StackPanel>
       </Grid>
     </Border>
   </Grid>
