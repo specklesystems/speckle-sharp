@@ -26,6 +26,20 @@ namespace SpeckleRhino
     public static string RhinoAppName = HostApplications.Rhino.Name;
     public static string AppName = "Rhino";
 #endif
+
+    public static string invalidRhinoChars = @"{}()";
+
+    /// <summary>
+    /// Removes invalid characters for Rhino layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidRhinoChars(string str)
+    {
+      // using this to handle grasshopper branch syntax
+      string cleanStr = str.Replace("{", "").Replace("}","");
+      return cleanStr;
+    }
     #region extension methods
     /// <summary>
     /// Finds a layer from its full path
@@ -36,11 +50,12 @@ namespace SpeckleRhino
     /// <returns>Null on failure</returns>
     public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
     {
-      int index = doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
+      var cleanPath = RemoveInvalidRhinoChars(path);
+      int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
       Layer layer = doc.Layers.FindIndex(index);
       if (layer == null && MakeIfNull)
       {
-        var layerNames = path.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+        var layerNames = cleanPath.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
         Layer parent = null;
         string currentLayerPath = string.Empty;
@@ -64,14 +79,21 @@ namespace SpeckleRhino
     #region internal methods
     private static Layer MakeLayer(RhinoDoc doc, string name, Layer parentLayer = null)
     {
-      Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
-      if (parentLayer != null)
-        newLayer.ParentLayerId = parentLayer.Id;
-      int newIndex = doc.Layers.Add(newLayer);
-      if (newIndex < 0)
+      try
+      {
+        Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
+        if (parentLayer != null)
+          newLayer.ParentLayerId = parentLayer.Id;
+        int newIndex = doc.Layers.Add(newLayer);
+        if (newIndex < 0)
+          return null;
+        else
+          return doc.Layers.FindIndex(newIndex);
+      }
+      catch (Exception e)
+      {
         return null;
-      else
-        return doc.Layers.FindIndex(newIndex);
+      }
     }
     #endregion
   }
