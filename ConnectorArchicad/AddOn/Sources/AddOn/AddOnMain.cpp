@@ -111,24 +111,14 @@ private:
 
   GS::Array<GS::UniString> GetExecutableArguments()
   {
-    UShort portNumber = 0;
-    {
-      const auto err = ACAPI_Goodies(APIAny_GetHttpConnectionPortID, &portNumber);
+    UShort portNumber;
+    const auto err = ACAPI_Goodies(APIAny_GetHttpConnectionPortID, &portNumber);
 
-      if (err != NoError) {
-        throw GS::IllegalArgumentException();
-      }
+    if (err != NoError) {
+      throw GS::IllegalArgumentException();
     }
 
-    UShort archicadVersion = 0;
-    {
-      API_ServerApplicationInfo serverApplicationInfo;
-      ACAPI_GetReleaseNumber (&serverApplicationInfo);
-
-      archicadVersion = serverApplicationInfo.mainVersion;
-    }
-
-    return GS::Array<GS::UniString> { GS::ValueToUniString(portNumber), GS::ValueToUniString(archicadVersion) };
+    return GS::Array<GS::UniString> { GS::ValueToUniString(portNumber) };
   }
 
   GS::Optional<GS::Process> avaloniaProcess;

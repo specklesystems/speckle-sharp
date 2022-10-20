@@ -16,27 +16,21 @@ namespace Archicad.Launcher
 
     public static void Main(string[] args)
     {
-      if (args.Length != 2)
+      if (args.Length == 0)
       {
         System.Diagnostics.Debug.Fail("Communication port number is missing!");
         return;
       }
 
-      if (!uint.TryParse(args[0], out uint portNumber))
+      if (!uint.TryParse(args.First(), out uint portNumber))
       {
         System.Diagnostics.Debug.Fail("Invalid communication port number!");
         return;
       }
 
-      if (!uint.TryParse(args[1], out uint archicadVersion))
-      {
-        System.Diagnostics.Debug.Fail("Invalid Archicad version number!");
-        return;
-      }
-
       Communication.ConnectionManager.Instance.Start(portNumber);
 
-      Bindings = new ArchicadBinding(archicadVersion);
+      Bindings = new ArchicadBinding();
       CreateOrFocusSpeckle(args);
       // BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
     }

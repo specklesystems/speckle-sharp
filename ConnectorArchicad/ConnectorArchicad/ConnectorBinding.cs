@@ -20,13 +20,6 @@ namespace Archicad.Launcher
 {
   public class ArchicadBinding : ConnectorBindings
   {
-    public uint archicadVersion { get; }
-
-    public ArchicadBinding (uint archicadVersion)
-    {
-      this.archicadVersion = archicadVersion;
-    }
-
     public override string GetActiveViewName()
     {
       throw new NotImplementedException();
@@ -66,7 +59,7 @@ namespace Archicad.Launcher
 
     public override string GetHostAppNameVersion()
     {
-      return string.Format("Archicad {0}", archicadVersion);
+      return "Archicad 26";
     }
 
     public override string GetHostAppName()
