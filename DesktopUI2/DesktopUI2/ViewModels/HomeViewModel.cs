@@ -253,6 +253,8 @@ namespace DesktopUI2.ViewModels
         streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
         this.RaisePropertyChanged("HasSavedStreams");
         SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
+
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Saved Streams Load" }, { "count", streams.Count } });
       }
       catch (Exception ex)
       {
@@ -658,6 +660,7 @@ namespace DesktopUI2.ViewModels
       {
         var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
         MainViewModel.RouterInstance.Navigate.Execute(new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand));
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Open" } });
       }
     }
 
