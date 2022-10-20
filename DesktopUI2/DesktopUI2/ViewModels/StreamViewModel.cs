@@ -989,7 +989,8 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object> {
             { "filter", StreamState.Filter.Name },
             { "view", view },
-            { "collaborators", Stream.collaborators.Count }
+            { "collaborators", Stream.collaborators.Count },
+            { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
           });
 
           Notification = $"Sent successfully, view online";
@@ -1070,7 +1071,10 @@ namespace DesktopUI2.ViewModels
               { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastSourceApp).Slug },
               { "sourceHostAppVersion", state.LastSourceApp },
               { "view", view },
-              { "collaborators", Stream.collaborators.Count },});
+              { "collaborators", Stream.collaborators.Count },
+              { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+
+            });
         }
 
 
