@@ -275,7 +275,7 @@ namespace DesktopUI2.ViewModels
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
-            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{HttpUtility.UrlEncode(SelectedBranch.Branch.name)}";
+            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         }
@@ -480,7 +480,7 @@ namespace DesktopUI2.ViewModels
         if (!IsReceiver)
         {
           if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{HttpUtility.UrlEncode(SelectedBranch.Branch.name)}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         }
         //receiver
         else
@@ -488,7 +488,7 @@ namespace DesktopUI2.ViewModels
           if (SelectedCommit != null && SelectedCommit.id != "latest")
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
           if (SelectedBranch != null)
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{HttpUtility.UrlEncode(SelectedBranch.Branch.name)}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         }
         return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
 
