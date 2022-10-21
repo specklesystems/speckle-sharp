@@ -230,13 +230,13 @@ namespace Objects.Converter.AutocadCivil
         var docStyles = new ObjectIdCollection();
         foreach (ObjectId styleId in civilDoc.Styles.AlignmentStyles) docStyles.Add(styleId);
         var style = civilAlignment != null ? 
-          GetFromObjectIdCollection(civilAlignment.style, docStyles) :  civilDoc.Styles.AlignmentStyles.First();
+          GetFromObjectIdCollection(civilAlignment.style, docStyles, true) :  civilDoc.Styles.AlignmentStyles.First();
 
         // label set style
         var labelStyles = new ObjectIdCollection();
         foreach (ObjectId styleId in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles) labelStyles.Add(styleId);
         var label = civilAlignment != null ?
-          GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
+          GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles, true) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
 #endregion
 
         try
@@ -276,7 +276,7 @@ namespace Objects.Converter.AutocadCivil
           }
           _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
         }
-        catch (Exception e)
+        catch (System.Exception e)
         {
           appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
           return appObj;
@@ -540,8 +540,8 @@ namespace Objects.Converter.AutocadCivil
       // featureline
       var _featureline = new Featureline();
 
-      _featureline.curve = PolylineToSpeckle(polyline);
-      _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
+      _featureline.displayValue = PolylineToSpeckle(polyline);
+      _featureline.curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
       _featureline.name = (featureline.Name != null) ? featureline.Name : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
@@ -584,23 +584,31 @@ namespace Objects.Converter.AutocadCivil
       // output vars
       var _vertices = new List<Acad.Point3d>();
       var faces = new List<int>();
-
       foreach (var triangle in surface.GetTriangles(false))
       {
-        // get vertices
-        var faceIndices = new List<int>();
-        foreach (var vertex in new List<CivilDB.TinSurfaceVertex>() {triangle.Vertex1, triangle.Vertex2, triangle.Vertex3})
+        var triangleVertices = new List<Point3d> { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
+
+#if CIVIL2023 // skip any triangles that are hidden in the surface!
+        if (!triangle.IsVisible)
         {
-          if (!_vertices.Contains(vertex.Location))
+          triangle.Dispose();
+          continue;
+        }
+#endif
+
+        // store vertices
+        var faceIndices = new List<int>();
+        foreach (var vertex in triangleVertices)
+        {
+          if (!_vertices.Contains(vertex))
           {
             faceIndices.Add(_vertices.Count);
-            _vertices.Add(vertex.Location);
+            _vertices.Add(vertex);
           }
           else
           {
-            faceIndices.Add(_vertices.IndexOf(vertex.Location));
+            faceIndices.Add(_vertices.IndexOf(vertex));
           }
-          vertex.Dispose();
         }
 
         // get face
@@ -616,11 +624,8 @@ namespace Objects.Converter.AutocadCivil
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
 
       // add tin surface props
-      try{
-      mesh["name"] = surface.DisplayName;
-      mesh["description"] = surface.Description;
-      }
-      catch{}
+      var props = Speckle.Core.Models.Utilities.GetApplicationProps(surface, typeof(CivilDB.TinSurface), false);
+      mesh[CivilPropName] = props;
 
       return mesh;
     }
@@ -670,6 +675,160 @@ namespace Objects.Converter.AutocadCivil
       catch{}
 
       return mesh;
+    }
+
+    public object CivilSurfaceToNative(Mesh mesh)
+    {
+      var props = mesh[CivilPropName] as Base;
+      if (props == null) return null;
+
+      switch (props["class"] as string)
+      {
+        case "TinSurface":
+          return TinSurfaceToNative(mesh, props);
+        default:
+          return MeshToNativeDB(mesh);
+      }
+    }
+    public ApplicationObject TinSurfaceToNative(Mesh mesh, Base props)
+    {
+      var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
+      var existingObjs = GetExistingElementsByApplicationId(mesh.applicationId);
+
+      // get civil doc
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+      var civilDoc = CivilApplication.ActiveDocument;
+      if (civilDoc == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+        return appObj;
+      }
+
+      // create or retrieve tin surface
+      CivilDB.TinSurface _surface = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.TinSurface : null;
+      bool isUpdate = true;
+      if (_surface == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create) // just create a new surface
+      {
+        isUpdate = false;
+
+        // get civil props for creation
+        var name = string.IsNullOrEmpty(props["Name"] as string) ? mesh.applicationId : props["Name"] as string;
+        var layer = Doc.Database.LayerZero;
+        var docStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.SurfaceStyles) docStyles.Add(styleId);
+        var style = props["style"] as string != null ?
+          GetFromObjectIdCollection(props["style"] as string, docStyles) : civilDoc.Styles.SurfaceStyles.First();
+
+        // add new surface to doc
+        // ⚠ this will throw if name is empty?
+        var id = ObjectId.Null;
+        try
+        {
+          id = CivilDB.TinSurface.Create(name, style);
+        }
+        catch (System.Exception e)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+          return appObj;
+        }
+        if (!id.IsValid)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
+          return appObj;
+        }
+        _surface = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.TinSurface;
+      }
+
+      if (_surface == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"retrieved or baked surface was null");
+        return appObj;
+      }
+
+      if (isUpdate)
+      {
+        appObj.Container = _surface.Layer; // set the appobj container to be the same layer as the existing alignment
+        _surface.DeleteVertices(_surface.Vertices); // remove existing vertices
+      }
+
+      // add all vertices
+      var vertices = new Point3dCollection();
+      var meshVertices = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
+      meshVertices.ForEach(o => vertices.Add(o));
+      _surface.AddVertices(vertices);
+      
+
+      // loop through faces to create an edge dictionary by vertex, which includes all other vertices this vertex is connected to
+      int i = 0;
+      var edges = new Dictionary<Point3d, List<Point3d>>();
+      foreach (var vertex in meshVertices)
+        edges.Add(vertex, new List<Point3d>());
+        
+      while (i < mesh.faces.Count)
+      {
+        if (mesh.faces[i] == 3) // triangle
+        {
+          var v1 = meshVertices[mesh.faces[i + 1]];
+          var v2 = meshVertices[mesh.faces[i + 2]];
+          var v3 = meshVertices[mesh.faces[i + 3]];
+          edges[v1].Add(v2);
+          edges[v2].Add(v3);
+          edges[v3].Add(v1);
+
+          i += 4;
+        }
+        else // this was not a triangulated surface! return null
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Mesh was not triangulated");
+          return appObj;
+        }
+      }
+
+      // loop through each surface vertex edge and create any that don't exist 
+      foreach (Point3d edgeStart in edges.Keys)
+      {
+        var vertex = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
+        var correctEdges = new List<Point3d>();
+        foreach (CivilDB.TinSurfaceEdge currentEdge in vertex.Edges)
+        {
+          if (edges[edgeStart].Contains(currentEdge.Vertex2.Location))
+            correctEdges.Add(currentEdge.Vertex2.Location);
+          currentEdge.Dispose();
+        }
+        vertex.Dispose();
+
+        foreach (var vertexToAdd in edges[edgeStart]) 
+        {
+          if (correctEdges.Contains(vertexToAdd)) continue;
+          var a1 = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
+          var a2 = _surface.FindVertexAtXY(vertexToAdd.X, vertexToAdd.Y);
+          _surface.AddLine(a1, a2);
+          a1.Dispose();
+          a2.Dispose();
+        }
+      }
+      
+
+      // loop through and delete any edges
+      var edgesToDelete = new List<CivilDB.TinSurfaceEdge>();
+      foreach(CivilDB.TinSurfaceVertex vertex in _surface.Vertices)
+      {
+        if (vertex.Edges.Count > edges[vertex.Location].Count)
+          foreach (CivilDB.TinSurfaceEdge modifiedEdge in vertex.Edges)
+            if (!edges[vertex.Location].Contains(modifiedEdge.Vertex2.Location) && !edges[modifiedEdge.Vertex2.Location].Contains(vertex.Location))
+              edgesToDelete.Add(modifiedEdge);
+        vertex.Dispose();
+      }
+      if (edgesToDelete.Count > 0)
+      {
+        _surface.DeleteLines(edgesToDelete);
+        _surface.Rebuild();
+      }
+      
+      // update appobj
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: _surface.Handle.ToString(), convertedItem: _surface);
+      return appObj;
     }
 
     // structures

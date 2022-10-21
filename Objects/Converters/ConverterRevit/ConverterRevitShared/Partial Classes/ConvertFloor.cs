@@ -28,6 +28,9 @@ namespace Objects.Converter.Revit
       }
 
       bool structural = false;
+      if (speckleFloor["structural"] is bool isStructural)
+        structural = isStructural;
+
       var outline = CurveToNative(speckleFloor.outline, true);
       UnboundCurveIfSingle(outline);
       DB.Level level;

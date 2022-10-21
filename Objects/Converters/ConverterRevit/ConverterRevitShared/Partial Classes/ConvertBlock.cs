@@ -147,7 +147,7 @@ namespace Objects.Converter.Revit
       try
       {
         group = Doc.Create.NewGroup(ids);
-        group.GroupType.Name = $"SpeckleBlock_{instance.blockDefinition.name}_{instance.applicationId ?? instance.id}";
+        group.GroupType.Name = $"SpeckleBlock_{RemoveProhibitedCharacters(instance.blockDefinition.name)}_{instance.applicationId ?? instance.id}";
         string skipped = $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
         if (!string.IsNullOrEmpty(skipped)) appObj.Update(logItem: $"Skipped {skipped}");
         var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;

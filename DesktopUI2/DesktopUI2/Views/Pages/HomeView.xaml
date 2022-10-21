@@ -60,7 +60,7 @@
   </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
     <m:Card
-      Padding="10,7"
+      Padding="15,10"
       Background="{DynamicResource PrimaryHueMidBrush}"
       CornerRadius="0">
       <Grid ColumnDefinitions="auto,*">
@@ -70,7 +70,7 @@
           Spacing="6">
           <Image Height="30" Source="../../Assets/logo.png" />
           <TextBlock
-            FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk"
+            Classes="SpeckleFont"
             FontSize="18"
             FontWeight="Medium"
             Foreground="White"
@@ -192,6 +192,7 @@
             <MenuItem
               Width="30"
               Height="30"
+              Foreground="White"
               Header="{icons:MaterialIconExt AccountMultiple}">
 
               <MenuItem
@@ -250,7 +251,7 @@
     </m:Card>
     <Grid
       Grid.Row="1"
-      Margin="15"
+      Margin="5,10,5,5"
       IsVisible="{Binding HasAccounts}"
       RowDefinitions="auto,auto, auto,auto, *">
 
@@ -470,7 +471,7 @@
                         RowDefinitions="auto, auto">
                         <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,auto">
                           <TextBlock
-                            Classes="Grotesk"
+                            Classes="Medium"
                             Text="{Binding Stream.name}"
                             TextTrimming="CharacterEllipsis" />
                           <icons:MaterialIcon

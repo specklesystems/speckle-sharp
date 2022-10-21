@@ -350,17 +350,8 @@ namespace Objects.Converter.Dynamo
     /// <returns></returns>
     public DS.Arc ArcToNative(Arc a)
     {
-      using (DS.Plane basePlane = PlaneToNative(a.plane))
-      using (DS.Point startPoint = (DS.Point)basePlane.Origin.Translate(basePlane.XAxis, ScaleToNative(a.radius.Value, a.units)))
-      {
-        var arc = DS.Arc.ByCenterPointStartPointSweepAngle(
-          basePlane.Origin,
-          startPoint,
-          a.angleRadians.ToDegrees(),
-          basePlane.Normal
-        );
+      var arc = DS.Arc.ByThreePoints(PointToNative(a.startPoint), PointToNative(a.midPoint), PointToNative(a.endPoint));
         return arc.SetDynamoProperties<DS.Arc>(GetDynamicMembersFromBase(a));
-      }
     }
 
     /// <summary>

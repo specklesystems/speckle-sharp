@@ -369,11 +369,17 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-
+      
+        if (!Helpers.UserHasInternet().Result)
+        {
+          throw new Exception("You are not connected to the internet.");
+        }
+        
         // Note: this method actually converts the objects to speckle too
         ObjectToSend = new Base();
         int convertedCount = 0;
-
+        
+        
         foreach (var d in DataInputs)
         {
           try
@@ -537,13 +543,22 @@ namespace ConnectorGrasshopper.Ops
           }
 
           // Part 3.1: persist the objects
-          BaseId = await Operations.Send(
-            ObjectToSend,
-            CancellationToken,
-            Transports,
-            useDefaultCache: sendComponent.UseDefaultCache,
-            onProgressAction: InternalProgressAction,
-            onErrorAction: ErrorAction, disposeTransports: true);
+          try
+          {
+            BaseId = await Operations.Send(
+              ObjectToSend,
+              CancellationToken,
+              Transports,
+              useDefaultCache: sendComponent.UseDefaultCache,
+              onProgressAction: InternalProgressAction,
+              onErrorAction: ErrorAction, disposeTransports: true);
+
+          }
+          catch (Exception e)
+          {
+            ErrorAction("S", e);
+            return;
+          }
 
           // 3.2 Create commits for any server transport present
 
@@ -615,7 +630,7 @@ namespace ConnectorGrasshopper.Ops
 
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString()));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         //Parent.Message = "Error";
         //((SendComponent)Parent).CurrentComponentState = "expired";
         Done();

@@ -265,6 +265,7 @@ namespace Speckle.ConnectorRevit
       BuiltInCategory.OST_MassFloor,
       BuiltInCategory.OST_Materials,
       BuiltInCategory.OST_MechanicalEquipment,
+      BuiltInCategory.OST_MEPSpaces,
       BuiltInCategory.OST_Parking,
       BuiltInCategory.OST_PipeCurves,
       BuiltInCategory.OST_PipingSystem,

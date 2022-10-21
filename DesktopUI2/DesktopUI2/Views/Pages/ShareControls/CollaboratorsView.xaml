@@ -50,7 +50,7 @@
           Grid.Column="1"
           Margin="15,0,0,0"
           VerticalAlignment="Center"
-          Classes="Grotesk"
+          Classes="Medium SpeckleFont"
           FontSize="20"
           Foreground="White"
           Text="Collaborators"
