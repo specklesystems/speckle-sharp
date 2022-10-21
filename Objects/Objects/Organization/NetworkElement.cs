@@ -69,7 +69,3 @@ namespace Objects.Organization.Revit
     Invalid = -1
   }
 }
-
-
-
-
