@@ -249,7 +249,10 @@ namespace SpeckleRhino
         // check for converter 
         var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
         if (converter == null)
-          throw new Exception("Could not find any Kit!");
+        {
+          progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+          return null;
+        }
         converter.SetContextDocument(Doc);
 
         var commitObject = await GetCommit(commit, state, progress);
@@ -346,7 +349,10 @@ namespace SpeckleRhino
       // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
       converter.SetContextDocument(Doc);
       converter.ReceiveMode = state.ReceiveMode;
 
@@ -474,16 +480,19 @@ namespace SpeckleRhino
     // gets objects by id directly or by applicaiton id user string
     private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
     {
-      var match = new List<RhinoObject>();
-      RhinoObject obj = null;
-      try
+      // first try to find the object by app id user string
+      var match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList() ?? new List<RhinoObject>();
+      
+      // if nothing is found, look for the geom obj by its guid directly
+      if (!match.Any())
       {
-        obj = Doc.Objects.FindId(new Guid(applicationId)); // try get geom object from app id directly
-        match.Add(obj);
-      }
-      catch
-      {
-        match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId).ToList(); // try get geom obj from geom obj app id user string
+        try
+        {
+          RhinoObject obj = Doc.Objects.FindId(new Guid(applicationId));
+          if (obj != null)
+            match.Add(obj);
+        }
+        catch { }
       }
       return match;
     }
@@ -852,7 +861,10 @@ namespace SpeckleRhino
       // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
       converter.SetContextDocument(Doc);
 
       var streamId = state.StreamId;
@@ -956,7 +968,7 @@ namespace SpeckleRhino
         if (converted["@SpeckleSchema"] != null)
         {
           var newSchemaBase = converted["@SpeckleSchema"] as Base;
-          newSchemaBase.applicationId = guid;
+          newSchemaBase.applicationId = applicationId;
           converted["@SpeckleSchema"] = newSchemaBase;
         }
 

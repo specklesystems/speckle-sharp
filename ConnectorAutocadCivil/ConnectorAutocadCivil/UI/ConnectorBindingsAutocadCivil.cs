@@ -82,7 +82,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil", "Civil 3D  "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D "); //hack for ADSK store;
 
     public override string GetHostAppName() => Utils.Slug;
 
@@ -237,7 +237,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
 
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
@@ -603,7 +606,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
-      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated ? false : true;
+      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated || appObj.Status == ApplicationObject.State.Failed ? false : true;
 
       foreach (var convertedItem in appObj.Converted)
       {
@@ -712,10 +715,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
             }
             catch (Exception e)
             {
-              if (parent != null)
-                parent.Log.Add(e.Message);
-              else
-                appObj.Log.Add(e.Message);
+              if (!e.Message.Contains("eWasErased")) // this couldve been previously received and deleted
+              {
+                if (parent != null)
+                  parent.Log.Add(e.Message);
+                else
+                  appObj.Log.Add(e.Message);
+              }
             }
           }
           appObj.Status = toRemove.Count > 0 ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -819,7 +825,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
       if (converter == null)
-        throw new Exception("Could not find any Kit!");
+      {
+        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        return null;
+      }
 
       var streamId = state.StreamId;
       var client = state.Client;

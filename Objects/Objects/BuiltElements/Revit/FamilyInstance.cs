@@ -1,4 +1,4 @@
-﻿using Objects.Geometry;
+using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;

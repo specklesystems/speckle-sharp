@@ -12,6 +12,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
 using Revit.Async;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
 using static DesktopUI2.ViewModels.MappingViewModel;
@@ -209,8 +210,8 @@ namespace Speckle.ConnectorRevit.UI
     private const string TypeCatFraming = "Framing";
     private const string TypeCatColumns = "Columns";
     private const string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
-    private List<string> allTypeCategories = new List<string> 
-    { 
+    private List<string> allTypeCategories = new List<string>
+    {
       TypeCatColumns,
       TypeCatFloors,
       TypeCatFraming,
@@ -354,7 +355,7 @@ namespace Speckle.ConnectorRevit.UI
           return new customTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns });
         case TypeCatMisc:
         default:
-          return new customTypesFilter(TypeCatMisc); 
+          return new customTypesFilter(TypeCatMisc);
       }
     }
 
@@ -397,7 +398,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         var @object = StoredObjects[obj.OriginalId];
         string type = null;
-        
+
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "etabs":
@@ -457,8 +458,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <summary>
     /// Update receive object to include the user's custom mapping
     /// </summary>
-    private void SetMappedValues(Dictionary<string,List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
+    private void SetMappedValues(Dictionary<string, List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
     {
+
       string typeCategory = null;
       List<string> mappedValues = new List<string>();
 
@@ -535,6 +537,8 @@ namespace Speckle.ConnectorRevit.UI
             break;
         }
       }
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Mappings Applied" } });
     }
 
     /// <summary>
@@ -744,12 +748,21 @@ namespace Speckle.ConnectorRevit.UI
           }
 
           if (symbolLoaded)
+          {
             t.Commit();
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
+              { "name", "Mappings Import Families" },
+              { "count", vm.selectedFamilySymbols.Count }});
+          }
+
           else
             t.RollBack();
           return hostTypesDict;
         }
       });
+
+
+
 
       //close current dialog body
       MainViewModel.CloseDialog();

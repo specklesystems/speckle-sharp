@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -229,9 +229,13 @@ namespace Speckle.Core.Api
 
         return res.Data.stream;
       }
+      catch (SpeckleException se)
+      {
+        throw se;
+      }
       catch (Exception e)
       {
-        throw new SpeckleException(e.Message, e);
+        throw new SpeckleException("Could not get stream", e);
       }
     }
 
@@ -1025,13 +1029,19 @@ namespace Speckle.Core.Api
         var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+          throw new SpeckleException($"Some errors occurred while fetching branch '{branchName}' from stream '{streamId}' on server '{ServerUrl}'",
+        res.Errors);
 
         return res.Data.stream.branch;
       }
+      catch (SpeckleException se)
+      {
+        throw se; // Rethrow the speckle exception
+      }
       catch (Exception e)
       {
-        throw new SpeckleException(e.Message, e);
+        // For anything else, wrap it in a speckle exception with a descriptive message.
+        throw new SpeckleException($"Failed to fetch branch '{branchName}' from stream '{streamId}' on server '{ServerUrl}'", e);
       }
     }
 

@@ -71,6 +71,8 @@ namespace Objects.Converter.Revit
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
+    public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
+
     public ReceiveMode ReceiveMode { get; set; }
 
 
@@ -267,7 +269,8 @@ namespace Objects.Converter.Revit
       // we might want to try later on to capture it more intelligently from inside conversion routines.
       if (returnObject != null
           && returnObject["renderMaterial"] == null
-          && returnObject["displayValue"] == null)
+          && returnObject["displayValue"] == null
+          && !(returnObject is Model))
       {
         try
         {
@@ -281,7 +284,7 @@ namespace Objects.Converter.Revit
       }
 
       //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null)
+      if (returnObject != null && !(returnObject is Model))
       {
         try
         {
@@ -355,7 +358,7 @@ namespace Objects.Converter.Revit
     {
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.Parse(recieveModelMesh ?? "false") == true)
       {
         try
         {

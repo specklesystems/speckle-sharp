@@ -8,6 +8,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
+using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
 {
@@ -58,16 +59,19 @@ namespace SpeckleRhino
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
 
+      try
+      {
 #if MAC
-      var msg = "Speckle is temporarily disabled on Rhino due to a critical bug regarding Rhino's top-menu commands. Please use Grasshopper instead while we fix this.";
-      RhinoApp.CommandLineOut.WriteLine(msg);
-      Rhino.UI.Dialogs.ShowMessage(msg, "Speckle has been disabled", Rhino.UI.ShowMessageButton.OK, Rhino.UI.ShowMessageIcon.Exclamation);
-      return Result.Nothing;
-      //CreateOrFocusSpeckle();
+        CreateOrFocusSpeckle();
+#else
+        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 #endif
-      Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
-
-      return Result.Success;
+        return Result.Success;
+      } catch (Exception e)
+      {
+        RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
+        return Result.Failure;
+      }
     }
 
     public static void CreateOrFocusSpeckle()
