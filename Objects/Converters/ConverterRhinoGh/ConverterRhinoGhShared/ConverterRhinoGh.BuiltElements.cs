@@ -62,6 +62,7 @@ namespace Objects.Converter.RhinoGh
     }
     public string ViewToNative(View3D view)
     {
+      var bakedViewName = string.Empty;
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate {
 
         RhinoView _view = Doc.Views.ActiveView;
@@ -97,14 +98,14 @@ namespace Objects.Converter.RhinoGh
           viewport.ChangeToParallelProjection(true);
 
         var commitInfo = GetCommitInfo();
-        var viewName = $"{commitInfo } - {view.name}";
+        bakedViewName = $"{commitInfo } - {view.name}";
 
-        Doc.NamedViews.Add(viewName, viewport.Id);
+        Doc.NamedViews.Add(bakedViewName, viewport.Id);
       });
 
       //ConversionErrors.Add(sdfasdfaf);
 
-      return "baked";
+      return bakedViewName;
     }
 
     private void AttachViewParams(Base speckleView, ViewInfo view)
@@ -253,13 +254,25 @@ namespace Objects.Converter.RhinoGh
       return new RV.RevitFaceWall(family, type, BrepToSpeckle(brep), null) { units = ModelUnits };
     }
 
+    public Topography BrepToTopography(RH.Brep brep)
+    {
+      brep.Repair(Doc.ModelAbsoluteTolerance);
+      var displayMesh = GetBrepDisplayMesh(brep);
+      return new Topography(MeshToSpeckle(displayMesh)) { units = ModelUnits };
+    }
+
     public Topography MeshToTopography(RH.Mesh mesh)
     {
-      if (mesh.IsClosed)
-        return null;
-
       return new Topography(MeshToSpeckle(mesh)) { units = ModelUnits };
     }
+
+#if RHINO7
+    public Topography MeshToTopography(RH.SubD subD)
+    {
+      var speckleMesh = MeshToSpeckle(subD);
+      return speckleMesh != null ? new Topography(speckleMesh) { units = ModelUnits } : null;
+    }
+#endif
 
     public RV.AdaptiveComponent InstanceToAdaptiveComponent(InstanceObject instance, string[] args)
     {
@@ -366,7 +379,7 @@ namespace Objects.Converter.RhinoGh
       return nativeObjects;
     } 
 
-    #region CIVIL
+#region CIVIL
 
     // alignment
     public RH.Curve AlignmentToNative(Alignment alignment)
@@ -385,6 +398,6 @@ namespace Objects.Converter.RhinoGh
       return joined.First();
     }
 
-    #endregion
+#endregion
   }
 }

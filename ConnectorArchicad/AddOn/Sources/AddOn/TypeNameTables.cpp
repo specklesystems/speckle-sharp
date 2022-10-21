@@ -65,3 +65,32 @@ const GS::HashTable<API_SlabReferencePlaneLocationID, GS::UniString> referencePl
 	{ APISlabRefPlane_Top,			"Top"}
 };
 
+
+const GS::HashTable<API_AssemblySegmentLengthTypeID, GS::UniString> segmentLengthTypeNames
+{
+	{APIAssemblySegment_Fixed, "Fixed"},
+	{APIAssemblySegment_Proportional, "Proportional"},
+};
+
+
+const GS::HashTable<API_AssemblySegmentCutTypeID, GS::UniString> assemblySegmentCutTypeNames
+{
+	{APIAssemblySegmentCut_Horizontal, "Horizontal"},
+	{APIAssemblySegmentCut_Vertical, "Vertical"},
+	{APIAssemblySegmentCut_Custom, "Custom"}
+};
+
+
+const GS::HashTable<API_BHoleTypeID, GS::UniString> beamHoleTypeNames
+{
+	{APIBHole_Rectangular, "Rectangular" },
+	{APIBHole_Circular, "Circular"}
+};
+
+
+const GS::HashTable<API_BeamShapeTypeID, GS::UniString> beamShapeTypeNames
+{
+	{ API_StraightBeam, "Straight" },
+	{ API_HorizontallyCurvedBeam, "HorizontallyCurved"},
+	{ API_VerticallyCurvedBeam, "VerticallyCurved"}
+};

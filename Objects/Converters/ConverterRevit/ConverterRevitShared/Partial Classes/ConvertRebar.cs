@@ -16,11 +16,10 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
       var appObj = new ApplicationObject(speckleRebar.id, speckleRebar.speckle_type) { applicationId = speckleRebar.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
-      }
 
       if (speckleRebar.curves.Count == 0)
       {
@@ -36,7 +35,11 @@ namespace Objects.Converter.Revit
       }
 
       var rebarType = speckleRevitRebar?.barType;
-      var barType = GetElementType<RebarBarType>(speckleRebar);
+      if (!GetElementType<RebarBarType>(speckleRebar, appObj, out RebarBarType barType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
       var rebarStyle = speckleRevitRebar?.barStyle == "StirrupTie" ? RebarStyle.StirrupTie : RebarStyle.Standard;
 
       // get construction curves (only works for revit rebar due to need for host)

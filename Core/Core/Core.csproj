@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Speckle.Core</RootNamespace>
     <LangVersion>8.0</LangVersion>
@@ -9,6 +9,7 @@
     <Authors>Speckle</Authors>
     <Company>Speckle</Company>
     <Product>SpeckleCore</Product>
+    <RuntimeIdentifiers>win-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
     <AssemblyName>SpeckleCore2</AssemblyName>
     <Version>2.1.0</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -21,6 +22,7 @@
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
+    <DefineConstants>TRACE;</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -28,34 +30,14 @@
   <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <ForceMacBuild Condition="'$(ForceMacBuild)' == ''">false</ForceMacBuild>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
-    <DefineConstants>TRACE;</DefineConstants>
-  </PropertyGroup>
-  <Choose>
-    <When Condition="$(ForceMacBuild) Or $([MSBuild]::IsOsPlatform('OSX'))">
-      <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Mac" Version="1.0.104.2" />
-      </ItemGroup>
-    </When>
-    <When Condition="!$(ForceMacBuild) Or $([MSBuild]::IsOsPlatform('Windows')) Or $([MSBuild]::IsOsPlatform('Linux')) ">
-      <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115" />
-      </ItemGroup>
-    </When>
-  </Choose>
   <ItemGroup>
     <PackageReference Include="GraphQL.Client" Version="4.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Sentry" Version="3.19.0" />
+    <PackageReference Include="Sentry" Version="3.20.1" />
     <PackageReference Include="Speckle.Newtonsoft.Json" Version="12.0.3.1">
       <Aliases></Aliases>
     </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.8" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialisation\" />
@@ -68,9 +50,15 @@
     <Compile Remove="Core\User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Web" />
   </ItemGroup>
 </Project>

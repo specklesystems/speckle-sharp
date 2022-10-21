@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Speckle.ConnectorTeklaStructures.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using System.Linq;
-using Speckle.ConnectorTeklaStructures.UI;
-using Tekla.Structures.Model;
 using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.Util
 {
   class ConnectorTeklaStructuresUtils
   {
 #if TeklaStructures2021
-    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2021;
+    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2021);
 #elif TeklaStructures2020
-  public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
+  public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2020);
 #endif
 
     public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
@@ -39,7 +39,7 @@ namespace Speckle.ConnectorTeklaStructures.Util
       }
       return _categories;
     }
-        
+
 
     #region Get List Names
 

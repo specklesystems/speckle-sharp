@@ -1,4 +1,5 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using Speckle.Core.Models.Extensions;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,21 +159,23 @@ namespace Speckle.Core.Models
       Status = State.Unknown;
     }
 
-    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, List<string> log = null, string logItem = null, List<object> converted = null, object convertedItem = null)
+    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, string container = null, List<string> log = null, string logItem = null, List<object> converted = null, object convertedItem = null)
     {
       if (createdIds != null) createdIds.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(o => CreatedIds.Add(o));
       if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
       if (status.HasValue) Status = status.Value;
       if (log != null) log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
       if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem)) Log.Add(logItem);
-      if (convertedItem != null) Converted.Add(convertedItem);
-      if (converted != null) converted.Where(o => o != null)?.ToList().ForEach(o => Converted.Add(o));
+      if (convertedItem != null && !Converted.Contains(convertedItem)) Converted.Add(convertedItem);
+      if (converted != null) converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
+      if (!string.IsNullOrEmpty(container)) Container = container;
     }
   }
 
   public class ProgressReport
   {
     public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
+    public List<string> SelectedReportObjects { get; set; } = new List<string>();
 
     public void Log(ApplicationObject obj)
     {
@@ -185,7 +188,7 @@ namespace Speckle.Core.Models
     {
       if (GetReportObject(obj.OriginalId, out int index))
       {
-        ReportObjects[index].Update(createdIds: obj.CreatedIds, log: obj.Log);
+        ReportObjects[index].Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log);
         if (obj.Status != ApplicationObject.State.Unknown)
           ReportObjects[index].Update(status: obj.Status);
         return ReportObjects[index];
@@ -274,7 +277,7 @@ namespace Speckle.Core.Models
       get
       {
         lock (OperationErrorsLock)
-          return string.Join("\n", OperationErrors.Select(x => x.Message).Distinct());
+          return string.Join("\n", OperationErrors.Select(x => x.ToFormattedString()).Distinct());
       }
     }
 

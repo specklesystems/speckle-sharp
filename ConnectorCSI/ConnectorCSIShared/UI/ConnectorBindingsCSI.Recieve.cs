@@ -16,10 +16,10 @@ namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
+    public override bool CanPreviewReceive => false;
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
-      // TODO!
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
@@ -63,6 +63,8 @@ namespace Speckle.ConnectorCSI.UI
       }
       string referencedObject = commit.referencedObject;
 
+      state.LastSourceApp = commit.sourceApplication;
+
       var commitObject = await Operations.Receive(
                 referencedObject,
                 progress.CancellationTokenSource.Token,
@@ -73,7 +75,7 @@ namespace Speckle.ConnectorCSI.UI
                   progress.Report.LogOperationError(e);
                   progress.CancellationTokenSource.Cancel();
                 }),
-                //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+                 onTotalChildrenCountKnown: count => { progress.Max = count; },
                 disposeTransports: true
                 );
 
@@ -103,7 +105,7 @@ namespace Speckle.ConnectorCSI.UI
         return null;
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
+      conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
 
       Action updateProgressAction = () =>
@@ -145,6 +147,7 @@ namespace Speckle.ConnectorCSI.UI
     {
       try
       {
+        converter.ReceiveMode = state.ReceiveMode;
         converter.ConvertToNative(obj);
       }
       catch (Exception e)

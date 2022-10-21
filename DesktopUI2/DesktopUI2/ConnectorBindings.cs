@@ -5,7 +5,9 @@ using DesktopUI2.ViewModels;
 using Sentry.Reflection;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
 {
@@ -41,6 +43,23 @@ namespace DesktopUI2
     {
       return false;
     }
+
+    #region abstract properties
+
+    /// <summary>
+    /// Indicates if previewing send has been implemented
+    /// </summary>
+    /// <returns></returns>
+    public abstract bool CanPreviewSend { get; }
+
+    /// <summary>
+    /// Indicates if previewing receive has been implemented
+    /// </summary>
+    /// <returns></returns>
+    public abstract bool CanPreviewReceive { get; }
+
+    #endregion
+
 
     #region abstract methods
 
@@ -124,6 +143,7 @@ namespace DesktopUI2
     /// <returns></returns>
     public abstract void PreviewSend(StreamState state, ProgressViewModel progress);
 
+
     /// <summary>
     /// Receives stream data from the server
     /// </summary>
@@ -182,6 +202,11 @@ namespace DesktopUI2
 
     public abstract List<ISetting> GetSettings();
 
+    /// <summary>
+    /// Imports family symbols in Revit 
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string,List<MappingValue>> Mapping);
     #endregion
   }
 }

@@ -20,12 +20,8 @@ namespace Objects.Converter.Revit
       }
 
       if (subElements != null)
-      {
         foreach (var sb in subElements)
-        {
           allSolids.AddRange(GetElementSolids(sb));
-        }
-      }
 
       return GetMeshesFromSolids(allSolids, element.Document);
 
@@ -186,7 +182,7 @@ namespace Objects.Converter.Revit
       {
         if (geometryObject is Solid gSolid) // already solid
         {
-          if (gSolid.Faces.Size > 0 && Math.Abs(gSolid.Volume) > 0) // skip invalid solid
+          if (gSolid.Faces.Size > 0 && Math.Abs(gSolid.SurfaceArea) > 0) // skip invalid solid
             solids.Add(gSolid);
         }
         else if (geometryObject is GeometryInstance gInstance) // find solids from GeometryInstance
@@ -296,7 +292,7 @@ namespace Objects.Converter.Revit
       {
         var triangle = mesh.get_Triangle(i);
 
-        faces.Add(0); // TRIANGLE flag
+        faces.Add(3); // TRIANGLE flag
         faces.Add((int)triangle.get_Index(0) + faceIndexOffset);
         faces.Add((int)triangle.get_Index(1) + faceIndexOffset);
         faces.Add((int)triangle.get_Index(2) + faceIndexOffset);

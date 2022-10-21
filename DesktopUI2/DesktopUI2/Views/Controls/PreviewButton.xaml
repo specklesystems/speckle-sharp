@@ -1,5 +1,5 @@
 <UserControl
-  x:Class="DesktopUI2.Controls.PreviewButton"
+  x:Class="DesktopUI2.Views.Controls.PreviewButton"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -43,5 +43,33 @@
         </Panel>
       </Button.Content>
     </m:FloatingButton>
+
+    <Grid>
+      <ProgressBar
+        Width="40"
+        Height="40"
+        Classes="Circle"
+        IsIndeterminate="True"
+        IsVisible="{Binding Progress.IsPreviewProgressing, FallbackValue=False}"
+        Maximum="{Binding Progress.Max}"
+        Value="{Binding Progress.Value}" />
+      <m:FloatingButton
+        assists:ButtonAssist.HoverColor="Transparent"
+        assists:ShadowAssist.ShadowDepth="0"
+        Background="Transparent"
+        Classes="Mini"
+        Command="{Binding CancelPreviewCommand}"
+        IsVisible="{Binding Progress.IsPreviewProgressing, FallbackValue=False}"
+        ToolTip.Tip="Cancel">
+        <Button.Content>
+          <icons:MaterialIcon
+            Width="15"
+            Height="15"
+            Foreground="{DynamicResource PrimaryHueDarkBrush}"
+            Kind="Close" />
+        </Button.Content>
+      </m:FloatingButton>
+    </Grid>
+
   </Grid>
 </UserControl>

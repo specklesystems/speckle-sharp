@@ -13,13 +13,12 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject SpaceToNative(Space speckleSpace)
     {
-      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
-      if (revitSpace != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: revitSpace.UniqueId, convertedItem: revitSpace);
+      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
+      
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(revitSpace, appObj, out appObj))
         return appObj;
-      }
 
       var levelState = ApplicationObject.State.Unknown;
       var level = ConvertLevelToRevit(speckleSpace.level, out levelState);
@@ -98,7 +97,7 @@ namespace Objects.Converter.Revit
       speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId(), revitSpace.Document);
       speckleSpace.baseOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET);
       speckleSpace.topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
-      speckleSpace.outline = profiles[0];
+      speckleSpace.outline = profiles.Count != 0 ? profiles[0] : null;
       if (profiles.Count > 1)
         speckleSpace.voids = profiles.Skip(1).ToList();
       speckleSpace.area = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_AREA);

@@ -1,38 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using CSiAPIv1;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using BE = Objects.BuiltElements;
-using OSG = Objects.Structural.Geometry;
-using OSEA = Objects.Structural.CSI.Analysis;
+﻿using CSiAPIv1;
 using Objects.Converter.CSI;
-using Speckle.Core.Logging;
 using Objects.Structural.Analysis;
-using Objects.Structural.Results;
 using Objects.Structural.CSI.Geometry;
+using Objects.Structural.Results;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using BE = Objects.BuiltElements;
+using OSEA = Objects.Structural.CSI.Analysis;
+using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI : ISpeckleConverter
   {
 #if ETABS
-    public static string CSIAppName = VersionedHostApplications.ETABS;
+    public static string CSIAppName = HostApplications.ETABS.Name;
     public static string CSISlug = HostApplications.ETABS.Slug;
 #elif SAP2000
-    public static string CSIAppName = VersionedHostApplications.SAP2000;
+    public static string CSIAppName = HostApplications.SAP2000.Name;
     public static string CSISlug = HostApplications.SAP2000.Slug;
-#elif CSIBridge
-        public static string CSIAppName = VersionedHostApplications.CSIBridge;
-            public static string CSISlug = HostApplications.CSIBridge.Slug;
+#elif CSIBRIDGE
+    public static string CSIAppName = HostApplications.CSIBridge.Name;
+    public static string CSISlug = HostApplications.CSIBridge.Slug;
 #elif SAFE
-      public static string CSIAppName = VersionedHostApplications.SAFE;
+      public static string CSIAppName = HostApplications.SAFE.Name;
       public static string CSISlug = HostApplications.SAFE.Slug;
-#else
-    public static string CSIAppName = VersionedHostApplications.CSI;
-    public static string CSISlug = HostApplications.CSI.Slug;
 #endif
     public string Description => "Default Speckle Kit for CSI";
 
@@ -75,6 +72,8 @@ namespace Objects.Converter.CSI
 
     public bool CanConvertToSpeckle(object @object)
     {
+      if (@object == null)
+        return false;
       foreach (var type in Enum.GetNames(typeof(ConverterCSI.CSIAPIUsableTypes)))
       {
         if (type == @object.ToString())
@@ -89,6 +88,9 @@ namespace Objects.Converter.CSI
     {
       switch (@object)
       {
+        case Objects.Organization.Model o:
+          return BuiltElementModelToNative(o);
+          Report.Log($"Created Model { o.id}");
         //case osg.node o:
         //    return pointtonative(o);
         case OSG.Node o:

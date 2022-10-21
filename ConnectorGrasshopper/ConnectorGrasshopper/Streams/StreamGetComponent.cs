@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
+using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
@@ -61,6 +62,7 @@ namespace ConnectorGrasshopper.Streams
       var account = string.IsNullOrEmpty(userId)
         ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == idWrapper.ServerUrl) // If no user is passed in, get the first account for this server
         : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId); // If user is passed in, get matching user in the db
+      
       if (account == null || account.serverInfo.url != idWrapper.ServerUrl)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
@@ -68,10 +70,11 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
+      var newWrapper = new StreamWrapper(idWrapper.OriginalInput + $"?u={userId}");
       if (error != null)
       {
         Message = null;
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, error.ToFormattedString());
         error = null;
         stream = null;
       }
@@ -81,7 +84,7 @@ namespace ConnectorGrasshopper.Streams
         // Validation
         string errorMessage = null;
 
-        if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
+        if (!ValidateInput(account, newWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
           return;
@@ -96,12 +99,13 @@ namespace ConnectorGrasshopper.Streams
           try
           {
             var acc = idWrapper.GetAccount().Result;
+            idWrapper.UserId = acc.userInfo.id;
             stream = idWrapper;
           }
           catch (Exception e)
           {
             stream = null;
-            error = e.InnerException ?? e;
+            error = e;
           }
           finally
           {

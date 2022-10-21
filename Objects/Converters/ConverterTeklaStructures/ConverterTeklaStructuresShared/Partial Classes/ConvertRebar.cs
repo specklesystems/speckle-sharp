@@ -29,7 +29,7 @@ namespace Objects.Converter.TeklaStructures
       }
       Rebar.units = GetUnitsFromModel();
       Rebar.name = rebarGroup.Name;
-      Rebar.material = new Structural.Materials.Material();
+      Rebar.material = new Structural.Materials.StructuralMaterial();
       Rebar.material.name = rebarGroup.Grade;
       Rebar.material.grade = rebarGroup.Grade;
       Rebar.size = rebarGroup.Size;

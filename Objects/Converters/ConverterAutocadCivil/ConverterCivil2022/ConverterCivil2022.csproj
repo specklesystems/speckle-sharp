@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.Civil2022</AssemblyName>
+    <AssemblyName>Objects.Converter.Civil3D2022</AssemblyName>
     <RootNamespace>Objects.Converter.Civil</RootNamespace>
     <DefineConstants>$(DefineConstants);CIVIL2022</DefineConstants>
     <PackageId>Speckle.Objects.Converter.Civil2022</PackageId>

@@ -313,16 +313,36 @@ namespace Objects.Converter.AutocadCivil
 
       return instance;
     }
-    
-    public string BlockInstanceToNativeDB(BlockInstance instance, out BlockReference reference, bool AppendToModelSpace = true)
+    public ApplicationObject BlockInstanceToNativeDB(BlockInstance instance, bool AppendToModelSpace = true)
     {
-      string result = null;
-      reference = null;
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      
+      // delete existing objs if any and this is an update
+      if (ReceiveMode == ReceiveMode.Update)
+      {
+        var existingObjs = GetExistingElementsByApplicationId(instance.applicationId);
+        try
+        {
+          foreach (var existingObjId in existingObjs)
+          {
+            var existingObj = Trans.GetObject(existingObjId, OpenMode.ForWrite);
+            existingObj.Erase();
+          }
+        }
+        catch (Exception e)
+        {
+          if (!e.Message.Contains("eWasErased")) // this couldve been previously deleted & received?
+            appObj.Update(logItem: $"Could not remove one or more existing instances on update: {e.Message}");
+        }
+      }
 
       // block definition
       ObjectId definitionId = BlockDefinitionToNativeDB(instance.blockDefinition);
       if (definitionId == ObjectId.Null)
-        return result;
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Couldn't create block definition");
+        return appObj;
+      }
 
       // insertion pt
       Point3d insertionPoint = PointToNative(instance.GetInsertionPoint());
@@ -347,12 +367,18 @@ namespace Objects.Converter.AutocadCivil
       if (AppendToModelSpace)
         id = modelSpaceRecord.Append(br);
 
-      // return
-      result = "success";
-      if ((id.IsValid && !id.IsNull) || !AppendToModelSpace)
-        reference = br;
+      if ((!id.IsValid || id.IsNull) && AppendToModelSpace)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Couldn't append instance to model space");
+        return appObj;
+      }
 
-      return result;
+      // update appobj
+      var status = ReceiveMode == ReceiveMode.Update ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, convertedItem: br);
+      if (AppendToModelSpace)
+        appObj.CreatedIds.Add(id.Handle.ToString());
+      return appObj;
     }
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
@@ -382,6 +408,77 @@ namespace Objects.Converter.AutocadCivil
       };
 
       return definition;
+    }
+    public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
+    {
+      // get modified definition name with commit info
+      var blockName = RemoveInvalidAutocadChars($"{Doc.UserData["commit"]} - {definition.name}");
+
+      ObjectId blockId = ObjectId.Null;
+
+      // see if block record already exists and return if so
+      BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+      if (blckTbl.Has(blockName))
+        return blckTbl[blockName];
+
+      // create btr
+      using (BlockTableRecord btr = new BlockTableRecord())
+      {
+        btr.Name = blockName;
+
+        // base point
+        btr.Origin = PointToNative(definition.basePoint);
+
+        // add geometry
+        blckTbl.UpgradeOpen();
+        var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
+        foreach (var geo in definition.geometry)
+        {
+          List<Entity> converted = new List<Entity>();
+          DisplayStyle style = geo["displayStyle"] as DisplayStyle;
+          RenderMaterial material = geo["renderMaterial"] as RenderMaterial;
+          if (CanConvertToNative(geo))
+          {
+            switch (geo)
+            {
+              case BlockInstance o:
+                var instanceAppObj = BlockInstanceToNativeDB(o, false);
+                var instance = instanceAppObj.Converted.FirstOrDefault() as BlockReference;
+                if (instance != null) converted.Add(instance);
+                break;
+              default:
+                ConvertWithDisplay(geo, style, material, ref converted);
+                break;
+            }
+          }
+          else if (geo["displayValue"] != null)
+          {
+            switch (geo["displayValue"])
+            {
+              case Base o:
+                ConvertWithDisplay(o, style, material, ref converted, true);
+                break;
+              case IReadOnlyList<Base> o:
+                foreach (Base displayValue in o)
+                  ConvertWithDisplay(displayValue, style, material, ref converted, true);
+                break;
+            }
+          }
+          foreach (var convertedItem in converted)
+          {
+            if (!convertedItem.IsNewObject && !(convertedItem is BlockReference))
+              bakedGeometry.Add(convertedItem.Id);
+            else
+              btr.AppendEntity(convertedItem);
+          }
+        }
+        blockId = blckTbl.Add(btr);
+        btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
+        Trans.AddNewlyCreatedDBObject(btr, true);
+        blckTbl.Dispose();
+      }
+
+      return blockId;
     }
 
     /// <summary>
@@ -434,77 +531,6 @@ namespace Objects.Converter.AutocadCivil
         return true;
       }
       return false;
-    }
-
-    public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
-    {
-      // get modified definition name with commit info
-      var blockName = RemoveInvalidAutocadChars($"{Doc.UserData["commit"]} - {definition.name}");
-
-      ObjectId blockId = ObjectId.Null;
-
-      // see if block record already exists and return if so
-      BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-      if (blckTbl.Has(blockName))
-        return blckTbl[blockName];
-
-      // create btr
-      using (BlockTableRecord btr = new BlockTableRecord())
-      {
-        btr.Name = blockName;
-
-        // base point
-        btr.Origin = PointToNative(definition.basePoint);
-
-        // add geometry
-        blckTbl.UpgradeOpen();
-        var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
-        foreach (var geo in definition.geometry)
-        {
-          List<Entity> converted = new List<Entity>();
-          DisplayStyle style = geo["displayStyle"] as DisplayStyle;
-          RenderMaterial material = geo["renderMaterial"] as RenderMaterial;
-          if (CanConvertToNative(geo))
-          {
-            switch (geo)
-            {
-              case BlockInstance o:
-                BlockInstanceToNativeDB(o, out BlockReference reference, false);
-                if (reference != null) converted.Add(reference);
-                break;
-              default:
-                ConvertWithDisplay(geo, style, material, ref converted);
-                break;
-            }
-          }
-          else if (geo["displayValue"] != null)
-          {
-            switch (geo["displayValue"])
-            {
-              case Base o:
-                ConvertWithDisplay(o, style, material, ref converted, true);
-                break;
-              case IReadOnlyList<Base> o:
-                foreach (Base displayValue in o)
-                  ConvertWithDisplay(displayValue, style, material, ref converted, true);
-                break;
-            }
-          }
-          foreach (var convertedItem in converted)
-          {
-            if (!convertedItem.IsNewObject && !(convertedItem is BlockReference))
-              bakedGeometry.Add(convertedItem.Id);
-            else
-              btr.AppendEntity(convertedItem);
-          }
-        }
-        blockId = blckTbl.Add(btr);
-        btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
-        Trans.AddNewlyCreatedDBObject(btr, true);
-        blckTbl.Dispose();
-      }
-
-      return blockId;
     }
     private void ConvertWithDisplay(Base obj, DisplayStyle style, RenderMaterial material, ref List<Entity> converted, bool TryUseObjDisplay = false)
     {
@@ -571,7 +597,6 @@ namespace Objects.Converter.AutocadCivil
 
       return _text;
     }
-
     public Entity AcadTextToNative(Text text)
     {
       Entity _text = null;
@@ -623,6 +648,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _text;
     }
+
     private ObjectId GetTextStyle(string styleName)
     {
       var textStyleTable = Trans.GetObject(Doc.Database.TextStyleTableId, OpenMode.ForRead) as DimStyleTable;
@@ -983,6 +1009,22 @@ namespace Objects.Converter.AutocadCivil
           return id;
       }
       return ObjectId.Null;
+    }
+
+    // Proxy Entity
+    public Base ProxyEntityToSpeckle(ProxyEntity proxy)
+    {
+      // Currently not possible to retrieve geometry of proxy entities, so sending props as a base instead
+      var _proxy = new Base();
+      _proxy["bbox"] = BoxToSpeckle(proxy.GeometricExtents);
+      var props = Utilities.GetApplicationProps(proxy, typeof(ProxyEntity), false);
+      props["ApplicationDescription"] = proxy.ApplicationDescription;
+      props["OriginalClassName"] = proxy.OriginalClassName;
+      props["OriginalDxfName"] = proxy.OriginalDxfName;
+      props["ProxyFlags"] = proxy.ProxyFlags;
+      if (props != null) _proxy[AutocadPropName] = props;
+
+      return _proxy;
     }
   }
 }

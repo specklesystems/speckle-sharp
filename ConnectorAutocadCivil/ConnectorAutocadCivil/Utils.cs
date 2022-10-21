@@ -22,31 +22,32 @@ namespace Speckle.ConnectorAutocadCivil
   {
 
 #if AUTOCAD2021
-    public static string VersionedAppName = VersionedHostApplications.Autocad2021;
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2021);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
 #elif AUTOCAD2022
-    public static string VersionedAppName = VersionedHostApplications.Autocad2022;
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
 #elif AUTOCAD2023
-    public static string VersionedAppName = VersionedHostApplications.Autocad2023;
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
 #elif CIVIL2021
-    public static string VersionedAppName = VersionedHostApplications.Civil2021;
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2022
-    public static string VersionedAppName = VersionedHostApplications.Civil2022;
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2023
-    public static string VersionedAppName = VersionedHostApplications.Civil2023;
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
+    public static string ApplicationIdKey = "applicationId";
 
     #region extension methods
 
@@ -193,6 +194,79 @@ namespace Speckle.ConnectorAutocadCivil
     }
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
+    private static Autodesk.Aec.PropertyData.DataType? GetPropertySetType(object prop)
+    {
+      switch (prop)
+      {
+        case IEnumerable<string> _:
+        case IEnumerable<int> _:
+        case IEnumerable<double> _:
+        case IEnumerable<bool> _:
+          return Autodesk.Aec.PropertyData.DataType.List;
+
+        case string _:
+          return Autodesk.Aec.PropertyData.DataType.Text;
+        case int _:
+          return Autodesk.Aec.PropertyData.DataType.Integer;
+        case double _:
+          return Autodesk.Aec.PropertyData.DataType.Real;
+        case bool _:
+          return Autodesk.Aec.PropertyData.DataType.TrueFalse;
+
+        default:
+          return null;
+      }
+    }
+
+    public static void SetPropertySets(this Entity entity, Document doc, List<Dictionary<string, object>> propertySetDicts)
+    {
+      // create a dictionary for property sets for this object
+      var name = $"Speckle {entity.Handle} Property Set";
+      int count = 0;
+      foreach (var propertySetDict in propertySetDicts)
+      {
+        // create the property set definition for this set.
+        var propSetDef = new PropertySetDefinition();
+        propSetDef.SetToStandard(doc.Database);
+        propSetDef.SubSetDatabaseDefaults(doc.Database);
+        var propSetDefName = name += $" - {count}";
+        propSetDef.Description = "Property Set Definition added with Speckle";
+        propSetDef.AppliesToAll = true;
+
+        // Create the definition for each property
+        foreach (var entry in propertySetDict)
+        {
+          var propDef = new PropertyDefinition();
+          propDef.SetToStandard(doc.Database);
+          propDef.SubSetDatabaseDefaults(doc.Database);
+          propDef.Name = entry.Key;
+          var dataType = GetPropertySetType(entry.Value);
+          if (dataType != null)
+            propDef.DataType = (Autodesk.Aec.PropertyData.DataType)dataType;
+          propDef.DefaultData = entry.Value;
+          propSetDef.Definitions.Add(propDef);
+        }
+
+        // add the property sets to the object
+        try
+        {
+          // add property set to the database
+          // todo: add logging if the property set couldnt be added because a def already exists
+          using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+          {
+            var dictPropSetDef = new DictionaryPropertySetDefinitions(doc.Database);
+            dictPropSetDef.AddNewRecord(propSetDefName, propSetDef);
+            tr.AddNewlyCreatedDBObject(propSetDef, true);
+
+            entity.UpgradeOpen();
+            PropertyDataServices.AddPropertySet(entity, propSetDef.ObjectId);
+            tr.Commit();
+          }
+        }
+        catch { }
+      }
+    }
+
     /// <summary>
     /// Get the property sets of  DBObject
     /// </summary>
@@ -206,7 +280,7 @@ namespace Speckle.ConnectorAutocadCivil
       {
         propertySets = PropertyDataServices.GetPropertySets(obj);
       }
-      catch (Exception e) 
+      catch (Exception e)
       { }
       if (propertySets == null) return sets;
 
@@ -294,7 +368,56 @@ namespace Speckle.ConnectorAutocadCivil
       }
       return objs;
     }
-#endregion
+    #endregion
+
+    /// <summary>
+    /// Returns, if found, the corresponding doc element.
+    /// The doc object can be null if the user deleted it. 
+    /// </summary>
+    /// <param name="appId">Id of the application that originally created the element, in AutocadCivil it's the handle</param>
+    /// <returns>The element, if found, otherwise null</returns>
+    public static List<ObjectId> GetObjectsByApplicationId(this Document doc, Transaction tr, string appId)
+    {
+      var foundObjects = new List<ObjectId>();
+
+      // first see if this appid is a handle (autocad appid)
+      if (Utils.GetHandle(appId, out Handle handle))
+        if (doc.Database.TryGetObjectId(handle, out ObjectId id))
+          return new List<ObjectId>() { id };
+
+      // Create a TypedValue array to define the filter criteria
+      TypedValue[] acTypValAr = new TypedValue[1];
+      acTypValAr.SetValue(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), 0);
+
+      // Create a selection filter for the applicationID xdata entry and find all objs with this field
+      SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var res = editor.SelectAll(acSelFtr);
+      if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
+        return foundObjects;
+
+      // loop through all obj with an appId 
+      foreach (var appIdObj in res.Value.GetObjectIds())
+      {
+        // get the db object from id
+        var obj = tr.GetObject(appIdObj, OpenMode.ForRead);
+        if (obj != null)
+          foreach (var entry in obj.XData)
+            if (entry.Value as string == appId)
+            {
+              foundObjects.Add(appIdObj);
+              break;
+            }
+      }
+
+      return foundObjects;
+    }
+    public static string ObjectDescriptor(DBObject obj)
+    {
+      if (obj == null) return String.Empty;
+      var simpleType = obj.GetType().ToString();
+      return $"{simpleType}";
+    }
 
     /// <summary>
     /// Retrieves the document's units.
@@ -328,9 +451,15 @@ namespace Speckle.ConnectorAutocadCivil
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    public static Handle GetHandle(string str)
+    public static bool GetHandle(string str, out Handle handle)
     {
-      return new Handle(Convert.ToInt64(str, 16));
+      handle = new Handle();
+      try
+      {
+        handle = new Handle(Convert.ToInt64(str, 16));
+      }
+      catch { return false; }
+      return true;
     }
 
     /// <summary>

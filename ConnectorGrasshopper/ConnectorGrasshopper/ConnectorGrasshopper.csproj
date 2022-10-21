@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{109B3382-634B-408A-8A5C-4CD09CB92641}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -13,6 +13,8 @@
     <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
     <TargetExt>.gha</TargetExt>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TransformOnBuild>false</TransformOnBuild>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
@@ -28,4 +30,23 @@
     <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build" />
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="SchemaBuilder\SchemaBuilderGen.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="SchemaBuilder\SchemaBuilderGen.cs">
+      <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <Target Name="GenerateT4" BeforeTargets="BeforeRebuild">
+    <Message Text="Restoring T4 tool..." Importance="high" />
+    <Exec Command="dotnet tool restore" />
+    <Message Text="Generating T4 templates..." Importance="high" />
+    <Exec Command="dotnet t4 -o $(ProjectDir)SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)" />
+  </Target>
+
 </Project>

@@ -112,6 +112,12 @@ namespace DesktopUI2.Models
     [JsonProperty]
     public string LastUsed { get; set; }
 
+    /// <summary>
+    /// If a receiver, the sourceApplication of the last commit it received from
+    /// </summary>
+    [JsonProperty]
+    public string LastSourceApp { get; set; }
+
 
     /// <summary>
     /// Allows clients to keep track of the previous commit id they created, and propagate it to the next one.

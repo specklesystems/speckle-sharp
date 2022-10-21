@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
@@ -8,16 +8,19 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
+using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
 {
   public class SpeckleCommand : Command
   {
-    #region Avalonia parent window
+#region Avalonia parent window
+#if !MAC
     [DllImport("user32.dll", SetLastError = true)]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
     const int GWL_HWNDPARENT = -8;
-    #endregion
+#endif
+#endregion
 
     public static SpeckleCommand Instance { get; private set; }
 
@@ -26,10 +29,9 @@ namespace SpeckleRhino
     public static Window MainWindow { get; private set; }
 
 
-
     private static CancellationTokenSource Lifetime = null;
 
-    private static Avalonia.Application AvaloniaApp { get; set; }
+    public static Avalonia.Application AvaloniaApp { get; set; }
 
     public SpeckleCommand()
     {
@@ -57,22 +59,24 @@ namespace SpeckleRhino
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
 
-
-#if DEBUG
-      SpeckleRhinoConnectorPlugin.Instance.Init();
-#endif
-
+      try
+      {
 #if MAC
-      CreateOrFocusSpeckle();
+        CreateOrFocusSpeckle();
+#else
+        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
 #endif
-      Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
-
-
-      return Result.Success;
+        return Result.Success;
+      } catch (Exception e)
+      {
+        RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
+        return Result.Failure;
+      }
     }
 
     public static void CreateOrFocusSpeckle()
     {
+      SpeckleRhinoConnectorPlugin.Instance.Init();
       if (MainWindow == null)
       {
         var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);

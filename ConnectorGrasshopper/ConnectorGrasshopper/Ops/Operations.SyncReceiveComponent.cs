@@ -91,15 +91,15 @@ namespace ConnectorGrasshopper.Ops
       if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName) return;
       HandleNewCommit();
     }
-    
+
     public SyncReceiveComponent() : base("Synchronous Receiver", "SR", "Receive data from a Speckle server Synchronously. This will block GH untill all the data are received which can be used to safely trigger other processes downstream",
       ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
     {
     }
-    
+
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      
+
       base.AppendAdditionalMenuItems(menu);
 
       Menu_AppendSeparator(menu);
@@ -152,7 +152,7 @@ namespace ConnectorGrasshopper.Ops
       JustPastedIn = true;
       return base.Read(reader);
     }
-    
+
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGenericParameter("Stream", "S", "The Speckle Stream to receive data from. You can also input the Stream ID or it's URL as text.", GH_ParamAccess.item);
@@ -162,7 +162,7 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
     }
-    
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (RunCount == 1)
@@ -181,7 +181,6 @@ namespace ConnectorGrasshopper.Ops
           var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
           remoteTransport.TransportName = "R";
 
-          Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "sync", true } });
 
           var myCommit = await ReceiveComponentWorker.GetCommit(StreamWrapper, client, (level, message) =>
           {
@@ -193,6 +192,13 @@ namespace ConnectorGrasshopper.Ops
             AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Couldn't get the commit");
             return null;
           }
+
+          Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Receive, new Dictionary<string, object>()
+          {
+            { "sync", true },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
+            { "sourceHostAppVersion", myCommit.sourceApplication }
+          });
 
           var TotalObjectCount = 1;
 
@@ -244,8 +250,8 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-        
-        
+
+
         var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage, true);
 
         DA.SetDataTree(0, data);
@@ -255,7 +261,7 @@ namespace ConnectorGrasshopper.Ops
     private void ParseInput(IGH_DataAccess DA)
     {
       IGH_Goo ghGoo = null;
-      if(!DA.GetData(0, ref ghGoo)) return;
+      if (!DA.GetData(0, ref ghGoo)) return;
 
       var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
@@ -271,14 +277,14 @@ namespace ConnectorGrasshopper.Ops
           newWrapper = new StreamWrapper(s);
           break;
       }
-      
-      if(newWrapper != null)
+
+      if (newWrapper != null)
         inputType = GetStreamTypeMessage(newWrapper);
-      
+
       InputType = inputType;
       HandleInputType(newWrapper);
     }
-    
+
     private static string GetStreamTypeMessage(StreamWrapper newWrapper)
     {
       var inputType = newWrapper?.Type switch
@@ -307,7 +313,7 @@ namespace ConnectorGrasshopper.Ops
       {
         // NOTE: Handled in do work
       }
-      
+
       if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn) return;
       StreamWrapper = wrapper;
 
@@ -316,7 +322,7 @@ namespace ConnectorGrasshopper.Ops
         await ResetApiClient(wrapper);
       });
     }
-    
+
     protected override System.Drawing.Bitmap Icon => Resources.SynchronousReceiver;
     public override Guid ComponentGuid => new Guid("08C7078E-C6DA-4B3B-A57D-CD291CC79B1C");
     public string LastInfoMessage { get; internal set; }

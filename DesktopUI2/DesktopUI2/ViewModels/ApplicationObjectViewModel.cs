@@ -4,11 +4,11 @@ using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Splat;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Splat;
 using System.Threading.Tasks;
-using System;
 
 namespace DesktopUI2.ViewModels
 {
@@ -27,6 +27,7 @@ namespace DesktopUI2.ViewModels
     public string SearchText { get; set; }
 
     private ConnectorBindings Bindings;
+    private ProgressReport _Progress;
 
     private bool previewOn = false;
     public bool PreviewOn
@@ -35,10 +36,11 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref previewOn, value);
     }
 
-    public ApplicationObjectViewModel(ApplicationObject item, bool isReceiver)
+    public ApplicationObjectViewModel(ApplicationObject item, bool isReceiver, ProgressReport progress)
     {
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
+      _Progress = progress;
       var cleanLog = item.Log.Where(o => !string.IsNullOrEmpty(o)).ToList();
 
       Id = item.OriginalId;
@@ -56,13 +58,13 @@ namespace DesktopUI2.ViewModels
       switch (item.Status)
       {
         case ApplicationObject.State.Created:
-          Icon = "PlusThick";
+          Icon = "CheckBold";
           break;
         case ApplicationObject.State.Updated:
           Icon = "Refresh";
           break;
         case ApplicationObject.State.Skipped:
-          Icon = "Cancel";
+          Icon = "Refresh";
           Opacity = 0.6;
           break;
         case ApplicationObject.State.Removed:
@@ -92,11 +94,16 @@ namespace DesktopUI2.ViewModels
       PreviewOn = !PreviewOn;
       if (PreviewOn)
       {
-        Bindings.SelectClientObjects(ApplicationIds);
-        Analytics.TrackEvent(null, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Viewed Report Item" } });
+        foreach (var applicationId in ApplicationIds)
+          if (!_Progress.SelectedReportObjects.Contains(applicationId))
+            _Progress.SelectedReportObjects.Add(applicationId);
+        Bindings.SelectClientObjects(_Progress.SelectedReportObjects);
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Viewed Report Item" } });
       }
       else
       {
+        foreach (var applicationId in ApplicationIds)
+          _Progress.SelectedReportObjects.Remove(applicationId);
         Bindings.SelectClientObjects(ApplicationIds, true);
       }
     }

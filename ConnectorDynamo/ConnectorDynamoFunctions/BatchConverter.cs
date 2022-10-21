@@ -1,4 +1,4 @@
-﻿using Autodesk.DesignScript.Runtime;
+using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -14,16 +14,20 @@ namespace Speckle.ConnectorDynamo.Functions
   public class BatchConverter
   {
     private ISpeckleConverter _converter { get; set; }
-
+    private ISpeckleKit _kit
+    {
+      get;
+      set;
+    }
+    
+    public EventHandler<OnErrorEventArgs> OnError;
+    
     public BatchConverter()
     {
       var kit = KitManager.GetDefaultKit();
-
-      if (kit == null)
-        throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
-
+      _kit = kit ?? throw new SpeckleException("Cannot find the Objects Kit. Has it been copied to the Kits folder?");
       _converter = kit.LoadConverter(Utils.GetAppName());
-
+      
       if (_converter == null)
         throw new SpeckleException("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
 
@@ -32,9 +36,7 @@ namespace Speckle.ConnectorDynamo.Functions
         _converter.SetContextDocument(Globals.RevitDocument);
 
     }
-
-
-
+    
     /// <summary>
     /// Helper method to convert a tree-like structure (nested lists) to Speckle
     /// </summary>
@@ -70,7 +72,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (IsList(@object))
       {
         var list = ((IEnumerable)@object).Cast<object>().ToList();
-        return list.Select(x => RecurseTreeToSpeckle(x)).ToList();
+        return list.Select(RecurseTreeToSpeckle).ToList();
       }
 
       if (@object is DesignScript.Builtin.Dictionary dsDic)
@@ -87,23 +89,68 @@ namespace Speckle.ConnectorDynamo.Functions
       return TryConvertItemToSpeckle(@object);
     }
 
+    private static Dictionary<string, object> DynamoDictionaryToDictionary(DesignScript.Builtin.Dictionary dsDic)
+    {
+      var dict = new Dictionary<string, object>();
+      
+      dsDic.Keys.ToList().ForEach(key =>
+      {
+        dict[key] = dsDic.ValueAtKey(key);
+      });
+      return dict;
+    }
     private Base DictionaryToBase(DesignScript.Builtin.Dictionary dsDic)
     {
-      var @base = new Base();
-      foreach (var key in dsDic.Keys)
-      {
-        @base[key] = RecurseTreeToSpeckle(dsDic.ValueAtKey(key));
-      }
-
-      return @base;
+      return DictionaryToBase(DynamoDictionaryToDictionary(dsDic));
     }
 
     private Base DictionaryToBase(Dictionary<string, object> dic)
     {
+      var hasSpeckleType = dic.Keys.Contains("speckle_type");
       var @base = new Base();
+      var type = @base.GetType();
+      if (hasSpeckleType)
+      {
+        // If the dictionary contains a `speckle_type` key, try to find and create an instance of that type
+        var s = dic["speckle_type"] as string;
+        
+        var baseType = typeof(Base);
+        type = _kit.Types.FirstOrDefault(t => t.FullName == s) ?? baseType;
+        if(type != baseType)
+          @base = Activator.CreateInstance(type) as Base;
+      }
+      var regex = new Regex("//");
       foreach (var key in dic.Keys)
       {
-        @base[key] = RecurseTreeToSpeckle(dic[key]);
+        // Dynamo does not support `::` in dictionary keys. We use `//` instead.
+        // Upon send, any `//` must be replaced by `::` again.
+        var replacedKey = regex.Replace(key, "::");
+        
+        var propInfo = type.GetProperty(key);
+        var convertedValue = RecurseTreeToSpeckle(dic[key]);
+
+        if (propInfo == null)
+        {
+          // Key is dynamic, just add it as is
+          @base[replacedKey] = convertedValue;
+          continue;
+        }
+        // It's an instance field, check if we can set it
+        if (!propInfo.CanWrite) continue;
+        
+        // Check if it's a list, and if so, try to create the according typed instance.
+        if (IsList(convertedValue))
+        {
+          var list = convertedValue as IList;
+          var genericTypeDefinition = propInfo.PropertyType;
+          var typedValue = Activator.CreateInstance(genericTypeDefinition) as IList;
+          foreach (var item in list)
+          {
+            typedValue.Add(item);
+          }
+          convertedValue = typedValue;
+        }
+        @base[replacedKey] = convertedValue;
       }
 
       return @base;
@@ -120,18 +167,16 @@ namespace Speckle.ConnectorDynamo.Functions
         }
         catch (Exception ex)
         {
-          throw new SpeckleException("Could not convert " + value.GetType() + " to Speckle:" + ex.Message, ex);
+          var spcklEx = new SpeckleException($"Could not convert {value.GetType().Name} to Speckle:", ex, false);
+          OnError?.Invoke(this, new OnErrorEventArgs(spcklEx));
+          return null;
         }
       }
 
 
       if (value is Base || value is null || value.GetType().IsSimpleType())
-      {
         return value;
-      }
-
-
-
+      
       return result;
     }
 
@@ -197,22 +242,21 @@ namespace Speckle.ConnectorDynamo.Functions
       // case 1: it's an item that has a direct conversion method, eg a point
       if (_converter.CanConvertToNative(@base))
         return TryConvertItemToNative(@base);
-      // if (IsDataTree(@base))
-      // {
-      //   return ConvertDataTreeToNative(@base);
-      // }
+
       // case 2: it's a wrapper Base
       //       2a: if there's only one member unpack it
       //       2b: otherwise return dictionary of unpacked members
-      var members = @base.GetMemberNames();
+      var members = @base.GetMemberNames().ToList();
 
-      if (members.Count() == 1)
+      if (members.Count == 1)
       {
         var converted = RecurseTreeToNative(@base[members.ElementAt(0)]);
         return converted;
       }
 
-      return members.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
+      var regex = new Regex("::");
+      var dict =  members.ToDictionary(x => regex.Replace(x, "//"), x => RecurseTreeToNative(@base[x]));
+      return dict;
     }
 
 
@@ -221,7 +265,7 @@ namespace Speckle.ConnectorDynamo.Functions
       if (IsList(@object))
       {
         var list = ((IEnumerable)@object).Cast<object>();
-        return list.Select(x => RecurseTreeToNative(x)).ToList();
+        return list.Select(RecurseTreeToNative).ToList();
       }
       if (@object is Base @base && IsDataTree(@base))
       {
@@ -234,7 +278,7 @@ namespace Speckle.ConnectorDynamo.Functions
     private object TryConvertItemToNative(object value)
     {
       if (value == null)
-        return value;
+        return null;
 
       //it's a simple type or not a Base
       if (value.GetType().IsSimpleType() || !(value is Base))
@@ -243,7 +287,6 @@ namespace Speckle.ConnectorDynamo.Functions
       }
 
       var @base = (Base)value;
-
       //it's an unsupported Base, return a dictionary
       if (!_converter.CanConvertToNative(@base))
       {
@@ -254,8 +297,7 @@ namespace Speckle.ConnectorDynamo.Functions
         var dicD = dynamicMembers.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
 
         var dic = dicI.Concat(dicD).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-
+        
         return dic;
       }
 
@@ -263,15 +305,14 @@ namespace Speckle.ConnectorDynamo.Functions
       {
         return _converter.ConvertToNative(@base);
       }
-      catch (Exception ex)
+      catch (Exception e)
       {
-        throw new SpeckleException(ex.Message, ex);
+        var spcklError = new Exception($"Could not convert {@base.GetType().Name}(id={@base.id}) to Dynamo.", e);
+        OnError?.Invoke(this, new OnErrorEventArgs(spcklError));
+        return null;
       }
-
-      return null;
     }
-
-
+    
     public static bool IsList(object @object)
     {
       if (@object == null)

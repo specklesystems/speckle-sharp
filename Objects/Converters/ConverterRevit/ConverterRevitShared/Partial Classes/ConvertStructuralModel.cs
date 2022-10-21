@@ -19,6 +19,7 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject StructuralModelToNative(Model speckleStructModel)
     {
+      var lengthUnits = speckleStructModel.specs.settings.modelUnits.length;
       var appObj = new ApplicationObject(speckleStructModel.id, speckleStructModel.speckle_type) { applicationId = speckleStructModel.applicationId };
       foreach (Node node in speckleStructModel.nodes)
       {
@@ -28,8 +29,9 @@ namespace Objects.Converter.Revit
       foreach (var element in speckleStructModel.elements)
       {
         
-        if (element is Element1D)
+        if (element is Element1D element1D)
         {
+          element1D.units = lengthUnits;
           try
           {
             if (element is CSIElement1D csiElement1D)

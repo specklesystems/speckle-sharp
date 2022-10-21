@@ -43,7 +43,7 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\Core\Core\Core.csproj">
-        <Project>{b4d98d2c-e5da-463e-bf6c-68e9b77c72f3}</Project>
+        <Project>{6321CA2D-5275-42A3-A034-170A0040E19E}</Project>
         <Name>Core</Name>
       </ProjectReference>
     </ItemGroup>

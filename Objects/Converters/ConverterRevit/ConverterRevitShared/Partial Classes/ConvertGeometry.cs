@@ -491,13 +491,15 @@ namespace Objects.Converter.Revit
     /// <returns>A Revit <see cref="CurveArray"/></returns>
     public CurveArray PolylineToNative(Polyline polyline)
     {
+      var appObj = new ApplicationObject(polyline.id, polyline.speckle_type) { applicationId = polyline.applicationId };
       var curveArray = new CurveArray();
       if (polyline.value.Count == 6)
       {
         // Polyline is actually a single line
         TryAppendLineSafely(
           curveArray, 
-          new Line(polyline.value, polyline.units)
+          new Line(polyline.value, polyline.units),
+          appObj
         );
       }
       else
@@ -508,7 +510,8 @@ namespace Objects.Converter.Revit
         {
           var success = TryAppendLineSafely(
             curveArray, 
-            new Line(lastPt, pts[i] , polyline.units)
+            new Line(lastPt, pts[i] , polyline.units),
+            appObj
           );
           if(success) lastPt = pts[i];
         }
@@ -517,7 +520,8 @@ namespace Objects.Converter.Revit
         {
           TryAppendLineSafely(
             curveArray, 
-            new Line(pts[pts.Count - 1], pts[0] , polyline.units)
+            new Line(pts[pts.Count - 1], pts[0] , polyline.units),
+            appObj
           );
         }
       }
@@ -574,7 +578,7 @@ namespace Objects.Converter.Revit
         var A = triangle.get_Index(0);
         var B = triangle.get_Index(1);
         var C = triangle.get_Index(2);
-        faces.Add(0);
+        faces.Add(3);
         faces.AddRange(new int[]
         {
           (int)A, (int)B, (int)C
@@ -590,7 +594,7 @@ namespace Objects.Converter.Revit
       return speckleMesh;
     }
 
-    // Insipred by
+    // Inspired by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
     public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage, RenderMaterial parentMaterial = null)
     {

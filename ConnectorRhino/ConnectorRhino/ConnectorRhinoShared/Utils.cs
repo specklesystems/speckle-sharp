@@ -1,34 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
-
-using Rhino;
-using Rhino.DocObjects;
-using Rhino.Geometry;
-using Rhino.Display;
-
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-
-using DesktopUI2.ViewModels;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
+using DesktopUI2.ViewModels;
+using Rhino;
+using Rhino.Display;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace SpeckleRhino
 {
   public static class Utils
   {
 #if RHINO6
-    public static string RhinoAppName = VersionedHostApplications.Rhino6;
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
     public static string AppName = "Rhino";
 #elif RHINO7
-    public static string RhinoAppName = VersionedHostApplications.Rhino7;
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
     public static string AppName = "Rhino";
 #else
-    public static string RhinoAppName = Applications.Rhino7;
+    public static string RhinoAppName = HostApplications.Rhino.Name;
     public static string AppName = "Rhino";
 #endif
+
+    public static string invalidRhinoChars = @"{}()";
+
+    /// <summary>
+    /// Removes invalid characters for Rhino layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidRhinoChars(string str)
+    {
+      // using this to handle grasshopper branch syntax
+      string cleanStr = str.Replace("{", "").Replace("}","");
+      return cleanStr;
+    }
     #region extension methods
     /// <summary>
     /// Finds a layer from its full path
@@ -39,11 +50,12 @@ namespace SpeckleRhino
     /// <returns>Null on failure</returns>
     public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
     {
-      int index = doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
+      var cleanPath = RemoveInvalidRhinoChars(path);
+      int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
       Layer layer = doc.Layers.FindIndex(index);
       if (layer == null && MakeIfNull)
       {
-        var layerNames = path.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+        var layerNames = cleanPath.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
         Layer parent = null;
         string currentLayerPath = string.Empty;
@@ -61,20 +73,27 @@ namespace SpeckleRhino
         layer = currentLayer;
       }
       return layer;
-    } 
+    }
     #endregion
 
     #region internal methods
     private static Layer MakeLayer(RhinoDoc doc, string name, Layer parentLayer = null)
     {
-      Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
-      if (parentLayer != null)
-        newLayer.ParentLayerId = parentLayer.Id;
-      int newIndex = doc.Layers.Add(newLayer);
-      if ( newIndex < 0)
+      try
+      {
+        Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
+        if (parentLayer != null)
+          newLayer.ParentLayerId = parentLayer.Id;
+        int newIndex = doc.Layers.Add(newLayer);
+        if (newIndex < 0)
+          return null;
+        else
+          return doc.Layers.FindIndex(newIndex);
+      }
+      catch (Exception e)
+      {
         return null;
-      else
-        return doc.Layers.FindIndex(newIndex);
+      }
     }
     #endregion
   }
@@ -99,7 +118,8 @@ namespace SpeckleRhino
       foreach (var previewObj in preview)
       {
         var converted = new List<object>();
-        foreach (var obj in previewObj.Converted)
+        var toBeConverted = previewObj.Convertible ? previewObj.Converted : previewObj.Fallback.SelectMany(o => o.Converted).ToList();
+        foreach (var obj in toBeConverted)
         {
           switch (obj)
           {
@@ -118,7 +138,9 @@ namespace SpeckleRhino
           }
           converted.Add(obj);
         }
-        Preview.Add(previewObj.OriginalId, converted);
+
+        if (!Preview.ContainsKey(previewObj.OriginalId))
+          Preview.Add(previewObj.OriginalId, converted);
       }
     }
 
@@ -152,7 +174,7 @@ namespace SpeckleRhino
 
       foreach (var previewobj in Preview)
       {
-        var drawColor = Selected.Contains(previewobj.Key) ?  selectedColor : color;
+        var drawColor = Selected.Contains(previewobj.Key) ? selectedColor : color;
         var drawMaterial = material;
         drawMaterial.Diffuse = drawColor;
         foreach (var obj in previewobj.Value)
@@ -172,7 +194,7 @@ namespace SpeckleRhino
               display.DrawPoint(o.Location, drawColor);
               break;
             case Point3d o:
-              display.DrawPoint(o,drawColor);
+              display.DrawPoint(o, drawColor);
               break;
             case PointCloud o:
               display.DrawPointCloud(o, 5, drawColor);
@@ -190,6 +212,13 @@ namespace SpeckleRhino
 
   public static class Formatting
   {
+    public static string ObjectDescriptor(RhinoObject obj)
+    {
+      if (obj == null) return String.Empty;
+      var simpleType = obj.ObjectType.ToString();
+      return obj.HasName ? $"{simpleType}" : $"{simpleType} {obj.Name}";
+    }
+
     public static string TimeAgo(string timestamp)
     {
       TimeSpan timeAgo;

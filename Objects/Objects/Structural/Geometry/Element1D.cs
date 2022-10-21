@@ -9,7 +9,7 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.Geometry
 {
-  public class Element1D : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Element1D : Base, IDisplayValue<List<Mesh>>
   {
     public string name { get; set; } //add unique id as base identifier, name can change too easily
     public Line baseLine { get; set; }
@@ -111,14 +111,5 @@ namespace Objects.Structural.Geometry
       this.orientationNode = orientationNode;
       this.orientationAngle = orientationAngle;
     }
-    
-    
-    #region Obsolete
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }

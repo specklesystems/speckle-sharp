@@ -200,7 +200,7 @@ namespace Speckle.Core.Credentials
       }
 
       // Step 1: check if direct account id (?u=)
-      if (OriginalInput.Contains("?u="))
+      if (OriginalInput != null && OriginalInput.Contains("?u="))
       {
         var userId = OriginalInput.Split(new string[] { "?u=" }, StringSplitOptions.None)[1];
         var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
@@ -273,8 +273,14 @@ namespace Speckle.Core.Credentials
     private async Task ValidateWithAccount(Account acc)
     {
       if (ServerUrl != acc.serverInfo.url)
-        throw new SpeckleException($"Account is not from server {ServerUrl}");
-      
+        throw new SpeckleException($"Account is not from server {ServerUrl}", false);
+
+      var hasInternet = await Helpers.UserHasInternet();
+      if (!hasInternet)
+      {
+        throw new Exception("You are not connected to the internet.");
+      }
+
       var client = new Client(acc);
       // First check if the stream exists
       try
@@ -284,13 +290,13 @@ namespace Speckle.Core.Credentials
       catch
       {
         throw new SpeckleException(
-          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.");
+          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.", false);
       }
 
       // Check if the branch exists
       if (Type == StreamWrapperType.Branch && await client.BranchGet(StreamId, BranchName, 1) == null)
         throw new SpeckleException(
-          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}");
+          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", false);
     }
 
     public override string ToString()

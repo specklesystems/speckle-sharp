@@ -10,6 +10,7 @@ using Rhino.Geometry;
 using Rhino.Geometry.Collections;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -630,7 +631,6 @@ namespace Objects.Converter.RhinoGh
       {
         var vertIndices = polygon.BoundaryVertexIndexList();
         int n = vertIndices.Length;
-        if (n <= 4) n -= 3;
         faces.Add(n);
         faces.AddRange(vertIndices.Select(vertIndex => (int) vertIndex));
       }
@@ -669,8 +669,8 @@ namespace Objects.Converter.RhinoGh
 
       var Faces = mesh.Faces.SelectMany(face =>
       {
-        if (face.VertexCount == 4) return new int[] { 1, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
-        return new int[] { 0, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
+        if (face.VertexCount == 4) return new int[] { 4, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        return new int[] { 3, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
       }).ToList();
 
       var speckleMesh = new Mesh(verts, Faces, null, null, u);
@@ -821,28 +821,9 @@ namespace Objects.Converter.RhinoGh
       //   f.RebuildEdges(tol, false, false);
       // }
       // Create complex
-      var joinedMesh = new RH.Mesh();
-      if (previewMesh == null)
-      {
-        var mySettings = MeshingParameters.Default;
-        switch (SelectedMeshSettings)
-        {
-          case MeshSettings.Default:
-            mySettings = new MeshingParameters(0.05, 0.05);
-            break;
-          case MeshSettings.CurrentDoc:
-            mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
-            break;
-        }
-        joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-        joinedMesh.Weld(Math.PI);
-      }
-      else
-      {
-        joinedMesh = previewMesh;
-      }
+      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(joinedMesh, u), provenance: RhinoAppName, units: u);
+      var spcklBrep = new Brep(displayValue: MeshToSpeckle(displayMesh, u), provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
@@ -959,6 +940,25 @@ namespace Objects.Converter.RhinoGh
       return spcklBrep;
     }
 
+    private RH.Mesh GetBrepDisplayMesh(RH.Brep brep)
+    {
+      var joinedMesh = new RH.Mesh();
+
+      var mySettings = MeshingParameters.Default;
+      switch (SelectedMeshSettings)
+      {
+        case MeshSettings.Default:
+          mySettings = new MeshingParameters(0.05, 0.05);
+          break;
+        case MeshSettings.CurrentDoc:
+          mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
+          break;
+      }
+      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+      joinedMesh.Weld(Math.PI);
+      return joinedMesh;
+    }
+
     /// <summary>
     /// Converts a Speckle <see cref="Brep"/> instance to a Rhino <see cref="Rhino.Geometry.Brep"/>
     /// </summary>
@@ -1022,7 +1022,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception e)
       {
-        notes.Add(e.Message);
+        notes.Add(e.ToFormattedString());
         return null;
       }
     }

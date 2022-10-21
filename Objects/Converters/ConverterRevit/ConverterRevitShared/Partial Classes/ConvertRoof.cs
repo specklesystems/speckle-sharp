@@ -17,12 +17,11 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
       var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type) { applicationId = speckleRoof.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
-      {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
-        return appObj;
-      }
       
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
       if (speckleRoof.outline == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof outline was null");
@@ -40,7 +39,11 @@ namespace Objects.Converter.Revit
       else
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
 
-      var roofType = GetElementType<RoofType>(speckleRoof);
+      if (!GetElementType<RoofType>(speckleRoof, appObj, out RoofType roofType))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
 
       if (docObj != null)
         Doc.Delete(docObj.Id);

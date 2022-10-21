@@ -5,6 +5,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper
 {
@@ -63,7 +64,7 @@ namespace ConnectorGrasshopper
       catch (Exception e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-          $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {e.InnerException?.Message ?? e.Message}");
+          $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {e.ToFormattedString()}");
         return null;
       }
     }

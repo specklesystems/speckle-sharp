@@ -13,6 +13,7 @@ using Speckle.Core.Transports;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using static DesktopUI2.ViewModels.MappingViewModel;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 
@@ -188,9 +189,21 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     {
       // TODO!
     }
+
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(500));
+      return new Dictionary<string, List<MappingValue>>();
+    }
     #endregion
 
     #region receiving
+    public override bool CanPreviewReceive => false;
+    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    {
+      return null;
+    }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -230,6 +243,8 @@ namespace Speckle.ConnectorMicroStationOpen.UI
         commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
       string referencedObject = commit.referencedObject;
+
+      state.LastSourceApp = commit.sourceApplication;
 
       var commitObject = await Operations.Receive(
         referencedObject,
@@ -375,8 +390,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
           List<string> props = @base.GetDynamicMembers().ToList();
           if (@base.GetMembers().ContainsKey("displayValue"))
             props.Add("displayValue");
-          else if (@base.GetMembers().ContainsKey("displayMesh")) // add display mesh to member list if it exists. this will be deprecated soon
-            props.Add("displayMesh");
           if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
             props.Add("elements");
           int totalMembers = props.Count;
@@ -437,6 +450,12 @@ namespace Speckle.ConnectorMicroStationOpen.UI
     #endregion
 
     #region sending
+    public override bool CanPreviewSend => false;
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      return;
+    }
+
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -841,17 +860,6 @@ namespace Speckle.ConnectorMicroStationOpen.UI
 
     public override void ResetDocument()
     {
-      // TODO!
-    }
-
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
-    {
-      // TODO!
-    }
-
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
-    {
-      return null;
       // TODO!
     }
     #endregion

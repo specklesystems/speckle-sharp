@@ -1,0 +1,200 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Windows.Dialogs.MappingViewDialog"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
+  Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"
+  mc:Ignorable="d">
+  <UserControl.Styles>
+
+    <Style Selector="ToggleSwitch[IsChecked=true]">
+      <Setter Property="Content" Value="Public stream" />
+    </Style>
+
+    <Style Selector="ToggleSwitch[IsChecked=false]">
+      <Setter Property="Content" Value="Private stream" />
+    </Style>
+
+
+  </UserControl.Styles>
+  <Design.DataContext>
+    <viewModels:MappingViewModel />
+  </Design.DataContext>
+
+  <Grid MinHeight="600" RowDefinitions="auto, auto,*,auto">
+    <!--  Page Header  -->
+    <Border
+      Margin="0,0,0,7"
+      Padding="0"
+      assists:ShadowAssist.ShadowDepth="Depth2"
+      Background="{DynamicResource MaterialDesignCardBackground}">
+      <Grid Margin="15" ColumnDefinitions="auto,auto,auto, auto">
+        <Grid.Styles>
+          <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+          </Style>
+        </Grid.Styles>
+        <TextBlock
+          Classes="Medium SpeckleFont"
+          FontSize="20"
+          Text="Category: "
+          TextTrimming="CharacterEllipsis" />
+        <ComboBox
+          Grid.Column="1"
+          Width="250"
+          Margin="10,0,0,0"
+          Padding="10,0,30,0"
+          VerticalAlignment="Center"
+          FontSize="100"
+          Items="{Binding Mapping.Keys}"
+          SelectedItem="{Binding SelectedCategory}" />
+      </Grid>
+    </Border>
+
+    <Grid
+      Grid.Row="2"
+      Margin="15,0,15,0"
+      ColumnDefinitions="*,*"
+      RowDefinitions="auto, *">
+      <TextBlock
+        Grid.Column="0"
+        Margin="10"
+        HorizontalAlignment="Center"
+        FontWeight="Bold">
+        Incoming Type
+      </TextBlock>
+      <TextBlock
+        Grid.Column="1"
+        Margin="10"
+        HorizontalAlignment="Center"
+        FontWeight="Bold">
+        Assigned To
+      </TextBlock>
+      <ScrollViewer
+        Name="ScrollParent"
+        Grid.Row="1"
+        Grid.ColumnSpan="2"
+        assists:ShadowAssist.ShadowDepth="Depth2"
+        Background="Transparent"
+        VerticalScrollBarVisibility="Auto">
+        <Border
+          Margin="10,5,15,10"
+          assists:ShadowAssist.ShadowDepth="Depth2"
+          Background="{DynamicResource MaterialDesignCardBackground}"
+          CornerRadius="5">
+          <StackPanel>
+            <ListBox
+              Items="{Binding VisibleMappingValues}"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              SelectedItem="{Binding SelectedMappingValue}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,*">
+                    <TextBlock
+                      Grid.Column="0"
+                      Margin="5"
+                      VerticalAlignment="Center"
+                      Text="{Binding IncomingType}"
+                      TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                      Name="OutgoingType"
+                      Grid.Column="1"
+                      Margin="0"
+                      VerticalAlignment="Center"
+                      Focusable="False"
+                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                      Text="{Binding OutgoingType}" />
+                    <TextBlock
+                      Grid.Column="1"
+                      Margin="0"
+                      VerticalAlignment="Center"
+                      Focusable="False"
+                      Foreground="Gray"
+                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                      Text="{Binding InitialGuess}" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+        </Border>
+      </ScrollViewer>
+    </Grid>
+
+
+    <StackPanel
+      Grid.Row="3"
+      Grid.ColumnSpan="3"
+      Background="{DynamicResource MaterialDesignCardBackground}">
+      <Grid ColumnDefinitions="*, auto" RowDefinitions="auto, auto">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock />
+          <TextBlock />
+        </StackPanel>
+
+        <!--  Search Box  -->
+        <TextBox
+          Name="TypeSearchBox"
+          Grid.Row="1"
+          Grid.Column="0"
+          Margin="10"
+          Padding="0"
+          assists:TextFieldAssist.CornerRadius="32"
+          BorderBrush="{Binding $self.Foreground}"
+          BorderThickness="1"
+          Classes="Solo"
+          IsEnabled="True"
+          Text="{Binding SearchQuery, Mode=TwoWay}"
+          Watermark="Search Types in Project">
+          <TextBox.InnerLeftContent>
+            <Border Width="{Binding $self.Bounds.Height}" Height="{Binding $parent[TextBox].Height}">
+              <icons:MaterialIcon
+                Width="20"
+                Height="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Kind="Magnify" />
+            </Border>
+          </TextBox.InnerLeftContent>
+        </TextBox>
+      </Grid>
+      <ScrollViewer
+        Grid.Row="2"
+        MaxHeight="110"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <ListBox
+            Margin="0,0,0,8"
+            Classes="Chip"
+            Items="{Binding SearchResults}"
+            SelectedItem="{Binding SelectedType}" />
+        </StackPanel>
+      </ScrollViewer>
+      <Grid ColumnDefinitions="*, auto, *">
+        <Button
+          MaxWidth="200"
+          Margin="5"
+          HorizontalAlignment="Left"
+          Command="{Binding ImportFamilyCommand}"
+          CornerRadius="20">
+          Import Types
+        </Button>
+        <Button
+          Grid.Column="2"
+          MaxWidth="200"
+          Margin="5"
+          HorizontalAlignment="Right"
+          Command="{Binding Done}"
+          CornerRadius="20">
+          Done
+        </Button>
+      </Grid>
+    </StackPanel>
+
+  </Grid>
+</UserControl>

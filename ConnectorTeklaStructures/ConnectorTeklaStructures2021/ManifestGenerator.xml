@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TEP Version="1.0">
 
-	<Product Id="SpeckleTeklaConnector" UpgradeCode="B61394A0-BFC9-4A5A-9F85-F4FB89F6E857" Version="2.6" Language="1033"
+	<Product Id="SpeckleTeklaConnector" UpgradeCode="B61394A0-BFC9-4A5A-9F85-F4FB89F6E857" Version="2.8" Language="1033"
 		Name="Speckle Connector Tekla Structures" Manufacturer="Speckle"  Description= "This extension adds Speckle"
 		IconPath="%TEPDEFINITIONFILEFOLDER%\logo.png" Type = "Environment">
 		<TeklaVersions>
@@ -13,7 +13,7 @@
 	 
 	<SourcePathVariables>
 		<SourcePathVariable Id="TepOutputFolder" Value="%TEPDEFINITIONFILEFOLDER%\output" Comment="This provides the location where the package builder is to save the package."/>
-		<SourcePathVariable Id="BinariesFolder" Value="%TEPDEFINITIONFILEFOLDER%\ConnectorTeklaStructures2021\bin\Release"/>
+		<SourcePathVariable Id="BinariesFolder" Value="%TEPDEFINITIONFILEFOLDER%\bin\Release"/>
     </SourcePathVariables>
 
 	<TargetPathVariables>
@@ -28,111 +28,170 @@
 
 	<Component Id="TheExtensionComponent" Guid="7709FE25-5293-4BBF-AB37-13F72C6F6CCB">
 		<File Id="Icon" Source="%BinariesFolder%\et_element_Speckle.ConnectorTeklaStructures.bmp" Target="%BitmapsDirectory%"/>
-		<File Id="Avalonia.Animation.dll" Source="%BinariesFolder%\Avalonia.Animation.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Base.dll" Source="%BinariesFolder%\Avalonia.Base.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Controls.DataGrid.dll" Source="%BinariesFolder%\Avalonia.Controls.DataGrid.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Controls.dll" Source="%BinariesFolder%\Avalonia.Controls.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.DesignerSupport.dll" Source="%BinariesFolder%\Avalonia.DesignerSupport.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Desktop.dll" Source="%BinariesFolder%\Avalonia.Desktop.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.DesktopRuntime.dll" Source="%BinariesFolder%\Avalonia.DesktopRuntime.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Diagnostics.dll" Source="%BinariesFolder%\Avalonia.Diagnostics.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Dialogs.dll" Source="%BinariesFolder%\Avalonia.Dialogs.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.dll" Source="%BinariesFolder%\Avalonia.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.FreeDesktop.dll" Source="%BinariesFolder%\Avalonia.FreeDesktop.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Input.dll" Source="%BinariesFolder%\Avalonia.Input.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Interactivity.dll" Source="%BinariesFolder%\Avalonia.Interactivity.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Layout.dll" Source="%BinariesFolder%\Avalonia.Layout.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Markup.dll" Source="%BinariesFolder%\Avalonia.Markup.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Markup.Xaml.dll" Source="%BinariesFolder%\Avalonia.Markup.Xaml.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.MicroCom.dll" Source="%BinariesFolder%\Avalonia.MicroCom.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Native.dll" Source="%BinariesFolder%\Avalonia.Native.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.OpenGL.dll" Source="%BinariesFolder%\Avalonia.OpenGL.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.ReactiveUI.dll" Source="%BinariesFolder%\Avalonia.ReactiveUI.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Remote.Protocol.dll" Source="%BinariesFolder%\Avalonia.Remote.Protocol.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Skia.dll" Source="%BinariesFolder%\Avalonia.Skia.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Styling.dll" Source="%BinariesFolder%\Avalonia.Styling.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Themes.Default.dll" Source="%BinariesFolder%\Avalonia.Themes.Default.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Themes.Fluent.dll" Source="%BinariesFolder%\Avalonia.Themes.Fluent.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Visuals.dll" Source="%BinariesFolder%\Avalonia.Visuals.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.Win32.dll" Source="%BinariesFolder%\Avalonia.Win32.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Avalonia.X11.dll" Source="%BinariesFolder%\Avalonia.X11.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="DesktopUI2.dll" Source="%BinariesFolder%\DesktopUI2.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="DialogHost.Avalonia.dll" Source="%BinariesFolder%\DialogHost.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="DynamicData.dll" Source="%BinariesFolder%\DynamicData.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="GraphQL.Client.Abstractions.dll" Source="%BinariesFolder%\GraphQL.Client.Abstractions.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="GraphQL.Client.Abstractions.Websocket.dll" Source="%BinariesFolder%\GraphQL.Client.Abstractions.Websocket.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="GraphQL.Client.dll" Source="%BinariesFolder%\GraphQL.Client.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="GraphQL.Primitives.dll" Source="%BinariesFolder%\GraphQL.Primitives.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="HarfBuzzSharp.dll" Source="%BinariesFolder%\HarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="JetBrains.Annotations.dll" Source="%BinariesFolder%\JetBrains.Annotations.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="libHarfBuzzSharp.dll" Source="%BinariesFolder%\libHarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="libSkiaSharp.dll" Source="%BinariesFolder%\libSkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Avalonia.dll" Source="%BinariesFolder%\Material.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Colors.dll" Source="%BinariesFolder%\Material.Colors.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.DataGrid.dll" Source="%BinariesFolder%\Material.DataGrid.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Dialog.dll" Source="%BinariesFolder%\Material.Dialog.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Icons.Avalonia.dll" Source="%BinariesFolder%\Material.Icons.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Icons.dll" Source="%BinariesFolder%\Material.Icons.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Ripple.dll" Source="%BinariesFolder%\Material.Ripple.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Material.Styles.dll" Source="%BinariesFolder%\Material.Styles.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="MathNet.Numerics.dll" Source="%BinariesFolder%\MathNet.Numerics.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="MathNet.Spatial.dll" Source="%BinariesFolder%\MathNet.Spatial.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Microsoft.Bcl.AsyncInterfaces.dll" Source="%BinariesFolder%\Microsoft.Bcl.AsyncInterfaces.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Microsoft.CodeAnalysis.CSharp.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.CSharp.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Microsoft.CodeAnalysis.CSharp.Scripting.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.CSharp.Scripting.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Microsoft.CodeAnalysis.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Microsoft.CodeAnalysis.Scripting.dll" Source="%BinariesFolder%\Microsoft.CodeAnalysis.Scripting.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Newtonsoft.Json.dll" Source="%BinariesFolder%\Newtonsoft.Json.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Objects.dll" Source="%BinariesFolder%\Objects.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="PolygonMesher.dll" Source="%BinariesFolder%\PolygonMesher.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="ReactiveUI.dll" Source="%BinariesFolder%\ReactiveUI.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Sentry.dll" Source="%BinariesFolder%\Sentry.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="SkiaSharp.dll" Source="%BinariesFolder%\SkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Speckle.Newtonsoft.Json.dll" Source="%BinariesFolder%\Speckle.Newtonsoft.Json.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="SpeckleConnectorTeklaStructures.dll" Source="%BinariesFolder%\SpeckleConnectorTeklaStructures.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="SpeckleCore2.dll" Source="%BinariesFolder%\SpeckleCore2.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Splat.dll" Source="%BinariesFolder%\Splat.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Stylet.dll" Source="%BinariesFolder%\Stylet.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Buffers.dll" Source="%BinariesFolder%\System.Buffers.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Collections.Immutable.dll" Source="%BinariesFolder%\System.Collections.Immutable.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.ComponentModel.Annotations.dll" Source="%BinariesFolder%\System.ComponentModel.Annotations.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Data.Common.dll" Source="%BinariesFolder%\System.Data.Common.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Data.SQLite.dll" Source="%BinariesFolder%\System.Data.SQLite.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Diagnostics.StackTrace.dll" Source="%BinariesFolder%\System.Diagnostics.StackTrace.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Diagnostics.Tracing.dll" Source="%BinariesFolder%\System.Diagnostics.Tracing.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Drawing.Common.dll" Source="%BinariesFolder%\System.Drawing.Common.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Globalization.Extensions.dll" Source="%BinariesFolder%\System.Globalization.Extensions.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.IO.Compression.dll" Source="%BinariesFolder%\System.IO.Compression.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Memory.dll" Source="%BinariesFolder%\System.Memory.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Net.Http.dll" Source="%BinariesFolder%\System.Net.Http.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Net.Sockets.dll" Source="%BinariesFolder%\System.Net.Sockets.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Net.WebSockets.Client.Managed.dll" Source="%BinariesFolder%\System.Net.WebSockets.Client.Managed.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Numerics.Vectors.dll" Source="%BinariesFolder%\System.Numerics.Vectors.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Reactive.dll" Source="%BinariesFolder%\System.Reactive.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Reflection.Metadata.dll" Source="%BinariesFolder%\System.Reflection.Metadata.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Runtime.CompilerServices.Unsafe.dll" Source="%BinariesFolder%\System.Runtime.CompilerServices.Unsafe.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Runtime.Serialization.Primitives.dll" Source="%BinariesFolder%\System.Runtime.Serialization.Primitives.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Security.Cryptography.Algorithms.dll" Source="%BinariesFolder%\System.Security.Cryptography.Algorithms.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Security.Principal.Windows.dll" Source="%BinariesFolder%\System.Security.Principal.Windows.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Security.SecureString.dll" Source="%BinariesFolder%\System.Security.SecureString.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Text.Encoding.CodePages.dll" Source="%BinariesFolder%\System.Text.Encoding.CodePages.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Text.Encodings.Web.dll" Source="%BinariesFolder%\System.Text.Encodings.Web.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Text.Json.dll" Source="%BinariesFolder%\System.Text.Json.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Threading.Overlapped.dll" Source="%BinariesFolder%\System.Threading.Overlapped.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Threading.Tasks.Extensions.dll" Source="%BinariesFolder%\System.Threading.Tasks.Extensions.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.ValueTuple.dll" Source="%BinariesFolder%\System.ValueTuple.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="System.Xml.XPath.XDocument.dll" Source="%BinariesFolder%\System.Xml.XPath.XDocument.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Application.Library.dll" Source="%BinariesFolder%\Tekla.Application.Library.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Analysis.dll" Source="%BinariesFolder%\Tekla.Structures.Analysis.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Catalogs.dll" Source="%BinariesFolder%\Tekla.Structures.Catalogs.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Datatype.dll" Source="%BinariesFolder%\Tekla.Structures.Datatype.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Dialog.dll" Source="%BinariesFolder%\Tekla.Structures.Dialog.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.dll" Source="%BinariesFolder%\Tekla.Structures.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Drawing.dll" Source="%BinariesFolder%\Tekla.Structures.Drawing.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Model.dll" Source="%BinariesFolder%\Tekla.Structures.Model.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tekla.Structures.Plugins.dll" Source="%BinariesFolder%\Tekla.Structures.Plugins.dll" Target="%BinariesTargetDirectory%"/>
-		<File Id="Tmds.DBus.dll" Source="%BinariesFolder%\Tmds.DBus.dll" Target="%BinariesTargetDirectory%"/>
- </Component>
+		<File Id="Avalonia.Animation.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Animation.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Base.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Base.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Controls.DataGrid.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Controls.DataGrid.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Controls.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Controls.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.DesignerSupport.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.DesignerSupport.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Desktop.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Desktop.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.DesktopRuntime.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.DesktopRuntime.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Diagnostics.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Diagnostics.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Dialogs.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Dialogs.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.FreeDesktop.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.FreeDesktop.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Input.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Input.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Interactivity.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Interactivity.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Layout.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Layout.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Markup.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Markup.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Markup.Xaml.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Markup.Xaml.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.MicroCom.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.MicroCom.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Native.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Native.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.OpenGL.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.OpenGL.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.ReactiveUI.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.ReactiveUI.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Remote.Protocol.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Remote.Protocol.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Skia.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Skia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Styling.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Styling.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Themes.Default.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Themes.Default.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Themes.Fluent.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Themes.Fluent.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Visuals.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Visuals.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.Win32.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.Win32.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Avalonia.X11.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Avalonia.X11.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="DesktopUI2.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\DesktopUI2.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="DynamicData.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\DynamicData.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="e_sqlite3.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\e_sqlite3.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Client.Abstractions.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\GraphQL.Client.Abstractions.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Client.Abstractions.Websocket.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\GraphQL.Client.Abstractions.Websocket.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Client.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\GraphQL.Client.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="GraphQL.Primitives.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\GraphQL.Primitives.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="HarfBuzzSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\HarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="JetBrains.Annotations.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\JetBrains.Annotations.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="libHarfBuzzSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\libHarfBuzzSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="libSkiaSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\libSkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Avalonia.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Colors.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Colors.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.DataGrid.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.DataGrid.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Dialog.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Dialog.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Icons.Avalonia.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Icons.Avalonia.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Icons.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Icons.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Ripple.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Ripple.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Material.Styles.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Material.Styles.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="MathNet.Numerics.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\MathNet.Numerics.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="MathNet.Spatial.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\MathNet.Spatial.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.Bcl.AsyncInterfaces.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Microsoft.Bcl.AsyncInterfaces.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.CSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Microsoft.CodeAnalysis.CSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.CSharp.Scripting.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Microsoft.CodeAnalysis.CSharp.Scripting.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Microsoft.CodeAnalysis.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.CodeAnalysis.Scripting.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Microsoft.CodeAnalysis.Scripting.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Microsoft.Data.Sqlite.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Microsoft.Data.Sqlite.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Newtonsoft.Json.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Newtonsoft.Json.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Objects.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Objects.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="PolygonMesher.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\PolygonMesher.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="ReactiveUI.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ReactiveUI.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Sentry.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Sentry.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SkiaSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\SkiaSharp.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Speckle.Newtonsoft.Json.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Speckle.Newtonsoft.Json.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SpeckleConnectorTeklaStructures.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\SpeckleConnectorTeklaStructures.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SpeckleCore2.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\SpeckleCore2.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Splat.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Splat.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SQLitePCLRaw.batteries_v2.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\SQLitePCLRaw.batteries_v2.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SQLitePCLRaw.core.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\SQLitePCLRaw.core.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="SQLitePCLRaw.provider.e_sqlite3.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\SQLitePCLRaw.provider.e_sqlite3.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Stylet.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Stylet.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Buffers.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Buffers.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Collections.Immutable.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Collections.Immutable.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.ComponentModel.Annotations.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.ComponentModel.Annotations.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Data.Common.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Data.Common.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Diagnostics.StackTrace.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Diagnostics.StackTrace.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Diagnostics.Tracing.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Diagnostics.Tracing.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Drawing.Common.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Drawing.Common.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Globalization.Extensions.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Globalization.Extensions.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.IO.Compression.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.IO.Compression.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Memory.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Memory.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Net.Http.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Net.Http.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Net.Sockets.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Net.Sockets.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Net.WebSockets.Client.Managed.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Net.WebSockets.Client.Managed.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Numerics.Vectors.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Numerics.Vectors.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Reactive.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Reactive.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Reflection.Metadata.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Reflection.Metadata.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Runtime.CompilerServices.Unsafe.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Runtime.CompilerServices.Unsafe.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Runtime.Serialization.Primitives.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Runtime.Serialization.Primitives.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Security.Cryptography.Algorithms.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Security.Cryptography.Algorithms.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Security.Principal.Windows.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Security.Principal.Windows.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Security.SecureString.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Security.SecureString.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Text.Encoding.CodePages.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Text.Encoding.CodePages.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Text.Encodings.Web.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Text.Encodings.Web.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Text.Json.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Text.Json.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Threading.Overlapped.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Threading.Overlapped.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Threading.Tasks.Extensions.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Threading.Tasks.Extensions.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.ValueTuple.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.ValueTuple.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="System.Xml.XPath.XDocument.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\System.Xml.XPath.XDocument.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Application.Library.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Application.Library.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Analysis.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Analysis.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Catalogs.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Catalogs.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Datatype.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Datatype.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Dialog.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Dialog.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Drawing.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Drawing.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Model.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Model.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tekla.Structures.Plugins.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tekla.Structures.Plugins.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="Tmds.DBus.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\Tmds.DBus.dll" Target="%BinariesTargetDirectory%"/>
+		<File Id="\cs\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\cs\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\cs"/>
+		<File Id="\cs\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\cs\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\cs"/>
+		<File Id="\cs\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\cs\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\cs"/>
+		<File Id="\cs\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\cs\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\cs"/>
+		<File Id="\de\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\de\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\de"/>
+		<File Id="\de\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\de\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\de"/>
+		<File Id="\de\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\de\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\de"/>
+		<File Id="\de\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\de\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\de"/>
+		<File Id="\es\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\es\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\es"/>
+		<File Id="\es\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\es\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\es"/>
+		<File Id="\es\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\es\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\es"/>
+		<File Id="\es\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\es\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\es"/>
+		<File Id="\fr\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\fr\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\fr"/>
+		<File Id="\fr\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\fr\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\fr"/>
+		<File Id="\fr\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\fr\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\fr"/>
+		<File Id="\fr\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\fr\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\fr"/>
+		<File Id="\it\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\it\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\it"/>
+		<File Id="\it\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\it\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\it"/>
+		<File Id="\it\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\it\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\it"/>
+		<File Id="\it\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\it\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\it"/>
+		<File Id="\ja\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ja\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\ja"/>
+		<File Id="\ja\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ja\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\ja"/>
+		<File Id="\ja\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ja\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\ja"/>
+		<File Id="\ja\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ja\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\ja"/>
+		<File Id="\ko\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ko\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\ko"/>
+		<File Id="\ko\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ko\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\ko"/>
+		<File Id="\ko\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ko\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\ko"/>
+		<File Id="\ko\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ko\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\ko"/>
+		<File Id="\pl\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pl\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\pl"/>
+		<File Id="\pl\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pl\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\pl"/>
+		<File Id="\pl\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pl\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\pl"/>
+		<File Id="\pl\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pl\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\pl"/>
+		<File Id="\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\pt-BR"/>
+		<File Id="\pt-BR\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pt-BR\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\pt-BR"/>
+		<File Id="\pt-BR\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pt-BR\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\pt-BR"/>
+		<File Id="\pt-BR\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\pt-BR\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\pt-BR"/>
+		<File Id="\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\ru"/>
+		<File Id="\ru\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ru\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\ru"/>
+		<File Id="\ru\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ru\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\ru"/>
+		<File Id="\ru\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\ru\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\ru"/>
+		<File Id="\tr\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\tr\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\tr"/>
+		<File Id="\tr\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\tr\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\tr"/>
+		<File Id="\tr\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\tr\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\tr"/>
+		<File Id="\tr\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\tr\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\tr"/>
+		<File Id="\x64\libHarfBuzzSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\x64\libHarfBuzzSharp.dll" Target= "%BinariesTargetDirectory%\x64"/>
+		<File Id="\x64\libSkiaSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\x64\libSkiaSharp.dll" Target= "%BinariesTargetDirectory%\x64"/>
+		<File Id="\x86\libHarfBuzzSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\x86\libHarfBuzzSharp.dll" Target= "%BinariesTargetDirectory%\x86"/>
+		<File Id="\x86\libSkiaSharp.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\x86\libSkiaSharp.dll" Target= "%BinariesTargetDirectory%\x86"/>
+		<File Id="\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hans"/>
+		<File Id="\zh-Hans\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hans\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hans"/>
+		<File Id="\zh-Hans\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hans\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hans"/>
+		<File Id="\zh-Hans\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hans\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hans"/>
+		<File Id="\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hant"/>
+		<File Id="\zh-Hant\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hant\Microsoft.CodeAnalysis.CSharp.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hant"/>
+		<File Id="\zh-Hant\Microsoft.CodeAnalysis.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hant\Microsoft.CodeAnalysis.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hant"/>
+		<File Id="\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll" Source="C:\Users\circleci\project\ConnectorTeklaStructures\ConnectorTeklaStructures2021\bin\Release\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll" Target= "%BinariesTargetDirectory%\zh-Hant"/>
+</Component>
 
 	<Feature Id="TheExtensionFeature" Title="ExtensionFeature">
 		<ComponentRef ReferenceId="TheExtensionComponent" />

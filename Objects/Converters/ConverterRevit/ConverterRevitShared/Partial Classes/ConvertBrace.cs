@@ -42,11 +42,13 @@ namespace Objects.Converter.Revit
 
       var myBrace = new RevitBrace()
       {
+        applicationId = myBeam.applicationId,
         type = myBeam.type,
         baseLine = myBeam.baseLine,
         level = myBeam.level,
         family = myBeam.family,
-        parameters = myBeam.parameters
+        parameters = myBeam.parameters,
+        displayValue = myBeam.displayValue,
       };
       return myBrace;
     }

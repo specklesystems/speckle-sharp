@@ -1,31 +1,32 @@
-﻿using System;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
+using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
-using STR = Objects.Structural;
 using GE = Objects.Geometry;
-using System;
+using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
 #if REVIT2023
-    public static string RevitAppName = VersionedHostApplications.Revit2023;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
 #elif REVIT2022
-    public static string RevitAppName = VersionedHostApplications.Revit2022;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2022);
 #elif REVIT2021
-    public static string RevitAppName = VersionedHostApplications.Revit2021;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2021);
 #elif REVIT2020
-    public static string RevitAppName = VersionedHostApplications.Revit2020;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2020);
 #else
-    public static string RevitAppName = VersionedHostApplications.Revit2019;
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
     #region ISpeckleConverter props
@@ -70,6 +71,8 @@ namespace Objects.Converter.Revit
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
+
+    public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
 
     public ReceiveMode ReceiveMode { get; set; }
 
@@ -198,7 +201,10 @@ namespace Objects.Converter.Revit
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
           break;
-        case DB.Architecture.TopRail _:
+        case DB.Architecture.TopRail o:
+          returnObject = TopRailToSpeckle(o);
+          break;
+        case DB.Architecture.HandRail _:
           returnObject = null;
           break;
         case DB.Structure.Rebar o:
@@ -257,21 +263,22 @@ namespace Objects.Converter.Revit
       // we might want to try later on to capture it more intelligently from inside conversion routines.
       if (returnObject != null
           && returnObject["renderMaterial"] == null
-          && returnObject["displayValue"] == null)
+          && returnObject["displayValue"] == null
+          && !(returnObject is Model))
       {
         try
         {
           var material = GetElementRenderMaterial(@object as DB.Element);
           returnObject["renderMaterial"] = material;
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
           // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
         }
       }
 
       //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null)
+      if (returnObject != null && !(returnObject is Model))
       {
         try
         {
@@ -306,7 +313,7 @@ namespace Objects.Converter.Revit
     }
     private BuiltInCategory GetObjectCategory(Base @object)
     {
-      switch(@object)
+      switch (@object)
       {
         case BE.Beam _:
         case BE.Brace _:
@@ -326,7 +333,7 @@ namespace Objects.Converter.Revit
           return BuiltInCategory.OST_PipeSegments;
         case BE.Rebar _:
           return BuiltInCategory.OST_Rebar;
-        case BE.Topography _: 
+        case BE.Topography _:
           return BuiltInCategory.OST_Topography;
         case BE.Wall _:
           return BuiltInCategory.OST_Walls;
@@ -337,7 +344,7 @@ namespace Objects.Converter.Revit
         case BE.CableTray _:
           return BuiltInCategory.OST_CableTray;
         default:
-          return BuiltInCategory.OST_GenericModel;        
+          return BuiltInCategory.OST_GenericModel;
       }
     }
 
@@ -345,7 +352,7 @@ namespace Objects.Converter.Revit
     {
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.Parse(recieveModelMesh ?? "false") == true)
       {
         try
         {
@@ -356,7 +363,7 @@ namespace Objects.Converter.Revit
           var cat = GetObjectCategory(@object);
           return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, cat);
         }
-        catch 
+        catch
         {
 
         }

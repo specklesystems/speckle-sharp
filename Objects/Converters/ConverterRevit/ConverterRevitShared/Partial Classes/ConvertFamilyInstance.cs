@@ -15,17 +15,21 @@ namespace Objects.Converter.Revit
     //TODO: might need to clean this up and split the ConversionLog.Addic by beam, FI, etc...
     public ApplicationObject FamilyInstanceToNative(BuiltElements.Revit.FamilyInstance speckleFi)
     {
-      DB.FamilySymbol familySymbol = GetElementType<FamilySymbol>(speckleFi);
       XYZ basePoint = PointToNative(speckleFi.basePoint);
       DB.Level level = ConvertLevelToRevit(speckleFi.level, out ApplicationObject.State levelState);
       DB.FamilyInstance familyInstance = null;
       var isUpdate = false;
-      //try update existing
+
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
       var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type) { applicationId = speckleFi.applicationId };
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
+      if (!GetElementType<FamilySymbol>(speckleFi, appObj, out DB.FamilySymbol familySymbol))
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
+        appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
 
@@ -95,7 +99,10 @@ namespace Objects.Converter.Revit
           else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
           {
             if (CurrentHostElement == null)
-              Report.ConversionErrors.Add(new Exception($"Object with ID {speckleFi.id} is work plane based, but does not have a host element"));
+            {
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
+              return appObj;
+            }
             if (CurrentHostElement is Wall wall)
             {
               Doc.Regenerate();
@@ -152,12 +159,14 @@ namespace Objects.Converter.Revit
             else if (CurrentHostElement is Floor floor)
             {
               // TODO: support hosted elements on floors. Should be very similar to above implementation
-              Report.ConversionErrors.Add(new Exception($"Work Plane based families on floors to be supported soon"));
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Work Plane based families on floors to be supported soon");
+              return appObj;
             }
           }
           else
           {
-            Report.ConversionErrors.Add(new Exception($"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}"));
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}");
+            return appObj;
           }
           // try a catch all solution as a last resort
           if (familyInstance == null)
@@ -334,7 +343,6 @@ namespace Objects.Converter.Revit
       double PointD = planeNormal.X * point.X + planeNormal.Y * point.Y + planeNormal.Z * point.Z;
       double value = Math.Abs(D - PointD);
 
-      //Report.Log($"point {point}");
       return value;
     }
 

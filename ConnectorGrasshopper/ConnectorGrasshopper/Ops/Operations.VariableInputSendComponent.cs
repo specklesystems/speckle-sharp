@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,6 +23,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Core.Models.Extensions;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -158,6 +159,10 @@ namespace ConnectorGrasshopper.Ops
       base.AppendAdditionalMenuItems(menu);
     }
 
+    public bool HasDuplicateKeys => Params.Input.Skip(2)
+      .Select(p => p.NickName)
+      .GroupBy(x => x).Count(group => group.Count() > 1) > 0;
+    
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -167,7 +172,15 @@ namespace ConnectorGrasshopper.Ops
         base.SolveInstance(DA);
         return;
       }
-
+      
+      if (HasDuplicateKeys)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
+        CurrentComponentState = "needs_input";
+        Message = "Expired";
+        return;
+      }
+      
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
         !JustPastedIn)
       {
@@ -238,14 +251,15 @@ namespace ConnectorGrasshopper.Ops
     public IGH_Param CreateParameter(GH_ParameterSide side, int index)
     {
       var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-
-      return new SendReceiveDataParam
+      var myParam = new SendReceiveDataParam
       {
         Name = uniqueName,
         NickName = uniqueName,
         MutableNickName = true,
         Optional = false
       };
+      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
+      return myParam;
     }
 
     public bool DestroyParameter(GH_ParameterSide side, int index)
@@ -255,6 +269,11 @@ namespace ConnectorGrasshopper.Ops
 
     public void VariableParameterMaintenance()
     {
+      Params.Input.Skip(2)
+        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+        .ToList()
+        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
+        );
     }
 
     private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
@@ -350,11 +369,17 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
-
+      
+        if (!Helpers.UserHasInternet().Result)
+        {
+          throw new Exception("You are not connected to the internet.");
+        }
+        
         // Note: this method actually converts the objects to speckle too
         ObjectToSend = new Base();
         int convertedCount = 0;
-
+        
+        
         foreach (var d in DataInputs)
         {
           try
@@ -376,7 +401,7 @@ namespace ConnectorGrasshopper.Ops
           }
           catch (Exception e)
           {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.Message));
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
             Done();
             return;
           }
@@ -418,7 +443,7 @@ namespace ConnectorGrasshopper.Ops
             catch (Exception e)
             {
               // TODO: Check this with team.
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.Message));
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
             }
           }
 
@@ -449,7 +474,7 @@ namespace ConnectorGrasshopper.Ops
             }
             catch (Exception e)
             {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.InnerException?.Message ?? e.Message));
+              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
               continue;
             }
 
@@ -490,8 +515,8 @@ namespace ConnectorGrasshopper.Ops
           // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
           var msg = exception.Message.Contains("401")
             ? $"You don't have access to this transport , or it doesn't exist."
-            : exception.Message;
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
+            : exception.ToFormattedString();
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {exception.ToFormattedString()}"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source =>
@@ -518,13 +543,22 @@ namespace ConnectorGrasshopper.Ops
           }
 
           // Part 3.1: persist the objects
-          BaseId = await Operations.Send(
-            ObjectToSend,
-            CancellationToken,
-            Transports,
-            useDefaultCache: sendComponent.UseDefaultCache,
-            onProgressAction: InternalProgressAction,
-            onErrorAction: ErrorAction, disposeTransports: true);
+          try
+          {
+            BaseId = await Operations.Send(
+              ObjectToSend,
+              CancellationToken,
+              Transports,
+              useDefaultCache: sendComponent.UseDefaultCache,
+              onProgressAction: InternalProgressAction,
+              onErrorAction: ErrorAction, disposeTransports: true);
+
+          }
+          catch (Exception e)
+          {
+            ErrorAction("S", e);
+            return;
+          }
 
           // 3.2 Create commits for any server transport present
 
@@ -596,7 +630,7 @@ namespace ConnectorGrasshopper.Ops
 
         // If we reach this, something happened that we weren't expecting...
         Log.CaptureException(e);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.Message));
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         //Parent.Message = "Error";
         //((SendComponent)Parent).CurrentComponentState = "expired";
         Done();

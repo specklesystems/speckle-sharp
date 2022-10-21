@@ -23,13 +23,13 @@
           Orientation="Horizontal"
           Spacing="6">
           <TextBlock
-            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            Classes="SpeckleFont"
             FontSize="18"
             FontWeight="Bold"
             Foreground="{DynamicResource PrimaryHueMidBrush}"
             Text="SPECKLE SCHEDULER" />
           <TextBlock
-            FontFamily="/Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            Classes="SpeckleFont"
             FontSize="18"
             FontWeight="Medium"
             Text="{Binding Title}" />
@@ -61,7 +61,7 @@
           <TextBlock
             Margin="0,15,0,0"
             IsVisible="{Binding HasSavedSenders, Converter={x:Static BoolConverters.Not}}"
-            Text="Please save a stream form the main Connector UI ⚠ to continue."
+            Text="⚠ Please save a Sender Stream form the main Connector UI to continue."
             TextWrapping="Wrap" />
         </StackPanel>
       </m:Card>

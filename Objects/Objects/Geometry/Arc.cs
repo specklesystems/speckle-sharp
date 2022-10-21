@@ -9,13 +9,29 @@ using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
+    /// <summary>
+    /// Represents a sub-curve of a three-dimensional circle.
+    /// </summary>
     public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     {
+        /// <summary>
+        /// The radius of the <see cref="Arc"/>
+        /// </summary>
         public double? radius { get; set; }
+        
+        /// <summary>
+        /// The start angle of the <see cref="Arc"/> based on it's <see cref="Arc.plane"/>
+        /// </summary>
         public double? startAngle { get; set; }
 
+        /// <summary>
+        /// The end angle of the <see cref="Arc"/> based on it's <see cref="Arc.plane"/>
+        /// </summary>
         public double? endAngle { get; set; }
 
+        /// <summary>
+        /// The inner angle of the <see cref="Arc"/>
+        /// </summary>
         public double angleRadians { get; set; }
 
         /// <summary>
@@ -23,8 +39,12 @@ namespace Objects.Geometry
         /// </summary>
         public Plane plane { get; set; }
 
+        /// <inheritdoc/>
         public Interval domain { get; set; }
-
+        
+        /// <summary>
+        /// The start <see cref="Point"/> of the <see cref="Arc"/>
+        /// </summary>
         public Point startPoint { get; set; }
 
         /// <summary>
@@ -32,19 +52,40 @@ namespace Objects.Geometry
         /// </summary>
         public Point midPoint { get; set; }
 
+        /// <summary>
+        /// The end <see cref="Point"/> of the <see cref="Arc"/>
+        /// </summary>
         public Point endPoint { get; set; }
-
+        
+        /// <inheritdoc/>
         public Box bbox { get; set; }
 
+        /// <inheritdoc/>
         public double area { get; set; }
 
+        /// <inheritdoc/>
         public double length { get; set; }
+        
+        /// <summary>
+        /// The units this object was specified in.
+        /// </summary>
         public string units { get; set; }
 
+        /// <inheritdoc/>
         public Arc()
         {
         }
-
+        
+        /// <summary>
+        /// Constructs a new <see cref="Arc"/> using angle values.
+        /// </summary>
+        /// <param name="plane">The Plane where the arc will be drawn</param>
+        /// <param name="radius">The radius of the Arc</param>
+        /// <param name="startAngle">The angle formed between the start point and the X Axis of the plane</param>
+        /// <param name="endAngle">The angle formed between the end point and the X Axis of the plane</param>
+        /// <param name="angleRadians">The total angle of the Arc in Radians</param>
+        /// <param name="units">The object's units</param>
+        /// <param name="applicationId">The object's unique application ID</param>
         public Arc(Plane plane, double radius, double startAngle, double endAngle, double angleRadians,
           string units = Units.Meters, string applicationId = null)
         {
@@ -78,9 +119,18 @@ namespace Objects.Geometry
             applicationId
             )
         { }
-
+        /// <summary>
+        /// Initialise an `Arc` using a plane, the arc angle and the start and end points.
+        /// The radius, midpoint, start angle, and end angle will be calculated.
+        /// </summary>
+        /// <param name="plane">The Plane where the arc will be drawn</param>
+        /// <param name="startPoint">The start point of the arc</param>
+        /// <param name="endPoint">The end point of the arc</param>
+        /// <param name="angleRadians">The arc angle</param>
+        /// <param name="units">Units (defaults to "m")</param>
+        /// <param name="applicationId">ID given to the arc in the authoring programme (defaults to null)</param>
         public Arc(Plane plane, Point startPoint, Point endPoint, double angleRadians, string units = Units.Meters,
-          string applicationId = null)
+                   string applicationId = null)
         {
             // don't be annoying
             if (angleRadians > Math.PI * 2)
@@ -128,7 +178,12 @@ namespace Objects.Geometry
                 startAngle = Math.PI - startAngle;
             endAngle = startAngle + angleRadians;
         }
-
+        
+        /// <summary>
+        /// Creates a flat list with the values of the <see cref="Arc"/>
+        /// This is only used for serialisation purposes.
+        /// </summary>
+        /// <returns>A list of numbers representing the <see cref="Arc"/>'s value</returns>
         public List<double> ToList()
         {
             var list = new List<double>();
@@ -148,7 +203,14 @@ namespace Objects.Geometry
             list.Insert(0, list.Count);
             return list;
         }
-
+        
+        /// <summary>
+        /// Creates a new <see cref="Arc"/> instance based on a flat list of numerical values.
+        /// This is only used for deserialisation purposes.
+        /// </summary>
+        /// <remarks>The input list should be the result of having called <see cref="Arc.ToList"/></remarks>
+        /// <param name="list">A list of numbers</param>
+        /// <returns>A new <see cref="Arc"/> with the values assigned from the list.</returns>
         public static Arc FromList(List<double> list)
         {
             var arc = new Arc();
@@ -167,7 +229,8 @@ namespace Objects.Geometry
 
             return arc;
         }
-
+        
+        /// <inheritdoc/>
         public bool TransformTo(Transform transform, out Arc transformed)
         {
             plane.TransformTo(transform, out Plane pln);
@@ -178,6 +241,7 @@ namespace Objects.Geometry
             return true;
         }
 
+        /// <inheritdoc/>
         public bool TransformTo(Transform transform, out ITransformable transformed)
         {
             var res = TransformTo(transform, out Arc arc);

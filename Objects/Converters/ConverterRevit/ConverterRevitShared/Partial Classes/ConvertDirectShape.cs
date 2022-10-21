@@ -58,11 +58,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
       var existing = CheckForExistingObject(speckleDs);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
-        return appObj;
-      }
+        return existing;
 
       var converted = new List<DB.GeometryObject>();
 
@@ -120,12 +116,8 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
       var existing = CheckForExistingObject(brep);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
-        return appObj;
-      }
-      
+        return existing;
+
       var catId = Doc.Settings.Categories.get_Item(cat).Id;
       var revitDs = DB.DirectShape.CreateElement(Doc, catId);
       revitDs.ApplicationId = brep.applicationId;
@@ -168,7 +160,6 @@ namespace Objects.Converter.Revit
       BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
       => DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new []{mesh}, cat, mesh.applicationId ?? mesh.id);
     
-    
     public ApplicationObject DirectShapeToNative(ApplicationObject appObj, IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel, string applicationId = null)
     {
       if (meshes.Count == 0)
@@ -179,12 +170,8 @@ namespace Objects.Converter.Revit
 
       var existing = CheckForExistingObject(meshes[0]);
       if (existing != null)
-      {
-        appObj = existing;
-        appObj.Update(status: ApplicationObject.State.Skipped);
-        return appObj;
-      }
-      
+        return existing;
+
       var converted = new List<GeometryObject>();
       foreach (Mesh m in meshes)
       {

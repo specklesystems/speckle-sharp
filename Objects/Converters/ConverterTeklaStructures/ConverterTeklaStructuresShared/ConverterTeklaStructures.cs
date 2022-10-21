@@ -1,16 +1,17 @@
-﻿using System;
 ﻿using Speckle.Core.Kits;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
+using System;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using BE = Objects.BuiltElements;
-using Speckle.Core.Logging;
-using Tekla.Structures.Model;
+using System.Text;
 using Tekla.Structures;
+using Tekla.Structures.Model;
+using BE = Objects.BuiltElements;
 using GE = Objects.Geometry;
 
 
@@ -19,9 +20,9 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures : ISpeckleConverter
   {
 #if TeklaStructures2021
-    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2021;
+    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2021);
 #elif TeklaStructures2020
-    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
+    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2020);
 #else
     public static string TeklaStructuresAppName = HostApplications.TeklaStructures.Name;
 #endif
@@ -61,9 +62,17 @@ namespace Objects.Converter.TeklaStructures
 
     public bool CanConvertToNative(Base @object)
     {
+      Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
+      if (bool.Parse(recieveModelMesh) == true)
+      {
+        return true;
+      }
+
       switch (@object)
       {
         case BE.Beam b:
+          return true;
+        case BE.Column b:
           return true;
         case BE.Area a:
           return true;
@@ -121,11 +130,22 @@ namespace Objects.Converter.TeklaStructures
       {
         try
         {
-          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
-          //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
-          MeshToNative(@object, meshes);
+          var bases = BaseExtensions.Flatten(@object);
+          foreach (var @base in bases)
+          {
+            try
+            {
+              List<GE.Mesh> displayValues = new List<GE.Mesh> { };
+              var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<GE.Mesh>;
+              //dynamic property = propInfo;
+              //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+              MeshToNative(@base, meshes);
+            }
+            catch
+            {
+
+            }
+          }
           return true;
         }
         catch
@@ -138,6 +158,9 @@ namespace Objects.Converter.TeklaStructures
       {
         case BE.Beam o:
           BeamToNative(o);
+          return true;
+        case BE.Column o:
+          ColumnToNative(o);
           return true;
         case BE.Area o:
           ContourPlateToNative(o);

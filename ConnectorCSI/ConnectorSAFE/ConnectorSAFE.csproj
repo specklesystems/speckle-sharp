@@ -17,6 +17,7 @@
     <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
     <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
     <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+    <PlatformTarget>x64</PlatformTarget>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -81,13 +82,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
-      <Version>0.10.17</Version>
+      <Version>0.10.18</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.17</Version>
+      <Version>0.10.18</Version>
     </PackageReference>
     <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.17</Version>
+      <Version>0.10.18</Version>
     </PackageReference>
     <PackageReference Include="CSiAPIv1">
       <Version>1.0.0</Version>
@@ -98,7 +99,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Sentry">
-      <Version>3.19.0</Version>
+      <Version>3.20.1</Version>
     </PackageReference>
     <PackageReference Include="Speckle.Newtonsoft.Json">
       <Version>12.0.3.1</Version>
@@ -108,6 +109,5 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
-  <Import Project="..\..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
