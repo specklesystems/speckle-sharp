@@ -145,13 +145,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           shell: cmd.exe #does not work in powershell
           environment:
             SLUG: << parameters.slug >>
-      # - when:
-      #     condition:
-      #       equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
-      #     steps:
-      #       - run:
-      #           name: Build TSEP
-      #           command: speckle-sharp-ci-tools/TSEPBuilder/TeklaExtensionPackage.BatchBuilder.exe -I C:/Users/circleci/project/ConnectorTeklaStructures/ConnectorTeklaStructures2021/ManifestGenerator.xml -O C:/Users/circleci/project/speckle-sharp-ci-tools/Installers/<<parameters.slug>>/<<parameters.dllname>>.tsep
+      - when:
+          condition:
+            equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
+          steps:
+            - run:
+                name: Build TSEP
+                command: speckle-sharp-ci-tools/TSEPBuilder/TeklaExtensionPackage.BatchBuilder.exe -I C:/Users/circleci/project/ConnectorTeklaStructures/ConnectorTeklaStructures2021/ManifestGenerator.xml -O C:/Users/circleci/project/speckle-sharp-ci-tools/Installers/<<parameters.slug>>/<<parameters.dllname>>.tsep
+            - store_artifacts:
+                path: speckle-sharp-ci-tools/Installers/<<parameters.slug>>/
       - when:
           condition: << pipeline.git.tag >>
           steps:
