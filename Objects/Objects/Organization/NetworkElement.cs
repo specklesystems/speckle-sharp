@@ -1,4 +1,4 @@
-﻿using Objects.Geometry;
+using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Speckle.Newtonsoft.Json;
+using Objects.BuiltElements;
 
 namespace Objects.Organization
 {
@@ -17,7 +18,7 @@ namespace Objects.Organization
     /// <summary>
     /// The Base object representing the element in the network (eg Pipe, Duct, etc)
     /// </summary>
-    public Base element {get; set;}
+    public Base element { get; set; }
 
     /// <summary>
     /// The index of the links in <see cref="network"/> that are connected to this element
@@ -38,11 +39,33 @@ namespace Objects.Organization.Revit
 {
   public class RevitNetworkElement : NetworkElement
   {
+    public FittingType fittingType { get; set; }
     public RevitNetworkElement() { }
 
+    public bool connectorBasedCreation { get; set; }
+
+    public bool isCurve { get; set; }
+
+    //public bool ConnectorBasedCreation()
+    //{
+    //  return FittingType == FittingType.Elbow
+    //    || FittingType == FittingType.Tee
+    //    || FittingType == FittingType.Union
+    //    || FittingType == FittingType.Transition
+    //    || FittingType == FittingType.Cross
+    //    || FittingType == FittingType.Tap;
+    //}
+  }
+
+  public enum FittingType
+  {
+    Elbow = 0,
+    Tee = 1,
+    Union = 2,
+    Transition = 3,
+    Cross = 4,
+    Tap = 5,
+    Other = 6,
+    Invalid = -1
   }
 }
-  
-
-  
-

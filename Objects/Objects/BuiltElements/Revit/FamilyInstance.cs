@@ -1,4 +1,3 @@
-﻿using System;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -29,6 +28,14 @@ namespace Objects.BuiltElements.Revit
     /// The rotation of the instance on <see cref="plane"/>
     /// </summary>
     public double rotation { get; set; }
+
+    public Point basisX { get; set; }
+
+    public Point basisY { get; set; }
+
+    public Point basisZ { get; set; }
+
+    public Point origin { get; set; }
 
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }

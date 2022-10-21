@@ -135,13 +135,14 @@ namespace Speckle.ConnectorRevit.UI
           }
           else
           {
-            var category = $"@{revitElement.Category.Name}";
+            var category = conversionResult.GetType().Name == "Network" ?
+            "@Networks" :
+            $"@{revitElement.Category.Name}";
             if (commitObject[category] == null)
               commitObject[category] = new List<Base>();
 
             ((List<Base>)commitObject[category]).Add(conversionResult);
           }
-
 
           reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}");
         }
