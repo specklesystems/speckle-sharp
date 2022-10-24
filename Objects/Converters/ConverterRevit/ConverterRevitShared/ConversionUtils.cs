@@ -716,10 +716,10 @@ namespace Objects.Converter.Revit
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else
+      else if(@ref.CreatedIds.Any())
       {
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.CreatedIds.FirstOrDefault());
+        element = Doc.GetElement(@ref.CreatedIds.First());
       }
 
       return element;

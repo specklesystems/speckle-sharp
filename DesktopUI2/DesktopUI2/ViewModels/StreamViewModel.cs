@@ -23,6 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Reactive;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Input;
 using Stream = Speckle.Core.Api.Stream;
 
@@ -273,7 +274,7 @@ namespace DesktopUI2.ViewModels
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
-            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{SelectedBranch.Branch.name}";
+            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         }
@@ -478,7 +479,7 @@ namespace DesktopUI2.ViewModels
         if (!IsReceiver)
         {
           if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.Branch.name}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         }
         //receiver
         else
@@ -486,7 +487,7 @@ namespace DesktopUI2.ViewModels
           if (SelectedCommit != null && SelectedCommit.id != "latest")
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
           if (SelectedBranch != null)
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.Branch.name}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         }
         return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
 
@@ -988,6 +989,10 @@ namespace DesktopUI2.ViewModels
             { "filter", StreamState.Filter.Name },
             { "view", view },
             { "collaborators", Stream.collaborators.Count },
+            { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+            { "branches", Stream.branches?.totalCount },
+            { "commits", Stream.commits?.totalCount },
+            { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
           });
 
           Notification = $"Sent successfully, view online";
@@ -1068,7 +1073,13 @@ namespace DesktopUI2.ViewModels
               { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastSourceApp).Slug },
               { "sourceHostAppVersion", state.LastSourceApp },
               { "view", view },
-              { "collaborators", Stream.collaborators.Count },});
+              { "collaborators", Stream.collaborators.Count },
+              { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+              { "branches", Stream.branches?.totalCount },
+              { "commits", Stream.commits?.totalCount },
+              { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
+
+            });
         }
 
 

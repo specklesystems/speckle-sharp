@@ -23,6 +23,18 @@
   </UserControl.Resources>
   <ScrollViewer Name="activityScroller">
     <Grid RowDefinitions="*,auto">
+      <StackPanel
+        Margin="10,15"
+        IsVisible="{Binding !Comments.Count}"
+        Orientation="Vertical"
+        Spacing="20">
+        <TextBlock Text="💬 There are no comments yet on this Stream!" TextWrapping="Wrap" />
+        <Button
+          Classes="Flat"
+          Command="{Binding ViewOnlineSavedStreamCommand}"
+          Content="Start a conversation" />
+      </StackPanel>
+
       <ItemsControl Margin="0,0,0,10" Items="{Binding Comments}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
