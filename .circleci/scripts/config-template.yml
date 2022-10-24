@@ -70,20 +70,31 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - store_artifacts:
           path: TestResults
 
-      - codecov/upload
+      #- codecov/upload
 
   build-objects:
-    executor:
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
+      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
     steps:
       - checkout
       - run:
           name: Restore Objects
-          command: nuget restore Objects/Objects.sln
+          command: dotnet restore Objects/Objects.sln
       - run:
           name: Build Objects
-          command: msbuild Objects/Objects.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+      - run:
+          name: Test Objects
+          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - store_test_results:
+          path: TestResults
+      - store_artifacts:
+          path: TestResults
+      # Upload to codecov if necessary
+      # Currently disabled until we figure out a strategy to
+      # upload Core and Objects at once
+      # - codecov/upload
 
   build-desktopui:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
@@ -141,6 +152,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build TSEP
                 command: speckle-sharp-ci-tools/TSEPBuilder/TeklaExtensionPackage.BatchBuilder.exe -I C:/Users/circleci/project/ConnectorTeklaStructures/ConnectorTeklaStructures2021/ManifestGenerator.xml -O C:/Users/circleci/project/speckle-sharp-ci-tools/Installers/<<parameters.slug>>/<<parameters.dllname>>.tsep
+            - store_artifacts:
+                path: speckle-sharp-ci-tools/Installers/<<parameters.slug>>/
       - when:
           condition: << pipeline.git.tag >>
           steps:
@@ -159,6 +172,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
       extension:
         type: string
+      arch:
+        type: string
+        default: Any
     steps:
       - checkout
       - attach_workspace:
@@ -171,7 +187,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.exe -o << parameters.os >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
+            /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >> -o << parameters.os >> -a << parameters.arch >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
 
   build-connector-mac:
     macos:
@@ -313,18 +329,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: cimg/base:2021.01
     steps:
-      - attach_workspace:
-          at: ./
       - run:
-          name: List contents
-          command: ls -R speckle-sharp-ci-tools/Installers
-      - aws-s3/copy:
-          arguments: "--recursive --endpoint=https://$SPACES_REGION.digitaloceanspaces.com --acl public-read"
-          aws-access-key-id: SPACES_KEY
-          aws-region: SPACES_REGION
-          aws-secret-access-key: SPACES_SECRET
-          from: '"speckle-sharp-ci-tools/Installers/"'
-          to: s3://speckle-releases/installers/
+          name: Proceed to deploy
+          command: echo "This step is just here to wait for all build jobs before proceeding to deploy each of them individually. If a job fails, no connector will be deployed."
 
 # The main workflows for our monorepo pipeline.
 # There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.

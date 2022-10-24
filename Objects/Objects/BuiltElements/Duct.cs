@@ -9,7 +9,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
-  public class Duct : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Duct : Base, IDisplayValue<List<Mesh>>
   {
     [JsonIgnore, Obsolete("Replaced with baseCurve property")]
     public Line baseLine { get; set; }
@@ -65,14 +65,6 @@ namespace Objects.BuiltElements
       this.diameter = diameter;
       this.velocity = velocity;
     }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }
 

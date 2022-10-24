@@ -1,10 +1,20 @@
-﻿using Objects.Geometry;
+﻿using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET.DgnEC;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.EC.Persistence.Query;
+using Bentley.ECObjects;
+using Bentley.ECObjects.Instance;
+using Bentley.ECObjects.Schema;
+using Bentley.GeometryNET;
+using Bentley.MstnPlatformNET;
+using Objects.Geometry;
 using Objects.Primitive;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
+using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -20,21 +30,10 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using View3D = Objects.BuiltElements.View3D;
+using Station = Objects.BuiltElements.Station;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using Alignment = Objects.BuiltElements.Alignment;
-using Station = Objects.BuiltElements.Station;
-
-using Bentley.DgnPlatformNET;
-using Bentley.DgnPlatformNET.Elements;
-using Bentley.DgnPlatformNET.DgnEC;
-using Bentley.GeometryNET;
-using Bentley.MstnPlatformNET;
-using Bentley.ECObjects.Schema;
-using Bentley.ECObjects;
-using Bentley.ECObjects.Instance;
-using Bentley.EC.Persistence.Query;
+using View3D = Objects.BuiltElements.View3D;
 
 #if(OPENBUILDINGS)
 using Bentley.Building.Api;
@@ -51,13 +50,13 @@ namespace Objects.Converter.MicroStationOpen
   public partial class ConverterMicroStationOpen : ISpeckleConverter
   {
 #if MICROSTATION
-    public static string BentleyAppName = VersionedHostApplications.MicroStation;
+    public static string BentleyAppName = HostApplications.MicroStation.Name;
 #elif OPENROADS
-    public static string BentleyAppName = VersionedHostApplications.OpenRoads;
+    public static string BentleyAppName = HostApplications.OpenRoads.Name;
 #elif OPENRAIL
-    public static string BentleyAppName = VersionedHostApplications.OpenRail;
+    public static string BentleyAppName = HostApplications.OpenRail.Name;
 #elif OPENBUILDINGS
-    public static string BentleyAppName = VersionedHostApplications.OpenBuildings;
+    public static string BentleyAppName = HostApplications.OpenBuildings.Name;
 #endif
     public string Description => "Default Speckle Kit for MicroStation, OpenRoads, OpenRail and OpenBuildings";
     public string Name => nameof(ConverterMicroStationOpen);

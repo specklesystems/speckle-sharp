@@ -14,6 +14,7 @@ using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo.SendNode
@@ -239,6 +240,12 @@ namespace Speckle.ConnectorDynamo.SendNode
         long totalCount = 0;
         Base @base = null;
         var converter = new BatchConverter();
+        converter.OnError += (sender, args) =>
+        {
+          Warning(args.Error.ToFormattedString());
+          Message = "Conversion errors";
+        };
+        
         try
         {
           @base = converter.ConvertRecursivelyToSpeckle(_data);
@@ -247,10 +254,10 @@ namespace Speckle.ConnectorDynamo.SendNode
         catch (Exception e)
         {
           Message = "Conversion error";
-          Warning(e.Message);
+          Warning(e.ToFormattedString());
           throw new SpeckleException("Conversion error", e);
         }
-
+        
         if (totalCount == 0)
           throw new SpeckleException("Zero objects converted successfully. Send stopped.");
 
@@ -277,13 +284,8 @@ namespace Speckle.ConnectorDynamo.SendNode
         void ErrorAction(string transportName, Exception e)
         {
           hasErrors = true;
-
-          while (e != null)
-          {
-            Message += e.Message;
-            e = e.InnerException;
-          }
-
+          Message += e.ToFormattedString();
+          
           Message = Message.Contains("401") ? "You don't have enough permissions to send to this stream." : Message;
           _cancellationToken.Cancel();
           ResetNode();

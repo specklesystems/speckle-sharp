@@ -263,7 +263,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
           var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
           remoteTransport.TransportName = "R";
 
-          Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "sync", true } });
+
 
           var myCommit = await ReceiveComponentWorker.GetCommit(StreamWrapper, client, (level, message) =>
           {
@@ -275,6 +275,13 @@ namespace ConnectorGrasshopper.Ops.Deprecated
             AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Couldn't get the commit");
             return null;
           }
+
+          Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Receive, new Dictionary<string, object>()
+          {
+            { "sync", true },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
+            { "sourceHostAppVersion", myCommit.sourceApplication }
+          });
 
           var TotalObjectCount = 1;
 

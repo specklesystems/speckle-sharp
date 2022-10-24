@@ -14,6 +14,8 @@
     <Deterministic>true</Deterministic>
     <StartAction>Program</StartAction>
     <StartProgram>$(ProgramW6432)\Bentley\OpenRail Designer CONNECT Edition\OpenRailDesigner\OpenRailDesigner.exe</StartProgram>
+    <PlatformTarget>x64</PlatformTarget>
+
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

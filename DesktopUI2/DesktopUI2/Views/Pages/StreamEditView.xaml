@@ -36,7 +36,7 @@
       Margin="0,0,0,7"
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
-      Background="{DynamicResource MaterialDesignCardBackground}">
+      Background="{DynamicResource PrimaryHueMidBrush}">
       <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
         <m:FloatingButton
           VerticalAlignment="Center"
@@ -53,7 +53,7 @@
               <icons:MaterialIcon
                 Width="24"
                 Height="24"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="ChevronLeft" />
             </Viewbox>
           </Button.Content>
@@ -64,13 +64,24 @@
           Margin="15,0,0,0"
           RowDefinitions="auto,auto">
           <TextBlock
-            Classes="Grotesk"
+            Classes="Medium SpeckleFont"
             FontSize="20"
+            Foreground="White"
             Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <sc:StreamDetails Grid.Row="1" />
+          <sc:StreamDetails Grid.Row="1">
+            <sc:StreamDetails.Styles>
+              <Style Selector="TextBlock">
+                <Setter Property="Foreground" Value="White" />
+              </Style>
+              <Style Selector="icons|MaterialIcon.StreamCard">
+                <Setter Property="Foreground" Value="White" />
+              </Style>
+
+            </sc:StreamDetails.Styles>
+          </sc:StreamDetails>
         </Grid>
-        <!--  TEMPORARILY DISABLED  -->
+        <!--  SHARE STREAM  -->
         <m:FloatingButton
           Grid.Column="2"
           VerticalAlignment="Center"
@@ -78,14 +89,13 @@
           Background="Transparent"
           Classes="Mini"
           Command="{Binding ShareCommand}"
-          IsVisible="False"
           ToolTip.Tip="Share">
           <Button.Content>
             <icons:MaterialIcon
               Width="15"
               Height="15"
               assists:ShadowAssist.ShadowDepth="0"
-              Foreground="{DynamicResource MaterialDesignBody}"
+              Foreground="White"
               Kind="UsersAdd" />
           </Button.Content>
         </m:FloatingButton>
@@ -311,6 +321,40 @@
                 Kind="Close" />
             </Button.Content>
           </m:FloatingButton>
+        </Grid>
+      </m:ColorZone>
+
+      <!--  SHARE PROMPT  -->
+      <m:ColorZone
+        Grid.Row="2"
+        Margin="0,0,0,10"
+        assists:ShadowAssist.ShadowDepth="Depth0"
+        CornerRadius="25"
+        IsVisible="{Binding ShowSharePrompt}"
+        Mode="PrimaryLight">
+        <Grid ColumnDefinitions="*, auto">
+          <Button
+            Margin="0,0,3,0"
+            VerticalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding ShareCommand}"
+            CornerRadius="25,0,0,25"
+            ToolTip.Tip="Share stream">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock
+                VerticalAlignment="Center"
+                Classes="Overline"
+                FontWeight="Medium"
+                Foreground="White"
+                Text="Enable multiplayer mode!"
+                TextWrapping="Wrap" />
+              <icons:MaterialIcon
+                Margin="5,0"
+                VerticalAlignment="Center"
+                Foreground="White"
+                Kind="UsersAdd" />
+            </StackPanel>
+          </Button>
         </Grid>
       </m:ColorZone>
 

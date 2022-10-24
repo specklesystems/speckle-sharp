@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Data.Sqlite;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Transports
@@ -24,7 +25,7 @@ namespace Speckle.Core.Transports
 
     public string ConnectionString { get; set; }
 
-    private SQLiteConnection Connection { get; set; }
+    private SqliteConnection Connection { get; set; }
     private object ConnectionLock { get; set; }
 
     private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
@@ -88,38 +89,38 @@ namespace Speckle.Core.Transports
       //    cart.Add(str + str2);
       if (CancellationToken.IsCancellationRequested) return;
 
-      using (var c = new SQLiteConnection(ConnectionString))
+      using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
-        using (var command = new SQLiteCommand(c))
-        {
-          command.CommandText = @"
+        var commandText = @"
             CREATE TABLE IF NOT EXISTS objects(
               hash TEXT PRIMARY KEY,
               content TEXT
             ) WITHOUT ROWID;
           ";
+        using (var command = new SqliteCommand(commandText, c))
+        {
           command.ExecuteNonQuery();
         }
 
         // Insert Optimisations
 
-        SQLiteCommand cmd;
-        cmd = new SQLiteCommand("PRAGMA journal_mode='wal';", c);
+        SqliteCommand cmd;
+        cmd = new SqliteCommand("PRAGMA journal_mode='wal';", c);
         cmd.ExecuteNonQuery();
 
         //Note / Hack: This setting has the potential to corrupt the db.
-        //cmd = new SQLiteCommand("PRAGMA synchronous=OFF;", Connection);
+        //cmd = new SqliteCommand("PRAGMA synchronous=OFF;", Connection);
         //cmd.ExecuteNonQuery();
 
-        cmd = new SQLiteCommand("PRAGMA count_changes=OFF;", c);
+        cmd = new SqliteCommand("PRAGMA count_changes=OFF;", c);
         cmd.ExecuteNonQuery();
 
-        cmd = new SQLiteCommand("PRAGMA temp_store=MEMORY;", c);
+        cmd = new SqliteCommand("PRAGMA temp_store=MEMORY;", c);
         cmd.ExecuteNonQuery();
       }
 
-      Connection = new SQLiteConnection(ConnectionString);
+      Connection = new SqliteConnection(ConnectionString);
       Connection.Open();
       ConnectionLock = new object();
 
@@ -183,30 +184,34 @@ namespace Speckle.Core.Transports
 
       var saved = 0;
 
-      using (var c = new SQLiteConnection(ConnectionString))
+      using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
         using (var t = c.BeginTransaction())
         {
-          using (var command = new SQLiteCommand(c))
+          var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+
+          while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
           {
-            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-            while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
+            using (var command = new SqliteCommand(commandText, c, t))
             {
+
               Queue.TryDequeue(out result);
               command.Parameters.AddWithValue("@hash", result.Item1);
               command.Parameters.AddWithValue("@content", result.Item2);
               command.ExecuteNonQuery();
+
               saved++;
             }
-            t.Commit();
-            if (CancellationToken.IsCancellationRequested)
-            {
-              Queue = new ConcurrentQueue<(string, string, int)>();
-              IS_WRITING = false;
-              return;
-            }
           }
+          t.Commit();
+          if (CancellationToken.IsCancellationRequested)
+          {
+            Queue = new ConcurrentQueue<(string, string, int)>();
+            IS_WRITING = false;
+            return;
+          }
+
         }
       }
 
@@ -254,12 +259,13 @@ namespace Speckle.Core.Transports
     {
       try
       {
-        using (var c = new SQLiteConnection(ConnectionString))
+        using (var c = new SqliteConnection(ConnectionString))
         {
           c.Open();
-          using (var command = new SQLiteCommand(c))
+          var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+          using (var command = new SqliteCommand(commandText, c))
           {
-            command.CommandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+
             command.Parameters.AddWithValue("@hash", hash);
             command.Parameters.AddWithValue("@content", serializedObject);
             command.ExecuteNonQuery();
@@ -286,9 +292,8 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested) return null;
       lock (ConnectionLock)
       {
-        using (var command = new SQLiteCommand(Connection))
+        using (var command = new SqliteCommand("SELECT * FROM objects WHERE hash = @hash LIMIT 1 ", Connection))
         {
-          command.CommandText = "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ";
           command.Parameters.AddWithValue("@hash", hash);
           using (var reader = command.ExecuteReader())
           {
@@ -318,11 +323,10 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested) yield break; // Check for cancellation
 
-      using var c = new SQLiteConnection(ConnectionString);
+      using var c = new SqliteConnection(ConnectionString);
       c.Open();
 
-      using var command = new SQLiteCommand(c);
-      command.CommandText = "SELECT * FROM objects";
+      using var command = new SqliteCommand("SELECT * FROM objects", c);
 
       using var reader = command.ExecuteReader();
       while (reader.Read())
@@ -340,12 +344,11 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested) return;
 
-      using (var c = new SQLiteConnection(ConnectionString))
+      using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
-        using (var command = new SQLiteCommand(c))
+        using (var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash", c))
         {
-          command.CommandText = "DELETE FROM objects WHERE hash = @hash";
           command.Parameters.AddWithValue("@hash", hash);
           command.ExecuteNonQuery();
         }
@@ -361,12 +364,12 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested) return;
 
-      using (var c = new SQLiteConnection(ConnectionString))
+      using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
-        using (var command = new SQLiteCommand(c))
+        var commandText = $"REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
+        using (var command = new SqliteCommand(commandText, c))
         {
-          command.CommandText = $"REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
           command.Parameters.AddWithValue("@hash", hash);
           command.Parameters.AddWithValue("@content", serializedObject);
           command.ExecuteNonQuery();
@@ -385,16 +388,15 @@ namespace Speckle.Core.Transports
       // Initialize with false so that canceled queries still return a dictionary item for every object id
       foreach (string objectId in objectIds) ret[objectId] = false;
 
-      using (var c = new SQLiteConnection(ConnectionString))
+      using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
         foreach (string objectId in objectIds)
         {
           if (CancellationToken.IsCancellationRequested) return ret;
-
-          using (var command = new SQLiteCommand(c))
+          var commandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
+          using (var command = new SqliteCommand(commandText, c))
           {
-            command.CommandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
             command.Parameters.AddWithValue("@hash", objectId);
             using (var reader = command.ExecuteReader())
             {

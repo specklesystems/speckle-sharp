@@ -631,7 +631,6 @@ namespace Objects.Converter.RhinoGh
       {
         var vertIndices = polygon.BoundaryVertexIndexList();
         int n = vertIndices.Length;
-        if (n <= 4) n -= 3;
         faces.Add(n);
         faces.AddRange(vertIndices.Select(vertIndex => (int) vertIndex));
       }
@@ -670,8 +669,8 @@ namespace Objects.Converter.RhinoGh
 
       var Faces = mesh.Faces.SelectMany(face =>
       {
-        if (face.VertexCount == 4) return new int[] { 1, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
-        return new int[] { 0, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
+        if (face.VertexCount == 4) return new int[] { 4, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        return new int[] { 3, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
       }).ToList();
 
       var speckleMesh = new Mesh(verts, Faces, null, null, u);

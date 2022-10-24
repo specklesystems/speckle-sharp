@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Autodesk.DesignScript.Runtime;
+using Sentry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -153,16 +154,21 @@ namespace Speckle.ConnectorDynamo.Functions
         return null;
 
       var transport = new ServerTransport(account, stream.StreamId);
+
       var @base = Operations.Receive(
         commit.referencedObject,
         cancellationToken,
         remoteTransport: transport,
         onProgressAction: onProgressAction,
-        onErrorAction: onErrorAction,
+        onErrorAction: ((s, exception) => throw exception),
         onTotalChildrenCountKnown: onTotalChildrenCountKnown,
         disposeTransports: true
       ).Result;
 
+      if (@base == null)
+      {
+        throw new SpeckleException("Receive operation returned nothing", false);
+      }
       try
       {
         client.CommitReceived(new CommitReceivedInput
@@ -170,7 +176,7 @@ namespace Speckle.ConnectorDynamo.Functions
           streamId = stream.StreamId,
           commitId = commit?.id,
           message = commit?.message,
-          sourceApplication = VersionedHostApplications.DynamoRevit
+          sourceApplication = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit)
         }).Wait();
       }
       catch
@@ -182,9 +188,15 @@ namespace Speckle.ConnectorDynamo.Functions
         return null;
 
       var converter = new BatchConverter();
+      converter.OnError += (sender, args) => onErrorAction?.Invoke("C", args.Error);
+      
       var data = converter.ConvertRecursivelyToNative(@base);
-
-      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
+      
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
+      {
+        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
+        { "sourceHostAppVersion", commit.sourceApplication }
+      });
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }

@@ -151,7 +151,7 @@ namespace StructuralUtilities.PolygonMesher
       var faces = new List<int>();
       foreach (var t in Triangles)
       {
-        faces.Add(0); // signifying a triangle
+        faces.Add(3); // signifying a triangle
         faces.AddRange(t.Indices.Take(3).Select(x => x + faceIndexOffset));
       }
 

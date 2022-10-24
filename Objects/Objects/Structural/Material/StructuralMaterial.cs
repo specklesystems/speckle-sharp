@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Materials
 {
-    public class Material : Base
+    public class StructuralMaterial : Base
     {
         public string name { get; set; }
         public string grade { get; set; } //ex. 350W(G40.21 Plate), could be set in name too
@@ -25,10 +25,10 @@ namespace Objects.Structural.Materials
 
         // add carbon/environmental parameters?
 
-        public Material() { }
+        public StructuralMaterial() { }
 
-        [SchemaInfo("Material", "Creates a Speckle structural material", "Structural", "Materials")]
-        public Material(string name, MaterialType type, string grade = null, string designCode = null, string codeYear = null)
+        [SchemaInfo("Structural Material", "Creates a Speckle structural material", "Structural", "Materials")]
+        public StructuralMaterial(string name, MaterialType type, string grade = null, string designCode = null, string codeYear = null)
         {
             this.name = name;
             this.materialType = type;
@@ -37,8 +37,8 @@ namespace Objects.Structural.Materials
             this.codeYear = codeYear;
         }
 
-        [SchemaInfo("Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Structural", "Materials")]
-        public Material(string name, MaterialType type, string grade = null, string designCode = null, string codeYear = null, double strength = 0, double elasticModulus = 0, double poissonsRatio = 0, double shearModulus = 0, double rho = 0, double alpha = 0, double dampingRatio = 0, double materialSafetyFactor = 0, double cost = 0)
+        [SchemaInfo("Structural Material (with properties)", "Creates a Speckle structural material with (isotropic) properties", "Structural", "Materials")]
+        public StructuralMaterial(string name, MaterialType type, string grade = null, string designCode = null, string codeYear = null, double strength = 0, double elasticModulus = 0, double poissonsRatio = 0, double shearModulus = 0, double rho = 0, double alpha = 0, double dampingRatio = 0, double materialSafetyFactor = 0, double cost = 0)
         {
             this.name = name;
             this.grade = grade;

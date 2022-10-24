@@ -313,15 +313,36 @@ namespace Objects.Converter.AutocadCivil
 
       return instance;
     }
-    public string BlockInstanceToNativeDB(BlockInstance instance, out BlockReference reference, bool AppendToModelSpace = true)
+    public ApplicationObject BlockInstanceToNativeDB(BlockInstance instance, bool AppendToModelSpace = true)
     {
-      string result = null;
-      reference = null;
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      
+      // delete existing objs if any and this is an update
+      if (ReceiveMode == ReceiveMode.Update)
+      {
+        var existingObjs = GetExistingElementsByApplicationId(instance.applicationId);
+        try
+        {
+          foreach (var existingObjId in existingObjs)
+          {
+            var existingObj = Trans.GetObject(existingObjId, OpenMode.ForWrite);
+            existingObj.Erase();
+          }
+        }
+        catch (Exception e)
+        {
+          if (!e.Message.Contains("eWasErased")) // this couldve been previously deleted & received?
+            appObj.Update(logItem: $"Could not remove one or more existing instances on update: {e.Message}");
+        }
+      }
 
       // block definition
       ObjectId definitionId = BlockDefinitionToNativeDB(instance.blockDefinition);
       if (definitionId == ObjectId.Null)
-        return result;
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Couldn't create block definition");
+        return appObj;
+      }
 
       // insertion pt
       Point3d insertionPoint = PointToNative(instance.GetInsertionPoint());
@@ -346,12 +367,18 @@ namespace Objects.Converter.AutocadCivil
       if (AppendToModelSpace)
         id = modelSpaceRecord.Append(br);
 
-      // return
-      result = "success";
-      if ((id.IsValid && !id.IsNull) || !AppendToModelSpace)
-        reference = br;
+      if ((!id.IsValid || id.IsNull) && AppendToModelSpace)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Couldn't append instance to model space");
+        return appObj;
+      }
 
-      return result;
+      // update appobj
+      var status = ReceiveMode == ReceiveMode.Update ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, convertedItem: br);
+      if (AppendToModelSpace)
+        appObj.CreatedIds.Add(id.Handle.ToString());
+      return appObj;
     }
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
@@ -415,8 +442,9 @@ namespace Objects.Converter.AutocadCivil
             switch (geo)
             {
               case BlockInstance o:
-                BlockInstanceToNativeDB(o, out BlockReference reference, false);
-                if (reference != null) converted.Add(reference);
+                var instanceAppObj = BlockInstanceToNativeDB(o, false);
+                var instance = instanceAppObj.Converted.FirstOrDefault() as BlockReference;
+                if (instance != null) converted.Add(instance);
                 break;
               default:
                 ConvertWithDisplay(geo, style, material, ref converted);

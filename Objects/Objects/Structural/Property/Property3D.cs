@@ -12,7 +12,7 @@ namespace Objects.Structural.Properties
         public PropertyType3D type { get; set; }
 
         [DetachProperty]
-        public Material material { get; set; }
+        public StructuralMaterial material { get; set; }
 
         [DetachProperty]
         public Axis orientationAxis { get; set; }
@@ -26,7 +26,7 @@ namespace Objects.Structural.Properties
         }
 
         [SchemaInfo("Property3D", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
-        public Property3D(string name, PropertyType3D type , Material material)
+        public Property3D(string name, PropertyType3D type , StructuralMaterial material)
         {
             this.name = name;
             this.type = type;

@@ -13,6 +13,7 @@ using Autodesk.AutoCAD.Geometry;
 using Acad = Autodesk.AutoCAD.Geometry;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
+using Objects.BuiltElements.Civil;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Interval = Objects.Primitive.Interval;
@@ -85,9 +86,21 @@ namespace Objects.Converter.AutocadCivil
           return Civil.SpiralType.Clothoid;
       }
     }
-    public Alignment AlignmentToSpeckle(CivilDB.Alignment alignment)
+    public CivilAlignment AlignmentToSpeckle(CivilDB.Alignment alignment)
     {
-      var _alignment = new Alignment();
+      var _alignment = new CivilAlignment();
+
+      // get alignment props
+      _alignment.type = alignment.AlignmentType.ToString();
+      _alignment.offset = alignment.IsOffsetAlignment ? alignment.OffsetAlignmentInfo.NominalOffset : 0;
+      if (alignment.SiteName != null)
+        _alignment.site = alignment.SiteName;
+      if (alignment.StyleName != null)
+        _alignment.style = alignment.StyleName;
+      if (alignment.Description != null)
+        _alignment["description"] = alignment.Description;
+      if (alignment.Name != null)
+        _alignment.name = alignment.Name;
 
       // get alignment stations
       _alignment.startStation = alignment.StartingStation;
@@ -95,6 +108,18 @@ namespace Objects.Converter.AutocadCivil
       var stations = alignment.GetStationSet(CivilDB.StationTypes.All).ToList();
       List<Station> _stations = stations.Select(o => StationToSpeckle(o)).ToList();
       if (_stations.Count > 0) _alignment["@stations"] = _stations;
+
+      // handle station equations
+      var equations = new List<double>();
+      var directions = new List<bool>();
+      foreach (var stationEquation in alignment.StationEquations)
+      {
+        equations.AddRange(new List<double> { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead });
+        bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
+        directions.Add(equationIncreasing);
+      }
+      _alignment.stationEquations = equations;
+      _alignment.stationEquationDirections = directions;
 
       // get the alignment subentity curves
       List<ICurve> curves = new List<ICurve>();
@@ -144,127 +169,148 @@ namespace Objects.Converter.AutocadCivil
           curves.Add(polycurve);
         }
       }
-
-      /* this isn't very accurate, basecurve is usually a polycurve with lines and arcs
-      // get display poly
-      var poly = alignment.BaseCurve as Autodesk.AutoCAD.DatabaseServices.Polyline;
-      using (Polyline2d poly2d = poly.ConvertTo(false))
-      {
-        _alignment.displayValue = CurveToSpeckle(poly) as Polyline;
-      }
-      */
-
       _alignment.curves = curves;
-      if (alignment.Name != null)
-        _alignment.name = alignment.Name;
 
-      // handle station equations
-      var equations = new List<double>();
-      var directions = new List<bool>();
-      foreach (var stationEquation in alignment.StationEquations)
+
+      // if offset alignment, also set parent and offset side
+      if (alignment.IsOffsetAlignment)
       {
-        equations.AddRange(new List<double> { stationEquation.RawStationBack, stationEquation.StationBack, stationEquation.StationAhead });
-        bool equationIncreasing = (stationEquation.EquationType.Equals(CivilDB.StationEquationType.Increasing)) ? true : false;
-        directions.Add(equationIncreasing);
+        _alignment["offsetSide"] = alignment.OffsetAlignmentInfo.Side.ToString();
+        try
+        {
+          var parent = Trans.GetObject(alignment.OffsetAlignmentInfo.ParentAlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+          if (parent != null && parent.Name != null)
+            _alignment.parent = parent.Name;
+        }
+        catch { }
       }
-      _alignment.stationEquations = equations;
-      _alignment.stationEquationDirections = directions;
-
-      _alignment.units = ModelUnits;
-
-      // add civil3d props if they exist
-      if (alignment.SiteName != null)
-        _alignment["site"] = alignment.SiteName;
-      if (alignment.StyleName != null)
-        _alignment["style"] = alignment.StyleName;
-      if (alignment.Description != null)
-        _alignment["description"] = alignment.Description;
 
       return _alignment;
     }
-    public CivilDB.Alignment AlignmentToNative(Alignment alignment)
-    {
-      var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
-      var layer = Doc.Database.LayerZero;
 
+    public ApplicationObject AlignmentToNative(Alignment alignment)
+    {
+      var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
+      var existingObjs = GetExistingElementsByApplicationId(alignment.applicationId);
+      var civilAlignment = alignment as CivilAlignment;
+
+      // get civil doc
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       var civilDoc = CivilApplication.ActiveDocument;
       if (civilDoc == null)
-        return null;
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+        return appObj;
+      }
 
+      // create or retrieve alignment, and parent if it exists
+      CivilDB.Alignment _alignment = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.Alignment : null;
+      var parent = civilAlignment != null ? GetFromObjectIdCollection(civilAlignment.parent, civilDoc.GetAlignmentIds()) : ObjectId.Null;
+      bool isUpdate = true;
+      if (_alignment == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create) // just create a new alignment
+      {
+        isUpdate = false;
+
+        // get civil props for creation
 #region properties
-      var site = ObjectId.Null;
-      var style = civilDoc.Styles.AlignmentStyles.First();
-      var label = civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
+        var name = string.IsNullOrEmpty(alignment.name) ? alignment.applicationId : alignment.name; // names need to be unique on creation (but not send i guess??)
+        var layer = Doc.Database.LayerZero;
 
-      // get site
-      if (alignment["site"] != null)
-      {
-        var _site = alignment["site"] as string;
-        if (_site != string.Empty)
-        {
-          foreach (ObjectId docSite in civilDoc.GetSiteIds())
-          {
-            var siteEntity = Trans.GetObject(docSite, OpenMode.ForRead) as CivilDB.Site;
-            if (siteEntity.Name.Equals(_site))
-            {
-              site = docSite;
-              break;
-            }
-          }
-        }
-      }
+        // type
+        var type = CivilDB.AlignmentType.Centerline;
+        if (civilAlignment != null)
+          if (Enum.TryParse(civilAlignment.type, out CivilDB.AlignmentType civilType))
+            type = civilType;
 
-      // get style
-      if (alignment["style"] != null)
-      {
-        var _style = alignment["style"] as string;
-        foreach (var docStyle in civilDoc.Styles.AlignmentStyles)
-        {
-          var styleEntity = Trans.GetObject(docStyle, OpenMode.ForRead) as CivilDB.Styles.AlignmentStyle;
-          if (styleEntity.Name.Equals(_style))
-          {
-            style = docStyle;
-            break;
-          }
-        }
-      }
+        // site
+        var site = civilAlignment != null ? 
+          GetFromObjectIdCollection(civilAlignment.site, civilDoc.GetSiteIds()) : ObjectId.Null;
 
-      // get labelset
-      if (alignment["label"] != null)
-      {
-        var _label = alignment["label"] as string;
-        foreach (var docLabelSet in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles)
-        {
-          var labelEntity = Trans.GetObject(docLabelSet, OpenMode.ForRead) as CivilDB.Styles.AlignmentLabelSetStyle;
-          if (labelEntity.Name.Equals(_label))
-          {
-            label = docLabelSet;
-            break;
-          }
-        }
-      }
+        // style
+        var docStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.AlignmentStyles) docStyles.Add(styleId);
+        var style = civilAlignment != null ? 
+          GetFromObjectIdCollection(civilAlignment.style, docStyles, true) :  civilDoc.Styles.AlignmentStyles.First();
+
+        // label set style
+        var labelStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles) labelStyles.Add(styleId);
+        var label = civilAlignment != null ?
+          GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles, true) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
 #endregion
 
-      // create alignment entity curves
-      try
-      {
-        var id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label); // ⚠ this will throw if name is not unique!!
+        try
+        {
+          // add new alignment to doc
+          // ⚠ this will throw if name is not unique!!
+          var id = ObjectId.Null;
+          switch (type)
+          {
+            case CivilDB.AlignmentType.Offset:
+              // create only if parent exists in doc
+              if (parent == ObjectId.Null) goto default;
+              try
+              {
+                id = CivilDB.Alignment.CreateOffsetAlignment(name, parent, civilAlignment.offset, style);
+              }
+              catch
+              {
+                id = CivilDB.Alignment.CreateOffsetAlignment(CivilDB.Alignment.GetNextUniqueName(name), parent, civilAlignment.offset, style);
+              }
+              break;
+            default:
+              try
+              {
+                id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
+              }
+              catch
+              {
+                id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label);
+              }
+              break;
+          }
+          if (!id.IsValid)
+          {
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
+            return appObj;
+          }
+          _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+        }
+        catch (System.Exception e)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+          return appObj;
+        }
+      }
 
-        if (id == ObjectId.Null)
-          return null;
-        var _alignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+      if (_alignment == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"returned null after bake");
+        return appObj;
+      }
+
+      if (isUpdate) appObj.Container = _alignment.Layer; // set the appobj container to be the same layer as the existing alignment
+
+      if (parent != ObjectId.Null)
+      {
+        _alignment.OffsetAlignmentInfo.NominalOffset = civilAlignment.offset; // just update the offset
+      }
+      else
+      {
+        // create alignment entity curves
         var entities = _alignment.Entities;
+        if (isUpdate) _alignment.Entities.Clear(); // remove existing curves
         foreach (var curve in alignment.curves)
           AddAlignmentEntity(curve, ref entities);
+      }
 
-        return _alignment;
-      }
-      catch (Exception e)
-      {
-        Report.LogConversionError(e);
-        return null; 
-      }
+      // set start station
+      _alignment.ReferencePointStation = alignment.startStation;
+
+      // update appobj
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: _alignment.Handle.ToString(), convertedItem: _alignment);
+      return appObj;
     }
 
 #region helper methods
@@ -494,8 +540,8 @@ namespace Objects.Converter.AutocadCivil
       // featureline
       var _featureline = new Featureline();
 
-      _featureline.curve = PolylineToSpeckle(polyline);
-      _featureline.baseCurve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
+      _featureline.displayValue = PolylineToSpeckle(polyline);
+      _featureline.curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits);
       _featureline.name = (featureline.Name != null) ? featureline.Name : "";
       _featureline["description"] = (featureline.Description != null) ? featureline.Description : "";
       _featureline.units = ModelUnits;
@@ -538,27 +584,35 @@ namespace Objects.Converter.AutocadCivil
       // output vars
       var _vertices = new List<Acad.Point3d>();
       var faces = new List<int>();
-
       foreach (var triangle in surface.GetTriangles(false))
       {
-        // get vertices
-        var faceIndices = new List<int>();
-        foreach (var vertex in new List<CivilDB.TinSurfaceVertex>() {triangle.Vertex1, triangle.Vertex2, triangle.Vertex3})
+        var triangleVertices = new List<Point3d> { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
+
+#if CIVIL2023 // skip any triangles that are hidden in the surface!
+        if (!triangle.IsVisible)
         {
-          if (!_vertices.Contains(vertex.Location))
+          triangle.Dispose();
+          continue;
+        }
+#endif
+
+        // store vertices
+        var faceIndices = new List<int>();
+        foreach (var vertex in triangleVertices)
+        {
+          if (!_vertices.Contains(vertex))
           {
             faceIndices.Add(_vertices.Count);
-            _vertices.Add(vertex.Location);
+            _vertices.Add(vertex);
           }
           else
           {
-            faceIndices.Add(_vertices.IndexOf(vertex.Location));
+            faceIndices.Add(_vertices.IndexOf(vertex));
           }
-          vertex.Dispose();
         }
 
         // get face
-        faces.AddRange(new List<int> { 0, faceIndices[0], faceIndices[1], faceIndices[2] });
+        faces.AddRange(new List<int> { 3, faceIndices[0], faceIndices[1], faceIndices[2] });
 
         triangle.Dispose();
       }
@@ -570,11 +624,8 @@ namespace Objects.Converter.AutocadCivil
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
 
       // add tin surface props
-      try{
-      mesh["name"] = surface.DisplayName;
-      mesh["description"] = surface.Description;
-      }
-      catch{}
+      var props = Speckle.Core.Models.Utilities.GetApplicationProps(surface, typeof(CivilDB.TinSurface), false);
+      mesh[CivilPropName] = props;
 
       return mesh;
     }
@@ -606,7 +657,7 @@ namespace Objects.Converter.AutocadCivil
         }
 
         // get face
-        faces.AddRange(new List<int> { 1, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+        faces.AddRange(new List<int> { 4, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
 
         cell.Dispose();
       }
@@ -624,6 +675,160 @@ namespace Objects.Converter.AutocadCivil
       catch{}
 
       return mesh;
+    }
+
+    public object CivilSurfaceToNative(Mesh mesh)
+    {
+      var props = mesh[CivilPropName] as Base;
+      if (props == null) return null;
+
+      switch (props["class"] as string)
+      {
+        case "TinSurface":
+          return TinSurfaceToNative(mesh, props);
+        default:
+          return MeshToNativeDB(mesh);
+      }
+    }
+    public ApplicationObject TinSurfaceToNative(Mesh mesh, Base props)
+    {
+      var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
+      var existingObjs = GetExistingElementsByApplicationId(mesh.applicationId);
+
+      // get civil doc
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+      var civilDoc = CivilApplication.ActiveDocument;
+      if (civilDoc == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+        return appObj;
+      }
+
+      // create or retrieve tin surface
+      CivilDB.TinSurface _surface = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.TinSurface : null;
+      bool isUpdate = true;
+      if (_surface == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create) // just create a new surface
+      {
+        isUpdate = false;
+
+        // get civil props for creation
+        var name = string.IsNullOrEmpty(props["Name"] as string) ? mesh.applicationId : props["Name"] as string;
+        var layer = Doc.Database.LayerZero;
+        var docStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.SurfaceStyles) docStyles.Add(styleId);
+        var style = props["style"] as string != null ?
+          GetFromObjectIdCollection(props["style"] as string, docStyles) : civilDoc.Styles.SurfaceStyles.First();
+
+        // add new surface to doc
+        // ⚠ this will throw if name is empty?
+        var id = ObjectId.Null;
+        try
+        {
+          id = CivilDB.TinSurface.Create(name, style);
+        }
+        catch (System.Exception e)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+          return appObj;
+        }
+        if (!id.IsValid)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
+          return appObj;
+        }
+        _surface = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.TinSurface;
+      }
+
+      if (_surface == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"retrieved or baked surface was null");
+        return appObj;
+      }
+
+      if (isUpdate)
+      {
+        appObj.Container = _surface.Layer; // set the appobj container to be the same layer as the existing alignment
+        _surface.DeleteVertices(_surface.Vertices); // remove existing vertices
+      }
+
+      // add all vertices
+      var vertices = new Point3dCollection();
+      var meshVertices = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
+      meshVertices.ForEach(o => vertices.Add(o));
+      _surface.AddVertices(vertices);
+      
+
+      // loop through faces to create an edge dictionary by vertex, which includes all other vertices this vertex is connected to
+      int i = 0;
+      var edges = new Dictionary<Point3d, List<Point3d>>();
+      foreach (var vertex in meshVertices)
+        edges.Add(vertex, new List<Point3d>());
+        
+      while (i < mesh.faces.Count)
+      {
+        if (mesh.faces[i] == 3) // triangle
+        {
+          var v1 = meshVertices[mesh.faces[i + 1]];
+          var v2 = meshVertices[mesh.faces[i + 2]];
+          var v3 = meshVertices[mesh.faces[i + 3]];
+          edges[v1].Add(v2);
+          edges[v2].Add(v3);
+          edges[v3].Add(v1);
+
+          i += 4;
+        }
+        else // this was not a triangulated surface! return null
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Mesh was not triangulated");
+          return appObj;
+        }
+      }
+
+      // loop through each surface vertex edge and create any that don't exist 
+      foreach (Point3d edgeStart in edges.Keys)
+      {
+        var vertex = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
+        var correctEdges = new List<Point3d>();
+        foreach (CivilDB.TinSurfaceEdge currentEdge in vertex.Edges)
+        {
+          if (edges[edgeStart].Contains(currentEdge.Vertex2.Location))
+            correctEdges.Add(currentEdge.Vertex2.Location);
+          currentEdge.Dispose();
+        }
+        vertex.Dispose();
+
+        foreach (var vertexToAdd in edges[edgeStart]) 
+        {
+          if (correctEdges.Contains(vertexToAdd)) continue;
+          var a1 = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
+          var a2 = _surface.FindVertexAtXY(vertexToAdd.X, vertexToAdd.Y);
+          _surface.AddLine(a1, a2);
+          a1.Dispose();
+          a2.Dispose();
+        }
+      }
+      
+
+      // loop through and delete any edges
+      var edgesToDelete = new List<CivilDB.TinSurfaceEdge>();
+      foreach(CivilDB.TinSurfaceVertex vertex in _surface.Vertices)
+      {
+        if (vertex.Edges.Count > edges[vertex.Location].Count)
+          foreach (CivilDB.TinSurfaceEdge modifiedEdge in vertex.Edges)
+            if (!edges[vertex.Location].Contains(modifiedEdge.Vertex2.Location) && !edges[modifiedEdge.Vertex2.Location].Contains(vertex.Location))
+              edgesToDelete.Add(modifiedEdge);
+        vertex.Dispose();
+      }
+      if (edgesToDelete.Count > 0)
+      {
+        _surface.DeleteLines(edgesToDelete);
+        _surface.Rebuild();
+      }
+      
+      // update appobj
+      var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: status, createdId: _surface.Handle.ToString(), convertedItem: _surface);
+      return appObj;
     }
 
     // structures
