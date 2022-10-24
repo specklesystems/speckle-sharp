@@ -991,6 +991,9 @@ namespace DesktopUI2.ViewModels
             { "view", view },
             { "collaborators", Stream.collaborators.Count },
             { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+            { "branches", Stream.branches?.totalCount },
+            { "commits", Stream.commits?.totalCount },
+            { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
           });
 
           Notification = $"Sent successfully, view online";
@@ -1073,6 +1076,9 @@ namespace DesktopUI2.ViewModels
               { "view", view },
               { "collaborators", Stream.collaborators.Count },
               { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+              { "branches", Stream.branches?.totalCount },
+              { "commits", Stream.commits?.totalCount },
+              { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
 
             });
         }
