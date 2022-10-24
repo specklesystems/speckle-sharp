@@ -129,7 +129,7 @@
           </Button>
           <TextBlock
             Opacity="0.5"
-            Text="💡Send the whole model or just the selected objects"
+            Text="💡 Send the whole model or just the selected objects"
             TextAlignment="Center"
             TextWrapping="Wrap" />
         </StackPanel>
@@ -240,6 +240,7 @@
             Text="{Binding Progress.ProgressTitle, FallbackValue='Operation XYZ'}"
             TextTrimming="CharacterEllipsis" />
           <ProgressBar
+            Classes="notransitions"
             IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
             IsVisible="{Binding Progress.IsProgressing}"
             Maximum="{Binding Progress.Max}"

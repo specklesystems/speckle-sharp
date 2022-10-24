@@ -83,13 +83,15 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       ChangeTheme(config.DarkTheme);
 
+      var home = new HomeViewModel(this);
+
       if (config.OneClickMode)
       {
         Router.Navigate.Execute(new OneClickViewModel(this));
       }
       else
       {
-        Router.Navigate.Execute(new HomeViewModel(this));
+        Router.Navigate.Execute(home);
       }
     }
 
@@ -102,8 +104,14 @@ namespace DesktopUI2.ViewModels
 
     public static void GoHome()
     {
-      if (RouterInstance != null && HomeViewModel.Instance != null)
-        RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+      if (RouterInstance == null)
+        return;
+
+      var config = ConfigManager.Load();
+      if (!config.OneClickMode)
+      {
+        RouterInstance.Navigate.Execute(new HomeViewModel(Instance));
+      }
     }
 
     public static void CloseDialog()

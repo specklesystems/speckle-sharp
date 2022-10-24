@@ -37,20 +37,10 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    public bool HasFileStream => FileStream != null;
-
     private string _fileName;
 
     private StreamState _fileStream;
-    public StreamState FileStream
-    {
-      get => _fileStream;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _fileStream, value);
-        this.RaisePropertyChanged("HasFileStream");
-      }
-    }
+
 
     private bool _sendClicked;
     public bool SendClicked
@@ -67,7 +57,7 @@ namespace DesktopUI2.ViewModels
         var commit = "";
         if (!string.IsNullOrEmpty(Id))
           commit = "commits/" + Id;
-        return $"{FileStream.ServerUrl.TrimEnd('/')}/streams/{FileStream.StreamId}/{commit}";
+        return $"{_fileStream.ServerUrl.TrimEnd('/')}/streams/{_fileStream.StreamId}/{commit}";
       }
     }
 
@@ -92,104 +82,103 @@ namespace DesktopUI2.ViewModels
     public async void Send()
     {
       SendClicked = true;
+      Progress = new ProgressViewModel();
+      Progress.ProgressTitle = "Sending to Speckle 🚀...";
+      Progress.IsProgressing = true;
 
-      SavedStreams = Bindings.GetStreamsInFile();
 
-      if (FileStream == null)
-        await LoadFileStream();
+      string fileName = null;
+      try
+      {
+        fileName = Bindings.GetFileName();
+      }
+      catch
+      {
+        //todo: handle properly in each connector bindings
+      }
+
+      //filename is different, might have been renamed or be a different document
+      if (_fileName != fileName)
+        _fileStream = null;
+
+      _fileName = fileName;
+
+      if (_fileStream == null)
+        _fileStream = await GetOrCreateStreamState();
       // check if objs are selected and set streamstate filter
       var filters = Bindings.GetSelectionFilters();
       var selection = Bindings.GetSelectedObjects();
+      //TODO: check if these filters exist
       if (selection.Count > 0)
       {
-        FileStream.Filter = filters.First(o => o.Slug == "manual");
-        FileStream.Filter.Selection = selection;
-        FileStream.CommitMessage = "Sent selection";
+        _fileStream.Filter = filters.First(o => o.Slug == "manual");
+        _fileStream.Filter.Selection = selection;
+        _fileStream.CommitMessage = "Sent selection";
       }
       else
       {
-        FileStream.Filter = filters.First(o => o.Slug == "all");
-        FileStream.CommitMessage = "Sent everything";
+        _fileStream.Filter = filters.First(o => o.Slug == "all");
+        _fileStream.CommitMessage = "Sent everything";
       }
-      FileStream.BranchName = "main";
+      _fileStream.BranchName = "main";
 
       // set settings
-      if (FileStream.Settings == null || FileStream.Settings.Count == 0)
+      if (_fileStream.Settings == null || _fileStream.Settings.Count == 0)
       {
         var settings = Bindings.GetSettings();
-        FileStream.Settings = settings;
+        _fileStream.Settings = settings;
       }
 
       // send to stream
+      // TODO: report conversions errors, empty commit etc
       try
       {
-        Progress = new ProgressViewModel();
-        Progress.ProgressTitle = "Sending to Speckle 🚀...";
-        Progress.IsProgressing = true;
-
-        Id = await Bindings.SendStream(FileStream, Progress);
+        Id = await Task.Run(() => Bindings.SendStream(_fileStream, Progress));
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
           Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "method", "OneClick" } });
-          FileStream.LastUsed = DateTime.Now.ToString();
+          _fileStream.LastUsed = DateTime.Now.ToString();
         }
       }
       catch (Exception ex)
       {
+        //TODO: report errors to user
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
 
-      if (Bindings.UpdateSavedStreams != null)
-        Bindings.UpdateSavedStreams(SavedStreams);
-
       if (HomeViewModel.Instance != null)
-        HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
+        HomeViewModel.Instance.AddSavedStream(new StreamViewModel(_fileStream, HostScreen, HomeViewModel.Instance.RemoveSavedStreamCommand));
     }
 
-    private async Task LoadFileStream()
+    private async Task<StreamState> GetOrCreateStreamState()
     {
       // get default account
       var account = AccountManager.GetDefaultAccount();
       var client = new Client(account);
-      try
-      {
-        _fileName = Bindings.GetFileName();
-      }
-      catch
-      {
-        _fileName = "Unnamed stream";
-        //todo: handle properly in each connector bindings
-      }
 
+      SavedStreams = Bindings.GetStreamsInFile();
       var fileStream = SavedStreams.Where(o => o.CachedStream.name == _fileName && o.Client.Account == account)?.FirstOrDefault();
       if (fileStream != null)
       {
-        FileStream = fileStream;
+        return fileStream;
       }
-      else // try to find stream in account
+      // try to find stream in account
+      var foundStream = await SearchStreams(client);
+
+      if (foundStream != null)
       {
-        Stream foundStream = await SearchStreams(client);
-
-        if (foundStream == null) // create the stream
-        {
-          var description = $"Automatic stream for {_fileName}";
-          try
-          {
-            string streamId = await client.StreamCreate(new StreamCreateInput { description = description, name = _fileName, isPublic = false });
-            foundStream = await client.StreamGet(streamId);
-          }
-          catch (Exception e) { }
-        }
-
-        FileStream = new StreamState(account, foundStream) { BranchName = "main" };
-        SavedStreams.Add(FileStream);
-        Bindings.WriteStreamsToFile(SavedStreams);
-
-        if (HomeViewModel.Instance != null)
-          HomeViewModel.Instance.UpdateSavedStreams(SavedStreams);
+        return new StreamState(account, foundStream) { BranchName = "main" };
       }
+
+      // create the stream
+      string streamId = await client.StreamCreate(new StreamCreateInput { description = "Autogenerated Stream for QuickSend", name = _fileName, isPublic = false });
+      var newStream = await client.StreamGet(streamId);
+
+      return new StreamState(account, newStream) { BranchName = "main" };
+
+
     }
 
     private async Task<Stream> SearchStreams(Client client)
@@ -206,7 +195,7 @@ namespace DesktopUI2.ViewModels
 
     private void ShareCommand()
     {
-      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, new StreamViewModel(FileStream, HostScreen, null)));
+      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, new StreamViewModel(_fileStream, HostScreen, null)));
 
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
     }
@@ -234,7 +223,7 @@ namespace DesktopUI2.ViewModels
 
     private void AdvancedModeCommand()
     {
-      MainViewModel.RouterInstance.Navigate.Execute(new HomeViewModel(HostScreen));
+      MainViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
 
       var config = ConfigManager.Load();
       config.OneClickMode = false;
