@@ -1,7 +1,8 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using DesktopUI2.Models;
-using DesktopUI2.Views.Pages.ShareControls;
+using DesktopUI2.Views.Pages;
+using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -13,7 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 
-namespace DesktopUI2.ViewModels.Share
+namespace DesktopUI2.ViewModels
 {
   public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
   {

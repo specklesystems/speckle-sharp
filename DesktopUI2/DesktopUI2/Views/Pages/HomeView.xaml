@@ -3,6 +3,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
@@ -11,8 +12,6 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
-  xmlns:sc="clr-namespace:DesktopUI2.Views.Pages.SharedControls"
-  xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
   xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
@@ -253,7 +252,7 @@
       Grid.Row="1"
       Margin="5,10,5,5"
       IsVisible="{Binding HasAccounts}"
-      RowDefinitions="auto,auto, auto,auto, *">
+      RowDefinitions="auto,auto, auto, *, auto">
 
       <!--  SEARCH STREAMS  -->
       <Grid Grid.Row="0" Margin="0">
@@ -405,7 +404,7 @@
 
 
       <ScrollViewer
-        Grid.Row="4"
+        Grid.Row="3"
         Padding="0,5,13,5"
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
         <StackPanel Margin="5,0,5,5" Orientation="Vertical">
@@ -422,7 +421,7 @@
                 IsVisible="{Binding HasSavedStreams}"
                 Text="SAVED STREAMS:" />
             </Expander.Header>
-            <uc:SavedStreams />
+            <c:SavedStreams />
           </Expander>
 
 
@@ -498,7 +497,7 @@
                             Text="{Binding Stream.description}"
                             TextTrimming="CharacterEllipsis" />
 
-                          <sc:StreamDetails Grid.Row="1" />
+                          <c:StreamDetails Grid.Row="1" />
 
                           <Grid
                             Grid.Row="2"
@@ -569,6 +568,25 @@
 
       </ScrollViewer>
 
+      <Button
+        Grid.Row="4"
+        Margin="5"
+        Classes="Flat Mini"
+        Command="{Binding OneClickModeCommand}">
+        <Button.Content>
+          <StackPanel
+            Margin="10"
+            Orientation="Horizontal"
+            Spacing="12">
+            <icons:MaterialIcon
+              Width="15"
+              Height="15"
+              Foreground="{DynamicResource PrimaryHueDarkBrush}"
+              Kind="SwapHorizontalVariant" />
+            <TextBlock Classes="ButtonText" Text="Switch to OneClick mode" />
+          </StackPanel>
+        </Button.Content>
+      </Button>
 
     </Grid>
     <Grid

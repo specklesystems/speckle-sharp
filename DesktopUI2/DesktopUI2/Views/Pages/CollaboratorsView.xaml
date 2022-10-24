@@ -1,5 +1,5 @@
 ﻿<UserControl
-  x:Class="DesktopUI2.Views.Pages.ShareControls.CollaboratorsView"
+  x:Class="DesktopUI2.Views.Pages.CollaboratorsView"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -11,8 +11,8 @@
   xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:reactiveUi="http://reactiveui.net"
   xmlns:vm="using:DesktopUI2.ViewModels.DesignViewModels"
-  d:DesignHeight="450"
-  d:DesignWidth="800"
+  d:DesignHeight="750"
+  d:DesignWidth="400"
   mc:Ignorable="d">
   <UserControl.Resources>
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
