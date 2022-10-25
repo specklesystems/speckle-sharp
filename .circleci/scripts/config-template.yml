@@ -238,25 +238,22 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 name: Install mono
                 command: |
                   HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
-      - run:
-          name: Set environment variables
-          command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            VER=$(echo "$SEMVER" | sed -e 's/-beta//')
-            VERSION=$(echo $VER.$WORKFLOW_NUM)
-            CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
-            mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
-            if [ "${CIRCLE_TAG}" ]; then echo "version: $SEMVER" > "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$CHANNEL.yml"; fi
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
       - when:
           condition: << parameters.build-with-mono >>
           steps:
             - run:
                 name: Build << parameters.slnname >>
                 command: |
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+                  VER=$(echo "$SEMVER" | sed -e 's/-beta//')
+                  VERSION=$(echo $VER.$WORKFLOW_NUM)
                   msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+                  CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
+                  mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
+                  if [ "${CIRCLE_TAG}" ]; then echo "version: $SEMVER" > "speckle-sharp-ci-tools/Installers/<< parameters.slug >>/$CHANNEL.yml"; fi
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >>
             # Compress build files
             - run:
                 name: Zip Objects Kit files
