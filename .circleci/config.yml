@@ -15,6 +15,7 @@ jobs:
     executor: python/default
     steps:
       - checkout # checkout code
+      - run: cat .circleci/scripts/parameters.json
       - when:
           condition:
             and:
