@@ -1,5 +1,6 @@
 ﻿using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
+using System;
 
 namespace DesktopUI2.Models
 {
@@ -22,7 +23,10 @@ namespace DesktopUI2.Models
       {
         return JsonConvert.DeserializeObject<Config>(ConfigStorage.GetObject("config"));
       }
-      catch { }
+      catch (Exception e)
+      {
+
+      }
       return new Config();
     }
   }

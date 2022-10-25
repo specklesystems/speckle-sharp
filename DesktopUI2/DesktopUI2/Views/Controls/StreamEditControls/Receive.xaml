@@ -156,7 +156,24 @@
               Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
               TextWrapping="Wrap" />
 
-            <Image Source="{Binding PreviewImage}" />
+            <!--  360 preview and hide logic in Receive.xaml.cs  -->
+            <Grid>
+              <Image
+                x:Name="ImageBasic"
+                Height="200"
+                Source="{Binding PreviewImage}" />
+              <Viewbox
+                x:Name="PreviewBox360"
+                Height="200"
+                Stretch="UniformToFill">
+                <Image
+                  x:Name="Image360"
+                  Height="200"
+                  Source="{Binding PreviewImage360}" />
+              </Viewbox>
+
+            </Grid>
+
 
 
           </StackPanel>

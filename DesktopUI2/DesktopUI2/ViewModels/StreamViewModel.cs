@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
@@ -21,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reactive;
 using System.Threading.Tasks;
 using System.Web;
@@ -277,6 +279,7 @@ namespace DesktopUI2.ViewModels
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
+          PreviewImageUrl360 = $"{PreviewImageUrl}/all";
         }
       }
     }
@@ -467,6 +470,24 @@ namespace DesktopUI2.ViewModels
     {
       get => _previewImage;
       set => this.RaiseAndSetIfChanged(ref _previewImage, value);
+    }
+
+    public string _previewImageUrl360 = "";
+    public string PreviewImageUrl360
+    {
+      get => _previewImageUrl360;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _previewImageUrl360, value);
+        DownloadImage360(PreviewImageUrl360);
+      }
+    }
+
+    private Avalonia.Media.Imaging.Bitmap _previewImage360 = null;
+    public Avalonia.Media.Imaging.Bitmap PreviewImage360
+    {
+      get => _previewImage360;
+      set => this.RaiseAndSetIfChanged(ref _previewImage360, value);
     }
 
     #endregion
@@ -829,41 +850,57 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public void DownloadImage(string url)
+    public async Task DownloadImage(string url)
     {
       try
       {
-        using (WebClient client = new WebClient())
-        {
-          client.Headers.Set("Authorization", "Bearer " + Client.ApiToken);
-          client.DownloadDataAsync(new Uri(url));
-          client.DownloadDataCompleted += DownloadComplete;
-        }
-      }
-      catch (Exception ex)
-      {
 
-      }
-    }
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.ApiToken}");
+        var result = await httpClient.GetAsync(url);
 
-    private void DownloadComplete(object sender, DownloadDataCompletedEventArgs e)
-    {
-      try
-      {
-        byte[] bytes = e.Result;
+
+        byte[] bytes = await result.Content.ReadAsByteArrayAsync();
 
         System.IO.Stream stream = new MemoryStream(bytes);
 
-        var image = new Avalonia.Media.Imaging.Bitmap(stream);
-        _previewImage = image;
-        this.RaisePropertyChanged("PreviewImage");
+        _previewImage = new Bitmap(stream);
+        this.RaisePropertyChanged(nameof(PreviewImage));
+
       }
       catch (Exception ex)
       {
         System.Diagnostics.Debug.WriteLine(ex);
-        PreviewImageUrl = null; // Could not download...
+        _previewImage = null; // Could not download...
       }
     }
+
+    //could not find a simple way to use a single method
+    public async Task DownloadImage360(string url)
+    {
+      try
+      {
+
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.ApiToken}");
+        var result = await httpClient.GetAsync(url);
+
+
+        byte[] bytes = await result.Content.ReadAsByteArrayAsync();
+
+        System.IO.Stream stream = new MemoryStream(bytes);
+
+        _previewImage360 = new Bitmap(stream);
+        this.RaisePropertyChanged(nameof(PreviewImage360));
+
+      }
+      catch (Exception ex)
+      {
+        System.Diagnostics.Debug.WriteLine(ex);
+        _previewImage360 = null; // Could not download...
+      }
+    }
+
 
     #region commands
 
