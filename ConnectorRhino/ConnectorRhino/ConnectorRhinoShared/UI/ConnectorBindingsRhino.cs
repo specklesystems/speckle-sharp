@@ -480,6 +480,9 @@ namespace SpeckleRhino
     // gets objects by id directly or by applicaiton id user string
     private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
     {
+      if (string.IsNullOrEmpty(applicationId))
+        return new List<RhinoObject>();
+
       // first try to find the object by app id user string
       var match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList() ?? new List<RhinoObject>();
       
@@ -552,7 +555,7 @@ namespace SpeckleRhino
         {
           appObj.Convertible = true;
           if (StoredObjects.ContainsKey(@base.id))
-            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id. Skipped other object");
+            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id {@base.id}. Skipped other object");
           else
             StoredObjects.Add(@base.id, @base);
           objects.Add(appObj);
