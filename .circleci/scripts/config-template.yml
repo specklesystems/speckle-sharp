@@ -398,6 +398,12 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       archicadversion:
         type: string
         default: ""
+      slug:
+        type: string
+        default: ""
+      installername:
+        type: string
+        default: ""
     steps:
       - checkout
       - attach_workspace:
@@ -424,10 +430,22 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             cd ConnectorArchicad/AddOn
             xcodebuild -scheme ALL_BUILD -configuration Release -project Build.macOS.x64.<<parameters.archicadversion>>/Speckle\ Connector.xcodeproj build
+      # Compress build files
+      - run:
+          name: Zip Connector files
+          command: |
+            cd ConnectorArchicad/AddOn/Build.macOS.x64.<< parameters.archicadversion >>/Release
+            zip -r << parameters.slug >>-<< parameters.archicadversion >>-mac.zip ./Speckle\ Connector.bundle
+      # Copy installer files
+      - run:
+          name: Copy files to installer
+          command: |
+            mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
+            cp ConnectorArchicad/AddOn/Build.macOS.x64.<< parameters.archicadversion >>/Release/<< parameters.slug >>-<<parameters.archicadversion>>-mac.zip speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles
       - persist_to_workspace:
           root: ./
           paths:
-            - ConnectorArchicad/AddOn/Build.macOS.x64.<<parameters.archicadversion>>
+            - speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
 
   deploy-connectors: # Uploads all installers found to S3
     docker:

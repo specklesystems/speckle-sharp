@@ -30,19 +30,6 @@ jobs:
                     value: << pipeline.git.tag >>
           steps:
             - run: git branch internal_circleci
-            - path-filtering/set-parameters:
-                mapping: |
-                  Core/.* core true
-                  (Core|Objects|ConnectorRhino|ConnectorGrasshopper|.*/ConverterRhinoGh)/.* rhino true
-                  (Core|Objects|ConnectorRevit|.*/ConverterRevit)/.* revit true
-                  (Core|Objects|ConnectorDynamo|.*/ConverterDynamo)/.* dynamo true
-                  (Core|Objects|ConnectorAutocadCivil|.*/ConverterAutocadCivil)/.* autocadcivil true
-                  (Core|Objects|ConnectorCSI|.*/ConverterCSI)/.* csi true
-                  (Core|Objects|ConnectorMicroStation|.*/ConverterMicroStation)/.* microstation true
-                  (Core|Objects|ConnectorTeklaStructures|.*/ConverterTeklaStructures)/.* teklastructures true
-                  (Core|Objects|ConnectorArchicad)/.* archicad true
-                base-revision: main
-                output-path: .circleci/scripts/parameters.json
       - run: cat .circleci/scripts/parameters.json
       - run: pip install pyyaml
       - run: # run a command

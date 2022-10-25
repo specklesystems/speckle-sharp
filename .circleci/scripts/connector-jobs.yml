@@ -160,11 +160,15 @@ archicad:
       requires:
         - get-ci-tools
       name: build-archicad-add-on-25-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
   - build-archicad-add-on-mac:
       archicadversion: "26"
       requires:
         - get-ci-tools
       name: build-archicad-add-on-26-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
   - build-connector-mac:
       name: archicad-build-mac
       requires:
