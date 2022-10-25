@@ -15,12 +15,13 @@ jobs:
     executor: python/default
     steps:
       - checkout # checkout code
-      - run: cat .circleci/scripts/parameters.json
       - when:
           condition:
             and:
               - not:
                   equal: [main, << pipeline.git.branch >>]
+              - not:
+                  equal: [archicad/devkits, << pipeline.git.branch >>]
               - not:
                   matches:
                     pattern: ".*/?ci/.*"
