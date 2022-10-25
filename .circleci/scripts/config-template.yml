@@ -282,29 +282,29 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 command: |
                   TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.0"; fi;)
                   $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
-                  $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-x64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG 
+            #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-x64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG 
 
-                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-arm64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
-                  $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-arm64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
+            #      $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-arm64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
+            #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-arm64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
             # see: https://www.kenmuse.com/blog/notarizing-dotnet-console-apps-for-macos/
             # merges the binaries inside the arm64 .app and then moves it up to the top level folder
             # need to update dotnet to avoid an issue while lipo-ing the universal binaries
-            - run:
-                name: Lipo Merge Binaries
-                command: |
-                  lipo -create -output "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>"
+            #- run:
+            #    name: Lipo Merge Binaries
+            #    command: |
+            #      lipo -create -output "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>"
             # Compress build files
             - run:
                 name: Zip Connector files
                 command: |
-                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish"
+                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish"
                   zip -r << parameters.slug >>-mac.zip "./<< parameters.bundlename >>"
             # Copy installer files
             - run:
                 name: Copy files to installer
                 command: |
                   mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
-                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.slug >>-mac.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       # Create installer
       - run:
           name: Build Mac installer
