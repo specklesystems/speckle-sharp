@@ -326,7 +326,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 root: ./
                 paths:
                   - speckle-sharp-ci-tools/Installers
-  
+
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
       - image: cimg/base:2021.01
