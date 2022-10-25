@@ -179,5 +179,4 @@ archicad:
       projname: ConnectorArchicad
       slug: archicad
       build-with-mono: false
-      bundlename: Archicad Connector for Speckle.app
       installername: SpeckleArchicadInstall
