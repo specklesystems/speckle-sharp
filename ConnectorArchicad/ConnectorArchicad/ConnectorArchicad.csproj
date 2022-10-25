@@ -13,7 +13,6 @@
     <WarningLevel>1</WarningLevel>
   </PropertyGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
