@@ -32,7 +32,7 @@ commands:
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
-            dotnet build <<parameters.projectfilepath>> -p:Version="$VERSION" -p:Configuration=Release -p:WarningLevel=0 -p:IsDesktopBuild=false -t:pack
+            msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -88,11 +88,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       #- codecov/upload
 
   build-objects:
-    docker:
-      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
-      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
+    macos:
+      xcode: 12.5.1
     steps:
       - checkout
+      - run:
+          name: Install mono
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
+      - run:
+          name: Install dotnet
+          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
       - run:
           name: Restore Objects
           command: dotnet restore Objects/Objects.sln
