@@ -14,14 +14,24 @@ namespace DesktopUI2.Models
 
     public static void Save(Config config)
     {
-      ConfigStorage.UpdateObject("config", JsonConvert.SerializeObject(config));
+      ConfigStorage.UpdateObject("configDUI", JsonConvert.SerializeObject(config));
     }
 
     public static Config Load()
     {
       try
       {
-        return JsonConvert.DeserializeObject<Config>(ConfigStorage.GetObject("config"));
+        //dui and manager were sharing the same config!
+        //splitting them to avoid overwriting settings
+        var oldConfig = ConfigStorage.GetObject("config");
+        var newConfig = ConfigStorage.GetObject("configDUI");
+
+        if (!string.IsNullOrEmpty(newConfig))
+        {
+          return JsonConvert.DeserializeObject<Config>(newConfig);
+        }
+
+        return JsonConvert.DeserializeObject<Config>(oldConfig);
       }
       catch (Exception e)
       {
