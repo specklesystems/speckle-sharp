@@ -33,7 +33,7 @@ commands:
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
             msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            ~/.dotnet/dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n true
+            ~/.dotnet/dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n
           environment:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
