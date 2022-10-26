@@ -74,4 +74,49 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
 
+  <Style Selector="Expander.Transparent">
+    <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Expander.Transparent /template/ ToggleButton#PART_toggle">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          MinHeight="48"
+          Padding="8"
+          Background="Transparent">
+          <Grid ColumnDefinitions="Auto,*">
+            <ContentPresenter
+              Name="PART_ContentPresenter"
+              Grid.Column="1"
+              Padding="0"
+              VerticalAlignment="Center"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              Background="Transparent"
+              Content="{TemplateBinding Content}" />
+            <Border
+              Grid.Column="0"
+              Margin="0,0,10,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+
+              <Path
+                Name="PART_ExpandIcon"
+                Width="16"
+                Height="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Data="M 6.013 11.606 L 9.219 8.4 L 6.013 5.187 L 7 4.2 L 11.2 8.4 L 7 12.6 L 6.013 11.606 Z"
+                Fill="Gray" />
+
+
+            </Border>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
 </Styles>

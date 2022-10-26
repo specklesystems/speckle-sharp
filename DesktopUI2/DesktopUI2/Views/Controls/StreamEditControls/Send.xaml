@@ -12,22 +12,131 @@
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-30deg)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-45deg)" />
+    </Style>
+  </UserControl.Styles>
+  <StackPanel Orientation="Vertical">
 
-  <Grid RowDefinitions="auto, auto">
 
+    <StackPanel Margin="15" Orientation="Horizontal">
+      <StackPanel.Styles>
+        <Style Selector="TextBlock">
+          <Setter Property="FontSize" Value="14" />
+        </Style>
+      </StackPanel.Styles>
+      <TextBlock Classes="SpeckleFont" Text="Sending " />
+      <TextBlock
+        Classes="SpeckleFont"
+        FontWeight="Bold"
+        Text="{Binding SelectedFilter.Summary, FallbackValue=?}" />
+      <TextBlock Classes="SpeckleFont" Text=" to " />
+      <TextBlock
+        Classes="SpeckleFont"
+        FontWeight="Bold"
+        Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+    </StackPanel>
+
+    <!--  SEND BTN  -->
+    <Button
+      Margin="0,5,0,20"
+      HorizontalAlignment="Center"
+      Command="{Binding SendCommand}"
+      CornerRadius="40"
+      IsDefault="True"
+      IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
+      ToolTip.Tip="Send to this stream and saves it">
+      <Button.Content>
+        <StackPanel
+          Margin="10"
+          Orientation="Horizontal"
+          Spacing="12">
+
+          <icons:MaterialIcon
+            Name="send"
+            Width="20"
+            Height="20"
+            Foreground="White"
+            Kind="CubeSend">
+            <icons:MaterialIcon.Transitions>
+              <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+              </Transitions>
+            </icons:MaterialIcon.Transitions>
+          </icons:MaterialIcon>
+          <TextBlock
+            Classes="ButtonText"
+            FontWeight="Bold"
+            Text="SEND" />
+        </StackPanel>
+
+      </Button.Content>
+    </Button>
+
+    <!--  COMMIT AND OTHER BUTTONS  -->
+    <Grid
+      Grid.Row="1"
+      Margin="15,5"
+      ColumnDefinitions="*,auto"
+      RowDefinitions="auto">
+      <!--  COMMIT MESSAGE  -->
+      <TextBox
+        Margin="0,0,10,0"
+        Padding="0"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Classes="Filled Dense"
+        Foreground="Gray"
+        IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+        IsReadOnly="{Binding Progress.IsProgressing}"
+        Text="{Binding StreamState.CommitMessage}"
+        Watermark="Message (optional) " />
+      <StackPanel
+        Grid.Column="1"
+        HorizontalAlignment="Right"
+        Orientation="Horizontal"
+        Spacing="10">
+
+        <!--  SAVE BTN  -->
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="Depth0"
+          Background="Transparent"
+          Command="{Binding SaveCommand}"
+          IsEnabled="{Binding !Progress.IsProgressing}"
+          ToolTip.Tip="Save this sender to the file without sending">
+          <Button.Content>
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="Gray"
+              Kind="ContentSave" />
+
+          </Button.Content>
+        </m:FloatingButton>
+
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
+
+
+      </StackPanel>
+    </Grid>
+
+    <!--  SETTINGS  -->
     <Expander
       Padding="15,0"
       HorizontalAlignment="Stretch"
       HorizontalContentAlignment="Stretch"
-      Background="Transparent"
-      Classes="Flat"
+      Classes="Transparent"
       IsExpanded="{Binding IsExpanded}">
       <Expander.Header>
         <StackPanel Orientation="Horizontal">
-          <TextBlock Text="Sending " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedFilter.Summary, FallbackValue=?}" />
-          <TextBlock Text=" to " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+          <TextBlock Text="Send settings" />
           <TextBlock
             Classes="Overline"
             Foreground="Gray"
@@ -139,56 +248,6 @@
 
     </Expander>
 
-
-    <Grid
-      Grid.Row="1"
-      Margin="15,5"
-      ColumnDefinitions="*,auto">
-      <!--  COMMIT MESSAGE  -->
-      <TextBox
-        Margin="0,0,10,0"
-        Padding="0"
-        HorizontalAlignment="Stretch"
-        HorizontalContentAlignment="Stretch"
-        Classes="Filled Dense"
-        Foreground="Gray"
-        IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-        IsReadOnly="{Binding Progress.IsProgressing}"
-        Text="{Binding StreamState.CommitMessage}"
-        Watermark="Message (optional) " />
-      <StackPanel
-        Grid.Column="1"
-        HorizontalAlignment="Right"
-        Orientation="Horizontal"
-        Spacing="10">
-
-        <!--  SAVE BTN  -->
-        <m:FloatingButton
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="Depth0"
-          Background="Transparent"
-          Command="{Binding SaveCommand}"
-          IsEnabled="{Binding !Progress.IsProgressing}"
-          ToolTip.Tip="Save this sender to the file without sending">
-          <Button.Content>
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              assists:ShadowAssist.ShadowDepth="0"
-              Foreground="Gray"
-              Kind="ContentSave" />
-
-          </Button.Content>
-        </m:FloatingButton>
-
-        <!--  PREVIEW BTN  -->
-        <c:PreviewButton />
-
-        <!--  SEND BTN  -->
-        <c:SendButton />
-      </StackPanel>
-    </Grid>
-
-  </Grid>
+  </StackPanel>
 
 </UserControl>

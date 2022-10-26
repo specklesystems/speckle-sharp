@@ -9,24 +9,152 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
-  d:DesignHeight="450"
+  d:DesignHeight="650"
   d:DesignWidth="400"
   mc:Ignorable="d">
-  <Grid RowDefinitions="auto, auto">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#receive">
+      <Setter Property="RenderTransform" Value="rotate(30deg) scaleX(-1)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#receive">
+      <Setter Property="RenderTransform" Value="rotate(15deg) scaleX(-1)" />
+    </Style>
+  </UserControl.Styles>
 
+  <StackPanel Orientation="Vertical">
+    <StackPanel Margin="15" Orientation="Horizontal">
+      <StackPanel.Styles>
+        <Style Selector="TextBlock">
+          <Setter Property="FontSize" Value="14" />
+        </Style>
+      </StackPanel.Styles>
+      <TextBlock Classes="SpeckleFont" Text="Receiving " />
+      <TextBlock
+        Classes="SpeckleFont"
+        FontWeight="Bold"
+        Text="{Binding SelectedCommit.id, FallbackValue=?}" />
+      <TextBlock Classes="SpeckleFont" Text=" from " />
+      <TextBlock
+        Classes="SpeckleFont"
+        FontWeight="Bold"
+        Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+
+    </StackPanel>
+    <!--  NO COMMIT INFO  -->
+    <m:Card
+      Margin="10"
+      HorizontalContentAlignment="Stretch"
+      Classes="Mini">
+      <StackPanel>
+        <TextBlock
+          IsVisible="{Binding HasCommits, Converter={x:Static BoolConverters.Not}}"
+          Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
+          TextWrapping="Wrap" />
+        <!--  360 preview and hide logic in Receive.xaml.cs  -->
+        <Grid>
+          <Image
+            x:Name="ImageBasic"
+            Height="200"
+            Source="{Binding PreviewImage}" />
+          <Viewbox
+            x:Name="PreviewBox360"
+            Height="200"
+            Stretch="UniformToFill">
+            <Image
+              x:Name="Image360"
+              Height="200"
+              Source="{Binding PreviewImage360}" />
+          </Viewbox>
+        </Grid>
+      </StackPanel>
+    </m:Card>
+    <!--  RECEIVE BTN  -->
+    <Button
+      Margin="0,5,0,20"
+      HorizontalAlignment="Center"
+      Command="{Binding ReceiveCommand}"
+      CornerRadius="40"
+      IsDefault="True"
+      IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
+      ToolTip.Tip="Receives from this stream and saves it">
+      <Button.Content>
+        <StackPanel
+          Margin="10"
+          Orientation="Horizontal"
+          Spacing="12">
+
+          <icons:MaterialIcon
+            Name="receive"
+            Width="20"
+            Height="20"
+            Foreground="White"
+            Kind="CubeSend"
+            ToolTip.Tip="Receive">
+            <icons:MaterialIcon.Transitions>
+              <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+              </Transitions>
+            </icons:MaterialIcon.Transitions>
+
+          </icons:MaterialIcon>
+          <TextBlock
+            Classes="ButtonText"
+            FontWeight="Bold"
+            Text="RECEIVE" />
+        </StackPanel>
+
+      </Button.Content>
+    </Button>
+    <Grid
+      Grid.Row="1"
+      Margin="15,5"
+      ColumnDefinitions="*,auto"
+      RowDefinitions="auto, auto,auto">
+
+
+
+
+
+      <StackPanel
+        Grid.Row="2"
+        Grid.Column="1"
+        HorizontalAlignment="Right"
+        Orientation="Horizontal"
+        Spacing="10">
+        <!--  SAVE BTN  -->
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="Depth0"
+          Background="Transparent"
+          Command="{Binding SaveCommand}"
+          IsEnabled="{Binding !Progress.IsProgressing}"
+          ToolTip.Tip="Save this sender to the file without sending">
+          <Button.Content>
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="Gray"
+              Kind="ContentSave" />
+
+          </Button.Content>
+        </m:FloatingButton>
+
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
+
+
+      </StackPanel>
+    </Grid>
     <Expander
       Padding="15,0"
       HorizontalAlignment="Stretch"
       HorizontalContentAlignment="Stretch"
-      Background="Transparent"
-      Classes="Flat"
+      Classes="Transparent"
       IsExpanded="{Binding IsExpanded}">
       <Expander.Header>
         <StackPanel Orientation="Horizontal">
-          <TextBlock Text="Receiving " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedCommit.id, FallbackValue=?}" />
-          <TextBlock Text=" from " />
-          <TextBlock FontWeight="Bold" Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
+          <TextBlock Text="Receive settings " />
           <TextBlock
             Classes="Overline"
             Foreground="Gray"
@@ -142,42 +270,7 @@
           Content="Auto Receive"
           IsChecked="{Binding AutoReceive}" />
 
-        <!--  NO COMMIT INFO  -->
-        <m:Card
-          Grid.Row="2"
-          Grid.ColumnSpan="4"
-          Margin="0,10"
-          VerticalAlignment="Stretch"
-          HorizontalContentAlignment="Stretch"
-          Classes="Mini">
-          <StackPanel>
-            <TextBlock
-              IsVisible="{Binding HasCommits, Converter={x:Static BoolConverters.Not}}"
-              Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
-              TextWrapping="Wrap" />
 
-            <!--  360 preview and hide logic in Receive.xaml.cs  -->
-            <Grid>
-              <Image
-                x:Name="ImageBasic"
-                Height="200"
-                Source="{Binding PreviewImage}" />
-              <Viewbox
-                x:Name="PreviewBox360"
-                Height="200"
-                Stretch="UniformToFill">
-                <Image
-                  x:Name="Image360"
-                  Height="200"
-                  Source="{Binding PreviewImage360}" />
-              </Viewbox>
-
-            </Grid>
-
-
-
-          </StackPanel>
-        </m:Card>
         <!--  ADVANCED SETTINGS  -->
         <Button
           Grid.Row="3"
@@ -203,43 +296,5 @@
       </Grid>
     </Expander>
 
-    <Grid
-      Grid.Row="1"
-      Margin="15,5"
-      ColumnDefinitions="*,auto">
-
-      <StackPanel
-        Grid.Column="1"
-        HorizontalAlignment="Right"
-        Orientation="Horizontal"
-        Spacing="10">
-        <!--  SAVE BTN  -->
-        <m:FloatingButton
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="Depth0"
-          Background="Transparent"
-          Command="{Binding SaveCommand}"
-          IsEnabled="{Binding !Progress.IsProgressing}"
-          ToolTip.Tip="Save this sender to the file without sending">
-          <Button.Content>
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              assists:ShadowAssist.ShadowDepth="0"
-              Foreground="Gray"
-              Kind="ContentSave" />
-
-          </Button.Content>
-        </m:FloatingButton>
-
-        <!--  PREVIEW BTN  -->
-        <c:PreviewButton />
-
-        <!--  RECEIVE BTN  -->
-        <c:ReceiveButton />
-
-      </StackPanel>
-    </Grid>
-
-  </Grid>
+  </StackPanel>
 </UserControl>
