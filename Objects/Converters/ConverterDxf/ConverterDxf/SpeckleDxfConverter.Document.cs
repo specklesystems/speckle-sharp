@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Speckle.Core.Models;
 using Speckle.netDxf;
@@ -16,6 +17,11 @@ namespace Objects.Converters.DxfConverter
                 case string str: // Load up an existing document
                     Doc = DxfDocument.Load(str);
                     break;
+                case DxfDocument d:
+                    Doc = d;
+                    break;
+                default:
+                    throw new Exception("Provided doc is not a string or a DXF doc");
             }
         }
 
