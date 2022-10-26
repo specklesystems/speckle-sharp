@@ -98,7 +98,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
       - run:
           name: Install dotnet
-          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 3.1.0
       - run:
           name: Restore Objects
           command: ~/.dotnet/dotnet restore Objects/Objects.sln
