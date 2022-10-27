@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@2.4.0
+  win: circleci/windows@5
   aws-s3: circleci/aws-s3@2.0.0
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
@@ -235,47 +235,100 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       build-config:
         type: string
         default: Release
+      build-with-mono:
+        type: boolean
+        default: true
+      bundlename:
+        type: string
+        default: ""
     steps:
       - checkout
       - attach_workspace:
           at: ./
       - run:
-          name: Install mono
+          name: Install dotnet and brew dependencies
           command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
+                  HOMEBREW_NO_AUTO_UPDATE=1 
+                  curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+                  brew install create-dmg
+
+                  $HOME/.dotnet/dotnet --version
+                  $HOME/.dotnet/dotnet --list-runtimes
+                  $HOME/.dotnet/dotnet --list-sdks
+      - when:
+          condition: << parameters.build-with-mono >>
+          steps:
+            - run:
+                name: Install mono
+                command: |
+                  HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
       - run:
-          name: Build << parameters.slnname >>
+          name: Set environment variables
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
             CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+      - when:
+          condition: << parameters.build-with-mono >>
+          steps:
+            - run:
+                name: Build << parameters.slnname >>
+                command: |
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+            # Compress build files
+            - run:
+                name: Zip Objects Kit files
+                command: |
+                  zip -j Objects.zip << parameters.converter-files >>
+            - run:
+                name: Zip Connector files
+                command: |
+                  cd << parameters.slnname >>/<< parameters.projname >>/bin/
+                  zip -r <<parameters.slug>>.zip ./
+            # Copy installer files
+            - run:
+                name: Copy files to installer
+                command: |
+                  mkdir -p speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles/
+                  cp Objects.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.projname >>/bin/<<parameters.slug>>.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+      - unless:
+          condition: << parameters.build-with-mono >>
+          steps:
+            - run:
+                name: Publish x64 and arm64
+                command: |
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.0"; fi;)
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
+            #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-x64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG 
 
-      # Compress build files
-      - run:
-          name: Install dotnet
-          command: curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-      - run:
-          name: Zip Objects Kit files
-          command: |
-            zip -j Objects.zip << parameters.converter-files >>
-      - run:
-          name: Zip Connector files
-          command: |
-            cd << parameters.slnname >>/<< parameters.projname >>/bin/
-            zip -r <<parameters.slug>>.zip ./
+            #      $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-arm64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
+            #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-arm64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
+            # see: https://www.kenmuse.com/blog/notarizing-dotnet-console-apps-for-macos/
+            # merges the binaries inside the arm64 .app and then moves it up to the top level folder
+            # need to update dotnet to avoid an issue while lipo-ing the universal binaries
+            #- run:
+            #    name: Lipo Merge Binaries
+            #    command: |
+            #      lipo -create -output "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>"
+            # Compress build files
+            - run:
+                name: Zip Connector files
+                command: |
+                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish"
+                  zip -r << parameters.slug >>-mac.zip "./"
+            # Copy installer files
+            - run:
+                name: Copy files to installer
+                command: |
+                  mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       # Create installer
-      - run:
-          name: Copy files to installer
-          command: |
-            mkdir -p speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles/
-            cp Objects.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
-            cp << parameters.slnname >>/<< parameters.projname >>/bin/<<parameters.slug>>.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       - run:
           name: Build Mac installer
           command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release
@@ -307,44 +360,115 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: # Could not get ssh to work, so using a personal token
           name: Clone
           command: git clone https://$GITHUB_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
+      - run: # Could not get ssh to work, so using a personal token
+          name: Checkout
+          command: |
+            cd speckle-sharp-ci-tools
+            git checkout archicad-ci
+            cd ..
       - persist_to_workspace:
           root: ./
           paths:
             - speckle-sharp-ci-tools
 
-  setup-archicad-dev: # get Archicad dev kit
+  build-archicad-add-on: # build Archicad C++ add-on
+    parameters:
+      e:
+        type: string
+        default: win/default
+      archicadversion:
+        type: string
+        default: ""
     executor:
-      name: win/default
+      name: << parameters.e >>
       shell: bash.exe
     steps:
       - checkout
       - attach_workspace:
           at: ./
       - run:
-          name: install cmake
+          name: Install cmake
           command: |
-            choco install cmake
+            choco install cmake -y
       - run:
-          name: extract devkit
+          name: Get Archicad devkit
           command: |
-            cd speckle-sharp-ci-tools/Resources
-            unzip Archicad25DevKit.zip -d Archicad25DevKit
+            mkdir Resources
+            cd Resources
+            curl -o Archicad<<parameters.archicadversion>>DevKit.zip https://releases.speckle.dev/build-utils/Archicad<<parameters.archicadversion>>DevKit.zip
+            unzip Archicad<<parameters.archicadversion>>DevKit.zip -d Archicad<<parameters.archicadversion>>DevKit
       - run:
-          name: cmake AddOn
+          name: Generate cmake files
           command: |
             cd ConnectorArchicad/AddOn
-            mkdir Build
+            mkdir Build.Win.x64.<<parameters.archicadversion>>
             export PATH=$PATH:"C:\Program Files\CMake\bin"
-            cmake -B "./Build/" -DAC_API_DEVKIT_DIR="../../speckle-sharp-ci-tools/Resources/Archicad25DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
       - run:
-          name: msbuild AddOn
+          name: Build add-on
           command: |
             cd ConnectorArchicad/AddOn
-            "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe" "Build/Speckle Connector.sln" -property:Configuration=Release
+            "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe" "Build.Win.x64.<<parameters.archicadversion>>/Speckle Connector.sln" -property:Configuration=Release
       - persist_to_workspace:
           root: ./
           paths:
-            - ConnectorArchicad/AddOn/Build
+            - ConnectorArchicad/AddOn/Build.Win.x64.<<parameters.archicadversion>>
+
+  build-archicad-add-on-mac: # build Archicad C++ add-on
+    macos:
+      xcode: 12.5.1
+    parameters:
+      archicadversion:
+        type: string
+        default: ""
+      slug:
+        type: string
+        default: ""
+      installername:
+        type: string
+        default: ""
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Install cmake
+          command: |
+            brew install cmake
+      - run:
+          name: Get Archicad devkit
+          command: |
+            mkdir Resources
+            cd Resources
+            curl -o Archicad<<parameters.archicadversion>>DevKitMac.zip https://releases.speckle.dev/build-utils/Archicad<<parameters.archicadversion>>DevKitMac.zip
+            unzip Archicad<<parameters.archicadversion>>DevKitMac.zip -d Archicad<<parameters.archicadversion>>DevKitMac
+      - run:
+          name: Generate cmake files
+          command: |
+            cd ConnectorArchicad/AddOn
+            mkdir Build.macOS.x64.<<parameters.archicadversion>>
+            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+      - run:
+          name: Build add-on
+          command: |
+            cd ConnectorArchicad/AddOn
+            xcodebuild -scheme ALL_BUILD -configuration Release -project Build.macOS.x64.<<parameters.archicadversion>>/Speckle\ Connector.xcodeproj build
+      # Compress build files
+      - run:
+          name: Zip Connector files
+          command: |
+            cd ConnectorArchicad/AddOn/Build.macOS.x64.<< parameters.archicadversion >>/Release
+            zip -r << parameters.slug >>-<< parameters.archicadversion >>-mac.zip ./Speckle\ Connector.bundle
+      # Copy installer files
+      - run:
+          name: Copy files to installer
+          command: |
+            mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
+            cp ConnectorArchicad/AddOn/Build.macOS.x64.<< parameters.archicadversion >>/Release/<< parameters.slug >>-<<parameters.archicadversion>>-mac.zip speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
 
   deploy-connectors: # Uploads all installers found to S3
     docker:

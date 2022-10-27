@@ -21,6 +21,8 @@ jobs:
               - not:
                   equal: [main, << pipeline.git.branch >>]
               - not:
+                  equal: [archicad/devkits, << pipeline.git.branch >>]
+              - not:
                   matches:
                     pattern: ".*/?ci/.*"
                     value: << pipeline.git.branch >>
