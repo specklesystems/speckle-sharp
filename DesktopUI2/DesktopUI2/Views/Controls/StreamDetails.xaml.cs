@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Pages.StreamEditControls
+namespace DesktopUI2.Views.Controls
 {
-  public partial class Activity : UserControl
+  public partial class StreamDetails : UserControl
   {
-    public Activity()
+    public StreamDetails()
     {
       InitializeComponent();
     }

@@ -3,14 +3,14 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:sc="clr-namespace:DesktopUI2.Views.Pages.SharedControls"
-  xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.StreamEditControls"
+  xmlns:uc="clr-namespace:DesktopUI2.Views.Controls.StreamEditControls"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
@@ -69,8 +69,8 @@
             Foreground="White"
             Text="{Binding Stream.name}"
             TextTrimming="CharacterEllipsis" />
-          <sc:StreamDetails Grid.Row="1">
-            <sc:StreamDetails.Styles>
+          <c:StreamDetails Grid.Row="1">
+            <c:StreamDetails.Styles>
               <Style Selector="TextBlock">
                 <Setter Property="Foreground" Value="White" />
               </Style>
@@ -78,8 +78,8 @@
                 <Setter Property="Foreground" Value="White" />
               </Style>
 
-            </sc:StreamDetails.Styles>
-          </sc:StreamDetails>
+            </c:StreamDetails.Styles>
+          </c:StreamDetails>
         </Grid>
         <!--  SHARE STREAM  -->
         <m:FloatingButton

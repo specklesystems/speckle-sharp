@@ -1,8 +1,8 @@
-﻿using Avalonia.Controls;
-using DesktopUI2.ViewModels.Share;
+﻿using Avalonia;
+using Avalonia.Controls;
+using DesktopUI2.Models;
 using DesktopUI2.Views.Pages;
-using DesktopUI2.Views.Pages.ShareControls;
-using DesktopUI2.Views.Windows.Dialogs;
+using Material.Styles.Themes;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using Splat;
@@ -72,17 +72,27 @@ namespace DesktopUI2.ViewModels
 
       Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamViewModel>));
       Locator.CurrentMutable.Register(() => new HomeView(), typeof(IViewFor<HomeViewModel>));
+      Locator.CurrentMutable.Register(() => new OneClickView(), typeof(IViewFor<OneClickViewModel>));
       Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
       Locator.CurrentMutable.Register(() => new SettingsView(), typeof(IViewFor<SettingsPageViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 
       RouterInstance = Router; // makes the router available app-wide
-      Router.Navigate.Execute(new HomeViewModel(this));
-
-      Bindings.UpdateSavedStreams = HomeViewModel.Instance.UpdateSavedStreams;
-      Bindings.UpdateSelectedStream = HomeViewModel.Instance.UpdateSelectedStream;
 
 
+      var config = ConfigManager.Load();
+      ChangeTheme(config.DarkTheme);
+
+      var home = new HomeViewModel(this);
+
+      if (config.OneClickMode)
+      {
+        Router.Navigate.Execute(new OneClickViewModel(this));
+      }
+      else
+      {
+        Router.Navigate.Execute(home);
+      }
     }
 
     //https://github.com/AvaloniaUI/Avalonia/issues/5290
@@ -94,13 +104,36 @@ namespace DesktopUI2.ViewModels
 
     public static void GoHome()
     {
-      if (RouterInstance != null && HomeViewModel.Instance != null)
-        RouterInstance.Navigate.Execute(HomeViewModel.Instance);
+      if (RouterInstance == null)
+        return;
+
+      var config = ConfigManager.Load();
+      if (!config.OneClickMode)
+      {
+        RouterInstance.Navigate.Execute(new HomeViewModel(Instance));
+      }
     }
 
     public static void CloseDialog()
     {
       Instance.DialogBody = null;
+    }
+
+    internal void ChangeTheme(bool isDark)
+    {
+
+      if (Application.Current == null)
+        return;
+
+      var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
+      var theme = materialTheme.CurrentTheme;
+
+      if (isDark)
+        theme.SetBaseTheme(Theme.Light);
+      else
+        theme.SetBaseTheme(Theme.Dark);
+
+      materialTheme.CurrentTheme = theme;
     }
   }
 }

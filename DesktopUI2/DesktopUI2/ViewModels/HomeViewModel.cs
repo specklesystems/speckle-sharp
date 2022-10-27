@@ -227,12 +227,14 @@ namespace DesktopUI2.ViewModels
         SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
 
         Bindings = Locator.Current.GetService<ConnectorBindings>();
+
+        Bindings.UpdateSavedStreams = UpdateSavedStreams;
+        Bindings.UpdateSelectedStream = UpdateSelectedStream;
+
+
         this.RaisePropertyChanged("SavedStreams");
         streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
         Init();
-
-        var config = ConfigManager.Load();
-        ChangeTheme(config.DarkTheme);
       }
       catch (Exception ex)
       {
@@ -689,35 +691,29 @@ namespace DesktopUI2.ViewModels
       var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
       var isDark = materialTheme.CurrentTheme.GetBaseTheme() == BaseThemeMode.Dark;
 
-      ChangeTheme(isDark);
+      MainViewModel.Instance.ChangeTheme(isDark);
 
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
     }
 
-    private void ChangeTheme(bool isDark)
-    {
 
-      if (Application.Current == null)
-        return;
-
-      var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
-      var theme = materialTheme.CurrentTheme;
-
-      if (isDark)
-        theme.SetBaseTheme(Theme.Light);
-      else
-        theme.SetBaseTheme(Theme.Dark);
-
-      materialTheme.CurrentTheme = theme;
-    }
 
     public void RefreshCommand()
     {
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
       ApiUtils.ClearCache();
       Init();
+    }
+
+    private void OneClickModeCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new OneClickViewModel(HostScreen));
+
+      var config = ConfigManager.Load();
+      config.OneClickMode = true;
+      ConfigManager.Save(config);
     }
 
     public void TestCommand()
