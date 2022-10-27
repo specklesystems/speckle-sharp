@@ -304,7 +304,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 name: Publish x64 and arm64
                 command: |
                   TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.0"; fi;)
-                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
+                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
             #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-x64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
             #      $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-arm64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
             #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-arm64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
