@@ -10,7 +10,9 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Speckle.Core.Api;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -31,6 +33,7 @@ using Polyline = Objects.Geometry.Polyline;
 using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
+using Text = Objects.Other.Text;
 using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 using View3D = Objects.BuiltElements.View3D;
@@ -91,7 +94,19 @@ namespace Objects.Converter.RhinoGh
 
     public void SetContextDocument(object doc)
     {
-      Doc = (RhinoDoc)doc;
+#if RHINO6
+        Doc = (RhinoDoc)doc;
+#else
+      if (doc != null)
+        Doc = (RhinoDoc)doc;
+      else
+      {
+        var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template", "headless.3dm");
+        Doc = File.Exists(templatePath) 
+          ? RhinoDoc.OpenHeadless(templatePath) 
+          : RhinoDoc.CreateHeadless(null);
+      }
+#endif
     }
 
     // speckle user string for custom schemas
