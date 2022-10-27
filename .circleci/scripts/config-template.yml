@@ -21,6 +21,21 @@ commands:
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+  packandpublish-bash:
+    parameters:
+      projectfilepath:
+        type: string
+    steps:
+      - run:
+          name: Publish nuget package
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
+            VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
+            msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
+            ~/.dotnet/dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-core:
     executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
@@ -73,20 +88,28 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       #- codecov/upload
 
   build-objects:
-    docker:
-      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
-      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
+    macos:
+      xcode: 12.5.1
     steps:
       - checkout
       - run:
+          name: Install mono
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
+      - run:
+          name: Install dotnet
+          command: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1
+      - run:
           name: Restore Objects
-          command: dotnet restore Objects/Objects.sln
+          command: ~/.dotnet/dotnet restore Objects/Objects.sln
       - run:
           name: Build Objects
-          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: ~/.dotnet/dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run:
           name: Test Objects
-          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          command: ~/.dotnet/dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - store_test_results:
           path: TestResults
       - store_artifacts:
@@ -368,7 +391,7 @@ workflows:
             tags:
               only: /^(nuget-objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
-            - packandpublish:
+            - packandpublish-bash:
                 projectfilepath: Objects/Objects.sln
       - build-desktopui:
           name: nuget-deploy-desktopui
