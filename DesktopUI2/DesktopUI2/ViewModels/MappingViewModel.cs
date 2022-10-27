@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
+using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace DesktopUI2.ViewModels
 
     private bool isSearching = false;
     public bool DoneMapping = false;
-    private Dictionary<string,List<string>> _hostTypeValuesDict { get; } = new Dictionary<string, List<string>>();
+    private Dictionary<string, List<string>> _hostTypeValuesDict { get; } = new Dictionary<string, List<string>>();
     private string _searchQuery;
     public string SearchQuery
     {
@@ -61,7 +62,7 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    public Dictionary<string,List<MappingValue>> Mapping { get; set; }
+    public Dictionary<string, List<MappingValue>> Mapping { get; set; }
 
     private string _selectedCategory;
     public string SelectedCategory
@@ -196,6 +197,9 @@ namespace DesktopUI2.ViewModels
         SelectedCategory = UnmappedKey;
       else
         SelectedCategory = Mapping.Keys.First();
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Mappings Open" } });
+
 
     }
 

@@ -492,6 +492,22 @@ namespace Objects.Converter.Revit
     {
       Structural.Materials.StructuralMaterial speckleMaterial = null;
 
+      if (materialType == StructuralMaterialType.Undefined)
+      {
+        switch (materialAsset.StructuralAssetClass)
+        {
+          case StructuralAssetClass.Metal:
+            materialType = StructuralMaterialType.Steel;
+            break;
+          case StructuralAssetClass.Concrete:
+            materialType = StructuralMaterialType.Concrete;
+            break;
+          case StructuralAssetClass.Wood:
+            materialType = StructuralMaterialType.Wood;
+            break;
+        }
+      }
+
       switch (materialType)
       {
         case StructuralMaterialType.Concrete:

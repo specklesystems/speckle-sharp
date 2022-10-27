@@ -62,6 +62,7 @@ namespace ConnectorGrasshopper.Streams
       var account = string.IsNullOrEmpty(userId)
         ? AccountManager.GetAccounts().FirstOrDefault(a => a.serverInfo.url == idWrapper.ServerUrl) // If no user is passed in, get the first account for this server
         : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId); // If user is passed in, get matching user in the db
+      
       if (account == null || account.serverInfo.url != idWrapper.ServerUrl)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
@@ -69,6 +70,7 @@ namespace ConnectorGrasshopper.Streams
         return;
       }
 
+      var newWrapper = new StreamWrapper(idWrapper.OriginalInput + $"?u={userId}");
       if (error != null)
       {
         Message = null;
@@ -82,7 +84,7 @@ namespace ConnectorGrasshopper.Streams
         // Validation
         string errorMessage = null;
 
-        if (!ValidateInput(account, idWrapper.StreamId, ref errorMessage))
+        if (!ValidateInput(account, newWrapper.StreamId, ref errorMessage))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
           return;
@@ -97,6 +99,7 @@ namespace ConnectorGrasshopper.Streams
           try
           {
             var acc = idWrapper.GetAccount().Result;
+            idWrapper.UserId = acc.userInfo.id;
             stream = idWrapper;
           }
           catch (Exception e)

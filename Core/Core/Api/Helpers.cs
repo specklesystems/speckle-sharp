@@ -19,7 +19,6 @@ namespace Speckle.Core.Api
 {
   public static class Helpers
   {
-
     private static string _feedsEndpoint = "https://releases.speckle.dev/manager2/feeds";
     /// <summary>
     /// Helper method to Receive from a Speckle Server.
@@ -273,5 +272,35 @@ namespace Speckle.Core.Api
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming")
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
+
+
+    /// <summary>
+    /// Checks if the user has a valid internet connection by pinging 'https://google.com'
+    /// </summary>
+    /// <returns>True if the user is connected to the internet, false otherwise.</returns>
+    public static Task<bool> UserHasInternet()
+    {
+      return Ping("https://google.com");
+    }
+
+    /// <summary>
+    /// Pings a specific url to verify it's accessible.
+    /// </summary>
+    /// <param name="url">The url to ping.</param>
+    /// <returns>True if the the status code is 200, false otherwise.</returns>
+    public static async Task<bool> Ping(string url)
+    {
+      try
+      {
+        HttpClient client = new HttpClient();
+        var response = await client.GetAsync(url);
+        return response.IsSuccessStatusCode;
+
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+    }
   }
 }

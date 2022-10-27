@@ -87,8 +87,8 @@ namespace Objects.Converter.CSI
           speckleStructMaterial.materialType = Structural.MaterialType.Aluminium;
           break;
         case eMatType.Rebar:
-          speckleStructMaterial.materialType = Structural.MaterialType.Rebar;
-          GetRebarMaterial(name, ref speckleStructMaterial);
+    
+          return GetRebarMaterial(name);
           break;
         case eMatType.ColdFormed:
           speckleStructMaterial.materialType = Structural.MaterialType.ColdFormed;
@@ -215,24 +215,25 @@ namespace Objects.Converter.CSI
       structuralMaterial.shearModulus);
     }
 
-    public void GetRebarMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
-    {
+    public Structural.CSI.Materials.CSIRebar GetRebarMaterial(string materialName ){ 
       double fy, fu, eFy, eFu, strainAtHardening, strainUltimate, finalSlope;
       fy = fu = eFy = eFu = strainAtHardening = strainUltimate = finalSlope = 0;
       int sStype, sSHysType;
       sStype = sSHysType = 0;
       bool useCaltransSSDefaults = false;
 
-   
 
+      Structural.CSI.Materials.CSIRebar rebarMaterial = new Structural.CSI.Materials.CSIRebar();
       // Rebar can only be set to uniaxial
-      GetUniaxialMaterial(materialName, ref speckleMaterial);
-      speckleMaterial = (Structural.CSI.Materials.CSIRebar)speckleMaterial;
-      Model.PropMaterial.GetORebar_1(materialName, ref fy, ref fu, ref eFy, ref eFu, ref sStype, ref sSHysType, ref strainAtHardening, ref strainUltimate, ref finalSlope, ref useCaltransSSDefaults);
+      //GetUniaxialMaterial(materialName);
+      //speckleMaterial = (Structural.CSI.Materials.CSIRebar)speckleMaterial;
+      //Model.PropMaterial.GetORebar_1(materialName, ref fy, ref fu, ref eFy, ref eFu, ref sStype, ref sSHysType, ref strainAtHardening, ref strainUltimate, ref finalSlope, ref useCaltransSSDefaults);
 
-      speckleMaterial.strength = fy;
+      //speckleMaterial.strength = fy;
+      return rebarMaterial;
 
     }
+
     public void SetRebarMaterial(StructuralMaterial structuralMaterial, string etabsMaterialName){
       Model.PropMaterial.SetORebar_1(etabsMaterialName, structuralMaterial.strength, 0, 0, 0, 0, 0, 0, 0, 0, false);
       Model.PropMaterial.SetMPUniaxial(etabsMaterialName, structuralMaterial.elasticModulus, structuralMaterial.thermalExpansivity);

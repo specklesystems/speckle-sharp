@@ -480,16 +480,22 @@ namespace SpeckleRhino
     // gets objects by id directly or by applicaiton id user string
     private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
     {
-      var match = new List<RhinoObject>();
-      RhinoObject obj = null;
-      try
+      if (string.IsNullOrEmpty(applicationId))
+        return new List<RhinoObject>();
+
+      // first try to find the object by app id user string
+      var match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList() ?? new List<RhinoObject>();
+      
+      // if nothing is found, look for the geom obj by its guid directly
+      if (!match.Any())
       {
-        obj = Doc.Objects.FindId(new Guid(applicationId)); // try get geom object from app id directly
-        match.Add(obj);
-      }
-      catch
-      {
-        match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId).ToList(); // try get geom obj from geom obj app id user string
+        try
+        {
+          RhinoObject obj = Doc.Objects.FindId(new Guid(applicationId));
+          if (obj != null)
+            match.Add(obj);
+        }
+        catch { }
       }
       return match;
     }
@@ -549,7 +555,7 @@ namespace SpeckleRhino
         {
           appObj.Convertible = true;
           if (StoredObjects.ContainsKey(@base.id))
-            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id. Skipped other object");
+            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id {@base.id}. Skipped other object");
           else
             StoredObjects.Add(@base.id, @base);
           objects.Add(appObj);
@@ -965,7 +971,7 @@ namespace SpeckleRhino
         if (converted["@SpeckleSchema"] != null)
         {
           var newSchemaBase = converted["@SpeckleSchema"] as Base;
-          newSchemaBase.applicationId = guid;
+          newSchemaBase.applicationId = applicationId;
           converted["@SpeckleSchema"] = newSchemaBase;
         }
 

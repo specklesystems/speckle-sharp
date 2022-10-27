@@ -274,7 +274,13 @@ namespace Speckle.Core.Credentials
     {
       if (ServerUrl != acc.serverInfo.url)
         throw new SpeckleException($"Account is not from server {ServerUrl}", false);
-      
+
+      var hasInternet = await Helpers.UserHasInternet();
+      if (!hasInternet)
+      {
+        throw new Exception("You are not connected to the internet.");
+      }
+
       var client = new Client(acc);
       // First check if the stream exists
       try

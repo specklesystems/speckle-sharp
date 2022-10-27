@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Autodesk.DesignScript.Runtime;
+using Sentry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -159,11 +160,15 @@ namespace Speckle.ConnectorDynamo.Functions
         cancellationToken,
         remoteTransport: transport,
         onProgressAction: onProgressAction,
-        onErrorAction: onErrorAction,
+        onErrorAction: ((s, exception) => throw exception),
         onTotalChildrenCountKnown: onTotalChildrenCountKnown,
         disposeTransports: true
       ).Result;
 
+      if (@base == null)
+      {
+        throw new SpeckleException("Receive operation returned nothing", false);
+      }
       try
       {
         client.CommitReceived(new CommitReceivedInput
