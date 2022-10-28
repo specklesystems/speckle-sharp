@@ -11,7 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
@@ -20,6 +20,8 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommandMac.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Release'">
