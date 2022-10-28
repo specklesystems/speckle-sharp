@@ -22,7 +22,7 @@
   </UserControl.Styles>
 
   <StackPanel Orientation="Vertical">
-    <StackPanel Margin="15" Orientation="Horizontal">
+    <!--   <StackPanel Margin="15" Orientation="Horizontal">
       <StackPanel.Styles>
         <Style Selector="TextBlock">
           <Setter Property="FontSize" Value="14" />
@@ -39,7 +39,174 @@
         FontWeight="Bold"
         Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
 
-    </StackPanel>
+    </StackPanel>-->
+
+
+    <Grid
+      Margin="15"
+      HorizontalAlignment="Stretch"
+      ColumnDefinitions="auto,*"
+      RowDefinitions="auto,auto">
+
+
+      <TextBlock
+        VerticalAlignment="Center"
+        Classes="SpeckleFont"
+        FontWeight="Bold"
+        Text="Model (branch):" />
+
+      <!--<icons:MaterialIcon
+        Margin="0"
+        VerticalAlignment="Center"
+        Foreground="Gray"
+        Kind="InfoCircle"
+        ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />-->
+      <ComboBox
+        Grid.Column="1"
+        Margin="5,10,5,10"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        Items="{Binding BranchesViewModel}"
+        PlaceholderText="Select a model (branch)"
+        SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
+        <ComboBox.ItemsPanel />
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="auto,*">
+              <icons:MaterialIcon
+                Margin="0,0,5,0"
+                Foreground="DarkGray"
+                Kind="{Binding Icon}" />
+              <TextBlock
+                Grid.Column="1"
+                Text="{Binding Branch.name}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+
+      <Expander
+        Grid.Row="1"
+        Grid.ColumnSpan="2"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Classes="Edit"
+        IsExpanded="{Binding IsExpanded}">
+        <Expander.Header>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock
+              Classes="SpeckleFont"
+              FontWeight="Bold"
+              Text="Receive options " />
+          </StackPanel>
+        </Expander.Header>
+        <Grid
+          Margin="15,0"
+          ColumnDefinitions="auto,*, auto, *"
+          RowDefinitions="auto, auto,auto,auto">
+
+          <!--  SELECT COMMIT  -->
+          <icons:MaterialIcon
+            Grid.Column="2"
+            Margin="0"
+            VerticalAlignment="Center"
+            Foreground="Gray"
+            Kind="InfoCircle"
+            ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
+          <ComboBox
+            Grid.Column="3"
+            Margin="5,10,0,10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            IsEnabled="{Binding HasCommits}"
+            Items="{Binding Commits}"
+            PlaceholderText="Select a commit"
+            SelectedIndex="0"
+            SelectedItem="{Binding SelectedCommit}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="auto,auto,auto,*">
+
+                  <icons:MaterialIcon
+                    Margin="0,0,5,0"
+                    Foreground="DarkGray"
+                    Kind="SourceCommit" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Text="{Binding id}"
+                    TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text=" | " />
+                  <TextBlock
+                    Grid.Column="3"
+                    Text="{Binding message}"
+                    TextTrimming="CharacterEllipsis" />
+                </Grid>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <!--  RECEIVE MODE  -->
+          <icons:MaterialIcon
+            Grid.Row="0"
+            Margin="0"
+            VerticalAlignment="Center"
+            Foreground="Gray"
+            Kind="InfoCircle"
+            ToolTip.Tip="Decide what to do when an element being received already exists.&#x0a;UPDATE: attempts to update existing elements&#x0a;CREATE: always creates a new element&#x0a;IGNORE: skips already existing elements" />
+          <ComboBox
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="5,10,5,10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Items="{Binding ReceiveModes}"
+            PlaceholderText="Select a receive mode"
+            SelectedItem="{Binding SelectedReceiveMode}" />
+          <!--  AUTO RECEIVE  -->
+          <icons:MaterialIcon
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="0"
+            VerticalAlignment="Center"
+            Foreground="Gray"
+            Kind="InfoCircle"
+            ToolTip.Tip="Automatically receive new data&#x0a;when it is sent to this branch.&#x0a;NOTE: use with caution!" />
+          <ToggleSwitch
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="5,10,0,10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Content="Auto Receive"
+            IsChecked="{Binding AutoReceive}" />
+
+
+          <!--  ADVANCED SETTINGS  -->
+          <Button
+            Grid.Row="3"
+            Grid.ColumnSpan="4"
+            Margin="5"
+            HorizontalAlignment="Center"
+            HorizontalContentAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            Background="Transparent"
+            Command="{Binding OpenSettingsCommand}"
+            Foreground="{DynamicResource PrimaryHueMidBrush}">
+            <Grid Margin="0" ColumnDefinitions="auto,*">
+              <icons:MaterialIcon VerticalAlignment="Center" Kind="Settings" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="8,0"
+                Padding="0"
+                VerticalAlignment="Center"
+                Text="Advanced Settings"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </Button>
+        </Grid>
+      </Expander>
+
+    </Grid>
     <!--  NO COMMIT INFO  -->
     <m:Card
       Margin="10"
@@ -69,42 +236,7 @@
       </StackPanel>
     </m:Card>
     <!--  RECEIVE BTN  -->
-    <Button
-      Margin="0,5,0,20"
-      HorizontalAlignment="Center"
-      Command="{Binding ReceiveCommand}"
-      CornerRadius="40"
-      IsDefault="True"
-      IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-      ToolTip.Tip="Receives from this stream and saves it">
-      <Button.Content>
-        <StackPanel
-          Margin="10"
-          Orientation="Horizontal"
-          Spacing="12">
-
-          <icons:MaterialIcon
-            Name="receive"
-            Width="20"
-            Height="20"
-            Foreground="White"
-            Kind="CubeSend"
-            ToolTip.Tip="Receive">
-            <icons:MaterialIcon.Transitions>
-              <Transitions>
-                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
-              </Transitions>
-            </icons:MaterialIcon.Transitions>
-
-          </icons:MaterialIcon>
-          <TextBlock
-            Classes="ButtonText"
-            FontWeight="Bold"
-            Text="RECEIVE" />
-        </StackPanel>
-
-      </Button.Content>
-    </Button>
+    <Button Margin="0,5,0,20" Classes="ReceiveFull" />
     <Grid
       Grid.Row="1"
       Margin="15,5"
@@ -146,155 +278,7 @@
 
       </StackPanel>
     </Grid>
-    <Expander
-      Padding="15,0"
-      HorizontalAlignment="Stretch"
-      HorizontalContentAlignment="Stretch"
-      Classes="Transparent"
-      IsExpanded="{Binding IsExpanded}">
-      <Expander.Header>
-        <StackPanel Orientation="Horizontal">
-          <TextBlock Text="Receive settings " />
-          <TextBlock
-            Classes="Overline"
-            Foreground="Gray"
-            Text="  (expand to edit)" />
-        </StackPanel>
-      </Expander.Header>
-      <Grid
-        Margin="15,0"
-        ColumnDefinitions="auto,*, auto, *"
-        RowDefinitions="auto, auto,auto,auto">
 
-        <!--  SELECT BRANCH  -->
-        <icons:MaterialIcon
-          Margin="0"
-          VerticalAlignment="Center"
-          Foreground="Gray"
-          Kind="InfoCircle"
-          ToolTip.Tip="Data in a stream can be organized in branches,&#x0a;for instance, to have multiple design options&#x0a;or to store data by discipline.&#x0a;The default branch is called main." />
-        <ComboBox
-          Grid.Column="1"
-          Margin="5,10,5,10"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Center"
-          Items="{Binding BranchesViewModel}"
-          PlaceholderText="Select a branch"
-          SelectedItem="{Binding SelectedBranch}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate>
-              <Grid ColumnDefinitions="auto,*">
-                <icons:MaterialIcon
-                  Margin="0,0,5,0"
-                  Foreground="DarkGray"
-                  Kind="{Binding Icon}" />
-                <TextBlock
-                  Grid.Column="1"
-                  Text="{Binding Branch.name}"
-                  TextTrimming="CharacterEllipsis" />
-              </Grid>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <!--  SELECT COMMIT  -->
-        <icons:MaterialIcon
-          Grid.Column="2"
-          Margin="0"
-          VerticalAlignment="Center"
-          Foreground="Gray"
-          Kind="InfoCircle"
-          ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
-        <ComboBox
-          Grid.Column="3"
-          Margin="5,10,0,10"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Center"
-          IsEnabled="{Binding HasCommits}"
-          Items="{Binding Commits}"
-          PlaceholderText="Select a commit"
-          SelectedIndex="0"
-          SelectedItem="{Binding SelectedCommit}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate>
-              <Grid ColumnDefinitions="auto,auto,auto,*">
-
-                <icons:MaterialIcon
-                  Margin="0,0,5,0"
-                  Foreground="DarkGray"
-                  Kind="SourceCommit" />
-                <TextBlock
-                  Grid.Column="1"
-                  Text="{Binding id}"
-                  TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="2" Text=" | " />
-                <TextBlock
-                  Grid.Column="3"
-                  Text="{Binding message}"
-                  TextTrimming="CharacterEllipsis" />
-              </Grid>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <!--  RECEIVE MODE  -->
-        <icons:MaterialIcon
-          Grid.Row="1"
-          Margin="0"
-          VerticalAlignment="Center"
-          Foreground="Gray"
-          Kind="InfoCircle"
-          ToolTip.Tip="Decide what to do when an element being received already exists.&#x0a;UPDATE: attempts to update existing elements&#x0a;CREATE: always creates a new element&#x0a;IGNORE: skips already existing elements" />
-        <ComboBox
-          Grid.Row="1"
-          Grid.Column="1"
-          Margin="5,10,5,10"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Center"
-          Items="{Binding ReceiveModes}"
-          PlaceholderText="Select a receive mode"
-          SelectedItem="{Binding SelectedReceiveMode}" />
-        <!--  AUTO RECEIVE  -->
-        <icons:MaterialIcon
-          Grid.Row="1"
-          Grid.Column="2"
-          Margin="0"
-          VerticalAlignment="Center"
-          Foreground="Gray"
-          Kind="InfoCircle"
-          ToolTip.Tip="Automatically receive new data&#x0a;when it is sent to this branch.&#x0a;NOTE: use with caution!" />
-        <ToggleSwitch
-          Grid.Row="1"
-          Grid.Column="3"
-          Margin="5,10,0,10"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Center"
-          Content="Auto Receive"
-          IsChecked="{Binding AutoReceive}" />
-
-
-        <!--  ADVANCED SETTINGS  -->
-        <Button
-          Grid.Row="3"
-          Grid.ColumnSpan="4"
-          Margin="5"
-          HorizontalAlignment="Center"
-          HorizontalContentAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="Depth0"
-          Background="Transparent"
-          Command="{Binding OpenSettingsCommand}"
-          Foreground="{DynamicResource PrimaryHueMidBrush}">
-          <Grid Margin="0" ColumnDefinitions="auto,*">
-            <icons:MaterialIcon VerticalAlignment="Center" Kind="Settings" />
-            <TextBlock
-              Grid.Column="1"
-              Margin="8,0"
-              Padding="0"
-              VerticalAlignment="Center"
-              Text="Advanced Settings"
-              TextTrimming="CharacterEllipsis" />
-          </Grid>
-        </Button>
-      </Grid>
-    </Expander>
 
   </StackPanel>
 </UserControl>

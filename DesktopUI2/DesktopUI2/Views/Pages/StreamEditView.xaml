@@ -30,7 +30,7 @@
     <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
     <conv:StreamEditHeightConverter x:Key="StreamEditHeightConverter" />
   </UserControl.Resources>
-  <Grid RowDefinitions="auto,*, 3, auto">
+  <Grid RowDefinitions="auto,*, auto, auto">
     <Border
       x:Name="header"
       Margin="0,0,0,7"
@@ -119,66 +119,91 @@
       Name="tabStreamEdit"
       Grid.Row="1"
       Background="Transparent">
-      <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}">
+      <TabItem ToolTip.Tip="Data Exchange">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
               Width="20"
               Height="20"
               VerticalAlignment="Center"
-              Kind="CubeSend"
-              ToolTip.Tip="Send">
+              Kind="Exchange"
+              ToolTip.Tip="Data Exchange">
               <icons:MaterialIcon.RenderTransform>
-                <RotateTransform Angle="-30" />
+                <RotateTransform Angle="-45" />
               </icons:MaterialIcon.RenderTransform>
             </icons:MaterialIcon>
           </StackPanel>
         </TabItem.Header>
-        <uc:Send />
+        <TabControl Background="Transparent">
+          <!--  SEND  -->
+          <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" ToolTip.Tip="Send">
+            <TabItem.Header>
+              <StackPanel Orientation="Horizontal">
+                <icons:MaterialIcon
+                  Width="20"
+                  Height="20"
+                  VerticalAlignment="Center"
+                  Kind="CubeSend">
+                  <icons:MaterialIcon.RenderTransform>
+                    <RotateTransform Angle="-30" />
+                  </icons:MaterialIcon.RenderTransform>
+                </icons:MaterialIcon>
+                <TextBlock
+                  Margin="10,0,0,0"
+                  VerticalAlignment="Center"
+                  Text="Send" />
+              </StackPanel>
+            </TabItem.Header>
+            <uc:Send />
+          </TabItem>
+
+          <!--  RECEIVE  -->
+          <TabItem ToolTip.Tip="Receive">
+            <TabItem.Header>
+              <StackPanel Orientation="Horizontal">
+                <icons:MaterialIcon
+                  Width="20"
+                  Height="20"
+                  Kind="CubeSend">
+                  <icons:MaterialIcon.RenderTransform>
+                    <TransformGroup>
+                      <RotateTransform Angle="30" />
+                      <ScaleTransform ScaleX="-1" />
+                    </TransformGroup>
+                  </icons:MaterialIcon.RenderTransform>
+                </icons:MaterialIcon>
+                <TextBlock
+                  Margin="10,0,0,0"
+                  VerticalAlignment="Center"
+                  Text="Receive" />
+              </StackPanel>
+            </TabItem.Header>
+            <uc:Receive />
+          </TabItem>
+        </TabControl>
       </TabItem>
 
-      <TabItem>
+      <!--  COLLABORATORS  -->
+      <TabItem ToolTip.Tip="Manage Collaborators">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
               Width="20"
               Height="20"
-              Kind="CubeSend"
-              ToolTip.Tip="Receive">
-              <icons:MaterialIcon.RenderTransform>
-                <TransformGroup>
-                  <RotateTransform Angle="30" />
-                  <ScaleTransform ScaleX="-1" />
-                </TransformGroup>
-              </icons:MaterialIcon.RenderTransform>
-            </icons:MaterialIcon>
-          </StackPanel>
-        </TabItem.Header>
-        <uc:Receive />
-      </TabItem>
-
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              Kind="UsersAdd"
-              ToolTip.Tip="Manage Collaborators" />
+              Kind="UsersAdd" />
           </StackPanel>
         </TabItem.Header>
 
       </TabItem>
 
-      <TabItem>
+      <TabItem ToolTip.Tip="Recent activity">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
               Width="20"
               Height="20"
               VerticalAlignment="Center"
-              Kind="TimelineText"
-              ToolTip.Tip="Send and Receive activity" />
+              Kind="TimelineText" />
           </StackPanel>
         </TabItem.Header>
         <!--  ACTIVITY  -->
@@ -189,30 +214,28 @@
         <uc:Activity />
       </TabItem>
 
-      <TabItem>
+      <TabItem ToolTip.Tip="Comments">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
               Width="20"
               Height="20"
               VerticalAlignment="Center"
-              Kind="Comments"
-              ToolTip.Tip="Comments" />
+              Kind="Comments" />
           </StackPanel>
         </TabItem.Header>
         <uc:Comments />
       </TabItem>
 
       <!--  REPORT  -->
-      <TabItem>
+      <TabItem ToolTip.Tip="Send and Receive report">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
               Width="20"
               Height="20"
               VerticalAlignment="Center"
-              Kind="Information"
-              ToolTip.Tip="Send and Receive report" />
+              Kind="Information" />
           </StackPanel>
         </TabItem.Header>
 
@@ -311,7 +334,7 @@
 
     <!--  NOTIFICATION  -->
     <m:ColorZone
-      Grid.Row="1"
+      Grid.Row="2"
       Margin="0,0,0,10"
       assists:ShadowAssist.ShadowDepth="Depth0"
       CornerRadius="25"
@@ -360,7 +383,7 @@
 
     <!--  SHARE PROMPT  -->
     <m:ColorZone
-      Grid.Row="2"
+      Grid.Row="3"
       Margin="0,0,0,10"
       assists:ShadowAssist.ShadowDepth="Depth0"
       CornerRadius="25"
