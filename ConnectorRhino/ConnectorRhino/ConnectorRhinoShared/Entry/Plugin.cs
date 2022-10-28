@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Avalonia;
+using Avalonia.ReactiveUI;
+using ConnectorRhinoShared;
 using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Rhino;
@@ -23,7 +26,8 @@ namespace SpeckleRhino
 
     public ConnectorBindingsRhino Bindings { get; private set; }
 
-    internal bool _initialized;
+
+    public static AppBuilder appBuilder;
 
     public SpeckleRhinoConnectorPlugin()
     {
@@ -34,22 +38,56 @@ namespace SpeckleRhino
     {
       try
       {
-        if (_initialized)
+        if (appBuilder != null)
           return;
 
-        SpeckleCommand.InitAvalonia();
+#if MAC
+        InitAvaloniaMac();
+#else
+        appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
+#endif
+
+
         Bindings = new ConnectorBindingsRhino();
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
-
-        _initialized = true;
       }
       catch (Exception ex)
       {
         RhinoApp.CommandLineOut.WriteLine($"Speckle error — {ex.ToFormattedString()}");
       }
 
+    }
+
+
+    public static void InitAvaloniaMac()
+    {
+        var rhinoMenuPtr = MacOSHelpers.MainMenu;
+        var rhinoDelegate = MacOSHelpers.AppDelegate;
+        var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
+
+        appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
+
+        // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
+        MacOSHelpers.AppDelegate = rhinoDelegate;
+        MacOSHelpers.MainMenu = rhinoMenuPtr;
+        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
+        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
+
+    }
+
+    public static AppBuilder BuildAvaloniaApp()
+    {
+      return AppBuilder.Configure<DesktopUI2.App>()
+      .UsePlatformDetect()
+      .With(new X11PlatformOptions { UseGpu = false })
+      .With(new AvaloniaNativePlatformOptions { UseGpu = false, UseDeferredRendering = true })
+      .With(new MacOSPlatformOptions { ShowInDock = false, DisableDefaultApplicationMenuItems = true, DisableNativeMenus = true })
+      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+      .LogToTrace()
+      .UseReactiveUI();
     }
 
     private void RhinoDoc_EndOpenDocument(object sender, DocumentOpenEventArgs e)
@@ -73,7 +111,7 @@ namespace SpeckleRhino
 #if MAC
         try
         {
-          SpeckleCommand.CreateOrFocusSpeckle();
+          SpeckleCommandMac.CreateOrFocusSpeckle();
         } catch (Exception ex)
         {
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
@@ -114,14 +152,10 @@ namespace SpeckleRhino
       }
 
 
+      Init();
 
 #if !MAC
-      System.Type panelType = typeof(Panel);
-      // Register my custom panel class type with Rhino, the custom panel my be display
-      // by running the MyOpenPanel command and hidden by running the MyClosePanel command.
-      // You can also include the custom panel in any existing panel group by simply right
-      // clicking one a panel tab and checking or un-checking the "MyPane" option.
-      Init();
+      System.Type panelType = typeof(Panel);     
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.
