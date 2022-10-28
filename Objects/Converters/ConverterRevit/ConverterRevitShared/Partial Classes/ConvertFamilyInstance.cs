@@ -257,6 +257,17 @@ namespace Objects.Converter.Revit
       if (basePoint == null)
         return RevitElementToSpeckle(revitFi, out notes);
 
+      return PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+    }
+
+    /// <summary>
+    /// Converts point-based family instances.
+    /// </summary>
+    /// <param name="revitFi"></param>
+    /// <returns></returns>
+    private Base PointBasedFamilyInstanceToSpeckle(DB.FamilyInstance revitFi, Point basePoint, out List<string> notes)
+    {
+      notes = new List<string>();
       var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
       var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
 
@@ -285,7 +296,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
-#region sub elements capture
+      #region sub elements capture
 
       var subElementIds = revitFi.GetSubComponentIds();
       var convertedSubElements = new List<Base>();
@@ -310,10 +321,8 @@ namespace Objects.Converter.Revit
         speckleFi.elements = convertedSubElements;
       }
 
-#endregion
+      #endregion
 
-      // TODO:
-      // revitFi.GetSubelements();
       return speckleFi;
     }
 
