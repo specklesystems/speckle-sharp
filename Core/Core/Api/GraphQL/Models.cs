@@ -117,6 +117,7 @@ namespace Speckle.Core.Api
     public int favoritesCount { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
+    public List<Collaborator> pendingCollaborators { get; set; }
     public Branches branches { get; set; }
 
     /// <summary>

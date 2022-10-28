@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -197,6 +197,12 @@ namespace Speckle.Core.Api
                         favoritedDate
                         favoritesCount
                         collaborators {{
+                          id
+                          name
+                          role
+                          avatar
+                        }},
+                        pendingCollaborators {{
                           id
                           name
                           role
