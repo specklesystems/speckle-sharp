@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@5
+  win: circleci/windows@5.0.0
   aws-s3: circleci/aws-s3@2.0.0
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
