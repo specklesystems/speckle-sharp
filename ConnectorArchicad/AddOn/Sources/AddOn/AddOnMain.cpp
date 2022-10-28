@@ -99,7 +99,7 @@ private:
         location.AppendToLocal(IO::Name(FolderName));
         location.AppendToLocal(IO::Name("bin"));
         location.AppendToLocal(IO::Name("Debug"));
-        location.AppendToLocal(IO::Name("net5.0"));
+        location.AppendToLocal(IO::Name("net6.0"));
         location.AppendToLocal(IO::Name(FileName));
     }
 
