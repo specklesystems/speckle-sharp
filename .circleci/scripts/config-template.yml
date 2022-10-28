@@ -360,12 +360,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run: # Could not get ssh to work, so using a personal token
           name: Clone
           command: git clone https://$GITHUB_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
-      - run: # Could not get ssh to work, so using a personal token
-          name: Checkout
-          command: |
-            cd speckle-sharp-ci-tools
-            git checkout archicad-ci
-            cd ..
       - persist_to_workspace:
           root: ./
           paths:
