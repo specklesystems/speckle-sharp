@@ -41,6 +41,8 @@ namespace DesktopUI2.ViewModels
 
     private List<MenuItemViewModel> _menuItems = new List<MenuItemViewModel>();
 
+    private CollaboratorsViewModel Collaborators { get; set; }
+
     public ICommand RemoveSavedStreamCommand { get; }
 
     private bool _previewOn = false;
@@ -564,7 +566,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -573,7 +575,6 @@ namespace DesktopUI2.ViewModels
       try
       {
         GetStream().ConfigureAwait(false);
-
         GetBranchesAndRestoreState();
         GetActivity();
         GetReport();
@@ -582,7 +583,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -612,7 +613,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error generating menu items", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -620,7 +621,14 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        Stream = await Client.StreamGet(StreamState.StreamId);
+        Stream = await Client.StreamGet(StreamState.StreamId, 25);
+        if (Stream.role == "stream:owner")
+        {
+          var streamPendingCollaborators = await Client.StreamGetPendingCollaborators(StreamState.StreamId);
+          Stream.pendingCollaborators = streamPendingCollaborators.pendingCollaborators;
+        }
+        Collaborators = new CollaboratorsViewModel(HostScreen, this);
+
         StreamState.CachedStream = Stream;
 
         //subscription
@@ -629,6 +637,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception e)
       {
+        new SpeckleException("Error retrieving stream", e, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -685,7 +694,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error restoring stream state", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -730,7 +739,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error getting activity", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -749,7 +758,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error getting comments", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -794,7 +803,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error updating state", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -822,7 +831,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error getting commits", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -932,6 +941,7 @@ namespace DesktopUI2.ViewModels
         catch (Exception e)
         {
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          new SpeckleException("Error creating branch", e, true, Sentry.SentryLevel.Error);
         }
       }
       else
@@ -951,13 +961,6 @@ namespace DesktopUI2.ViewModels
     public void ClearSearchCommand()
     {
       SearchQuery = "";
-    }
-
-    public void ShareCommand()
-    {
-      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
-
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
     }
 
     public void CloseNotificationCommand(bool track = true)
@@ -1046,7 +1049,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error sending", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -1076,7 +1079,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-
+          new SpeckleException("Error preview", ex, true, Sentry.SentryLevel.Error);
         }
       }
       else
@@ -1125,7 +1128,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error receiving", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -1169,7 +1172,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error saving", ex, true, Sentry.SentryLevel.Error);
       }
     }
 

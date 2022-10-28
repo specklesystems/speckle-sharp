@@ -45,7 +45,7 @@
       <Button
         Margin="0,0,10,0"
         Click="Save_Click"
-        Content="Save"
+        Content="OK"
         IsEnabled="{Binding #role.SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
     </StackPanel>

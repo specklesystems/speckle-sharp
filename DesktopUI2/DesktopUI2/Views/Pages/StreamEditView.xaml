@@ -81,24 +81,7 @@
             </c:StreamDetails.Styles>
           </c:StreamDetails>
         </Grid>
-        <!--  SHARE STREAM  -->
-        <m:FloatingButton
-          Grid.Column="2"
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="Depth0"
-          Background="Transparent"
-          Classes="Mini"
-          Command="{Binding ShareCommand}"
-          ToolTip.Tip="Share">
-          <Button.Content>
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              assists:ShadowAssist.ShadowDepth="0"
-              Foreground="White"
-              Kind="UsersAdd" />
-          </Button.Content>
-        </m:FloatingButton>
+        <!--  THREE DOTS  -->
         <Menu Grid.Column="3" Items="{Binding MenuItems}">
           <Menu.Styles>
             <Style Selector="MenuItem">
@@ -127,7 +110,7 @@
               Height="20"
               VerticalAlignment="Center"
               Kind="Exchange"
-              ToolTip.Tip="Data Exchange">
+              ToolTip.Tip="Exchange Data">
               <icons:MaterialIcon.RenderTransform>
                 <RotateTransform Angle="-45" />
               </icons:MaterialIcon.RenderTransform>
@@ -190,13 +173,16 @@
             <icons:MaterialIcon
               Width="20"
               Height="20"
-              Kind="UsersAdd" />
+              Kind="AccountGroup" />
           </StackPanel>
         </TabItem.Header>
-
+        <c:CollaboratorsControl
+          Grid.Row="1"
+          Margin="15"
+          DataContext="{Binding Collaborators}" />
       </TabItem>
 
-      <TabItem ToolTip.Tip="Recent activity">
+      <TabItem ToolTip.Tip="Recent Activity">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
@@ -228,7 +214,7 @@
       </TabItem>
 
       <!--  REPORT  -->
-      <TabItem ToolTip.Tip="Send and Receive report">
+      <TabItem ToolTip.Tip="Report">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon

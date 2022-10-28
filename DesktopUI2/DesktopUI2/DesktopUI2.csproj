@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Views\Controls\CollaboratorsControl.xaml" />
     <None Remove="Views\Controls\PreviewButton.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\ChipListBox.xaml" />
@@ -111,6 +112,9 @@
       <Generator></Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Controls\CollaboratorsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Controls\PreviewButton.xaml">
@@ -237,6 +241,9 @@
   <ItemGroup>
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Controls\CollaboratorsControl.xaml.cs">
+      <DependentUpon>CollaboratorsControl.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Controls\PreviewButton.xaml.cs">
       <DependentUpon>PreviewButton.xaml</DependentUpon>
