@@ -54,10 +54,14 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       //var hostedElementIds = host.FindInserts(true, false, false, false);
-      var inserts = host.FindInserts(true, false, false, false);
-      var filter = new ElementIsElementTypeFilter(true);
-      var hostedElementIds = host.GetDependentElements(filter);
-      System.Diagnostics.Debug.WriteLine($"hosted {hostedElementIds.Count}, inserts {inserts.Count}");
+      var typeFilter = new ElementIsElementTypeFilter(true);
+      var categoryFilter = new ElementMulticategoryFilter (
+        new List<BuiltInCategory>()
+        { 
+          BuiltInCategory.OST_SketchLines,
+          BuiltInCategory.OST_WeakDims
+        }, true);
+      var hostedElementIds = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -76,7 +80,6 @@ namespace Objects.Converter.Revit
 
         if (isSelectedInContextObjects == -1)
         {
-          System.Diagnostics.Debug.WriteLine($"didn't make it {element.Name}");
           continue;
         }
 
