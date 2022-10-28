@@ -22,26 +22,6 @@
   </UserControl.Styles>
 
   <StackPanel Orientation="Vertical">
-    <!--   <StackPanel Margin="15" Orientation="Horizontal">
-      <StackPanel.Styles>
-        <Style Selector="TextBlock">
-          <Setter Property="FontSize" Value="14" />
-        </Style>
-      </StackPanel.Styles>
-      <TextBlock Classes="SpeckleFont" Text="Receiving " />
-      <TextBlock
-        Classes="SpeckleFont"
-        FontWeight="Bold"
-        Text="{Binding SelectedCommit.id, FallbackValue=?}" />
-      <TextBlock Classes="SpeckleFont" Text=" from " />
-      <TextBlock
-        Classes="SpeckleFont"
-        FontWeight="Bold"
-        Text="{Binding SelectedBranch.Branch.name, FallbackValue=?}" />
-
-    </StackPanel>-->
-
-
     <Grid
       Margin="15"
       HorizontalAlignment="Stretch"
@@ -207,6 +187,7 @@
       </Expander>
 
     </Grid>
+
     <!--  NO COMMIT INFO  -->
     <m:Card
       Margin="10"
