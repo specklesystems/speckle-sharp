@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using ConnectorRhinoShared;
-using DesktopUI2;
-using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
 using Rhino.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Models.Extensions;
+
+[assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 
 namespace SpeckleRhino
 {
@@ -63,17 +64,17 @@ namespace SpeckleRhino
 
     public static void InitAvaloniaMac()
     {
-        var rhinoMenuPtr = MacOSHelpers.MainMenu;
-        var rhinoDelegate = MacOSHelpers.AppDelegate;
-        var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
+      var rhinoMenuPtr = MacOSHelpers.MainMenu;
+      var rhinoDelegate = MacOSHelpers.AppDelegate;
+      var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
 
-        appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
+      appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
 
-        // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
-        MacOSHelpers.AppDelegate = rhinoDelegate;
-        MacOSHelpers.MainMenu = rhinoMenuPtr;
-        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
-        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
+      // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
+      MacOSHelpers.AppDelegate = rhinoDelegate;
+      MacOSHelpers.MainMenu = rhinoMenuPtr;
+      MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
+      MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
 
     }
 
@@ -155,7 +156,7 @@ namespace SpeckleRhino
       Init();
 
 #if !MAC
-      System.Type panelType = typeof(Panel);     
+      System.Type panelType = typeof(Panel);
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.
