@@ -1,5 +1,5 @@
 <UserControl
-  x:Class="DesktopUI2.Views.Pages.HomeControls.SavedStreams"
+  x:Class="DesktopUI2.Views.Controls.SavedStreams"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:ap="clr-namespace:DesktopUI2.Views.AttachedProperties"

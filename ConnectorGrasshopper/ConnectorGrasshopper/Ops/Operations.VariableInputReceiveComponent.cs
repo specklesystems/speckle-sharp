@@ -72,6 +72,8 @@ namespace ConnectorGrasshopper.Ops
 
     public StreamWrapper StreamWrapper { get; set; }
 
+    public Task ApiResetTask;
+
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
       switch (context)
@@ -84,8 +86,9 @@ namespace ConnectorGrasshopper.Ops
               Task.Run(async () =>
               {
                 // Ensure fresh instance of client.
-                await ResetApiClient(StreamWrapper);
-
+                ApiResetTask = ResetApiClient(StreamWrapper);
+                await ApiResetTask;
+                
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
@@ -399,7 +402,8 @@ namespace ConnectorGrasshopper.Ops
         LastInfoMessage = null;
         Task.Run(async () =>
         {
-          await ResetApiClient(wrapper);
+          ApiResetTask = ResetApiClient(StreamWrapper);
+          await ApiResetTask;
         });
         return;
       }
@@ -421,7 +425,8 @@ namespace ConnectorGrasshopper.Ops
       //ResetApiClient(wrapper);
       Task.Run(async () =>
       {
-        await ResetApiClient(wrapper);
+        ApiResetTask = ResetApiClient(StreamWrapper);
+        await ApiResetTask;
       });
     }
 
@@ -570,8 +575,9 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
-        
 
+        receiveComponent.ApiResetTask.Wait();
+        
         var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 

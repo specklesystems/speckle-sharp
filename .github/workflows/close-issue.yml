@@ -12,7 +12,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GHPROJECT_TOKEN}}
           ORGANIZATION: specklesystems
-          PROJECT_NUMBER: 9
+          PROJECT_NUMBER: 11
         run: |
           gh api graphql --header 'GraphQL-Features: projects_next_graphql' -f query='
             query($org: String!, $number: Int!) {
