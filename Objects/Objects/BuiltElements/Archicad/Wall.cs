@@ -37,6 +37,8 @@ namespace Objects.BuiltElements.Archicad
 		public double? topOffset { get; set; }
 
 		public bool flipped { get; set; }
+		public bool hasWindow { get; set; }
+		public bool hasDoor { get; set; }
 
 		public Wall() { }
 

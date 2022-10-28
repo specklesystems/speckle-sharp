@@ -17,6 +17,8 @@ using Floor = Objects.BuiltElements.Floor;
 using Room = Objects.BuiltElements.Archicad.Room;
 using Wall = Objects.BuiltElements.Wall;
 using Beam = Objects.BuiltElements.Beam;
+using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
+using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 
 namespace Archicad
 {
@@ -45,36 +47,52 @@ namespace Archicad
 
     public async Task<Base?> ConvertToSpeckle(IEnumerable<string> elementIds, CancellationToken token)
     {
-      IEnumerable<ElementModelData> rawModels =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(elementIds), token);
-      if ( rawModels is null )
-        return null;
+      #region Original content
+      //IEnumerable<ElementModelData> rawModels =
+      //  await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(elementIds), token);
+      //if ( rawModels is null )
+      //  return null;
 
-      var elementTypeTable =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(elementIds), token);
-      if ( elementTypeTable is null )
-        return null;
+      //var elementTypeTable =
+      //  await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(elementIds), token);
+      //if ( elementTypeTable is null )
+      //  return null;
 
-      var converted = new Dictionary<string, List<Base>>();
-      foreach ( var (key, value)in elementTypeTable )
-      {
-        var converter = GetConverterForElement(ElementTypeProvider.GetTypeByName(key));
-        var bases = await converter.ConvertToSpeckle(
-          rawModels.Where(model => value.Contains(model.applicationId)), token);
-        if ( bases.Count > 0 )
-          converted[ key ] = bases;
-      }
+      //var converted = new Dictionary<string, List<Base>>();
 
-      if ( converted.Count == 0 )
-        return null;
+      //foreach ( var (key, value)in elementTypeTable )
+      //{
+      //  var converter = GetConverterForElement(ElementTypeProvider.GetTypeByName(key));
+      //  var currentObjects = rawModels.Where(model => value.Contains(model.applicationId));
+      //  var bases = await converter.ConvertToSpeckle(currentObjects, token);
 
-      var commitObject = new Base();
-      foreach ( var (key, bases) in converted )
-      {
-        commitObject[ "@" + key ] = bases;
-      }
+      //  foreach (var singleBase in bases)
+      //  {
+      //    var subElements = await GetSubElementsToConvert(rawModels.First(o => o.applicationId == singleBase.applicationId).applicationId);
+      //    foreach (var subElement in subElements)
+      //    {
+      //      var subElementConverter = GetConverterForElement(ElementTypeProvider.GetTypeByName(subElement.elementType));
+      //    }
+      //  }
 
-      return commitObject;
+      //  if ( bases.Count > 0 )
+      //    converted[ key ] = bases;
+      //}
+
+      //if ( converted.Count == 0 )
+      //  return null;
+
+      //var commitObject = new Base();
+      //foreach ( var (key, bases) in converted )
+      //{
+      //  commitObject[ "@" + key ] = bases;
+      //}
+
+      //return commitObject;
+      #endregion
+
+      // Forward request to this new implementation
+      return await new CustomConverter().ConvertAllToSpeckle(elementIds, token);
     }
 
     public async Task<List<string>> ConvertToNative(Base obj, CancellationToken token)
@@ -119,6 +137,8 @@ namespace Archicad
         return Converters[ typeof(Wall) ];
       if (elementType.IsSubclassOf(typeof(Beam)))
         return Converters[typeof(Beam)];
+      if (elementType.IsSubclassOf(typeof(Door)))
+        return Converters[typeof(Door)];
       if ( elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)) )
         return Converters[ typeof(Floor) ];
       if ( elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)) )
@@ -139,6 +159,8 @@ namespace Archicad
           Room _ => true,
           DirectShape _ => true,
           Mesh _ => true,
+          Door => true,
+          Window => true,
           _ => false
         };
     }
@@ -191,7 +213,6 @@ namespace Archicad
           return objects;
       }
     }
-
     #endregion
   }
 }

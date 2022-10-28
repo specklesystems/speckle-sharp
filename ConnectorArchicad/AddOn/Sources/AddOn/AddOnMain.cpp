@@ -10,10 +10,13 @@
 #include "Commands/GetSelectedApplicationIds.hpp"
 #include "Commands/GetElementTypes.hpp"
 #include "Commands/GetWallData.hpp"
+#include "Commands/GetDoorData.hpp"
+#include "Commands/GetWindowData.hpp"
 #include "Commands/GetBeamData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetRoomData.hpp"
 #include "Commands/GetProjectInfo.hpp"
+#include "Commands/GetSubElementInfo.hpp"
 #include "Commands/CreateWall.hpp"
 #include "Commands/CreateBeam.hpp"
 #include "Commands/CreateSlab.hpp"
@@ -74,7 +77,6 @@ private:
     static const char* FileName = "ConnectorArchicad.exe";
 #endif
     static const char* FolderName = "ConnectorArchicad";
-
 
     IO::Location ownFileLoc;
     auto err = ACAPI_GetOwnLocation(&ownFileLoc);
@@ -161,6 +163,9 @@ static GSErrCode RegisterAddOnCommands()
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSelectedApplicationIds>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementTypes>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWallData>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetDoorData>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWindowData>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSubElementInfo>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetBeamData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetRoomData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSlabData>()));

@@ -5,11 +5,15 @@ static const char* ApplicationIdFieldName = "applicationId";
 static const char* ApplicationIdsFieldName = "applicationIds";
 static const char* ElementTypeFieldName = "elementType";
 static const char* ElementTypesFieldName = "elementTypes";
+static const char* ElementsFieldName = "elements";
 
 static const char* FloorIndexFieldName = "floorIndex";
 static const char* ShapeFieldName = "shape";
 
 static const char* WallsFieldName = "walls";
+static const char* WindowsFieldName = "windows";
+static const char* SubelementModelsFieldName = "subelementModels";
+static const char* DoorsFieldName = "doors";
 static const char* BeamsFieldName = "beams";
 static const char* SlabsFieldName = "slabs";
 static const char* ZonesFieldName = "zones";
@@ -37,6 +41,59 @@ namespace Wall
   static const char* BaseOffsetFieldName = "baseOffset";
   static const char* TopOffsetFieldName = "topOffset";
   static const char* FlippedFieldName = "flipped";
+	static const char* HasDoorFieldName = "hasDoor";
+	static const char* HasWindowFieldName = "hasWindow";
+
+}
+
+
+namespace Window {
+  static const char* WindowFieldName = "Window #%d";
+  //
+  static const char* guid = "guid";
+  //
+  static const char* openingBase = "openingBase";
+  static const char* width = "width";
+  static const char* height = "height";
+  //
+  static const char* subFloorThickness = "subFloorThickness";
+  static const char* revealDepthFromSide = "revealDepthFromSide";
+  static const char* jambDepthHead = "jambDepthHead";
+  static const char* jambDepth = "jambDepth";
+  static const char* jambDepth2 = "jambDepth2";
+  static const char* objLoc = "objLoc";
+  static const char* lower = "lower";
+  static const char* directionType = "directionType";
+  static const char* startPoint = "startPoint";
+  static const char* dirVector = "dirVector";
+  static const char* reflected = "reflected";
+  static const char* oSide = "oSide";
+  static const char* refSide = "refSide";
+}
+
+
+namespace Door {
+	static const char* DoorFieldName = "Door #%d";
+	//
+	static const char* guid = "guid";
+	//
+	static const char* openingBase = "openingBase";
+	static const char* width = "width";
+	static const char* height = "height";
+	//
+	static const char* subFloorThickness = "subFloorThickness";
+	static const char* revealDepthFromSide = "revealDepthFromSide";
+	static const char* jambDepthHead = "jambDepthHead";
+	static const char* jambDepth = "jambDepth";
+	static const char* jambDepth2 = "jambDepth2";
+	static const char* objLoc = "objLoc";
+	static const char* lower = "lower";
+	static const char* directionType = "directionType";
+	static const char* startPoint = "startPoint";
+	static const char* dirVector = "dirVector";
+	static const char* reflected = "reflected";
+	static const char* oSide = "oSide";
+	static const char* refSide = "refSide";
 }
 
 

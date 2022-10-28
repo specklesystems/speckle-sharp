@@ -191,6 +191,7 @@ namespace AddOnCommands
     if (os.Contains(Wall::InsideSlantAngleFieldName))
       os.Get(Wall::InsideSlantAngleFieldName, element.wall.slantBeta);
     ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, slantBeta);
+    
 
     return NoError;
   }
@@ -236,7 +237,6 @@ namespace AddOnCommands
           listAdder(elemId);
         }
       }
-
       return NoError;
     });
 

@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
@@ -44,17 +45,17 @@ namespace Archicad.Converters
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
       CancellationToken token)
     {
+      List<Base> walls = new List<Base>();
       var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
+
       IEnumerable<Objects.BuiltElements.Archicad.Wall> data =
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
           token);
-      if ( data is null )
-      {
-        return new List<Base>();
-      }
 
-      List<Base> walls = new List<Base>();
+      if ( data is null )
+        return walls;
+
       foreach ( Objects.BuiltElements.Archicad.Wall wall in data )
       {
         wall.displayValue =

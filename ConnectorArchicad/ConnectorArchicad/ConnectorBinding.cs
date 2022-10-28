@@ -137,9 +137,10 @@ namespace Archicad.Launcher
       if (state.Filter is null)
         return null;
 
-      state.SelectedObjectIds = state.Filter.Selection;
+      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(
+        state.Filter.Selection,
+        progress.CancellationTokenSource.Token);
 
-      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
       if (commitObject is not null)
       {
         return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);

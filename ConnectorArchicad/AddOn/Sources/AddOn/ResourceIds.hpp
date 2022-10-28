@@ -9,11 +9,14 @@
 #define GetSelectedApplicationIdsCommandName 		"GetSelectedApplicationIds";
 #define GetElementTypesCommandName				"GetElementTypes";
 #define GetWallDataCommandName					"GetWallData";
+#define GetDoorCommandName				        "GetDoorData";
+#define GetWindowCommandName				    "GetWindowData";
 #define GetBeamDataCommandName					"GetBeamData";
 #define GetSlabDataCommandName					"GetSlabData";
 #define GetRoomDataCommandName					"GetRoomData";
 #define GetRoofDataCommandName					"GetRoofData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
+#define GetSubelementInfoCommandName				"GetSubelementInfo";
 #define CreateDirectShapesCommandName 			"CreateDirectShapes";
 #define CreateWallCommandName					"CreateWall";
 #define CreateBeamCommandName                   "CreateBeam";

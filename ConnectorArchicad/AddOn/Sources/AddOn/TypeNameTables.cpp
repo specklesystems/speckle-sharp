@@ -94,3 +94,10 @@ const GS::HashTable<API_BeamShapeTypeID, GS::UniString> beamShapeTypeNames
 	{ API_HorizontallyCurvedBeam, "HorizontallyCurved"},
 	{ API_VerticallyCurvedBeam, "VerticallyCurved"}
 };
+
+
+const GS::HashTable<API_WindowDoorDirectionTypes, GS::UniString> windowDoorDirectionTypeNames
+{
+	{ API_WDAssociativeToWall, "Associative" },
+	{ API_WDVertical, "Vertical"},
+};
