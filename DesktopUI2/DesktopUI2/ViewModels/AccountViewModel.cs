@@ -57,7 +57,7 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    public AccountViewModel(User user)
+    public AccountViewModel(UserBase user)
     {
       Name = user.name;
       Id = user.id;
