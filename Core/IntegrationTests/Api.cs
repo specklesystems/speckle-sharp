@@ -47,14 +47,14 @@ namespace TestsIntegration
     public async Task ActiveUserGet()
     {
       var res = await myClient.ActiveUserGet();
-      Assert.That(res.id, Is.EqualTo(myClient.Account.userInfo.id));
+      Assert.That(myClient.Account.userInfo.id, Is.EqualTo(res.id));
     }
 
     [Test]
     public async Task OtherUserGet()
     {
       var res = await myClient.OtherUserGet(secondUserAccount.userInfo.id);
-      Assert.That(res.name, Is.EqualTo(secondUserAccount.userInfo.name));
+      Assert.That(secondUserAccount.userInfo.name, Is.EqualTo(res.name));
 
     }
 
@@ -62,8 +62,8 @@ namespace TestsIntegration
     public async Task UserSearch()
     {
       var res = await myClient.UserSearch(firstUserAccount.userInfo.email);
-      Assert.That(res.Count, Is.EqualTo(1));
-      Assert.That(res[0].id, Is.EqualTo(firstUserAccount.userInfo.id));
+      Assert.That(1, Is.EqualTo(res.Count));
+      Assert.That(firstUserAccount.userInfo.id, Is.EqualTo(res[0].id));
     }
 
     [Test]
