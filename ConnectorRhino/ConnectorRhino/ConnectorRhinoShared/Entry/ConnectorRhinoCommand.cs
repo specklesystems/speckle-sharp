@@ -62,12 +62,8 @@ namespace SpeckleRhino
       try
       {
 #if MAC
-        var msg = "Speckle is temporarily disabled on Rhino due to a critical bug regarding Rhino's top-menu commands. Please use Grasshopper instead while we fix this.";
-        RhinoApp.CommandLineOut.WriteLine(msg);
-        Rhino.UI.Dialogs.ShowMessage(msg, "Speckle has been disabled", Rhino.UI.ShowMessageButton.OK, Rhino.UI.ShowMessageIcon.Exclamation);
-        return Result.Nothing;
-        //CreateOrFocusSpeckle();
-        //return Result.Success;
+        CreateOrFocusSpeckle();
+        return Result.Success;
 #else
         Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
         return Result.Success;
