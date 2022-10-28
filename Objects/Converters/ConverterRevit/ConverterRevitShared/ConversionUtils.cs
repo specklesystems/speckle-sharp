@@ -53,7 +53,11 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = host.FindInserts(true, false, false, false);
+      //var hostedElementIds = host.FindInserts(true, false, false, false);
+      var inserts = host.FindInserts(true, false, false, false);
+      var filter = new ElementIsElementTypeFilter(true);
+      var hostedElementIds = host.GetDependentElements(filter);
+      System.Diagnostics.Debug.WriteLine($"hosted {hostedElementIds.Count}, inserts {inserts.Count}");
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -72,6 +76,7 @@ namespace Objects.Converter.Revit
 
         if (isSelectedInContextObjects == -1)
         {
+          System.Diagnostics.Debug.WriteLine($"didn't make it {element.Name}");
           continue;
         }
 
