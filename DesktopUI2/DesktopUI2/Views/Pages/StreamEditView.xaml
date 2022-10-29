@@ -20,9 +20,9 @@
     <dataTemplates:FilterTemplateSelector />
   </UserControl.DataTemplates>
 
-  <Design.DataContext>
+  <!--<Design.DataContext>
     <viewModels:DesignSavedStreamViewModel />
-  </Design.DataContext>
+  </Design.DataContext>-->
 
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
@@ -117,53 +117,66 @@
             </icons:MaterialIcon>
           </StackPanel>
         </TabItem.Header>
-        <TabControl Background="Transparent">
-          <!--  SEND  -->
-          <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" ToolTip.Tip="Send">
-            <TabItem.Header>
-              <StackPanel Orientation="Horizontal">
-                <icons:MaterialIcon
-                  Width="20"
-                  Height="20"
-                  VerticalAlignment="Center"
-                  Kind="CubeSend">
-                  <icons:MaterialIcon.RenderTransform>
-                    <RotateTransform Angle="-30" />
-                  </icons:MaterialIcon.RenderTransform>
-                </icons:MaterialIcon>
-                <TextBlock
-                  Margin="10,0,0,0"
-                  VerticalAlignment="Center"
-                  Text="Send" />
-              </StackPanel>
-            </TabItem.Header>
-            <uc:Send />
-          </TabItem>
+        <Grid RowDefinitions="auto,*">
+          <TextBlock
+            Margin="20,20,20,0"
+            Classes="SpeckleFont"
+            FontSize="18"
+            Text="Data Exchange" />
+          <TabControl Grid.Row="1" Background="Transparent">
+            <!--  SEND  -->
+            <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" ToolTip.Tip="Send">
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <icons:MaterialIcon
+                    Width="20"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    Kind="CubeSend">
+                    <icons:MaterialIcon.RenderTransform>
+                      <RotateTransform Angle="-30" />
+                    </icons:MaterialIcon.RenderTransform>
+                  </icons:MaterialIcon>
+                  <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="Send" />
+                </StackPanel>
+              </TabItem.Header>
+              <ScrollViewer>
+                <uc:Send />
+              </ScrollViewer>
 
-          <!--  RECEIVE  -->
-          <TabItem ToolTip.Tip="Receive">
-            <TabItem.Header>
-              <StackPanel Orientation="Horizontal">
-                <icons:MaterialIcon
-                  Width="20"
-                  Height="20"
-                  Kind="CubeSend">
-                  <icons:MaterialIcon.RenderTransform>
-                    <TransformGroup>
-                      <RotateTransform Angle="30" />
-                      <ScaleTransform ScaleX="-1" />
-                    </TransformGroup>
-                  </icons:MaterialIcon.RenderTransform>
-                </icons:MaterialIcon>
-                <TextBlock
-                  Margin="10,0,0,0"
-                  VerticalAlignment="Center"
-                  Text="Receive" />
-              </StackPanel>
-            </TabItem.Header>
-            <uc:Receive />
-          </TabItem>
-        </TabControl>
+            </TabItem>
+
+            <!--  RECEIVE  -->
+            <TabItem ToolTip.Tip="Receive">
+              <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                  <icons:MaterialIcon
+                    Width="20"
+                    Height="20"
+                    Kind="CubeSend">
+                    <icons:MaterialIcon.RenderTransform>
+                      <TransformGroup>
+                        <RotateTransform Angle="30" />
+                        <ScaleTransform ScaleX="-1" />
+                      </TransformGroup>
+                    </icons:MaterialIcon.RenderTransform>
+                  </icons:MaterialIcon>
+                  <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="Receive" />
+                </StackPanel>
+              </TabItem.Header>
+              <ScrollViewer>
+                <uc:Receive />
+              </ScrollViewer>
+            </TabItem>
+          </TabControl>
+        </Grid>
+
       </TabItem>
 
       <!--  COLLABORATORS  -->
@@ -176,10 +189,19 @@
               Kind="AccountGroup" />
           </StackPanel>
         </TabItem.Header>
-        <c:CollaboratorsControl
-          Grid.Row="1"
-          Margin="15"
-          DataContext="{Binding Collaborators}" />
+        <Grid RowDefinitions="auto,*">
+          <TextBlock
+            Margin="20"
+            Classes="SpeckleFont"
+            FontSize="18"
+            Text="Collaborators" />
+          <c:CollaboratorsControl
+            Grid.Row="1"
+            Margin="10,0"
+            Padding="5"
+            DataContext="{Binding Collaborators}" />
+        </Grid>
+
       </TabItem>
 
       <TabItem ToolTip.Tip="Recent Activity">
@@ -193,13 +215,16 @@
           </StackPanel>
         </TabItem.Header>
         <!--  ACTIVITY  -->
-        <!--
-          NOTE FORMATTED TEXT IS COMING TO AVALONIA !
-          https://github.com/AvaloniaUI/Avalonia/pull/6953
-        -->
-        <uc:Activity />
+        <Grid RowDefinitions="auto,*">
+          <TextBlock
+            Margin="20,20,20,20"
+            Classes="SpeckleFont"
+            FontSize="18"
+            Text="Activity" />
+          <uc:Activity Grid.Row="1" />
+        </Grid>
       </TabItem>
-
+      <!--  COMMENTS  -->
       <TabItem ToolTip.Tip="Comments">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
@@ -210,7 +235,15 @@
               Kind="Comments" />
           </StackPanel>
         </TabItem.Header>
-        <uc:Comments />
+        <Grid RowDefinitions="auto,*">
+          <TextBlock
+            Margin="20,20,20,20"
+            Classes="SpeckleFont"
+            FontSize="18"
+            Text="Comments" />
+          <uc:Comments Grid.Row="1" Margin="15,0" />
+        </Grid>
+
       </TabItem>
 
       <!--  REPORT  -->
@@ -225,94 +258,106 @@
           </StackPanel>
         </TabItem.Header>
 
-        <Grid ColumnDefinitions="*,auto" RowDefinitions="auto,auto,auto,*">
-
-          <!--  SUMMARY AND OPERATION ERRORS  -->
+        <Grid RowDefinitions="auto,*">
           <TextBlock
-            Grid.Row="0"
-            Margin="10,0,0,0"
-            VerticalAlignment="Center"
-            Text="{Binding Log}"
-            TextWrapping="Wrap" />
-
-          <!--  SEARCH AND FILTER  -->
-          <m:Card
+            Margin="20,20,20,20"
+            Classes="SpeckleFont"
+            FontSize="18"
+            Text="Report" />
+          <Grid
             Grid.Row="1"
-            Grid.Column="0"
-            Margin="5,10,5,10"
-            Padding="0"
-            HorizontalAlignment="Stretch"
-            CornerRadius="25"
-            IsVisible="{Binding HasReportItems}">
-            <TextBox
-              Margin="0"
+            ColumnDefinitions="*,auto"
+            RowDefinitions="auto,auto,auto,*">
+
+            <!--  SUMMARY AND OPERATION ERRORS  -->
+            <TextBlock
+              Grid.Row="0"
+              Margin="10,0,0,0"
+              VerticalAlignment="Center"
+              Text="{Binding Log}"
+              TextWrapping="Wrap" />
+
+            <!--  SEARCH AND FILTER  -->
+            <m:Card
+              Grid.Row="1"
+              Grid.Column="0"
+              Margin="5,10,5,10"
               Padding="0"
-              Classes="Solo Small"
-              Text="{Binding SearchQuery}"
-              Watermark="Search items">
-              <TextBox.InnerRightContent>
-                <m:FloatingButton
-                  VerticalAlignment="Center"
-                  assists:ShadowAssist.ShadowDepth="Depth0"
-                  Background="Transparent"
-                  Classes="Mini"
-                  Command="{Binding ClearSearchCommand}"
-                  IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                  ToolTip.Tip="Clear">
-                  <Button.Content>
-                    <icons:MaterialIcon
-                      Width="15"
-                      Height="15"
-                      assists:ShadowAssist.ShadowDepth="0"
-                      Foreground="{DynamicResource MaterialDesignBody}"
-                      Kind="CloseCircle" />
-                  </Button.Content>
-                </m:FloatingButton>
-              </TextBox.InnerRightContent>
-              <TextBox.InnerLeftContent>
+              HorizontalAlignment="Stretch"
+              CornerRadius="25"
+              IsVisible="{Binding HasReportItems}">
+              <TextBox
+                Margin="0"
+                Padding="0"
+                Classes="Solo Small"
+                Text="{Binding SearchQuery}"
+                Watermark="Search items">
+                <TextBox.InnerRightContent>
+                  <m:FloatingButton
+                    VerticalAlignment="Center"
+                    assists:ShadowAssist.ShadowDepth="Depth0"
+                    Background="Transparent"
+                    Classes="Mini"
+                    Command="{Binding ClearSearchCommand}"
+                    IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                    ToolTip.Tip="Clear">
+                    <Button.Content>
+                      <icons:MaterialIcon
+                        Width="15"
+                        Height="15"
+                        assists:ShadowAssist.ShadowDepth="0"
+                        Foreground="{DynamicResource MaterialDesignBody}"
+                        Kind="CloseCircle" />
+                    </Button.Content>
+                  </m:FloatingButton>
+                </TextBox.InnerRightContent>
+                <TextBox.InnerLeftContent>
+                  <icons:MaterialIcon
+                    Width="15"
+                    Height="15"
+                    Margin="10,0,0,0"
+                    Kind="Search" />
+                </TextBox.InnerLeftContent>
+              </TextBox>
+            </m:Card>
+            <m:FloatingButton
+              Grid.Row="1"
+              Grid.Column="1"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              Background="Transparent"
+              Command="{Binding CopyReportCommand}"
+              IsVisible="{Binding HasReportItems}"
+              ToolTip.Tip="Copy report items to clipboard">
+              <Button.Content>
                 <icons:MaterialIcon
-                  Width="15"
-                  Height="15"
-                  Margin="10,0,0,0"
-                  Kind="Search" />
-              </TextBox.InnerLeftContent>
-            </TextBox>
-          </m:Card>
-          <m:FloatingButton
-            Grid.Row="1"
-            Grid.Column="1"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Background="Transparent"
-            Command="{Binding CopyReportCommand}"
-            IsVisible="{Binding HasReportItems}"
-            ToolTip.Tip="Copy report items to clipboard">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="20"
-                Height="20"
-                assists:ShadowAssist.ShadowDepth="0"
-                Foreground="Gray"
-                Kind="ContentCopy" />
-            </Button.Content>
-          </m:FloatingButton>
+                  Width="20"
+                  Height="20"
+                  assists:ShadowAssist.ShadowDepth="0"
+                  Foreground="Gray"
+                  Kind="ContentCopy" />
+              </Button.Content>
+            </m:FloatingButton>
 
-          <ListBox
-            Grid.Row="2"
-            Margin="0,0,0,8"
-            Classes="Chip"
-            IsVisible="{Binding HasReportItems}"
-            Items="{Binding ReportFilterItems}"
-            Selection="{Binding ReportSelectionModel}"
-            SelectionMode="Multiple, Toggle" />
+            <ListBox
+              Grid.Row="2"
+              Margin="0,0,0,8"
+              Classes="Chip"
+              IsVisible="{Binding HasReportItems}"
+              Items="{Binding ReportFilterItems}"
+              Selection="{Binding ReportSelectionModel}"
+              SelectionMode="Multiple, Toggle" />
 
-          <!--  APP OBJS  -->
-          <uc:Report
-            Grid.Row="3"
-            Grid.ColumnSpan="2"
-            IsVisible="{Binding HasReportItems}" />
+            <!--  APP OBJS  -->
+            <uc:Report
+              Grid.Row="3"
+              Grid.ColumnSpan="2"
+              IsVisible="{Binding HasReportItems}" />
+          </Grid>
+
         </Grid>
+
 
       </TabItem>
 

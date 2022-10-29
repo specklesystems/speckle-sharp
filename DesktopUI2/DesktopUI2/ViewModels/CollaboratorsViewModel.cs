@@ -140,11 +140,11 @@ namespace DesktopUI2.ViewModels
 
       IsDialog = MainViewModel.RouterInstance.NavigationStack.Last() is CollaboratorsViewModel;
 
-      Init();
+      ReloadUsers();
 
     }
 
-    private void Init()
+    internal void ReloadUsers()
     {
       AddedUsers = new ObservableCollection<AccountViewModel>();
       foreach (var collab in _stream.Stream.collaborators)
@@ -337,7 +337,7 @@ namespace DesktopUI2.ViewModels
         _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
         _stream.StreamState.CachedStream = _stream.Stream;
 
-        Init();
+        ReloadUsers();
       }
       catch (Exception e)
       {

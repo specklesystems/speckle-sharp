@@ -166,6 +166,7 @@ namespace DesktopUI2.ViewModels
     {
       System.IO.Stream stream = new MemoryStream(bytes);
       AvatarImage = new Avalonia.Media.Imaging.Bitmap(stream);
+      this.RaisePropertyChanged(nameof(AvatarImage));
 
     }
   }

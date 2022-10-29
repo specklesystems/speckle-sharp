@@ -19,19 +19,19 @@
 
   <Grid RowDefinitions="auto, auto, auto, *, auto">
     <TextBlock
-      Margin="10,0,10,10"
+      Margin="5,0,0,0"
       IsVisible="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}"
       Text="Manage your collaborators or invite new ones by name or email:"
       TextWrapping="Wrap" />
 
     <TextBlock
-      Margin="10,0,10,10"
+      Margin="5,0,0,0"
       IsVisible="{Binding Role, Converter={StaticResource RoleCannotShareValueConverter}}"
       Text="You don't have permission to manage collaborators on this stream."
       TextWrapping="Wrap" />
     <Grid
       Grid.Row="1"
-      Margin="0,10,0,0"
+      Margin="0,15,0,0"
       IsVisible="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}">
       <ComboBox
         Margin="8,19,8,0"
@@ -108,7 +108,7 @@
 
     <m:Card
       Grid.Row="3"
-      Margin="0,15"
+      Margin="0,15,0,0"
       VerticalAlignment="Stretch"
       HorizontalContentAlignment="Stretch"
       Classes="Mini">
@@ -212,6 +212,7 @@
       Grid.ColumnSpan="2"
       Margin="0,10,0,0"
       HorizontalAlignment="Right"
+      IsVisible="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}"
       Orientation="Horizontal"
       Spacing="5">
 
@@ -221,7 +222,6 @@
         CornerRadius="25 "
         Foreground="Red"
         IsEnabled="{Binding HasSelectedUsers}"
-        IsVisible="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}"
         ToolTip.Tip="Remove selected users and emails">
         <Grid Margin="0" ColumnDefinitions="auto,*">
 
@@ -240,7 +240,6 @@
         Command="{Binding ChangeRoleSeletedUsersCommand}"
         CornerRadius="25 "
         IsEnabled="{Binding HasSelectedUsers}"
-        IsVisible="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}"
         ToolTip.Tip="Change the role for the selected users">
         <Grid Margin="0" ColumnDefinitions="auto,*">
 
@@ -258,7 +257,6 @@
         Command="{Binding SaveCommand}"
         Content="Save"
         CornerRadius="25 "
-        IsVisible="{Binding Role, Converter={StaticResource RoleCanShareValueConverter}}"
         ToolTip.Tip="Save your changes and invite the new collaborators" />
       <Button
         Command="{Binding CloseCommand}"

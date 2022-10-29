@@ -67,13 +67,6 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    private bool _hasUpdate;
-    public bool HasUpdate
-    {
-      get => _hasUpdate;
-      private set => this.RaiseAndSetIfChanged(ref _hasUpdate, value);
-    }
-
     private List<StreamAccountWrapper> _streams;
     public List<StreamAccountWrapper> Streams
     {
@@ -84,6 +77,14 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("FilteredStreams");
         this.RaisePropertyChanged("HasStreams");
       }
+    }
+
+    private ObservableCollection<NotificationViewModel> _notifications = new ObservableCollection<NotificationViewModel>();
+    public ObservableCollection<NotificationViewModel> Notifications
+    {
+      get => _notifications;
+      private set => this.RaiseAndSetIfChanged(ref _notifications, value);
+
     }
 
     private Filter _selectedFilter = Filter.all;
@@ -325,6 +326,8 @@ namespace DesktopUI2.ViewModels
           return;
 
         InProgress = true;
+
+        //needed for the search feature
         StreamGetCancelTokenSource?.Cancel();
         StreamGetCancelTokenSource = new CancellationTokenSource();
 
@@ -386,6 +389,48 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private async Task GetNotifications()
+    {
+      try
+      {
+
+        var hasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
+
+        Notifications.Clear();
+
+        if (hasUpdate)
+          Notifications.Add(new NotificationViewModel { Message = "An update for this connector is available, install it now!", Launch = LaunchManagerCommand });
+
+        foreach (var account in Accounts)
+        {
+          try
+          {
+            var client = new Client(account.Account);
+            var result = await client.GetAllPendingInvites();
+            foreach (var r in result)
+            {
+              Notifications.Add(new NotificationViewModel(r, client.ServerUrl));
+            }
+
+          }
+          catch (Exception e)
+          {
+            if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
+              return;
+            Log.CaptureException(new Exception("Could not fetch invites", e), Sentry.SentryLevel.Error);
+          }
+        }
+
+
+        this.RaisePropertyChanged(nameof(Notifications));
+
+      }
+      catch (Exception ex)
+      {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+      }
+    }
+
     private void SearchStreams()
     {
       GetStreams().ConfigureAwait(false);
@@ -399,6 +444,7 @@ namespace DesktopUI2.ViewModels
         Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
 
         GetStreams();
+        GetNotifications();
 
         try
         {
@@ -409,7 +455,7 @@ namespace DesktopUI2.ViewModels
         catch { }
 
 
-        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
+
       }
       catch (Exception ex)
       {
@@ -480,7 +526,7 @@ namespace DesktopUI2.ViewModels
 
         else
         {
-          Process.Start(new ProcessStartInfo($"https://releases.speckle.systems/") { UseShellExecute = true });
+          Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
         }
       }
       catch (Exception ex)
@@ -714,6 +760,11 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.OneClickMode = true;
       ConfigManager.Save(config);
+    }
+
+    private void NotificationsCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new NotificationsViewModel(HostScreen, Notifications.ToList()));
     }
 
     public void TestCommand()

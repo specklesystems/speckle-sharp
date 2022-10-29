@@ -544,6 +544,7 @@ namespace DesktopUI2.ViewModels
 
         HostScreen = hostScreen;
         RemoveSavedStreamCommand = removeSavedStreamCommand;
+        Collaborators = new CollaboratorsViewModel(HostScreen, this);
 
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
@@ -627,7 +628,7 @@ namespace DesktopUI2.ViewModels
           var streamPendingCollaborators = await Client.StreamGetPendingCollaborators(StreamState.StreamId);
           Stream.pendingCollaborators = streamPendingCollaborators.pendingCollaborators;
         }
-        Collaborators = new CollaboratorsViewModel(HostScreen, this);
+        Collaborators.ReloadUsers(); ;
 
         StreamState.CachedStream = Stream;
 

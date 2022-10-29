@@ -51,6 +51,7 @@
     <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\NotificationsView.xaml" />
     <None Remove="Views\Pages\OneClickView.xaml" />
     <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Controls\StreamEditControls\Comments.xaml" />
@@ -134,6 +135,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\MainUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\OneClickView.xaml">
@@ -259,6 +263,9 @@
     </Compile>
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\NotificationsView.xaml.cs">
+      <DependentUpon>NotificationsView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\OneClickView.xaml.cs">
       <DependentUpon>OneClickView.xaml</DependentUpon>
