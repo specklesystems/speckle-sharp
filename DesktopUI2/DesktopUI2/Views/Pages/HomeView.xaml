@@ -22,6 +22,11 @@
   <UserControl.Resources>
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
   </UserControl.Resources>
+  <UserControl.DataTemplates>
+    <DataTemplate DataType="{x:Type vm:MenuItemViewModel}">
+      <Separator />
+    </DataTemplate>
+  </UserControl.DataTemplates>
   <UserControl.Styles>
     <Style Selector="MenuItem.Profile">
       <Setter Property="Header">
@@ -58,8 +63,8 @@
 
   </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
-    <m:Card
-      Padding="15,10"
+    <Border
+      Padding="10"
       Background="{DynamicResource PrimaryHueMidBrush}"
       CornerRadius="0">
       <Grid ColumnDefinitions="auto,auto,*,auto,auto,auto,auto">
@@ -86,8 +91,10 @@
         </Canvas>
         <TextBlock
           Grid.Column="1"
+          Margin="5,0,0,0"
+          VerticalAlignment="Center"
           Classes="SpeckleFont"
-          FontSize="18"
+          FontSize="16"
           FontWeight="Medium"
           Foreground="White"
           Text="{Binding Title}"
@@ -95,7 +102,7 @@
 
         <TextBlock
           Grid.Column="2"
-          Margin="0,0,0,8"
+          Margin="2,0,0,7"
           VerticalAlignment="Bottom"
           FontSize="8"
           Foreground="White"
@@ -103,149 +110,28 @@
           TextTrimming="CharacterEllipsis" />
 
 
-        <!--<m:FloatingButton
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            assists:ShadowAssist.ShadowDepth="Depth0"
-            Background="Transparent"
-            Classes="Mini"
-            Command="{Binding TestCommand}"
-            ToolTip.Tip="Test stuff">
-            <Button.Content>
-              <icons:MaterialIcon
-                Width="15"
-                Height="15"
-                assists:ShadowAssist.ShadowDepth="0"
-                Foreground="{DynamicResource MaterialDesignBody}"
-                Kind="Bomb" />
-
-            </Button.Content>
-          </m:FloatingButton>-->
-        <m:FloatingButton
-          Grid.Column="3"
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="Depth0"
-          Background="Transparent"
-          Classes="Mini"
-          Command="{Binding ToggleDarkThemeCommand}"
-          ToolTip.Tip="Toggle dark theme">
-          <Button.Content>
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              assists:ShadowAssist.ShadowDepth="0"
-              Foreground="White"
-              Kind="SunMoonStars" />
-
-          </Button.Content>
-        </m:FloatingButton>
-
-        <m:FloatingButton
-          Grid.Column="4"
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="Depth0"
-          Background="Transparent"
-          Classes="Mini"
-          Command="{Binding RefreshCommand}"
-          ToolTip.Tip="Refresh">
-          <Button.Content>
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              assists:ShadowAssist.ShadowDepth="0"
-              Foreground="White"
-              Kind="Refresh" />
-          </Button.Content>
-        </m:FloatingButton>
-
         <!--  ACCOUNT MENU  -->
+
         <Menu
           Grid.Column="5"
           VerticalAlignment="Center"
-          IsVisible="{Binding HasOneAccount}"
-          ToolTip.Tip="Account">
-          <MenuItem Padding="0">
-            <MenuItem.Header>
-              <Image
-                Width="28"
-                Height="28"
-                Source="{Binding Accounts[0].AvatarImage}">
-
-                <Image.Clip>
-                  <EllipseGeometry Rect="0,0,28,28" />
-                </Image.Clip>
-              </Image>
-            </MenuItem.Header>
-            <MenuItem
-              Classes="Profile"
-              Command="{Binding $parent[local:HomeView].DataContext.OpenProfileCommand}"
-              CommandParameter="{Binding Account}"
-              DataContext="{Binding Accounts[0]}" />
-            <Separator />
-            <MenuItem
-              Command="{Binding AddAccountCommand}"
-              Header="Add another account"
-              Icon="{icons:MaterialIconExt AccountPlus}" />
-            <MenuItem
-              Command="{Binding LaunchManagerCommand}"
-              Header="Manage accounts in Manager"
-              Icon="{icons:MaterialIconExt AccountCog}" />
-            <MenuItem
-              Command="{Binding RemoveAccountCommand}"
-              CommandParameter="{Binding Accounts[0].Account}"
-              Header="Log Out"
-              Icon="{icons:MaterialIconExt Logout}" />
-          </MenuItem>
+          Items="{Binding MenuItems}">
+          <Menu.Styles>
+            <Style Selector="MenuItem">
+              <Setter Property="Header" Value="{Binding Header}" />
+              <Setter Property="Icon" Value="{Binding Icon}" />
+              <Setter Property="MinWidth" Value="28" />
+              <Setter Property="Items" Value="{Binding Items}" />
+              <Setter Property="Command" Value="{Binding Command}" />
+              <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+            </Style>
+          </Menu.Styles>
         </Menu>
 
-        <!--  MULTIPLE ACCOUNTS MENU  -->
-        <Menu
-          Grid.Column="5"
-          VerticalAlignment="Center"
-          IsVisible="{Binding HasMultipleAccounts}"
-          ToolTip.Tip="Accounts">
-          <MenuItem
-            Width="30"
-            Height="30"
-            Foreground="White"
-            Header="{icons:MaterialIconExt AccountMultiple}">
 
-            <MenuItem
-              Header="Accounts"
-              Icon="{icons:MaterialIconExt AccountMultiple}"
-              Items="{Binding Accounts}">
-              <MenuItem.DataTemplates>
-                <DataTemplate>
-                  <MenuItem Classes="Profile">
-                    <MenuItem
-                      Command="{Binding $parent[local:HomeView].DataContext.OpenProfileCommand}"
-                      CommandParameter="{Binding Account}"
-                      Header="View online"
-                      Icon="{icons:MaterialIconExt ExternalLink}" />
-                    <MenuItem
-                      Command="{Binding $parent[local:HomeView].DataContext.RemoveAccountCommand}"
-                      CommandParameter="{Binding Account}"
-                      Header="Remove account"
-                      Icon="{icons:MaterialIconExt AccountMinus}" />
-                  </MenuItem>
-                </DataTemplate>
-
-              </MenuItem.DataTemplates>
-            </MenuItem>
-            <MenuItem
-              Command="{Binding $parent[local:HomeView].DataContext.AddAccountCommand}"
-              Header="Add another account"
-              Icon="{icons:MaterialIconExt AccountPlus}" />
-            <MenuItem
-              Command="{Binding $parent[local:HomeView].DataContext.LaunchManagerCommand}"
-              Header="Manage accounts in Manager"
-              Icon="{icons:MaterialIconExt AccountCog}" />
-
-          </MenuItem>
-        </Menu>
 
         <!--  NOTIFICATIONS  -->
-        <Grid Grid.Column="6">
+        <Grid Grid.Column="6" IsVisible="{Binding Notifications.Count}">
           <m:FloatingButton
             VerticalAlignment="Center"
             assists:ShadowAssist.ShadowDepth="Depth0"
@@ -255,16 +141,13 @@
             ToolTip.Tip="Notifications">
             <Button.Content>
               <Grid>
-
                 <icons:MaterialIcon
                   Width="15"
                   Height="15"
                   assists:ShadowAssist.ShadowDepth="0"
                   Foreground="White"
                   Kind="Notifications" />
-
               </Grid>
-
             </Button.Content>
           </m:FloatingButton>
           <Border
@@ -273,7 +156,6 @@
             Margin="15,0,0,15"
             Background="Red"
             CornerRadius="8"
-            IsVisible="{Binding Notifications.Count}"
             ToolTip.Tip="You have notifications">
             <TextBlock
               HorizontalAlignment="Center"
@@ -288,7 +170,7 @@
 
 
       </Grid>
-    </m:Card>
+    </Border>
     <Grid
       Grid.Row="1"
       Margin="5,10,5,5"

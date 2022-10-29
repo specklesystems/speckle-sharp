@@ -1,9 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Views.Windows.Dialogs;
+using Material.Icons;
+using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
@@ -66,6 +70,15 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
     }
 
+    private ObservableCollection<MenuItemViewModel> _menuItems = new ObservableCollection<MenuItemViewModel>();
+    public ObservableCollection<MenuItemViewModel> MenuItems
+    {
+      get => _menuItems;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _menuItems, value);
+      }
+    }
 
     private List<StreamAccountWrapper> _streams;
     public List<StreamAccountWrapper> Streams
@@ -399,7 +412,7 @@ namespace DesktopUI2.ViewModels
         Notifications.Clear();
 
         if (hasUpdate)
-          Notifications.Add(new NotificationViewModel { Message = "An update for this connector is available, install it now!", Launch = LaunchManagerCommand });
+          Notifications.Add(new NotificationViewModel { Message = "An update for this connector is available, install it now!", Launch = LaunchManagerCommand, Icon = MaterialIconKind.Gift, IconColor = Avalonia.Media.Brushes.Gold });
 
         foreach (var account in Accounts)
         {
@@ -445,6 +458,7 @@ namespace DesktopUI2.ViewModels
 
         GetStreams();
         GetNotifications();
+        GenerateMenuItems();
 
         try
         {
@@ -460,6 +474,61 @@ namespace DesktopUI2.ViewModels
       catch (Exception ex)
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
+      }
+    }
+
+    private void GenerateMenuItems()
+    {
+      try
+      {
+        MenuItems.Clear();
+        MenuItemViewModel menu;
+
+
+        if (Accounts.Count > 1)
+          menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.AccountMultiple, Foreground = Avalonia.Media.Brushes.White } };
+        else if (Accounts.Count == 1)
+          menu = new MenuItemViewModel { Header = new Image { Width = 28, Height = 28, [!Image.SourceProperty] = new Binding("AvatarImage"), DataContext = Accounts[0], Clip = new EllipseGeometry(new Rect(0, 0, 28, 28)) }, };
+        else
+          menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.AccountWarning, Foreground = Avalonia.Media.Brushes.White } };
+
+        menu.Items = new List<MenuItemViewModel>();
+
+
+
+        foreach (var account in Accounts)
+        {
+
+          menu.Items.Add(new MenuItemViewModel
+          {
+            Header = account.FullAccountName,
+            //needs a binding to the image as it's lazy loaded
+            Icon = new Image { Width = 20, Height = 20, [!Image.SourceProperty] = new Binding("AvatarImage"), DataContext = account, Clip = new EllipseGeometry(new Rect(0, 0, 20, 20)) },
+            Items = new List<MenuItemViewModel>()
+            {
+              new MenuItemViewModel(OpenProfileCommand, account.Account, "View online", MaterialIconKind.ExternalLink),
+              new MenuItemViewModel(RemoveAccountCommand, account.Account, "Remove account", MaterialIconKind.AccountMinus)
+            }
+          });
+        }
+
+        menu.Items.Add(new MenuItemViewModel(AddAccountCommand, "Add another account", MaterialIconKind.AccountPlus));
+        menu.Items.Add(new MenuItemViewModel(LaunchManagerCommand, "Manage accounts in Manager", MaterialIconKind.AccountCog));
+
+        menu.Items.Add(new MenuItemViewModel(RefreshCommand, "Refresh streams & accounts", MaterialIconKind.Refresh));
+        menu.Items.Add(new MenuItemViewModel(ToggleDarkThemeCommand, "Toggle dark/light theme", MaterialIconKind.SunMoonStars));
+
+#if DEBUG
+        menu.Items.Add(new MenuItemViewModel(TestCommand, "Test stuff", MaterialIconKind.Bomb));
+#endif
+
+        MenuItems.Add(menu);
+
+        this.RaisePropertyChanged("MenuItems");
+      }
+      catch (Exception ex)
+      {
+        new SpeckleException("Error generating menu items", ex, true, Sentry.SentryLevel.Error);
       }
     }
 

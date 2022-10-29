@@ -39,7 +39,7 @@ namespace DesktopUI2.ViewModels
 
     private ConnectorBindings Bindings;
 
-    private List<MenuItemViewModel> _menuItems = new List<MenuItemViewModel>();
+
 
     private CollaboratorsViewModel Collaborators { get; set; }
 
@@ -75,6 +75,8 @@ namespace DesktopUI2.ViewModels
       get => _progress;
       set => this.RaiseAndSetIfChanged(ref _progress, value);
     }
+
+    private List<MenuItemViewModel> _menuItems = new List<MenuItemViewModel>();
     public List<MenuItemViewModel> MenuItems
     {
       get => _menuItems;

@@ -1,4 +1,7 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Media;
+using Material.Icons;
+using Material.Icons.Avalonia;
+using ReactiveUI;
 using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
@@ -10,6 +13,9 @@ namespace DesktopUI2.ViewModels
   public class NotificationViewModel : ReactiveObject
   {
     public string Message { get; set; }
+
+    public MaterialIconKind Icon { get; set; }
+    public IBrush IconColor { get; set; }
     private AccountViewModel _user;
     public AccountViewModel User
     {

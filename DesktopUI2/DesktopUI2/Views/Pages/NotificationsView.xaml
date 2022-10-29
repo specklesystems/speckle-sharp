@@ -71,13 +71,21 @@
             <DataTemplate>
               <m:Card Margin="15,10">
                 <Grid ColumnDefinitions="auto,*,auto">
+                  <icons:MaterialIcon
+                    Width="20"
+                    Height="20"
+                    Foreground="{Binding IconColor}"
+                    IsVisible="{Binding Icon}"
+                    Kind="{Binding Icon}" />
+
                   <Image
-                     Width="30"
+                    Width="30"
                     Height="30"
-                    Source="{Binding User^.AvatarImage}"
+                    IsVisible="{Binding User}"
+                    Source="{Binding User.AvatarImage}"
                     ToolTip.Tip="{Binding User.Name}">
                     <Image.Clip>
-                      <EllipseGeometry Rect="0,0,15,15" />
+                      <EllipseGeometry Rect="0,0,30,30" />
                     </Image.Clip>
                   </Image>
 
