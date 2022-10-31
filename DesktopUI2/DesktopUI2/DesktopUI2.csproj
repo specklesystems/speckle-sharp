@@ -30,6 +30,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Styles\NotificationCard.xaml" />
+    <None Remove="Styles\NotificationManager.xaml" />
     <None Remove="Views\Controls\CollaboratorsControl.xaml" />
     <None Remove="Views\Controls\PreviewButton.xaml" />
     <None Remove="Styles\Button.xaml" />
@@ -113,6 +115,12 @@
       <Generator></Generator>
     </AvaloniaResource>
     <AvaloniaXaml Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\NotificationCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\NotificationManager.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Controls\CollaboratorsControl.xaml">

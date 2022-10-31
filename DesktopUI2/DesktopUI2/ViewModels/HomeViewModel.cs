@@ -1,10 +1,11 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -838,11 +839,19 @@ namespace DesktopUI2.ViewModels
 
     public void TestCommand()
     {
-      var dialog = new ImportExportAlert();
-      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-      dialog.Show();
-      dialog.Activate();
-      dialog.Focus();
+      MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+      {
+        Title = "🥳 Account removed",
+        Message = $"The account has been removed from all your Connectors!",
+        Expiration = TimeSpan.Zero,
+        Type = Avalonia.Controls.Notifications.NotificationType.Error
+      }); ;
+
+      //var dialog = new ImportExportAlert();
+      //dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      //dialog.Show();
+      //dialog.Activate();
+      //dialog.Focus();
 
     }
   }
