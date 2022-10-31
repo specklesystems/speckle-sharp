@@ -45,6 +45,35 @@ namespace Objects.Converter.Revit
       }
       return true;
     }
+
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base speckleHost)
+    {
+      //doesn't have a host, go ahead and convert
+      if (host == null)
+        return true;
+
+      // has been converted before (from a parent host), skip it
+      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      {
+        return false;
+      }
+
+      // the parent is in our selection list,skip it, as this element will be converted by the host element
+      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      {
+        // there are certain elements in Revit that can be a host to another element
+        // yet not know it.
+        var hostedElementIds = GetDependentElementIds(host);
+        var elementId = element.Id;
+        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        {
+          speckleHost = new Base() { applicationId = host.UniqueId };
+          speckleHost["category"] = host.Category.Name;
+        }
+        else return false;
+      }
+      return true;
+    }
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
     /// </summary>
@@ -54,14 +83,7 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       //var hostedElementIds = host.FindInserts(true, false, false, false);
-      var typeFilter = new ElementIsElementTypeFilter(true);
-      var categoryFilter = new ElementMulticategoryFilter (
-        new List<BuiltInCategory>()
-        { 
-          BuiltInCategory.OST_SketchLines,
-          BuiltInCategory.OST_WeakDims
-        }, true);
-      var hostedElementIds = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+      var hostedElementIds = GetDependentElementIds(host);
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -114,6 +136,18 @@ namespace Objects.Converter.Revit
 
         (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
       }
+    }
+
+    public IList<ElementId> GetDependentElementIds(Element host)
+    {
+      var typeFilter = new ElementIsElementTypeFilter(true);
+      var categoryFilter = new ElementMulticategoryFilter(
+        new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_SketchLines,
+          BuiltInCategory.OST_WeakDims
+        }, true);
+      return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
     }
 
     public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)

@@ -120,8 +120,33 @@ namespace Speckle.ConnectorRevit.UI
             continue;
           }
 
+          // if we first receive an object that is a host but doesn't know it
+          // and then we receive the hosted object
+          if (conversionResult["speckleHost"] is Base host && host["category"] is string catName)
+          {
+            commitObject[$"@{catName}"] ??= new List<Base>();
+            if (commitObject[$"@{catName}"] is List<Base> objs)
+            {
+              var hostIndex = objs.FindIndex(obj => obj.applicationId == host.applicationId);
+              if (hostIndex != -1)
+              {
+                objs[hostIndex]["elements"] ??= new List<Base>();
+
+                // remove the speckleHost element that we added
+                conversionResult["speckleHost"] = null;
+                ((List<Base>)objs[hostIndex]["elements"]).Add(conversionResult);
+              }
+              else
+              {
+                conversionResult["speckleHost"] = null;
+                var newBase = new Base() { applicationId = host.applicationId };
+                newBase["elements"] = new List<Base>() { conversionResult };
+                objs.Add(newBase);
+              }
+            }
+          }
           //is an element type, nest it under Types instead
-          if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
+          else if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
           {
             var category = $"@{revitElement.Category.Name}";
 
@@ -136,10 +161,20 @@ namespace Speckle.ConnectorRevit.UI
           else
           {
             var category = $"@{revitElement.Category.Name}";
-            if (commitObject[category] == null)
-              commitObject[category] = new List<Base>();
+            commitObject[category] ??= new List<Base>();
 
-            ((List<Base>)commitObject[category]).Add(conversionResult);
+            if (commitObject[category] is List<Base> objs)
+            {
+              var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
+              // if we first receive a hosted object
+              // and then we receive the host that doesn't know that it is a host
+              if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
+              {
+                objs.RemoveAt(hostIndex);
+                conversionResult["elements"] = elements;
+              }
+              objs.Add(conversionResult);
+            }
           }
 
 

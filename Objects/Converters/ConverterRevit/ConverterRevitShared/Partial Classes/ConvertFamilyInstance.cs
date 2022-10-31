@@ -221,16 +221,31 @@ namespace Objects.Converter.Revit
     public Base FamilyInstanceToSpeckle(DB.FamilyInstance revitFi, out List<string> notes)
     {
       notes = new List<string>();
-      if (!ShouldConvertHostedElement(revitFi, revitFi.Host))
-        return null;
+      Base @base = null;
+      Base speckleHost = null;
+
+      if (!ShouldConvertHostedElement(revitFi, revitFi.Host, ref speckleHost))
+      {
+        // there are certain elements in Revit that can be a host to another element
+        // yet not know it.
+        var hostedElementIds = GetDependentElementIds(revitFi.Host);
+        var elementId = revitFi.Id;
+        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        {
+          speckleHost = new Base() { applicationId = revitFi.Host.UniqueId };
+          speckleHost["category"] = revitFi.Host.Category.Name;
+        }
+        else
+          return null;
+      }
 
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
-        return AdaptiveComponentToSpeckle(revitFi);
+        @base = AdaptiveComponentToSpeckle(revitFi);
 
       //these elements come when the curtain wall is generated
       //let's not send them to speckle unless we realize they are needed!
-      if (Categories.curtainWallSubElements.Contains(revitFi.Category))
+      if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
@@ -240,24 +255,29 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (Categories.beamCategories.Contains(revitFi.Category))
+      if (@base == null && Categories.beamCategories.Contains(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
-          return BeamToSpeckle(revitFi, out notes);
+          @base = BeamToSpeckle(revitFi, out notes);
         else if (revitFi.StructuralType == StructuralType.Brace)
-          return BraceToSpeckle(revitFi, out notes);
+          @base = BraceToSpeckle(revitFi, out notes);
       }
 
       //columns
-      if (Categories.columnCategories.Contains(revitFi.Category) || revitFi.StructuralType == StructuralType.Column)
-        return ColumnToSpeckle(revitFi, out notes);
+      if (@base == null && Categories.columnCategories.Contains(revitFi.Category) || revitFi.StructuralType == StructuralType.Column)
+        @base = ColumnToSpeckle(revitFi, out notes);
 
       var baseGeometry = LocationToSpeckle(revitFi);
       var basePoint = baseGeometry as Point;
-      if (basePoint == null)
-        return RevitElementToSpeckle(revitFi, out notes);
+      if (@base == null && basePoint == null)
+        @base = RevitElementToSpeckle(revitFi, out notes);
 
-      return PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+      @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+
+      if (speckleHost != null)
+        @base["speckleHost"] = speckleHost;
+
+      return @base; 
     }
 
     /// <summary>
