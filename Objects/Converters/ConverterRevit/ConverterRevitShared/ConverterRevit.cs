@@ -121,6 +121,9 @@ namespace Objects.Converter.Revit
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
           break;
+        case DB.FabricationPart o:
+          returnObject = FabricationPartToSpeckle(o, out notes);
+          break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
           break;
