@@ -82,8 +82,7 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitNetworkElement : NetworkElement
   {
-    public FittingType fittingType { get; set; }
-    public bool connectorBasedCreation { get; set; }
+    public bool isConnectorBased { get; set; }
     public bool isCurve { get; set; }
 
     public RevitNetworkElement() { }
@@ -105,15 +104,38 @@ namespace Objects.BuiltElements.Revit
     /// <summary>
     /// The shape of the <see cref="NetworkLink"/>
     /// </summary>
-    public RevitNetworkLinkShape shape { get; set; }
+    public NetworkLinkShape shape { get; set; }
 
     /// <summary>
-    /// The connector domain. Could be duct, piping, conduit, cabletray, or unknown 
+    /// The link domain
     /// </summary>
-    public string domain { get; set; }
-    public int connectionIndex { get; set; }
-    public bool connectedToCurve { get; set; }
-    public bool connected { get; set; }
+    public NetworkLinkDomain domain { get; set; }
+
+    /// <summary>
+    /// The index indicating the position of this link on the connected fitting element, if applicable
+    /// </summary>
+    /// <remarks>
+    /// Revit fitting links are 1-indexed. For example, "T" fittings will have ordered links from index 1-3.
+    /// </remarks>
+    public int fittingIndex { get; set; }
+
+    /// <summary>
+    /// Indicates if this link needs temporary placeholder objects to be created first when receiving
+    /// </summary>
+    /// <remarks>
+    /// This is a utility property used to track network creation state on receive. Deprecate if possible. 
+    /// Placeholder geometry are curves. 
+    /// For example, U-bend links need temporary pipes to be created first, if one or more linked pipes have not yet been created in the network.
+    /// </remarks>
+    [JsonIgnore] public bool needsPlaceholders { get; set; }
+
+    /// <summary>
+    /// Indicates if this link has been connected to its elements
+    /// </summary>
+    /// <remarks>
+    /// This is a utility property used to track network creation state on receive. Deprecate if possible.
+    /// </remarks>
+    [JsonIgnore] public bool isConnected { get; set; }
 
     public RevitNetworkLink() { }
   }
@@ -121,11 +143,20 @@ namespace Objects.BuiltElements.Revit
   /// <summary>
   /// Represents the shape of a <see cref="NetworkLink"/>.
   /// </summary>
-  public enum RevitNetworkLinkShape
+  public enum NetworkLinkShape
   {
-    Unknown,
+    Oval,
     Round,
     Rectangular,
-    Oval
+    Unknown,
+  }
+
+  public enum NetworkLinkDomain
+  {
+    Cabletray,
+    Conduit,
+    Duct,
+    Piping,
+    Unknown
   }
 }
