@@ -362,6 +362,8 @@ namespace Speckle.Core.Models
       this.objectIds = objectIds;
     }
 
+
+  }
   public class BundleReferenceArgs : EventArgs
   {
     public List<BundleItem> items { get; set; }
