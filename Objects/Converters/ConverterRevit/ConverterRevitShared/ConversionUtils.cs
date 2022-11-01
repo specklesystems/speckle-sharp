@@ -150,8 +150,10 @@ namespace Objects.Converter.Revit
       return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
     }
 
-    public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)
+    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
+      var x = @base["elements"] as List<Base>;
+      var y = x.GetType();
       if (@base["elements"] != null && @base["elements"] is List<Base> elements)
       {
         CurrentHostElement = host;

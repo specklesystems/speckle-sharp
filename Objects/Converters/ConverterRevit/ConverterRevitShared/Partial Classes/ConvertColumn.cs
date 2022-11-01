@@ -155,6 +155,7 @@ namespace Objects.Converter.Revit
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitColumn.UniqueId, convertedItem: revitColumn);
       // TODO: nested elements.
+      appObj = SetHostedElements(speckleColumn, revitColumn, appObj);
       return appObj;
     }
 

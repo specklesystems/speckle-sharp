@@ -103,7 +103,7 @@ namespace Objects.Converter.Revit
               appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
               return appObj;
             }
-            if (CurrentHostElement is Wall wall)
+            if (CurrentHostElement is Element wall)
             {
               Doc.Regenerate();
 
@@ -126,23 +126,23 @@ namespace Objects.Converter.Revit
                       // some family instance base points may lie on the intersection of faces
                       // this makes it so family instance families can only be placed on the
                       // faces of walls
-                      if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
-                      {
+                      //if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
+                      //{
                         double newPlaneDist = ComputePlaneDistance(planarFace.Origin, planarFace.FaceNormal, basePoint);
                         if (newPlaneDist < planeDist)
                         {
                           planeDist = newPlaneDist;
                           faceRef = planarFace.Reference;
                         }
-                      }
+                      //}
                     }
                   }
                 }
               }
 
               // last resort, just guess a face
-              if (faceRef == null)
-                faceRef = HostObjectUtils.GetSideFaces(wall, ShellLayerType.Interior)[0];
+              //if (faceRef == null)
+              //  faceRef = HostObjectUtils.GetSideFaces(wall, ShellLayerType.Interior)[0];
 
               XYZ norm = new XYZ(0, 0, 0);
               familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
@@ -272,7 +272,8 @@ namespace Objects.Converter.Revit
       if (@base == null && basePoint == null)
         @base = RevitElementToSpeckle(revitFi, out notes);
 
-      @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+      if (@base == null)
+        @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
 
       if (speckleHost != null)
         @base["speckleHost"] = speckleHost;
