@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,10 +14,111 @@ namespace Speckle.Core.Api
   {
 
     /// <summary>
+    /// Gets the currently active user profile.
+    /// </summary>
+    /// <returns></returns>
+    public Task<User> ActiveUserGet() => ActiveUserGet(CancellationToken.None);
+
+    /// <summary>
+    /// Gets the currently active user profile.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<User> ActiveUserGet(CancellationToken cancellationToken)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query User {
+                      activeUser {
+                        id,
+                        email,
+                        name,
+                        bio,
+                        company,
+                        avatar,
+                        verified,
+                        profiles,
+                        role,
+                      }
+                    }"
+        };
+
+        var res = await GQLClient.SendMutationAsync<ActiveUserData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        return res.Data.activeUser;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+
+    }
+
+    /// <summary>
+    /// Get another user's profile by its user id.
+    /// </summary>
+    /// <param name="id">Id of the user you are looking for</param>
+    /// <returns></returns>
+    public Task<LimitedUser> OtherUserGet(string id) => OtherUserGet(CancellationToken.None, id);
+
+    /// <summary>
+    /// Get another user's profile by its user id.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <param name="id">Id of the user you are looking for</param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
+    public async Task<LimitedUser> OtherUserGet(CancellationToken cancellationToken, string id)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = @"query LimitedUser($id: String!) {
+                      otherUser(id: $id){
+                        id,
+                        name,
+                        bio,
+                        company,
+                        avatar,
+                        verified,
+                        role,
+                      }
+                    }"
+        ,
+          Variables = new
+          {
+            id
+          }
+        };
+
+        var res = await GQLClient
+          .SendMutationAsync<LimitedUserData>(request, cancellationToken)
+          .ConfigureAwait(false);
+
+        if (res.Errors != null && res.Errors.Any())
+          throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        return res.Data.otherUser;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    /// <summary>
     /// Gets the current user.
     /// </summary>
     /// <param name="id">If provided, retrieves th user with this user Id</param>
     /// <returns></returns>
+    [Obsolete("UserGet obsolete, use ActiveUserGet or OtherUserGet", false)]
     public Task<User> UserGet(string id = "")
     {
       return UserGet(CancellationToken.None, id);
@@ -28,6 +129,7 @@ namespace Speckle.Core.Api
     /// </summary>
     /// <param name="id">If provided, retrieves th user with this user Id</param>
     /// <returns></returns>
+    [Obsolete("UserGet obsolete, use ActiveUserGet or OtherUserGet", false)]
     public async Task<User> UserGet(CancellationToken cancellationToken, string id = "")
     {
       try
@@ -74,7 +176,7 @@ namespace Speckle.Core.Api
     /// <param name="query">String to search for. Must be at least 3 characters</param>
     /// <param name="limit">Max number of users to return</param>
     /// <returns></returns>
-    public Task<List<User>> UserSearch(string query, int limit = 10)
+    public Task<List<LimitedUser>> UserSearch(string query, int limit = 10)
     {
       return UserSearch(CancellationToken.None, query: query, limit: limit);
     }
@@ -85,7 +187,7 @@ namespace Speckle.Core.Api
     /// <param name="query">String to search for. Must be at least 3 characters</param>
     /// <param name="limit">Max number of users to return</param>
     /// <returns></returns>
-    public async Task<List<User>> UserSearch(CancellationToken cancellationToken, string query, int limit = 10)
+    public async Task<List<LimitedUser>> UserSearch(CancellationToken cancellationToken, string query, int limit = 10)
     {
       try
       {
@@ -101,6 +203,7 @@ namespace Speckle.Core.Api
                           company
                           avatar
                           verified
+                          role
                         }
                       }
                     }",
@@ -147,6 +250,8 @@ namespace Speckle.Core.Api
 
         if (res.Errors != null && res.Errors.Any())
           throw new SpeckleException(res.Errors[0].Message, res.Errors);
+
+        if (res.Data.serverInfo.version.Contains("dev")) return new System.Version(999, 999, 999);
 
         ServerVersion = new System.Version(Regex.Replace(res.Data.serverInfo.version, "[-a-zA-Z]+", ""));
         return ServerVersion;
@@ -261,7 +366,7 @@ namespace Speckle.Core.Api
         var request = new GraphQLRequest
         {
           Query = $@"query User {{
-                      user{{
+                      activeUser{{
                         id,
                         email,
                         name,
@@ -297,15 +402,15 @@ namespace Speckle.Core.Api
                     }}"
         };
 
-        var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
+        var res = await GQLClient.SendMutationAsync<ActiveUserData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null)
           throw new SpeckleException("Could not get streams", res.Errors);
-        if (res.Data?.user == null)
+        if (res.Data?.activeUser == null)
         {
           throw new SpeckleException("User is not authenticated, or the credentials were not valid. Check the provided account is still valid, remove it from manager and add it again.");
         }
-        return res.Data.user.streams.items;
+        return res.Data.activeUser.streams.items;
       }
       catch (Exception e)
       {
@@ -331,7 +436,7 @@ namespace Speckle.Core.Api
         var request = new GraphQLRequest
         {
           Query = $@"query User {{
-                      user{{
+                      activeUser{{
                         id,
                         email,
                         name,
@@ -367,12 +472,12 @@ namespace Speckle.Core.Api
                     }}"
         };
 
-        var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
+        var res = await GQLClient.SendMutationAsync<ActiveUserData>(request, cancellationToken).ConfigureAwait(false);
 
         if (res.Errors != null)
           throw new SpeckleException("Could not get favorite streams", res.Errors);
 
-        return res.Data.user.favoriteStreams.items;
+        return res.Data.activeUser.favoriteStreams.items;
       }
       catch (Exception e)
       {
