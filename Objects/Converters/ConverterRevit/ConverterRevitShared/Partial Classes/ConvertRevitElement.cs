@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using System;
 using System.Collections.Generic;
@@ -30,8 +30,13 @@ namespace Objects.Converter.Revit
       //Only send elements that have a mesh, if not we should probably support them properly via direct conversions
       if (speckleElement.displayValue == null || speckleElement.displayValue.Count == 0)
       {
-        notes.Add("Not sending elements without display meshes");
-        return null;
+        speckleElement.displayValue = GetFabricationMeshes(revitElement);
+
+        if (speckleElement.displayValue == null || speckleElement.displayValue.Count == 0)
+        {
+          notes.Add("Not sending elements without display meshes");
+          return null;
+        }
       }
 
       GetAllRevitParamsAndIds(speckleElement, revitElement);
