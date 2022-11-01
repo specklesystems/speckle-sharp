@@ -1,4 +1,4 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using System;
 using System.Collections.Generic;
@@ -24,6 +24,12 @@ namespace Objects.Converter.Revit
         speckleElement.type = revitElement.Name;
       }
 
+      var baseGeometry = LocationToSpeckle(revitElement);
+      if (baseGeometry is Geometry.Point point)
+        speckleElement.basePoint = point;
+      else if (baseGeometry is Geometry.Line line)
+        speckleElement.baseLine = line;
+      
       speckleElement.category = revitElement.Category.Name;
       speckleElement.displayValue = GetElementDisplayMesh(revitElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
