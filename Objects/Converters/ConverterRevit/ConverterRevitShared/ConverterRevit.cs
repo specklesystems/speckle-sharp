@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -612,6 +612,7 @@ namespace Objects.Converter.Revit
         DB.ElementType _ => true,
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
+        DB.FabricationPart _ => true,
 #if !REVIT2023
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
