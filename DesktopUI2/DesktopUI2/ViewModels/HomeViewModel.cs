@@ -1,9 +1,14 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
+using Material.Icons;
+using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
@@ -66,12 +71,14 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
     }
 
-
-    private bool _hasUpdate;
-    public bool HasUpdate
+    private ObservableCollection<MenuItemViewModel> _menuItems = new ObservableCollection<MenuItemViewModel>();
+    public ObservableCollection<MenuItemViewModel> MenuItems
     {
-      get => _hasUpdate;
-      private set => this.RaiseAndSetIfChanged(ref _hasUpdate, value);
+      get => _menuItems;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _menuItems, value);
+      }
     }
 
     private List<StreamAccountWrapper> _streams;
@@ -84,6 +91,14 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("FilteredStreams");
         this.RaisePropertyChanged("HasStreams");
       }
+    }
+
+    private ObservableCollection<NotificationViewModel> _notifications = new ObservableCollection<NotificationViewModel>();
+    public ObservableCollection<NotificationViewModel> Notifications
+    {
+      get => _notifications;
+      private set => this.RaiseAndSetIfChanged(ref _notifications, value);
+
     }
 
     private Filter _selectedFilter = Filter.all;
@@ -325,6 +340,8 @@ namespace DesktopUI2.ViewModels
           return;
 
         InProgress = true;
+
+        //needed for the search feature
         StreamGetCancelTokenSource?.Cancel();
         StreamGetCancelTokenSource = new CancellationTokenSource();
 
@@ -386,6 +403,48 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private async Task GetNotifications()
+    {
+      try
+      {
+
+        var hasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
+
+        Notifications.Clear();
+
+        if (hasUpdate)
+          Notifications.Add(new NotificationViewModel { Message = "An update for this connector is available, install it now!", Launch = LaunchManagerCommand, Icon = MaterialIconKind.Gift, IconColor = Avalonia.Media.Brushes.Gold });
+
+        foreach (var account in Accounts)
+        {
+          try
+          {
+            var client = new Client(account.Account);
+            var result = await client.GetAllPendingInvites();
+            foreach (var r in result)
+            {
+              Notifications.Add(new NotificationViewModel(r, client.ServerUrl));
+            }
+
+          }
+          catch (Exception e)
+          {
+            if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
+              return;
+            Log.CaptureException(new Exception("Could not fetch invites", e), Sentry.SentryLevel.Error);
+          }
+        }
+
+
+        this.RaisePropertyChanged(nameof(Notifications));
+
+      }
+      catch (Exception ex)
+      {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+      }
+    }
+
     private void SearchStreams()
     {
       GetStreams().ConfigureAwait(false);
@@ -399,6 +458,8 @@ namespace DesktopUI2.ViewModels
         Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
 
         GetStreams();
+        GetNotifications();
+        GenerateMenuItems();
 
         try
         {
@@ -409,11 +470,66 @@ namespace DesktopUI2.ViewModels
         catch { }
 
 
-        HasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
+
       }
       catch (Exception ex)
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
+      }
+    }
+
+    private void GenerateMenuItems()
+    {
+      try
+      {
+        MenuItems.Clear();
+        MenuItemViewModel menu;
+
+
+        if (Accounts.Count > 1)
+          menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.AccountMultiple, Foreground = Avalonia.Media.Brushes.White } };
+        else if (Accounts.Count == 1)
+          menu = new MenuItemViewModel { Header = new Image { Width = 28, Height = 28, [!Image.SourceProperty] = new Binding("AvatarImage"), DataContext = Accounts[0], Clip = new EllipseGeometry(new Rect(0, 0, 28, 28)) }, };
+        else
+          menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.AccountWarning, Foreground = Avalonia.Media.Brushes.White } };
+
+        menu.Items = new List<MenuItemViewModel>();
+
+
+
+        foreach (var account in Accounts)
+        {
+
+          menu.Items.Add(new MenuItemViewModel
+          {
+            Header = account.FullAccountName,
+            //needs a binding to the image as it's lazy loaded
+            Icon = new Image { Width = 20, Height = 20, [!Image.SourceProperty] = new Binding("AvatarImage"), DataContext = account, Clip = new EllipseGeometry(new Rect(0, 0, 20, 20)) },
+            Items = new List<MenuItemViewModel>()
+            {
+              new MenuItemViewModel(OpenProfileCommand, account.Account, "View online", MaterialIconKind.ExternalLink),
+              new MenuItemViewModel(RemoveAccountCommand, account.Account, "Remove account", MaterialIconKind.AccountMinus)
+            }
+          });
+        }
+
+        menu.Items.Add(new MenuItemViewModel(AddAccountCommand, "Add another account", MaterialIconKind.AccountPlus));
+        menu.Items.Add(new MenuItemViewModel(LaunchManagerCommand, "Manage accounts in Manager", MaterialIconKind.AccountCog));
+
+        menu.Items.Add(new MenuItemViewModel(RefreshCommand, "Refresh streams & accounts", MaterialIconKind.Refresh));
+        menu.Items.Add(new MenuItemViewModel(ToggleDarkThemeCommand, "Toggle dark/light theme", MaterialIconKind.SunMoonStars));
+
+#if DEBUG
+        menu.Items.Add(new MenuItemViewModel(TestCommand, "Test stuff", MaterialIconKind.Bomb));
+#endif
+
+        MenuItems.Add(menu);
+
+        this.RaisePropertyChanged("MenuItems");
+      }
+      catch (Exception ex)
+      {
+        new SpeckleException("Error generating menu items", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -480,7 +596,7 @@ namespace DesktopUI2.ViewModels
 
         else
         {
-          Process.Start(new ProcessStartInfo($"https://releases.speckle.systems/") { UseShellExecute = true });
+          Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
         }
       }
       catch (Exception ex)
@@ -716,13 +832,26 @@ namespace DesktopUI2.ViewModels
       ConfigManager.Save(config);
     }
 
+    private void NotificationsCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new NotificationsViewModel(HostScreen, Notifications.ToList()));
+    }
+
     public void TestCommand()
     {
-      var dialog = new ImportExportAlert();
-      dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-      dialog.Show();
-      dialog.Activate();
-      dialog.Focus();
+      MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+      {
+        Title = "🥳 Account removed",
+        Message = $"The account has been removed from all your Connectors!",
+        Expiration = TimeSpan.Zero,
+        Type = Avalonia.Controls.Notifications.NotificationType.Error
+      });
+
+      //var dialog = new ImportExportAlert();
+      //dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+      //dialog.Show();
+      //dialog.Activate();
+      //dialog.Focus();
 
     }
   }

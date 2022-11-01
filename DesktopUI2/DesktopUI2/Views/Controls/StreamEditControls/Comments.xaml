@@ -12,9 +12,7 @@
   d:DesignHeight="450"
   d:DesignWidth="500"
   mc:Ignorable="d">
-  <Design.DataContext>
-    <viewModels:DesignSavedStreamViewModel />
-  </Design.DataContext>
+
 
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
@@ -39,6 +37,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Expander
+              Margin="0,2"
               Padding="15,0"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Stretch"
